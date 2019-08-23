@@ -1,5 +1,4 @@
 #include <winsock2.h>
-#include <windows.h>
 #include "core.h"
 #include "client.h"
 #include "server.h"
