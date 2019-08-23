@@ -30,6 +30,9 @@ void Packet_RegisterDefault();
 uchar ReadString(char* data, char** dst);
 void WriteString(char* data, const char* string);
 void Handler_Handshake(CLIENT* self, char* data);
+void Handler_SetBlock(CLIENT* self, char* data);
+void Handler_PosAndOrient(CLIENT* self, char* data);
+void Handler_Message(CLIENT* self, char* data);
 
 extern EXT* firstExtenison;
 extern EXT* tailExtension;

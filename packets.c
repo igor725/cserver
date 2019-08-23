@@ -39,13 +39,16 @@ void Packet_Register(uchar id, const char* name, ushort size, packetHandler hand
 
 void Packet_RegisterDefault() {
 	Packet_Register(0x00, "Handshake", 131, &Handler_Handshake);
+	Packet_Register(0x05, "SetBlock", 9, &Handler_SetBlock);
+	Packet_Register(0x08, "PosAndOrient", 10, &Handler_PosAndOrient);
+	Packet_Register(0x0D, "Message", 66, &Handler_Message);
 }
 
-void Packet_RegisterCPE(uchar id, const char* extName, int extVersion, ushort extSize) {
+void Packet_RegisterCPE(uchar id, const char* name, int version, ushort size) {
 	PACKET* tmp = packets[id];
-	tmp->extName = extName;
-	tmp->extVersion = extVersion;
-	tmp->extSize = extSize;
+	tmp->extName = name;
+	tmp->extVersion = version;
+	tmp->extSize = size;
 }
 
 ushort Packet_GetSize(uchar id, CLIENT* self) {
@@ -100,6 +103,18 @@ void Handler_Handshake(CLIENT* self, char* data) {
 			ptr = ptr->next;
 		}
 	}
+}
+
+void Handler_SetBlock(CLIENT* self, char* data) {
+
+}
+
+void Handler_PosAndOrient(CLIENT* self, char* data) {
+
+}
+
+void Handler_Message(CLIENT* self, char* data) {
+
 }
 
 /*
