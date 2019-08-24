@@ -55,6 +55,9 @@ void Client_Destroy(CLIENT* self) {
 	free(self->rdbuf);
 	free(self->wrbuf);
 
+	if(self->thread != NULL)
+		CloseHandle(self->thread);
+
 	if(self->playerData != NULL) {
 		free(self->playerData->position);
 		free(self->playerData->angle);

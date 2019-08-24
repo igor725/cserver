@@ -1,8 +1,9 @@
 #ifndef SERVER_H
 #define SERVER_H
-void Server_InitialWork();
+bool Server_InitialWork();
 void Server_DoStep();
 
+bool serverActive;
 SOCKET server;
 WORLD* World;
 #endif
