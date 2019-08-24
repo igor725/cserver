@@ -31,6 +31,8 @@ void WriteString(char* data, const char* string) {
 
 void Packet_Register(uchar id, const char* name, ushort size, packetHandler handler) {
 	PACKET* tmp = (PACKET*)malloc(sizeof(struct packet));
+	memset(tmp, 0, sizeof(struct packet));
+
 	tmp->name = name;
 	tmp->size = size;
 	tmp->handler = handler;
@@ -51,7 +53,7 @@ void Packet_RegisterCPE(uchar id, const char* name, int version, ushort size) {
 	tmp->extSize = size;
 }
 
-ushort Packet_GetSize(uchar id, CLIENT* self) {
+short Packet_GetSize(uchar id, CLIENT* self) {
 	PACKET* packet = packets[id];
 	if(packet == NULL)
 		return -1;
@@ -71,7 +73,8 @@ void Packet_WriteKick(CLIENT* cl, const char* reason) {
 	WriteString(cl->wrbuf + 1, reason);
 	send(cl->sock, cl->wrbuf, 65, 0);
 	cl->state = CLIENT_WAITCLOSE;
-	shutdown(cl->sock, SD_RECEIVE);
+	shutdown(cl->sock, SD_SEND);
+	printf("Client %d kicked %s\n", cl->sock, reason);
 }
 
 void Packet_WriteHandshake(CLIENT* cl) {
@@ -121,6 +124,11 @@ void Handler_Message(CLIENT* self, char* data) {
 	CPE
 */
 
+void Packet_RegisterCPEDefault() {
+	Packet_Register(0x10, "ExtInfo", 67, &CPEHandler_ExtInfo);
+	Packet_Register(0x11, "ExtEntry", 69, &CPEHandler_ExtEntry);
+}
+
 void CPEPacket_WriteInfo(CLIENT *cl) {
 	char* data = cl->wrbuf;
 	*data = 0x10;
@@ -134,4 +142,12 @@ void CPEPacket_WriteExtEntry(CLIENT *cl, EXT* ext) {
 	*data = 0x011;
 	WriteString(++data, ext->name); data += 63;
 	*(uint*)++data = htonl(ext->version);
+}
+
+void CPEHandler_ExtInfo(CLIENT* self, char* data) {
+
+}
+
+void CPEHandler_ExtEntry(CLIENT* self, char* data) {
+
 }

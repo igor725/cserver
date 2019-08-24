@@ -1,8 +1,9 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#define CLIENT_OK        0
-#define CLIENT_WAITCLOSE 1
+#define CLIENT_OK         0
+#define CLIENT_WAITCLOSE  1
+#define CLIENT_AFTERCLOSE 2
 
 typedef struct client {
 	int     id;

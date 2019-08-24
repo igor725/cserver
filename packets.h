@@ -19,7 +19,7 @@ typedef struct ext {
 	struct ext*  next;
 } EXT;
 
-ushort Packet_GetSize(uchar id, CLIENT* self);
+short Packet_GetSize(uchar id, CLIENT* self);
 void Packet_Register(uchar id, const char* name, ushort size, packetHandler handler);
 void Packet_RegisterCPE(uchar id, const char* extName, int extVersion, ushort extSize);
 void Packet_WriteKick(CLIENT* cl, const char* reason);
@@ -29,10 +29,14 @@ void CPEPacket_WriteExtEntry(CLIENT *cl, EXT* ext);
 void Packet_RegisterDefault();
 uchar ReadString(char* data, char** dst);
 void WriteString(char* data, const char* string);
+
 void Handler_Handshake(CLIENT* self, char* data);
 void Handler_SetBlock(CLIENT* self, char* data);
 void Handler_PosAndOrient(CLIENT* self, char* data);
 void Handler_Message(CLIENT* self, char* data);
+
+void CPEHandler_ExtInfo(CLIENT* self, char* data);
+void CPEHandler_ExtEntry(CLIENT* self, char* data);
 
 extern EXT* firstExtenison;
 extern EXT* tailExtension;

@@ -35,8 +35,8 @@ int Client_ThreadProc(void* lpParam) {
 		if(self->state == CLIENT_WAITCLOSE) {
 			int len = recv(self->sock, self->rdbuf, 131, 0);
 			if(len <= 0) {
-				clients[self->id] = NULL;
 				closesocket(self->sock);
+				self->state = CLIENT_AFTERCLOSE;
 				break;
 			}
 			continue;
@@ -44,7 +44,7 @@ int Client_ThreadProc(void* lpParam) {
 		ushort wait = 1;
 
 		if(self->rdbufpos > 0) {
-			ushort packetSize = Packet_GetSize(*self->rdbuf, self);
+			short packetSize = Packet_GetSize(*self->rdbuf, self);
 
 			if(packetSize < 1) {
 				Packet_WriteKick(self, "Invalid packet ID");
@@ -57,14 +57,15 @@ int Client_ThreadProc(void* lpParam) {
 			Client_HandlePacket(self);
 			self->rdbufpos = 0;
 			continue;
-		}
+		} else if(wait > 0) {
+			int len = recv(self->sock, self->rdbuf + self->rdbufpos, wait, 0);
 
-		int len = recv(self->sock, self->rdbuf + self->rdbufpos, wait, 0);
-
-		if(len > 0) {
-			self->rdbufpos += len;
-		} else {
-			self->state = CLIENT_WAITCLOSE;
+			if(len > 0) {
+				self->rdbufpos += len;
+			} else {
+				self->state = CLIENT_AFTERCLOSE;
+				break;
+			}
 		}
 
 		Sleep(10);
@@ -79,6 +80,8 @@ void AcceptClients() {
 	SOCKET fd = accept(server, (struct sockaddr*)&caddr, &caddrsz);
 	if(fd != INVALID_SOCKET) {
 	 	CLIENT* tmp = (CLIENT*)malloc(sizeof(struct client));
+		memset(tmp, 0, sizeof(struct client));
+
 		tmp->sock = fd;
 		tmp->rdbufpos = 0;
 		tmp->wrbufpos = 0;
@@ -116,12 +119,12 @@ void Client_HandlePacket(CLIENT* self) {
 		return;
 
 	char* data = self->rdbuf;
-	if(packet->haveCPEImp) {
+	if(packet->haveCPEImp == true)
 		if(packet->cpeHandler == NULL)
 			packet->handler(self, data);
 		else
 			packet->cpeHandler(self, data);
-	} else {
-		packet->handler(self, data);
-	}
+	else
+		if(packet->handler != NULL)
+			packet->handler(self, data);
 }

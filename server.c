@@ -11,11 +11,20 @@ void WSAErr(const char* func) {
 
 void InitialWork() {
 	Packet_RegisterDefault();
+	Packet_RegisterCPEDefault();
 	Client_InitListen();
 }
 
 void DoServerStep() {
-	//TODO: Ыа?
+	for(int i = 0; i < 128; i++) {
+		CLIENT* cl = clients[i];
+		if(cl == NULL)
+			continue;
+		if(cl->state == CLIENT_AFTERCLOSE) {
+			CloseHandle(cl->thread);
+			clients[i] = NULL;
+		}
+	}
 }
 
 int main(int argc, char** argv) {
@@ -32,7 +41,7 @@ int main(int argc, char** argv) {
 	ssa.sin_port = htons(25565);
 	ssa.sin_addr.s_addr = inet_addr("0.0.0.0");
 
-	//setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, 1);
+	//setsockopt(server, SOL_SOCKET, SO_REUSEADDR, 1);
 	if(bind(server, (const struct sockaddr*)&ssa, sizeof ssa) == -1)
 		WSAErr("bind()");
 
