@@ -1,30 +1,29 @@
 #include <winsock2.h>
-#include <stdio.h>
 #include "core.h"
+#include "log.h"
 #include "world.h"
 #include "client.h"
 #include "server.h"
 #include "packets.h"
 
-void WSAErr(const char* func) {
-	printf("%s error: %d", func, WSAGetLastError());
-}
-
-void InitialWork() {
+void Server_InitialWork() {
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 	Client_InitListen();
 	World = World_Create("TestWorld", 128, 128, 128);
-	World_Load(World);
+	if(!World_Load(World)) {
+		Log_WinErr("World_Load()");
+	}
 }
 
-void DoServerStep() {
+void Server_DoStep() {
 	for(int i = 0; i < 128; i++) {
-		CLIENT* cl = clients[i];
-		if(cl == NULL)
+		CLIENT* self = clients[i];
+		if(self == NULL)
 			continue;
-		if(cl->state == CLIENT_AFTERCLOSE) {
-			CloseHandle(cl->thread);
+		if(self->state == CLIENT_AFTERCLOSE) {
+			CloseHandle(self->thread);
+			Client_Destroy(self);
 			clients[i] = NULL;
 		}
 	}
@@ -33,11 +32,11 @@ void DoServerStep() {
 int main(int argc, char** argv) {
 	WSADATA ws;
 	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR) {
-		WSAErr("WSAStartup()");
+		Log_WSAErr("WSAStartup()");
 	}
 
 	if(INVALID_SOCKET == (server = socket(AF_INET, SOCK_STREAM, 0)))
-		WSAErr("socket()");
+		Log_WSAErr("socket()");
 
 	struct sockaddr_in ssa;
 	ssa.sin_family = AF_INET;
@@ -46,15 +45,15 @@ int main(int argc, char** argv) {
 
 	//setsockopt(server, SOL_SOCKET, SO_REUSEADDR, 1);
 	if(bind(server, (const struct sockaddr*)&ssa, sizeof ssa) == -1)
-		WSAErr("bind()");
+		Log_WSAErr("bind()");
 
 	if(listen(server, SOMAXCONN) == -1)
-		WSAErr("listen()");
+		Log_WSAErr("listen()");
 
-	printf("%s %s started on 0.0.0.0:25565\n", SOFTWARE_NAME, SOFTWARE_VERSION);
-	InitialWork();
+	Log_Info("%s %s started on 0.0.0.0:25565", SOFTWARE_NAME, SOFTWARE_VERSION);
+	Server_InitialWork();
 	while(1) {
-		DoServerStep();
+		Server_DoStep();
 		Sleep(10);
 	}
 }

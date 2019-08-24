@@ -1,4 +1,6 @@
+#include <winsock2.h>
 #include <windows.h>
+#include <string.h>
 #include "core.h"
 #include "world.h"
 #include "client.h"
@@ -25,13 +27,60 @@ int Client_FindFreeID() {
 	return -1;
 }
 
-boolean Client_IsSupportExt(CLIENT* self, const char* packetName) {
+boolean Client_IsSupportExt(CLIENT* self, const char* extName) {
+	if(self->cpeData == NULL)
+		return false;
+
+	EXT* ptr = self->cpeData->firstExtension;
+	while(ptr != NULL) {
+		if(stricmp(ptr->name, extName) == 0) {
+			return true;
+		}
+		ptr = ptr->next;
+	}
 	return false;
 }
 
-void Client_SendMap(CLIENT* self) {
-	if(!self->currentWorld)
-		return;
+char* Client_GetAppName(CLIENT* self) {
+	if(self->cpeData == NULL)
+		return "vanilla";
+	return self->cpeData->appName;
+}
+
+void Client_Destroy(CLIENT* self) {
+	free(self->rdbuf);
+	free(self->wrbuf);
+
+	if(self->playerData != NULL) {
+		free(self->playerData->name);
+		free(self->playerData->key);
+		free(self->playerData);
+	}
+	if(self->cpeData != NULL) {
+		EXT* ptr = self->cpeData->firstExtension;
+		while(ptr != NULL) {
+			free(ptr->name);
+			free(ptr);
+			ptr = ptr->next;
+		}
+		free(self->cpeData);
+	}
+}
+
+int Client_Send(CLIENT* self, uint len) {
+	return send(self->sock, self->wrbuf, len, 0);
+}
+
+boolean Client_SendMap(CLIENT* self) {
+	if(self->playerData->currentWorld == NULL)
+		return false;
+
+	return true;
+}
+
+void Client_Disconnect(CLIENT* self) {
+	self->state = CLIENT_WAITCLOSE;
+	shutdown(self->sock, SD_SEND);
 }
 
 int Client_ThreadProc(void* lpParam) {
@@ -49,32 +98,30 @@ int Client_ThreadProc(void* lpParam) {
 		}
 		ushort wait = 1;
 
-		if(self->rdbufpos > 0) {
+		if(self->bufpos > 0) {
 			short packetSize = Packet_GetSize(*self->rdbuf, self);
 
 			if(packetSize < 1) {
 				Packet_WriteKick(self, "Invalid packet ID");
 				continue;
 			}
-			wait = packetSize - self->rdbufpos;
+			wait = packetSize - self->bufpos;
 		}
 
 		if(wait == 0) {
 			Client_HandlePacket(self);
-			self->rdbufpos = 0;
+			self->bufpos = 0;
 			continue;
 		} else if(wait > 0) {
-			int len = recv(self->sock, self->rdbuf + self->rdbufpos, wait, 0);
+			int len = recv(self->sock, self->rdbuf + self->bufpos, wait, 0);
 
 			if(len > 0) {
-				self->rdbufpos += len;
+				self->bufpos += len;
 			} else {
 				self->state = CLIENT_AFTERCLOSE;
 				break;
 			}
 		}
-
-		Sleep(10);
 	}
 	return 0;
 }
@@ -89,9 +136,7 @@ void AcceptClients() {
 		memset(tmp, 0, sizeof(struct client));
 
 		tmp->sock = fd;
-		tmp->rdbufpos = 0;
-		tmp->wrbufpos = 0;
-		tmp->appName = "vanilla";
+		tmp->bufpos = 0;
 		tmp->rdbuf = (char*)malloc(131);
 		tmp->wrbuf = (char*)malloc(2048);
 
@@ -122,16 +167,20 @@ int AcceptClients_ThreadProc(void* lpParam) {
 void Client_HandlePacket(CLIENT* self) {
 	uchar id = self->rdbuf[0];
 	PACKET* packet = packets[id];
-	if(packet == NULL)
-		return;
+	if(packet == NULL) return;
 
-	char* data = ++self->rdbuf;
+	boolean ret;
+	char* data = self->rdbuf; ++data;
+
 	if(packet->haveCPEImp == true)
 		if(packet->cpeHandler == NULL)
-			packet->handler(self, data);
+			ret = packet->handler(self, data);
 		else
-			packet->cpeHandler(self, data);
+			ret = packet->cpeHandler(self, data);
 	else
 		if(packet->handler != NULL)
-			packet->handler(self, data);
+			ret = packet->handler(self, data);
+
+	if(ret == false)
+		Packet_WriteKick(self, "Packet reading error");
 }

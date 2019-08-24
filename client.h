@@ -5,29 +5,39 @@
 #define CLIENT_WAITCLOSE  1
 #define CLIENT_AFTERCLOSE 2
 
-typedef struct client {
-	int     id;
-	int     state;
-	char*   name;
-	char*   key;
-	SOCKET  sock;
-	char*   rdbuf;
-	char*   wrbuf;
-	ushort  rdbufpos;
-	ushort  wrbufpos;
-	void*   thread;
+typedef struct cpeData {
 	boolean cpeEnabled;
 	short   _extCount;
-	EXT*    firstExtenison;
-	EXT*    tailExtenison;
+	EXT*    firstExtension;
+	EXT*    tailExtension;
 	char*   appName;
+} CPEDATA;
+
+typedef struct playerData {
+	char*   name;
+	char*   key;
+	ANGLE*  angle;
+	VECTOR* position;
 	WORLD*  currentWorld;
+} PLAYERDATA;
+
+typedef struct client {
+	int         id;
+	SOCKET      sock;
+	int         state;
+	char*       rdbuf;
+	char*       wrbuf;
+	ushort      bufpos;
+	void*       thread;
+	CPEDATA*    cpeData;
+	PLAYERDATA* playerData;
 } CLIENT;
 
 boolean Client_IsSupportExt(CLIENT* self, const char* packetName);
+int Client_Send(CLIENT* self, uint len);
 int AcceptClients_ThreadProc(void* lpParam);
 void Client_HandlePacket(CLIENT* self);
-void Client_SendMap(CLIENT* self);
+boolean Client_SendMap(CLIENT* self);
 void Client_InitListen();
 void AcceptClients();
 

@@ -1,8 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
-boolean Client_IsSupportExt(CLIENT* self, const char* packetName);
-void InitialWork();
-void DoServerStep();
+void Server_InitialWork();
+void Server_DoStep();
 
 SOCKET server;
 WORLD* World;

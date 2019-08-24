@@ -6,8 +6,8 @@
 #include "packets.h"
 
 PACKET* packets[256] = {0};
-EXT* firstExtenison = NULL;
-EXT* tailExtenison = NULL;
+EXT* firstExtension = NULL;
+EXT* tailExtension = NULL;
 int extensionsCount = 0;
 
 uchar ReadString(char* data, char** dst) {
@@ -69,56 +69,67 @@ short Packet_GetSize(uchar id, CLIENT* self) {
 	VANILLA
 */
 
-void Packet_WriteKick(CLIENT* cl, const char* reason) {
-	cl->wrbuf[0] = 0x0E;
-	WriteString(cl->wrbuf + 1, reason);
-	send(cl->sock, cl->wrbuf, 65, 0);
-	cl->state = CLIENT_WAITCLOSE;
-	shutdown(cl->sock, SD_SEND);
-	printf("Client %d kicked %s\n", cl->sock, reason);
+void Packet_WriteKick(CLIENT* self, const char* reason) {
+	self->wrbuf[0] = 0x0E;
+	WriteString(self->wrbuf + 1, reason);
+	Client_Send(self, 65);
+	Client_Disconnect(self);
+	printf("Client %d kicked %s\n", self->sock, reason);
 }
 
-void Packet_WriteHandshake(CLIENT* cl) {
-	char* data = cl->wrbuf;
+void Packet_WriteHandshake(CLIENT* self) {
+	char* data = self->wrbuf;
 	*data = 0x00;
 	*++data = 0x07;
 	WriteString(++data, "Server Name"); data += 63;
 	WriteString(++data, "Server MOTD"); data += 63;
 	*++data = 0x00;
 	*++data = 0x02; //TODO: Отдельный пакет инициализации мира, сейчас я пиздец ленивый для этого
-	send(cl->sock, cl->wrbuf, 132, 0);
+	Client_Send(self, 132);
 }
 
-void Handler_Handshake(CLIENT* self, char* data) {
+boolean Handler_Handshake(CLIENT* self, char* data) {
 	uchar protoVer = *data;
 	if(protoVer != 0x07) {
 		Packet_WriteKick(self, "Invalid protocol version");
-		return;
+		return true;
 	}
-	ReadString(++data, &self->name); data += 63;
-	ReadString(++data, &self->key); data += 63;
-	self->cpeEnabled = *++data == 0x42;
+
+	self->playerData = (PLAYERDATA*)malloc(sizeof(struct playerData));
+	memset(self->playerData, 0, sizeof(struct playerData));
+
+	ReadString(++data, &self->playerData->name); data += 63;
+	ReadString(++data, &self->playerData->key); data += 63;
+	boolean cpeEnabled = *++data == 0x42;
 	Packet_WriteHandshake(self);
-	if(self->cpeEnabled){
+
+	if(cpeEnabled) {
+		self->cpeData = (CPEDATA*)malloc(sizeof(struct cpeData));
+		memset(self->cpeData, 0, sizeof(struct cpeData));
+
 		CPEPacket_WriteInfo(self);
-		EXT* ptr = firstExtenison;
+		EXT* ptr = firstExtension;
 		while(ptr != NULL) {
 			CPEPacket_WriteExtEntry(self, ptr);
 			ptr = ptr->next;
 		}
+	} else {
+		Client_SendMap(self);
 	}
+
+	return true;
 }
 
-void Handler_SetBlock(CLIENT* self, char* data) {
-
+boolean Handler_SetBlock(CLIENT* self, char* data) {
+	return false;
 }
 
-void Handler_PosAndOrient(CLIENT* self, char* data) {
-
+boolean Handler_PosAndOrient(CLIENT* self, char* data) {
+	return false;
 }
 
-void Handler_Message(CLIENT* self, char* data) {
-
+boolean Handler_Message(CLIENT* self, char* data) {
+	return false;
 }
 
 /*
@@ -130,42 +141,50 @@ void Packet_RegisterCPEDefault() {
 	Packet_Register(0x11, "ExtEntry", 69, &CPEHandler_ExtEntry);
 }
 
-void CPEPacket_WriteInfo(CLIENT *cl) {
-	char* data = cl->wrbuf;
+void CPEPacket_WriteInfo(CLIENT *self) {
+	char* data = self->wrbuf;
 	*data = 0x10;
 	WriteString(++data, SOFTWARE_NAME DELIM SOFTWARE_VERSION); data += 63;
 	*(ushort*)++data = htons(extensionsCount);
-	send(cl->sock, cl->wrbuf, 67, 0);
+	Client_Send(self, 67);
 }
 
-void CPEPacket_WriteExtEntry(CLIENT *cl, EXT* ext) {
-	char* data = cl->wrbuf;
+void CPEPacket_WriteExtEntry(CLIENT* self, EXT* ext) {
+	char* data = self->wrbuf;
 	*data = 0x011;
 	WriteString(++data, ext->name); data += 63;
 	*(uint*)++data = htonl(ext->version);
+	Client_Send(self, 69);
 }
 
-void CPEHandler_ExtInfo(CLIENT* self, char* data) {
-	ReadString(data, &self->appName); data += 63;
-	self->_extCount = ntohs(*(ushort*)++data);
+boolean CPEHandler_ExtInfo(CLIENT* self, char* data) {
+	if(self->cpeData == NULL) return false;
+
+	ReadString(data, &self->cpeData->appName); data += 63;
+	self->cpeData->_extCount = ntohs(*(ushort*)++data);
+	return true;
 }
 
-void CPEHandler_ExtEntry(CLIENT* self, char* data) {
+boolean CPEHandler_ExtEntry(CLIENT* self, char* data) {
+	if(self->cpeData == NULL) return false;
+
 	EXT* tmp = (EXT*)malloc(sizeof(struct ext));
 	memset(tmp, 0, sizeof(struct ext));
 
 	ReadString(data, &tmp->name);data += 63;
 	tmp->version = ntohl(*(uint*)++data);
 
-	if(self->tailExtenison == NULL) {
-		self->firstExtenison = tmp;
-		self->tailExtenison = tmp;
+	if(self->cpeData->tailExtension == NULL) {
+		self->cpeData->firstExtension = tmp;
+		self->cpeData->tailExtension = tmp;
 	} else {
-		self->tailExtenison->next = tmp;
-		self->tailExtenison = tmp;
+		self->cpeData->tailExtension->next = tmp;
+		self->cpeData->tailExtension = tmp;
 	}
 
-	--self->_extCount;
-	if(self->_extCount == 0)
+	--self->cpeData->_extCount;
+	if(self->cpeData->_extCount == 0)
 		Client_SendMap(self);
+
+	return true;
 }

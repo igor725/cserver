@@ -23,11 +23,11 @@ WORLD* World_Create(char* name, ushort dx, ushort dy, ushort dz) {
 }
 
 int World_WriteInfo(WORLD* world, FILE* fp) {
-
+	return false;
 }
 
 int World_ReadInfo(WORLD* world, FILE* fp) {
-
+	return false;
 }
 
 int World_Save(WORLD* world) {

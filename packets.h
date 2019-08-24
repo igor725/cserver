@@ -1,6 +1,6 @@
 #ifndef PACKETS_H
 #define PACKETS_H
-typedef void (*packetHandler)(CLIENT*, char*);
+typedef boolean (*packetHandler)(CLIENT*, char*);
 
 typedef struct packet {
 	const char* name;
@@ -24,15 +24,15 @@ void Packet_RegisterDefault();
 uchar ReadString(char* data, char** dst);
 void WriteString(char* data, const char* string);
 
-void Handler_Handshake(CLIENT* self, char* data);
-void Handler_SetBlock(CLIENT* self, char* data);
-void Handler_PosAndOrient(CLIENT* self, char* data);
-void Handler_Message(CLIENT* self, char* data);
+boolean Handler_Handshake(CLIENT* self, char* data);
+boolean Handler_SetBlock(CLIENT* self, char* data);
+boolean Handler_PosAndOrient(CLIENT* self, char* data);
+boolean Handler_Message(CLIENT* self, char* data);
 
-void CPEHandler_ExtInfo(CLIENT* self, char* data);
-void CPEHandler_ExtEntry(CLIENT* self, char* data);
+boolean CPEHandler_ExtInfo(CLIENT* self, char* data);
+boolean CPEHandler_ExtEntry(CLIENT* self, char* data);
 
-extern EXT* firstExtenison;
+extern EXT* firstExtension;
 extern EXT* tailExtension;
 extern PACKET* packets[256];
 #endif

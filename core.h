@@ -16,4 +16,15 @@ typedef struct ext {
 	int   version;
 	struct ext*  next;
 } EXT;
+
+typedef struct vector {
+	float x;
+	float y;
+	float z;
+} VECTOR;
+
+typedef struct angle {
+	float yaw;
+	float pitch;
+} ANGLE;
 #endif
