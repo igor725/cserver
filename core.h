@@ -2,8 +2,8 @@
 #define CORE_H
 typedef unsigned short ushort;
 typedef unsigned char  uchar;
+typedef int            bool;
 typedef unsigned int   uint;
-
 #define true  1
 #define false 0
 

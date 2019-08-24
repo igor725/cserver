@@ -3,4 +3,5 @@
 *.o
 *.obj
 *.cws
+*.cfg
 zlib-*

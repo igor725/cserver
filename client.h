@@ -6,7 +6,7 @@
 #define CLIENT_AFTERCLOSE 2
 
 typedef struct cpeData {
-	boolean cpeEnabled;
+	bool cpeEnabled;
 	short   _extCount;
 	EXT*    firstExtension;
 	EXT*    tailExtension;
@@ -33,11 +33,11 @@ typedef struct client {
 	PLAYERDATA* playerData;
 } CLIENT;
 
-boolean Client_IsSupportExt(CLIENT* self, const char* packetName);
+bool Client_IsSupportExt(CLIENT* self, const char* packetName);
 int Client_Send(CLIENT* self, uint len);
 int AcceptClients_ThreadProc(void* lpParam);
 void Client_HandlePacket(CLIENT* self);
-boolean Client_SendMap(CLIENT* self);
+bool Client_SendMap(CLIENT* self);
 void Client_InitListen();
 void AcceptClients();
 

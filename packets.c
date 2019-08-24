@@ -88,7 +88,13 @@ void Packet_WriteHandshake(CLIENT* self) {
 	Client_Send(self, 132);
 }
 
-boolean Handler_Handshake(CLIENT* self, char* data) {
+void Packet_WritePosAndOrient(CLIENT* self, VECTOR* pos, ANGLE* ang) {
+	char* data = self->wrbuf;
+	*data = 0x08;
+
+}
+
+bool Handler_Handshake(CLIENT* self, char* data) {
 	uchar protoVer = *data;
 	if(protoVer != 0x07) {
 		Packet_WriteKick(self, "Invalid protocol version");
@@ -98,9 +104,14 @@ boolean Handler_Handshake(CLIENT* self, char* data) {
 	self->playerData = (PLAYERDATA*)malloc(sizeof(struct playerData));
 	memset(self->playerData, 0, sizeof(struct playerData));
 
+	self->playerData->position = (VECTOR*)malloc(sizeof(struct vector));
+	memset(self->playerData->position, 0, sizeof(struct vector));
+	self->playerData->angle = (ANGLE*)malloc(sizeof(struct angle));
+	memset(self->playerData->angle, 0, sizeof(struct angle));
+
 	ReadString(++data, &self->playerData->name); data += 63;
 	ReadString(++data, &self->playerData->key); data += 63;
-	boolean cpeEnabled = *++data == 0x42;
+	bool cpeEnabled = *++data == 0x42;
 	Packet_WriteHandshake(self);
 
 	if(cpeEnabled) {
@@ -120,16 +131,30 @@ boolean Handler_Handshake(CLIENT* self, char* data) {
 	return true;
 }
 
-boolean Handler_SetBlock(CLIENT* self, char* data) {
+bool Handler_SetBlock(CLIENT* self, char* data) {
+	VECTOR* vec = {0};
+	uchar block, mode;
+
+	vec->x = ntohs(*(ushort*)data); data += 2;
+	vec->y = ntohs(*(ushort*)data); data += 2;
+	vec->z = ntohs(*(ushort*)data); data += 2;
+	mode = *(uchar*)data; ++data;
+	block = *(uchar*)data; ++data;
+
 	return false;
 }
 
-boolean Handler_PosAndOrient(CLIENT* self, char* data) {
+bool Handler_PosAndOrient(CLIENT* self, char* data) {
 	return false;
 }
 
-boolean Handler_Message(CLIENT* self, char* data) {
-	return false;
+bool Handler_Message(CLIENT* self, char* data) {
+	char* message;
+	uchar unused = *data;
+	int len = ReadString(++data, &message);
+	Event_OnMessage(self, message, len);
+	free(message);
+	return true;
 }
 
 /*
@@ -157,7 +182,7 @@ void CPEPacket_WriteExtEntry(CLIENT* self, EXT* ext) {
 	Client_Send(self, 69);
 }
 
-boolean CPEHandler_ExtInfo(CLIENT* self, char* data) {
+bool CPEHandler_ExtInfo(CLIENT* self, char* data) {
 	if(self->cpeData == NULL) return false;
 
 	ReadString(data, &self->cpeData->appName); data += 63;
@@ -165,7 +190,7 @@ boolean CPEHandler_ExtInfo(CLIENT* self, char* data) {
 	return true;
 }
 
-boolean CPEHandler_ExtEntry(CLIENT* self, char* data) {
+bool CPEHandler_ExtEntry(CLIENT* self, char* data) {
 	if(self->cpeData == NULL) return false;
 
 	EXT* tmp = (EXT*)malloc(sizeof(struct ext));

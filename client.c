@@ -27,7 +27,7 @@ int Client_FindFreeID() {
 	return -1;
 }
 
-boolean Client_IsSupportExt(CLIENT* self, const char* extName) {
+bool Client_IsSupportExt(CLIENT* self, const char* extName) {
 	if(self->cpeData == NULL)
 		return false;
 
@@ -47,11 +47,17 @@ char* Client_GetAppName(CLIENT* self) {
 	return self->cpeData->appName;
 }
 
+void Client_SetPosition(CLIENT* self, VECTOR* pos, ANGLE* ang) {
+	Packet_WritePosAndOrient(self, NULL);
+}
+
 void Client_Destroy(CLIENT* self) {
 	free(self->rdbuf);
 	free(self->wrbuf);
 
 	if(self->playerData != NULL) {
+		free(self->playerData->position);
+		free(self->playerData->angle);
 		free(self->playerData->name);
 		free(self->playerData->key);
 		free(self->playerData);
@@ -71,7 +77,7 @@ int Client_Send(CLIENT* self, uint len) {
 	return send(self->sock, self->wrbuf, len, 0);
 }
 
-boolean Client_SendMap(CLIENT* self) {
+bool Client_SendMap(CLIENT* self) {
 	if(self->playerData->currentWorld == NULL)
 		return false;
 
@@ -169,7 +175,7 @@ void Client_HandlePacket(CLIENT* self) {
 	PACKET* packet = packets[id];
 	if(packet == NULL) return;
 
-	boolean ret;
+	bool ret;
 	char* data = self->rdbuf; ++data;
 
 	if(packet->haveCPEImp == true)

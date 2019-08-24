@@ -5,6 +5,7 @@
 #include "client.h"
 #include "server.h"
 #include "packets.h"
+#include "config.h"
 
 void Server_InitialWork() {
 	Packet_RegisterDefault();
