@@ -5,4 +5,5 @@ void InitialWork();
 void DoServerStep();
 
 SOCKET server;
+WORLD* World;
 #endif

@@ -1,3 +1,6 @@
 *.exe
+*.dll
 *.o
 *.obj
+*.cws
+zlib-*

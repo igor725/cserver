@@ -1,5 +1,6 @@
 #include <winsock2.h>
 #include "core.h"
+#include "world.h"
 #include "client.h"
 #include "server.h"
 #include "packets.h"
@@ -89,7 +90,7 @@ void Packet_WriteHandshake(CLIENT* cl) {
 }
 
 void Handler_Handshake(CLIENT* self, char* data) {
-	uchar protoVer = *++data;
+	uchar protoVer = *data;
 	if(protoVer != 0x07) {
 		Packet_WriteKick(self, "Invalid protocol version");
 		return;
@@ -145,9 +146,26 @@ void CPEPacket_WriteExtEntry(CLIENT *cl, EXT* ext) {
 }
 
 void CPEHandler_ExtInfo(CLIENT* self, char* data) {
-
+	ReadString(data, &self->appName); data += 63;
+	self->_extCount = ntohs(*(ushort*)++data);
 }
 
 void CPEHandler_ExtEntry(CLIENT* self, char* data) {
+	EXT* tmp = (EXT*)malloc(sizeof(struct ext));
+	memset(tmp, 0, sizeof(struct ext));
 
+	ReadString(data, &tmp->name);data += 63;
+	tmp->version = ntohl(*(uint*)++data);
+
+	if(self->tailExtenison == NULL) {
+		self->firstExtenison = tmp;
+		self->tailExtenison = tmp;
+	} else {
+		self->tailExtenison->next = tmp;
+		self->tailExtenison = tmp;
+	}
+
+	--self->_extCount;
+	if(self->_extCount == 0)
+		Client_SendMap(self);
 }

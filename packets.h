@@ -13,12 +13,6 @@ typedef struct packet {
 	packetHandler cpeHandler;
 } PACKET;
 
-typedef struct ext {
-	char* name;
-	int   version;
-	struct ext*  next;
-} EXT;
-
 short Packet_GetSize(uchar id, CLIENT* self);
 void Packet_Register(uchar id, const char* name, ushort size, packetHandler handler);
 void Packet_RegisterCPE(uchar id, const char* extName, int extVersion, ushort extSize);

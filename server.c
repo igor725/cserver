@@ -1,6 +1,7 @@
 #include <winsock2.h>
 #include <stdio.h>
 #include "core.h"
+#include "world.h"
 #include "client.h"
 #include "server.h"
 #include "packets.h"
@@ -13,6 +14,8 @@ void InitialWork() {
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 	Client_InitListen();
+	World = World_Create("TestWorld", 128, 128, 128);
+	World_Load(World);
 }
 
 void DoServerStep() {

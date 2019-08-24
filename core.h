@@ -1,3 +1,5 @@
+#ifndef CORE_H
+#define CORE_H
 typedef unsigned short ushort;
 typedef unsigned char  uchar;
 typedef unsigned int   uint;
@@ -8,3 +10,10 @@ typedef unsigned int   uint;
 #define DELIM " "
 #define SOFTWARE_NAME "C-Server"
 #define SOFTWARE_VERSION "0.1"
+
+typedef struct ext {
+	char* name;
+	int   version;
+	struct ext*  next;
+} EXT;
+#endif

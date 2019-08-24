@@ -17,11 +17,17 @@ typedef struct client {
 	ushort  wrbufpos;
 	void*   thread;
 	boolean cpeEnabled;
+	short   _extCount;
+	EXT*    firstExtenison;
+	EXT*    tailExtenison;
+	char*   appName;
+	WORLD*  currentWorld;
 } CLIENT;
 
 boolean Client_IsSupportExt(CLIENT* self, const char* packetName);
 int AcceptClients_ThreadProc(void* lpParam);
 void Client_HandlePacket(CLIENT* self);
+void Client_SendMap(CLIENT* self);
 void Client_InitListen();
 void AcceptClients();
 

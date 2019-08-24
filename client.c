@@ -1,5 +1,6 @@
 #include <windows.h>
 #include "core.h"
+#include "world.h"
 #include "client.h"
 #include "packets.h"
 #include "server.h"
@@ -26,6 +27,11 @@ int Client_FindFreeID() {
 
 boolean Client_IsSupportExt(CLIENT* self, const char* packetName) {
 	return false;
+}
+
+void Client_SendMap(CLIENT* self) {
+	if(!self->currentWorld)
+		return;
 }
 
 int Client_ThreadProc(void* lpParam) {
@@ -85,6 +91,7 @@ void AcceptClients() {
 		tmp->sock = fd;
 		tmp->rdbufpos = 0;
 		tmp->wrbufpos = 0;
+		tmp->appName = "vanilla";
 		tmp->rdbuf = (char*)malloc(131);
 		tmp->wrbuf = (char*)malloc(2048);
 
@@ -118,7 +125,7 @@ void Client_HandlePacket(CLIENT* self) {
 	if(packet == NULL)
 		return;
 
-	char* data = self->rdbuf;
+	char* data = ++self->rdbuf;
 	if(packet->haveCPEImp == true)
 		if(packet->cpeHandler == NULL)
 			packet->handler(self, data);
