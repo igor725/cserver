@@ -1,8 +1,6 @@
-#include <stdio.h>
-#include <winsock2.h>
-#define ZLIB_WINAPI
-#include <zlib.h>
 #include "core.h"
+#include <stdio.h>
+#include <zlib.h>
 #include "world.h"
 
 WORLD* World_Create(char* name, ushort dx, ushort dy, ushort dz) {

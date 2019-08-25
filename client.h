@@ -44,6 +44,7 @@ int  Client_Send(CLIENT* self, int len);
 int  AcceptClients_ThreadProc(void* lpParam);
 void Client_HandlePacket(CLIENT* self);
 bool Client_SendMap(CLIENT* self);
+bool Client_CheckAuth(CLIENT* self);
 void Client_InitListen();
 void AcceptClients();
 

@@ -1,9 +1,8 @@
+#include "core.h"
 #include <winsock2.h>
 #include <windows.h>
 #include <string.h>
-#define ZLIB_WINAPI
 #include <zlib.h>
-#include "core.h"
 #include "world.h"
 #include "client.h"
 #include "packets.h"
@@ -47,6 +46,10 @@ char* Client_GetAppName(CLIENT* self) {
 	if(self->cpeData == NULL)
 		return "vanilla";
 	return self->cpeData->appName;
+}
+
+bool Client_CheckAuth(CLIENT* self) { //TODO: ClassiCube auth
+	return true;
 }
 
 void Client_SetPosition(CLIENT* self, VECTOR* pos, ANGLE* ang) {
@@ -130,17 +133,27 @@ int Client_MapThreadProc(void* lpParam) {
 	} while(stream.avail_out == 0);
 
 	deflateEnd(&stream);
-	self->playerData->state = STATE_INGAME;
 	Packet_WriteLvlFin(self);
+	self->playerData->state = STATE_INGAME;
+	for(int i = 0; i < 128; i++) {
+		CLIENT* other = clients[i];
+		if(other == NULL) continue;
+
+		Packet_WriteSpawn(other, self);
+		if(self != other)
+			Packet_WriteSpawn(self, other);
+	}
 	return 0;
 }
 
 bool Client_SendMap(CLIENT* self) {
 	if(self->playerData->currentWorld == NULL)
 		return false;
+	if(self->playerData->mapThread != NULL)
+		return false;
 
-	self->playerData->state = STATE_WLOAD;
 	Packet_WriteLvlInit(self);
+	self->playerData->state = STATE_WLOAD;
 	self->playerData->mapThread = CreateThread(
 		NULL,
 		0,
@@ -198,7 +211,7 @@ int Client_ThreadProc(void* lpParam) {
 			}
 		}
 	}
-	
+
 	return 0;
 }
 

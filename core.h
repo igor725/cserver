@@ -1,5 +1,6 @@
 #ifndef CORE_H
 #define CORE_H
+#define ZLIB_WINAPI
 typedef unsigned short ushort;
 typedef unsigned char  uchar;
 typedef int            bool;
@@ -22,6 +23,12 @@ typedef struct vector {
 	float y;
 	float z;
 } VECTOR;
+
+typedef struct svector {
+	short x;
+	short y;
+	short z;
+} SVECTOR;
 
 typedef struct angle {
 	float yaw;

@@ -30,6 +30,37 @@ void WriteString(char* data, const char* string) {
 	memset(data + size, ' ', 64 - size);
 }
 
+char* WriteShortVec(char* data, SVECTOR* vec) {
+	*(ushort*)++data = htons(vec->x);++data;
+	*(ushort*)++data = htons(vec->y);++data;
+	*(ushort*)++data = htons(vec->z);++data;
+	return data;
+}
+
+void ReadClPos(CLIENT* self, char* data) {
+	VECTOR* vec = self->playerData->position;
+	ANGLE* ang = self->playerData->angle;
+
+	vec->x = (float)ntohs((*(short*)data)) / 32;++data;
+	vec->y = (float)ntohs((*(short*)++data)) / 32;++data;
+	vec->z = (float)ntohs((*(short*)++data)) / 32;++data;
+	ang->yaw = (((float)(uchar)*++data) / 256) * 360;
+	ang->pitch = (((float)(uchar)*++data) / 256) * 360;
+}
+
+#define SWAP(num) ((num >> 8) | (num << 8))
+char* WriteClPos(char* data, CLIENT* self, bool stand) {
+	VECTOR* vec = self->playerData->position;
+	ANGLE* ang = self->playerData->angle;
+
+	*(short*)++data = SWAP(((short)vec->x) * 32);++data;
+	*(short*)++data = SWAP(((short)vec->y) * 32 + stand ? 51 : 0);++data;
+	*(short*)++data = SWAP(((short)vec->z) * 32);++data;
+	*(uchar*)++data = ((ang->yaw / 360) * 256);
+	*(uchar*)++data = ((ang->pitch / 360) * 256);
+	return data;
+}
+
 void Packet_Register(int id, const char* name, ushort size, packetHandler handler) {
 	PACKET* tmp = (PACKET*)malloc(sizeof(struct packet));
 	memset(tmp, 0, sizeof(struct packet));
@@ -87,9 +118,7 @@ void Packet_WriteLvlFin(CLIENT* self) {
 	WORLD* world = self->playerData->currentWorld;
 	char* data = self->wrbuf;
 	*data = 0x04;
-	*(ushort*)++data = htons(world->dimensions[0]);++data;
-	*(ushort*)++data = htons(world->dimensions[1]);++data;
-	*(ushort*)++data = htons(world->dimensions[2]);++data;
+	WriteShortVec(data, (SVECTOR*)world->dimensions);
 	Client_Send(self, 7);
 }
 
@@ -108,7 +137,8 @@ void Packet_WriteSpawn(CLIENT* self, CLIENT* other) {
 	*data = 0x07;
 	*++data = self == other ? 0xFF : other->id;
 	WriteString(++data, other->playerData->name); data += 63;
-	//TODO: Дописать пакет спавна
+	WriteClPos(++data, self, true);
+	Client_Send(self, 74);
 }
 
 void Packet_WritePosAndOrient(CLIENT* self, CLIENT* other) {
@@ -136,7 +166,13 @@ bool Handler_Handshake(CLIENT* self, char* data) {
 	ReadString(++data, &self->playerData->name); data += 63;
 	ReadString(++data, &self->playerData->key); data += 63;
 	bool cpeEnabled = false; //*++data == 0x42; // Temporarily
-	Packet_WriteHandshake(self);
+
+	if(Client_CheckAuth(self))
+		Packet_WriteHandshake(self);
+	else {
+		Packet_WriteKick(self, "Auth failed");
+		return true;
+	}
 
 	if(cpeEnabled) {
 		self->cpeData = (CPEDATA*)malloc(sizeof(struct cpeData));
@@ -158,7 +194,7 @@ bool Handler_Handshake(CLIENT* self, char* data) {
 bool Handler_SetBlock(CLIENT* self, char* data) {
 	WORLD* world = self->playerData->currentWorld;
 	if(world == NULL) return false;
-	
+
 	ushort x = ntohs(*(ushort*)data); data += 2;
 	ushort y = ntohs(*(ushort*)data); data += 2;
 	ushort z = ntohs(*(ushort*)data); data += 2;
@@ -180,7 +216,10 @@ bool Handler_SetBlock(CLIENT* self, char* data) {
 }
 
 bool Handler_PosAndOrient(CLIENT* self, char* data) {
-	return false;
+	int id = *data;
+	ReadClPos(self, ++data);
+	//TODO: Рассылка игрокам позиций других игроков
+	return true;
 }
 
 bool Handler_Message(CLIENT* self, char* data) {

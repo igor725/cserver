@@ -9,9 +9,8 @@
 
 void Server_Bind(char* ip, short port) {
 	WSADATA ws;
-	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR) {
+	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR)
 		Log_WSAErr("WSAStartup()");
-	}
 
 	if(INVALID_SOCKET == (server = socket(AF_INET, SOCK_STREAM, 0)))
 		Log_WSAErr("socket()");
@@ -56,6 +55,14 @@ void Server_DoStep() {
 		if(self->status == CLIENT_AFTERCLOSE) {
 			Client_Destroy(self);
 			clients[i] = NULL;
+		}
+
+		if(self->playerData == NULL) continue;
+		if(self->playerData->state == STATE_INGAME) {
+			if(self->playerData->mapThread != NULL) {
+				CloseHandle(self->playerData->mapThread);
+				self->playerData->mapThread = NULL;
+			}
 		}
 	}
 }
