@@ -21,8 +21,8 @@ typedef struct playerData {
 	char*   key;
 	char*   name;
 	int     state;
-	ANGLE*  angle;
-	VECTOR* position;
+	ANGLE   angle;
+	VECTOR  position;
 	void*   mapThread;
 	WORLD*  currentWorld;
 } PLAYERDATA;

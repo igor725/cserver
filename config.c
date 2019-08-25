@@ -88,7 +88,7 @@ CFGENTRY* Config_AllocEntry() {
 	return ptr;
 }
 
-void Config_SetVoid(char* key, void* value, uchar type) {
+static void Config_SetVoid(char* key, void* value, uchar type) {
 	CFGENTRY* ptr = firstCfgEntry;
 	while(ptr != NULL) {
 		if(stricmp(ptr->key, key) == 0) {

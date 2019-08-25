@@ -7,7 +7,7 @@
 #include "packets.h"
 #include "config.h"
 
-void Server_Bind(char* ip, short port) {
+static void Server_Bind(char* ip, short port) {
 	WSADATA ws;
 	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR)
 		Log_WSAErr("WSAStartup()");
@@ -30,7 +30,7 @@ void Server_Bind(char* ip, short port) {
 	Log_Info("%s %s started on %s:%d", SOFTWARE_NAME, SOFTWARE_VERSION, ip, port);
 }
 
-bool Server_InitialWork() {
+static bool Server_InitialWork() {
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 
@@ -47,7 +47,7 @@ bool Server_InitialWork() {
 	return true;
 }
 
-void Server_DoStep() {
+static void Server_DoStep() {
 	for(int i = 0; i < 128; i++) {
 		CLIENT* self = clients[i];
 		if(self == NULL) continue;

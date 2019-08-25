@@ -52,8 +52,9 @@ bool Client_CheckAuth(CLIENT* self) { //TODO: ClassiCube auth
 	return true;
 }
 
-void Client_SetPosition(CLIENT* self, VECTOR* pos, ANGLE* ang) {
-	Packet_WritePosAndOrient(self, NULL);
+void Client_SetPos(CLIENT* self, VECTOR* pos, ANGLE* ang) {
+	memcpy(&self->playerData->position, pos, sizeof(struct vector));
+	memcpy(&self->playerData->angle, ang, sizeof(struct angle));
 }
 
 void Client_Destroy(CLIENT* self) {
@@ -64,8 +65,6 @@ void Client_Destroy(CLIENT* self) {
 		CloseHandle(self->thread);
 
 	if(self->playerData != NULL) {
-		free(self->playerData->position);
-		free(self->playerData->angle);
 		free(self->playerData->name);
 		free(self->playerData->key);
 		free(self->playerData);
@@ -215,7 +214,7 @@ int Client_ThreadProc(void* lpParam) {
 	return 0;
 }
 
-void AcceptClients() {
+static void AcceptClients() {
 	static struct sockaddr_in caddr;
 	static int caddrsz = sizeof caddr;
 

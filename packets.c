@@ -10,7 +10,7 @@ EXT* firstExtension = NULL;
 EXT* tailExtension = NULL;
 int extensionsCount = 0;
 
-int ReadString(char* data, char** dst) {
+static int ReadString(char* data, char** dst) {
 	int end = 63;
 	while(data[end] == ' ') --end;
 	++end;
@@ -22,7 +22,7 @@ int ReadString(char* data, char** dst) {
 	return end;
 }
 
-void WriteString(char* data, const char* string) {
+static void WriteString(char* data, const char* string) {
 	int size = min(strlen(string), 64);
 	memcpy(data, string, size);
 
@@ -30,34 +30,33 @@ void WriteString(char* data, const char* string) {
 	memset(data + size, ' ', 64 - size);
 }
 
-char* WriteShortVec(char* data, SVECTOR* vec) {
+static char* WriteShortVec(char* data, SVECTOR* vec) {
 	*(ushort*)++data = htons(vec->x);++data;
 	*(ushort*)++data = htons(vec->y);++data;
 	*(ushort*)++data = htons(vec->z);++data;
 	return data;
 }
 
-void ReadClPos(CLIENT* self, char* data) {
-	VECTOR* vec = self->playerData->position;
-	ANGLE* ang = self->playerData->angle;
+static void ReadClPos(CLIENT* self, char* data) {
+	VECTOR vec = self->playerData->position;
+	ANGLE ang = self->playerData->angle;
 
-	vec->x = (float)ntohs((*(short*)data)) / 32;++data;
-	vec->y = (float)ntohs((*(short*)++data)) / 32;++data;
-	vec->z = (float)ntohs((*(short*)++data)) / 32;++data;
-	ang->yaw = (((float)(uchar)*++data) / 256) * 360;
-	ang->pitch = (((float)(uchar)*++data) / 256) * 360;
+	vec.x = (float)ntohs((*(short*)data)) / 32;++data;
+	vec.y = (float)ntohs((*(short*)++data)) / 32;++data;
+	vec.z = (float)ntohs((*(short*)++data)) / 32;++data;
+	ang.yaw = (((float)(uchar)*++data) / 256) * 360;
+	ang.pitch = (((float)(uchar)*++data) / 256) * 360;
 }
 
 #define SWAP(num) ((num >> 8) | (num << 8))
-char* WriteClPos(char* data, CLIENT* self, bool stand) {
-	VECTOR* vec = self->playerData->position;
-	ANGLE* ang = self->playerData->angle;
-
-	*(short*)++data = SWAP(((short)vec->x) * 32);++data;
-	*(short*)++data = SWAP(((short)vec->y) * 32 + stand ? 51 : 0);++data;
-	*(short*)++data = SWAP(((short)vec->z) * 32);++data;
-	*(uchar*)++data = ((ang->yaw / 360) * 256);
-	*(uchar*)++data = ((ang->pitch / 360) * 256);
+static char* WriteClPos(char* data, CLIENT* self, bool stand) {
+	VECTOR vec = self->playerData->position;
+	ANGLE ang = self->playerData->angle;
+	*(ushort*)data = htons(vec.x * 32);++data;
+	*(ushort*)++data = htons(vec.y * 32 + (stand ? 51 : 0));++data;
+	*(ushort*)++data = htons(vec.z * 32);++data;
+	*(uchar*)++data = ((ang.yaw / 360) * 256);
+	*(uchar*)++data = ((ang.pitch / 360) * 256);
 	return data;
 }
 
@@ -101,6 +100,9 @@ int Packet_GetSize(int id, CLIENT* self) {
 */
 
 void Packet_WriteKick(CLIENT* self, const char* reason) {
+	if(self->status != CLIENT_OK)
+		return;
+
 	self->wrbuf[0] = 0x0E;
 	WriteString(self->wrbuf + 1, reason);
 	Client_Send(self, 65);
@@ -137,7 +139,7 @@ void Packet_WriteSpawn(CLIENT* self, CLIENT* other) {
 	*data = 0x07;
 	*++data = self == other ? 0xFF : other->id;
 	WriteString(++data, other->playerData->name); data += 63;
-	WriteClPos(++data, self, true);
+	WriteClPos(++data, other, true);
 	Client_Send(self, 74);
 }
 
@@ -156,16 +158,11 @@ bool Handler_Handshake(CLIENT* self, char* data) {
 
 	self->playerData = (PLAYERDATA*)malloc(sizeof(struct playerData));
 	memset(self->playerData, 0, sizeof(struct playerData));
-
-	self->playerData->position = (VECTOR*)malloc(sizeof(struct vector));
-	memset(self->playerData->position, 0, sizeof(struct vector));
-	self->playerData->angle = (ANGLE*)malloc(sizeof(struct angle));
-	memset(self->playerData->angle, 0, sizeof(struct angle));
 	self->playerData->currentWorld = worlds[0];
-
+	Client_SetPos(self, &worlds[0]->spawnVec, &worlds[0]->spawnAng);
 	ReadString(++data, &self->playerData->name); data += 63;
 	ReadString(++data, &self->playerData->key); data += 63;
-	bool cpeEnabled = false; //*++data == 0x42; // Temporarily
+	bool cpeEnabled = *++data == 0x42; // Temporarily
 
 	if(Client_CheckAuth(self))
 		Packet_WriteHandshake(self);
@@ -203,7 +200,11 @@ bool Handler_SetBlock(CLIENT* self, char* data) {
 
 	switch(mode) {
 		case MODE_PLACE:
-			if(Block_IsValid(block) && Event_OnBlockPalce(self, x, y, z, block))
+			if(!Block_IsValid(block)) {
+				Packet_WriteKick(self, "Invalid block ID");
+				return false;
+			}
+			if(Event_OnBlockPalce(self, x, y, z, block))
 				World_SetBlock(world, x, y, z, block);
 			break;
 		case MODE_DESTROY:

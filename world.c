@@ -17,8 +17,22 @@ WORLD* World_Create(char* name, ushort dx, ushort dy, ushort dz) {
 	memset(data, 0, tmp->size);
 	*(uint*)data = htonl(tmp->size - 4);
 	tmp->data = data;
+	World_GenerateFlat(tmp);
 
 	return tmp;
+}
+
+void World_GenerateFlat(WORLD* world) {
+	ushort dx = world->dimensions[0],
+	dy = world->dimensions[1],
+	dz = world->dimensions[2];
+
+	int offset = dx * dz * (dy / 2 - 1);
+	memset(world->data + 4, 3, offset);
+	memset(world->data + 4 + offset, 2, dx * dz);
+	world->spawnVec.x = dx / 2;
+	world->spawnVec.y = dy / 2 + 1;
+	world->spawnVec.z = dz / 2;
 }
 
 int World_WriteInfo(WORLD* world, FILE* fp) {
