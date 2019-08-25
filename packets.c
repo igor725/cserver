@@ -158,6 +158,7 @@ bool Handler_Handshake(CLIENT* self, char* data) {
 bool Handler_SetBlock(CLIENT* self, char* data) {
 	WORLD* world = self->playerData->currentWorld;
 	if(world == NULL) return false;
+	
 	ushort x = ntohs(*(ushort*)data); data += 2;
 	ushort y = ntohs(*(ushort*)data); data += 2;
 	ushort z = ntohs(*(ushort*)data); data += 2;
@@ -170,10 +171,12 @@ bool Handler_SetBlock(CLIENT* self, char* data) {
 				World_SetBlock(world, x, y, z, block);
 			break;
 		case MODE_DESTROY:
+			if(Event_OnBlockPalce(self, x, y, z, 0))
+				World_SetBlock(world, x, y, z, 0);
 			break;
 	}
 
-	return false;
+	return true;
 }
 
 bool Handler_PosAndOrient(CLIENT* self, char* data) {

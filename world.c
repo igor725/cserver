@@ -71,7 +71,6 @@ int World_Load(WORLD* world) {
 		return false;
 
 	z_stream stream = {0};
-	uchar* wdata = world->data;
 	char in[1024];
 	int ret;
 
@@ -92,7 +91,7 @@ int World_Load(WORLD* world) {
 			break;
 
 		stream.next_in = in;
-		stream.next_out = wdata;
+		stream.next_out = world->data;
 
 		do {
 			stream.avail_out = 1024;
