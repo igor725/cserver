@@ -1,6 +1,8 @@
 #include <winsock2.h>
 #include <windows.h>
 #include <string.h>
+#define ZLIB_WINAPI
+#include <zlib.h>
 #include "core.h"
 #include "world.h"
 #include "client.h"
@@ -76,19 +78,83 @@ void Client_Destroy(CLIENT* self) {
 	}
 }
 
-int Client_Send(CLIENT* self, uint len) {
-	return send(self->sock, self->wrbuf, len, 0);
+int Client_Send(CLIENT* self, int len) {
+	return send(self->sock, self->wrbuf, len, 0) == len;
+}
+
+int Client_MapThreadProc(void* lpParam) {
+	CLIENT* self = (CLIENT*)lpParam;
+	WORLD* world = self->playerData->currentWorld;
+
+	z_stream stream = {0};
+
+	self->wrbuf[0] = 0x03;
+	self->wrbuf[1027] = 0;
+	ushort* len = (ushort*)(self->wrbuf + 1);
+	char* out = (char*)len + 2;
+	int ret;
+
+	if((ret = deflateInit2_(
+		&stream,
+		4,
+		Z_DEFLATED,
+		31,
+		8,
+		Z_DEFAULT_STRATEGY,
+		zlibVersion(),
+		sizeof(stream)
+	)) != Z_OK) {
+		Log_Error("zlib deflateInit: %s", zError(ret));
+		return 0;
+	}
+
+	stream.avail_in = world->size;
+	stream.next_in = world->data;
+
+	do {
+		stream.next_out = out;
+		stream.avail_out = 1024;
+
+		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
+			Log_Error("zlib deflate: %s", zError(ret));
+			deflateEnd(&stream);
+			return 0;
+		}
+
+		*len = htons(1024 - stream.avail_out);
+		if(!Client_Send(self, 1028)) {
+			Log_Error("Client disconnected while map send in progress:(");
+			deflateEnd(&stream);
+			return 0;
+		}
+	} while(stream.avail_out == 0);
+
+	deflateEnd(&stream);
+	self->playerData->state = STATE_INGAME;
+	Packet_WriteLvlFin(self);
+	return 0;
 }
 
 bool Client_SendMap(CLIENT* self) {
 	if(self->playerData->currentWorld == NULL)
 		return false;
 
+	self->playerData->state = STATE_WLOAD;
+	Packet_WriteLvlInit(self);
+	self->playerData->mapThread = CreateThread(
+		NULL,
+		0,
+		(LPTHREAD_START_ROUTINE)&Client_MapThreadProc,
+		self,
+		0,
+		NULL
+	);
+
 	return true;
 }
 
 void Client_Disconnect(CLIENT* self) {
-	self->state = CLIENT_WAITCLOSE;
+	self->status = CLIENT_WAITCLOSE;
 	shutdown(self->sock, SD_SEND);
 }
 
@@ -96,11 +162,11 @@ int Client_ThreadProc(void* lpParam) {
 	CLIENT* self = (CLIENT*)lpParam;
 
 	while(1) {
-		if(self->state == CLIENT_WAITCLOSE) {
+		if(self->status == CLIENT_WAITCLOSE) {
 			int len = recv(self->sock, self->rdbuf, 131, 0);
 			if(len <= 0) {
+				self->status = CLIENT_AFTERCLOSE;
 				closesocket(self->sock);
-				self->state = CLIENT_AFTERCLOSE;
 				break;
 			}
 			continue;
@@ -127,11 +193,12 @@ int Client_ThreadProc(void* lpParam) {
 			if(len > 0) {
 				self->bufpos += len;
 			} else {
-				self->state = CLIENT_AFTERCLOSE;
+				self->status = CLIENT_AFTERCLOSE;
 				break;
 			}
 		}
 	}
+	
 	return 0;
 }
 
@@ -152,7 +219,7 @@ void AcceptClients() {
 		int id = Client_FindFreeID();
 		if(id >= 0) {
 			tmp->id = id;
-			tmp->state = CLIENT_OK;
+			tmp->status = CLIENT_OK;
 			tmp->thread = CreateThread(
 				NULL,
 				0,

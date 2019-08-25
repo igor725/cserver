@@ -35,8 +35,8 @@ bool Server_InitialWork() {
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 
-	World = World_Create("TestWorld", 128, 128, 128);
-	if(!World_Load(World)) {
+	worlds[0] = World_Create("TestWorld", 128, 128, 128);
+	if(!World_Load(worlds[0])) {
 		Log_WinErr("World_Load()");
 	}
 
@@ -51,12 +51,25 @@ bool Server_InitialWork() {
 void Server_DoStep() {
 	for(int i = 0; i < 128; i++) {
 		CLIENT* self = clients[i];
-		if(self == NULL)
-			continue;
-		if(self->state == CLIENT_AFTERCLOSE) {
+		if(self == NULL) continue;
+
+		if(self->status == CLIENT_AFTERCLOSE) {
 			Client_Destroy(self);
 			clients[i] = NULL;
 		}
+	}
+}
+
+void Server_Stop() {
+	for(int i = 0; i < 128; i++) {
+		CLIENT* self = clients[i];
+		WORLD* world = worlds[i];
+
+		if(self != NULL)
+			Packet_WriteKick(self, "Server stopped");
+
+		if(world != NULL)
+			World_Save(world);
 	}
 }
 
@@ -66,4 +79,5 @@ int main(int argc, char** argv) {
 		Server_DoStep();
 		Sleep(10);
 	}
+	Server_Stop();
 }

@@ -10,8 +10,8 @@ EXT* firstExtension = NULL;
 EXT* tailExtension = NULL;
 int extensionsCount = 0;
 
-uchar ReadString(char* data, char** dst) {
-	uchar end = 63;
+int ReadString(char* data, char** dst) {
+	int end = 63;
 	while(data[end] == ' ') --end;
 	++end;
 
@@ -30,7 +30,7 @@ void WriteString(char* data, const char* string) {
 	memset(data + size, ' ', 64 - size);
 }
 
-void Packet_Register(uchar id, const char* name, ushort size, packetHandler handler) {
+void Packet_Register(int id, const char* name, ushort size, packetHandler handler) {
 	PACKET* tmp = (PACKET*)malloc(sizeof(struct packet));
 	memset(tmp, 0, sizeof(struct packet));
 
@@ -47,14 +47,14 @@ void Packet_RegisterDefault() {
 	Packet_Register(0x0D, "Message", 66, &Handler_Message);
 }
 
-void Packet_RegisterCPE(uchar id, const char* name, int version, ushort size) {
+void Packet_RegisterCPE(int id, const char* name, int version, ushort size) {
 	PACKET* tmp = packets[id];
 	tmp->extName = name;
 	tmp->extVersion = version;
 	tmp->extSize = size;
 }
 
-short Packet_GetSize(uchar id, CLIENT* self) {
+int Packet_GetSize(int id, CLIENT* self) {
 	PACKET* packet = packets[id];
 	if(packet == NULL)
 		return -1;
@@ -77,6 +77,22 @@ void Packet_WriteKick(CLIENT* self, const char* reason) {
 	printf("Client %d kicked %s\n", self->sock, reason);
 }
 
+void Packet_WriteLvlInit(CLIENT* self) {
+	self->wrbuf[0] = 0x02;
+	self->playerData->state = STATE_MOTD;
+	Client_Send(self, 1);
+}
+
+void Packet_WriteLvlFin(CLIENT* self) {
+	WORLD* world = self->playerData->currentWorld;
+	char* data = self->wrbuf;
+	*data = 0x04;
+	*(ushort*)++data = htons(world->dimensions[0]);++data;
+	*(ushort*)++data = htons(world->dimensions[1]);++data;
+	*(ushort*)++data = htons(world->dimensions[2]);++data;
+	Client_Send(self, 7);
+}
+
 void Packet_WriteHandshake(CLIENT* self) {
 	char* data = self->wrbuf;
 	*data = 0x00;
@@ -84,14 +100,21 @@ void Packet_WriteHandshake(CLIENT* self) {
 	WriteString(++data, "Server Name"); data += 63;
 	WriteString(++data, "Server MOTD"); data += 63;
 	*++data = 0x00;
-	*++data = 0x02; //TODO: Отдельный пакет инициализации мира, сейчас я пиздец ленивый для этого
-	Client_Send(self, 132);
+	Client_Send(self, 131);
 }
 
-void Packet_WritePosAndOrient(CLIENT* self, VECTOR* pos, ANGLE* ang) {
+void Packet_WriteSpawn(CLIENT* self, CLIENT* other) {
+	char* data = self->wrbuf;
+	*data = 0x07;
+	*++data = self == other ? 0xFF : other->id;
+	WriteString(++data, other->playerData->name); data += 63;
+	//TODO: Дописать пакет спавна
+}
+
+void Packet_WritePosAndOrient(CLIENT* self, CLIENT* other) {
 	char* data = self->wrbuf;
 	*data = 0x08;
-
+	//TODO: Дописать пакет перемещения
 }
 
 bool Handler_Handshake(CLIENT* self, char* data) {
@@ -108,10 +131,11 @@ bool Handler_Handshake(CLIENT* self, char* data) {
 	memset(self->playerData->position, 0, sizeof(struct vector));
 	self->playerData->angle = (ANGLE*)malloc(sizeof(struct angle));
 	memset(self->playerData->angle, 0, sizeof(struct angle));
+	self->playerData->currentWorld = worlds[0];
 
 	ReadString(++data, &self->playerData->name); data += 63;
 	ReadString(++data, &self->playerData->key); data += 63;
-	bool cpeEnabled = *++data == 0x42;
+	bool cpeEnabled = false; //*++data == 0x42; // Temporarily
 	Packet_WriteHandshake(self);
 
 	if(cpeEnabled) {
@@ -132,14 +156,22 @@ bool Handler_Handshake(CLIENT* self, char* data) {
 }
 
 bool Handler_SetBlock(CLIENT* self, char* data) {
-	VECTOR* vec = {0};
-	uchar block, mode;
+	WORLD* world = self->playerData->currentWorld;
+	if(world == NULL) return false;
+	ushort x = ntohs(*(ushort*)data); data += 2;
+	ushort y = ntohs(*(ushort*)data); data += 2;
+	ushort z = ntohs(*(ushort*)data); data += 2;
+	uchar mode = *(uchar*)data; ++data;
+	int block = (int)*(uchar*)data; ++data;
 
-	vec->x = ntohs(*(ushort*)data); data += 2;
-	vec->y = ntohs(*(ushort*)data); data += 2;
-	vec->z = ntohs(*(ushort*)data); data += 2;
-	mode = *(uchar*)data; ++data;
-	block = *(uchar*)data; ++data;
+	switch(mode) {
+		case MODE_PLACE:
+			if(Block_IsValid(block) && Event_OnBlockPalce(self, x, y, z, block))
+				World_SetBlock(world, x, y, z, block);
+			break;
+		case MODE_DESTROY:
+			break;
+	}
 
 	return false;
 }

@@ -1,5 +1,9 @@
 #ifndef PACKETS_H
 #define PACKETS_H
+
+#define MODE_DESTROY 0x00
+#define MODE_PLACE   0x01
+
 typedef bool (*packetHandler)(CLIENT*, char*);
 
 typedef struct packet {
@@ -13,15 +17,18 @@ typedef struct packet {
 	packetHandler cpeHandler;
 } PACKET;
 
-short Packet_GetSize(uchar id, CLIENT* self);
-void Packet_Register(uchar id, const char* name, ushort size, packetHandler handler);
-void Packet_RegisterCPE(uchar id, const char* extName, int extVersion, ushort extSize);
+int  Packet_GetSize(int id, CLIENT* self);
+void Packet_Register(int id, const char* name, ushort size, packetHandler handler);
+void Packet_RegisterCPE(int id, const char* extName, int extVersion, ushort extSize);
+void Packet_RegisterDefault();
+
 void Packet_WriteKick(CLIENT* cl, const char* reason);
 void Packet_WriteHandshake(CLIENT* cl);
+void Packet_WriteLvlInit(CLIENT* self);
 void CPEPacket_WriteInfo(CLIENT *cl);
 void CPEPacket_WriteExtEntry(CLIENT *cl, EXT* ext);
-void Packet_RegisterDefault();
-uchar ReadString(char* data, char** dst);
+
+int  ReadString(char* data, char** dst);
 void WriteString(char* data, const char* string);
 
 bool Handler_Handshake(CLIENT* self, char* data);

@@ -3,7 +3,7 @@
 bool Server_InitialWork();
 void Server_DoStep();
 
+WORLD* worlds[128];
 bool serverActive;
 SOCKET server;
-WORLD* World;
 #endif

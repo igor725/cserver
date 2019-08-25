@@ -10,8 +10,8 @@ typedef struct world {
 
 WORLD* World_Create(char* name, ushort dx, ushort dy, ushort dz);
 uint World_GetOffset(WORLD* world, ushort x, ushort y, ushort z);
-int World_SetBlock(WORLD* world, ushort x, ushort y, ushort z, uchar id);
-uchar World_GetBlock(WORLD* world, ushort x, ushort y, ushort z);
+int World_SetBlock(WORLD* world, ushort x, ushort y, ushort z, int id);
+int World_GetBlock(WORLD* world, ushort x, ushort y, ushort z);
 int World_Load(WORLD* world);
 int World_Save(WORLD* world);
 #endif
