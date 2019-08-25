@@ -51,7 +51,7 @@ int World_Save(WORLD* world) {
 		return false;
 
 	z_stream stream = {0};
-	char out[1024];
+	uchar out[1024];
 	int ret;
 
 	if((ret = deflateInit(&stream, 4)) != Z_OK) {
@@ -60,7 +60,7 @@ int World_Save(WORLD* world) {
 	}
 
 	stream.avail_in = world->size;
-	stream.next_in = world->data;
+	stream.next_in = (uchar*)world->data;
 
 	do {
 		stream.next_out = out;
@@ -83,7 +83,7 @@ int World_Load(WORLD* world) {
 		return false;
 
 	z_stream stream = {0};
-	char in[1024];
+	uchar in[1024];
 	int ret;
 
 	if((ret = inflateInit(&stream)) != Z_OK) {
@@ -103,7 +103,7 @@ int World_Load(WORLD* world) {
 			break;
 
 		stream.next_in = in;
-		stream.next_out = world->data;
+		stream.next_out = (uchar*)world->data;
 
 		do {
 			stream.avail_out = 1024;

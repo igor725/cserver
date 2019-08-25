@@ -4,7 +4,7 @@
 #include "core.h"
 #include "log.h"
 
-Log_Level = 3;
+int Log_Level = 3;
 const char* const Log_Levels[5] = {
 	"ERROR",
 	"INFO ",
@@ -14,7 +14,7 @@ const char* const Log_Levels[5] = {
 };
 
 
-static int WinErrorStr(int errcode, char* buf, int buflen) {
+int WinErrorStr(int errcode, char* buf, int buflen) {
 	int len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errcode, 0, buf, 512, NULL);
 	if(len > 0) {
 		buf[len - 1] = 0;
@@ -31,7 +31,7 @@ void Log_SetLevel(int level) {
 void Log_WSAErr(const char* func) {
 	int err = WSAGetLastError();
 	char buf[512];
-	int len = WinErrorStr(err, buf, 512);
+	WinErrorStr(err, buf, 512);
 	Log_Error("%s: %s (%d)", func, buf, err);
 }
 

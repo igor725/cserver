@@ -7,7 +7,7 @@
 #include "packets.h"
 #include "config.h"
 
-static void Server_Bind(char* ip, short port) {
+void Server_Bind(char* ip, short port) {
 	WSADATA ws;
 	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR)
 		Log_WSAErr("WSAStartup()");
@@ -26,11 +26,18 @@ static void Server_Bind(char* ip, short port) {
 	if(listen(server, SOMAXCONN) == -1)
 		Log_WSAErr("listen()");
 
-	Client_InitListen();
+	CreateThread(
+		NULL,
+		0,
+		(LPTHREAD_START_ROUTINE)&AcceptClients_ThreadProc,
+		NULL,
+		0,
+		NULL
+	);
 	Log_Info("%s %s started on %s:%d", SOFTWARE_NAME, SOFTWARE_VERSION, ip, port);
 }
 
-static bool Server_InitialWork() {
+bool Server_InitialWork() {
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 
@@ -47,7 +54,7 @@ static bool Server_InitialWork() {
 	return true;
 }
 
-static void Server_DoStep() {
+void Server_DoStep() {
 	for(int i = 0; i < 128; i++) {
 		CLIENT* self = clients[i];
 		if(self == NULL) continue;

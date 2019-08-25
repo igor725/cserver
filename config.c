@@ -11,7 +11,7 @@ bool Config_Load(const char* filename) {
 	if(fp == NULL)
 		return false;
 
-	char count = 0;
+	int count = 0;
 	char key[128] = {0};
 	char value[128] = {0};
 	int  type;
@@ -40,17 +40,14 @@ bool Config_Load(const char* filename) {
 
 		char* hkey = (char*)malloc(strlen(key) + 1);
 		strcpy(hkey, key);
-		switch(type) {
-			case CFG_STR:
-				char* hval = (char*)malloc(strlen(value) + 1);
-				strcpy(hval, value);
-				Config_SetStr(hkey, hval);
-				break;
-			case CFG_INT:
-				Config_SetInt(hkey, atoi(value));
-				break;
-			default:
-				return false;
+		if(type == CFG_STR) {
+			char* hval = (char*)malloc(strlen(value) + 1);
+			strcpy(hval, value);
+			Config_SetStr(hkey, hval);
+		} else if(type == CFG_INT) {
+			Config_SetInt(hkey, atoi(value));
+		} else {
+			return false;
 		}
 		ch = fgetc(fp);
 	}
@@ -88,7 +85,7 @@ CFGENTRY* Config_AllocEntry() {
 	return ptr;
 }
 
-static void Config_SetVoid(char* key, void* value, uchar type) {
+void Config_SetVoid(char* key, void* value, uchar type) {
 	CFGENTRY* ptr = firstCfgEntry;
 	while(ptr != NULL) {
 		if(stricmp(ptr->key, key) == 0) {

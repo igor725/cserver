@@ -21,10 +21,14 @@ int  Packet_GetSize(int id, CLIENT* self);
 void Packet_Register(int id, const char* name, ushort size, packetHandler handler);
 void Packet_RegisterCPE(int id, const char* extName, int extVersion, ushort extSize);
 void Packet_RegisterDefault();
+void Packet_RegisterCPEDefault();
 
 void Packet_WriteKick(CLIENT* cl, const char* reason);
+void Packet_WriteSpawn(CLIENT* self, CLIENT* other);
 void Packet_WriteHandshake(CLIENT* cl);
 void Packet_WriteLvlInit(CLIENT* self);
+void Packet_WriteLvlFin(CLIENT* self);
+
 void CPEPacket_WriteInfo(CLIENT *cl);
 void CPEPacket_WriteExtEntry(CLIENT *cl, EXT* ext);
 

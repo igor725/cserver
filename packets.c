@@ -1,7 +1,9 @@
 #include <winsock2.h>
 #include "core.h"
+#include "block.h"
 #include "world.h"
 #include "client.h"
+#include "event.h"
 #include "server.h"
 #include "packets.h"
 
@@ -10,7 +12,7 @@ EXT* firstExtension = NULL;
 EXT* tailExtension = NULL;
 int extensionsCount = 0;
 
-static int ReadString(char* data, char** dst) {
+int ReadString(char* data, char** dst) {
 	int end = 63;
 	while(data[end] == ' ') --end;
 	++end;
@@ -22,7 +24,7 @@ static int ReadString(char* data, char** dst) {
 	return end;
 }
 
-static void WriteString(char* data, const char* string) {
+void WriteString(char* data, const char* string) {
 	int size = min(strlen(string), 64);
 	memcpy(data, string, size);
 
@@ -30,14 +32,14 @@ static void WriteString(char* data, const char* string) {
 	memset(data + size, ' ', 64 - size);
 }
 
-static char* WriteShortVec(char* data, SVECTOR* vec) {
+char* WriteShortVec(char* data, SVECTOR* vec) {
 	*(ushort*)++data = htons(vec->x);++data;
 	*(ushort*)++data = htons(vec->y);++data;
 	*(ushort*)++data = htons(vec->z);++data;
 	return data;
 }
 
-static void ReadClPos(CLIENT* self, char* data) {
+void ReadClPos(CLIENT* self, char* data) {
 	VECTOR vec = self->playerData->position;
 	ANGLE ang = self->playerData->angle;
 
@@ -49,7 +51,7 @@ static void ReadClPos(CLIENT* self, char* data) {
 }
 
 #define SWAP(num) ((num >> 8) | (num << 8))
-static char* WriteClPos(char* data, CLIENT* self, bool stand) {
+char* WriteClPos(char* data, CLIENT* self, bool stand) {
 	VECTOR vec = self->playerData->position;
 	ANGLE ang = self->playerData->angle;
 	*(ushort*)data = htons(vec.x * 32);++data;
@@ -107,7 +109,6 @@ void Packet_WriteKick(CLIENT* self, const char* reason) {
 	WriteString(self->wrbuf + 1, reason);
 	Client_Send(self, 65);
 	Client_Disconnect(self);
-	printf("Client %d kicked %s\n", self->sock, reason);
 }
 
 void Packet_WriteLvlInit(CLIENT* self) {

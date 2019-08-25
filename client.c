@@ -3,22 +3,11 @@
 #include <windows.h>
 #include <string.h>
 #include <zlib.h>
+#include "log.h"
 #include "world.h"
 #include "client.h"
 #include "packets.h"
 #include "server.h"
-
-void Client_InitListen() {
-	CLIENT* clients[256] = {0};
-	void* listenThread = CreateThread(
-		NULL,
-		0,
-		(LPTHREAD_START_ROUTINE)&AcceptClients_ThreadProc,
-		NULL,
-		0,
-		NULL
-	);
-}
 
 int Client_FindFreeID() {
 	for(int i = 0; i < 127; i++) {
@@ -93,7 +82,7 @@ int Client_MapThreadProc(void* lpParam) {
 	self->wrbuf[0] = 0x03;
 	self->wrbuf[1027] = 0;
 	ushort* len = (ushort*)(self->wrbuf + 1);
-	char* out = (char*)len + 2;
+	uchar* out = (uchar*)len + 2;
 	int ret;
 
 	if((ret = deflateInit2_(
@@ -111,7 +100,7 @@ int Client_MapThreadProc(void* lpParam) {
 	}
 
 	stream.avail_in = world->size;
-	stream.next_in = world->data;
+	stream.next_in = (uchar*)world->data;
 
 	do {
 		stream.next_out = out;
@@ -214,9 +203,9 @@ int Client_ThreadProc(void* lpParam) {
 	return 0;
 }
 
-static void AcceptClients() {
-	static struct sockaddr_in caddr;
-	static int caddrsz = sizeof caddr;
+void AcceptClients() {
+	struct sockaddr_in caddr;
+	int caddrsz = sizeof caddr;
 
 	SOCKET fd = accept(server, (struct sockaddr*)&caddr, &caddrsz);
 	if(fd != INVALID_SOCKET) {
@@ -257,7 +246,7 @@ void Client_HandlePacket(CLIENT* self) {
 	PACKET* packet = packets[id];
 	if(packet == NULL) return;
 
-	bool ret;
+	bool ret = false;
 	char* data = self->rdbuf; ++data;
 
 	if(packet->haveCPEImp == true)

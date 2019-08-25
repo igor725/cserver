@@ -40,14 +40,15 @@ typedef struct client {
 } CLIENT;
 
 bool Client_IsSupportExt(CLIENT* self, const char* packetName);
-int  Client_Send(CLIENT* self, int len);
+void Client_SetPos(CLIENT* self, VECTOR* vec, ANGLE* ang);
 int  AcceptClients_ThreadProc(void* lpParam);
+int  Client_Send(CLIENT* self, int len);
 void Client_HandlePacket(CLIENT* self);
-bool Client_SendMap(CLIENT* self);
+void Client_Disconnect(CLIENT* self);
 bool Client_CheckAuth(CLIENT* self);
-void Client_InitListen();
+bool Client_SendMap(CLIENT* self);
+void Client_Destroy(CLIENT* self);
 void AcceptClients();
 
 CLIENT* clients[256];
-void* listenThread;
 #endif
