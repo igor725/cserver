@@ -17,7 +17,7 @@ int ReadString(char* data, char** dst) {
 	while(data[end] == ' ') --end;
 	++end;
 
-	char* str = malloc(end + 1);
+	char* str = calloc(end + 1, 1);
 	memcpy(str, data, end);
 	str[end] = 0;
 	dst[0] = str;
@@ -26,7 +26,7 @@ int ReadString(char* data, char** dst) {
 
 void WriteString(char* data, const char* string) {
 	int size = min(strlen(string), 64);
-	memset(data, 0, 64);
+	memset(data + size, 0, 64);
 	memcpy(data, string, size);
 }
 
@@ -61,8 +61,7 @@ char* WriteClPos(char* data, CLIENT* client, bool stand) {
 }
 
 void Packet_Register(int id, const char* name, ushort size, packetHandler handler) {
-	PACKET* tmp = malloc(sizeof(struct packet));
-	memset(tmp, 0, sizeof(struct packet));
+	PACKET* tmp = calloc(1, sizeof(struct packet));
 
 	tmp->name = name;
 	tmp->size = size;
@@ -142,6 +141,13 @@ void Packet_WriteSpawn(CLIENT* client, CLIENT* other) {
 	Client_Send(client, 74);
 }
 
+void Packet_WriteDespawn(CLIENT* client, CLIENT* other) {
+	char* data = client->wrbuf;
+	*data = 0x0C;
+	*++data = other->id;
+	Client_Send(client, 2);
+}
+
 void Packet_WritePosAndOrient(CLIENT* client, CLIENT* other) {
 	char* data = client->wrbuf;
 	*data = 0x08;
@@ -163,9 +169,9 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 		return true;
 	}
 
-	client->playerData = malloc(sizeof(struct playerData));
-	memset(client->playerData, 0, sizeof(struct playerData));
+	client->playerData = calloc(1, sizeof(struct playerData));
 	client->playerData->currentWorld = worlds[0];
+
 	Client_SetPos(client, &worlds[0]->spawnVec, &worlds[0]->spawnAng);
 	ReadString(++data, &client->playerData->name); data += 63;
 	ReadString(++data, &client->playerData->key); data += 63;
@@ -179,8 +185,7 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	}
 
 	if(cpeEnabled) {
-		client->cpeData = malloc(sizeof(struct cpeData));
-		memset(client->cpeData, 0, sizeof(struct cpeData));
+		client->cpeData = calloc(1, sizeof(struct cpeData));
 
 		CPEPacket_WriteInfo(client);
 		EXT* ptr = firstExtension;
@@ -244,22 +249,22 @@ bool Handler_Message(CLIENT* client, char* data) {
 	char* message;
 	int len = ReadString(++data, &message);
 
+	for(int i = 0; i < 63; i++) {
+		int nc = message[i + 1];
+		if(message[i] == '%' && ISHEX(message[i + 1]))
+			message[i] = '&';
+	}
+
 	if(Event_OnMessage(client, message, len)) {
-		char mesg[128] = {0};
-		sprintf(mesg, CHATLINE, client->playerData->name, message);
+		char formatted[128] = {0};
+		sprintf(formatted, CHATLINE, client->playerData->name, message);
 
 		if(*message == '/') {
 			if(!Command_Handle(message + 1, client))
 				Packet_WriteChat(client, 0, "Unknown command");
-		} else {
-			for(int i = 0; i < 128; i++) {
-				CLIENT* client = clients[i];
-
-				if(client)
-					Packet_WriteChat(client, 0, mesg);
-			}
-		}
-		Log_Chat(mesg);
+		} else
+			Packet_WriteChat(Broadcast, 0, formatted);
+		Log_Chat(formatted);
 	}
 	free(message);
 	return true;
@@ -269,7 +274,25 @@ bool Handler_Message(CLIENT* client, char* data) {
 	CPE
 */
 
+void CPE_RegisterExtension(char* name, int version) {
+	EXT* tmp = calloc(1, sizeof(struct ext));
+
+	tmp->name = name;
+	tmp->version = version;
+
+	if(!tailExtension) {
+		firstExtension = tmp;
+		tailExtension = tmp;
+	} else {
+		tailExtension->next = tmp;
+		tailExtension = tmp;
+	}
+	++extensionsCount;
+}
+
 void Packet_RegisterCPEDefault() {
+	CPE_RegisterExtension("MessageTypes", 1);
+	CPE_RegisterExtension("InventoryOrder", 1);
 	Packet_Register(0x10, "ExtInfo", 67, &CPEHandler_ExtInfo);
 	Packet_Register(0x11, "ExtEntry", 69, &CPEHandler_ExtEntry);
 }
@@ -284,10 +307,18 @@ void CPEPacket_WriteInfo(CLIENT *client) {
 
 void CPEPacket_WriteExtEntry(CLIENT* client, EXT* ext) {
 	char* data = client->wrbuf;
-	*data = 0x011;
+	*data = 0x11;
 	WriteString(++data, ext->name); data += 63;
 	*(uint*)++data = htonl(ext->version);
 	Client_Send(client, 69);
+}
+
+void CPEPacket_WriteInventoryOrder(CLIENT* client, uchar order, BlockID block) {
+	char* data = client->wrbuf;
+	*data = 0x44;
+	*++data = order;
+	*++data = block;
+	Client_Send(client, 3);
 }
 
 bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
@@ -301,8 +332,7 @@ bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
 bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
 	if(client->cpeData == NULL) return false;
 
-	EXT* tmp = malloc(sizeof(struct ext));
-	memset(tmp, 0, sizeof(struct ext));
+	EXT* tmp = calloc(1, sizeof(struct ext));
 
 	ReadString(data, &tmp->name);data += 63;
 	tmp->version = ntohl(*(uint*)++data);

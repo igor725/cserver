@@ -27,13 +27,14 @@ typedef struct playerData {
 	char*   name;
 	int     state;
 	ANGLE   angle;
+	bool    spawned;
 	VECTOR  position;
 	void*   mapThread;
 	WORLD*  currentWorld;
 } PLAYERDATA;
 
 typedef struct client {
-	int         id;
+	ClientID    id;
 	SOCKET      sock;
 	int         status;
 	char*       rdbuf;
@@ -54,7 +55,9 @@ bool Client_CheckAuth(CLIENT* client);
 bool Client_SendMap(CLIENT* client);
 void Client_Destroy(CLIENT* client);
 void Client_Tick(CLIENT* client);
-void Client_Listen();
+void Client_Init();
 
 CLIENT* clients[256];
+void* listenThread;
+CLIENT* Broadcast;
 #endif

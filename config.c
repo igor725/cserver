@@ -4,8 +4,6 @@
 #include "config.h"
 #include "stdlib.h"
 
-//TODO: Оптимизировать фуникции Config_Load и Config_Save
-
 bool Config_Load(const char* filename) {
 	FILE* fp = fopen(filename, "r");
 	if(fp == NULL)
@@ -38,10 +36,10 @@ bool Config_Load(const char* filename) {
 		} while(ch != '\n' && ch != EOF);
 		count = 0;
 
-		char* hkey = malloc(strlen(key) + 1);
+		char* hkey = calloc(strlen(key) + 1, 1);
 		strcpy(hkey, key);
 		if(type == CFG_STR) {
-			char* hval = malloc(strlen(value) + 1);
+			char* hval = calloc(strlen(value) + 1, 1);
 			strcpy(hval, value);
 			Config_SetStr(hkey, hval);
 		} else if(type == CFG_INT) {
@@ -79,12 +77,6 @@ bool Config_Save(const char* filename) {
 	return false;
 }
 
-CFGENTRY* Config_AllocEntry() {
-	CFGENTRY* ptr = malloc(sizeof(struct cfgEntry));
-	memset(ptr, 0, sizeof(struct cfgEntry));
-	return ptr;
-}
-
 CFGENTRY* Config_GetStruct(char* key) {
 	CFGENTRY* ptr = firstCfgEntry;
 	while(ptr != NULL) {
@@ -98,11 +90,11 @@ CFGENTRY* Config_GetStruct(char* key) {
 	}
 
 	if(ptr == NULL) {
-		ptr = Config_AllocEntry();
+		ptr = (CFGENTRY*)calloc(1, sizeof(struct cfgEntry));
 		firstCfgEntry = ptr;
 		ptr->key = key;
 	} else {
-		ptr->next = Config_AllocEntry();
+		ptr->next = (CFGENTRY*)calloc(1, sizeof(struct cfgEntry));
 		ptr = ptr->next;
 		ptr->key = key;
 	}

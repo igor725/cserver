@@ -4,8 +4,7 @@
 #include "world.h"
 
 WORLD* World_Create(char* name, ushort dx, ushort dy, ushort dz) {
-	WORLD* tmp = malloc(sizeof(struct world));
-	memset(tmp, 0, sizeof(struct world));
+	WORLD* tmp = calloc(1, sizeof(struct world));
 
 	tmp->name = name;
 	tmp->size = dx * dy * dz + 4;
@@ -13,8 +12,7 @@ WORLD* World_Create(char* name, ushort dx, ushort dy, ushort dz) {
 	tmp->dimensions[1] = dy;
 	tmp->dimensions[2] = dz;
 
-	char* data = malloc(tmp->size);
-	memset(data, 0, tmp->size);
+	BlockID* data = calloc(tmp->size, sizeof(BlockID));
 	*(uint*)data = htonl(tmp->size - 4);
 	tmp->data = data;
 
@@ -22,7 +20,9 @@ WORLD* World_Create(char* name, ushort dx, ushort dy, ushort dz) {
 }
 
 void World_Destroy(WORLD* world) {
-
+	if(world->data)
+		free(world->data);
+	free(world);
 }
 
 void World_GenerateFlat(WORLD* world) {
@@ -34,7 +34,7 @@ void World_GenerateFlat(WORLD* world) {
 	memset(world->data + 4, 3, offset);
 	memset(world->data + 4 + offset, 2, dx * dz);
 	world->spawnVec.x = dx / 2;
-	world->spawnVec.y = dy / 2 + 1;
+	world->spawnVec.y = dy / 2;
 	world->spawnVec.z = dz / 2;
 }
 
@@ -152,18 +152,22 @@ uint World_GetOffset(WORLD* world, ushort x, ushort y, ushort z) {
 	return z * dz + y * (dx * dy) + x + 4;
 }
 
-int World_SetBlock(WORLD* world, ushort x, ushort y, ushort z, int id) {
+bool World_SetBlock(WORLD* world, ushort x, ushort y, ushort z, BlockID id) {
 	int offset = World_GetOffset(world, x, y, z);
+
 	if(offset > 3)
 		world->data[offset] = (char)id;
+	else
+		return false;
 
 	return true;
 }
 
-int World_GetBlock(WORLD* world, ushort x, ushort y, ushort z) {
+BlockID World_GetBlock(WORLD* world, ushort x, ushort y, ushort z) {
 	int offset = World_GetOffset(world, x, y, z);
+
 	if(offset > 3)
-		return (int)world->data[offset];
+		return world->data[offset];
 	else
 		return 0;
 }

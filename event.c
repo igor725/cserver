@@ -16,3 +16,7 @@ bool Event_OnBlockPalce(CLIENT* client, ushort x, ushort y, ushort z, int id) {
 void Event_OnHandshakeDone(CLIENT* client) {
 
 }
+
+void Event_OnSpawn(CLIENT* client) {
+
+}

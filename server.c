@@ -29,7 +29,7 @@ bool Server_Bind(char* ip, short port) {
 	}
 
 
-	Client_Listen();
+	Client_Init();
 	Log_Info("%s %s started on %s:%d", SOFTWARE_NAME, SOFTWARE_VERSION, ip, port);
 	return true;
 }
@@ -70,8 +70,10 @@ void Server_Stop() {
 		if(client)
 			Packet_WriteKick(client, "Server stopped");
 
-		if(world)
+		if(world) {
 			World_Save(world);
+			World_Destroy(world);
+		}
 	}
 
 	Console_StopListen();

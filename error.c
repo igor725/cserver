@@ -6,12 +6,13 @@ const char* const Error_Strings[] = {
 	"All ok",
 };
 
-Error_Type = ET_SERVER;
-Error_Code = 0;
-
 char Error_WinBuf[512] = {0};
+int Error_Type = ET_SERVER;
+int Error_Code = 0;
 
 const char* Error_GetString() {
+	int len;
+
 	switch(Error_Type) {
 		case ET_SERVER:
 			return Error_Strings[Error_Code];
@@ -20,7 +21,7 @@ const char* Error_GetString() {
 		case ET_ZLIB:
 			return zError(Error_Code);
 		case ET_WIN:
-			int len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, Error_Code, 0, Error_WinBuf, 512, NULL);
+			len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, Error_Code, 0, Error_WinBuf, 512, NULL);
 			if(len > 0) {
 				Error_WinBuf[len - 1] = 0;
 				Error_WinBuf[len - 2] = 0;

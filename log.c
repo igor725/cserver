@@ -20,11 +20,15 @@ void Log_SetLevel(int level) {
 void Log_Print(int level, const char* str, va_list args) {
 	if(level > Log_Level) return;
 
-	char buf[8192];
+	char buf[8192] = {0};
 	SYSTEMTIME time;
 	GetSystemTime(&time);
-	memset(buf, 0, 8192);
-	vsprintf(buf, str, args);
+
+	if(args)
+		vsprintf(buf, str, args);
+	else
+		strcpy(buf, str);
+
 	printf("%02d:%02d:%02d.%03d [%s] %s\n",
 		time.wHour,
 		time.wMinute,
@@ -55,10 +59,7 @@ void Log_Info(const char* str, ...) {
 }
 
 void Log_Chat(const char* str, ...) {
-	va_list args;
-	va_start(args, str);
-	Log_Print(2, str, args);
-	va_end(args);
+	Log_Print(2, str, NULL);
 }
 
 void Log_Warn(const char* str, ...) {

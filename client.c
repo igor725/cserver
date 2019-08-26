@@ -7,9 +7,10 @@
 #include "packets.h"
 #include "server.h"
 
-void* listenThread;
+void Client_Init() {
+	Broadcast = calloc(1, sizeof(struct client));
+	Broadcast->wrbuf = calloc(2048, 1);
 
-void Client_Listen() {
 	listenThread = CreateThread(
 		NULL,
 		0,
@@ -87,6 +88,16 @@ void Client_Destroy(CLIENT* client) {
 }
 
 int Client_Send(CLIENT* client, int len) {
+	if(client == Broadcast) {
+		for(int i = 0; i < 128; i++) {
+			CLIENT* bClient = clients[i];
+
+			if(bClient)
+				send(bClient->sock, Broadcast->wrbuf, len, 0);
+		}
+		return len;
+	}
+
 	return send(client->sock, client->wrbuf, len, 0) == len;
 }
 
@@ -139,6 +150,15 @@ int Client_MapThreadProc(void* lpParam) {
 	deflateEnd(&stream);
 	Packet_WriteLvlFin(client);
 	client->playerData->state = STATE_WLOADDONE;
+	Client_Spawn(client);
+
+	return 0;
+}
+
+bool Client_Spawn(CLIENT* client) {
+	if(client->playerData->spawned)
+		return false;
+
 	for(int i = 0; i < 128; i++) {
 		CLIENT* other = clients[i];
 		if(other == NULL) continue;
@@ -147,7 +167,18 @@ int Client_MapThreadProc(void* lpParam) {
 		if(client != other)
 			Packet_WriteSpawn(client, other);
 	}
-	return 0;
+
+	client->playerData->spawned = true;
+	return true;
+}
+
+bool Client_Despawn(CLIENT* client) {
+	if(!client->playerData->spawned)
+		return false;
+
+	Packet_WriteDespawn(Broadcast, client);
+	client->playerData->spawned = false;
+	return true;
 }
 
 bool Client_SendMap(CLIENT* client) {
@@ -242,13 +273,12 @@ void AcceptClients() {
 
 	SOCKET fd = accept(server, (struct sockaddr*)&caddr, &caddrsz);
 	if(fd != INVALID_SOCKET) {
-	 	CLIENT* tmp = malloc(sizeof(struct client));
-		memset(tmp, 0, sizeof(struct client));
+	 	CLIENT* tmp = calloc(1, sizeof(struct client));
 
 		tmp->sock = fd;
 		tmp->bufpos = 0;
-		tmp->rdbuf = malloc(131);
-		tmp->wrbuf = malloc(2048);
+		tmp->rdbuf = calloc(131, 1);
+		tmp->wrbuf = calloc(2048, 1);
 
 		int id = Client_FindFreeID();
 		if(id >= 0) {

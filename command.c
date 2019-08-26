@@ -3,8 +3,7 @@
 #include "server.h"
 
 void Command_Register(char* cmd, cmdFunc func) {
-	COMMAND* tmp = malloc(sizeof(struct command));
-	memset(tmp, 0, sizeof(struct command));
+	COMMAND* tmp = calloc(1, sizeof(struct command));
 
 	tmp->name = cmd;
 	tmp->func = func;
@@ -36,7 +35,7 @@ void Command_RegisterDefault() {
 }
 
 bool Command_Handle(char* cmd, CLIENT* caller) {
-	char* ret = malloc(512);
+	char* ret = calloc(512, 1);
 	char* args = cmd;
 
 	while(1) {

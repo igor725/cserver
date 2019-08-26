@@ -1,4 +1,6 @@
 #ifndef BLOCK_H
 #define BLOCK_H
-bool Block_IsValid(int id);
+#include "core.h"
+
+bool Block_IsValid(BlockID id);
 #endif
