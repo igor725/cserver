@@ -16,8 +16,6 @@ const char* Error_GetString() {
 	switch(Error_Type) {
 		case ET_SERVER:
 			return Error_Strings[Error_Code];
-		case ET_IO:
-			return "I/O error";
 		case ET_ZLIB:
 			return zError(Error_Code);
 		case ET_WIN:
@@ -55,5 +53,6 @@ char* Error_GetFunc() {
 
 void Error_SetSuccess() {
 	Error_Type = ET_NOERR;
+	Error_Func = NULL;
 	Error_Code = 0;
 }

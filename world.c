@@ -51,7 +51,7 @@ int World_Save(WORLD* world) {
 	sprintf(name, "%s.cws", world->name);
 	FILE* fp;
 	if((fp = fopen(name, "wb")) == NULL) {
-		Error_SetCode(ET_IO, 0, "fopen");
+		Error_SetCode(ET_WIN, GetLastError(), "fopen");
 		return false;
 	}
 
@@ -97,7 +97,7 @@ int World_Load(WORLD* world) {
 	sprintf(name, "%s.cws", world->name);
 	FILE* fp;
 	if((fp = fopen(name, "rb")) == NULL) {
-		Error_SetCode(ET_IO, 0, "fopen");
+		Error_SetCode(ET_WIN, GetLastError(), "fopen");
 		return false;
 	}
 
@@ -118,7 +118,7 @@ int World_Load(WORLD* world) {
 	do {
 		stream.avail_in = fread(in, 1, 1024, fp);
 		if(ferror(fp)) {
-			Error_SetCode(ET_IO, 0, "fread");
+			Error_SetCode(ET_WIN, GetLastError(), "fread");
 			inflateEnd(&stream);
 			return false;
 		}

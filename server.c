@@ -43,11 +43,12 @@ bool Server_InitialWork() {
 	if(!World_Load(worlds[0])){
 		Log_FormattedError();
 		World_GenerateFlat(worlds[0]);
+		return false;
 	}
 
 	Console_StartListen();
-	if(Config_Load("test.cfg"))
-		return Server_Bind(Config_GetStr("IP"), Config_GetInt("PORT"));
+	if(Config_Load("server.cfg"))
+		return Server_Bind(Config_GetStr("ip"), Config_GetInt("port"));
 	else
 		return false;
 

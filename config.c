@@ -1,4 +1,5 @@
 #include "core.h"
+#include "windows.h"
 #include "stdio.h"
 #include "string.h"
 #include "config.h"
@@ -6,8 +7,10 @@
 
 bool Config_Load(const char* filename) {
 	FILE* fp = fopen(filename, "r");
-	if(fp == NULL)
+	if(!fp) {
+		Error_SetCode(ET_WIN, GetLastError(), "fopen");
 		return false;
+	}
 
 	int count = 0;
 	char key[128] = {0};
@@ -56,11 +59,13 @@ bool Config_Load(const char* filename) {
 
 bool Config_Save(const char* filename) {
 	FILE* fp = fopen(filename, "w");
-	if(fp == NULL)
+	if(!fp) {
+		Error_SetCode(ET_WIN, GetLastError(), "fopen");
 		return false;
+	}
 
 	CFGENTRY* ptr = firstCfgEntry;
-	while(ptr != NULL) {
+	while(ptr) {
 		fwrite(ptr->key, strlen(ptr->key), 1, fp);
 		switch (ptr->type) {
 			case CFG_STR:

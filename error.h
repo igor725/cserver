@@ -3,9 +3,8 @@
 
 #define ET_NOERR -1
 #define ET_SERVER 0
-#define ET_IO     1
-#define ET_ZLIB   2
-#define ET_WIN    3
+#define ET_ZLIB   1
+#define ET_WIN    2
 
 int   Error_Type;
 int   Error_Code;
