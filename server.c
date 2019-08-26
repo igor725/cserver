@@ -35,8 +35,9 @@ bool Server_InitialWork() {
 	Command_RegisterDefault();
 
 	worlds[0] = World_Create("TestWorld", 128, 128, 128);
-	if(!World_Load(worlds[0])) {
+	if(!World_Load(worlds[0])){
 		Log_WinErr("World_Load()");
+		World_GenerateFlat(worlds[0]);
 	}
 
 	if(Config_Load("test.cfg"))

@@ -34,7 +34,7 @@ bool Config_Load(const char* filename) {
 			if(ch != '\r')
 				value[count] = ch;
 			count++;
-			ch = getc(fp);
+			ch = fgetc(fp);
 		} while(ch != '\n' && ch != EOF);
 		count = 0;
 

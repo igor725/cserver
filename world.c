@@ -17,7 +17,6 @@ WORLD* World_Create(char* name, ushort dx, ushort dy, ushort dz) {
 	memset(data, 0, tmp->size);
 	*(uint*)data = htonl(tmp->size - 4);
 	tmp->data = data;
-	World_GenerateFlat(tmp);
 
 	return tmp;
 }
@@ -69,12 +68,16 @@ int World_Save(WORLD* world) {
 	do {
 		stream.next_out = out;
 		stream.avail_out = 1024;
-		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
+		deflate(&stream, Z_FINISH);
+		uint nb = 1024 - stream.avail_out;
+
+		if(fwrite(out, 1, 1024 - stream.avail_out, f) != nb){
+			Log_Error("World saving error");
 			deflateEnd(&stream);
 			return false;
 		}
-		fwrite(out, 1, 1024, f);
-	} while(stream.avail_out != 0);
+	} while(stream.avail_out == 0);
+
 	fclose(f);
 	return true;
 }
@@ -95,6 +98,8 @@ int World_Load(WORLD* world) {
 		return false;
 	}
 
+	stream.next_out = (uchar*)world->data;
+
 	do {
 		stream.avail_in = fread(in, 1, 1024, f);
 		if(ferror(f)) {
@@ -107,7 +112,6 @@ int World_Load(WORLD* world) {
 			break;
 
 		stream.next_in = in;
-		stream.next_out = (uchar*)world->data;
 
 		do {
 			stream.avail_out = 1024;

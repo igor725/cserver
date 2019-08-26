@@ -191,6 +191,7 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 			ptr = ptr->next;
 		}
 	} else {
+		Event_OnHandshakeDone(client);
 		Client_SendMap(client);
 	}
 
@@ -234,12 +235,25 @@ bool Handler_PosAndOrient(CLIENT* client, char* data) {
 
 bool Handler_Message(CLIENT* client, char* data) {
 	char* message;
-	uchar unused = *data;
 	int len = ReadString(++data, &message);
-	if(Event_OnMessage(client, message, len))
-		if(*message == '/')
+
+	if(Event_OnMessage(client, message, len)) {
+		char mesg[128] = {0};
+		sprintf(mesg, CHATLINE, client->playerData->name, message);
+
+		if(*message == '/') {
 			if(!Command_Handle(message + 1, client))
 				Packet_WriteChat(client, 0, "Unknown command");
+		} else {
+			for(int i = 0; i < 128; i++) {
+				CLIENT* client = clients[i];
+
+				if(client)
+					Packet_WriteChat(client, 0, mesg);
+			}
+		}
+		Log_Chat(mesg);
+	}
 	free(message);
 	return true;
 }
@@ -295,8 +309,10 @@ bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
 	}
 
 	--client->cpeData->_extCount;
-	if(client->cpeData->_extCount == 0)
+	if(client->cpeData->_extCount == 0) {
+		Event_OnHandshakeDone(client);
 		Client_SendMap(client);
+	}
 
 	return true;
 }

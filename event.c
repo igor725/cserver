@@ -13,6 +13,6 @@ bool Event_OnBlockPalce(CLIENT* client, ushort x, ushort y, ushort z, int id) {
 	return true;
 }
 
-void Event_OnPlayerMove(CLIENT* client) {
+void Event_OnHandshakeDone(CLIENT* client) {
 
 }

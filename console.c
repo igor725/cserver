@@ -15,8 +15,13 @@ int Console_ReadLine(char* buf, int buflen) {
 		if(c != '\r') {
 			buf[len] = c;
 			len++;
+			if(len > buflen) {
+				len--;
+				break;
+			}
 		}
 	}
+	buf[len] = 0;
 
 	return len;
 }
@@ -31,9 +36,7 @@ int Console_ThreadProc(void* lpParam) {
 	char buf[4096] = {0};
 
 	while(1) {
-		int len = Console_ReadLine(buf, 4096);
-
-		if(len > 0)
+		if(Console_ReadLine(buf, 4096) > 0)
 			Console_HandleCommand(buf);
 	}
 	return 0;

@@ -13,6 +13,7 @@ typedef unsigned int   uint;
 #define DELIM " "
 #define SOFTWARE_NAME "C-Server"
 #define SOFTWARE_VERSION "0.1"
+#define CHATLINE "<%s>: %s"
 
 typedef struct ext {
 	char* name;
