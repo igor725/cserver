@@ -8,7 +8,6 @@ void Log_Error(const char* str, ...);
 void Log_Info(const char* str, ...);
 void Log_Warn(const char* str, ...);
 void Log_Debug(const char* str, ...);
-void Log_WinErr(const char* func);
-void Log_WSAErr(const char* func);
 void Log_SetLevel(int level);
+void Log_FormattedError();
 #endif

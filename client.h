@@ -10,7 +10,9 @@
 
 #define STATE_MOTD         0
 #define STATE_WLOAD        1
-#define STATE_INGAME       2
+#define STATE_WLOADDONE    2
+#define STATE_WLOADERR     3
+#define STATE_INGAME       4
 
 typedef struct cpeData {
 	bool cpeEnabled;
@@ -51,6 +53,7 @@ void Client_Disconnect(CLIENT* client);
 bool Client_CheckAuth(CLIENT* client);
 bool Client_SendMap(CLIENT* client);
 void Client_Destroy(CLIENT* client);
+void Client_Tick(CLIENT* client);
 void Client_Listen();
 
 CLIENT* clients[256];

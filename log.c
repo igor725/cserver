@@ -1,6 +1,7 @@
 #include "windows.h"
 #include "core.h"
 #include "stdio.h"
+#include "error.h"
 
 int Log_Level = 3;
 const char* const Log_Levels[5] = {
@@ -12,32 +13,8 @@ const char* const Log_Levels[5] = {
 };
 
 
-int WinErrorStr(int errcode, char* buf, int buflen) {
-	int len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errcode, 0, buf, 512, NULL);
-	if(len > 0) {
-		buf[len - 1] = 0;
-		buf[len - 2] = 0;
-		return len - 1;
-	}
-	return len;
-}
-
 void Log_SetLevel(int level) {
 	Log_Level = min(max(-1, level), 4);
-}
-
-void Log_WSAErr(const char* func) {
-	int err = WSAGetLastError();
-	char buf[512];
-	WinErrorStr(err, buf, 512);
-	Log_Error("%s: %s (%d)", func, buf, err);
-}
-
-void Log_WinErr(const char* func) {
-	int err = GetLastError();
-	char buf[512];
-	WinErrorStr(err, buf, 512);
-	Log_Error("%s: %s (%d)", func, buf, err);
 }
 
 void Log_Print(int level, const char* str, va_list args) {
@@ -63,6 +40,11 @@ void Log_Error(const char* str, ...) {
 	va_start(args, str);
 	Log_Print(0, str, args);
 	va_end(args);
+}
+
+void Log_FormattedError() {
+	Log_Error("%s(...): %s (%d)", Error_GetFunc(), Error_GetString(), Error_GetCode());
+	Error_SetSuccess();
 }
 
 void Log_Info(const char* str, ...) {

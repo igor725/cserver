@@ -5,28 +5,33 @@
 #include "console.h"
 #include "command.h"
 
-void Server_Bind(char* ip, short port) {
+bool Server_Bind(char* ip, short port) {
 	WSADATA ws;
 	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR)
-		Log_WSAErr("WSAStartup()");
+		Error_SetCode(ET_WIN, WSAGetLastError(), "WSAStartup");
 
 	if(INVALID_SOCKET == (server = socket(AF_INET, SOCK_STREAM, 0)))
-		Log_WSAErr("socket()");
+		Error_SetCode(ET_WIN, WSAGetLastError(), "socket");
 
 	struct sockaddr_in ssa;
 	ssa.sin_family = AF_INET;
 	ssa.sin_port = htons(port);
 	ssa.sin_addr.s_addr = inet_addr(ip);
 
-	if(bind(server, (const struct sockaddr*)&ssa, sizeof ssa) == -1)
-		Log_WSAErr("bind()");
+	if(bind(server, (const struct sockaddr*)&ssa, sizeof ssa) == -1) {
+		Error_SetCode(ET_WIN, WSAGetLastError(), "bind");
+		return false;
+	}
 
-	if(listen(server, SOMAXCONN) == -1)
-		Log_WSAErr("listen()");
+	if(listen(server, SOMAXCONN) == -1) {
+		Error_SetCode(ET_WIN, WSAGetLastError(), "listen");
+		return false;
+	}
 
 
 	Client_Listen();
 	Log_Info("%s %s started on %s:%d", SOFTWARE_NAME, SOFTWARE_VERSION, ip, port);
+	return true;
 }
 
 bool Server_InitialWork() {
@@ -36,16 +41,15 @@ bool Server_InitialWork() {
 
 	worlds[0] = World_Create("TestWorld", 128, 128, 128);
 	if(!World_Load(worlds[0])){
-		Log_WinErr("World_Load()");
+		Log_FormattedError();
 		World_GenerateFlat(worlds[0]);
 	}
 
+	Console_StartListen();
 	if(Config_Load("test.cfg"))
-		Server_Bind(Config_GetStr("IP"), Config_GetInt("PORT"));
+		return Server_Bind(Config_GetStr("IP"), Config_GetInt("PORT"));
 	else
 		return false;
-
-	Console_StartListen();
 
 	return true;
 }
@@ -53,20 +57,8 @@ bool Server_InitialWork() {
 void Server_DoStep() {
 	for(int i = 0; i < 128; i++) {
 		CLIENT* client = clients[i];
-		if(client == NULL) continue;
-
-		if(client->status == CLIENT_AFTERCLOSE) {
-			Client_Destroy(client);
-			clients[i] = NULL;
-		}
-
-		if(client->playerData == NULL) continue;
-		if(client->playerData->state == STATE_INGAME) {
-			if(client->playerData->mapThread != NULL) {
-				CloseHandle(client->playerData->mapThread);
-				client->playerData->mapThread = NULL;
-			}
-		}
+		if(client)
+			Client_Tick(client);
 	}
 }
 
@@ -86,7 +78,9 @@ void Server_Stop() {
 }
 
 int main(int argc, char** argv) {
-	serverActive = Server_InitialWork();
+	if((serverActive = Server_InitialWork()) == false)
+		Log_FormattedError();
+
 	while(serverActive) {
 		Server_DoStep();
 		Sleep(10);

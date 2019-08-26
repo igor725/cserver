@@ -39,18 +39,23 @@ void World_GenerateFlat(WORLD* world) {
 }
 
 int World_WriteInfo(WORLD* world, FILE* fp) {
-	return false;
+	return true;
 }
 
 int World_ReadInfo(WORLD* world, FILE* fp) {
-	return false;
+	return true;
 }
 
 int World_Save(WORLD* world) {
 	char name[256];
 	sprintf(name, "%s.cws", world->name);
-	FILE* f;
-	if((f = fopen(name, "wb")) == NULL)
+	FILE* fp;
+	if((fp = fopen(name, "wb")) == NULL) {
+		Error_SetCode(ET_IO, 0, "fopen");
+		return false;
+	}
+
+	if(!World_WriteInfo(world, fp))
 		return false;
 
 	z_stream stream = {0};
@@ -58,7 +63,7 @@ int World_Save(WORLD* world) {
 	int ret;
 
 	if((ret = deflateInit(&stream, 4)) != Z_OK) {
-		printf("%s\n", zError(ret));
+		Error_SetCode(ET_ZLIB, ret, "deflateInit");
 		return false;
 	}
 
@@ -68,25 +73,35 @@ int World_Save(WORLD* world) {
 	do {
 		stream.next_out = out;
 		stream.avail_out = 1024;
-		deflate(&stream, Z_FINISH);
+
+		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
+			Error_SetCode(ET_ZLIB, ret, "deflate");
+			return false;
+		}
 		uint nb = 1024 - stream.avail_out;
 
-		if(fwrite(out, 1, 1024 - stream.avail_out, f) != nb){
-			Log_Error("World saving error");
+		if(fwrite(out, 1, 1024 - stream.avail_out, fp) != nb || ferror(fp)){
+
 			deflateEnd(&stream);
 			return false;
 		}
 	} while(stream.avail_out == 0);
 
-	fclose(f);
+	fclose(fp);
+	Error_SetSuccess();
 	return true;
 }
 
 int World_Load(WORLD* world) {
 	char name[256];
 	sprintf(name, "%s.cws", world->name);
-	FILE* f;
-	if((f = fopen(name, "rb")) == NULL)
+	FILE* fp;
+	if((fp = fopen(name, "rb")) == NULL) {
+		Error_SetCode(ET_IO, 0, "fopen");
+		return false;
+	}
+
+	if(!World_ReadInfo(world, fp))
 		return false;
 
 	z_stream stream = {0};
@@ -94,16 +109,16 @@ int World_Load(WORLD* world) {
 	int ret;
 
 	if((ret = inflateInit(&stream)) != Z_OK) {
-		printf("%s\n", zError(ret));
+		Error_SetCode(ET_ZLIB, ret, "inflateInit");
 		return false;
 	}
 
 	stream.next_out = (uchar*)world->data;
 
 	do {
-		stream.avail_in = fread(in, 1, 1024, f);
-		if(ferror(f)) {
-			printf("%s\n", zError(ret));
+		stream.avail_in = fread(in, 1, 1024, fp);
+		if(ferror(fp)) {
+			Error_SetCode(ET_IO, 0, "fread");
 			inflateEnd(&stream);
 			return false;
 		}
@@ -117,13 +132,15 @@ int World_Load(WORLD* world) {
 			stream.avail_out = 1024;
 			ret = inflate(&stream, Z_NO_FLUSH);
 			if(ret == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
-				printf("%s\n", zError(ret));
+				Error_SetCode(ET_ZLIB, ret, "inflate");
 				inflateEnd(&stream);
 				return false;
 			}
 		} while(stream.avail_out == 0);
 	} while(ret != Z_STREAM_END);
 
+	fclose(fp);
+	Error_SetSuccess();
 	return true;
 }
 

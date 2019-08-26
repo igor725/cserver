@@ -23,8 +23,16 @@ bool CHandler_Stop(char* args, CLIENT* caller, char* out) {
 	return false;
 }
 
+bool CHandler_Test(char* args, CLIENT* caller, char* out) {
+	sprintf(out, "Command \"test\" called by %s with args: %s",
+		caller ? caller->playerData->name : "console", args
+	);
+	return true;
+}
+
 void Command_RegisterDefault() {
 	Command_Register("stop", &CHandler_Stop);
+	Command_Register("test", &CHandler_Test);
 }
 
 bool Command_Handle(char* cmd, CLIENT* caller) {

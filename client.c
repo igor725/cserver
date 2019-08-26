@@ -63,6 +63,7 @@ void Client_SetPos(CLIENT* client, VECTOR* pos, ANGLE* ang) {
 }
 
 void Client_Destroy(CLIENT* client) {
+	clients[client->id] = NULL;
 	free(client->rdbuf);
 	free(client->wrbuf);
 
@@ -111,7 +112,7 @@ int Client_MapThreadProc(void* lpParam) {
 		zlibVersion(),
 		sizeof(stream)
 	)) != Z_OK) {
-		Log_Error("zlib deflateInit: %s", zError(ret));
+		client->playerData->state = STATE_WLOADERR;
 		return 0;
 	}
 
@@ -123,14 +124,13 @@ int Client_MapThreadProc(void* lpParam) {
 		stream.avail_out = 1024;
 
 		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
-			Log_Error("zlib deflate: %s", zError(ret));
+			client->playerData->state = STATE_WLOADERR;
 			deflateEnd(&stream);
 			return 0;
 		}
 
 		*len = htons(1024 - stream.avail_out);
 		if(!Client_Send(client, 1028)) {
-			Log_Error("Client disconnected while map send in progress:(");
 			deflateEnd(&stream);
 			return 0;
 		}
@@ -138,7 +138,7 @@ int Client_MapThreadProc(void* lpParam) {
 
 	deflateEnd(&stream);
 	Packet_WriteLvlFin(client);
-	client->playerData->state = STATE_INGAME;
+	client->playerData->state = STATE_WLOADDONE;
 	for(int i = 0; i < 128; i++) {
 		CLIENT* other = clients[i];
 		if(other == NULL) continue;
@@ -217,6 +217,23 @@ int Client_ThreadProc(void* lpParam) {
 	}
 
 	return 0;
+}
+
+void Client_Tick(CLIENT* client) {
+	if(client->status == CLIENT_AFTERCLOSE) {
+		Client_Destroy(client);
+		return;
+	}
+
+	if(client->playerData == NULL) return;
+	switch (client->playerData->state) {
+		case STATE_WLOADDONE:
+			CloseHandle(client->playerData->mapThread);
+			break;
+		case STATE_WLOADERR:
+			Packet_WriteKick(client, "Map loading error");
+			break;
+	}
 }
 
 void AcceptClients() {

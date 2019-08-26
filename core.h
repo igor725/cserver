@@ -1,5 +1,6 @@
 #ifndef CORE_H
 #define CORE_H
+#include "error.h"
 #include "log.h"
 
 #define ZLIB_WINAPI

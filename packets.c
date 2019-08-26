@@ -26,10 +26,8 @@ int ReadString(char* data, char** dst) {
 
 void WriteString(char* data, const char* string) {
 	int size = min(strlen(string), 64);
+	memset(data, 0, 64);
 	memcpy(data, string, size);
-
-	if(size == 64) return;
-	memset(data + size, ' ', 64 - size);
 }
 
 char* WriteShortVec(char* data, SVECTOR* vec) {
@@ -199,6 +197,9 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 }
 
 bool Handler_SetBlock(CLIENT* client, char* data) {
+	if(!client->playerData)
+		return false;
+
 	WORLD* world = client->playerData->currentWorld;
 	if(world == NULL) return false;
 
@@ -227,6 +228,9 @@ bool Handler_SetBlock(CLIENT* client, char* data) {
 }
 
 bool Handler_PosAndOrient(CLIENT* client, char* data) {
+	if(!client->playerData)
+		return false;
+
 	int id = *data;
 	ReadClPos(client, ++data);
 	//TODO: Рассылка игрокам позиций других игроков
@@ -234,6 +238,9 @@ bool Handler_PosAndOrient(CLIENT* client, char* data) {
 }
 
 bool Handler_Message(CLIENT* client, char* data) {
+	if(!client->playerData)
+		return false;
+
 	char* message;
 	int len = ReadString(++data, &message);
 
