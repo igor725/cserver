@@ -7,7 +7,10 @@
 typedef struct cfgEntry {
 	char*            key;
 	int              type;
-	void*            value;
+	union {
+		int   vint;
+		char* vchar;
+	} value;
 	struct cfgEntry* next;
 } CFGENTRY;
 

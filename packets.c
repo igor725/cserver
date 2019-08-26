@@ -1,4 +1,3 @@
-#include <winsock2.h>
 #include "core.h"
 #include "block.h"
 #include "world.h"
@@ -6,6 +5,7 @@
 #include "event.h"
 #include "server.h"
 #include "packets.h"
+#include "command.h"
 
 PACKET* packets[256] = {0};
 EXT* firstExtension = NULL;
@@ -17,7 +17,7 @@ int ReadString(char* data, char** dst) {
 	while(data[end] == ' ') --end;
 	++end;
 
-	char* str = (char*)malloc(end + 1);
+	char* str = malloc(end + 1);
 	memcpy(str, data, end);
 	str[end] = 0;
 	dst[0] = str;
@@ -39,9 +39,9 @@ char* WriteShortVec(char* data, SVECTOR* vec) {
 	return data;
 }
 
-void ReadClPos(CLIENT* self, char* data) {
-	VECTOR vec = self->playerData->position;
-	ANGLE ang = self->playerData->angle;
+void ReadClPos(CLIENT* client, char* data) {
+	VECTOR vec = client->playerData->position;
+	ANGLE ang = client->playerData->angle;
 
 	vec.x = (float)ntohs((*(short*)data)) / 32;++data;
 	vec.y = (float)ntohs((*(short*)++data)) / 32;++data;
@@ -51,9 +51,9 @@ void ReadClPos(CLIENT* self, char* data) {
 }
 
 #define SWAP(num) ((num >> 8) | (num << 8))
-char* WriteClPos(char* data, CLIENT* self, bool stand) {
-	VECTOR vec = self->playerData->position;
-	ANGLE ang = self->playerData->angle;
+char* WriteClPos(char* data, CLIENT* client, bool stand) {
+	VECTOR vec = client->playerData->position;
+	ANGLE ang = client->playerData->angle;
 	*(ushort*)data = htons(vec.x * 32);++data;
 	*(ushort*)++data = htons(vec.y * 32 + (stand ? 51 : 0));++data;
 	*(ushort*)++data = htons(vec.z * 32);++data;
@@ -63,7 +63,7 @@ char* WriteClPos(char* data, CLIENT* self, bool stand) {
 }
 
 void Packet_Register(int id, const char* name, ushort size, packetHandler handler) {
-	PACKET* tmp = (PACKET*)malloc(sizeof(struct packet));
+	PACKET* tmp = malloc(sizeof(struct packet));
 	memset(tmp, 0, sizeof(struct packet));
 
 	tmp->name = name;
@@ -86,13 +86,13 @@ void Packet_RegisterCPE(int id, const char* name, int version, ushort size) {
 	tmp->extSize = size;
 }
 
-int Packet_GetSize(int id, CLIENT* self) {
+int Packet_GetSize(int id, CLIENT* client) {
 	PACKET* packet = packets[id];
 	if(packet == NULL)
 		return -1;
 
 	if(packet->haveCPEImp)
-		return Client_IsSupportExt(self, packet->extName) ? packet->extSize : packet->size;
+		return Client_IsSupportExt(client, packet->extName) ? packet->extSize : packet->size;
 	else
 		return packet->size;
 }
@@ -101,96 +101,104 @@ int Packet_GetSize(int id, CLIENT* self) {
 	VANILLA
 */
 
-void Packet_WriteKick(CLIENT* self, const char* reason) {
-	if(self->status != CLIENT_OK)
+void Packet_WriteKick(CLIENT* client, const char* reason) {
+	if(client->status != CLIENT_OK)
 		return;
 
-	self->wrbuf[0] = 0x0E;
-	WriteString(self->wrbuf + 1, reason);
-	Client_Send(self, 65);
-	Client_Disconnect(self);
+	client->wrbuf[0] = 0x0E;
+	WriteString(client->wrbuf + 1, reason);
+	Client_Send(client, 65);
+	Client_Disconnect(client);
 }
 
-void Packet_WriteLvlInit(CLIENT* self) {
-	self->wrbuf[0] = 0x02;
-	self->playerData->state = STATE_MOTD;
-	Client_Send(self, 1);
+void Packet_WriteLvlInit(CLIENT* client) {
+	client->wrbuf[0] = 0x02;
+	client->playerData->state = STATE_MOTD;
+	Client_Send(client, 1);
 }
 
-void Packet_WriteLvlFin(CLIENT* self) {
-	WORLD* world = self->playerData->currentWorld;
-	char* data = self->wrbuf;
+void Packet_WriteLvlFin(CLIENT* client) {
+	WORLD* world = client->playerData->currentWorld;
+	char* data = client->wrbuf;
 	*data = 0x04;
 	WriteShortVec(data, (SVECTOR*)world->dimensions);
-	Client_Send(self, 7);
+	Client_Send(client, 7);
 }
 
-void Packet_WriteHandshake(CLIENT* self) {
-	char* data = self->wrbuf;
+void Packet_WriteHandshake(CLIENT* client) {
+	char* data = client->wrbuf;
 	*data = 0x00;
 	*++data = 0x07;
 	WriteString(++data, "Server Name"); data += 63;
 	WriteString(++data, "Server MOTD"); data += 63;
 	*++data = 0x00;
-	Client_Send(self, 131);
+	Client_Send(client, 131);
 }
 
-void Packet_WriteSpawn(CLIENT* self, CLIENT* other) {
-	char* data = self->wrbuf;
+void Packet_WriteSpawn(CLIENT* client, CLIENT* other) {
+	char* data = client->wrbuf;
 	*data = 0x07;
-	*++data = self == other ? 0xFF : other->id;
+	*++data = client == other ? 0xFF : other->id;
 	WriteString(++data, other->playerData->name); data += 63;
 	WriteClPos(++data, other, true);
-	Client_Send(self, 74);
+	Client_Send(client, 74);
 }
 
-void Packet_WritePosAndOrient(CLIENT* self, CLIENT* other) {
-	char* data = self->wrbuf;
+void Packet_WritePosAndOrient(CLIENT* client, CLIENT* other) {
+	char* data = client->wrbuf;
 	*data = 0x08;
 	//TODO: Дописать пакет перемещения
 }
 
-bool Handler_Handshake(CLIENT* self, char* data) {
+void Packet_WriteChat(CLIENT* client, int type, char* mesg) {
+	char* data = client->wrbuf;
+	*data = 0x0D;
+	*++data = type;
+	WriteString(++data, mesg);
+	Client_Send(client, 66);
+}
+
+bool Handler_Handshake(CLIENT* client, char* data) {
 	uchar protoVer = *data;
 	if(protoVer != 0x07) {
-		Packet_WriteKick(self, "Invalid protocol version");
+		Packet_WriteKick(client, "Invalid protocol version");
 		return true;
 	}
 
-	self->playerData = (PLAYERDATA*)malloc(sizeof(struct playerData));
-	memset(self->playerData, 0, sizeof(struct playerData));
-	self->playerData->currentWorld = worlds[0];
-	Client_SetPos(self, &worlds[0]->spawnVec, &worlds[0]->spawnAng);
-	ReadString(++data, &self->playerData->name); data += 63;
-	ReadString(++data, &self->playerData->key); data += 63;
+	client->playerData = malloc(sizeof(struct playerData));
+	memset(client->playerData, 0, sizeof(struct playerData));
+	client->playerData->currentWorld = worlds[0];
+	Client_SetPos(client, &worlds[0]->spawnVec, &worlds[0]->spawnAng);
+	ReadString(++data, &client->playerData->name); data += 63;
+	ReadString(++data, &client->playerData->key); data += 63;
 	bool cpeEnabled = *++data == 0x42; // Temporarily
 
-	if(Client_CheckAuth(self))
-		Packet_WriteHandshake(self);
+	if(Client_CheckAuth(client))
+		Packet_WriteHandshake(client);
 	else {
-		Packet_WriteKick(self, "Auth failed");
+		Packet_WriteKick(client, "Auth failed");
 		return true;
 	}
 
 	if(cpeEnabled) {
-		self->cpeData = (CPEDATA*)malloc(sizeof(struct cpeData));
-		memset(self->cpeData, 0, sizeof(struct cpeData));
+		client->cpeData = malloc(sizeof(struct cpeData));
+		memset(client->cpeData, 0, sizeof(struct cpeData));
 
-		CPEPacket_WriteInfo(self);
+		CPEPacket_WriteInfo(client);
 		EXT* ptr = firstExtension;
 		while(ptr != NULL) {
-			CPEPacket_WriteExtEntry(self, ptr);
+			CPEPacket_WriteExtEntry(client, ptr);
 			ptr = ptr->next;
 		}
 	} else {
-		Client_SendMap(self);
+		Client_SendMap(client);
 	}
 
 	return true;
 }
 
-bool Handler_SetBlock(CLIENT* self, char* data) {
-	WORLD* world = self->playerData->currentWorld;
+bool Handler_SetBlock(CLIENT* client, char* data) {
+	WORLD* world = client->playerData->currentWorld;
 	if(world == NULL) return false;
 
 	ushort x = ntohs(*(ushort*)data); data += 2;
@@ -202,14 +210,14 @@ bool Handler_SetBlock(CLIENT* self, char* data) {
 	switch(mode) {
 		case MODE_PLACE:
 			if(!Block_IsValid(block)) {
-				Packet_WriteKick(self, "Invalid block ID");
+				Packet_WriteKick(client, "Invalid block ID");
 				return false;
 			}
-			if(Event_OnBlockPalce(self, x, y, z, block))
+			if(Event_OnBlockPalce(client, x, y, z, block))
 				World_SetBlock(world, x, y, z, block);
 			break;
 		case MODE_DESTROY:
-			if(Event_OnBlockPalce(self, x, y, z, 0))
+			if(Event_OnBlockPalce(client, x, y, z, 0))
 				World_SetBlock(world, x, y, z, 0);
 			break;
 	}
@@ -217,18 +225,21 @@ bool Handler_SetBlock(CLIENT* self, char* data) {
 	return true;
 }
 
-bool Handler_PosAndOrient(CLIENT* self, char* data) {
+bool Handler_PosAndOrient(CLIENT* client, char* data) {
 	int id = *data;
-	ReadClPos(self, ++data);
+	ReadClPos(client, ++data);
 	//TODO: Рассылка игрокам позиций других игроков
 	return true;
 }
 
-bool Handler_Message(CLIENT* self, char* data) {
+bool Handler_Message(CLIENT* client, char* data) {
 	char* message;
 	uchar unused = *data;
 	int len = ReadString(++data, &message);
-	Event_OnMessage(self, message, len);
+	if(Event_OnMessage(client, message, len))
+		if(*message == '/')
+			if(!Command_Handle(message + 1, client))
+				Packet_WriteChat(client, 0, "Unknown command");
 	free(message);
 	return true;
 }
@@ -242,50 +253,50 @@ void Packet_RegisterCPEDefault() {
 	Packet_Register(0x11, "ExtEntry", 69, &CPEHandler_ExtEntry);
 }
 
-void CPEPacket_WriteInfo(CLIENT *self) {
-	char* data = self->wrbuf;
+void CPEPacket_WriteInfo(CLIENT *client) {
+	char* data = client->wrbuf;
 	*data = 0x10;
 	WriteString(++data, SOFTWARE_NAME DELIM SOFTWARE_VERSION); data += 63;
 	*(ushort*)++data = htons(extensionsCount);
-	Client_Send(self, 67);
+	Client_Send(client, 67);
 }
 
-void CPEPacket_WriteExtEntry(CLIENT* self, EXT* ext) {
-	char* data = self->wrbuf;
+void CPEPacket_WriteExtEntry(CLIENT* client, EXT* ext) {
+	char* data = client->wrbuf;
 	*data = 0x011;
 	WriteString(++data, ext->name); data += 63;
 	*(uint*)++data = htonl(ext->version);
-	Client_Send(self, 69);
+	Client_Send(client, 69);
 }
 
-bool CPEHandler_ExtInfo(CLIENT* self, char* data) {
-	if(self->cpeData == NULL) return false;
+bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
+	if(client->cpeData == NULL) return false;
 
-	ReadString(data, &self->cpeData->appName); data += 63;
-	self->cpeData->_extCount = ntohs(*(ushort*)++data);
+	ReadString(data, &client->cpeData->appName); data += 63;
+	client->cpeData->_extCount = ntohs(*(ushort*)++data);
 	return true;
 }
 
-bool CPEHandler_ExtEntry(CLIENT* self, char* data) {
-	if(self->cpeData == NULL) return false;
+bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
+	if(client->cpeData == NULL) return false;
 
-	EXT* tmp = (EXT*)malloc(sizeof(struct ext));
+	EXT* tmp = malloc(sizeof(struct ext));
 	memset(tmp, 0, sizeof(struct ext));
 
 	ReadString(data, &tmp->name);data += 63;
 	tmp->version = ntohl(*(uint*)++data);
 
-	if(self->cpeData->tailExtension == NULL) {
-		self->cpeData->firstExtension = tmp;
-		self->cpeData->tailExtension = tmp;
+	if(client->cpeData->tailExtension == NULL) {
+		client->cpeData->firstExtension = tmp;
+		client->cpeData->tailExtension = tmp;
 	} else {
-		self->cpeData->tailExtension->next = tmp;
-		self->cpeData->tailExtension = tmp;
+		client->cpeData->tailExtension->next = tmp;
+		client->cpeData->tailExtension = tmp;
 	}
 
-	--self->cpeData->_extCount;
-	if(self->cpeData->_extCount == 0)
-		Client_SendMap(self);
+	--client->cpeData->_extCount;
+	if(client->cpeData->_extCount == 0)
+		Client_SendMap(client);
 
 	return true;
 }

@@ -1,13 +1,29 @@
+#include "winsock2.h"
 #include "core.h"
-#include <winsock2.h>
-#include <windows.h>
-#include <string.h>
-#include <zlib.h>
-#include "log.h"
+#include "string.h"
+#include "zlib.h"
 #include "world.h"
 #include "client.h"
 #include "packets.h"
 #include "server.h"
+
+void* listenThread;
+
+void Client_Listen() {
+	listenThread = CreateThread(
+		NULL,
+		0,
+		(LPTHREAD_START_ROUTINE)&AcceptClients_ThreadProc,
+		NULL,
+		0,
+		NULL
+	);
+}
+
+void Client_StopListen() {
+	if(listenThread)
+		CloseHandle(listenThread);
+}
 
 int Client_FindFreeID() {
 	for(int i = 0; i < 127; i++) {
@@ -17,11 +33,11 @@ int Client_FindFreeID() {
 	return -1;
 }
 
-bool Client_IsSupportExt(CLIENT* self, const char* extName) {
-	if(self->cpeData == NULL)
+bool Client_IsSupportExt(CLIENT* client, const char* extName) {
+	if(client->cpeData == NULL)
 		return false;
 
-	EXT* ptr = self->cpeData->firstExtension;
+	EXT* ptr = client->cpeData->firstExtension;
 	while(ptr != NULL) {
 		if(stricmp(ptr->name, extName) == 0) {
 			return true;
@@ -31,57 +47,57 @@ bool Client_IsSupportExt(CLIENT* self, const char* extName) {
 	return false;
 }
 
-char* Client_GetAppName(CLIENT* self) {
-	if(self->cpeData == NULL)
+char* Client_GetAppName(CLIENT* client) {
+	if(client->cpeData == NULL)
 		return "vanilla";
-	return self->cpeData->appName;
+	return client->cpeData->appName;
 }
 
-bool Client_CheckAuth(CLIENT* self) { //TODO: ClassiCube auth
+bool Client_CheckAuth(CLIENT* client) { //TODO: ClassiCube auth
 	return true;
 }
 
-void Client_SetPos(CLIENT* self, VECTOR* pos, ANGLE* ang) {
-	memcpy(&self->playerData->position, pos, sizeof(struct vector));
-	memcpy(&self->playerData->angle, ang, sizeof(struct angle));
+void Client_SetPos(CLIENT* client, VECTOR* pos, ANGLE* ang) {
+	memcpy(&client->playerData->position, pos, sizeof(struct vector));
+	memcpy(&client->playerData->angle, ang, sizeof(struct angle));
 }
 
-void Client_Destroy(CLIENT* self) {
-	free(self->rdbuf);
-	free(self->wrbuf);
+void Client_Destroy(CLIENT* client) {
+	free(client->rdbuf);
+	free(client->wrbuf);
 
-	if(self->thread != NULL)
-		CloseHandle(self->thread);
+	if(client->thread != NULL)
+		CloseHandle(client->thread);
 
-	if(self->playerData != NULL) {
-		free(self->playerData->name);
-		free(self->playerData->key);
-		free(self->playerData);
+	if(client->playerData != NULL) {
+		free(client->playerData->name);
+		free(client->playerData->key);
+		free(client->playerData);
 	}
-	if(self->cpeData != NULL) {
-		EXT* ptr = self->cpeData->firstExtension;
+	if(client->cpeData != NULL) {
+		EXT* ptr = client->cpeData->firstExtension;
 		while(ptr != NULL) {
 			free(ptr->name);
 			free(ptr);
 			ptr = ptr->next;
 		}
-		free(self->cpeData);
+		free(client->cpeData);
 	}
 }
 
-int Client_Send(CLIENT* self, int len) {
-	return send(self->sock, self->wrbuf, len, 0) == len;
+int Client_Send(CLIENT* client, int len) {
+	return send(client->sock, client->wrbuf, len, 0) == len;
 }
 
 int Client_MapThreadProc(void* lpParam) {
-	CLIENT* self = (CLIENT*)lpParam;
-	WORLD* world = self->playerData->currentWorld;
+	CLIENT* client = (CLIENT*)lpParam;
+	WORLD* world = client->playerData->currentWorld;
 
 	z_stream stream = {0};
 
-	self->wrbuf[0] = 0x03;
-	self->wrbuf[1027] = 0;
-	ushort* len = (ushort*)(self->wrbuf + 1);
+	client->wrbuf[0] = 0x03;
+	client->wrbuf[1027] = 0;
+	ushort* len = (ushort*)(client->wrbuf + 1);
 	uchar* out = (uchar*)len + 2;
 	int ret;
 
@@ -113,7 +129,7 @@ int Client_MapThreadProc(void* lpParam) {
 		}
 
 		*len = htons(1024 - stream.avail_out);
-		if(!Client_Send(self, 1028)) {
+		if(!Client_Send(client, 1028)) {
 			Log_Error("Client disconnected while map send in progress:(");
 			deflateEnd(&stream);
 			return 0;
@@ -121,32 +137,32 @@ int Client_MapThreadProc(void* lpParam) {
 	} while(stream.avail_out == 0);
 
 	deflateEnd(&stream);
-	Packet_WriteLvlFin(self);
-	self->playerData->state = STATE_INGAME;
+	Packet_WriteLvlFin(client);
+	client->playerData->state = STATE_INGAME;
 	for(int i = 0; i < 128; i++) {
 		CLIENT* other = clients[i];
 		if(other == NULL) continue;
 
-		Packet_WriteSpawn(other, self);
-		if(self != other)
-			Packet_WriteSpawn(self, other);
+		Packet_WriteSpawn(other, client);
+		if(client != other)
+			Packet_WriteSpawn(client, other);
 	}
 	return 0;
 }
 
-bool Client_SendMap(CLIENT* self) {
-	if(self->playerData->currentWorld == NULL)
+bool Client_SendMap(CLIENT* client) {
+	if(client->playerData->currentWorld == NULL)
 		return false;
-	if(self->playerData->mapThread != NULL)
+	if(client->playerData->mapThread != NULL)
 		return false;
 
-	Packet_WriteLvlInit(self);
-	self->playerData->state = STATE_WLOAD;
-	self->playerData->mapThread = CreateThread(
+	Packet_WriteLvlInit(client);
+	client->playerData->state = STATE_WLOAD;
+	client->playerData->mapThread = CreateThread(
 		NULL,
 		0,
 		(LPTHREAD_START_ROUTINE)&Client_MapThreadProc,
-		self,
+		client,
 		0,
 		NULL
 	);
@@ -154,47 +170,47 @@ bool Client_SendMap(CLIENT* self) {
 	return true;
 }
 
-void Client_Disconnect(CLIENT* self) {
-	self->status = CLIENT_WAITCLOSE;
-	shutdown(self->sock, SD_SEND);
+void Client_Disconnect(CLIENT* client) {
+	client->status = CLIENT_WAITCLOSE;
+	shutdown(client->sock, SD_SEND);
 }
 
 int Client_ThreadProc(void* lpParam) {
-	CLIENT* self = (CLIENT*)lpParam;
+	CLIENT* client = (CLIENT*)lpParam;
 
 	while(1) {
-		if(self->status == CLIENT_WAITCLOSE) {
-			int len = recv(self->sock, self->rdbuf, 131, 0);
+		if(client->status == CLIENT_WAITCLOSE) {
+			int len = recv(client->sock, client->rdbuf, 131, 0);
 			if(len <= 0) {
-				self->status = CLIENT_AFTERCLOSE;
-				closesocket(self->sock);
+				client->status = CLIENT_AFTERCLOSE;
+				closesocket(client->sock);
 				break;
 			}
 			continue;
 		}
 		ushort wait = 1;
 
-		if(self->bufpos > 0) {
-			short packetSize = Packet_GetSize(*self->rdbuf, self);
+		if(client->bufpos > 0) {
+			short packetSize = Packet_GetSize(*client->rdbuf, client);
 
 			if(packetSize < 1) {
-				Packet_WriteKick(self, "Invalid packet ID");
+				Packet_WriteKick(client, "Invalid packet ID");
 				continue;
 			}
-			wait = packetSize - self->bufpos;
+			wait = packetSize - client->bufpos;
 		}
 
 		if(wait == 0) {
-			Client_HandlePacket(self);
-			self->bufpos = 0;
+			Client_HandlePacket(client);
+			client->bufpos = 0;
 			continue;
 		} else if(wait > 0) {
-			int len = recv(self->sock, self->rdbuf + self->bufpos, wait, 0);
+			int len = recv(client->sock, client->rdbuf + client->bufpos, wait, 0);
 
 			if(len > 0) {
-				self->bufpos += len;
+				client->bufpos += len;
 			} else {
-				self->status = CLIENT_AFTERCLOSE;
+				client->status = CLIENT_AFTERCLOSE;
 				break;
 			}
 		}
@@ -209,13 +225,13 @@ void AcceptClients() {
 
 	SOCKET fd = accept(server, (struct sockaddr*)&caddr, &caddrsz);
 	if(fd != INVALID_SOCKET) {
-	 	CLIENT* tmp = (CLIENT*)malloc(sizeof(struct client));
+	 	CLIENT* tmp = malloc(sizeof(struct client));
 		memset(tmp, 0, sizeof(struct client));
 
 		tmp->sock = fd;
 		tmp->bufpos = 0;
-		tmp->rdbuf = (char*)malloc(131);
-		tmp->wrbuf = (char*)malloc(2048);
+		tmp->rdbuf = malloc(131);
+		tmp->wrbuf = malloc(2048);
 
 		int id = Client_FindFreeID();
 		if(id >= 0) {
@@ -241,23 +257,23 @@ int AcceptClients_ThreadProc(void* lpParam) {
 	return 0;
 }
 
-void Client_HandlePacket(CLIENT* self) {
-	uchar id = self->rdbuf[0];
+void Client_HandlePacket(CLIENT* client) {
+	uchar id = client->rdbuf[0];
 	PACKET* packet = packets[id];
 	if(packet == NULL) return;
 
 	bool ret = false;
-	char* data = self->rdbuf; ++data;
+	char* data = client->rdbuf; ++data;
 
 	if(packet->haveCPEImp == true)
 		if(packet->cpeHandler == NULL)
-			ret = packet->handler(self, data);
+			ret = packet->handler(client, data);
 		else
-			ret = packet->cpeHandler(self, data);
+			ret = packet->cpeHandler(client, data);
 	else
 		if(packet->handler != NULL)
-			ret = packet->handler(self, data);
+			ret = packet->handler(client, data);
 
 	if(ret == false)
-		Packet_WriteKick(self, "Packet reading error");
+		Packet_WriteKick(client, "Packet reading error");
 }

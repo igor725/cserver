@@ -1,8 +1,8 @@
-#include <windows.h>
-#include <string.h>
-#include <stdio.h>
 #include "core.h"
+#include "stdio.h"
+#include "string.h"
 #include "config.h"
+#include "stdlib.h"
 
 //TODO: Оптимизировать фуникции Config_Load и Config_Save
 
@@ -38,10 +38,10 @@ bool Config_Load(const char* filename) {
 		} while(ch != '\n' && ch != EOF);
 		count = 0;
 
-		char* hkey = (char*)malloc(strlen(key) + 1);
+		char* hkey = malloc(strlen(key) + 1);
 		strcpy(hkey, key);
 		if(type == CFG_STR) {
-			char* hval = (char*)malloc(strlen(value) + 1);
+			char* hval = malloc(strlen(value) + 1);
 			strcpy(hval, value);
 			Config_SetStr(hkey, hval);
 		} else if(type == CFG_INT) {
@@ -66,10 +66,10 @@ bool Config_Save(const char* filename) {
 		fwrite(ptr->key, strlen(ptr->key), 1, fp);
 		switch (ptr->type) {
 			case CFG_STR:
-				fprintf(fp, "=s%s\n", (char*)ptr->value);
+				fprintf(fp, "=s%s\n", (char*)ptr->value.vchar);
 				break;
 			case CFG_INT:
-				fprintf(fp, "=i%d\n", (int)ptr->value);
+				fprintf(fp, "=i%d\n", (int)ptr->value.vint);
 				break;
 		}
 		ptr = ptr->next;
@@ -80,17 +80,16 @@ bool Config_Save(const char* filename) {
 }
 
 CFGENTRY* Config_AllocEntry() {
-	CFGENTRY* ptr = (CFGENTRY*)malloc(sizeof(struct cfgEntry));
+	CFGENTRY* ptr = malloc(sizeof(struct cfgEntry));
 	memset(ptr, 0, sizeof(struct cfgEntry));
 	return ptr;
 }
 
-void Config_SetVoid(char* key, void* value, uchar type) {
+CFGENTRY* Config_GetStruct(char* key) {
 	CFGENTRY* ptr = firstCfgEntry;
 	while(ptr != NULL) {
 		if(stricmp(ptr->key, key) == 0) {
-			ptr->value = value;
-			return;
+			return ptr;
 		}
 		if(ptr->next == NULL) {
 			break;
@@ -101,39 +100,32 @@ void Config_SetVoid(char* key, void* value, uchar type) {
 	if(ptr == NULL) {
 		ptr = Config_AllocEntry();
 		firstCfgEntry = ptr;
+		ptr->key = key;
 	} else {
 		ptr->next = Config_AllocEntry();
 		ptr = ptr->next;
+		ptr->key = key;
 	}
 
-	ptr->key = key;
-	ptr->value = value;
-	ptr->type = type;
-}
-
-void* Config_GetVoid(char* key) {
-	CFGENTRY* ptr = firstCfgEntry;
-	while(ptr != NULL) {
-		if(stricmp(ptr->key, key) == 0) {
-			return ptr->value;
-		}
-		ptr = ptr->next;
-	}
-	return NULL;
+	return ptr;
 }
 
 void Config_SetInt(char* key, int value) {
-	Config_SetVoid(key, (void*)value, CFG_INT);
+	CFGENTRY* ent = Config_GetStruct(key);
+	ent->value.vint = value;
 }
 
 int Config_GetInt(char* key) {
-	return (int)Config_GetVoid(key);
+	CFGENTRY* ent = Config_GetStruct(key);
+	return ent->value.vint;
 }
 
 void Config_SetStr(char* key, char* value) {
-	Config_SetVoid(key, value, CFG_STR);
+	CFGENTRY* ent = Config_GetStruct(key);
+	ent->value.vchar = value;
 }
 
 char* Config_GetStr(char* key) {
-	return (char*)Config_GetVoid(key);
+	CFGENTRY* ent = Config_GetStruct(key);
+	return ent->value.vchar;
 }

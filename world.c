@@ -4,7 +4,7 @@
 #include "world.h"
 
 WORLD* World_Create(char* name, ushort dx, ushort dy, ushort dz) {
-	WORLD* tmp = (WORLD*)malloc(sizeof(struct world));
+	WORLD* tmp = malloc(sizeof(struct world));
 	memset(tmp, 0, sizeof(struct world));
 
 	tmp->name = name;
@@ -13,13 +13,17 @@ WORLD* World_Create(char* name, ushort dx, ushort dy, ushort dz) {
 	tmp->dimensions[1] = dy;
 	tmp->dimensions[2] = dz;
 
-	char* data = (char*)malloc(tmp->size);
+	char* data = malloc(tmp->size);
 	memset(data, 0, tmp->size);
 	*(uint*)data = htonl(tmp->size - 4);
 	tmp->data = data;
 	World_GenerateFlat(tmp);
 
 	return tmp;
+}
+
+void World_Destroy(WORLD* world) {
+
 }
 
 void World_GenerateFlat(WORLD* world) {

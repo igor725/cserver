@@ -1,5 +1,7 @@
 #ifndef WORLD_H
 #define WORLD_H
+#include "core.h"
+
 typedef struct world {
 	char*  name;
 	ushort dimensions[3];

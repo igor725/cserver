@@ -1,5 +1,8 @@
 #ifndef CLIENT_H
 #define CLIENT_H
+#include "core.h"
+#include "world.h"
+#include "winsock2.h"
 
 #define CLIENT_OK         0
 #define CLIENT_WAITCLOSE  1
@@ -39,16 +42,16 @@ typedef struct client {
 	PLAYERDATA* playerData;
 } CLIENT;
 
-bool Client_IsSupportExt(CLIENT* self, const char* packetName);
-void Client_SetPos(CLIENT* self, VECTOR* vec, ANGLE* ang);
+bool Client_IsSupportExt(CLIENT* client, const char* packetName);
+void Client_SetPos(CLIENT* client, VECTOR* vec, ANGLE* ang);
 int  AcceptClients_ThreadProc(void* lpParam);
-int  Client_Send(CLIENT* self, int len);
-void Client_HandlePacket(CLIENT* self);
-void Client_Disconnect(CLIENT* self);
-bool Client_CheckAuth(CLIENT* self);
-bool Client_SendMap(CLIENT* self);
-void Client_Destroy(CLIENT* self);
-void AcceptClients();
+int  Client_Send(CLIENT* client, int len);
+void Client_HandlePacket(CLIENT* client);
+void Client_Disconnect(CLIENT* client);
+bool Client_CheckAuth(CLIENT* client);
+bool Client_SendMap(CLIENT* client);
+void Client_Destroy(CLIENT* client);
+void Client_Listen();
 
 CLIENT* clients[256];
 #endif

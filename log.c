@@ -1,8 +1,6 @@
-#include <windows.h>
-#include <stdarg.h>
-#include <stdio.h>
+#include "windows.h"
 #include "core.h"
-#include "log.h"
+#include "stdio.h"
 
 int Log_Level = 3;
 const char* const Log_Levels[5] = {

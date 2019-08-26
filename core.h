@@ -1,5 +1,7 @@
 #ifndef CORE_H
 #define CORE_H
+#include "log.h"
+
 #define ZLIB_WINAPI
 typedef unsigned short ushort;
 typedef unsigned char  uchar;
