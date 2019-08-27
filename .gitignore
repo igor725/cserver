@@ -4,4 +4,4 @@
 *.obj
 *.cws
 *.cfg
-zlib-*
+zlib*/

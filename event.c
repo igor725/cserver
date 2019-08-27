@@ -9,7 +9,7 @@ bool Event_OnMessage(CLIENT* client, char* message, int len) {
 	return true;
 }
 
-bool Event_OnBlockPalce(CLIENT* client, ushort x, ushort y, ushort z, int id) {
+bool Event_OnBlockPlace(CLIENT* client, ushort x, ushort y, ushort z, int id) {
 	return true;
 }
 

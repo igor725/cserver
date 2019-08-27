@@ -32,6 +32,7 @@ void Packet_WriteLvlInit(CLIENT* client);
 void Packet_WriteLvlFin(CLIENT* client);
 void Packet_WritePosAndOrient(CLIENT* client, CLIENT* other);
 void Packet_WriteChat(CLIENT* client, int type, char* mesg);
+void Packet_WriteSetBlock(CLIENT* client, ushort x, ushort y, ushort z, BlockID block);
 
 int  ReadString(char* data, char** dst);
 void WriteString(char* data, const char* string);

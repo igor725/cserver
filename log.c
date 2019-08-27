@@ -47,6 +47,8 @@ void Log_Error(const char* str, ...) {
 }
 
 void Log_FormattedError() {
+	if(Error_Type == ET_NOERR)
+		return;
 	Log_Error("%s:%d in %s(...): %s (%d)", Error_GetFile(), Error_Line, Error_GetFunc(), Error_GetString(), Error_Code);
 	Error_SetSuccess();
 }

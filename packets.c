@@ -28,13 +28,6 @@ void WriteString(char* data, const char* string) {
 	memcpy(data, string, size);
 }
 
-char* WriteShortVec(char* data, SVECTOR* vec) {
-	*(ushort*)++data = htons(vec->x);++data;
-	*(ushort*)++data = htons(vec->y);++data;
-	*(ushort*)++data = htons(vec->z);++data;
-	return data;
-}
-
 void ReadClPos(CLIENT* client, char* data) {
 	VECTOR* vec = client->playerData->position;
 	ANGLE* ang = client->playerData->angle;
@@ -115,8 +108,20 @@ void Packet_WriteLvlFin(CLIENT* client) {
 	WORLD* world = client->playerData->currentWorld;
 	char* data = client->wrbuf;
 	*data = 0x04;
-	WriteShortVec(data, (SVECTOR*)world->dimensions);
+	*(ushort*)++data = htons(world->info->dim->width);++data;
+	*(ushort*)++data = htons(world->info->dim->height);++data;
+	*(ushort*)++data = htons(world->info->dim->length);++data;
 	Client_Send(client, 7);
+}
+
+void Packet_WriteSetBlock(CLIENT* client, ushort x, ushort y, ushort z, BlockID block) {
+	char* data = client->wrbuf;
+	*data = 0x06;
+	*(ushort*)++data = htons(x);++data;
+	*(ushort*)++data = htons(y);++data;
+	*(ushort*)++data = htons(z);++data;
+	*++data = block;
+	Client_Send(client, 8);
 }
 
 void Packet_WriteHandshake(CLIENT* client) {
@@ -173,7 +178,7 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	client->playerData->position = calloc(1, sizeof(struct vector));
 	client->playerData->angle = calloc(1, sizeof(struct angle));
 
-	Client_SetPos(client, &worlds[0]->spawnVec, &worlds[0]->spawnAng);
+	Client_SetPos(client, worlds[0]->info->spawnVec, worlds[0]->info->spawnAng);
 	ReadString(++data, &client->playerData->name); data += 63;
 	ReadString(++data, &client->playerData->key); data += 63;
 	bool cpeEnabled = *++data == 0x42;
@@ -208,7 +213,7 @@ bool Handler_SetBlock(CLIENT* client, char* data) {
 	ushort y = ntohs(*(ushort*)data); data += 2;
 	ushort z = ntohs(*(ushort*)data); data += 2;
 	uchar mode = *(uchar*)data; ++data;
-	int block = (int)*(uchar*)data; ++data;
+	BlockID block = *(BlockID*)data;
 
 	switch(mode) {
 		case MODE_PLACE:
@@ -216,12 +221,18 @@ bool Handler_SetBlock(CLIENT* client, char* data) {
 				Client_Kick(client, "Invalid block ID");
 				return false;
 			}
-			if(Event_OnBlockPalce(client, x, y, z, block))
+			if(Event_OnBlockPlace(client, x, y, z, block)) {
 				World_SetBlock(world, x, y, z, block);
+				Client_UpdateBlock(client, world, x, y, z);
+			} else
+				Packet_WriteSetBlock(client, x, y, z, World_GetBlock(world, x, y, z));
 			break;
 		case MODE_DESTROY:
-			if(Event_OnBlockPalce(client, x, y, z, 0))
+			if(Event_OnBlockPlace(client, x, y, z, 0)) {
 				World_SetBlock(world, x, y, z, 0);
+				Client_UpdateBlock(client, world, x, y, z);
+			} else
+				Packet_WriteSetBlock(client, x, y, z, World_GetBlock(world, x, y, z));
 			break;
 	}
 

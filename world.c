@@ -3,46 +3,107 @@
 #include <zlib.h>
 #include "world.h"
 
-WORLD* World_Create(char* name, ushort dx, ushort dy, ushort dz) {
+WORLD* World_Create(char* name) {
 	WORLD* tmp = calloc(1, sizeof(struct world));
 
 	tmp->name = name;
-	tmp->size = dx * dy * dz + 4;
-	tmp->dimensions[0] = dx;
-	tmp->dimensions[1] = dy;
-	tmp->dimensions[2] = dz;
-
-	BlockID* data = calloc(tmp->size, sizeof(BlockID));
-	*(uint*)data = htonl(tmp->size - 4);
-	tmp->data = data;
-
+	tmp->info = calloc(1, sizeof(struct worldInfo));
+	tmp->info->dim = calloc(1, sizeof(struct worldDims));
+	tmp->info->spawnVec = calloc(1, sizeof(struct vector));
+	tmp->info->spawnAng = calloc(1, sizeof(struct angle));
 	return tmp;
+}
+
+void World_SetDimensions(WORLD* world, ushort width, ushort height, ushort length) {
+	WORLDDIMS* wd = world->info->dim;
+	wd->width = width;
+	wd->height = height;
+	wd->length = length;
+}
+
+void World_AllocBlockArray(WORLD* world) {
+	if(world->data)
+		free(world->data);
+
+	WORLDINFO* wi = world->info;
+	ushort dx = wi->dim->width,
+	dy = wi->dim->height,
+	dz = wi->dim->length;
+
+	world->size = 4 + dx * dy * dz;
+	BlockID* data = calloc(world->size, sizeof(BlockID));
+	*(uint*)data = htonl(world->size - 4);
+	world->data = data;
 }
 
 void World_Destroy(WORLD* world) {
 	if(world->data)
 		free(world->data);
+	if(world->info)
+		free(world->info);
 	free(world);
 }
 
 void World_GenerateFlat(WORLD* world) {
-	ushort dx = world->dimensions[0],
-	dy = world->dimensions[1],
-	dz = world->dimensions[2];
+	WORLDINFO* wi = world->info;
+	ushort dx = wi->dim->width,
+	dy = wi->dim->height,
+	dz = wi->dim->length;
 
 	int offset = dx * dz * (dy / 2 - 1);
 	memset(world->data + 4, 3, offset);
 	memset(world->data + 4 + offset, 2, dx * dz);
-	world->spawnVec.x = dx / 2;
-	world->spawnVec.y = dy / 2;
-	world->spawnVec.z = dz / 2;
+	wi->spawnVec->x = dx / 2;
+	wi->spawnVec->y = dy / 2;
+	wi->spawnVec->z = dz / 2;
 }
 
-int World_WriteInfo(WORLD* world, FILE* fp) {
+void _WriteData(FILE* fp, uchar dataType, void* ptr, int size) {
+	if(!fwrite(&dataType, 1, 1, fp))
+		return;
+	if(ptr && !fwrite(ptr, size, 1, fp))
+		return;
+}
+
+bool World_WriteInfo(WORLD* world, FILE* fp) {
+	int magic = WORLD_MAGIC;
+	if(fwrite((char*)&magic, 4, 1, fp) != 1)
+		return false;
+	_WriteData(fp, DT_DIM, world->info->dim, sizeof(struct worldDims));
+	_WriteData(fp, DT_SV, world->info->spawnVec, sizeof(struct vector));
+	_WriteData(fp, DT_SA, world->info->spawnAng, sizeof(struct angle));
+	_WriteData(fp, DT_END, NULL, 0);
 	return true;
 }
 
-int World_ReadInfo(WORLD* world, FILE* fp) {
+bool World_ReadInfo(WORLD* world, FILE* fp) {
+	uchar id = 0;
+	uint magic = 0;
+	fread(&magic, 4, 1, fp);
+	if(WORLD_MAGIC != magic) {
+		Error_Set(ET_SERVER, EC_MAGIC);
+		return false;
+	}
+
+	while(fread(&id, 1, 1, fp) == 1 && id != DT_END) {
+		switch (id) {
+			case DT_DIM:
+				if(fread(world->info->dim, sizeof(struct worldDims), 1, fp) != 1)
+					return false;
+				break;
+			case DT_SV:
+				if(fread(world->info->spawnVec, sizeof(struct vector), 1, fp) != 1)
+					return false;
+				break;
+			case DT_SA:
+				if(fread(world->info->spawnAng, sizeof(struct angle), 1, fp) != 1)
+					return false;
+				break;
+			default:
+				return false;
+		}
+	}
+
 	return true;
 }
 
@@ -55,8 +116,10 @@ int World_Save(WORLD* world) {
 		return false;
 	}
 
-	if(!World_WriteInfo(world, fp))
+	if(!World_WriteInfo(world, fp)) {
+		fclose(fp);
 		return false;
+	}
 
 	z_stream stream = {0};
 	uchar out[1024];
@@ -81,8 +144,8 @@ int World_Save(WORLD* world) {
 		uint nb = 1024 - stream.avail_out;
 
 		if(fwrite(out, 1, 1024 - stream.avail_out, fp) != nb || ferror(fp)){
-
 			deflateEnd(&stream);
+			Error_Set(ET_WIN, 0);
 			return false;
 		}
 	} while(stream.avail_out == 0);
@@ -101,8 +164,12 @@ int World_Load(WORLD* world) {
 		return false;
 	}
 
-	if(!World_ReadInfo(world, fp))
+	if(!World_ReadInfo(world, fp)) {
+		fclose(fp);
 		return false;
+	} else {
+		World_AllocBlockArray(world);
+	}
 
 	z_stream stream = {0};
 	uchar in[1024];
@@ -145,7 +212,9 @@ int World_Load(WORLD* world) {
 }
 
 uint World_GetOffset(WORLD* world, ushort x, ushort y, ushort z) {
-	int dx = world->dimensions[0], dy = world->dimensions[1], dz = world->dimensions[2];
+	WORLDDIMS* wd = world->info->dim;
+	ushort dx = wd->width, dy = wd->height, dz = wd->length;
+
 	if(x > dx || y > dy || z > dz)
 		return 0;
 

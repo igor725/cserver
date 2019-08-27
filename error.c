@@ -4,6 +4,7 @@
 
 const char* const Error_Strings[] = {
 	"All ok",
+	"Invalid magic"
 };
 
 char Error_WinBuf[512] = {0};
@@ -30,7 +31,7 @@ const char* Error_GetString() {
 	}
 }
 
-void Error_SetCode(char* efile, int eline, char* efunc, int etype, int ecode) {
+void Error_SetCode(const char* efile, int eline, const char* efunc, int etype, int ecode) {
 	Error_File = efile;
 	Error_Line = eline;
 	Error_Func = efunc;
@@ -38,14 +39,14 @@ void Error_SetCode(char* efile, int eline, char* efunc, int etype, int ecode) {
 	Error_Code = ecode;
 }
 
-char* Error_GetFunc() {
+const char* Error_GetFunc() {
 	if(Error_Func)
 		return Error_Func;
 	else
 		return "[unknown function]";
 }
 
-char* Error_GetFile() {
+const char* Error_GetFile() {
 	if(Error_File)
 		return Error_File;
 	else

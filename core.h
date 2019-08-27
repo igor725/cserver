@@ -43,12 +43,6 @@ typedef struct vector {
 	float z;
 } VECTOR;
 
-typedef struct svector {
-	short x;
-	short y;
-	short z;
-} SVECTOR;
-
 typedef struct angle {
 	float yaw;
 	float pitch;

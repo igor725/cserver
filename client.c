@@ -9,6 +9,100 @@
 #include "cpe.h"
 #include "event.h"
 
+void Client_StopListen() {
+	if(listenThread)
+		CloseHandle(listenThread);
+}
+
+int Client_FindFreeID() {
+	for(int i = 0; i < 127; i++) {
+		if(!clients[i])
+			return i;
+	}
+	return -1;
+}
+
+int Client_ThreadProc(void* lpParam) {
+	CLIENT* client = (CLIENT*)lpParam;
+
+	while(1) {
+		if(client->status == CLIENT_WAITCLOSE) {
+			int len = recv(client->sock, client->rdbuf, 131, 0);
+			if(len <= 0) {
+				client->status = CLIENT_AFTERCLOSE;
+				closesocket(client->sock);
+				break;
+			}
+			continue;
+		}
+		ushort wait = 1;
+
+		if(client->bufpos > 0) {
+			short packetSize = Packet_GetSize(*client->rdbuf, client);
+
+			if(packetSize < 1) {
+				Client_Kick(client, "Invalid packet ID");
+				continue;
+			}
+			wait = packetSize - client->bufpos;
+		}
+
+		if(wait == 0) {
+			Client_HandlePacket(client);
+			client->bufpos = 0;
+			continue;
+		} else if(wait > 0) {
+			int len = recv(client->sock, client->rdbuf + client->bufpos, wait, 0);
+
+			if(len > 0) {
+				client->bufpos += len;
+			} else {
+				client->status = CLIENT_AFTERCLOSE;
+				break;
+			}
+		}
+	}
+
+	return 0;
+}
+
+void AcceptClients() {
+	struct sockaddr_in caddr;
+	int caddrsz = sizeof caddr;
+
+	SOCKET fd = accept(server, (struct sockaddr*)&caddr, &caddrsz);
+	if(fd != INVALID_SOCKET) {
+	 	CLIENT* tmp = calloc(1, sizeof(struct client));
+
+		tmp->sock = fd;
+		tmp->bufpos = 0;
+		tmp->rdbuf = calloc(131, 1);
+		tmp->wrbuf = calloc(2048, 1);
+
+		int id = Client_FindFreeID();
+		if(id >= 0) {
+			tmp->id = id;
+			tmp->status = CLIENT_OK;
+			tmp->thread = CreateThread(
+				NULL,
+				0,
+				(LPTHREAD_START_ROUTINE)&Client_ThreadProc,
+				tmp,
+				0,
+				NULL
+			);
+			clients[id] = tmp;
+		} else {
+			Client_Kick(tmp, "Server is full");
+		}
+	}
+}
+
+int AcceptClients_ThreadProc(void* lpParam) {
+	while(1)AcceptClients();
+	return 0;
+}
+
 void Client_Init() {
 	Broadcast = calloc(1, sizeof(struct client));
 	Broadcast->wrbuf = calloc(2048, 1);
@@ -23,17 +117,15 @@ void Client_Init() {
 	);
 }
 
-void Client_StopListen() {
-	if(listenThread)
-		CloseHandle(listenThread);
-}
+void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort z) {
+	BlockID block = World_GetBlock(world, x, y, z);
 
-int Client_FindFreeID() {
-	for(int i = 0; i < 127; i++) {
-		if(!clients[i])
-			return i;
+	for(int i = 0; i < 128; i++) {
+		CLIENT* other = clients[i];
+		if(!other || other == client) continue;
+		if(!other->playerData || other->playerData->currentWorld != world) continue;
+		Packet_WriteSetBlock(other, x, y, z, block);
 	}
-	return -1;
 }
 
 bool Client_IsSupportExt(CLIENT* client, const char* extName) {
@@ -217,50 +309,6 @@ void Client_Kick(CLIENT* client, const char* reason) {
 	Client_Disconnect(client);
 }
 
-int Client_ThreadProc(void* lpParam) {
-	CLIENT* client = (CLIENT*)lpParam;
-
-	while(1) {
-		if(client->status == CLIENT_WAITCLOSE) {
-			int len = recv(client->sock, client->rdbuf, 131, 0);
-			if(len <= 0) {
-				client->status = CLIENT_AFTERCLOSE;
-				closesocket(client->sock);
-				break;
-			}
-			continue;
-		}
-		ushort wait = 1;
-
-		if(client->bufpos > 0) {
-			short packetSize = Packet_GetSize(*client->rdbuf, client);
-
-			if(packetSize < 1) {
-				Client_Kick(client, "Invalid packet ID");
-				continue;
-			}
-			wait = packetSize - client->bufpos;
-		}
-
-		if(wait == 0) {
-			Client_HandlePacket(client);
-			client->bufpos = 0;
-			continue;
-		} else if(wait > 0) {
-			int len = recv(client->sock, client->rdbuf + client->bufpos, wait, 0);
-
-			if(len > 0) {
-				client->bufpos += len;
-			} else {
-				client->status = CLIENT_AFTERCLOSE;
-				break;
-			}
-		}
-	}
-
-	return 0;
-}
-
 void Client_UpdatePositions(CLIENT* client) {
 	if(!client->playerData->positionUpdated)
 		return;
@@ -294,43 +342,6 @@ void Client_Tick(CLIENT* client) {
 			Client_UpdatePositions(client);
 			break;
 	}
-}
-
-void AcceptClients() {
-	struct sockaddr_in caddr;
-	int caddrsz = sizeof caddr;
-
-	SOCKET fd = accept(server, (struct sockaddr*)&caddr, &caddrsz);
-	if(fd != INVALID_SOCKET) {
-	 	CLIENT* tmp = calloc(1, sizeof(struct client));
-
-		tmp->sock = fd;
-		tmp->bufpos = 0;
-		tmp->rdbuf = calloc(131, 1);
-		tmp->wrbuf = calloc(2048, 1);
-
-		int id = Client_FindFreeID();
-		if(id >= 0) {
-			tmp->id = id;
-			tmp->status = CLIENT_OK;
-			tmp->thread = CreateThread(
-				NULL,
-				0,
-				(LPTHREAD_START_ROUTINE)&Client_ThreadProc,
-				tmp,
-				0,
-				NULL
-			);
-			clients[id] = tmp;
-		} else {
-			Client_Kick(tmp, "Server is full");
-		}
-	}
-}
-
-int AcceptClients_ThreadProc(void* lpParam) {
-	while(1)AcceptClients();
-	return 0;
 }
 
 void Client_HandlePacket(CLIENT* client) {

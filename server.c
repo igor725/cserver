@@ -43,9 +43,11 @@ bool Server_InitialWork() {
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
 
-	worlds[0] = World_Create("TestWorld", 128, 128, 128);
+	worlds[0] = World_Create("TestWorld");
 	if(!World_Load(worlds[0])){
 		Log_FormattedError();
+		World_SetDimensions(worlds[0], 128, 128, 128);
+		World_AllocBlockArray(worlds[0]);
 		World_GenerateFlat(worlds[0]);
 	}
 
@@ -75,7 +77,8 @@ void Server_Stop() {
 			Client_Kick(client, "Server stopped");
 
 		if(world) {
-			// World_Save(world);
+			if(!World_Save(world))
+				Log_FormattedError();
 			World_Destroy(world);
 		}
 	}
