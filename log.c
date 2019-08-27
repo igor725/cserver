@@ -25,9 +25,9 @@ void Log_Print(int level, const char* str, va_list args) {
 	GetSystemTime(&time);
 
 	if(args)
-		vsprintf(buf, str, args);
+		vsprintf_s(buf, 8192, str, args);
 	else
-		strcpy(buf, str);
+		strcpy_s(buf, 8192, str);
 
 	printf("%02d:%02d:%02d.%03d [%s] %s\n",
 		time.wHour,

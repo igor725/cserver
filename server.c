@@ -4,6 +4,7 @@
 #include "config.h"
 #include "console.h"
 #include "command.h"
+#include "ws2tcpip.h"
 
 bool Server_Bind(char* ip, short port) {
 	WSADATA ws;
@@ -20,7 +21,10 @@ bool Server_Bind(char* ip, short port) {
 	struct sockaddr_in ssa;
 	ssa.sin_family = AF_INET;
 	ssa.sin_port = htons(port);
-	ssa.sin_addr.s_addr = inet_addr(ip);
+	if(inet_pton(AF_INET, ip, &ssa.sin_addr.s_addr) <= 0) {
+		Error_Set(ET_WIN, WSAGetLastError());
+		return false;
+	}
 
 	if(bind(server, (const struct sockaddr*)&ssa, sizeof ssa) == -1) {
 		Error_Set(ET_WIN, WSAGetLastError());

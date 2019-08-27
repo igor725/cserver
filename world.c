@@ -32,7 +32,6 @@ void World_AllocBlockArray(WORLD* world) {
 
 	world->size = 4 + dx * dy * dz;
 	BlockID* data = calloc(world->size, sizeof(BlockID));
-	*(uint*)data = htonl(world->size - 4);
 	world->data = data;
 }
 
@@ -53,9 +52,9 @@ void World_GenerateFlat(WORLD* world) {
 	int offset = dx * dz * (dy / 2 - 1);
 	memset(world->data + 4, 3, offset);
 	memset(world->data + 4 + offset, 2, dx * dz);
-	wi->spawnVec->x = dx / 2;
-	wi->spawnVec->y = dy / 2;
-	wi->spawnVec->z = dz / 2;
+	wi->spawnVec->x = (float)dx / 2;
+	wi->spawnVec->y = (float)dy / 2;
+	wi->spawnVec->z = (float)dz / 2;
 }
 
 void _WriteData(FILE* fp, uchar dataType, void* ptr, int size) {
@@ -183,7 +182,7 @@ int World_Load(WORLD* world) {
 	stream.next_out = (uchar*)world->data;
 
 	do {
-		stream.avail_in = fread(in, 1, 1024, fp);
+		stream.avail_in = (uint)fread(in, 1, 1024, fp);
 		if(ferror(fp)) {
 			Error_Set(ET_WIN, GetLastError());
 			inflateEnd(&stream);

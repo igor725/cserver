@@ -54,6 +54,7 @@ void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort
 bool Client_IsSupportExt(CLIENT* client, const char* packetName);
 void Client_SetPos(CLIENT* client, VECTOR* vec, ANGLE* ang);
 void Client_Kick(CLIENT* client, const char* reason);
+CLIENT* Client_FindByName(const char* name);
 int  Client_Send(CLIENT* client, int len);
 void Client_HandlePacket(CLIENT* client);
 void Client_Disconnect(CLIENT* client);

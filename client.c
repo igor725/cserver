@@ -15,11 +15,22 @@ void Client_StopListen() {
 }
 
 int Client_FindFreeID() {
-	for(int i = 0; i < 127; i++) {
+	for(int i = 0; i < 128; i++) {
 		if(!clients[i])
 			return i;
 	}
 	return -1;
+}
+
+CLIENT* Client_FindByName(const char* name) {
+	for(int i = 0; i < 128; i++) {
+		CLIENT* client = clients[i];
+		if(!client) continue;
+		if(_stricmp(client->playerData->name, name) == 0) {
+			return client;
+		}
+	}
+	return NULL;
 }
 
 int Client_ThreadProc(void* lpParam) {
@@ -134,7 +145,7 @@ bool Client_IsSupportExt(CLIENT* client, const char* extName) {
 
 	EXT* ptr = client->cpeData->firstExtension;
 	while(ptr) {
-		if(stricmp(ptr->name, extName) == 0) {
+		if(_stricmp(ptr->name, extName) == 0) {
 			return true;
 		}
 		ptr = ptr->next;
@@ -223,6 +234,7 @@ int Client_MapThreadProc(void* lpParam) {
 
 	stream.avail_in = world->size;
 	stream.next_in = (uchar*)world->data;
+	*(uint*)world->data = htonl(world->size - 4);
 
 	do {
 		stream.next_out = out;

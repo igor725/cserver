@@ -37,7 +37,7 @@ IF "%ZLIB_ARCH%"=="x64" call vcvars64
 IF "%ZLIB_ARCH%"=="x86" call vcvars32
 copy /Y %ZLIB_COMPILEDIR%\zlibwapi.dll .
 IF NOT "%ERRORLEVEL%"=="0" goto copyerror
-cl *.c /I%ZLIB_DIR% ws2_32.lib %ZLIB_COMPILEDIR%\zlibwapi.lib /Fe%EXECNAME%
+cl *.c /MP /W2 /Gm- /I%ZLIB_DIR% ws2_32.lib %ZLIB_COMPILEDIR%\zlibwapi.lib /Fe%EXECNAME%
 IF NOT "%ERRORLEVEL%"=="0" goto compileerror
 goto end
 

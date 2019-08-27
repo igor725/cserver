@@ -59,7 +59,7 @@ bool Command_Handle(char* cmd, CLIENT* caller) {
 
 	COMMAND* tmp = firstCommand;
 	while(tmp) {
-		if(stricmp(tmp->name, cmd) == 0) {
+		if(_stricmp(tmp->name, cmd) == 0) {
 			if(tmp->func(args, caller, ret))
 				if(caller)
 					Packet_WriteChat(caller, 0, ret);

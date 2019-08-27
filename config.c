@@ -85,7 +85,7 @@ bool Config_Save(const char* filename) {
 CFGENTRY* Config_GetStruct(char* key) {
 	CFGENTRY* ptr = firstCfgEntry;
 	while(ptr) {
-		if(stricmp(ptr->key, key) == 0) {
+		if(_stricmp(ptr->key, key) == 0) {
 			return ptr;
 		}
 		if(!ptr->next)

@@ -23,7 +23,7 @@ int ReadString(char* data, char** dst) {
 }
 
 void WriteString(char* data, const char* string) {
-	int size = min(strlen(string), 64);
+	uchar size = min((uchar)strlen(string), 64);
 	memset(data + size, 0, 64);
 	memcpy(data, string, size);
 }
@@ -32,9 +32,9 @@ void ReadClPos(CLIENT* client, char* data) {
 	VECTOR* vec = client->playerData->position;
 	ANGLE* ang = client->playerData->angle;
 
-	vec->x = (float)ntohs((*(short*)data)) / 32;++data;
-	vec->y = (float)ntohs((*(short*)++data)) / 32;++data;
-	vec->z = (float)ntohs((*(short*)++data)) / 32;++data;
+	vec->x = (float)ntohs(*(short*)data) / 32;++data;
+	vec->y = (float)ntohs(*(short*)++data) / 32;++data;
+	vec->z = (float)ntohs(*(short*)++data) / 32;++data;
 	ang->yaw = (((float)(uchar)*++data) / 256) * 360;
 	ang->pitch = (((float)(uchar)*++data) / 256) * 360;
 }
@@ -43,11 +43,11 @@ char* WriteClPos(char* data, CLIENT* client, bool stand) {
 	VECTOR* vec = client->playerData->position;
 	ANGLE* ang = client->playerData->angle;
 
-	*(ushort*)data = htons(vec->x * 32);++data;
-	*(ushort*)++data = htons(vec->y * 32 + (stand ? 51 : 0));++data;
-	*(ushort*)++data = htons(vec->z * 32);++data;
-	*(uchar*)++data = ((ang->yaw / 360) * 256);
-	*(uchar*)++data = ((ang->pitch / 360) * 256);
+	*(ushort*)data = htons((ushort)(vec->x * 32));++data;
+	*(ushort*)++data = htons((ushort)(vec->y * 32 + (stand ? 51 : 0)));++data;
+	*(ushort*)++data = htons((ushort)(vec->z * 32));++data;
+	*(uchar*)++data = (uchar)((ang->yaw / 360) * 256);
+	*(uchar*)++data = (uchar)((ang->pitch / 360) * 256);
 
 	return data;
 }
@@ -181,6 +181,15 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	Client_SetPos(client, worlds[0]->info->spawnVec, worlds[0]->info->spawnAng);
 	ReadString(++data, &client->playerData->name); data += 63;
 	ReadString(++data, &client->playerData->key); data += 63;
+
+	for(int i = 0; i < 128; i++) {
+		CLIENT* other = clients[i];
+		if(!other || other == client) continue;
+		if(_stricmp(client->playerData->name, other->playerData->name) == 0) {
+			Client_Kick(client, "This name already in use");
+		}
+	}
+
 	bool cpeEnabled = *++data == 0x42;
 
 	if(Client_CheckAuth(client))
