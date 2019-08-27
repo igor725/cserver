@@ -60,7 +60,7 @@ void Log_Info(const char* str, ...) {
 }
 
 void Log_Chat(const char* str, ...) {
-	Log_Print(2, str, NULL);
+	Log_Print(2, str, (va_list)NULL);
 }
 
 void Log_Warn(const char* str, ...) {

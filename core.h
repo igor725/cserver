@@ -6,12 +6,13 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#include <stdio.h>
 #define ZLIB_WINAPI
 #else
+#include "errno.h"
 #define GetLastError() (errno)
 #endif
 
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
