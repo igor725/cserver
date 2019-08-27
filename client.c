@@ -30,18 +30,18 @@ void Client_StopListen() {
 
 int Client_FindFreeID() {
 	for(int i = 0; i < 127; i++) {
-		if(clients[i] == NULL)
+		if(!clients[i])
 			return i;
 	}
 	return -1;
 }
 
 bool Client_IsSupportExt(CLIENT* client, const char* extName) {
-	if(client->cpeData == NULL)
+	if(!client->cpeData)
 		return false;
 
 	EXT* ptr = client->cpeData->firstExtension;
-	while(ptr != NULL) {
+	while(ptr) {
 		if(stricmp(ptr->name, extName) == 0) {
 			return true;
 		}
@@ -51,7 +51,7 @@ bool Client_IsSupportExt(CLIENT* client, const char* extName) {
 }
 
 char* Client_GetAppName(CLIENT* client) {
-	if(client->cpeData == NULL)
+	if(!client->cpeData)
 		return "vanilla";
 	return client->cpeData->appName;
 }
@@ -70,17 +70,17 @@ void Client_Destroy(CLIENT* client) {
 	free(client->rdbuf);
 	free(client->wrbuf);
 
-	if(client->thread != NULL)
+	if(client->thread)
 		CloseHandle(client->thread);
 
-	if(client->playerData != NULL) {
+	if(client->playerData) {
 		free(client->playerData->name);
 		free(client->playerData->key);
 		free(client->playerData);
 	}
-	if(client->cpeData != NULL) {
+	if(client->cpeData) {
 		EXT* ptr = client->cpeData->firstExtension;
-		while(ptr != NULL) {
+		while(ptr) {
 			free(ptr->name);
 			free(ptr);
 			ptr = ptr->next;
@@ -164,7 +164,7 @@ bool Client_Spawn(CLIENT* client) {
 
 	for(int i = 0; i < 128; i++) {
 		CLIENT* other = clients[i];
-		if(other == NULL) continue;
+		if(!other) continue;
 
 		Packet_WriteSpawn(other, client);
 		if(client != other)
@@ -187,9 +187,9 @@ bool Client_Despawn(CLIENT* client) {
 }
 
 bool Client_SendMap(CLIENT* client) {
-	if(client->playerData->currentWorld == NULL)
+	if(!client->playerData->currentWorld)
 		return false;
-	if(client->playerData->mapThread != NULL)
+	if(client->playerData->mapThread)
 		return false;
 
 	Packet_WriteLvlInit(client);
@@ -281,7 +281,7 @@ void Client_Tick(CLIENT* client) {
 		return;
 	}
 
-	if(client->playerData == NULL) return;
+	if(!client->playerData) return;
 	switch (client->playerData->state) {
 		case STATE_WLOADDONE:
 			CloseHandle(client->playerData->mapThread);
@@ -334,22 +334,20 @@ int AcceptClients_ThreadProc(void* lpParam) {
 }
 
 void Client_HandlePacket(CLIENT* client) {
+	char* data = client->rdbuf; ++data;
 	uchar id = client->rdbuf[0];
 	PACKET* packet = packets[id];
-	if(packet == NULL) return;
-
 	bool ret = false;
-	char* data = client->rdbuf; ++data;
 
-	if(packet->haveCPEImp == true)
-		if(packet->cpeHandler == NULL)
+	if(packet->haveCPEImp && Client_IsSupportExt(client, packet->extName))
+		if(!packet->cpeHandler)
 			ret = packet->handler(client, data);
 		else
 			ret = packet->cpeHandler(client, data);
 	else
-		if(packet->handler != NULL)
+		if(packet->handler)
 			ret = packet->handler(client, data);
 
-	if(ret == false)
+	if(!ret)
 		Client_Kick(client, "Packet reading error");
 }

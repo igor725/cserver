@@ -84,7 +84,7 @@ void Packet_RegisterCPE(int id, const char* name, int version, ushort size) {
 
 int Packet_GetSize(int id, CLIENT* client) {
 	PACKET* packet = packets[id];
-	if(packet == NULL)
+	if(!packet)
 		return -1;
 
 	if(packet->haveCPEImp)
@@ -202,7 +202,7 @@ bool Handler_SetBlock(CLIENT* client, char* data) {
 		return false;
 
 	WORLD* world = client->playerData->currentWorld;
-	if(world == NULL) return false;
+	if(!world) return false;
 
 	ushort x = ntohs(*(ushort*)data); data += 2;
 	ushort y = ntohs(*(ushort*)data); data += 2;

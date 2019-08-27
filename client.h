@@ -4,14 +4,18 @@
 #include "world.h"
 #include "winsock2.h"
 
-#define CLIENT_OK         0
-#define CLIENT_WAITCLOSE  1
-#define CLIENT_AFTERCLOSE 2
+enum SockStatuses {
+	CLIENT_OK,
+	CLIENT_WAITCLOSE,
+	CLIENT_AFTERCLOSE
+};
 
-#define STATE_MOTD         0
-#define STATE_WLOADDONE    1
-#define STATE_WLOADERR     2
-#define STATE_INGAME       3
+enum States {
+	STATE_MOTD,
+	STATE_WLOADDONE,
+	STATE_WLOADERR,
+	STATE_INGAME
+};
 
 typedef struct cpeData {
 	bool cpeEnabled;

@@ -50,7 +50,7 @@ int World_Save(WORLD* world) {
 	char name[256];
 	sprintf(name, "%s.cws", world->name);
 	FILE* fp;
-	if((fp = fopen(name, "wb")) == NULL) {
+	if(!(fp = fopen(name, "wb"))) {
 		Error_SetCode(ET_WIN, GetLastError(), "fopen");
 		return false;
 	}
@@ -96,7 +96,7 @@ int World_Load(WORLD* world) {
 	char name[256];
 	sprintf(name, "%s.cws", world->name);
 	FILE* fp;
-	if((fp = fopen(name, "rb")) == NULL) {
+	if(!(fp = fopen(name, "rb"))) {
 		Error_SetCode(ET_WIN, GetLastError(), "fopen");
 		return false;
 	}

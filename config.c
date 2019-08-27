@@ -84,17 +84,17 @@ bool Config_Save(const char* filename) {
 
 CFGENTRY* Config_GetStruct(char* key) {
 	CFGENTRY* ptr = firstCfgEntry;
-	while(ptr != NULL) {
+	while(ptr) {
 		if(stricmp(ptr->key, key) == 0) {
 			return ptr;
 		}
-		if(ptr->next == NULL) {
+		if(!ptr->next)
 			break;
-		} else
+		else
 			ptr = ptr->next;
 	}
 
-	if(ptr == NULL) {
+	if(!ptr) {
 		ptr = (CFGENTRY*)calloc(1, sizeof(struct cfgEntry));
 		firstCfgEntry = ptr;
 		ptr->key = key;

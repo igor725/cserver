@@ -80,7 +80,7 @@ void Server_Stop() {
 }
 
 int main(int argc, char** argv) {
-	if((serverActive = Server_InitialWork()) == false)
+	if(!(serverActive = Server_InitialWork()))
 		Log_FormattedError();
 
 	while(serverActive) {
