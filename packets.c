@@ -1,4 +1,5 @@
 #include "core.h"
+#include "log.h"
 #include "block.h"
 #include "world.h"
 #include "client.h"

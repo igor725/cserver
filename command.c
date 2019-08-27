@@ -1,4 +1,5 @@
 #include "core.h"
+#include "log.h"
 #include "command.h"
 #include "packets.h"
 #include "server.h"

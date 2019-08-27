@@ -1,7 +1,5 @@
 #ifndef PACKETS_H
 #define PACKETS_H
-#include <stdio.h>
-
 #define MODE_DESTROY 0x00
 #define MODE_PLACE   0x01
 

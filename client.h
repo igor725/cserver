@@ -2,7 +2,6 @@
 #define CLIENT_H
 #include "core.h"
 #include "world.h"
-#include "winsock2.h"
 
 enum SockStatuses {
 	CLIENT_OK,
@@ -59,13 +58,14 @@ int  Client_Send(CLIENT* client, int len);
 void Client_HandlePacket(CLIENT* client);
 void Client_Disconnect(CLIENT* client);
 bool Client_CheckAuth(CLIENT* client);
+int Client_ThreadProc(void* lpParam);
 bool Client_SendMap(CLIENT* client);
 void Client_Destroy(CLIENT* client);
 bool Client_Spawn(CLIENT* client);
 void Client_Tick(CLIENT* client);
+ClientID Client_FindFreeID();
 void Client_Init();
 
 CLIENT* clients[256];
-void* listenThread;
 CLIENT* Broadcast;
 #endif

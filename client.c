@@ -1,21 +1,13 @@
-#include "winsock2.h"
 #include "core.h"
-#include "string.h"
 #include "zlib.h"
 #include "world.h"
 #include "client.h"
 #include "packets.h"
-#include "server.h"
 #include "cpe.h"
 #include "event.h"
 
-void Client_StopListen() {
-	if(listenThread)
-		CloseHandle(listenThread);
-}
-
-int Client_FindFreeID() {
-	for(int i = 0; i < 128; i++) {
+ClientID Client_FindFreeID() {
+	for(ClientID i = 0; i < 128; i++) {
 		if(!clients[i])
 			return i;
 	}
@@ -77,55 +69,9 @@ int Client_ThreadProc(void* lpParam) {
 	return 0;
 }
 
-void AcceptClients() {
-	struct sockaddr_in caddr;
-	int caddrsz = sizeof caddr;
-
-	SOCKET fd = accept(server, (struct sockaddr*)&caddr, &caddrsz);
-	if(fd != INVALID_SOCKET) {
-	 	CLIENT* tmp = calloc(1, sizeof(struct client));
-
-		tmp->sock = fd;
-		tmp->bufpos = 0;
-		tmp->rdbuf = calloc(131, 1);
-		tmp->wrbuf = calloc(2048, 1);
-
-		int id = Client_FindFreeID();
-		if(id >= 0) {
-			tmp->id = id;
-			tmp->status = CLIENT_OK;
-			tmp->thread = CreateThread(
-				NULL,
-				0,
-				(LPTHREAD_START_ROUTINE)&Client_ThreadProc,
-				tmp,
-				0,
-				NULL
-			);
-			clients[id] = tmp;
-		} else {
-			Client_Kick(tmp, "Server is full");
-		}
-	}
-}
-
-int AcceptClients_ThreadProc(void* lpParam) {
-	while(1)AcceptClients();
-	return 0;
-}
-
 void Client_Init() {
 	Broadcast = calloc(1, sizeof(struct client));
 	Broadcast->wrbuf = calloc(2048, 1);
-
-	listenThread = CreateThread(
-		NULL,
-		0,
-		(LPTHREAD_START_ROUTINE)&AcceptClients_ThreadProc,
-		NULL,
-		0,
-		NULL
-	);
 }
 
 void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort z) {

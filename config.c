@@ -1,9 +1,6 @@
 #include "core.h"
-#include "windows.h"
-#include "stdio.h"
-#include "string.h"
+#include "error.h"
 #include "config.h"
-#include "stdlib.h"
 
 bool Config_Load(const char* filename) {
 	FILE* fp = fopen(filename, "r");

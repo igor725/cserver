@@ -1,6 +1,5 @@
-#include "windows.h"
 #include "core.h"
-#include "stdio.h"
+#include "log.h"
 #include "error.h"
 
 int Log_Level = 3;

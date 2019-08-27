@@ -1,10 +1,49 @@
+#include "core.h"
+#include "log.h"
+#include "error.h"
 #include "server.h"
 #include "client.h"
 #include "packets.h"
 #include "config.h"
 #include "console.h"
 #include "command.h"
-#include "ws2tcpip.h"
+
+void Server_Accept() {
+	struct sockaddr_in caddr;
+	int caddrsz = sizeof caddr;
+
+	SOCKET fd = accept(server, (struct sockaddr*)&caddr, &caddrsz);
+	if(fd != INVALID_SOCKET) {
+	 	CLIENT* tmp = calloc(1, sizeof(struct client));
+
+		tmp->sock = fd;
+		tmp->bufpos = 0;
+		tmp->rdbuf = calloc(131, 1);
+		tmp->wrbuf = calloc(2048, 1);
+
+		int id = Client_FindFreeID();
+		if(id >= 0) {
+			tmp->id = id;
+			tmp->status = CLIENT_OK;
+			tmp->thread = CreateThread(
+				NULL,
+				0,
+				(LPTHREAD_START_ROUTINE)&Client_ThreadProc,
+				tmp,
+				0,
+				NULL
+			);
+			clients[id] = tmp;
+		} else {
+			Client_Kick(tmp, "Server is full");
+		}
+	}
+}
+
+int Server_AcceptThread(void* lpParam) {
+	while(1)Server_Accept();
+	return 0;
+}
 
 bool Server_Bind(char* ip, short port) {
 	WSADATA ws;
@@ -36,6 +75,14 @@ bool Server_Bind(char* ip, short port) {
 		return false;
 	}
 
+	acceptThread = CreateThread(
+		NULL,
+		0,
+		(LPTHREAD_START_ROUTINE)&Server_AcceptThread,
+		NULL,
+		0,
+		NULL
+	);
 
 	Client_Init();
 	Log_Info("%s %s started on %s:%d", SOFTWARE_NAME, SOFTWARE_VERSION, ip, port);
@@ -87,7 +134,9 @@ void Server_Stop() {
 		}
 	}
 
-	Console_StopListen();
+	if(acceptThread)
+		CloseHandle(acceptThread);
+	Console_Close();
 }
 
 int main(int argc, char** argv) {

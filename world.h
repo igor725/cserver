@@ -1,6 +1,5 @@
 #ifndef WORLD_H
 #define WORLD_H
-#include "core.h"
 
 #define WORLD_MAGIC 1413563479
 

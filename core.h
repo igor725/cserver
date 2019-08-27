@@ -1,11 +1,19 @@
 #ifndef CORE_H
 #define CORE_H
+
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define _CRT_SECURE_NO_WARNINGS
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <stdio.h>
 #define ZLIB_WINAPI
-#include "stdlib.h"
-#include "error.h"
-#include "log.h"
+#else
+#define GetLastError() (errno)
+#endif
+
+#include <string.h>
+#include <stdlib.h>
 
 typedef unsigned short ushort;
 typedef unsigned char  uchar;

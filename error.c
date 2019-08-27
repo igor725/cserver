@@ -1,5 +1,5 @@
 #include "core.h"
-#include "zlib.h"
+#include <zlib.h>
 #include "error.h"
 
 const char* const Error_Strings[] = {
@@ -20,12 +20,16 @@ const char* Error_GetString() {
 		case ET_ZLIB:
 			return zError(Error_Code);
 		case ET_WIN:
+#ifdef _WIN32
 			len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, Error_Code, 0, Error_WinBuf, 512, NULL);
 			if(len > 0) {
 				Error_WinBuf[len - 1] = 0;
 				Error_WinBuf[len - 2] = 0;
 			}
 			return Error_WinBuf;
+#else
+			return strerror(Error_code);
+#endif
 		default:
 			return Error_Strings[0];
 	}

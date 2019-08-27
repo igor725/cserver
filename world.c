@@ -1,5 +1,5 @@
 #include "core.h"
-#include <stdio.h>
+#include "error.h"
 #include <zlib.h>
 #include "world.h"
 
@@ -49,9 +49,14 @@ void World_GenerateFlat(WORLD* world) {
 	dy = wi->dim->height,
 	dz = wi->dim->length;
 
-	int offset = dx * dz * (dy / 2 - 1);
-	memset(world->data + 4, 3, offset);
-	memset(world->data + 4 + offset, 2, dx * dz);
+	BlockID* data = world->data + 4;
+	int dirtEnd = dx * dz * (dy / 2 - 1);
+	for(int i = 0; i < dirtEnd + dx * dz; i++) {
+		if(i < dirtEnd)
+			data[i] = 3;
+		else
+			data[i] = 2;
+	}
 	wi->spawnVec->x = (float)dx / 2;
 	wi->spawnVec->y = (float)dy / 2;
 	wi->spawnVec->z = (float)dz / 2;
