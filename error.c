@@ -30,18 +30,12 @@ const char* Error_GetString() {
 	}
 }
 
-void Error_SetCode(int etype, int ecode, char* efunc) {
+void Error_SetCode(char* efile, int eline, char* efunc, int etype, int ecode) {
+	Error_File = efile;
+	Error_Line = eline;
+	Error_Func = efunc;
 	Error_Type = etype;
 	Error_Code = ecode;
-	Error_Func = efunc;
-}
-
-int Error_GetCode() {
-	return Error_Code;
-}
-
-int Error_GetType() {
-	return Error_Type;
 }
 
 char* Error_GetFunc() {
@@ -51,8 +45,17 @@ char* Error_GetFunc() {
 		return "[unknown function]";
 }
 
+char* Error_GetFile() {
+	if(Error_File)
+		return Error_File;
+	else
+		return "[unknown file]";
+}
+
 void Error_SetSuccess() {
 	Error_Type = ET_NOERR;
+	Error_File = NULL;
 	Error_Func = NULL;
+	Error_Line = -1;
 	Error_Code = 0;
 }

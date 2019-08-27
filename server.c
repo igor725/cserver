@@ -7,11 +7,15 @@
 
 bool Server_Bind(char* ip, short port) {
 	WSADATA ws;
-	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR)
-		Error_SetCode(ET_WIN, WSAGetLastError(), "WSAStartup");
+	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR) {
+		Error_Set(ET_WIN, WSAGetLastError());
+		return false;
+	}
 
-	if(INVALID_SOCKET == (server = socket(AF_INET, SOCK_STREAM, 0)))
-		Error_SetCode(ET_WIN, WSAGetLastError(), "socket");
+	if(INVALID_SOCKET == (server = socket(AF_INET, SOCK_STREAM, 0))) {
+		Error_Set(ET_WIN, WSAGetLastError());
+		return false;
+	}
 
 	struct sockaddr_in ssa;
 	ssa.sin_family = AF_INET;
@@ -19,12 +23,12 @@ bool Server_Bind(char* ip, short port) {
 	ssa.sin_addr.s_addr = inet_addr(ip);
 
 	if(bind(server, (const struct sockaddr*)&ssa, sizeof ssa) == -1) {
-		Error_SetCode(ET_WIN, WSAGetLastError(), "bind");
+		Error_Set(ET_WIN, WSAGetLastError());
 		return false;
 	}
 
 	if(listen(server, SOMAXCONN) == -1) {
-		Error_SetCode(ET_WIN, WSAGetLastError(), "listen");
+		Error_Set(ET_WIN, WSAGetLastError());
 		return false;
 	}
 

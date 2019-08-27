@@ -47,7 +47,7 @@ void Log_Error(const char* str, ...) {
 }
 
 void Log_FormattedError() {
-	Log_Error("%s(...): %s (%d)", Error_GetFunc(), Error_GetString(), Error_GetCode());
+	Log_Error("%s:%d in %s(...): %s (%d)", Error_GetFile(), Error_Line, Error_GetFunc(), Error_GetString(), Error_Code);
 	Error_SetSuccess();
 }
 

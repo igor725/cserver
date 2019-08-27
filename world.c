@@ -51,7 +51,7 @@ int World_Save(WORLD* world) {
 	sprintf(name, "%s.cws", world->name);
 	FILE* fp;
 	if(!(fp = fopen(name, "wb"))) {
-		Error_SetCode(ET_WIN, GetLastError(), "fopen");
+		Error_Set(ET_WIN, GetLastError());
 		return false;
 	}
 
@@ -63,7 +63,7 @@ int World_Save(WORLD* world) {
 	int ret;
 
 	if((ret = deflateInit(&stream, 4)) != Z_OK) {
-		Error_SetCode(ET_ZLIB, ret, "deflateInit");
+		Error_Set(ET_ZLIB, ret);
 		return false;
 	}
 
@@ -75,7 +75,7 @@ int World_Save(WORLD* world) {
 		stream.avail_out = 1024;
 
 		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
-			Error_SetCode(ET_ZLIB, ret, "deflate");
+			Error_Set(ET_ZLIB, ret);
 			return false;
 		}
 		uint nb = 1024 - stream.avail_out;
@@ -97,7 +97,7 @@ int World_Load(WORLD* world) {
 	sprintf(name, "%s.cws", world->name);
 	FILE* fp;
 	if(!(fp = fopen(name, "rb"))) {
-		Error_SetCode(ET_WIN, GetLastError(), "fopen");
+		Error_Set(ET_WIN, GetLastError());
 		return false;
 	}
 
@@ -109,7 +109,7 @@ int World_Load(WORLD* world) {
 	int ret;
 
 	if((ret = inflateInit(&stream)) != Z_OK) {
-		Error_SetCode(ET_ZLIB, ret, "inflateInit");
+		Error_Set(ET_ZLIB, ret);
 		return false;
 	}
 
@@ -118,7 +118,7 @@ int World_Load(WORLD* world) {
 	do {
 		stream.avail_in = fread(in, 1, 1024, fp);
 		if(ferror(fp)) {
-			Error_SetCode(ET_WIN, GetLastError(), "fread");
+			Error_Set(ET_WIN, GetLastError());
 			inflateEnd(&stream);
 			return false;
 		}
@@ -132,7 +132,7 @@ int World_Load(WORLD* world) {
 			stream.avail_out = 1024;
 			ret = inflate(&stream, Z_NO_FLUSH);
 			if(ret == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
-				Error_SetCode(ET_ZLIB, ret, "inflate");
+				Error_Set(ET_ZLIB, ret);
 				inflateEnd(&stream);
 				return false;
 			}

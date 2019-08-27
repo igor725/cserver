@@ -8,7 +8,7 @@
 bool Config_Load(const char* filename) {
 	FILE* fp = fopen(filename, "r");
 	if(!fp) {
-		Error_SetCode(ET_WIN, GetLastError(), "fopen");
+		Error_Set(ET_WIN, GetLastError());
 		return false;
 	}
 
@@ -60,7 +60,7 @@ bool Config_Load(const char* filename) {
 bool Config_Save(const char* filename) {
 	FILE* fp = fopen(filename, "w");
 	if(!fp) {
-		Error_SetCode(ET_WIN, GetLastError(), "fopen");
+		Error_Set(ET_WIN, GetLastError());
 		return false;
 	}
 
