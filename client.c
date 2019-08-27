@@ -6,6 +6,8 @@
 #include "client.h"
 #include "packets.h"
 #include "server.h"
+#include "cpe.h"
+#include "event.h"
 
 void Client_Init() {
 	Broadcast = calloc(1, sizeof(struct client));
@@ -59,8 +61,8 @@ bool Client_CheckAuth(CLIENT* client) { //TODO: ClassiCube auth
 }
 
 void Client_SetPos(CLIENT* client, VECTOR* pos, ANGLE* ang) {
-	memcpy(&client->playerData->position, pos, sizeof(struct vector));
-	memcpy(&client->playerData->angle, ang, sizeof(struct angle));
+	memcpy(client->playerData->position, pos, sizeof(struct vector));
+	memcpy(client->playerData->angle, ang, sizeof(struct angle));
 }
 
 void Client_Destroy(CLIENT* client) {
@@ -142,6 +144,7 @@ int Client_MapThreadProc(void* lpParam) {
 
 		*len = htons(1024 - stream.avail_out);
 		if(!Client_Send(client, 1028)) {
+			client->playerData->state = STATE_WLOADERR;
 			deflateEnd(&stream);
 			return 0;
 		}
@@ -169,6 +172,7 @@ bool Client_Spawn(CLIENT* client) {
 	}
 
 	client->playerData->spawned = true;
+	Event_OnSpawn(client);
 	return true;
 }
 
@@ -178,6 +182,7 @@ bool Client_Despawn(CLIENT* client) {
 
 	Packet_WriteDespawn(Broadcast, client);
 	client->playerData->spawned = false;
+	Event_OnDespawn(client);
 	return true;
 }
 
@@ -188,7 +193,7 @@ bool Client_SendMap(CLIENT* client) {
 		return false;
 
 	Packet_WriteLvlInit(client);
-	client->playerData->state = STATE_WLOAD;
+	client->playerData->state = STATE_MOTD;
 	client->playerData->mapThread = CreateThread(
 		NULL,
 		0,
@@ -202,8 +207,14 @@ bool Client_SendMap(CLIENT* client) {
 }
 
 void Client_Disconnect(CLIENT* client) {
+	Client_Despawn(client);
 	client->status = CLIENT_WAITCLOSE;
 	shutdown(client->sock, SD_SEND);
+}
+
+void Client_Kick(CLIENT* client, const char* reason) {
+	Packet_WriteKick(client, reason);
+	Client_Disconnect(client);
 }
 
 int Client_ThreadProc(void* lpParam) {
@@ -225,7 +236,7 @@ int Client_ThreadProc(void* lpParam) {
 			short packetSize = Packet_GetSize(*client->rdbuf, client);
 
 			if(packetSize < 1) {
-				Packet_WriteKick(client, "Invalid packet ID");
+				Client_Kick(client, "Invalid packet ID");
 				continue;
 			}
 			wait = packetSize - client->bufpos;
@@ -250,8 +261,22 @@ int Client_ThreadProc(void* lpParam) {
 	return 0;
 }
 
+void Client_UpdatePositions(CLIENT* client) {
+	if(!client->playerData->positionUpdated)
+		return;
+	client->playerData->positionUpdated = false;
+
+	for(int i = 0; i < 128; i++) {
+		CLIENT* other = clients[i];
+		if(!other || !other->playerData || other->playerData->state != STATE_INGAME || client == other) continue;
+		if(client->playerData->currentWorld != other->playerData->currentWorld) continue;
+		Packet_WritePosAndOrient(other, client);
+	}
+}
+
 void Client_Tick(CLIENT* client) {
 	if(client->status == CLIENT_AFTERCLOSE) {
+		Client_Disconnect(client);
 		Client_Destroy(client);
 		return;
 	}
@@ -260,9 +285,13 @@ void Client_Tick(CLIENT* client) {
 	switch (client->playerData->state) {
 		case STATE_WLOADDONE:
 			CloseHandle(client->playerData->mapThread);
+			client->playerData->state = STATE_INGAME;
 			break;
 		case STATE_WLOADERR:
-			Packet_WriteKick(client, "Map loading error");
+			Client_Kick(client, "Map loading error");
+			break;
+		case STATE_INGAME:
+			Client_UpdatePositions(client);
 			break;
 	}
 }
@@ -294,7 +323,7 @@ void AcceptClients() {
 			);
 			clients[id] = tmp;
 		} else {
-			Packet_WriteKick(tmp, "Server is full");
+			Client_Kick(tmp, "Server is full");
 		}
 	}
 }
@@ -322,5 +351,5 @@ void Client_HandlePacket(CLIENT* client) {
 			ret = packet->handler(client, data);
 
 	if(ret == false)
-		Packet_WriteKick(client, "Packet reading error");
+		Client_Kick(client, "Packet reading error");
 }

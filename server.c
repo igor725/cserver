@@ -43,7 +43,6 @@ bool Server_InitialWork() {
 	if(!World_Load(worlds[0])){
 		Log_FormattedError();
 		World_GenerateFlat(worlds[0]);
-		return false;
 	}
 
 	Console_StartListen();
@@ -69,10 +68,10 @@ void Server_Stop() {
 		WORLD* world = worlds[i];
 
 		if(client)
-			Packet_WriteKick(client, "Server stopped");
+			Client_Kick(client, "Server stopped");
 
 		if(world) {
-			World_Save(world);
+			// World_Save(world);
 			World_Destroy(world);
 		}
 	}
@@ -88,6 +87,7 @@ int main(int argc, char** argv) {
 		Server_DoStep();
 		Sleep(10);
 	}
+
 	Log_Info("Server stopped");
 	Server_Stop();
 }

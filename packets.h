@@ -26,13 +26,12 @@ void Packet_RegisterCPEDefault();
 
 void Packet_WriteKick(CLIENT* cl, const char* reason);
 void Packet_WriteSpawn(CLIENT* client, CLIENT* other);
+void Packet_WriteDespawn(CLIENT* client, CLIENT* other);
 void Packet_WriteHandshake(CLIENT* cl);
 void Packet_WriteLvlInit(CLIENT* client);
 void Packet_WriteLvlFin(CLIENT* client);
+void Packet_WritePosAndOrient(CLIENT* client, CLIENT* other);
 void Packet_WriteChat(CLIENT* client, int type, char* mesg);
-
-void CPEPacket_WriteInfo(CLIENT *cl);
-void CPEPacket_WriteExtEntry(CLIENT *cl, EXT* ext);
 
 int  ReadString(char* data, char** dst);
 void WriteString(char* data, const char* string);
@@ -42,10 +41,5 @@ bool Handler_SetBlock(CLIENT* client, char* data);
 bool Handler_PosAndOrient(CLIENT* client, char* data);
 bool Handler_Message(CLIENT* client, char* data);
 
-bool CPEHandler_ExtInfo(CLIENT* client, char* data);
-bool CPEHandler_ExtEntry(CLIENT* client, char* data);
-
-extern EXT* firstExtension;
-extern EXT* tailExtension;
 extern PACKET* packets[256];
 #endif

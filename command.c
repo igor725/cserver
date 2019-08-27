@@ -1,3 +1,4 @@
+#include "core.h"
 #include "command.h"
 #include "packets.h"
 #include "server.h"
@@ -29,9 +30,15 @@ bool CHandler_Test(char* args, CLIENT* caller, char* out) {
 	return true;
 }
 
+bool CHandler_Announce(char* args, CLIENT* caller, char* out) {
+	Packet_WriteChat(caller, CPE_ANNOUNCE, "Test announcement");
+	return false;
+}
+
 void Command_RegisterDefault() {
 	Command_Register("stop", &CHandler_Stop);
 	Command_Register("test", &CHandler_Test);
+	Command_Register("announce", &CHandler_Announce);
 }
 
 bool Command_Handle(char* cmd, CLIENT* caller) {

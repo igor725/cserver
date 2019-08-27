@@ -20,3 +20,11 @@ void Event_OnHandshakeDone(CLIENT* client) {
 void Event_OnSpawn(CLIENT* client) {
 
 }
+
+void Event_OnDespawn(CLIENT* client) {
+
+}
+
+void Event_OnHeldBlockChange(CLIENT* client, BlockID prev, BlockID curr) {
+
+}

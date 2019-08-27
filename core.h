@@ -10,6 +10,7 @@ typedef int            bool;
 typedef unsigned int   uint;
 typedef unsigned char  BlockID;
 typedef unsigned char  ClientID;
+typedef unsigned char  Order;
 
 #define true  1
 #define false 0
