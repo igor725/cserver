@@ -1,7 +1,7 @@
 #ifndef CORE_H
 #define CORE_H
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #pragma warning(disable:4706)
 #pragma warning(disable:4100)
 #define IS_WINDOWS 1
@@ -11,10 +11,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #define ZLIB_WINAPI
-#endif
-#ifdef __unix__
-#define IS_WINDOWS 0
-#define IS_POSIX   1
+#elif defined(__unix__)
 #define _GNU_SOURCE
 #include <errno.h>
 #include <sys/socket.h>
@@ -23,12 +20,14 @@
 #include <pthread.h>
 #include <sys/time.h>
 
-#define INVALID_SOCKET -1
-#define SD_SEND SHUT_WR
 typedef int SOCKET;
 #define min(a, b) (((a)<(b))?(a):(b))
 #define max(a, b) (((a)>(b))?(a):(b))
 #define Sleep(ms) (usleep(ms * 1000))
+#define INVALID_SOCKET -1
+#define IS_WINDOWS      0
+#define IS_POSIX        1
+#define SD_SEND   SHUT_WR
 #endif
 
 #define true  1
