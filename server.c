@@ -7,7 +7,6 @@
 #include "config.h"
 #include "console.h"
 #include "command.h"
-#include "platform.h"
 
 void Server_Accept() {
 	struct sockaddr_in caddr;

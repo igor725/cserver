@@ -5,7 +5,7 @@ typedef void* THREAD;
 typedef void* TARG;
 
 #ifdef _WIN32
-typedef LPTHREAD_START_ROUTINE TFUNC;
+typedef int(*TFUNC)(TARG);
 typedef int THRET;
 #else
 typedef void*(*TFUNC)(TARG);
@@ -30,6 +30,10 @@ void Thread_Close(THREAD th);
 */
 bool String_Compare(const char* str1, const char* str2);
 bool String_CaselessCompare(const char* str1, const char* str2);
+size_t String_Length(const char* str);
+bool String_Copy(char* dst, size_t len, const char* src);
+char* String_CopyUnsafe(char* dst, const char* src);
+uint String_FormatError(uint code, char* buf, uint buflen);
 
 /*
 	TIME FUNCTIONS

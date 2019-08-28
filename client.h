@@ -58,7 +58,7 @@ int  Client_Send(CLIENT* client, int len);
 void Client_HandlePacket(CLIENT* client);
 void Client_Disconnect(CLIENT* client);
 bool Client_CheckAuth(CLIENT* client);
-int Client_ThreadProc(void* lpParam);
+THRET Client_ThreadProc(TARG lpParam);
 bool Client_SendMap(CLIENT* client);
 void Client_Destroy(CLIENT* client);
 bool Client_Spawn(CLIENT* client);

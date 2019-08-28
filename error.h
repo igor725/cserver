@@ -12,7 +12,7 @@ enum ErrorTypes {
 #define Error_Set(etype, ecode) (Error_SetCode(__FILE__, __LINE__, __func__, etype, ecode))
 
 int   Error_Type;
-int   Error_Code;
+uint  Error_Code;
 const char* Error_Func;
 const char* Error_File;
 int   Error_Line;
@@ -23,7 +23,7 @@ enum ErrorCodes {
 	EC_MAGIC,
 };
 
-void Error_SetCode(const char* efile, int eline, const char* efunc, int etype, int ecode);
+void Error_SetCode(const char* efile, int eline, const char* efunc, int etype, uint ecode);
 const char* Error_GetString();
 const char* Error_GetFunc();
 const char* Error_GetFile();

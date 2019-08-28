@@ -7,35 +7,27 @@ const char* const Error_Strings[] = {
 	"Invalid magic"
 };
 
-char Error_WinBuf[512] = {0};
+char Error_StrBuf[512] = {0};
 int Error_Type = ET_SERVER;
-int Error_Code = 0;
+uint Error_Code = 0;
 
 const char* Error_GetString() {
-	int len;
-
 	switch(Error_Type) {
 		case ET_SERVER:
 			return Error_Strings[Error_Code];
 		case ET_ZLIB:
 			return zError(Error_Code);
 		case ET_SYS:
-#ifdef _WIN32
-			len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, Error_Code, 0, Error_WinBuf, 512, NULL);
-			if(len > 0) {
-				Error_WinBuf[len - 1] = 0;
-				Error_WinBuf[len - 2] = 0;
-			}
-			return Error_WinBuf;
-#else
-			return strerror(Error_code);
-#endif
+			if(String_FormatError(Error_Code, Error_StrBuf, 512) > 0)
+				return Error_StrBuf;
+			else
+				return "[Unexpected error]";
 		default:
 			return Error_Strings[0];
 	}
 }
 
-void Error_SetCode(const char* efile, int eline, const char* efunc, int etype, int ecode) {
+void Error_SetCode(const char* efile, int eline, const char* efunc, int etype, uint ecode) {
 	Error_File = efile;
 	Error_Line = eline;
 	Error_Func = efunc;

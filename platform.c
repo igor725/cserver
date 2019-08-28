@@ -1,5 +1,4 @@
 #include "core.h"
-#include "platform.h"
 #include "error.h"
 #include <string.h>
 
@@ -79,6 +78,38 @@ bool String_Compare(const char* str1, const char* str2) {
 	return strcmp(str1, str2) == 0;
 }
 
+size_t String_Length(const char* str) {
+	return strlen(str);
+}
+
+bool String_Copy(char* dst, size_t len, const char* src) {
+	if(!dst) return false;
+	if(!src) return false;
+
+	if(String_Length(src) < len)
+		strcpy(dst, src);
+	else
+		return false;
+
+	return true;
+}
+
+char* String_CopyUnsafe(char* dst, const char* src) {
+	return strcpy(dst, src);
+}
+
+uint String_FormatError(uint code, char* buf, uint buflen) {
+	uint len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, code, 0, buf, buflen, NULL);
+	if(len > 0) {
+		Error_WinBuf[len - 1] = 0;
+		Error_WinBuf[len - 2] = 0;
+	} else {
+		Error_Set(ET_SYS, GetLastError());
+	}
+
+	return len;
+}
+
 /*
 	WINDOWS TIME FUNCTIONS
 */
@@ -127,11 +158,46 @@ void Thread_Close(THREAD th) {
 }
 
 /*
+	POSIX STRING FUNCTIONS
+*/
+bool String_CaselessCompare(const char* str1, const char* str2) {
+	return stricmp(str1, str2) == 0;
+}
+
+bool String_Compare(const char* str1, const char* str2) {
+	return strcmp(str1, str2) == 0;
+}
+
+size_t String_Length(const char* str) {
+	return strlen(str);
+}
+
+uint String_Copy(char* dst, size_t len, const char* src) {
+	if(!dst) return false;
+	if(!src) return false;
+
+	if(String_Length(src) < len)
+		strcpy(dst, src);
+	else
+		return false;
+
+	return true;
+}
+
+char* String_CopyUnsafe(char* dst, const char* src) {
+	return strcpy(dst, src);
+}
+
+uint String_FormatError(uint code, char* buf, uint buflen) {
+
+}
+
+/*
 	POSIX TIME FUNCTIONS
 */
 
 void Time_Format(char* buf, size_t buflen) {
 	if(buflen > 12)
-		strcpy(buf, "00:00:00.000");
+		String_Copy(buf, "00:00:00.000");
 }
 #endif

@@ -22,8 +22,8 @@ typedef int SOCKET;
 #define Sleep(ms) (usleep(ms * 1000))
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
+#define true  1
+#define false 0
 
 typedef unsigned short ushort;
 typedef unsigned char  uchar;
@@ -33,8 +33,9 @@ typedef unsigned char  BlockID;
 typedef unsigned char  ClientID;
 typedef unsigned char  Order;
 
-#define true  1
-#define false 0
+#include <stdio.h>
+#include <stdlib.h>
+#include "platform.h"
 
 #define DELIM " "
 #define SOFTWARE_NAME "C-Server"

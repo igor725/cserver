@@ -1,7 +1,6 @@
 #include "core.h"
 #include "log.h"
 #include "error.h"
-#include "platform.h"
 
 int Log_Level = 3;
 const char* const Log_Levels[5] = {
@@ -27,7 +26,7 @@ void Log_Print(int level, const char* str, va_list* args) {
 	if(args)
 		vsprintf_s(buf, 8192, str, *args);
 	else
-		strcpy_s(buf, 8192, str);
+		String_Copy(buf, 8192, str);
 
 	printf("%s [%s] %s\n",
 		time,

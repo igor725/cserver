@@ -2,7 +2,6 @@
 #include "log.h"
 #include "console.h"
 #include "command.h"
-#include "platform.h"
 
 int Console_ReadLine(char* buf, int buflen) {
 	int len = 0;
@@ -29,7 +28,7 @@ void Console_HandleCommand(char* cmd) {
 	}
 }
 
-int Console_ThreadProc(void* lpParam) {
+THRET Console_ThreadProc(TARG lpParam) {
 	char buf[4096] = {0};
 
 	while(1) {

@@ -24,7 +24,7 @@ int ReadString(char* data, char** dst) {
 }
 
 void WriteString(char* data, const char* string) {
-	uchar size = min((uchar)strlen(string), 64);
+	uchar size = min((uchar)String_Length(string), 64);
 	memset(data + size, 0, 64);
 	memcpy(data, string, size);
 }
@@ -186,8 +186,9 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	for(int i = 0; i < 128; i++) {
 		CLIENT* other = clients[i];
 		if(!other || other == client) continue;
-		if(_stricmp(client->playerData->name, other->playerData->name) == 0) {
+		if(String_CaselessCompare(client->playerData->name, other->playerData->name)) {
 			Client_Kick(client, "This name already in use");
+			return true;
 		}
 	}
 

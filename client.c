@@ -5,7 +5,6 @@
 #include "packets.h"
 #include "cpe.h"
 #include "event.h"
-#include "platform.h"
 
 ClientID Client_FindFreeID() {
 	for(ClientID i = 0; i < 128; i++) {
@@ -19,14 +18,14 @@ CLIENT* Client_FindByName(const char* name) {
 	for(int i = 0; i < 128; i++) {
 		CLIENT* client = clients[i];
 		if(!client) continue;
-		if(_stricmp(client->playerData->name, name) == 0) {
+		if(String_CaselessCompare(client->playerData->name, name)) {
 			return client;
 		}
 	}
 	return NULL;
 }
 
-THRET Client_ThreadProc(void* lpParam) {
+THRET Client_ThreadProc(TARG lpParam) {
 	CLIENT* client = (CLIENT*)lpParam;
 
 	while(1) {
@@ -70,7 +69,7 @@ THRET Client_ThreadProc(void* lpParam) {
 	return 0;
 }
 
-THRET Client_MapThreadProc(void* lpParam) {
+THRET Client_MapThreadProc(TARG lpParam) {
 	CLIENT* client = (CLIENT*)lpParam;
 	WORLD* world = client->playerData->currentWorld;
 
@@ -148,9 +147,8 @@ bool Client_IsSupportExt(CLIENT* client, const char* extName) {
 
 	EXT* ptr = client->cpeData->firstExtension;
 	while(ptr) {
-		if(_stricmp(ptr->name, extName) == 0) {
+		if(String_CaselessCompare(ptr->name, extName))
 			return true;
-		}
 		ptr = ptr->next;
 	}
 	return false;

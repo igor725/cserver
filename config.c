@@ -1,7 +1,6 @@
 #include "core.h"
 #include "error.h"
 #include "config.h"
-#include "platform.h"
 
 bool Config_Load(const char* filename) {
 	FILE* fp = fopen(filename, "r");
@@ -17,31 +16,33 @@ bool Config_Load(const char* filename) {
 
 	char ch = fgetc(fp);
 	while(ch != EOF) {
-		memset(key, 0, 128);
-		memset(value, 0, 128);
 		do {
 			key[count] = ch;
 			ch = fgetc(fp);
 			count++;
 		} while(ch != '=' && ch != EOF);
+		key[count] = 0;
 		if(ch == EOF) return false;
 
 		count = 0;
 		type = fgetc(fp);
 		ch = fgetc(fp);
+
 		do {
 			if(ch != '\r')
 				value[count] = ch;
 			count++;
 			ch = fgetc(fp);
 		} while(ch != '\n' && ch != EOF);
+
+		value[count] = 0;
 		count = 0;
 
-		char* hkey = calloc(strlen(key) + 1, 1);
-		strcpy(hkey, key);
+		char* hkey = calloc(String_Length(key) + 1, 1);
+		String_CopyUnsafe(hkey, key);
 		if(type == CFG_STR) {
-			char* hval = calloc(strlen(value) + 1, 1);
-			strcpy(hval, value);
+			char* hval = calloc(String_Length(value) + 1, 1);
+			String_CopyUnsafe(hval, value);
 			Config_SetStr(hkey, hval);
 		} else if(type == CFG_INT) {
 			Config_SetInt(hkey, atoi(value));
@@ -64,7 +65,7 @@ bool Config_Save(const char* filename) {
 
 	CFGENTRY* ptr = firstCfgEntry;
 	while(ptr) {
-		fwrite(ptr->key, strlen(ptr->key), 1, fp);
+		fwrite(ptr->key, String_Length(ptr->key), 1, fp);
 		switch (ptr->type) {
 			case CFG_STR:
 				fprintf(fp, "=s%s\n", (char*)ptr->value.vchar);

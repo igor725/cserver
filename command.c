@@ -3,7 +3,6 @@
 #include "command.h"
 #include "packets.h"
 #include "server.h"
-#include "platform.h"
 
 void Command_Register(char* cmd, cmdFunc func) {
 	COMMAND* tmp = calloc(1, sizeof(struct command));
