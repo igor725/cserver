@@ -11,7 +11,7 @@ ClientID Client_FindFreeID() {
 		if(!clients[i])
 			return i;
 	}
-	return -1;
+	return (ClientID)-1;
 }
 
 CLIENT* Client_FindByName(const char* name) {
@@ -58,7 +58,7 @@ THRET Client_ThreadProc(TARG lpParam) {
 			int len = recv(client->sock, client->rdbuf + client->bufpos, wait, 0);
 
 			if(len > 0) {
-				client->bufpos += len;
+				client->bufpos += (ushort)len;
 			} else {
 				client->status = CLIENT_AFTERCLOSE;
 				break;
@@ -109,7 +109,7 @@ THRET Client_MapThreadProc(TARG lpParam) {
 			return 0;
 		}
 
-		*len = htons(1024 - stream.avail_out);
+		*len = htons(1024 - (ushort)stream.avail_out);
 		if(!Client_Send(client, 1028)) {
 			client->playerData->state = STATE_WLOADERR;
 			deflateEnd(&stream);

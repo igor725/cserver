@@ -7,7 +7,6 @@
 #include "server.h"
 #include "packets.h"
 #include "command.h"
-#include "cpe.h"
 
 PACKET* packets[256] = {0};
 
@@ -76,7 +75,7 @@ void Packet_RegisterCPE(int id, const char* name, int version, ushort size) {
 	tmp->extSize = size;
 }
 
-int Packet_GetSize(int id, CLIENT* client) {
+short Packet_GetSize(int id, CLIENT* client) {
 	PACKET* packet = packets[id];
 	if(!packet)
 		return -1;
@@ -159,7 +158,7 @@ void Packet_WritePosAndOrient(CLIENT* client, CLIENT* other) {
 	Client_Send(client, 10);
 }
 
-void Packet_WriteChat(CLIENT* client, int type, char* mesg) {
+void Packet_WriteChat(CLIENT* client, MessageType type, char* mesg) {
 	char* data = client->wrbuf;
 	*data = 0x0D;
 	*++data = type;

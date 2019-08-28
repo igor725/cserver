@@ -3,8 +3,8 @@
 #include "config.h"
 
 bool Config_Load(const char* filename) {
-	FILE* fp;
-	if(!(fp = File_Open(filename, "r")))
+	FILE* fp = File_Open(filename, "r");
+	if(!fp)
 		return false;
 
 	int type;
@@ -21,7 +21,7 @@ bool Config_Load(const char* filename) {
 		Memory_Fill(value, 128, 0);
 		do {
 			if(ch != '\n' && ch != '\r' && ch != ' ') {
-				key[count] = ch;
+				key[count] = (char)ch;
 				count++;
 			}
 			ch = fgetc(fp);
@@ -35,7 +35,7 @@ bool Config_Load(const char* filename) {
 		type = fgetc(fp);
 		while((ch = fgetc(fp)) != EOF && ch != '\n') {
 			if(ch != '\r') {
-				value[count] = ch;
+				value[count] = (char)ch;
 				count++;
 			}
 		}
@@ -45,10 +45,9 @@ bool Config_Load(const char* filename) {
 		}
 		count = 0;
 
-		char* hkey;
+		char* hkey, *hval;
 		if(!(hkey = Memory_Alloc(String_Length(key) + 1, 1)))
 			return false;
-		char* hval;
 		String_CopyUnsafe(hkey, key);
 		switch (type) {
 			case CFG_STR:
@@ -75,8 +74,8 @@ bool Config_Load(const char* filename) {
 }
 
 bool Config_Save(const char* filename) {
-	FILE* fp;
-	if(!(fp = File_Open(filename, "w"))) {
+	FILE* fp = File_Open(filename, "w");
+	if(!fp) {
 		return false;
 	}
 

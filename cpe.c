@@ -78,7 +78,7 @@ void CPEPacket_WriteHoldThis(CLIENT* client, BlockID block, bool preventChange) 
 	char* data = client->wrbuf;
 	*data = 0x14;
 	*++data = block;
-	*++data = preventChange;
+	*++data = (char)preventChange;
 	Client_Send(client, 3);
 }
 

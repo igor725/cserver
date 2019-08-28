@@ -42,8 +42,8 @@ size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp) {
 		return 0;
 	}
 
-	int ncount;
-	if(count != (ncount = fread(ptr, size, count, fp))) {
+	size_t ncount = fread(ptr, size, count, fp);
+	if(count != ncount) {
 		Error_Set(ET_SYS, GetLastError());
 		return ncount;
 	}
@@ -62,6 +62,14 @@ bool File_Write(const void* ptr, size_t size, size_t count, FILE* fp) {
 	return true;
 }
 
+bool File_Error(FILE* fp) {
+	if(!fp) {
+		Error_Set(ET_SYS, ERROR_INVALID_HANDLE);
+		return true;
+	}
+	return ferror(fp) > 0;
+}
+
 bool File_WriteFormat(FILE* fp, const char* fmt, ...) {
 	if(!fp) {
 		Error_Set(ET_SYS, ERROR_INVALID_HANDLE);
@@ -71,7 +79,7 @@ bool File_WriteFormat(FILE* fp, const char* fmt, ...) {
 	va_start(args, fmt);
 	vfprintf(fp, fmt, args);
 	va_end(args);
-	if(ferror(fp)) {
+	if(File_Error(fp)) {
 		Error_Set(ET_SYS, GetLastError());
 		return false;
 	}
@@ -282,6 +290,14 @@ bool File_Write(const void* ptr, size_t size, size_t count, FILE* fp) {
 	return true;
 }
 
+bool File_Error(FILE* fp) {
+	if(!fp) {
+		Error_Set(ET_SYS, EBADF);
+		return true;
+	}
+	return ferror(fp) > 0;
+}
+
 bool File_WriteFormat(FILE* fp, const char* fmt, ...) {
 	if(!fp) {
 		Error_Set(ET_SYS, EBADF);
@@ -292,7 +308,7 @@ bool File_WriteFormat(FILE* fp, const char* fmt, ...) {
 	va_start(args, fmt);
 	vfprintf(fp, fmt, args);
 	va_end(args);
-	if(ferror(fp)) {
+	if(File_Error(fp)) {
 		Error_Set(ET_SYS, errno);
 		return false;
 	}

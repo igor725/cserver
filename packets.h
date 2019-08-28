@@ -1,5 +1,7 @@
 #ifndef PACKETS_H
 #define PACKETS_H
+#include "cpe.h"
+
 #define MODE_DESTROY 0x00
 #define MODE_PLACE   0x01
 
@@ -16,7 +18,7 @@ typedef struct packet {
 	packetHandler cpeHandler;
 } PACKET;
 
-int  Packet_GetSize(int id, CLIENT* client);
+short Packet_GetSize(int id, CLIENT* client);
 void Packet_Register(int id, const char* name, ushort size, packetHandler handler);
 void Packet_RegisterCPE(int id, const char* extName, int extVersion, ushort extSize);
 void Packet_RegisterDefault();
@@ -29,7 +31,7 @@ void Packet_WriteHandshake(CLIENT* cl);
 void Packet_WriteLvlInit(CLIENT* client);
 void Packet_WriteLvlFin(CLIENT* client);
 void Packet_WritePosAndOrient(CLIENT* client, CLIENT* other);
-void Packet_WriteChat(CLIENT* client, int type, char* mesg);
+void Packet_WriteChat(CLIENT* client, MessageType type, char* mesg);
 void Packet_WriteSetBlock(CLIENT* client, ushort x, ushort y, ushort z, BlockID block);
 
 int  ReadString(char* data, char** dst);

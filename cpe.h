@@ -1,6 +1,7 @@
 #ifndef CPE_H
 #define CPE_H
 typedef unsigned char Weather;
+typedef unsigned char MessageType;
 
 enum WeatherTypes {
 	WEATHER_SUN = 0,
@@ -24,5 +25,5 @@ void CPEPacket_WriteHoldThis(CLIENT* client, BlockID block, bool preventChange);
 
 EXT* firstExtension;
 EXT* tailExtension;
-int  extensionsCount;
+ushort extensionsCount;
 #endif

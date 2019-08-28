@@ -32,7 +32,9 @@ bool CHandler_Test(char* args, CLIENT* caller, char* out) {
 }
 
 bool CHandler_Announce(char* args, CLIENT* caller, char* out) {
-	Packet_WriteChat(caller, CPE_ANNOUNCE, "Test announcement");
+	if(caller == NULL)
+		caller = Broadcast;
+	Packet_WriteChat(caller, CPE_ANNOUNCE, !args ? "Test announcement" : args);
 	return false;
 }
 

@@ -2,6 +2,8 @@
 #define CORE_H
 
 #ifdef _WIN32
+#pragma warning(disable:4706)
+#pragma warning(disable:4100)
 #define IS_WINDOWS 1
 #define IS_POSIX   0
 #define WIN32_LEAN_AND_MEAN
@@ -37,7 +39,7 @@ typedef unsigned char  uchar;
 typedef int            bool;
 typedef unsigned int   uint;
 typedef unsigned char  BlockID;
-typedef unsigned char  ClientID;
+typedef char           ClientID;
 typedef unsigned char  Order;
 
 #include <stdio.h>

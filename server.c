@@ -10,7 +10,7 @@
 
 void Server_Accept() {
 	struct sockaddr_in caddr;
-	uint caddrsz = sizeof caddr;
+	int caddrsz = sizeof caddr;
 
 	SOCKET fd = accept(server, (struct sockaddr*)&caddr, &caddrsz);
 	if(fd != INVALID_SOCKET) {
@@ -21,7 +21,7 @@ void Server_Accept() {
 		tmp->rdbuf = (char*)Memory_Alloc(131, 1);
 		tmp->wrbuf = (char*)Memory_Alloc(2048, 1);
 
-		int id = Client_FindFreeID();
+		ClientID id = Client_FindFreeID();
 		if(id >= 0) {
 			tmp->id = id;
 			tmp->status = CLIENT_OK;
@@ -78,7 +78,7 @@ bool Server_InitialWork() {
 	Console_StartListen();
 	Log_Info("Loading server.cfg");
 	if(Config_Load("./server.cfg"))
-		return Server_Bind(Config_GetStr("ip"), Config_GetInt("port"));
+		return Server_Bind(Config_GetStr("ip"), (ushort)Config_GetInt("port"));
 	else
 		return false;
 }

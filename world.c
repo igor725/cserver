@@ -148,6 +148,7 @@ int World_Save(WORLD* world) {
 			Error_Set(ET_ZLIB, ret);
 			return false;
 		}
+
 		if(!File_Write(out, 1, 1024 - stream.avail_out, fp)){
 			deflateEnd(&stream);
 			return false;
@@ -185,7 +186,7 @@ int World_Load(WORLD* world) {
 
 	do {
 		stream.avail_in = (uint)File_Read(in, 1, 1024, fp);
-		if(ferror(fp)) {
+		if(File_Error(fp)) {
 			inflateEnd(&stream);
 			return false;
 		}
@@ -197,8 +198,7 @@ int World_Load(WORLD* world) {
 
 		do {
 			stream.avail_out = 1024;
-			ret = inflate(&stream, Z_NO_FLUSH);
-			if(ret == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
+			if((ret = inflate(&stream, Z_NO_FLUSH)) == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
 				Error_Set(ET_ZLIB, ret);
 				inflateEnd(&stream);
 				return false;

@@ -9,7 +9,7 @@ int Console_ReadLine(char* buf, int buflen) {
 
 	while((c = getc(stdin)) != EOF && c != '\n') {
 		if(c != '\r') {
-			buf[len] = c;
+			buf[len] = (char)c;
 			len++;
 			if(len > buflen) {
 				len--;
