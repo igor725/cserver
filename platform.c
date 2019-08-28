@@ -186,7 +186,8 @@ SOCKET Socket_Bind(const char* ip, ushort port) {
 	ssa.sin_port = htons(port);
 	ssa.sin_addr.s_addr = inet_addr(ip);
 
-	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void*)1, 4);
+	int val = 1;
+	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void*)val, 4);
 	if(bind(fd, (const struct sockaddr*)&ssa, sizeof(ssa)) == -1) {
 		Error_Set(ET_SYS, GetLastError());
 		return INVALID_SOCKET;
