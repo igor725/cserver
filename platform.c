@@ -2,7 +2,7 @@
 #include "error.h"
 #include <string.h>
 
-#ifdef _WIN32
+#if IS_WINDOWS
 /*
 	WINDOWS MEMORY FUNCTIONS
 */
@@ -147,9 +147,7 @@ void Time_Format(char* buf, size_t buflen) {
 		time.wMilliseconds
 	);
 }
-#else
-#include <pthread.h>
-
+#elif IS_POSIX
 /*
 	POSIX MEMORY FUNCTIONS
 */
@@ -268,7 +266,18 @@ void String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* arg
 */
 
 void Time_Format(char* buf, size_t buflen) {
-	if(buflen > 12)
-		String_CopyUnsafe(buf, "00:00:00.000");
+	struct timeval tv;
+	struct tm* tm;
+	gettimeofday(&tv, NULL);
+	tm = localtime(&tv.tv_sec);
+
+	if(buflen > 12) {
+		sprintf(buf, "%02d:%02d:%02d.%03d",
+			tm->tm_hour,
+			tm->tm_min,
+			tm->tm_sec,
+			(int) (tv.tv_usec / 1000)
+		);
+	}
 }
 #endif

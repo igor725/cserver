@@ -3,11 +3,11 @@
 
 typedef void* TARG;
 
-#ifdef _WIN32
+#if IS_WINDOWS
 typedef void* THREAD;
 typedef uint THRET;
 typedef THRET(*TFUNC)(TARG);
-#else
+#elif IS_POSIX
 typedef pthread_t THREAD;
 typedef void*(*TFUNC)(TARG);
 typedef void* THRET;

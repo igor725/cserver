@@ -2,16 +2,23 @@
 #define CORE_H
 
 #ifdef _WIN32
+#define IS_WINDOWS 1
+#define IS_POSIX   0
 #define WIN32_LEAN_AND_MEAN
 #define _CRT_SECURE_NO_WARNINGS
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #define ZLIB_WINAPI
-#else
+#endif
+#ifdef __unix__
+#define IS_WINDOWS 0
+#define IS_POSIX   1
 #include <errno.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <pthread.h>
+#include <sys/time.h>
 
 #define INVALID_SOCKET -1
 #define SD_SEND SHUT_WR
