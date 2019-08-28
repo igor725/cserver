@@ -210,7 +210,7 @@ void Socket_Close(SOCKET fd) {
 */
 THREAD Thread_Create(TFUNC func, const TARG arg) {
 	pthread_t thread;
-	if(pthread_create(&thread, arg, func, NULL) != 0) {
+	if(pthread_create(&thread, NULL, func, arg) != 0) {
 		Error_Set(ET_SYS, errno);
 		return -1;
 	}
