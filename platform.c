@@ -93,6 +93,8 @@ void Time_Format(char* buf, size_t buflen) {
 	);
 }
 #else
+#include <pthread.h>
+
 /*
 	POSIX SOCKET FUNCTIONS
 */
@@ -117,7 +119,7 @@ void Socket_Close(SOCKET fd) {
 	POSIX THREAD FUNCTIONS
 */
 THREAD Thread_Create(TFUNC func, TARG arg) {
-
+	return NULL;
 }
 
 void Thread_Close(THREAD th) {

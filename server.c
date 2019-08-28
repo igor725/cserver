@@ -34,7 +34,7 @@ void Server_Accept() {
 	}
 }
 
-int Server_AcceptThread(void* lpParam) {
+THRET Server_AcceptThread(void* lpParam) {
 	while(1)Server_Accept();
 	return 0;
 }

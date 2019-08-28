@@ -2,6 +2,15 @@
 #define PLATFORM_H
 
 typedef void* THREAD;
+typedef void* TARG;
+
+#ifdef _WIN32
+typedef LPTHREAD_START_ROUTINE TFUNC;
+typedef int THRET;
+#else
+typedef void*(*TFUNC)(TARG);
+typedef void* THRET;
+#endif
 
 /*
 	SOCKET FUNCTIONS

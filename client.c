@@ -26,7 +26,7 @@ CLIENT* Client_FindByName(const char* name) {
 	return NULL;
 }
 
-int Client_ThreadProc(void* lpParam) {
+THRET Client_ThreadProc(void* lpParam) {
 	CLIENT* client = (CLIENT*)lpParam;
 
 	while(1) {
@@ -66,6 +66,62 @@ int Client_ThreadProc(void* lpParam) {
 			}
 		}
 	}
+
+	return 0;
+}
+
+THRET Client_MapThreadProc(void* lpParam) {
+	CLIENT* client = (CLIENT*)lpParam;
+	WORLD* world = client->playerData->currentWorld;
+
+	z_stream stream = {0};
+
+	client->wrbuf[0] = 0x03;
+	client->wrbuf[1027] = 0;
+	ushort* len = (ushort*)(client->wrbuf + 1);
+	uchar* out = (uchar*)len + 2;
+	int ret;
+
+	if((ret = deflateInit2_(
+		&stream,
+		4,
+		Z_DEFLATED,
+		31,
+		8,
+		Z_DEFAULT_STRATEGY,
+		zlibVersion(),
+		sizeof(stream)
+	)) != Z_OK) {
+		client->playerData->state = STATE_WLOADERR;
+		return 0;
+	}
+
+	stream.avail_in = world->size;
+	stream.next_in = (uchar*)world->data;
+	*(uint*)world->data = htonl(world->size - 4);
+
+	do {
+		stream.next_out = out;
+		stream.avail_out = 1024;
+
+		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
+			client->playerData->state = STATE_WLOADERR;
+			deflateEnd(&stream);
+			return 0;
+		}
+
+		*len = htons(1024 - stream.avail_out);
+		if(!Client_Send(client, 1028)) {
+			client->playerData->state = STATE_WLOADERR;
+			deflateEnd(&stream);
+			return 0;
+		}
+	} while(stream.avail_out == 0);
+
+	deflateEnd(&stream);
+	Packet_WriteLvlFin(client);
+	client->playerData->state = STATE_WLOADDONE;
+	Client_Spawn(client);
 
 	return 0;
 }
@@ -151,62 +207,6 @@ int Client_Send(CLIENT* client, int len) {
 	}
 
 	return send(client->sock, client->wrbuf, len, 0) == len;
-}
-
-int Client_MapThreadProc(void* lpParam) {
-	CLIENT* client = (CLIENT*)lpParam;
-	WORLD* world = client->playerData->currentWorld;
-
-	z_stream stream = {0};
-
-	client->wrbuf[0] = 0x03;
-	client->wrbuf[1027] = 0;
-	ushort* len = (ushort*)(client->wrbuf + 1);
-	uchar* out = (uchar*)len + 2;
-	int ret;
-
-	if((ret = deflateInit2_(
-		&stream,
-		4,
-		Z_DEFLATED,
-		31,
-		8,
-		Z_DEFAULT_STRATEGY,
-		zlibVersion(),
-		sizeof(stream)
-	)) != Z_OK) {
-		client->playerData->state = STATE_WLOADERR;
-		return 0;
-	}
-
-	stream.avail_in = world->size;
-	stream.next_in = (uchar*)world->data;
-	*(uint*)world->data = htonl(world->size - 4);
-
-	do {
-		stream.next_out = out;
-		stream.avail_out = 1024;
-
-		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
-			client->playerData->state = STATE_WLOADERR;
-			deflateEnd(&stream);
-			return 0;
-		}
-
-		*len = htons(1024 - stream.avail_out);
-		if(!Client_Send(client, 1028)) {
-			client->playerData->state = STATE_WLOADERR;
-			deflateEnd(&stream);
-			return 0;
-		}
-	} while(stream.avail_out == 0);
-
-	deflateEnd(&stream);
-	Packet_WriteLvlFin(client);
-	client->playerData->state = STATE_WLOADDONE;
-	Client_Spawn(client);
-
-	return 0;
 }
 
 bool Client_Spawn(CLIENT* client) {

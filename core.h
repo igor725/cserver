@@ -7,8 +7,6 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #define ZLIB_WINAPI
-typedef LPTHREAD_START_ROUTINE TFUNC;
-typedef void* TARG;
 #else
 #include <errno.h>
 #include <sys/socket.h>
