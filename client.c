@@ -165,8 +165,8 @@ bool Client_CheckAuth(CLIENT* client) { //TODO: ClassiCube auth
 }
 
 void Client_SetPos(CLIENT* client, VECTOR* pos, ANGLE* ang) {
-	memcpy(client->playerData->position, pos, sizeof(struct vector));
-	memcpy(client->playerData->angle, ang, sizeof(struct angle));
+	Memory_Copy(client->playerData->position, pos, sizeof(struct vector));
+	Memory_Copy(client->playerData->angle, ang, sizeof(struct angle));
 }
 
 void Client_Destroy(CLIENT* client) {

@@ -4,6 +4,18 @@
 
 #ifdef _WIN32
 /*
+	WINDOWS MEMORY FUNCTIONS
+*/
+
+void Memory_Copy(void* dst, const void* src, size_t count) {
+	memcpy(dst, src, count);
+}
+
+void Memory_Fill(void* dst, size_t count, int val) {
+	memset(dst, val, count);
+}
+
+/*
 	WINDOWS SOCKET FUNCTIONS
 */
 bool Socket_Init() {
@@ -82,16 +94,16 @@ size_t String_Length(const char* str) {
 	return strlen(str);
 }
 
-bool String_Copy(char* dst, size_t len, const char* src) {
-	if(!dst) return false;
-	if(!src) return false;
+size_t String_Copy(char* dst, size_t len, const char* src) {
+	if(!dst) return 0;
+	if(!src) return 0;
 
 	if(String_Length(src) < len)
 		strcpy(dst, src);
 	else
-		return false;
+		return 0;
 
-	return true;
+	return len;
 }
 
 char* String_CopyUnsafe(char* dst, const char* src) {
@@ -108,6 +120,10 @@ uint String_FormatError(uint code, char* buf, uint buflen) {
 	}
 
 	return len;
+}
+
+void String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* args) {
+	vsprintf_s(buf, len, str, *args);
 }
 
 /*
@@ -161,7 +177,7 @@ void Thread_Close(THREAD th) {
 	POSIX STRING FUNCTIONS
 */
 bool String_CaselessCompare(const char* str1, const char* str2) {
-	return stricmp(str1, str2) == 0;
+	return strcasecmp(str1, str2) == 0;
 }
 
 bool String_Compare(const char* str1, const char* str2) {
@@ -172,16 +188,16 @@ size_t String_Length(const char* str) {
 	return strlen(str);
 }
 
-uint String_Copy(char* dst, size_t len, const char* src) {
-	if(!dst) return false;
-	if(!src) return false;
+size_t String_Copy(char* dst, size_t len, const char* src) {
+	if(!dst) return 0;
+	if(!src) return 0;
 
 	if(String_Length(src) < len)
 		strcpy(dst, src);
 	else
-		return false;
+		return 0;
 
-	return true;
+	return len;
 }
 
 char* String_CopyUnsafe(char* dst, const char* src) {
@@ -189,7 +205,12 @@ char* String_CopyUnsafe(char* dst, const char* src) {
 }
 
 uint String_FormatError(uint code, char* buf, uint buflen) {
+	char* errstr = strerror(code);
+	return String_Copy(buf, buflen, errstr);
+}
 
+void String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* args) {
+	vsnprintf(buf, len, str, *args);
 }
 
 /*
@@ -198,6 +219,6 @@ uint String_FormatError(uint code, char* buf, uint buflen) {
 
 void Time_Format(char* buf, size_t buflen) {
 	if(buflen > 12)
-		String_Copy(buf, "00:00:00.000");
+		String_CopyUnsafe(buf, "00:00:00.000");
 }
 #endif

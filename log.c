@@ -24,7 +24,7 @@ void Log_Print(int level, const char* str, va_list* args) {
 	Time_Format(time, 13);
 
 	if(args)
-		vsprintf_s(buf, 8192, str, *args);
+		String_FormatBufVararg(buf, 8192, str, args);
 	else
 		String_Copy(buf, 8192, str);
 

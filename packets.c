@@ -17,7 +17,7 @@ int ReadString(char* data, char** dst) {
 	++end;
 
 	char* str = calloc(end + 1, 1);
-	memcpy(str, data, end);
+	Memory_Copy(str, data, end);
 	str[end] = 0;
 	dst[0] = str;
 	return end;
@@ -25,8 +25,8 @@ int ReadString(char* data, char** dst) {
 
 void WriteString(char* data, const char* string) {
 	uchar size = min((uchar)String_Length(string), 64);
-	memset(data + size, 0, 64);
-	memcpy(data, string, size);
+	Memory_Fill(data + size, 64, 0);
+	Memory_Copy(data, string, size);
 }
 
 void ReadClPos(CLIENT* client, char* data) {
