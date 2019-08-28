@@ -7,7 +7,7 @@ bool Server_InitialWork();
 void Server_DoStep();
 
 WORLD* worlds[128];
-void* acceptThread;
+THREAD acceptThread;
 bool serverActive;
 SOCKET server;
 #endif

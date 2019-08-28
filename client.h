@@ -32,7 +32,7 @@ typedef struct playerData {
 	ANGLE*  angle;
 	VECTOR* position;
 	bool    spawned;
-	void*   mapThread;
+	THREAD  mapThread;
 	WORLD*  currentWorld;
 	bool    positionUpdated;
 } PLAYERDATA;
@@ -44,7 +44,7 @@ typedef struct client {
 	char*       rdbuf;
 	char*       wrbuf;
 	ushort      bufpos;
-	void*       thread;
+	THREAD      thread;
 	CPEDATA*    cpeData;
 	PLAYERDATA* playerData;
 } CLIENT;
