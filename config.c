@@ -1,11 +1,12 @@
 #include "core.h"
 #include "error.h"
 #include "config.h"
+#include "platform.h"
 
 bool Config_Load(const char* filename) {
 	FILE* fp = fopen(filename, "r");
 	if(!fp) {
-		Error_Set(ET_WIN, GetLastError());
+		Error_Set(ET_SYS, GetLastError());
 		return false;
 	}
 
@@ -57,7 +58,7 @@ bool Config_Load(const char* filename) {
 bool Config_Save(const char* filename) {
 	FILE* fp = fopen(filename, "w");
 	if(!fp) {
-		Error_Set(ET_WIN, GetLastError());
+		Error_Set(ET_SYS, GetLastError());
 		return false;
 	}
 
@@ -82,7 +83,7 @@ bool Config_Save(const char* filename) {
 CFGENTRY* Config_GetStruct(char* key) {
 	CFGENTRY* ptr = firstCfgEntry;
 	while(ptr) {
-		if(_stricmp(ptr->key, key) == 0) {
+		if(String_CaselessCompare(ptr->key, key)) {
 			return ptr;
 		}
 		if(!ptr->next)

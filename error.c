@@ -19,7 +19,7 @@ const char* Error_GetString() {
 			return Error_Strings[Error_Code];
 		case ET_ZLIB:
 			return zError(Error_Code);
-		case ET_WIN:
+		case ET_WSYS:
 #ifdef _WIN32
 			len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, Error_Code, 0, Error_WinBuf, 512, NULL);
 			if(len > 0) {

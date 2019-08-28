@@ -7,13 +7,24 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #define ZLIB_WINAPI
+typedef LPTHREAD_START_ROUTINE TFUNC;
+typedef void* TARG;
 #else
-#include "errno.h"
+#include <errno.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
+#define INVALID_SOCKET -1
+#define SD_SEND SHUT_WR
+typedef int SOCKET;
 #define GetLastError() (errno)
+#define min(a, b) (((a)<(b))?(a):(b))
+#define max(a, b) (((a)>(b))?(a):(b))
+#define Sleep(ms) (usleep(ms * 1000))
 #endif
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 
 typedef unsigned short ushort;

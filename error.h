@@ -5,7 +5,7 @@ enum ErrorTypes {
 	ET_NOERR = -1,
 	ET_SERVER = 0,
 	ET_ZLIB,
-	ET_WIN
+	ET_SYS
 };
 
 #define LNUM ": "

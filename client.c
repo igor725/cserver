@@ -5,6 +5,7 @@
 #include "packets.h"
 #include "cpe.h"
 #include "event.h"
+#include "platform.h"
 
 ClientID Client_FindFreeID() {
 	for(ClientID i = 0; i < 128; i++) {
@@ -33,7 +34,7 @@ int Client_ThreadProc(void* lpParam) {
 			int len = recv(client->sock, client->rdbuf, 131, 0);
 			if(len <= 0) {
 				client->status = CLIENT_AFTERCLOSE;
-				closesocket(client->sock);
+				Socket_Close(client->sock);
 				break;
 			}
 			continue;
@@ -120,7 +121,7 @@ void Client_Destroy(CLIENT* client) {
 	free(client->wrbuf);
 
 	if(client->thread)
-		CloseHandle(client->thread);
+		Thread_Close(client->thread);
 
 	if(client->playerData) {
 		free(client->playerData->name);
@@ -244,15 +245,7 @@ bool Client_SendMap(CLIENT* client) {
 
 	Packet_WriteLvlInit(client);
 	client->playerData->state = STATE_MOTD;
-	client->playerData->mapThread = CreateThread(
-		NULL,
-		0,
-		(LPTHREAD_START_ROUTINE)&Client_MapThreadProc,
-		client,
-		0,
-		NULL
-	);
-
+	client->playerData->mapThread = Thread_Create(&Client_MapThreadProc, client);
 	return true;
 }
 
@@ -290,7 +283,7 @@ void Client_Tick(CLIENT* client) {
 	if(!client->playerData) return;
 	switch (client->playerData->state) {
 		case STATE_WLOADDONE:
-			CloseHandle(client->playerData->mapThread);
+			Thread_Close(client->playerData->mapThread);
 			client->playerData->state = STATE_INGAME;
 			break;
 		case STATE_WLOADERR:

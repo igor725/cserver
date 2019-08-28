@@ -18,6 +18,7 @@ IF "%1"=="debug" set ZLIB_MODE=Debug
 IF "%1"=="dbg" set ZLIB_MODE=Debug
 IF "%1"=="norun" set NORUN=1
 IF "%1"=="onerun" set NORUN=2
+IF "%1"=="clean" goto clean
 SHIFT
 goto argloop
 :continue
@@ -70,3 +71,6 @@ exit /B 0
 
 :cloc
 cloc --exclude-dir=zlib .
+
+:clean
+del *.obj *.exe *.dll

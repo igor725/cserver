@@ -2,6 +2,7 @@
 #include "log.h"
 #include "console.h"
 #include "command.h"
+#include "platform.h"
 
 int Console_ReadLine(char* buf, int buflen) {
 	int len = 0;
@@ -39,17 +40,10 @@ int Console_ThreadProc(void* lpParam) {
 }
 
 void Console_StartListen() {
-	Console_Thread = CreateThread(
-		NULL,
-		0,
-		(LPTHREAD_START_ROUTINE)&Console_ThreadProc,
-		NULL,
-		0,
-		NULL
-	);
+	Console_Thread = Thread_Create(&Console_ThreadProc, NULL);
 }
 
 void Console_Close() {
 	if(Console_Thread)
-		CloseHandle(Console_Thread);
+		Thread_Close(Console_Thread);
 }

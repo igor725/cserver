@@ -3,6 +3,7 @@
 #include "command.h"
 #include "packets.h"
 #include "server.h"
+#include "platform.h"
 
 void Command_Register(char* cmd, cmdFunc func) {
 	COMMAND* tmp = calloc(1, sizeof(struct command));
@@ -60,7 +61,7 @@ bool Command_Handle(char* cmd, CLIENT* caller) {
 
 	COMMAND* tmp = firstCommand;
 	while(tmp) {
-		if(_stricmp(tmp->name, cmd) == 0) {
+		if(String_CaselessCompare(tmp->name, cmd)) {
 			if(tmp->func(args, caller, ret))
 				if(caller)
 					Packet_WriteChat(caller, 0, ret);

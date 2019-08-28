@@ -7,6 +7,7 @@
 #include "config.h"
 #include "console.h"
 #include "command.h"
+#include "platform.h"
 
 void Server_Accept() {
 	struct sockaddr_in caddr;
@@ -25,14 +26,7 @@ void Server_Accept() {
 		if(id >= 0) {
 			tmp->id = id;
 			tmp->status = CLIENT_OK;
-			tmp->thread = CreateThread(
-				NULL,
-				0,
-				(LPTHREAD_START_ROUTINE)&Client_ThreadProc,
-				tmp,
-				0,
-				NULL
-			);
+			tmp->thread = Thread_Create(&Client_ThreadProc, tmp);
 			clients[id] = tmp;
 		} else {
 			Client_Kick(tmp, "Server is full");
@@ -46,50 +40,18 @@ int Server_AcceptThread(void* lpParam) {
 }
 
 bool Server_Bind(char* ip, short port) {
-	WSADATA ws;
-	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR) {
-		Error_Set(ET_WIN, WSAGetLastError());
+	if((server = Socket_Bind(ip, port)) == INVALID_SOCKET)
 		return false;
-	}
-
-	if(INVALID_SOCKET == (server = socket(AF_INET, SOCK_STREAM, 0))) {
-		Error_Set(ET_WIN, WSAGetLastError());
-		return false;
-	}
-
-	struct sockaddr_in ssa;
-	ssa.sin_family = AF_INET;
-	ssa.sin_port = htons(port);
-	if(inet_pton(AF_INET, ip, &ssa.sin_addr.s_addr) <= 0) {
-		Error_Set(ET_WIN, WSAGetLastError());
-		return false;
-	}
-
-	if(bind(server, (const struct sockaddr*)&ssa, sizeof ssa) == -1) {
-		Error_Set(ET_WIN, WSAGetLastError());
-		return false;
-	}
-
-	if(listen(server, SOMAXCONN) == -1) {
-		Error_Set(ET_WIN, WSAGetLastError());
-		return false;
-	}
-
-	acceptThread = CreateThread(
-		NULL,
-		0,
-		(LPTHREAD_START_ROUTINE)&Server_AcceptThread,
-		NULL,
-		0,
-		NULL
-	);
 
 	Client_Init();
+	acceptThread = Thread_Create(&Server_AcceptThread, NULL);
 	Log_Info("%s %s started on %s:%d", SOFTWARE_NAME, SOFTWARE_VERSION, ip, port);
 	return true;
 }
 
 bool Server_InitialWork() {
+	if(!Socket_Init())
+		return false;
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
@@ -135,8 +97,9 @@ void Server_Stop() {
 	}
 
 	if(acceptThread)
-		CloseHandle(acceptThread);
+		Thread_Close(acceptThread);
 	Console_Close();
+	Socket_Close(server);
 }
 
 int main(int argc, char** argv) {
