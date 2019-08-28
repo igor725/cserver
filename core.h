@@ -13,6 +13,7 @@
 #ifdef __unix__
 #define IS_WINDOWS 0
 #define IS_POSIX   1
+#define _GNU_SOURCE
 #include <errno.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
