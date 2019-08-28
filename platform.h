@@ -30,7 +30,7 @@ void Socket_Close(SOCKET sock);
 /*
 	THREAD FUNCTIONS
 */
-THREAD Thread_Create(TFUNC func, TARG lpParam);
+THREAD Thread_Create(TFUNC func, const TARG lpParam);
 void Thread_Close(THREAD th);
 
 /*

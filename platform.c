@@ -67,7 +67,7 @@ void Socket_Close(SOCKET sock) {
 /*
 	WINDOWS THREAD FUNCTIONS
 */
-THREAD Thread_Create(TFUNC func, TARG lpParam) {
+THREAD Thread_Create(TFUNC func, const TARG lpParam) {
 	return CreateThread(
 		NULL,
 		0,
@@ -179,10 +179,10 @@ SOCKET Socket_Bind(const char* ip, ushort port) {
 
 	struct sockaddr_in ssa;
 	ssa.sin_family = AF_INET;
-	ssa.sin_port = port;
+	ssa.sin_port = htons(port);
 	ssa.sin_addr.s_addr = inet_addr(ip);
 
-	if(bind(fd, (const struct sockaddr*)&ssa, sizeof ssa) == -1) {
+	if(bind(fd, (const struct sockaddr*)&ssa, sizeof(ssa)) == -1) {
 		Error_Set(ET_SYS, GetLastError());
 		return INVALID_SOCKET;
 	}
@@ -202,11 +202,11 @@ void Socket_Close(SOCKET fd) {
 /*
 	POSIX THREAD FUNCTIONS
 */
-THREAD Thread_Create(TFUNC func, TARG arg) {
+THREAD Thread_Create(TFUNC func, const TARG arg) {
 	pthread_t thread;
 	int status;
-	if((status = pthread_create(&thread, NULL, func, NULL)) != 0) {
-		return NULL;
+	if((status = pthread_create(&thread, arg, func, NULL)) != 0) {
+		return -1;
 	}
 	return (THREAD)thread;
 }

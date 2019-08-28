@@ -38,7 +38,7 @@ THRET Server_AcceptThread(void* lpParam) {
 	return 0;
 }
 
-bool Server_Bind(char* ip, short port) {
+bool Server_Bind(char* ip, ushort port) {
 	if((server = Socket_Bind(ip, port)) == INVALID_SOCKET)
 		return false;
 

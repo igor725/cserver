@@ -226,6 +226,9 @@ bool Client_Spawn(CLIENT* client) {
 }
 
 bool Client_Despawn(CLIENT* client) {
+	if(!client->playerData)
+		return false;
+		
 	if(!client->playerData->spawned)
 		return false;
 

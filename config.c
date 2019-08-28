@@ -11,31 +11,29 @@ bool Config_Load(const char* filename) {
 
 	int type;
 	int count = 0;
-	char ch = fgetc(fp);
+	int ch = fgetc(fp);
 	char key[128] = {0};
 	char value[128] = {0};
 
 	while(!feof(fp)) {
+		Memory_Fill(key, 128, 0);
+		Memory_Fill(value, 128, 0);
 		do {
 			key[count] = ch;
 			ch = fgetc(fp);
 			count++;
 		} while(ch != '=' && !feof(fp));
-		key[count] = 0;
 		if(feof(fp)) return false;
 
 		count = 0;
 		type = fgetc(fp);
 		ch = fgetc(fp);
-
 		do {
 			if(ch != '\r')
 				value[count] = ch;
 			count++;
 			ch = fgetc(fp);
 		} while(ch != '\n' && !feof(fp));
-
-		value[count] = 0;
 		count = 0;
 
 		char* hkey = Memory_Alloc(String_Length(key) + 1, 1);
