@@ -1,6 +1,7 @@
 #include "core.h"
 #include "error.h"
 #include <string.h>
+#include <processthreadsapi.h>
 
 #if IS_WINDOWS
 /*
@@ -80,6 +81,10 @@ THREAD Thread_Create(TFUNC func, const TARG lpParam) {
 
 bool Thread_IsValid(THREAD th) {
 	return th != (THREAD)NULL;
+}
+
+bool Thread_SetName(const char* name) {
+	return false; //????
 }
 
 void Thread_Close(THREAD th) {
@@ -220,6 +225,10 @@ THREAD Thread_Create(TFUNC func, const TARG arg) {
 
 bool Thread_IsValid(THREAD th) {
 	return th != (THREAD)-1;
+}
+
+bool Thread_SetName(const char* thName) {
+	return pthread_setname_np(pthread_self(), thName) == 0;
 }
 
 void Thread_Close(THREAD th) {}

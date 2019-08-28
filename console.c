@@ -29,6 +29,7 @@ void Console_HandleCommand(char* cmd) {
 }
 
 THRET Console_ThreadProc(TARG lpParam) {
+	Thread_SetName("Console listener");
 	char buf[4096] = {0};
 
 	while(1) {

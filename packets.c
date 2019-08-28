@@ -182,6 +182,7 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	Client_SetPos(client, worlds[0]->info->spawnVec, worlds[0]->info->spawnAng);
 	ReadString(++data, &client->playerData->name); data += 63;
 	ReadString(++data, &client->playerData->key); data += 63;
+	Thread_SetName(client->playerData->name);
 
 	for(int i = 0; i < 128; i++) {
 		CLIENT* other = clients[i];
@@ -214,7 +215,7 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 }
 
 bool Handler_SetBlock(CLIENT* client, char* data) {
-	if(!client->playerData)
+	if(!client->playerData || client->playerData->state != STATE_INGAME)
 		return false;
 
 	WORLD* world = client->playerData->currentWorld;
@@ -251,8 +252,9 @@ bool Handler_SetBlock(CLIENT* client, char* data) {
 }
 
 bool Handler_PosAndOrient(CLIENT* client, char* data) {
-	if(!client->playerData)
+	if(!client->playerData || client->playerData->state != STATE_INGAME)
 		return false;
+
 	if(client->cpeData) {
 		if(client->cpeData->heldBlock != *data) {
 			Event_OnHeldBlockChange(client, client->cpeData->heldBlock, *data);
@@ -266,7 +268,7 @@ bool Handler_PosAndOrient(CLIENT* client, char* data) {
 }
 
 bool Handler_Message(CLIENT* client, char* data) {
-	if(!client->playerData)
+	if(!client->playerData || client->playerData->state != STATE_INGAME)
 		return false;
 
 	char* message;

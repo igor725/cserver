@@ -109,7 +109,8 @@ void CPEPacket_WriteTwoWayPing(CLIENT* client, uchar direction, short num) {
 }
 
 bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
-	if(!client->cpeData) return false;
+	if(!client->playerData || client->playerData->state != STATE_MOTD)
+		return false;
 
 	ReadString(data, &client->cpeData->appName); data += 63;
 	client->cpeData->_extCount = ntohs(*(ushort*)++data);
@@ -117,7 +118,8 @@ bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
 }
 
 bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
-	if(!client->cpeData) return false;
+	if(!client->playerData || client->playerData->state != STATE_MOTD)
+		return false;
 
 	EXT* tmp = (EXT*)Memory_Alloc(1, sizeof(EXT));
 	ReadString(data, &tmp->name);data += 63;
@@ -164,5 +166,8 @@ bool CPEHandler_TwoWayPing(CLIENT* client, char* data) {
 }
 
 bool CPEHandler_PlayerClick(CLIENT* client, char* data) {
+	if(!client->playerData || client->playerData->state != STATE_INGAME)
+		return false;
+
 	return true;
 }

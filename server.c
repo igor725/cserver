@@ -40,6 +40,7 @@ void Server_Accept() {
 }
 
 THRET Server_AcceptThread(void* lpParam) {
+	Thread_SetName("AcceptThread");
 	while(1)Server_Accept();
 	return 0;
 }
