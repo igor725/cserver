@@ -67,7 +67,7 @@ THREAD Thread_Create(TFUNC func, TARG lpParam) {
 	return CreateThread(
 		NULL,
 		0,
-		func,
+		(LPTHREAD_START_ROUTINE)func,
 		lpParam,
 		0,
 		NULL

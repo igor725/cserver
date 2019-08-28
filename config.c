@@ -9,20 +9,20 @@ bool Config_Load(const char* filename) {
 		return false;
 	}
 
+	int type;
 	int count = 0;
+	char ch = fgetc(fp);
 	char key[128] = {0};
 	char value[128] = {0};
-	int  type;
 
-	char ch = fgetc(fp);
-	while(ch != EOF) {
+	while(!feof(fp)) {
 		do {
 			key[count] = ch;
 			ch = fgetc(fp);
 			count++;
-		} while(ch != '=' && ch != EOF);
+		} while(ch != '=' && !feof(fp));
 		key[count] = 0;
-		if(ch == EOF) return false;
+		if(feof(fp)) return false;
 
 		count = 0;
 		type = fgetc(fp);
@@ -33,7 +33,7 @@ bool Config_Load(const char* filename) {
 				value[count] = ch;
 			count++;
 			ch = fgetc(fp);
-		} while(ch != '\n' && ch != EOF);
+		} while(ch != '\n' && !feof(fp));
 
 		value[count] = 0;
 		count = 0;

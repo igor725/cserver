@@ -25,7 +25,7 @@ void Server_Accept() {
 		if(id >= 0) {
 			tmp->id = id;
 			tmp->status = CLIENT_OK;
-			tmp->thread = Thread_Create(&Client_ThreadProc, tmp);
+			tmp->thread = Thread_Create((TFUNC)&Client_ThreadProc, tmp);
 			clients[id] = tmp;
 		} else {
 			Client_Kick(tmp, "Server is full");
@@ -43,7 +43,7 @@ bool Server_Bind(char* ip, short port) {
 		return false;
 
 	Client_Init();
-	acceptThread = Thread_Create(&Server_AcceptThread, NULL);
+	acceptThread = Thread_Create((TFUNC)&Server_AcceptThread, NULL);
 	if(acceptThread)
 		Log_Info("%s %s started on %s:%d", SOFTWARE_NAME, SOFTWARE_VERSION, ip, port);
 	else {
@@ -69,7 +69,8 @@ bool Server_InitialWork() {
 	}
 
 	Console_StartListen();
-	if(Config_Load("server.cfg"))
+	Log_Info("Loading server.cfg");
+	if(Config_Load("./server.cfg"))
 		return Server_Bind(Config_GetStr("ip"), Config_GetInt("port"));
 	else
 		return false;

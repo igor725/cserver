@@ -5,8 +5,8 @@ typedef void* THREAD;
 typedef void* TARG;
 
 #ifdef _WIN32
-typedef int(*TFUNC)(TARG);
-typedef int THRET;
+typedef uint THRET;
+typedef THRET(*TFUNC)(TARG);
 #else
 typedef void*(*TFUNC)(TARG);
 typedef void* THRET;

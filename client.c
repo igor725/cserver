@@ -243,7 +243,7 @@ bool Client_SendMap(CLIENT* client) {
 
 	Packet_WriteLvlInit(client);
 	client->playerData->state = STATE_MOTD;
-	client->playerData->mapThread = Thread_Create(&Client_MapThreadProc, client);
+	client->playerData->mapThread = Thread_Create((TFUNC)&Client_MapThreadProc, client);
 	if(!client->playerData->mapThread) {
 		Client_Kick(client, "playerData->mapThread == NULL");
 		return false;
