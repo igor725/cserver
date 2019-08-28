@@ -273,7 +273,6 @@ bool Handler_Message(CLIENT* client, char* data) {
 	int len = ReadString(++data, &message);
 
 	for(int i = 0; i < 63; i++) {
-		int nc = message[i + 1];
 		if(message[i] == '%' && ISHEX(message[i + 1]))
 			message[i] = '&';
 	}

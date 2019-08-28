@@ -10,7 +10,7 @@
 
 void Server_Accept() {
 	struct sockaddr_in caddr;
-	int caddrsz = sizeof caddr;
+	uint caddrsz = sizeof caddr;
 
 	SOCKET fd = accept(server, (struct sockaddr*)&caddr, &caddrsz);
 	if(fd != INVALID_SOCKET) {
@@ -44,7 +44,12 @@ bool Server_Bind(char* ip, short port) {
 
 	Client_Init();
 	acceptThread = Thread_Create(&Server_AcceptThread, NULL);
-	Log_Info("%s %s started on %s:%d", SOFTWARE_NAME, SOFTWARE_VERSION, ip, port);
+	if(acceptThread)
+		Log_Info("%s %s started on %s:%d", SOFTWARE_NAME, SOFTWARE_VERSION, ip, port);
+	else {
+		Log_Error("acceptThread == NULL");
+		return false;
+	}
 	return true;
 }
 

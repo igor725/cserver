@@ -61,11 +61,12 @@ bool Command_Handle(char* cmd, CLIENT* caller) {
 	COMMAND* tmp = firstCommand;
 	while(tmp) {
 		if(String_CaselessCompare(tmp->name, cmd)) {
-			if(tmp->func(args, caller, ret))
+			if(tmp->func(args, caller, ret)) {
 				if(caller)
 					Packet_WriteChat(caller, 0, ret);
 				else
-					Log_Info(ret);
+					Log_Info(ret);	
+			}
 			free(ret);
 			return true;
 		}

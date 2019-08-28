@@ -143,19 +143,48 @@ void Time_Format(char* buf, size_t buflen) {
 #include <pthread.h>
 
 /*
+	POSIX MEMORY FUNCTIONS
+*/
+
+void Memory_Copy(void* dst, const void* src, size_t count) {
+	memcpy(dst, src, count);
+}
+
+void Memory_Fill(void* dst, size_t count, int val) {
+	memset(dst, val, count);
+}
+
+/*
 	POSIX SOCKET FUNCTIONS
 */
 bool Socket_Init() {
 	return true;
 }
 
-SOCKET Socket_Bind(const char*, ushort port) {
+SOCKET Socket_Bind(const char* ip, ushort port) {
 	SOCKET fd;
 
 	if((fd = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
 		Error_Set(ET_SYS, GetLastError());
 		return INVALID_SOCKET;
 	}
+
+	struct sockaddr_in ssa;
+	ssa.sin_family = AF_INET;
+	ssa.sin_port = port;
+	ssa.sin_addr.s_addr = inet_addr(ip);
+
+	if(bind(fd, (const struct sockaddr*)&ssa, sizeof ssa) == -1) {
+		Error_Set(ET_SYS, GetLastError());
+		return INVALID_SOCKET;
+	}
+
+	if(listen(fd, SOMAXCONN) == -1) {
+		Error_Set(ET_SYS, GetLastError());
+		return INVALID_SOCKET;
+	}
+
+	return fd;
 }
 
 void Socket_Close(SOCKET fd) {
@@ -169,9 +198,7 @@ THREAD Thread_Create(TFUNC func, TARG arg) {
 	return NULL;
 }
 
-void Thread_Close(THREAD th) {
-
-}
+void Thread_Close(THREAD th) {}
 
 /*
 	POSIX STRING FUNCTIONS
