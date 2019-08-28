@@ -4,7 +4,8 @@
 
 const char* const Error_Strings[] = {
 	"All ok",
-	"Invalid magic"
+	"Invalid magic",
+	"Unknown cfg entry type"
 };
 
 char Error_StrBuf[512] = {0};

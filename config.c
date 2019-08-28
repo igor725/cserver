@@ -37,15 +37,23 @@ bool Config_Load(const char* filename) {
 		count = 0;
 
 		char* hkey = Memory_Alloc(String_Length(key) + 1, 1);
+		char* hval;
 		String_CopyUnsafe(hkey, key);
-		if(type == CFG_STR) {
-			char* hval = Memory_Alloc(String_Length(value) + 1, 1);
-			String_CopyUnsafe(hval, value);
-			Config_SetStr(hkey, hval);
-		} else if(type == CFG_INT) {
-			Config_SetInt(hkey, atoi(value));
-		} else {
-			return false;
+		switch (type) {
+			case CFG_STR:
+				hval = Memory_Alloc(String_Length(value) + 1, 1);
+				String_CopyUnsafe(hval, value);
+				Config_SetStr(hkey, hval);
+				break;
+			case CFG_INT:
+				Config_SetInt(hkey, atoi(value));
+				break;
+			case CFG_BOOL:
+				Config_SetBool(hkey, String_Compare(value, "True"));
+				break;
+			default:
+				Error_Set(ET_SERVER, EC_CFGTYPE);
+				return false;
 		}
 		ch = fgetc(fp);
 	}
@@ -71,6 +79,12 @@ bool Config_Save(const char* filename) {
 			case CFG_INT:
 				fprintf(fp, "=i%d\n", (int)ptr->value.vint);
 				break;
+			case CFG_BOOL:
+				fprintf(fp, "=b%s\n", ptr->value.vbool ? "True" : "False");
+				break;
+			default:
+				fwrite("=sUnknown value\n", 16, 1, fp);
+				break;
 		}
 		ptr = ptr->next;
 	}
@@ -79,7 +93,7 @@ bool Config_Save(const char* filename) {
 	return false;
 }
 
-CFGENTRY* Config_GetStruct(char* key) {
+CFGENTRY* Config_GetStruct(const char* key) {
 	CFGENTRY* ptr = firstCfgEntry;
 	while(ptr) {
 		if(String_CaselessCompare(ptr->key, key)) {
@@ -104,22 +118,35 @@ CFGENTRY* Config_GetStruct(char* key) {
 	return ptr;
 }
 
-void Config_SetInt(char* key, int value) {
+void Config_SetInt(const char* key, int value) {
 	CFGENTRY* ent = Config_GetStruct(key);
 	ent->value.vint = value;
+	ent->type = CFG_INT;
 }
 
-int Config_GetInt(char* key) {
+int Config_GetInt(const char* key) {
 	CFGENTRY* ent = Config_GetStruct(key);
 	return ent->value.vint;
 }
 
-void Config_SetStr(char* key, char* value) {
+void Config_SetStr(const char* key, char* value) {
 	CFGENTRY* ent = Config_GetStruct(key);
 	ent->value.vchar = value;
+	ent->type = CFG_STR;
 }
 
-char* Config_GetStr(char* key) {
+char* Config_GetStr(const char* key) {
 	CFGENTRY* ent = Config_GetStruct(key);
 	return ent->value.vchar;
+}
+
+void Config_SetBool(const char* key, bool value) {
+	CFGENTRY* ent = Config_GetStruct(key);
+	ent->value.vbool = value;
+	ent->type = CFG_BOOL;
+}
+
+bool Config_GetBool(const char* key) {
+	CFGENTRY* ent = Config_GetStruct(key);
+	return ent->value.vbool;
 }

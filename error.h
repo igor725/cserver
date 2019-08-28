@@ -21,6 +21,7 @@ char Error_WinBuf[512];
 enum ErrorCodes {
 	EC_OK = 0,
 	EC_MAGIC,
+	EC_CFGTYPE
 };
 
 void Error_SetCode(const char* efile, int eline, const char* efunc, int etype, uint ecode);
