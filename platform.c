@@ -1,7 +1,6 @@
 #include "core.h"
 #include "error.h"
 #include <string.h>
-#include <processthreadsapi.h>
 
 #if IS_WINDOWS
 /*
