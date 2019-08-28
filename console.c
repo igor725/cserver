@@ -40,7 +40,7 @@ THRET Console_ThreadProc(TARG lpParam) {
 
 void Console_StartListen() {
 	Console_Thread = Thread_Create((TFUNC)&Console_ThreadProc, NULL);
-	if(!Console_Thread)
+	if(!Thread_IsValid(Console_Thread))
 		Log_Warn("The server will NOT handle console commands: Console_Thread == NULL");
 }
 

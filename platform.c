@@ -78,6 +78,10 @@ THREAD Thread_Create(TFUNC func, const TARG lpParam) {
 	);
 }
 
+bool Thread_IsValid(THREAD th) {
+	return th != (THREAD)NULL;
+}
+
 void Thread_Close(THREAD th) {
 	if(th)
 		CloseHandle(th);
@@ -182,6 +186,7 @@ SOCKET Socket_Bind(const char* ip, ushort port) {
 	ssa.sin_port = htons(port);
 	ssa.sin_addr.s_addr = inet_addr(ip);
 
+	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void*)1, 4);
 	if(bind(fd, (const struct sockaddr*)&ssa, sizeof(ssa)) == -1) {
 		Error_Set(ET_SYS, GetLastError());
 		return INVALID_SOCKET;
@@ -204,11 +209,15 @@ void Socket_Close(SOCKET fd) {
 */
 THREAD Thread_Create(TFUNC func, const TARG arg) {
 	pthread_t thread;
-	int status;
-	if((status = pthread_create(&thread, arg, func, NULL)) != 0) {
+	if(pthread_create(&thread, arg, func, NULL) != 0) {
+		Error_Set(ET_SYS, errno);
 		return -1;
 	}
 	return (THREAD)thread;
+}
+
+bool Thread_IsValid(THREAD th) {
+	return th != (THREAD)-1;
 }
 
 void Thread_Close(THREAD th) {}

@@ -26,6 +26,12 @@ void Server_Accept() {
 			tmp->id = id;
 			tmp->status = CLIENT_OK;
 			tmp->thread = Thread_Create((TFUNC)&Client_ThreadProc, tmp);
+			if(!Thread_IsValid(tmp->thread)) {
+				Log_FormattedError();
+				Client_Kick(tmp, "client->thread == NULL");
+				return;
+			}
+
 			clients[id] = tmp;
 		} else {
 			Client_Kick(tmp, "Server is full");
@@ -44,7 +50,7 @@ bool Server_Bind(char* ip, ushort port) {
 
 	Client_Init();
 	acceptThread = Thread_Create((TFUNC)&Server_AcceptThread, NULL);
-	if(acceptThread)
+	if(Thread_IsValid(acceptThread))
 		Log_Info("%s %s started on %s:%d", SOFTWARE_NAME, SOFTWARE_VERSION, ip, port);
 	else {
 		Log_Error("acceptThread == NULL");
@@ -74,8 +80,6 @@ bool Server_InitialWork() {
 		return Server_Bind(Config_GetStr("ip"), Config_GetInt("port"));
 	else
 		return false;
-
-	return true;
 }
 
 void Server_DoStep() {

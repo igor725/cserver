@@ -31,6 +31,7 @@ void Socket_Close(SOCKET sock);
 	THREAD FUNCTIONS
 */
 THREAD Thread_Create(TFUNC func, const TARG lpParam);
+bool Thread_IsValid(THREAD th);
 void Thread_Close(THREAD th);
 
 /*

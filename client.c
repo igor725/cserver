@@ -228,7 +228,7 @@ bool Client_Spawn(CLIENT* client) {
 bool Client_Despawn(CLIENT* client) {
 	if(!client->playerData)
 		return false;
-		
+
 	if(!client->playerData->spawned)
 		return false;
 
@@ -247,7 +247,7 @@ bool Client_SendMap(CLIENT* client) {
 	Packet_WriteLvlInit(client);
 	client->playerData->state = STATE_MOTD;
 	client->playerData->mapThread = Thread_Create((TFUNC)&Client_MapThreadProc, client);
-	if(!client->playerData->mapThread) {
+	if(!Thread_IsValid(client->playerData->mapThread)) {
 		Client_Kick(client, "playerData->mapThread == NULL");
 		return false;
 	}
