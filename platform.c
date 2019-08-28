@@ -8,7 +8,12 @@
 */
 
 void* Memory_Alloc(size_t num, size_t size) {
-	return calloc(num, size);
+	void* ptr;
+	if((ptr = calloc(num, size)) == NULL) {
+		Error_Set(ET_SYS, GetLastError());
+		return NULL;
+	}
+	return ptr;
 }
 
 void Memory_Copy(void* dst, const void* src, size_t count) {
@@ -17,6 +22,72 @@ void Memory_Copy(void* dst, const void* src, size_t count) {
 
 void Memory_Fill(void* dst, size_t count, int val) {
 	memset(dst, val, count);
+}
+
+/*
+	WINDOWS FILE FUNCTIONS
+*/
+
+FILE* File_Open(const char* path, const char* mode) {
+	FILE* fp;
+	if((fp = fopen(path, mode)) == NULL) {
+		Error_Set(ET_SYS, GetLastError());
+	}
+	return fp;
+}
+
+size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp) {
+	if(!fp) {
+		Error_Set(ET_SYS, ERROR_INVALID_HANDLE);
+		return 0;
+	}
+
+	int ncount;
+	if(count != (ncount = fread(ptr, size, count, fp))) {
+		Error_Set(ET_SYS, GetLastError());
+		return ncount;
+	}
+	return count;
+}
+
+bool File_Write(const void* ptr, size_t size, size_t count, FILE* fp) {
+	if(!fp) {
+		Error_Set(ET_SYS, ERROR_INVALID_HANDLE);
+		return false;
+	}
+	if(count != fwrite(ptr, size, count, fp)) {
+		Error_Set(ET_SYS, GetLastError());
+		return false;
+	}
+	return true;
+}
+
+bool File_WriteFormat(FILE* fp, const char* fmt, ...) {
+	if(!fp) {
+		Error_Set(ET_SYS, ERROR_INVALID_HANDLE);
+		return false;
+	}
+	va_list args;
+	va_start(args, fmt);
+	vfprintf(fp, fmt, args);
+	va_end(args);
+	if(ferror(fp)) {
+		Error_Set(ET_SYS, GetLastError());
+		return false;
+	}
+	return true;
+}
+
+bool File_Close(FILE* fp) {
+	if(!fp) {
+		Error_Set(ET_SYS, ERROR_INVALID_HANDLE);
+		return false;
+	}
+	if(fclose(fp) != 0) {
+		Error_Set(ET_SYS, GetLastError());
+		return false;
+	}
+	return true;
 }
 
 /*
@@ -157,7 +228,12 @@ void Time_Format(char* buf, size_t buflen) {
 */
 
 void* Memory_Alloc(size_t num, size_t size) {
-	return calloc(num, size);
+	void* ptr;
+	if((ptr = calloc(num, size)) == NULL) {
+		Error_Set(ET_SYS, errno);
+		return NULL;
+	}
+	return ptr;
 }
 
 void Memory_Copy(void* dst, const void* src, size_t count) {
@@ -166,6 +242,73 @@ void Memory_Copy(void* dst, const void* src, size_t count) {
 
 void Memory_Fill(void* dst, size_t count, int val) {
 	memset(dst, val, count);
+}
+
+/*
+	POSIX FILE FUNCTIONS
+*/
+
+FILE* File_Open(const char* path, const char* mode) {
+	FILE* fp;
+	if((fp = fopen(path, mode)) == NULL) {
+		Error_Set(ET_SYS, errno);
+	}
+	return fp;
+}
+
+size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp) {
+	if(!fp) {
+		Error_Set(ET_SYS, EBADF);
+		return 0;
+	}
+
+	int ncount;
+	if(count != (ncount = fread(ptr, size, count, fp))) {
+		Error_Set(ET_SYS, errno);
+		return ncount;
+	}
+	return count;
+}
+
+bool File_Write(const void* ptr, size_t size, size_t count, FILE* fp) {
+	if(!fp) {
+		Error_Set(ET_SYS, EBADF);
+		return false;
+	}
+	if(count != fwrite(ptr, size, count, fp)) {
+		Error_Set(ET_SYS, errno);
+		return false;
+	}
+	return true;
+}
+
+bool File_WriteFormat(FILE* fp, const char* fmt, ...) {
+	if(!fp) {
+		Error_Set(ET_SYS, EBADF);
+		return false;
+	}
+
+	va_list args;
+	va_start(args, fmt);
+	vfprintf(fp, fmt, args);
+	va_end(args);
+	if(ferror(fp)) {
+		Error_Set(ET_SYS, errno);
+		return false;
+	}
+	return true;
+}
+
+bool File_Close(FILE* fp) {
+	if(!fp) {
+		Error_Set(ET_SYS, EBADF);
+		return false;
+	}
+	if(fclose(fp) != 0) {
+		Error_Set(ET_SYS, errno);
+		return false;
+	}
+	return true;
 }
 
 /*
@@ -179,7 +322,7 @@ SOCKET Socket_Bind(const char* ip, ushort port) {
 	SOCKET fd;
 
 	if((fd = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
-		Error_Set(ET_SYS, GetLastError());
+		Error_Set(ET_SYS, errno);
 		return INVALID_SOCKET;
 	}
 
@@ -189,17 +332,17 @@ SOCKET Socket_Bind(const char* ip, ushort port) {
 	ssa.sin_addr.s_addr = inet_addr(ip);
 
 	if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0) {
-		Error_Set(ET_SYS, GetLastError());
+		Error_Set(ET_SYS, errno);
 		return INVALID_SOCKET;
 	}
 
 	if(bind(fd, (const struct sockaddr*)&ssa, sizeof(ssa)) == -1) {
-		Error_Set(ET_SYS, GetLastError());
+		Error_Set(ET_SYS, errno);
 		return INVALID_SOCKET;
 	}
 
 	if(listen(fd, SOMAXCONN) == -1) {
-		Error_Set(ET_SYS, GetLastError());
+		Error_Set(ET_SYS, errno);
 		return INVALID_SOCKET;
 	}
 

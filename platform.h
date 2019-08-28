@@ -21,6 +21,16 @@ void  Memory_Copy(void* dst, const void* src, size_t count);
 void  Memory_Fill(void* dst, size_t count, int val);
 
 /*
+	FILE FUNCTIONS
+*/
+
+FILE* File_Open(const char* path, const char* mode);
+size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp);
+bool File_Write(const void* ptr, size_t size, size_t count, FILE* fp);
+bool File_WriteFormat(FILE* fp, const char* fmt, ...);
+bool File_Close(FILE* fp);
+
+/*
 	SOCKET FUNCTIONS
 */
 bool Socket_Init();

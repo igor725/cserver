@@ -20,13 +20,17 @@ char Error_WinBuf[512];
 
 enum ErrorCodes {
 	EC_OK = 0,
+	EC_NULLPTR,
 	EC_MAGIC,
-	EC_CFGTYPE
+	EC_WIUNKID,
+	EC_CFGTYPE,
+	EC_CFGEND,
 };
 
 void Error_SetCode(const char* efile, int eline, const char* efunc, int etype, uint ecode);
 const char* Error_GetString();
 const char* Error_GetFunc();
 const char* Error_GetFile();
+const char* Error_GetType();
 void Error_SetSuccess();
 #endif

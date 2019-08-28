@@ -2,10 +2,19 @@
 #include <zlib.h>
 #include "error.h"
 
+const char* const Error_Types[] = {
+	"SERVER",
+	"ZLIB",
+	"SYSTEM"
+};
+
 const char* const Error_Strings[] = {
 	"All ok",
+	"Pointer is NULL",
 	"Invalid magic",
-	"Unknown cfg entry type"
+	"Unknown data type ID",
+	"Unknown cfg entry type",
+	"Unexpected end of cfg file",
 };
 
 char Error_StrBuf[512] = {0};
@@ -48,6 +57,12 @@ const char* Error_GetFile() {
 		return Error_File;
 	else
 		return "[unknown file]";
+}
+
+const char* Error_GetType() {
+	if(Error_Type == ET_NOERR)
+		return "NOERR";
+	return Error_Types[Error_Type];
 }
 
 void Error_SetSuccess() {

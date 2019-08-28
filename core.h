@@ -24,7 +24,6 @@
 #define INVALID_SOCKET -1
 #define SD_SEND SHUT_WR
 typedef int SOCKET;
-#define GetLastError() (errno)
 #define min(a, b) (((a)<(b))?(a):(b))
 #define max(a, b) (((a)>(b))?(a):(b))
 #define Sleep(ms) (usleep(ms * 1000))
@@ -43,6 +42,7 @@ typedef unsigned char  Order;
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include "platform.h"
 
 #define DELIM " "

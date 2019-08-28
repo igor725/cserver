@@ -3,7 +3,7 @@
 #include "error.h"
 
 int Log_Level = 3;
-const char* const Log_Levels[5] = {
+const char* const Log_Levels[] = {
 	"ERROR",
 	"INFO ",
 	"CHAT ",
@@ -43,9 +43,15 @@ void Log_Error(const char* str, ...) {
 }
 
 void Log_FormattedError() {
-	if(Error_Type == ET_NOERR)
+	if(Error_Type == ET_NOERR) {
+		Log_Warn("Log_FormattedError() called, but Error_Type is ET_NOERR");
 		return;
-	Log_Error("%s:%d in %s(...): %s (%d)", Error_GetFile(), Error_Line, Error_GetFunc(), Error_GetString(), Error_Code);
+	}
+	Log_Error("%s:%d in %s(...): %s/%s (%d)",
+		Error_GetFile(), Error_Line,
+		Error_GetFunc(), Error_GetType(),
+		Error_GetString(), Error_Code
+	);
 	Error_SetSuccess();
 }
 

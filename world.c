@@ -62,66 +62,69 @@ void World_GenerateFlat(WORLD* world) {
 	wi->spawnVec->z = (float)dz / 2;
 }
 
-void _WriteData(FILE* fp, uchar dataType, void* ptr, int size) {
-	if(!fwrite(&dataType, 1, 1, fp))
-		return;
-	if(ptr && !fwrite(ptr, size, 1, fp))
-		return;
+bool _WriteData(FILE* fp, uchar dataType, void* ptr, int size) {
+	if(!File_Write(&dataType, 1, 1, fp))
+		return false;
+	if(ptr && !File_Write(ptr, size, 1, fp))
+		return false;
+	return true;
 }
 
 bool World_WriteInfo(WORLD* world, FILE* fp) {
 	int magic = WORLD_MAGIC;
-	if(fwrite((char*)&magic, 4, 1, fp) != 1)
+	if(!File_Write((char*)&magic, 4, 1, fp))
 		return false;
-	_WriteData(fp, DT_DIM, world->info->dim, sizeof(WORLDDIMS));
-	_WriteData(fp, DT_SV, world->info->spawnVec, sizeof(VECTOR));
-	_WriteData(fp, DT_SA, world->info->spawnAng, sizeof(ANGLE));
+	return _WriteData(fp, DT_DIM, world->info->dim, sizeof(WORLDDIMS)) &&
+	_WriteData(fp, DT_SV, world->info->spawnVec, sizeof(VECTOR)) &&
+	_WriteData(fp, DT_SA, world->info->spawnAng, sizeof(ANGLE)) &&
 	_WriteData(fp, DT_END, NULL, 0);
-	return true;
 }
 
 bool World_ReadInfo(WORLD* world, FILE* fp) {
 	uchar id = 0;
 	uint magic = 0;
-	fread(&magic, 4, 1, fp);
+	if(!File_Read(&magic, 4, 1, fp))
+		return false;
+
 	if(WORLD_MAGIC != magic) {
 		Error_Set(ET_SERVER, EC_MAGIC);
 		return false;
 	}
 
-	while(fread(&id, 1, 1, fp) == 1 && id != DT_END) {
+	while(File_Read(&id, 1, 1, fp) == 1) {
 		switch (id) {
 			case DT_DIM:
-				if(fread(world->info->dim, sizeof(WORLDDIMS), 1, fp) != 1)
+				if(File_Read(world->info->dim, sizeof(WORLDDIMS), 1, fp) != 1)
 					return false;
 				break;
 			case DT_SV:
-				if(fread(world->info->spawnVec, sizeof(VECTOR), 1, fp) != 1)
+				if(File_Read(world->info->spawnVec, sizeof(VECTOR), 1, fp) != 1)
 					return false;
 				break;
 			case DT_SA:
-				if(fread(world->info->spawnAng, sizeof(ANGLE), 1, fp) != 1)
+				if(File_Read(world->info->spawnAng, sizeof(ANGLE), 1, fp) != 1)
 					return false;
 				break;
+			case DT_END:
+				return true;
 			default:
+				Error_Set(ET_SERVER, EC_WIUNKID);
 				return false;
 		}
 	}
 
-	return true;
+	return false;
 }
 
 int World_Save(WORLD* world) {
 	char name[256];
 	sprintf(name, "%s.cws", world->name);
 	FILE* fp;
-	if(!(fp = fopen(name, "wb"))) {
-		Error_Set(ET_SYS, GetLastError());
+	if(!(fp = File_Open(name, "wb")))
 		return false;
-	}
 
 	if(!World_WriteInfo(world, fp)) {
-		fclose(fp);
+		File_Close(fp);
 		return false;
 	}
 
@@ -145,17 +148,13 @@ int World_Save(WORLD* world) {
 			Error_Set(ET_ZLIB, ret);
 			return false;
 		}
-		uint nb = 1024 - stream.avail_out;
-
-		if(fwrite(out, 1, 1024 - stream.avail_out, fp) != nb || ferror(fp)){
+		if(!File_Write(out, 1, 1024 - stream.avail_out, fp)){
 			deflateEnd(&stream);
-			Error_Set(ET_SYS, 0);
 			return false;
 		}
 	} while(stream.avail_out == 0);
 
-	fclose(fp);
-	Error_SetSuccess();
+	File_Close(fp);
 	return true;
 }
 
@@ -163,13 +162,11 @@ int World_Load(WORLD* world) {
 	char name[256];
 	sprintf(name, "%s.cws", world->name);
 	FILE* fp;
-	if(!(fp = fopen(name, "rb"))) {
-		Error_Set(ET_SYS, GetLastError());
+	if(!(fp = File_Open(name, "rb")))
 		return false;
-	}
 
 	if(!World_ReadInfo(world, fp)) {
-		fclose(fp);
+		File_Close(fp);
 		return false;
 	} else {
 		World_AllocBlockArray(world);
@@ -187,9 +184,8 @@ int World_Load(WORLD* world) {
 	stream.next_out = (uchar*)world->data;
 
 	do {
-		stream.avail_in = (uint)fread(in, 1, 1024, fp);
+		stream.avail_in = (uint)File_Read(in, 1, 1024, fp);
 		if(ferror(fp)) {
-			Error_Set(ET_SYS, GetLastError());
 			inflateEnd(&stream);
 			return false;
 		}
@@ -210,8 +206,7 @@ int World_Load(WORLD* world) {
 		} while(stream.avail_out == 0);
 	} while(ret != Z_STREAM_END);
 
-	fclose(fp);
-	Error_SetSuccess();
+	File_Close(fp);
 	return true;
 }
 

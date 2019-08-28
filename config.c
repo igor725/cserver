@@ -3,11 +3,9 @@
 #include "config.h"
 
 bool Config_Load(const char* filename) {
-	FILE* fp = fopen(filename, "r");
-	if(!fp) {
-		Error_Set(ET_SYS, GetLastError());
+	FILE* fp;
+	if(!(fp = File_Open(filename, "r")))
 		return false;
-	}
 
 	int type;
 	int count = 0;
@@ -16,32 +14,46 @@ bool Config_Load(const char* filename) {
 	char value[128] = {0};
 
 	while(!feof(fp)) {
+		while(ch == '\n') {
+			ch = fgetc(fp);
+		}
 		Memory_Fill(key, 128, 0);
 		Memory_Fill(value, 128, 0);
 		do {
-			key[count] = ch;
+			if(ch != '\n' && ch != '\r' && ch != ' ') {
+				key[count] = ch;
+				count++;
+			}
 			ch = fgetc(fp);
-			count++;
 		} while(ch != '=' && !feof(fp));
-		if(feof(fp)) return false;
+		if(feof(fp)) {
+			Error_Set(ET_SERVER, EC_CFGEND);
+			return false;
+		}
 
 		count = 0;
 		type = fgetc(fp);
-		ch = fgetc(fp);
-		do {
-			if(ch != '\r')
+		while((ch = fgetc(fp)) != EOF && ch != '\n') {
+			if(ch != '\r') {
 				value[count] = ch;
-			count++;
-			ch = fgetc(fp);
-		} while(ch != '\n' && !feof(fp));
+				count++;
+			}
+		}
+		if(count < 1) {
+			Error_Set(ET_SERVER, EC_CFGEND);
+			return false;
+		}
 		count = 0;
 
-		char* hkey = Memory_Alloc(String_Length(key) + 1, 1);
+		char* hkey;
+		if(!(hkey = Memory_Alloc(String_Length(key) + 1, 1)))
+			return false;
 		char* hval;
 		String_CopyUnsafe(hkey, key);
 		switch (type) {
 			case CFG_STR:
-				hval = Memory_Alloc(String_Length(value) + 1, 1);
+				if(!(hval = Memory_Alloc(String_Length(value) + 1, 1)))
+					return false;
 				String_CopyUnsafe(hval, value);
 				Config_SetStr(hkey, hval);
 				break;
@@ -58,39 +70,43 @@ bool Config_Load(const char* filename) {
 		ch = fgetc(fp);
 	}
 
-	fclose(fp);
+	File_Close(fp);
 	return true;
 }
 
 bool Config_Save(const char* filename) {
-	FILE* fp = fopen(filename, "w");
-	if(!fp) {
-		Error_Set(ET_SYS, GetLastError());
+	FILE* fp;
+	if(!(fp = File_Open(filename, "w"))) {
 		return false;
 	}
 
 	CFGENTRY* ptr = firstCfgEntry;
 	while(ptr) {
-		fwrite(ptr->key, String_Length(ptr->key), 1, fp);
+		if(!File_Write(ptr->key, String_Length(ptr->key), 1, fp))
+			return false;
 		switch (ptr->type) {
 			case CFG_STR:
-				fprintf(fp, "=s%s\n", (char*)ptr->value.vchar);
+				if(!File_WriteFormat(fp, "=s%s\n", (char*)ptr->value.vchar))
+					return false;
 				break;
 			case CFG_INT:
-				fprintf(fp, "=i%d\n", (int)ptr->value.vint);
+				if(!File_WriteFormat(fp, "=i%d\n", (int)ptr->value.vint))
+					return false;
 				break;
 			case CFG_BOOL:
-				fprintf(fp, "=b%s\n", ptr->value.vbool ? "True" : "False");
+				if(!File_WriteFormat(fp, "=b%s\n", ptr->value.vbool ? "True" : "False"))
+					return false;
 				break;
 			default:
-				fwrite("=sUnknown value\n", 16, 1, fp);
+				if(!File_Write("=sUnknown value\n", 16, 1, fp))
+					return false;
 				break;
 		}
 		ptr = ptr->next;
 	}
 
-	fclose(fp);
-	return false;
+	File_Close(fp);
+	return true;
 }
 
 CFGENTRY* Config_GetStruct(const char* key) {
