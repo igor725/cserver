@@ -126,8 +126,8 @@ THRET Client_MapThreadProc(TARG lpParam) {
 }
 
 void Client_Init() {
-	Broadcast = calloc(1, sizeof(struct client));
-	Broadcast->wrbuf = calloc(2048, 1);
+	Broadcast = Memory_Alloc(1, sizeof(CLIENT));
+	Broadcast->wrbuf = Memory_Alloc(2048, 1);
 }
 
 void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort z) {
@@ -165,8 +165,8 @@ bool Client_CheckAuth(CLIENT* client) { //TODO: ClassiCube auth
 }
 
 void Client_SetPos(CLIENT* client, VECTOR* pos, ANGLE* ang) {
-	Memory_Copy(client->playerData->position, pos, sizeof(struct vector));
-	Memory_Copy(client->playerData->angle, ang, sizeof(struct angle));
+	Memory_Copy(client->playerData->position, pos, sizeof(VECTOR));
+	Memory_Copy(client->playerData->angle, ang, sizeof(ANGLE));
 }
 
 void Client_Destroy(CLIENT* client) {

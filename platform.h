@@ -1,13 +1,14 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-typedef void* THREAD;
 typedef void* TARG;
 
 #ifdef _WIN32
+typedef void* THREAD;
 typedef uint THRET;
 typedef THRET(*TFUNC)(TARG);
 #else
+typedef pthread_t THREAD;
 typedef void*(*TFUNC)(TARG);
 typedef void* THRET;
 #endif
@@ -15,8 +16,9 @@ typedef void* THRET;
 /*
 	MEMORY FUNCTIONS
 */
-void Memory_Copy(void* dst, const void* src, size_t count);
-void Memory_Fill(void* dst, size_t count, int val);
+void* Memory_Alloc(size_t num, size_t size);
+void  Memory_Copy(void* dst, const void* src, size_t count);
+void  Memory_Fill(void* dst, size_t count, int val);
 
 /*
 	SOCKET FUNCTIONS

@@ -5,7 +5,7 @@
 #include "server.h"
 
 void Command_Register(char* cmd, cmdFunc func) {
-	COMMAND* tmp = calloc(1, sizeof(struct command));
+	COMMAND* tmp = Memory_Alloc(1, sizeof(COMMAND));
 
 	tmp->name = cmd;
 	tmp->func = func;
@@ -43,7 +43,7 @@ void Command_RegisterDefault() {
 }
 
 bool Command_Handle(char* cmd, CLIENT* caller) {
-	char* ret = calloc(512, 1);
+	char* ret = Memory_Alloc(512, 1);
 	char* args = cmd;
 
 	while(1) {
@@ -65,7 +65,7 @@ bool Command_Handle(char* cmd, CLIENT* caller) {
 				if(caller)
 					Packet_WriteChat(caller, 0, ret);
 				else
-					Log_Info(ret);	
+					Log_Info(ret);
 			}
 			free(ret);
 			return true;

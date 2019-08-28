@@ -16,7 +16,7 @@ int ReadString(char* data, char** dst) {
 	while(data[end] == ' ') --end;
 	++end;
 
-	char* str = calloc(end + 1, 1);
+	char* str = Memory_Alloc(end + 1, 1);
 	Memory_Copy(str, data, end);
 	str[end] = 0;
 	dst[0] = str;
@@ -54,7 +54,7 @@ char* WriteClPos(char* data, CLIENT* client, bool stand) {
 }
 
 void Packet_Register(int id, const char* name, ushort size, packetHandler handler) {
-	PACKET* tmp = calloc(1, sizeof(struct packet));
+	PACKET* tmp = (PACKET*)Memory_Alloc(1, sizeof(PACKET));
 
 	tmp->name = name;
 	tmp->size = size;
@@ -174,10 +174,10 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 		return true;
 	}
 
-	client->playerData = calloc(1, sizeof(struct playerData));
+	client->playerData = (PLAYERDATA*)Memory_Alloc(1, sizeof(PLAYERDATA));
 	client->playerData->currentWorld = worlds[0];
-	client->playerData->position = calloc(1, sizeof(struct vector));
-	client->playerData->angle = calloc(1, sizeof(struct angle));
+	client->playerData->position = (VECTOR*)Memory_Alloc(1, sizeof(VECTOR));
+	client->playerData->angle = (ANGLE*)Memory_Alloc(1, sizeof(ANGLE));
 
 	Client_SetPos(client, worlds[0]->info->spawnVec, worlds[0]->info->spawnAng);
 	ReadString(++data, &client->playerData->name); data += 63;
@@ -202,7 +202,7 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	}
 
 	if(cpeEnabled) {
-		client->cpeData = calloc(1, sizeof(struct cpeData));
+		client->cpeData = (CPEDATA*)Memory_Alloc(1, sizeof(CPEDATA));
 		CPE_StartHandshake(client);
 	} else {
 		Event_OnHandshakeDone(client);

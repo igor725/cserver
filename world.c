@@ -4,13 +4,13 @@
 #include "world.h"
 
 WORLD* World_Create(char* name) {
-	WORLD* tmp = calloc(1, sizeof(struct world));
+	WORLD* tmp = (WORLD*)Memory_Alloc(1, sizeof(WORLD));
 
 	tmp->name = name;
-	tmp->info = calloc(1, sizeof(struct worldInfo));
-	tmp->info->dim = calloc(1, sizeof(struct worldDims));
-	tmp->info->spawnVec = calloc(1, sizeof(struct vector));
-	tmp->info->spawnAng = calloc(1, sizeof(struct angle));
+	tmp->info = (WORLDINFO*)Memory_Alloc(1, sizeof(WORLDINFO));
+	tmp->info->dim = (WORLDDIMS*)Memory_Alloc(1, sizeof(WORLDDIMS));
+	tmp->info->spawnVec = (VECTOR*)Memory_Alloc(1, sizeof(VECTOR));
+	tmp->info->spawnAng = (ANGLE*)Memory_Alloc(1, sizeof(ANGLE));
 	return tmp;
 }
 
@@ -31,7 +31,7 @@ void World_AllocBlockArray(WORLD* world) {
 	dz = wi->dim->length;
 
 	world->size = 4 + dx * dy * dz;
-	BlockID* data = calloc(world->size, sizeof(BlockID));
+	BlockID* data = (BlockID*)Memory_Alloc(world->size, sizeof(BlockID));
 	world->data = data;
 }
 
@@ -73,9 +73,9 @@ bool World_WriteInfo(WORLD* world, FILE* fp) {
 	int magic = WORLD_MAGIC;
 	if(fwrite((char*)&magic, 4, 1, fp) != 1)
 		return false;
-	_WriteData(fp, DT_DIM, world->info->dim, sizeof(struct worldDims));
-	_WriteData(fp, DT_SV, world->info->spawnVec, sizeof(struct vector));
-	_WriteData(fp, DT_SA, world->info->spawnAng, sizeof(struct angle));
+	_WriteData(fp, DT_DIM, world->info->dim, sizeof(WORLDDIMS));
+	_WriteData(fp, DT_SV, world->info->spawnVec, sizeof(VECTOR));
+	_WriteData(fp, DT_SA, world->info->spawnAng, sizeof(ANGLE));
 	_WriteData(fp, DT_END, NULL, 0);
 	return true;
 }
@@ -92,15 +92,15 @@ bool World_ReadInfo(WORLD* world, FILE* fp) {
 	while(fread(&id, 1, 1, fp) == 1 && id != DT_END) {
 		switch (id) {
 			case DT_DIM:
-				if(fread(world->info->dim, sizeof(struct worldDims), 1, fp) != 1)
+				if(fread(world->info->dim, sizeof(WORLDDIMS), 1, fp) != 1)
 					return false;
 				break;
 			case DT_SV:
-				if(fread(world->info->spawnVec, sizeof(struct vector), 1, fp) != 1)
+				if(fread(world->info->spawnVec, sizeof(VECTOR), 1, fp) != 1)
 					return false;
 				break;
 			case DT_SA:
-				if(fread(world->info->spawnAng, sizeof(struct angle), 1, fp) != 1)
+				if(fread(world->info->spawnAng, sizeof(ANGLE), 1, fp) != 1)
 					return false;
 				break;
 			default:

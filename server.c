@@ -14,12 +14,12 @@ void Server_Accept() {
 
 	SOCKET fd = accept(server, (struct sockaddr*)&caddr, &caddrsz);
 	if(fd != INVALID_SOCKET) {
-	 	CLIENT* tmp = calloc(1, sizeof(struct client));
+	 	CLIENT* tmp = (CLIENT*)Memory_Alloc(1, sizeof(CLIENT));
 
 		tmp->sock = fd;
 		tmp->bufpos = 0;
-		tmp->rdbuf = calloc(131, 1);
-		tmp->wrbuf = calloc(2048, 1);
+		tmp->rdbuf = (char*)Memory_Alloc(131, 1);
+		tmp->wrbuf = (char*)Memory_Alloc(2048, 1);
 
 		int id = Client_FindFreeID();
 		if(id >= 0) {

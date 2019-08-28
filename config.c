@@ -38,10 +38,10 @@ bool Config_Load(const char* filename) {
 		value[count] = 0;
 		count = 0;
 
-		char* hkey = calloc(String_Length(key) + 1, 1);
+		char* hkey = Memory_Alloc(String_Length(key) + 1, 1);
 		String_CopyUnsafe(hkey, key);
 		if(type == CFG_STR) {
-			char* hval = calloc(String_Length(value) + 1, 1);
+			char* hval = Memory_Alloc(String_Length(value) + 1, 1);
 			String_CopyUnsafe(hval, value);
 			Config_SetStr(hkey, hval);
 		} else if(type == CFG_INT) {
@@ -94,11 +94,11 @@ CFGENTRY* Config_GetStruct(char* key) {
 	}
 
 	if(!ptr) {
-		ptr = (CFGENTRY*)calloc(1, sizeof(struct cfgEntry));
+		ptr = (CFGENTRY*)Memory_Alloc(1, sizeof(CFGENTRY));
 		firstCfgEntry = ptr;
 		ptr->key = key;
 	} else {
-		ptr->next = (CFGENTRY*)calloc(1, sizeof(struct cfgEntry));
+		ptr->next = (CFGENTRY*)Memory_Alloc(1, sizeof(CFGENTRY));
 		ptr = ptr->next;
 		ptr->key = key;
 	}

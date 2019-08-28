@@ -7,6 +7,10 @@
 	WINDOWS MEMORY FUNCTIONS
 */
 
+void* Memory_Alloc(size_t num, size_t size) {
+	return calloc(num, size);
+}
+
 void Memory_Copy(void* dst, const void* src, size_t count) {
 	memcpy(dst, src, count);
 }
@@ -146,6 +150,10 @@ void Time_Format(char* buf, size_t buflen) {
 	POSIX MEMORY FUNCTIONS
 */
 
+void* Memory_Alloc(size_t num, size_t size) {
+	return calloc(num, size);
+}
+
 void Memory_Copy(void* dst, const void* src, size_t count) {
 	memcpy(dst, src, count);
 }
@@ -195,7 +203,12 @@ void Socket_Close(SOCKET fd) {
 	POSIX THREAD FUNCTIONS
 */
 THREAD Thread_Create(TFUNC func, TARG arg) {
-	return NULL;
+	pthread_t thread;
+	int status;
+	if((status = pthread_create(&thread, NULL, func, NULL)) != 0) {
+		return NULL;
+	}
+	return (THREAD)thread;
 }
 
 void Thread_Close(THREAD th) {}

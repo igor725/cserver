@@ -6,7 +6,7 @@
 #include "block.h"
 
 void CPE_RegisterExtension(char* name, int version) {
-	EXT* tmp = calloc(1, sizeof(struct ext));
+	EXT* tmp = (EXT*)Memory_Alloc(1, sizeof(EXT));
 
 	tmp->name = name;
 	tmp->version = version;
@@ -119,8 +119,7 @@ bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
 bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
 	if(!client->cpeData) return false;
 
-	EXT* tmp = calloc(1, sizeof(struct ext));
-
+	EXT* tmp = (EXT*)Memory_Alloc(1, sizeof(EXT));
 	ReadString(data, &tmp->name);data += 63;
 	tmp->version = ntohl(*(uint*)++data);
 
