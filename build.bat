@@ -71,6 +71,7 @@ exit /B 0
 
 :cloc
 cloc --exclude-dir=zlib .
+exit /B 0
 
 :clean
 del *.obj *.exe *.dll
