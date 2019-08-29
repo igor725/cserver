@@ -6,6 +6,9 @@
 #include "config.h"
 #include "console.h"
 #include "command.h"
+#ifdef LUA_ENABLED
+#include "luaplugin.h"
+#endif
 
 void Server_Accept() {
 	struct sockaddr_in caddr;
@@ -62,6 +65,12 @@ bool Server_Bind(char* ip, ushort port) {
 bool Server_InitialWork() {
 	if(!Socket_Init())
 		return false;
+
+#ifdef LUA_ENABLED
+	Log_Info("Starting LuaVM...");
+	LuaPlugin_Start();
+#endif
+
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
@@ -109,6 +118,10 @@ void Server_Stop() {
 		Thread_Close(acceptThread);
 	Console_Close();
 	Socket_Close(server);
+#ifdef LUA_ENABLED
+	Log_Info("Destroying lua_State...");
+	LuaPlugin_Close();
+#endif
 }
 
 int main(int argc, char** argv) {
