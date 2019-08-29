@@ -29,5 +29,5 @@ void  Config_SetStr(const char* key, char* value);
 void Config_SetBool(const char* key, bool value);
 bool Config_GetBool(const char* key);
 
-CFGENTRY* firstCfgEntry;
+CFGENTRY* headCfgEntry;
 #endif

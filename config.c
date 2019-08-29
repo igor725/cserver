@@ -78,7 +78,7 @@ bool Config_Save(const char* filename) {
 		return false;
 	}
 
-	CFGENTRY* ptr = firstCfgEntry;
+	CFGENTRY* ptr = headCfgEntry;
 	while(ptr) {
 		if(!File_Write(ptr->key, String_Length(ptr->key), 1, fp))
 			return false;
@@ -108,7 +108,7 @@ bool Config_Save(const char* filename) {
 }
 
 CFGENTRY* Config_GetStruct(const char* key) {
-	CFGENTRY* ptr = firstCfgEntry;
+	CFGENTRY* ptr = headCfgEntry;
 	while(ptr) {
 		if(String_CaselessCompare(ptr->key, key)) {
 			return ptr;
@@ -119,15 +119,10 @@ CFGENTRY* Config_GetStruct(const char* key) {
 			ptr = ptr->next;
 	}
 
-	if(!ptr) {
-		ptr = (CFGENTRY*)Memory_Alloc(1, sizeof(CFGENTRY));
-		firstCfgEntry = ptr;
-		ptr->key = key;
-	} else {
-		ptr->next = (CFGENTRY*)Memory_Alloc(1, sizeof(CFGENTRY));
-		ptr = ptr->next;
-		ptr->key = key;
-	}
+	ptr = (CFGENTRY*)Memory_Alloc(1, sizeof(CFGENTRY));
+	ptr->next = headCfgEntry;
+	ptr->key = key;
+	headCfgEntry = ptr;
 
 	return ptr;
 }
