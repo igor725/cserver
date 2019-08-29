@@ -1,13 +1,12 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
-
 typedef void* TARG;
 
-#if IS_WINDOWS
+#if defined(WINDOWS)
 typedef void* THREAD;
 typedef uint THRET;
 typedef THRET(*TFUNC)(TARG);
-#elif IS_POSIX
+#elif defined(POSIX)
 typedef pthread_t THREAD;
 typedef void*(*TFUNC)(TARG);
 typedef void* THRET;

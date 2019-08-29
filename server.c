@@ -1,6 +1,5 @@
 #include "core.h"
 #include "log.h"
-#include "error.h"
 #include "server.h"
 #include "client.h"
 #include "packets.h"

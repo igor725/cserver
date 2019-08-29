@@ -18,6 +18,7 @@ bool CPEHandler_PlayerClick(CLIENT* client, char* data);
 
 void CPEPacket_WriteInfo(CLIENT *client);
 void CPEPacket_WriteExtEntry(CLIENT* client, EXT* ext);
+void CPEPAcket_WriteClickDistance(CLIENT* client, short dist);
 void CPEPacket_WriteWeatherType(CLIENT* client, Weather type);
 void CPEPacket_WriteSetHotBar(CLIENT* client, Order order, BlockID block);
 void CPEPacket_WriteInventoryOrder(CLIENT* client, Order order, BlockID block);

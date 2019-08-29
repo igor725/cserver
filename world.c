@@ -1,5 +1,4 @@
 #include "core.h"
-#include "error.h"
 #include <zlib.h>
 #include "world.h"
 

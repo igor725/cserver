@@ -1,6 +1,5 @@
 #ifndef SERVER_H
 #define SERVER_H
-#include "core.h"
 #include "world.h"
 
 bool Server_InitialWork();

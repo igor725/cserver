@@ -1,11 +1,9 @@
 #ifndef CORE_H
 #define CORE_H
-
 #if defined(_WIN32)
 #pragma warning(disable:4706)
 #pragma warning(disable:4100)
-#define IS_WINDOWS 1
-#define IS_POSIX   0
+#define WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #define _CRT_SECURE_NO_WARNINGS
 #include <winsock2.h>
@@ -25,8 +23,7 @@ typedef int SOCKET;
 #define max(a, b) (((a)>(b))?(a):(b))
 #define Sleep(ms) (usleep(ms * 1000))
 #define INVALID_SOCKET -1
-#define IS_WINDOWS      0
-#define IS_POSIX        1
+#define POSIX
 #define SD_SEND   SHUT_WR
 #endif
 
@@ -45,6 +42,7 @@ typedef unsigned char  Order;
 #include <stdlib.h>
 #include <stdarg.h>
 #include "platform.h"
+#include "error.h"
 
 #define DELIM " "
 #define SOFTWARE_NAME "C-Server"

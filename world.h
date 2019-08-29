@@ -1,6 +1,5 @@
 #ifndef WORLD_H
 #define WORLD_H
-
 #define WORLD_MAGIC 1413563479
 
 enum WorldDataType {

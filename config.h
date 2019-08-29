@@ -1,6 +1,5 @@
 #ifndef CONFIG_H
 #define CONFIG_H
-
 enum cfgTypes {
 	CFG_BOOL = 'b',
 	CFG_INT  = 'i',

@@ -1,6 +1,5 @@
 #ifndef CLIENT_H
 #define CLIENT_H
-#include "core.h"
 #include "world.h"
 
 enum SockStatuses {

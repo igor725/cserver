@@ -1,5 +1,4 @@
 #include "core.h"
-#include "error.h"
 #include "config.h"
 
 bool Config_Load(const char* filename) {

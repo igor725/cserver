@@ -1,8 +1,7 @@
 #include "core.h"
-#include "error.h"
 #include <string.h>
 
-#if IS_WINDOWS
+#if defined(WINDOWS)
 /*
 	WINDOWS MEMORY FUNCTIONS
 */
@@ -230,7 +229,7 @@ void Time_Format(char* buf, size_t buflen) {
 		time.wMilliseconds
 	);
 }
-#elif IS_POSIX
+#elif defined(POSIX)
 /*
 	POSIX MEMORY FUNCTIONS
 */

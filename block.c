@@ -1,3 +1,4 @@
+#include "core.h"
 #include "block.h"
 
 bool Block_IsValid(BlockID id) {

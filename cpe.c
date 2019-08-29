@@ -36,6 +36,7 @@ void Packet_RegisterCPEDefault() {
 	CPE_RegisterExtension("TwoWayPing", 1);
 	CPE_RegisterExtension("PlayerClick", 1);
 	CPE_RegisterExtension("MessageTypes", 1);
+	CPE_RegisterExtension("ClockDistance", 1);
 	CPE_RegisterExtension("InventoryOrder", 1);
 	CPE_RegisterExtension("EnvWeatherType", 1);
 	Packet_Register(0x10, "ExtInfo", 67, &CPEHandler_ExtInfo);
@@ -58,6 +59,13 @@ void CPEPacket_WriteExtEntry(CLIENT* client, EXT* ext) {
 	WriteString(++data, ext->name); data += 63;
 	*(uint*)++data = htonl(ext->version);
 	Client_Send(client, 69);
+}
+
+void CPEPAcket_WriteClickDistance(CLIENT* client, short dist) {
+	char* data = client->wrbuf;
+	*data = 0x12;
+	*(short*)++data = dist;
+	Client_Send(client, 3);
 }
 
 void CPEPacket_WriteInventoryOrder(CLIENT* client, Order order, BlockID block) {

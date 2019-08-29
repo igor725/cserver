@@ -1,7 +1,5 @@
 #ifndef BLOCK_H
 #define BLOCK_H
-#include "core.h"
-
 enum Blocks {
 	BLOCK_AIR = 0,
 	BLOCK_STONE = 1,
