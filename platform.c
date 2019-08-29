@@ -216,6 +216,13 @@ void String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* arg
 	vsprintf_s(buf, len, str, *args);
 }
 
+void String_FormatBuf(char* buf, size_t len, const char* str, ...) {
+	va_list args;
+	va_start(args, str);
+	vsprintf_s(buf, len, str, args);
+	va_end(args);
+}
+
 /*
 	WINDOWS TIME FUNCTIONS
 */
@@ -428,6 +435,13 @@ uint String_FormatError(uint code, char* buf, uint buflen) {
 
 void String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* args) {
 	vsnprintf(buf, len, str, *args);
+}
+
+void String_FormatBuf(char* buf, size_t len, const char* str, ...) {
+	va_list args;
+	va_start(atgs, str);
+	vsprintf_s(buf, lenm str, args);
+	va_end();
 }
 
 /*

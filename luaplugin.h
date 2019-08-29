@@ -4,7 +4,15 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-void LuaPlugin_Close();
+typedef struct luaPlugin {
+	const char* name;
+	lua_State* state;
+	struct luaPlugin* next;
+} LUAPLUGIN;
+
+bool LuaPlugin_Load(const char* name);
+void LuaPlugin_Close(LUAPLUGIN* plugin);
 void LuaPlugin_Start();
-lua_State* LuaPlugin_State;
+void LuaPlugin_Stop();
+LUAPLUGIN* headPlugin;
 #endif

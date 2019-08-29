@@ -120,7 +120,7 @@ void Server_Stop() {
 	Socket_Close(server);
 #ifdef LUA_ENABLED
 	Log_Info("Destroying lua_State...");
-	LuaPlugin_Close();
+	LuaPlugin_Stop();
 #endif
 }
 
