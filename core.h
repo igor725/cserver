@@ -61,7 +61,7 @@ typedef unsigned char  Order;
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
 
 typedef struct ext {
-	char* name;
+	const char* name;
 	int   version;
 	struct ext*  next;
 } EXT;

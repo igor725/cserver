@@ -145,7 +145,7 @@ bool Client_IsSupportExt(CLIENT* client, const char* extName) {
 	if(!client->cpeData)
 		return false;
 
-	EXT* ptr = client->cpeData->firstExtension;
+	EXT* ptr = client->cpeData->headExtension;
 	while(ptr) {
 		if(String_CaselessCompare(ptr->name, extName))
 			return true;
@@ -183,9 +183,9 @@ void Client_Destroy(CLIENT* client) {
 		free(client->playerData);
 	}
 	if(client->cpeData) {
-		EXT* ptr = client->cpeData->firstExtension;
+		EXT* ptr = client->cpeData->headExtension;
 		while(ptr) {
-			free(ptr->name);
+			free((void*)ptr->name);
 			free(ptr);
 			ptr = ptr->next;
 		}

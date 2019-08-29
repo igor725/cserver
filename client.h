@@ -19,8 +19,7 @@ typedef struct cpeData {
 	bool cpeEnabled;
 	BlockID heldBlock;
 	short   _extCount;
-	EXT*    firstExtension;
-	EXT*    tailExtension;
+	EXT*    headExtension;
 	char*   appName;
 } CPEDATA;
 

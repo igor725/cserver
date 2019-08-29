@@ -9,6 +9,11 @@ enum WeatherTypes {
 	WEATHER_SNOW
 };
 
+struct extReg {
+	const char* name;
+	int version;
+};
+
 void CPEPacket_WriteInfo(CLIENT *cl);
 void CPE_StartHandshake(CLIENT* client);
 bool CPEHandler_ExtInfo(CLIENT* client, char* data);
@@ -24,7 +29,6 @@ void CPEPacket_WriteSetHotBar(CLIENT* client, Order order, BlockID block);
 void CPEPacket_WriteInventoryOrder(CLIENT* client, Order order, BlockID block);
 void CPEPacket_WriteHoldThis(CLIENT* client, BlockID block, bool preventChange);
 
-EXT* firstExtension;
-EXT* tailExtension;
+EXT* headExtension;
 ushort extensionsCount;
 #endif

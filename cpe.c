@@ -5,40 +5,42 @@
 #include "event.h"
 #include "block.h"
 
-void CPE_RegisterExtension(char* name, int version) {
+void CPE_RegisterExtension(const char* name, int version) {
 	EXT* tmp = (EXT*)Memory_Alloc(1, sizeof(EXT));
 
 	tmp->name = name;
 	tmp->version = version;
-
-	if(!tailExtension) {
-		firstExtension = tmp;
-		tailExtension = tmp;
-	} else {
-		tailExtension->next = tmp;
-		tailExtension = tmp;
-	}
+	tmp->next = headExtension;
+	headExtension = tmp;
 	++extensionsCount;
 }
 
 void CPE_StartHandshake(CLIENT* client) {
 	CPEPacket_WriteInfo(client);
-	EXT* ptr = firstExtension;
+	EXT* ptr = headExtension;
 	while(ptr) {
 		CPEPacket_WriteExtEntry(client, ptr);
 		ptr = ptr->next;
 	}
 }
 
+static const struct extReg serverExtensions[] = {
+	{"SetHotbar", 1},
+	{"HeldBlock", 1},
+	{"TwoWayPing", 1},
+	// {"PlayerClick", 1},
+	{"MessageTypes", 1},
+	{"ClickDistance", 1},
+	{"InventoryOrder", 1},
+	{"EnvWeatherType", 1},
+	{NULL, 0}
+};
+
 void Packet_RegisterCPEDefault() {
-	CPE_RegisterExtension("SetHotbar", 1);
-	CPE_RegisterExtension("HeldBlock", 1);
-	CPE_RegisterExtension("TwoWayPing", 1);
-	CPE_RegisterExtension("PlayerClick", 1);
-	CPE_RegisterExtension("MessageTypes", 1);
-	CPE_RegisterExtension("ClockDistance", 1);
-	CPE_RegisterExtension("InventoryOrder", 1);
-	CPE_RegisterExtension("EnvWeatherType", 1);
+	const struct extReg* ext;
+	for(ext = serverExtensions; ext->name; ext++) {
+		CPE_RegisterExtension(ext->name, ext->version);
+	}
 	Packet_Register(0x10, "ExtInfo", 67, &CPEHandler_ExtInfo);
 	Packet_Register(0x11, "ExtEntry", 69, &CPEHandler_ExtEntry);
 	Packet_Register(0x2B, "TwoWayPing", 4, &CPEHandler_TwoWayPing);
@@ -117,7 +119,7 @@ void CPEPacket_WriteTwoWayPing(CLIENT* client, uchar direction, short num) {
 }
 
 bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
-	if(!client->playerData || client->playerData->state != STATE_MOTD)
+	if(!client->playerData || !client->cpeData || client->playerData->state != STATE_MOTD)
 		return false;
 
 	ReadString(data, &client->cpeData->appName); data += 63;
@@ -126,20 +128,15 @@ bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
 }
 
 bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
-	if(!client->playerData || client->playerData->state != STATE_MOTD)
+	if(!client->playerData || !client->cpeData || client->playerData->state != STATE_MOTD)
 		return false;
 
 	EXT* tmp = (EXT*)Memory_Alloc(1, sizeof(EXT));
-	ReadString(data, &tmp->name);data += 63;
+	ReadString(data, (void*)&tmp->name);data += 63;
 	tmp->version = ntohl(*(uint*)++data);
 
-	if(!client->cpeData->tailExtension) {
-		client->cpeData->firstExtension = tmp;
-		client->cpeData->tailExtension = tmp;
-	} else {
-		client->cpeData->tailExtension->next = tmp;
-		client->cpeData->tailExtension = tmp;
-	}
+	tmp->next = client->cpeData->headExtension;
+	client->cpeData->headExtension = tmp;
 
 	--client->cpeData->_extCount;
 	if(client->cpeData->_extCount == 0) {
@@ -174,7 +171,7 @@ bool CPEHandler_TwoWayPing(CLIENT* client, char* data) {
 }
 
 bool CPEHandler_PlayerClick(CLIENT* client, char* data) {
-	if(!client->playerData || client->playerData->state != STATE_INGAME)
+	if(!client->playerData || !client->cpeData || client->playerData->state != STATE_INGAME)
 		return false;
 
 	return true;

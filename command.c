@@ -9,14 +9,8 @@ void Command_Register(char* cmd, cmdFunc func) {
 
 	tmp->name = cmd;
 	tmp->func = func;
-
-	if(!tailCommand) {
-		firstCommand = tmp;
-		tailCommand = tmp;
-	} else {
-		tailCommand->next = tmp;
-		tailCommand = tmp;
-	}
+	tmp->next = headCommand;
+	headCommand = tmp;
 }
 
 bool CHandler_Stop(char* args, CLIENT* caller, char* out) {
@@ -60,7 +54,7 @@ bool Command_Handle(char* cmd, CLIENT* caller) {
 		}
 	}
 
-	COMMAND* tmp = firstCommand;
+	COMMAND* tmp = headCommand;
 	while(tmp) {
 		if(String_CaselessCompare(tmp->name, cmd)) {
 			if(tmp->func(args, caller, ret)) {

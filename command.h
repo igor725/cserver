@@ -10,8 +10,7 @@ typedef struct command {
 	struct command* next;
 } COMMAND;
 
-COMMAND* firstCommand;
-COMMAND* tailCommand;
+COMMAND* headCommand;
 
 void Command_Register(char* name, cmdFunc func);
 bool Command_Handle(char* cmd, CLIENT* caller);
