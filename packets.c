@@ -179,8 +179,8 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	client->playerData->angle = (ANGLE*)Memory_Alloc(1, sizeof(ANGLE));
 
 	Client_SetPos(client, worlds[0]->info->spawnVec, worlds[0]->info->spawnAng);
-	ReadString(++data, &client->playerData->name); data += 63;
-	ReadString(++data, &client->playerData->key); data += 63;
+	ReadString(++data, (void*)&client->playerData->name); data += 63;
+	ReadString(++data, (void*)&client->playerData->key); data += 63;
 	Thread_SetName(client->playerData->name);
 
 	for(int i = 0; i < 128; i++) {

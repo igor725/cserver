@@ -106,7 +106,7 @@ popd
 exit /B 0
 
 :cloc
-cloc --exclude-dir=zlib .
+cloc --exclude-dir=zlib,lua .
 exit /B 0
 
 :clean

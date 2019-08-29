@@ -178,8 +178,8 @@ void Client_Destroy(CLIENT* client) {
 		Thread_Close(client->thread);
 
 	if(client->playerData) {
-		free(client->playerData->name);
-		free(client->playerData->key);
+		free((void*)client->playerData->name);
+		free((void*)client->playerData->key);
 		free(client->playerData);
 	}
 	if(client->cpeData) {

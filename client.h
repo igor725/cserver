@@ -24,8 +24,8 @@ typedef struct cpeData {
 } CPEDATA;
 
 typedef struct playerData {
-	char*   key;
-	char*   name;
+	const char*   key;
+	const char*   name;
 	int     state;
 	ANGLE*  angle;
 	VECTOR* position;
