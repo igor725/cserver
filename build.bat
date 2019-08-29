@@ -43,7 +43,10 @@ goto argloop
 echo.
 echo Build configuration:
 echo Architecture: %ARCH%
-IF "%LUA_ENABLED%"=="0" (echo LuaPlugin: disabled) else (
+IF "%LUA_ENABLED%"=="0" (
+set MSVC_OPTS=/wd4206
+echo LuaPlugin: disabled
+) else (
 set MSVC_OPTS=%MSVC_OPTS% /DLUA_ENABLED /I%LUA_DIR%\include
 set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%LUA_DIR%\lib_%ARCH%
 set MSVC_LIBS=%MSVC_LIBS% lua%LUA_VER%.lib
