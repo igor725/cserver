@@ -57,13 +57,7 @@ bool Server_Bind(const char* ip, ushort port) {
 		return false;
 
 	Client_Init();
-	acceptThread = Thread_Create((TFUNC)&Server_AcceptThread, NULL);
-	if(Thread_IsValid(acceptThread))
-		Log_Info("%s %s started on %s:%d", SOFTWARE_NAME, SOFTWARE_VERSION, ip, port);
-	else {
-		Log_Error("acceptThread == NULL");
-		return false;
-	}
+	Log_Info("%s %s started on %s:%d", SOFTWARE_NAME, SOFTWARE_VERSION, ip, port);
 	return true;
 }
 
@@ -133,8 +127,15 @@ void Server_Stop() {
 }
 
 int main(int argc, char** argv) {
-	if(!(serverActive = Server_InitialWork()))
+	if(!(serverActive = Server_InitialWork())) {
 		Log_FormattedError();
+	} else {
+		acceptThread = Thread_Create((TFUNC)&Server_AcceptThread, NULL);
+		if(!Thread_IsValid(acceptThread)) {
+			Log_Error("acceptThread == NULL");
+			serverActive = false;
+		}
+	}
 
 	while(serverActive) {
 		Server_DoStep();
