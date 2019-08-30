@@ -6,8 +6,10 @@
 
 int LuaError(lua_State* L) {
 	PLUGIN* plugin = LuaPlugin_GetPluginByState(L);
-	Log_Error("%s: %s", plugin->name, lua_tostring(L, -1));
-	lua_pop(L, 1);
+	if(plugin)
+		Log_Error("%s: %s", plugin->name, lua_tostring(L, -1));
+	else
+		Log_Error(lua_tostring(L, -1));
 	return 0;
 }
 

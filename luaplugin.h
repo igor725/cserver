@@ -1,8 +1,8 @@
 #ifndef LUAPLUGIN_H
 #define LUAPLUGIN_H
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
 
 #define	CFG_BOOL_NAME "boolean"
 #define	CFG_INT_NAME  "number"

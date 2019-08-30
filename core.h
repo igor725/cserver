@@ -25,6 +25,7 @@ typedef int SOCKET;
 #define INVALID_SOCKET -1
 #define POSIX
 #define SD_SEND   SHUT_WR
+#define MAX_PATH  PATH_MAX
 #endif
 
 #define true  1
