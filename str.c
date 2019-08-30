@@ -1,11 +1,12 @@
 #include "core.h"
 #include "str.h"
+#include <string.h>
 
 bool String_CaselessCompare(const char* str1, const char* str2) {
 #if defined(WINDOWS)
 	return _stricmp(str1, str2) == 0;
 #elif defined(POSIX)
-	return stricmp(str1, str2) == 0;
+	return strcasecmp(str1, str2) == 0;
 #endif
 }
 
@@ -38,15 +39,19 @@ char* String_CopyUnsafe(char* dst, const char* src) {
 }
 
 uint String_FormatError(uint code, char* buf, uint buflen) {
+#if defined(WINDOWS)
 	int len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, code, 0, buf, buflen, NULL);
 	if(len > 0) {
 		for(int i = 0; i < len; i++) {
-			if(Error_WinBuf[i] == '\r' || Error_WinBuf[i] == '\n')
-				Error_WinBuf[i] = ' ';
+			if(buf[i] == '\r' || buf[i] == '\n')
+				buf[i] = ' ';
 		}
 	} else {
 		Error_Set(ET_SYS, GetLastError());
 	}
+#elif defined(POSIX)
+	int len = String_Copy(buf, buflen, strerror(code));
+#endif
 
 	return len;
 }
@@ -62,7 +67,7 @@ void String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* arg
 void String_FormatBuf(char* buf, size_t len, const char* str, ...) {
 	va_list args;
 	va_start(args, str);
-	vsprintf_s(buf, len, str, args);
+	String_FormatBufVararg(buf, len, str, &args);
 	va_end(args);
 }
 

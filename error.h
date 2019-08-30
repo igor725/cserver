@@ -15,7 +15,6 @@ uint  Error_Code;
 const char* Error_Func;
 const char* Error_File;
 int   Error_Line;
-char Error_WinBuf[512];
 
 enum ErrorCodes {
 	EC_OK = 0,
