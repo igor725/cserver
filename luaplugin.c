@@ -150,7 +150,9 @@ static int lconfig_save(lua_State *L) {
 
 static int lconfig_set(lua_State *L) {
 	CFGSTORE *store = checkStore(L, 1);
-	const char* key = luaL_checkstring(L, 2);
+	const char *key = luaL_checkstring(L, 2);
+	const char *err = NULL;
+	bool succ = true;
 
 	switch(lua_type(L, 3)) {
 		case LUA_TBOOLEAN:
@@ -163,10 +165,17 @@ static int lconfig_set(lua_State *L) {
 			Config_SetInt(store, key, (int)luaL_checkinteger(L, 3));
 			break;
 		default:
-			luaL_error(L, "Bad argument #2 (number/boolean/string expected)");
+			err = "Bad argument #2 (number/boolean/string expected)";
+			succ = false;
 			break;
 	}
-	return 0;
+
+	lua_pushboolean(L, succ);
+	if(err)
+		lua_pushstring(L, err);
+	else
+		lua_pushnil(L);
+	return 1;
 }
 
 static int lconfig_get(lua_State *L) {
@@ -220,7 +229,7 @@ static int lconfig_type(lua_State* L) {
 			break;
 		default:
 			type = CFG_UNK_NAME;
-			luaL_error(L, "Internal error, unknown cfgentry type");
+			luaL_error(L, "Internal error: unknown cfgentry type");
 			break;
 	}
 
@@ -380,10 +389,15 @@ void LuaPlugin_LoadLibs(lua_State *L) {
 		lua_setglobal(L, reg->name);
 	}
 
+	/*
+	TODO: Убрать комментарий, когда появится возможность
+	отправки vararg в функцию log.info
+
 	lua_getglobal(L, "log");
 	lua_getfield(L, -1, "info");
 	lua_setglobal(L, "print");
 	lua_pop(L, 1);
+	*/
 }
 
 bool LuaPlugin_Load(const char *name) {
