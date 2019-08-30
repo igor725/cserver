@@ -93,7 +93,9 @@ bool Server_InitialWork() {
 }
 
 void Server_DoStep() {
+#ifdef LUA_ENABLED
 	LuaPlugin_Tick();
+#endif
 	for(int i = 0; i < 128; i++) {
 		CLIENT* client = clients[i];
 		if(client)
