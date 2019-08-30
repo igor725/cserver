@@ -12,6 +12,7 @@ typedef struct luaPlugin {
 
 bool LuaPlugin_Load(const char* name);
 void LuaPlugin_Close(LUAPLUGIN* plugin);
+LUAPLUGIN* LuaPlugin_GetPluginByState(lua_State* L);
 void LuaPlugin_Start();
 void LuaPlugin_Stop();
 LUAPLUGIN* headPlugin;

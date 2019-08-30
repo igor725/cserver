@@ -3,22 +3,57 @@
 #include "log.h"
 #include "luaplugin.h"
 
-// static const luaL_Reg loglib[] = {
-// 	{"info", },
-// 	{"error", },
-// 	{"warn", },
-// };
+#define CallLuaVoid(L, func) \
+lua_getglobal(L, func); \
+if(lua_isfunction(L, -1)) \
+	lua_call(L, 0, 0); \
+else \
+	lua_pop(L, 1); \
+
+#define GetLuaPlugin(L) \
+LUAPLUGIN* plugin = LuaPlugin_GetPluginByState(L); \
+if(!plugin) \
+	return 0; \
+
+int llog_info(lua_State* L) {
+	GetLuaPlugin(L);
+
+	const char* str = luaL_checkstring(L, 1);
+	if(str)
+		Log_Info("%s: %s", plugin->name, str);
+	return 0;
+}
+
+int llog_error(lua_State* L) {
+	return 0;
+}
+
+int llog_warn(lua_State* L) {
+	return 0;
+}
+
+int llog_setlevel(lua_State* L) {
+	return 0;
+}
+
+static const luaL_Reg loglib[] = {
+	{"info", llog_info},
+	{"error", llog_error},
+	{"warn", llog_warn},
+	{"setlevel", llog_setlevel},
+	{NULL, NULL}
+};
 
 int luaopen_log(lua_State* L) {
 	luaL_register(L, lua_tostring(L, -1), loglib);
-	return 0;
+	return 1;
 }
 
 int luaopen_event(lua_State* L) {
 	return 0;
 }
 
-inv luaopen_config(lua_State* L) {
+int luaopen_config(lua_State* L) {
 	return 0;
 }
 
@@ -69,18 +104,19 @@ bool LuaPlugin_Load(const char* name) {
 	lua_State* L = luaL_newstate();
 	LuaPlugin_LoadLibs(L);
 	LUAPLUGIN* tmp = Memory_Alloc(1, sizeof(struct luaPlugin));
-	tmp->state = L;
 	tmp->name = name;
+	tmp->state = L;
 
 	if(luaL_dofile(L, path)) {
 		PrintError(tmp);
 		lua_close(L);
 		free(tmp);
 		return false;
-	} else {
-		tmp->next = headPlugin;
-		headPlugin = tmp;
 	}
+
+	tmp->next = headPlugin;
+	headPlugin = tmp;
+	CallLuaVoid(L, "onStart");
 
 	return true;
 }
@@ -89,8 +125,19 @@ void LuaPlugin_Start() {
 	LuaPlugin_Load("test");
 }
 
+LUAPLUGIN* LuaPlugin_GetPluginByState(lua_State* L) {
+	LUAPLUGIN* ptr = headPlugin;
+	while(ptr) {
+		if(ptr->state == L) {
+			return ptr;
+		}
+		ptr = ptr->next;
+	}
+	return (LUAPLUGIN*)NULL;
+}
+
 void LuaPlugin_Close(LUAPLUGIN* plugin) {
-	// TODO: Call onClose() function from plugin if it exists
+	CallLuaVoid(plugin->state, "onStop");
 	lua_close(plugin->state);
 	free(plugin);
 }
