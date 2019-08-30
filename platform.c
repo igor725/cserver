@@ -170,60 +170,6 @@ void Thread_Close(THREAD th) {
 }
 
 /*
-	WINDOWS STRING FUNCTIONS
-*/
-bool String_CaselessCompare(const char* str1, const char* str2) {
-	return _stricmp(str1, str2) == 0;
-}
-
-bool String_Compare(const char* str1, const char* str2) {
-	return strcmp(str1, str2) == 0;
-}
-
-size_t String_Length(const char* str) {
-	return strlen(str);
-}
-
-size_t String_Copy(char* dst, size_t len, const char* src) {
-	if(!dst) return 0;
-	if(!src) return 0;
-
-	if(String_Length(src) < len)
-		strcpy(dst, src);
-	else
-		return 0;
-
-	return len;
-}
-
-char* String_CopyUnsafe(char* dst, const char* src) {
-	return strcpy(dst, src);
-}
-
-uint String_FormatError(uint code, char* buf, uint buflen) {
-	uint len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, code, 0, buf, buflen, NULL);
-	if(len > 0) {
-		Error_WinBuf[len - 1] = 0;
-		Error_WinBuf[len - 2] = 0;
-	} else {
-		Error_Set(ET_SYS, GetLastError());
-	}
-
-	return len;
-}
-
-void String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* args) {
-	vsprintf_s(buf, len, str, *args);
-}
-
-void String_FormatBuf(char* buf, size_t len, const char* str, ...) {
-	va_list args;
-	va_start(args, str);
-	vsprintf_s(buf, len, str, args);
-	va_end(args);
-}
-
-/*
 	WINDOWS TIME FUNCTIONS
 */
 void Time_Format(char* buf, size_t buflen) {
@@ -396,53 +342,6 @@ bool Thread_SetName(const char* thName) {
 }
 
 void Thread_Close(THREAD th) {}
-
-/*
-	POSIX STRING FUNCTIONS
-*/
-bool String_CaselessCompare(const char* str1, const char* str2) {
-	return strcasecmp(str1, str2) == 0;
-}
-
-bool String_Compare(const char* str1, const char* str2) {
-	return strcmp(str1, str2) == 0;
-}
-
-size_t String_Length(const char* str) {
-	return strlen(str);
-}
-
-size_t String_Copy(char* dst, size_t len, const char* src) {
-	if(!dst) return 0;
-	if(!src) return 0;
-
-	if(String_Length(src) < len)
-		strcpy(dst, src);
-	else
-		return 0;
-
-	return len;
-}
-
-char* String_CopyUnsafe(char* dst, const char* src) {
-	return strcpy(dst, src);
-}
-
-uint String_FormatError(uint code, char* buf, uint buflen) {
-	char* errstr = strerror(code);
-	return String_Copy(buf, buflen, errstr);
-}
-
-void String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* args) {
-	vsnprintf(buf, len, str, *args);
-}
-
-void String_FormatBuf(char* buf, size_t len, const char* str, ...) {
-	va_list args;
-	va_start(atgs, str);
-	vsprintf_s(buf, lenm str, args);
-	va_end();
-}
 
 /*
 	POSIX TIME FUNCTIONS

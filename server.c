@@ -15,7 +15,12 @@ void Server_Accept() {
 	int caddrsz = sizeof caddr;
 
 	SOCKET fd = accept(server, (struct sockaddr*)&caddr, &caddrsz);
+
 	if(fd != INVALID_SOCKET) {
+		if(!serverActive) {
+			Socket_Close(fd);
+			return;
+		}
 	 	CLIENT* tmp = (CLIENT*)Memory_Alloc(1, sizeof(CLIENT));
 
 		tmp->sock = fd;
@@ -43,11 +48,11 @@ void Server_Accept() {
 
 THRET Server_AcceptThread(void* lpParam) {
 	Thread_SetName("AcceptThread");
-	while(1)Server_Accept();
+	while(serverActive)Server_Accept();
 	return 0;
 }
 
-bool Server_Bind(char* ip, ushort port) {
+bool Server_Bind(const char* ip, ushort port) {
 	if((server = Socket_Bind(ip, port)) == INVALID_SOCKET)
 		return false;
 
@@ -66,8 +71,14 @@ bool Server_InitialWork() {
 	if(!Socket_Init())
 		return false;
 
+	Log_Info("Loading server.cfg");
+	if(!Config_Load("./server.cfg")) {
+		Config_SetStr("ip", "0.0.0.0");
+		Config_SetInt("port", 25565);
+	}
+
 #ifdef LUA_ENABLED
-	Log_Info("Starting LuaVM...");
+	Log_Info("Starting LuaVM");
 	LuaPlugin_Start();
 #endif
 
@@ -84,11 +95,7 @@ bool Server_InitialWork() {
 	}
 
 	Console_StartListen();
-	Log_Info("Loading server.cfg");
-	if(Config_Load("./server.cfg"))
-		return Server_Bind(Config_GetStr("ip"), (ushort)Config_GetInt("port"));
-	else
-		return false;
+	return Server_Bind(Config_GetStr("ip"), (ushort)Config_GetInt("port"));
 }
 
 void Server_DoStep() {
@@ -117,11 +124,12 @@ void Server_Stop() {
 	if(acceptThread)
 		Thread_Close(acceptThread);
 	Console_Close();
+	#ifdef LUA_ENABLED
+		Log_Info("Destroying LuaVM");
+		LuaPlugin_Stop();
+	#endif
 	Socket_Close(server);
-#ifdef LUA_ENABLED
-	Log_Info("Destroying lua_State...");
-	LuaPlugin_Stop();
-#endif
+	Config_Save("./server.cfg");
 }
 
 int main(int argc, char** argv) {

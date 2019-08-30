@@ -44,15 +44,14 @@ bool Config_Load(const char* filename) {
 		}
 		count = 0;
 
-		char* hkey, *hval;
-		if(!(hkey = Memory_Alloc(String_Length(key) + 1, 1)))
+		const char* hkey, *hval;
+		if(!(hkey = String_AllocCopy(key)))
 			return false;
-		String_CopyUnsafe(hkey, key);
+
 		switch (type) {
 			case CFG_STR:
-				if(!(hval = Memory_Alloc(String_Length(value) + 1, 1)))
+				if(!(hval = String_AllocCopy(value)))
 					return false;
-				String_CopyUnsafe(hval, value);
 				Config_SetStr(hkey, hval);
 				break;
 			case CFG_INT:
@@ -78,7 +77,7 @@ bool Config_Save(const char* filename) {
 		return false;
 	}
 
-	CFGENTRY* ptr = headCfgEntry;
+	CFGENTRY* ptr = firstCfgEntry;
 	while(ptr) {
 		if(!File_Write(ptr->key, String_Length(ptr->key), 1, fp))
 			return false;
@@ -107,55 +106,69 @@ bool Config_Save(const char* filename) {
 	return true;
 }
 
-CFGENTRY* Config_GetStruct(const char* key) {
-	CFGENTRY* ptr = headCfgEntry;
-	while(ptr) {
-		if(String_CaselessCompare(ptr->key, key)) {
-			return ptr;
+CFGENTRY* Config_GetEntry(const char* key) {
+	CFGENTRY* ent = firstCfgEntry;
+
+	while(ent) {
+		if(String_CaselessCompare(ent->key, key)) {
+			return ent;
 		}
-		if(!ptr->next)
-			break;
-		else
-			ptr = ptr->next;
+		ent = ent->next;
 	}
 
-	ptr = (CFGENTRY*)Memory_Alloc(1, sizeof(CFGENTRY));
-	ptr->next = headCfgEntry;
-	ptr->key = key;
-	headCfgEntry = ptr;
+	return ent;
+}
 
-	return ptr;
+CFGENTRY* Config_GetEntry2(const char* key) {
+	CFGENTRY* ent = Config_GetEntry(key);
+
+	if(!ent) {
+		ent = (CFGENTRY*)Memory_Alloc(1, sizeof(CFGENTRY));
+		ent->key = String_AllocCopy(key);
+		if(firstCfgEntry) {
+			lastCfgEntry->next = ent;
+			lastCfgEntry = ent;
+		} else {
+			lastCfgEntry = ent;
+			firstCfgEntry = ent;
+		}
+	}
+
+	return ent;
 }
 
 void Config_SetInt(const char* key, int value) {
-	CFGENTRY* ent = Config_GetStruct(key);
+	CFGENTRY* ent = Config_GetEntry2(key);
 	ent->value.vint = value;
 	ent->type = CFG_INT;
 }
 
 int Config_GetInt(const char* key) {
-	CFGENTRY* ent = Config_GetStruct(key);
+	CFGENTRY* ent = Config_GetEntry2(key);
 	return ent->value.vint;
 }
 
-void Config_SetStr(const char* key, char* value) {
-	CFGENTRY* ent = Config_GetStruct(key);
-	ent->value.vchar = value;
-	ent->type = CFG_STR;
+void Config_SetStr(const char* key, const char* value) {
+	CFGENTRY* ent = Config_GetEntry2(key);
+	if(ent->type == CFG_STR)
+		free((void*)ent->value.vchar);
+	else
+		ent->type = CFG_STR;
+	ent->value.vchar = String_AllocCopy(value);
 }
 
-char* Config_GetStr(const char* key) {
-	CFGENTRY* ent = Config_GetStruct(key);
+const char* Config_GetStr(const char* key) {
+	CFGENTRY* ent = Config_GetEntry2(key);
 	return ent->value.vchar;
 }
 
 void Config_SetBool(const char* key, bool value) {
-	CFGENTRY* ent = Config_GetStruct(key);
+	CFGENTRY* ent = Config_GetEntry2(key);
 	ent->value.vbool = value;
 	ent->type = CFG_BOOL;
 }
 
 bool Config_GetBool(const char* key) {
-	CFGENTRY* ent = Config_GetStruct(key);
+	CFGENTRY* ent = Config_GetEntry2(key);
 	return ent->value.vbool;
 }

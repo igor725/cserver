@@ -43,6 +43,7 @@ typedef unsigned char  Order;
 #include <stdarg.h>
 #include "platform.h"
 #include "error.h"
+#include "str.h"
 
 #define DELIM " "
 #define SOFTWARE_NAME "C-Server"
