@@ -50,6 +50,7 @@ typedef unsigned char  Order;
 #define SOFTWARE_NAME "C-Server"
 #define SOFTWARE_VERSION "0.1"
 #define CHATLINE "<%s>: %s"
+#define MAINCFG "server.cfg"
 
 #define CPE_CHAT      0
 #define CPE_STATUS1   1

@@ -4,6 +4,10 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+#if !defined(LUA_VERSION_NUM) || LUA_VERSION_NUM < 501 || LUA_VERSION_NUM > 501
+#error This version of Lua intepreter currently is not supported.
+#endif
+
 #define	CFG_BOOL_NAME "boolean"
 #define	CFG_INT_NAME  "number"
 #define	CFG_STR_NAME  "string"

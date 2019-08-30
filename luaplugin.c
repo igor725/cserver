@@ -106,6 +106,10 @@ static CFGSTORE *pushStore(lua_State *L) {
 
 static int lconfig_newStore(lua_State *L) {
 	const char *filename = luaL_checkstring(L, 1);
+	if(String_CaselessCompare(filename, MAINCFG)) {
+		luaL_error(L, "Can't create cfgStore with reserved filename");
+	}
+
 	CFGSTORE *store = pushStore(L);
 	store->path = String_AllocCopy(filename);
 	store->firstCfgEntry = NULL;
@@ -392,6 +396,8 @@ void LuaPlugin_LoadLibs(lua_State *L) {
 	/*
 	TODO: Убрать комментарий, когда появится возможность
 	отправки vararg в функцию log.info
+	P.S. Я действительно надеюсь, что это когда-нибудь
+	случится
 
 	lua_getglobal(L, "log");
 	lua_getfield(L, -1, "info");
