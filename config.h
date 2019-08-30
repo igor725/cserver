@@ -18,25 +18,26 @@ typedef struct cfgEntry {
 } CFGENTRY;
 
 typedef struct cfgStore {
-	const char* name;
+	const char* path;
 	bool modified;
 	CFGENTRY* firstCfgEntry;
+	CFGENTRY* lastCfgEntry;
 } CFGSTORE;
 
-CFGENTRY* Config_GetEntry(const char* key);
+CFGENTRY* Config_GetEntry(CFGSTORE* store, const char* key);
 
-bool  Config_Load(const char* filename);
-bool  Config_Save(const char* filename);
+CFGSTORE* Config_Create(const char* filename);
+void Config_EmptyStore(CFGSTORE* store);
 
-int   Config_GetInt(const char* key);
-void  Config_SetInt(const char* key, int value);
+bool Config_Load(CFGSTORE *store);
+bool  Config_Save(CFGSTORE* store);
 
-const char* Config_GetStr(const char* key);
-void  Config_SetStr(const char* key, const char* value);
+int   Config_GetInt(CFGSTORE* store, const char* key);
+void  Config_SetInt(CFGSTORE* store, const char* key, int value);
 
-void Config_SetBool(const char* key, bool value);
-bool Config_GetBool(const char* key);
+const char* Config_GetStr(CFGSTORE* store, const char* key);
+void  Config_SetStr(CFGSTORE* store, const char* key, const char* value);
 
-CFGENTRY* firstCfgEntry;
-CFGENTRY* lastCfgEntry;
+void Config_SetBool(CFGSTORE* store, const char* key, bool value);
+bool Config_GetBool(CFGSTORE* store, const char* key);
 #endif

@@ -1,5 +1,4 @@
 @echo off
-cls
 set ARCH=x86
 set DEBUG=0
 
@@ -20,6 +19,8 @@ set NORUN=0
 
 :argloop
 IF "%1"=="" goto continue
+IF "%1"=="cls" cls
+IF "%1"=="clear" cls
 IF "%1"=="cloc" goto :cloc
 IF "%1"=="gcc" goto gcc
 IF "%1"=="64" set ARCH=x64

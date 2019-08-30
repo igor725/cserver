@@ -10,6 +10,9 @@
 #include "luaplugin.h"
 #endif
 
+#define MAINCFG "server.cfg"
+CFGSTORE* serverCfg;
+
 void Server_Accept() {
 	struct sockaddr_in caddr;
 	int caddrsz = sizeof caddr;
@@ -65,10 +68,12 @@ bool Server_InitialWork() {
 	if(!Socket_Init())
 		return false;
 
-	Log_Info("Loading server.cfg");
-	if(!Config_Load("./server.cfg")) {
-		Config_SetStr("ip", "0.0.0.0");
-		Config_SetInt("port", 25565);
+	Log_Info("Loading " MAINCFG);
+	serverCfg = Config_Create(MAINCFG);
+	if(!Config_Load(serverCfg)) {
+		Config_EmptyStore(serverCfg);
+		Config_SetStr(serverCfg, "ip", "0.0.0.0");
+		Config_SetInt(serverCfg, "port", 25565);
 	}
 
 #ifdef LUA_ENABLED
@@ -89,7 +94,7 @@ bool Server_InitialWork() {
 	}
 
 	Console_StartListen();
-	return Server_Bind(Config_GetStr("ip"), (ushort)Config_GetInt("port"));
+	return Server_Bind(Config_GetStr(serverCfg, "ip"), (ushort)Config_GetInt(serverCfg, "port"));
 }
 
 void Server_DoStep() {
@@ -126,7 +131,7 @@ void Server_Stop() {
 		LuaPlugin_Stop();
 	#endif
 	Socket_Close(server);
-	Config_Save("./server.cfg");
+	Config_Save(serverCfg);
 }
 
 int main(int argc, char** argv) {

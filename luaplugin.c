@@ -4,7 +4,7 @@
 #include "config.h"
 #include "luaplugin.h"
 
-int LuaError(lua_State* L) {
+static int LuaError(lua_State* L) {
 	PLUGIN* plugin = LuaPlugin_FindByState(L);
 	if(plugin)
 		Log_Error("%s: %s", plugin->name, lua_tostring(L, -1));
@@ -30,28 +30,28 @@ if(!plugin) \
 	Lua log library
 */
 
-int llog_info(lua_State* L) {
+static int llog_info(lua_State* L) {
 	GetLuaPlugin(L);
 
-	const char* str = luaL_checkstring(L, 1);
+	const char* str = lua_tostring(L, 1);
 	if(str)
 		Log_Info("%s: %s", plugin->name, str);
 	return 0;
 }
 
-int llog_error(lua_State* L) {
+static int llog_error(lua_State* L) {
 	GetLuaPlugin(L);
 
-	const char* str = luaL_checkstring(L, 1);
+	const char* str = lua_tostring(L, 1);
 	if(str)
 		Log_Error("%s: %s", plugin->name, str);
 	return 0;
 }
 
-int llog_warn(lua_State* L) {
+static int llog_warn(lua_State* L) {
 	GetLuaPlugin(L);
 
-	const char* str = luaL_checkstring(L, 1);
+	const char* str = lua_tostring(L, 1);
 	if(str)
 		Log_Warn("%s: %s", plugin->name, str);
 	return 0;
@@ -81,18 +81,86 @@ int luaopen_event(lua_State* L) {
 	Lua config library
 */
 
-int lconfig_set(lua_State* L) {
-	const char* key = luaL_checkstring(L, 1);
+#define LUA_TCFGSTORE "cfgStore"
 
-	switch(lua_type(L, 2)) {
+static CFGSTORE *toStore(lua_State *L, int index) {
+	CFGSTORE* store = lua_touserdata(L, index);
+	if(!store) luaL_typerror(L, index, LUA_TCFGSTORE);
+	return store;
+}
+
+static CFGSTORE *checkStore(lua_State *L, int index) {
+	CFGSTORE* store;
+	luaL_checktype(L, index, LUA_TUSERDATA);
+	store = luaL_checkudata(L, index, LUA_TCFGSTORE);
+	if(!store) luaL_typerror(L, index, LUA_TCFGSTORE);
+	return store;
+}
+
+static CFGSTORE *pushStore(lua_State *L) {
+	CFGSTORE *store = lua_newuserdata(L, sizeof(CFGSTORE));
+	luaL_getmetatable(L, LUA_TCFGSTORE);
+	lua_setmetatable(L, -2);
+	return store;
+}
+
+static int lconfig_newStore(lua_State *L) {
+	const char *filename = luaL_checkstring(L, 1);
+	CFGSTORE *store = pushStore(L);
+	store->path = String_AllocCopy(filename);
+	store->firstCfgEntry = NULL;
+	store->lastCfgEntry = NULL;
+	store->modified = false;
+	return 1;
+}
+
+static int lconfig_purge(lua_State *L) {
+	CFGSTORE *store = checkStore(L, 1);
+	Config_EmptyStore(store);
+	return 0;
+}
+
+static int lconfig_load(lua_State *L) {
+	CFGSTORE *store = checkStore(L, 1);
+
+	if(!Config_Load(store)) {
+		lua_pushboolean(L, false);
+		lua_pushstring(L, Error_GetString());
+	} else {
+		lua_pushboolean(L, true);
+		lua_pushnil(L);
+	}
+
+	return 2;
+}
+
+static int lconfig_save(lua_State *L) {
+	CFGSTORE *store = checkStore(L, 1);
+
+	if(!Config_Save(store)) {
+		lua_pushboolean(L, false);
+		lua_pushstring(L, Error_GetString());
+	} else {
+		lua_pushboolean(L, true);
+		lua_pushnil(L);
+	}
+
+	return 2;
+}
+
+static int lconfig_set(lua_State *L) {
+	CFGSTORE *store = checkStore(L, 1);
+	const char* key = luaL_checkstring(L, 2);
+
+	switch(lua_type(L, 3)) {
 		case LUA_TBOOLEAN:
-			Config_SetBool(key, lua_toboolean(L, 2));
+			Config_SetBool(store, key, lua_toboolean(L, 3));
 			break;
 		case LUA_TSTRING:
-			Config_SetStr(key, luaL_checkstring(L, 2));
+			Config_SetStr(store, key, luaL_checkstring(L, 3));
 			break;
 		case LUA_TNUMBER:
-			Config_SetInt(key, (int)luaL_checkinteger(L, 2));
+			Config_SetInt(store, key, (int)luaL_checkinteger(L, 3));
 			break;
 		default:
 			luaL_error(L, "Bad argument #2 (number/boolean/string expected)");
@@ -101,9 +169,10 @@ int lconfig_set(lua_State* L) {
 	return 0;
 }
 
-int lconfig_get(lua_State* L) {
-	const char* key = luaL_checkstring(L, 1);
-	CFGENTRY* ent = Config_GetEntry(key);
+static int lconfig_get(lua_State *L) {
+	CFGSTORE *store = checkStore(L, 1);
+	const char *key = luaL_checkstring(L, 2);
+	CFGENTRY *ent = Config_GetEntry(store, key);
 
 	if(!ent) {
 		lua_pushnil(L);
@@ -129,14 +198,15 @@ int lconfig_get(lua_State* L) {
 	return 1;
 }
 
-int lconfig_type(lua_State* L) {
-	const char* key = luaL_checkstring(L, 1);
-	CFGENTRY* ent = Config_GetEntry(key);
+static int lconfig_type(lua_State* L) {
+	CFGSTORE *store = checkStore(L, 1);
+	const char *key = luaL_checkstring(L, 2);
+	CFGENTRY *ent = Config_GetEntry(store, key);
 	if(!ent) {
 		lua_pushstring(L, "nil");
 		return 1;
 	}
-	const char* type;
+	const char *type;
 
 	switch (ent->type) {
 		case CFG_BOOL:
@@ -158,10 +228,11 @@ int lconfig_type(lua_State* L) {
 	return 1;
 }
 
-int lconfig_istype(lua_State* L) {
-	const char* key = luaL_checkstring(L, 1);
-	const char* type = luaL_checkstring(L, 2);
-	CFGENTRY* ent = Config_GetEntry(key);
+static int lconfig_istype(lua_State *L) {
+	CFGSTORE *store = checkStore(L, 1);
+	const char *key = luaL_checkstring(L, 2);
+	const char *type = luaL_checkstring(L, 3);
+	CFGENTRY *ent = Config_GetEntry(store, key);
 	bool valid = false;
 
 	switch (ent->type) {
@@ -180,7 +251,11 @@ int lconfig_istype(lua_State* L) {
 	return 1;
 }
 
-static const luaL_Reg configlib[] = {
+static const luaL_Reg cfg_methods[] = {
+	{"newstore", lconfig_newStore},
+	{"purge", lconfig_purge},
+	{"save", lconfig_save},
+	{"load", lconfig_load},
 	{"get", lconfig_get},
 	{"set", lconfig_set},
 	{"type", lconfig_type},
@@ -188,8 +263,37 @@ static const luaL_Reg configlib[] = {
 	{NULL, NULL},
 };
 
-int luaopen_config(lua_State* L) {
-	luaL_register(L, lua_tostring(L, -1), configlib);
+static int lconfig_gc(lua_State *L) {
+	CFGSTORE *store = toStore(L, 1);
+	Config_EmptyStore(store);
+	return 0;
+}
+
+static int lconfig_tostring(lua_State *L) {
+	lua_pushstring(L, "cfgStore");
+	return 1;
+}
+
+static const luaL_Reg cfg_meta[] = {
+	{"__gc", lconfig_gc},
+	{"__tostring", lconfig_tostring},
+	{NULL, NULL}
+};
+
+int luaopen_config(lua_State *L) {
+	luaL_openlib(L, lua_tostring(L, -1), cfg_methods, 0);
+
+	luaL_newmetatable(L, LUA_TCFGSTORE);
+
+	luaL_openlib(L, 0, cfg_meta, 0);
+	lua_pushstring(L, "__index");
+	lua_pushvalue(L, -3);
+	lua_rawset(L, -3);
+	lua_pushstring(L, "__metatable");
+	lua_pushvalue(L, -3);
+	lua_rawset(L, -3);
+
+	lua_pop(L, 1);
 	return 1;
 }
 
@@ -201,7 +305,7 @@ static const luaL_Reg cpelib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_cpe(lua_State* L) {
+int luaopen_cpe(lua_State *L) {
 	luaL_register(L, lua_tostring(L, -1), cpelib);
 	return 1;
 }
@@ -214,7 +318,7 @@ static const luaL_Reg packetslib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_packets(lua_State* L) {
+int luaopen_packets(lua_State *L) {
 	luaL_register(L, lua_tostring(L, -1), packetslib);
 	return 1;
 }
@@ -227,7 +331,7 @@ static const luaL_Reg worldlib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_world(lua_State* L) {
+int luaopen_world(lua_State *L) {
 	luaL_register(L, lua_tostring(L, -1), worldlib);
 	return 1;
 }
@@ -251,8 +355,8 @@ static const luaL_Reg LuaPlugin_Libs[] = {
 	Lua global functions
 */
 
-static int lunload(lua_State* L) {
-	PLUGIN* pl = LuaPlugin_FindByState(L);
+static int lunload(lua_State *L) {
+	PLUGIN *pl = LuaPlugin_FindByState(L);
 	if(pl)
 		pl->loaded = false;
 	return 0;
@@ -263,7 +367,7 @@ static const luaL_Reg LuaPlugin_Globals[] = {
 	{NULL, NULL}
 };
 
-void LuaPlugin_LoadLibs(lua_State* L) {
+void LuaPlugin_LoadLibs(lua_State *L) {
 	const luaL_Reg *reg;
 	for(reg = LuaPlugin_Libs; reg->func; reg++) {
 		lua_pushcfunction(L, reg->func);
@@ -282,13 +386,13 @@ void LuaPlugin_LoadLibs(lua_State* L) {
 	lua_pop(L, 1);
 }
 
-bool LuaPlugin_Load(const char* name) {
+bool LuaPlugin_Load(const char *name) {
 	char path[MAX_PATH];
 	String_FormatBuf(path, MAX_PATH, "plugins/%s.lua", name);
 
-	lua_State* L = luaL_newstate();
+	lua_State *L = luaL_newstate();
 	LuaPlugin_LoadLibs(L);
-	PLUGIN* tmp = Memory_Alloc(1, sizeof(PLUGIN));
+	PLUGIN *tmp = Memory_Alloc(1, sizeof(PLUGIN));
 	tmp->name = String_AllocCopy(name);
 	tmp->state = L;
 
@@ -309,7 +413,7 @@ bool LuaPlugin_Load(const char* name) {
 }
 
 void LuaPlugin_PrintList() {
-	PLUGIN* ptr = headPlugin;
+	PLUGIN *ptr = headPlugin;
 
 	while(ptr) {
 		Log_Info(ptr->name);
@@ -321,7 +425,7 @@ void LuaPlugin_Start() {
 	LuaPlugin_Load("test");
 }
 
-PLUGIN* LuaPlugin_FindByName(const char* name) {
+PLUGIN* LuaPlugin_FindByName(const char *name) {
 	PLUGIN* ptr = headPlugin;
 
 	while(ptr) {
@@ -334,8 +438,8 @@ PLUGIN* LuaPlugin_FindByName(const char* name) {
 	return (PLUGIN*)NULL;
 }
 
-PLUGIN* LuaPlugin_FindByState(lua_State* L) {
-	PLUGIN* ptr = headPlugin;
+PLUGIN *LuaPlugin_FindByState(lua_State *L) {
+	PLUGIN *ptr = headPlugin;
 
 	while(ptr) {
 		if(ptr->state == L) {
@@ -347,7 +451,7 @@ PLUGIN* LuaPlugin_FindByState(lua_State* L) {
 	return (PLUGIN*)NULL;
 }
 
-void LuaPlugin_Remove(PLUGIN* plugin) {
+void LuaPlugin_Remove(PLUGIN *plugin) {
 	if(plugin->prev)
 		plugin->prev->next = plugin->next;
 	if(plugin->next)
@@ -355,7 +459,7 @@ void LuaPlugin_Remove(PLUGIN* plugin) {
 }
 
 void LuaPlugin_Tick() {
-	PLUGIN* ptr = headPlugin;
+	PLUGIN *ptr = headPlugin;
 
 	while(ptr) {
 		if(ptr->loaded) {
@@ -369,18 +473,19 @@ void LuaPlugin_Tick() {
 	}
 }
 
-void LuaPlugin_Free(PLUGIN* plugin) {
+void LuaPlugin_Free(PLUGIN *plugin) {
 	free((void*)plugin->name);
 	free(plugin);
 }
 
-void LuaPlugin_Close(PLUGIN* plugin) {
+void LuaPlugin_Close(PLUGIN *plugin) {
 	CallLuaVoid(plugin, "onStop");
 	lua_close(plugin->state);
 }
 
 void LuaPlugin_Stop() {
-	PLUGIN* ptr = headPlugin;
+	PLUGIN *ptr = headPlugin;
+
 	while(ptr) {
 		LuaPlugin_Close(ptr);
 		LuaPlugin_Free(ptr);
