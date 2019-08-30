@@ -5,7 +5,7 @@
 #include "luaplugin.h"
 
 int LuaError(lua_State* L) {
-	PLUGIN* plugin = LuaPlugin_GetPluginByState(L);
+	PLUGIN* plugin = LuaPlugin_FindByState(L);
 	if(plugin)
 		Log_Error("%s: %s", plugin->name, lua_tostring(L, -1));
 	else
@@ -22,7 +22,7 @@ else \
 	lua_pop(plugin->state, 1); \
 
 #define GetLuaPlugin(L) \
-PLUGIN* plugin = LuaPlugin_GetPluginByState(L); \
+PLUGIN* plugin = LuaPlugin_FindByState(L); \
 if(!plugin) \
 	return 0; \
 
@@ -247,13 +247,39 @@ static const luaL_Reg LuaPlugin_Libs[] = {
 	{NULL, NULL}
 };
 
+/*
+	Lua global functions
+*/
+
+static int lunload(lua_State* L) {
+	PLUGIN* pl = LuaPlugin_FindByState(L);
+	if(pl)
+		pl->loaded = false;
+	return 0;
+}
+
+static const luaL_Reg LuaPlugin_Globals[] = {
+	{"_unload", lunload},
+	{NULL, NULL}
+};
+
 void LuaPlugin_LoadLibs(lua_State* L) {
-	const luaL_Reg *lib;
-	for(lib = LuaPlugin_Libs; lib->func; lib++) {
-		lua_pushcfunction(L, lib->func);
-		lua_pushstring(L, lib->name);
+	const luaL_Reg *reg;
+	for(reg = LuaPlugin_Libs; reg->func; reg++) {
+		lua_pushcfunction(L, reg->func);
+		lua_pushstring(L, reg->name);
 		lua_call(L, 1, 0);
 	}
+
+	for(reg = LuaPlugin_Globals; reg->func; reg++) {
+		lua_pushcfunction(L, reg->func);
+		lua_setglobal(L, reg->name);
+	}
+
+	lua_getglobal(L, "log");
+	lua_getfield(L, -1, "info");
+	lua_setglobal(L, "print");
+	lua_pop(L, 1);
 }
 
 bool LuaPlugin_Load(const char* name) {
@@ -263,48 +289,101 @@ bool LuaPlugin_Load(const char* name) {
 	lua_State* L = luaL_newstate();
 	LuaPlugin_LoadLibs(L);
 	PLUGIN* tmp = Memory_Alloc(1, sizeof(PLUGIN));
-	tmp->name = name;
+	tmp->name = String_AllocCopy(name);
 	tmp->state = L;
 
 	if(luaL_dofile(L, path)) {
 		LuaError(L);
-		lua_close(L);
-		free(tmp);
+		LuaPlugin_Close(tmp);
 		return false;
 	}
 
 	tmp->next = headPlugin;
+	if(headPlugin)
+		headPlugin->prev = tmp;
+	tmp->loaded = true;
 	headPlugin = tmp;
 	CallLuaVoid(tmp, "onStart");
 
 	return true;
 }
 
+void LuaPlugin_PrintList() {
+	PLUGIN* ptr = headPlugin;
+
+	while(ptr) {
+		Log_Info(ptr->name);
+		ptr = ptr->next;
+	}
+}
+
 void LuaPlugin_Start() {
 	LuaPlugin_Load("test");
 }
 
-PLUGIN* LuaPlugin_GetPluginByState(lua_State* L) {
+PLUGIN* LuaPlugin_FindByName(const char* name) {
 	PLUGIN* ptr = headPlugin;
+
+	while(ptr) {
+		if(String_Compare(name, ptr->name)) {
+			return ptr;
+		}
+		ptr = ptr->next;
+	}
+
+	return (PLUGIN*)NULL;
+}
+
+PLUGIN* LuaPlugin_FindByState(lua_State* L) {
+	PLUGIN* ptr = headPlugin;
+
 	while(ptr) {
 		if(ptr->state == L) {
 			return ptr;
 		}
 		ptr = ptr->next;
 	}
+
 	return (PLUGIN*)NULL;
+}
+
+void LuaPlugin_Remove(PLUGIN* plugin) {
+	if(plugin->prev)
+		plugin->prev->next = plugin->next;
+	if(plugin->next)
+		plugin->next->prev = plugin->prev;
+}
+
+void LuaPlugin_Tick() {
+	PLUGIN* ptr = headPlugin;
+
+	while(ptr) {
+		if(ptr->loaded) {
+			CallLuaVoid(ptr, "onTick");
+		} else {
+			LuaPlugin_Close(ptr);
+			LuaPlugin_Remove(ptr);
+			LuaPlugin_Free(ptr);
+		}
+		ptr = ptr->next;
+	}
+}
+
+void LuaPlugin_Free(PLUGIN* plugin) {
+	free((void*)plugin->name);
+	free(plugin);
 }
 
 void LuaPlugin_Close(PLUGIN* plugin) {
 	CallLuaVoid(plugin, "onStop");
 	lua_close(plugin->state);
-	free(plugin);
 }
 
 void LuaPlugin_Stop() {
 	PLUGIN* ptr = headPlugin;
 	while(ptr) {
 		LuaPlugin_Close(ptr);
+		LuaPlugin_Free(ptr);
 		ptr = ptr->next;
 	}
 }

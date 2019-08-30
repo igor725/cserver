@@ -93,6 +93,7 @@ bool Server_InitialWork() {
 }
 
 void Server_DoStep() {
+	LuaPlugin_Tick();
 	for(int i = 0; i < 128; i++) {
 		CLIENT* client = clients[i];
 		if(client)
