@@ -223,8 +223,9 @@ bool Handler_SetBlock(CLIENT* client, char* data) {
 	ushort x = ntohs(*(ushort*)data); data += 2;
 	ushort y = ntohs(*(ushort*)data); data += 2;
 	ushort z = ntohs(*(ushort*)data); data += 2;
-	uchar mode =* (uchar*)data; ++data;
-	BlockID block =* (BlockID*)data;
+	uchar mode = *(uchar*)data; ++data;
+	BlockID block = *(BlockID*)data;
+	BlockID pblock = block;
 
 	switch(mode) {
 		case MODE_PLACE:
@@ -232,16 +233,17 @@ bool Handler_SetBlock(CLIENT* client, char* data) {
 				Client_Kick(client, "Invalid block ID");
 				return false;
 			}
-			if(Event_OnBlockPlace(client, x, y, z, block)) {
+			if(Event_OnBlockPlace(client, &x, &y, &z, &block)) {
 				World_SetBlock(world, x, y, z, block);
-				Client_UpdateBlock(client, world, x, y, z);
+				Client_UpdateBlock(pblock != block ? NULL : client, world, x, y, z);
 			} else
 				Packet_WriteSetBlock(client, x, y, z, World_GetBlock(world, x, y, z));
 			break;
 		case MODE_DESTROY:
-			if(Event_OnBlockPlace(client, x, y, z, 0)) {
-				World_SetBlock(world, x, y, z, 0);
-				Client_UpdateBlock(client, world, x, y, z);
+			block = 0;
+			if(Event_OnBlockPlace(client, &x, &y, &z, &block)) {
+				World_SetBlock(world, x, y, z, block);
+				Client_UpdateBlock(pblock != block ? NULL : client, world, x, y, z);
 			} else
 				Packet_WriteSetBlock(client, x, y, z, World_GetBlock(world, x, y, z));
 			break;
@@ -256,11 +258,13 @@ bool Handler_PosAndOrient(CLIENT* client, char* data) {
 
 	if(client->cpeData) {
 		if(client->cpeData->heldBlock !=* data) {
-			Event_OnHeldBlockChange(client, client->cpeData->heldBlock,* data);
-			client->cpeData->heldBlock =* data;
+			BlockID id = *data;
+			BlockID lastblock = client->cpeData->heldBlock;
+			Event_OnHeldBlockChange(client, &lastblock, &id);
+			client->cpeData->heldBlock = *data;
 		}
 	}
-		client->cpeData->heldBlock =* data;
+		client->cpeData->heldBlock = *data;
 	ReadClPos(client, ++data);
 	client->playerData->positionUpdated = true;
 	return true;
@@ -271,24 +275,26 @@ bool Handler_Message(CLIENT* client, char* data) {
 		return false;
 
 	char* message;
+	MessageType type = 0;
 	int len = ReadString(++data, &message);
 
-	for(int i = 0; i < 63; i++) {
+	for(int i = 0; i < len; i++) {
 		if(message[i] == '%' && ISHEX(message[i + 1]))
 			message[i] = '&';
 	}
 
-	if(Event_OnMessage(client, message, len)) {
+	if(Event_OnMessage(client, message, &type)) {
 		char formatted[128] = {0};
 		sprintf(formatted, CHATLINE, client->playerData->name, message);
 
 		if(*message == '/') {
 			if(!Command_Handle(message + 1, client))
-				Packet_WriteChat(client, 0, "Unknown command");
+				Packet_WriteChat(client, type, "Unknown command");
 		} else
-			Packet_WriteChat(Broadcast, 0, formatted);
+			Packet_WriteChat(Broadcast, type, formatted);
 		Log_Chat(formatted);
 	}
+
 	free(message);
 	return true;
 }
