@@ -4,6 +4,7 @@
 #include "config.h"
 #include "luaplugin.h"
 #include "command.h"
+#include "packets.h"
 
 static int LuaError(lua_State* L) {
 	PLUGIN* plugin = LuaPlugin_FindByState(L);
@@ -452,13 +453,20 @@ bool LuaPlugin_Load(const char* name) {
 	return true;
 }
 
-void LuaPlugin_PrintList() {
-	Log_Info("List of loaded plugins:");
+#define PLUGLIST "List of loaded plugins:"
+static void PrintList(CLIENT *client) {
+	if(!client)
+		Log_Info(PLUGLIST);
+	else
+		Packet_WriteChat(client, 0, PLUGLIST);
 
 	PLUGIN *ptr = headPlugin;
 
 	while(ptr) {
-		printf("%s\n", ptr->name);
+		if(!client)
+			printf("%s\n", ptr->name);
+		else
+			Packet_WriteChat(client, 0, ptr->name);
 		ptr = ptr->next;
 	}
 }
@@ -472,7 +480,7 @@ static bool Cmd_Plugins(const char* args, CLIENT* caller, char* out) {
 
 	if(String_GetArgument(args, arg, 0)) {
 		if(String_CaselessCompare(arg, "list")) {
-			LuaPlugin_PrintList();
+			PrintList(caller);
 			return false;
 		} else if (String_CaselessCompare(arg, "load")) {
 			if(String_GetArgument(args, arg, 1)) {
@@ -488,8 +496,8 @@ static bool Cmd_Plugins(const char* args, CLIENT* caller, char* out) {
 				if(!plugin) {
 					String_Copy(out, CMD_MAX_OUT, "This plugin is not loaded");
 				} else {
+					String_Copy(out, CMD_MAX_OUT, "Plugin unloading queued");
 					plugin->loaded = false;
-					return false;
 				}
 			} else {
 				String_Copy(out, CMD_MAX_OUT, "Invalud argument #2");

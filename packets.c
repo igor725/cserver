@@ -10,7 +10,7 @@
 
 PACKET* packets[256] = {0};
 
-int ReadString(char* data, char** dst) {
+int ReadString(const char* data, char** dst) {
 	int end = 63;
 	while(data[end] == ' ') --end;
 	++end;
@@ -158,7 +158,7 @@ void Packet_WritePosAndOrient(CLIENT* client, CLIENT* other) {
 	Client_Send(client, 10);
 }
 
-void Packet_WriteChat(CLIENT* client, MessageType type, char* mesg) {
+void Packet_WriteChat(CLIENT* client, MessageType type, const char* mesg) {
 	char* data = client->wrbuf;
 	*data = 0x0D;
 	*++data = type;
