@@ -16,7 +16,7 @@ enum States {
 };
 
 typedef struct cpeData {
-	bool cpeEnabled;
+	bool fmSupport;
 	BlockID heldBlock;
 	short   _extCount;
 	EXT*    headExtension;

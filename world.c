@@ -31,6 +31,7 @@ void World_AllocBlockArray(WORLD* world) {
 
 	world->size = 4 + dx * dy * dz;
 	BlockID* data = (BlockID*)Memory_Alloc(world->size, sizeof(BlockID));
+	*(uint*)data = htonl(world->size - 4);
 	world->data = data;
 }
 

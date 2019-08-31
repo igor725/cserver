@@ -25,6 +25,7 @@ void CPE_StartHandshake(CLIENT* client) {
 }
 
 static const struct extReg serverExtensions[] = {
+	{"FastMap", 1},
 	{"SetHotbar", 1},
 	{"HeldBlock", 1},
 	{"TwoWayPing", 1},
@@ -134,6 +135,10 @@ bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
 	EXT* tmp = (EXT*)Memory_Alloc(1, sizeof(EXT));
 	ReadString(data, (void*)&tmp->name);data += 63;
 	tmp->version = ntohl(*(uint*)++data);
+
+	if(String_CaselessCompare(tmp->name, "FastMap")) {
+		client->cpeData->fmSupport = true;
+	}
 
 	tmp->next = client->cpeData->headExtension;
 	client->cpeData->headExtension = tmp;

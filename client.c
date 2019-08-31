@@ -75,17 +75,31 @@ THRET Client_MapThreadProc(TARG lpParam) {
 
 	z_stream stream = {0};
 
-	client->wrbuf[0] = 0x03;
-	client->wrbuf[1027] = 0;
-	ushort* len = (ushort*)(client->wrbuf + 1);
-	uchar* out = (uchar*)len + 2;
+	uchar* data = (uchar*)client->wrbuf;
+	*data = 0x03;
+	ushort* len = (ushort*)++data;
+	uchar* out = data + 2;
 	int ret;
+
+	uchar* mapdata = world->data;
+	int maplen = world->size;
+	int windowBits = 31;
+
+	if(client->cpeData->fmSupport) {
+		windowBits = -15;
+		maplen -= 4;
+		mapdata += 4;
+		if((ret = deflateInit(&stream, 4)) != Z_OK) {
+			client->playerData->state = STATE_WLOADERR;
+			return 0;
+		}
+	}
 
 	if((ret = deflateInit2_(
 		&stream,
 		4,
 		Z_DEFLATED,
-		31,
+		windowBits,
 		8,
 		Z_DEFAULT_STRATEGY,
 		zlibVersion(),
@@ -95,9 +109,8 @@ THRET Client_MapThreadProc(TARG lpParam) {
 		return 0;
 	}
 
-	stream.avail_in = world->size;
-	stream.next_in = (uchar*)world->data;
-	*(uint*)world->data = htonl(world->size - 4);
+	stream.avail_in = maplen;
+	stream.next_in = mapdata;
 
 	do {
 		stream.next_out = out;

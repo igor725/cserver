@@ -91,17 +91,20 @@ short Packet_GetSize(int id, CLIENT* client) {
 */
 
 void Packet_WriteKick(CLIENT* client, const char* reason) {
-	if(client->status != CLIENT_OK)
-		return;
-
-	client->wrbuf[0] = 0x0E;
-	WriteString(client->wrbuf + 1, reason);
+	char* data = client->wrbuf;
+	*data = 0x0E;
+	WriteString(++data, reason);
 	Client_Send(client, 65);
 }
 
 void Packet_WriteLvlInit(CLIENT* client) {
-	client->wrbuf[0] = 0x02;
-	Client_Send(client, 1);
+	char* data = client->wrbuf;
+	*data = 0x02;
+	if(client->cpeData && client->cpeData->fmSupport) {
+		*(uint*)++data = htonl(client->playerData->currentWorld->size - 4);
+		Client_Send(client, 5);
+	} else
+		Client_Send(client, 1);
 }
 
 void Packet_WriteLvlFin(CLIENT* client) {

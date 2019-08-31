@@ -46,8 +46,6 @@ uint String_FormatError(uint code, char* buf, uint buflen) {
 			if(buf[i] == '\r' || buf[i] == '\n')
 				buf[i] = '\0';
 		}
-	} else {
-		Error_Set(ET_SYS, GetLastError());
 	}
 #elif defined(POSIX)
 	int len = String_Copy(buf, buflen, strerror(code));
