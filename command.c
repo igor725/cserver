@@ -4,10 +4,10 @@
 #include "packets.h"
 #include "server.h"
 
-void Command_Register(char* cmd, cmdFunc func) {
+void Command_Register(const char* cmd, cmdFunc func) {
 	COMMAND* tmp = Memory_Alloc(1, sizeof(COMMAND));
 
-	tmp->name = cmd;
+	tmp->name = String_AllocCopy(cmd);
 	tmp->func = func;
 	tmp->next = headCommand;
 	headCommand = tmp;
@@ -47,7 +47,7 @@ bool Command_Handle(char* cmd, CLIENT* caller) {
 		if(*args == 0) {
 			args = NULL;
 			break;
-		} else if (*args == 32){
+		} else if (*args == 32) {
 			*args = 0;
 			++args;
 			break;

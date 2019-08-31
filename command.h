@@ -7,14 +7,14 @@
 typedef bool (*cmdFunc)(const char* args, CLIENT* caller, char* out);
 
 typedef struct command {
-	char          * name;
+	const char*     name;
 	cmdFunc         func;
 	struct command* next;
 } COMMAND;
 
 COMMAND* headCommand;
 
-void Command_Register(char* name, cmdFunc func);
+void Command_Register(const char* name, cmdFunc func);
 bool Command_Handle(char* cmd, CLIENT* caller);
 void Command_RegisterDefault();
 #endif
