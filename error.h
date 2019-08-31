@@ -4,7 +4,8 @@ enum ErrorTypes {
 	ET_NOERR = -1,
 	ET_SERVER = 0,
 	ET_ZLIB,
-	ET_SYS
+	ET_SYS,
+	ET_STR
 };
 
 #define LNUM ": "
@@ -22,10 +23,11 @@ enum ErrorCodes {
 	EC_MAGIC,
 	EC_WIUNKID,
 	EC_CFGTYPE,
-	EC_CFGEND,
+	EC_CFGEND
 };
 
 void Error_SetCode(const char* efile, int eline, const char* efunc, int etype, uint ecode);
+void Error_SetStr_(const char* efile, int eline, const char* efunc, const char* estr);
 const char* Error_GetString();
 const char* Error_GetFunc();
 const char* Error_GetFile();

@@ -9,4 +9,5 @@ uint String_FormatError(uint code, char* buf, uint buflen);
 void String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* args);
 void String_FormatBuf(char* buf, size_t len, const char* str, ...);
 const char* String_AllocCopy(const char* str);
+size_t String_GetArgument(const char* args, char* arg, int index);
 #endif

@@ -14,14 +14,14 @@ struct extReg {
 	int version;
 };
 
-void CPEPacket_WriteInfo(CLIENT *cl);
+void CPEPacket_WriteInfo(CLIENT* cl);
 void CPE_StartHandshake(CLIENT* client);
 bool CPEHandler_ExtInfo(CLIENT* client, char* data);
 bool CPEHandler_ExtEntry(CLIENT* client, char* data);
 bool CPEHandler_TwoWayPing(CLIENT* client, char* data);
 bool CPEHandler_PlayerClick(CLIENT* client, char* data);
 
-void CPEPacket_WriteInfo(CLIENT *client);
+void CPEPacket_WriteInfo(CLIENT* client);
 void CPEPacket_WriteExtEntry(CLIENT* client, EXT* ext);
 void CPEPAcket_WriteClickDistance(CLIENT* client, short dist);
 void CPEPacket_WriteWeatherType(CLIENT* client, Weather type);

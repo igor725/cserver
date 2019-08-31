@@ -47,7 +47,7 @@ void Packet_RegisterCPEDefault() {
 	Packet_Register(0x22, "PlayerClick", 15, &CPEHandler_PlayerClick);
 }
 
-void CPEPacket_WriteInfo(CLIENT *client) {
+void CPEPacket_WriteInfo(CLIENT* client) {
 	char* data = client->wrbuf;
 	*data = 0x10;
 	WriteString(++data, SOFTWARE_NAME DELIM SOFTWARE_VERSION); data += 63;
@@ -161,7 +161,7 @@ bool CPEHandler_TwoWayPing(CLIENT* client, char* data) {
 			P.S. Стоит всё же предостеречься и реализовать позже
 			что-то типа мьютексов.
 		*/
-		CPEPacket_WriteTwoWayPing(client, 0, *(ushort*)++data);
+		CPEPacket_WriteTwoWayPing(client, 0,* (ushort*)++data);
 		return true;
 	} else if(*data == 1) {
 		// TODO: Обрабатывать ответ от клиента на пинг пакет

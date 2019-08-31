@@ -4,7 +4,7 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-#if !defined(LUA_VERSION_NUM) || LUA_VERSION_NUM < 501 || LUA_VERSION_NUM > 501
+#if LUA_VERSION_NUM != 501
 #error This version of Lua intepreter currently is not supported.
 #endif
 

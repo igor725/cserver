@@ -167,7 +167,7 @@ void Packet_WriteChat(CLIENT* client, MessageType type, char* mesg) {
 }
 
 bool Handler_Handshake(CLIENT* client, char* data) {
-	uchar protoVer = *data;
+	uchar protoVer =* data;
 	if(protoVer != 0x07) {
 		Client_Kick(client, "Invalid protocol version");
 		return true;
@@ -192,7 +192,7 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 		}
 	}
 
-	bool cpeEnabled = *++data == 0x42;
+	bool cpeEnabled =* ++data == 0x42;
 
 	if(Client_CheckAuth(client))
 		Packet_WriteHandshake(client);
@@ -223,8 +223,8 @@ bool Handler_SetBlock(CLIENT* client, char* data) {
 	ushort x = ntohs(*(ushort*)data); data += 2;
 	ushort y = ntohs(*(ushort*)data); data += 2;
 	ushort z = ntohs(*(ushort*)data); data += 2;
-	uchar mode = *(uchar*)data; ++data;
-	BlockID block = *(BlockID*)data;
+	uchar mode =* (uchar*)data; ++data;
+	BlockID block =* (BlockID*)data;
 
 	switch(mode) {
 		case MODE_PLACE:
@@ -255,12 +255,12 @@ bool Handler_PosAndOrient(CLIENT* client, char* data) {
 		return false;
 
 	if(client->cpeData) {
-		if(client->cpeData->heldBlock != *data) {
-			Event_OnHeldBlockChange(client, client->cpeData->heldBlock, *data);
-			client->cpeData->heldBlock = *data;
+		if(client->cpeData->heldBlock !=* data) {
+			Event_OnHeldBlockChange(client, client->cpeData->heldBlock,* data);
+			client->cpeData->heldBlock =* data;
 		}
 	}
-		client->cpeData->heldBlock = *data;
+		client->cpeData->heldBlock =* data;
 	ReadClPos(client, ++data);
 	client->playerData->positionUpdated = true;
 	return true;

@@ -13,19 +13,19 @@ void Command_Register(char* cmd, cmdFunc func) {
 	headCommand = tmp;
 }
 
-bool CHandler_Stop(char* args, CLIENT* caller, char* out) {
+static bool CHandler_Stop(const char* args, CLIENT* caller, char* out) {
 	serverActive = false;
 	return false;
 }
 
-bool CHandler_Test(char* args, CLIENT* caller, char* out) {
+static bool CHandler_Test(const char* args, CLIENT* caller, char* out) {
 	sprintf(out, "Command \"test\" called by %s with args: %s",
 		caller ? caller->playerData->name : "console", args
 	);
 	return true;
 }
 
-bool CHandler_Announce(char* args, CLIENT* caller, char* out) {
+static bool CHandler_Announce(const char* args, CLIENT* caller, char* out) {
 	if(caller == NULL)
 		caller = Broadcast;
 	Packet_WriteChat(caller, CPE_ANNOUNCE, !args ? "Test announcement" : args);
@@ -39,7 +39,7 @@ void Command_RegisterDefault() {
 }
 
 bool Command_Handle(char* cmd, CLIENT* caller) {
-	char* ret = Memory_Alloc(512, 1);
+	char ret[CMD_MAX_OUT] = {0};
 	char* args = cmd;
 
 	while(1) {
@@ -57,18 +57,15 @@ bool Command_Handle(char* cmd, CLIENT* caller) {
 	COMMAND* tmp = headCommand;
 	while(tmp) {
 		if(String_CaselessCompare(tmp->name, cmd)) {
-			if(tmp->func(args, caller, ret)) {
+			if(tmp->func((const char*)args, caller, ret)) {
 				if(caller)
 					Packet_WriteChat(caller, 0, ret);
 				else
 					Log_Info(ret);
 			}
-			free(ret);
 			return true;
 		}
 		tmp = tmp->next;
 	}
-
-	free(ret);
 	return false;
 }

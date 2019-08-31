@@ -2,10 +2,12 @@
 #define COMMAND_H
 #include "client.h"
 
-typedef bool (*cmdFunc)(char* args, CLIENT* caller, char* out);
+#define	CMD_MAX_OUT 512
+
+typedef bool (*cmdFunc)(const char* args, CLIENT* caller, char* out);
 
 typedef struct command {
-	char*           name;
+	char          * name;
 	cmdFunc         func;
 	struct command* next;
 } COMMAND;

@@ -29,7 +29,7 @@ CFGENTRY* Config_GetEntry(CFGSTORE* store, const char* key);
 CFGSTORE* Config_Create(const char* filename);
 void Config_EmptyStore(CFGSTORE* store);
 
-bool Config_Load(CFGSTORE *store);
+bool Config_Load(CFGSTORE* store);
 bool  Config_Save(CFGSTORE* store);
 
 int   Config_GetInt(CFGSTORE* store, const char* key);

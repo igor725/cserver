@@ -58,9 +58,9 @@ uint String_FormatError(uint code, char* buf, uint buflen) {
 
 void String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* args) {
 #if defined(WINDOWS)
-	vsprintf_s(buf, len, str, *args);
+	vsprintf_s(buf, len, str,* args);
 #elif defined(POSIX)
-	vsnprintf(buf, len, str, *args);
+	vsnprintf(buf, len, str,* args);
 #endif
 }
 
@@ -77,4 +77,34 @@ const char* String_AllocCopy(const char* str) {
 		return NULL;
 	String_CopyUnsafe(ptr, str);
 	return (const char*)ptr;
+}
+
+size_t String_GetArgument(const char* args, char* arg, int index) {
+	if(!args) return 0;
+
+	size_t argsize = 0;
+
+	while(1) {
+		if(index > 0) {
+			if(*args == '\0')
+				return 0;
+
+			if(*args == ' ') {
+				--index;
+			}
+
+			++args;
+		} else {
+			arg[argsize] = args[argsize];
+			if(args[argsize] == '\0')
+				break;
+			if(args[argsize] == ' ') {
+				arg[argsize] = '\0';
+				break;
+			}
+			++argsize;
+		}
+	}
+
+	return argsize;
 }

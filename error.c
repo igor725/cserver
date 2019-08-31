@@ -15,10 +15,11 @@ const char* const Error_Strings[] = {
 	"Unknown data type ID",
 	"Unknown cfg entry type",
 	"Unexpected end of cfg file",
+	"This plugin already loaded"
 };
 
 char Error_StrBuf[512] = {0};
-int Error_Type = ET_SERVER;
+int Error_Type = ET_NOERR;
 uint Error_Code = 0;
 
 const char* Error_GetString() {

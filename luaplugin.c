@@ -3,11 +3,12 @@
 #include "log.h"
 #include "config.h"
 #include "luaplugin.h"
+#include "command.h"
 
 static int LuaError(lua_State* L) {
 	PLUGIN* plugin = LuaPlugin_FindByState(L);
 	if(plugin)
-		Log_Error("%s: %s", plugin->name, lua_tostring(L, -1));
+		Log_Error("In plugin \"%s\": %s", plugin->name, lua_tostring(L, -1));
 	else
 		Log_Error(lua_tostring(L, -1));
 	return 0;
@@ -83,13 +84,13 @@ int luaopen_event(lua_State* L) {
 
 #define LUA_TCFGSTORE "cfgStore"
 
-static CFGSTORE *toStore(lua_State *L, int index) {
+static CFGSTORE* toStore(lua_State* L, int index) {
 	CFGSTORE* store = lua_touserdata(L, index);
 	if(!store) luaL_typerror(L, index, LUA_TCFGSTORE);
 	return store;
 }
 
-static CFGSTORE *checkStore(lua_State *L, int index) {
+static CFGSTORE* checkStore(lua_State* L, int index) {
 	CFGSTORE* store;
 	luaL_checktype(L, index, LUA_TUSERDATA);
 	store = luaL_checkudata(L, index, LUA_TCFGSTORE);
@@ -97,20 +98,20 @@ static CFGSTORE *checkStore(lua_State *L, int index) {
 	return store;
 }
 
-static CFGSTORE *pushStore(lua_State *L) {
-	CFGSTORE *store = lua_newuserdata(L, sizeof(CFGSTORE));
+static CFGSTORE* pushStore(lua_State* L) {
+	CFGSTORE* store = lua_newuserdata(L, sizeof(CFGSTORE));
 	luaL_getmetatable(L, LUA_TCFGSTORE);
 	lua_setmetatable(L, -2);
 	return store;
 }
 
-static int lconfig_newStore(lua_State *L) {
-	const char *filename = luaL_checkstring(L, 1);
+static int lconfig_newStore(lua_State* L) {
+	const char* filename = luaL_checkstring(L, 1);
 	if(String_CaselessCompare(filename, MAINCFG)) {
 		luaL_error(L, "Can't create cfgStore with reserved filename");
 	}
 
-	CFGSTORE *store = pushStore(L);
+	CFGSTORE* store = pushStore(L);
 	store->path = String_AllocCopy(filename);
 	store->firstCfgEntry = NULL;
 	store->lastCfgEntry = NULL;
@@ -118,14 +119,14 @@ static int lconfig_newStore(lua_State *L) {
 	return 1;
 }
 
-static int lconfig_purge(lua_State *L) {
-	CFGSTORE *store = checkStore(L, 1);
+static int lconfig_purge(lua_State* L) {
+	CFGSTORE* store = checkStore(L, 1);
 	Config_EmptyStore(store);
 	return 0;
 }
 
-static int lconfig_load(lua_State *L) {
-	CFGSTORE *store = checkStore(L, 1);
+static int lconfig_load(lua_State* L) {
+	CFGSTORE* store = checkStore(L, 1);
 
 	if(!Config_Load(store)) {
 		lua_pushboolean(L, false);
@@ -138,8 +139,8 @@ static int lconfig_load(lua_State *L) {
 	return 2;
 }
 
-static int lconfig_save(lua_State *L) {
-	CFGSTORE *store = checkStore(L, 1);
+static int lconfig_save(lua_State* L) {
+	CFGSTORE* store = checkStore(L, 1);
 
 	if(!Config_Save(store)) {
 		lua_pushboolean(L, false);
@@ -152,10 +153,10 @@ static int lconfig_save(lua_State *L) {
 	return 2;
 }
 
-static int lconfig_set(lua_State *L) {
-	CFGSTORE *store = checkStore(L, 1);
-	const char *key = luaL_checkstring(L, 2);
-	const char *err = NULL;
+static int lconfig_set(lua_State* L) {
+	CFGSTORE* store = checkStore(L, 1);
+	const char* key = luaL_checkstring(L, 2);
+	const char* err = NULL;
 	bool succ = true;
 
 	switch(lua_type(L, 3)) {
@@ -182,10 +183,10 @@ static int lconfig_set(lua_State *L) {
 	return 1;
 }
 
-static int lconfig_get(lua_State *L) {
-	CFGSTORE *store = checkStore(L, 1);
-	const char *key = luaL_checkstring(L, 2);
-	CFGENTRY *ent = Config_GetEntry(store, key);
+static int lconfig_get(lua_State* L) {
+	CFGSTORE* store = checkStore(L, 1);
+	const char* key = luaL_checkstring(L, 2);
+	CFGENTRY* ent = Config_GetEntry(store, key);
 
 	if(!ent) {
 		lua_pushnil(L);
@@ -212,14 +213,14 @@ static int lconfig_get(lua_State *L) {
 }
 
 static int lconfig_type(lua_State* L) {
-	CFGSTORE *store = checkStore(L, 1);
-	const char *key = luaL_checkstring(L, 2);
-	CFGENTRY *ent = Config_GetEntry(store, key);
+	CFGSTORE* store = checkStore(L, 1);
+	const char* key = luaL_checkstring(L, 2);
+	CFGENTRY* ent = Config_GetEntry(store, key);
 	if(!ent) {
 		lua_pushstring(L, "nil");
 		return 1;
 	}
-	const char *type;
+	const char* type;
 
 	switch (ent->type) {
 		case CFG_BOOL:
@@ -241,11 +242,11 @@ static int lconfig_type(lua_State* L) {
 	return 1;
 }
 
-static int lconfig_istype(lua_State *L) {
-	CFGSTORE *store = checkStore(L, 1);
-	const char *key = luaL_checkstring(L, 2);
-	const char *type = luaL_checkstring(L, 3);
-	CFGENTRY *ent = Config_GetEntry(store, key);
+static int lconfig_istype(lua_State* L) {
+	CFGSTORE* store = checkStore(L, 1);
+	const char* key = luaL_checkstring(L, 2);
+	const char* type = luaL_checkstring(L, 3);
+	CFGENTRY* ent = Config_GetEntry(store, key);
 	bool valid = false;
 
 	switch (ent->type) {
@@ -276,13 +277,13 @@ static const luaL_Reg cfg_methods[] = {
 	{NULL, NULL},
 };
 
-static int lconfig_gc(lua_State *L) {
-	CFGSTORE *store = toStore(L, 1);
+static int lconfig_gc(lua_State* L) {
+	CFGSTORE* store = toStore(L, 1);
 	Config_EmptyStore(store);
 	return 0;
 }
 
-static int lconfig_tostring(lua_State *L) {
+static int lconfig_tostring(lua_State* L) {
 	lua_pushstring(L, "cfgStore");
 	return 1;
 }
@@ -293,7 +294,7 @@ static const luaL_Reg cfg_meta[] = {
 	{NULL, NULL}
 };
 
-int luaopen_config(lua_State *L) {
+int luaopen_config(lua_State* L) {
 	luaL_openlib(L, lua_tostring(L, -1), cfg_methods, 0);
 
 	luaL_newmetatable(L, LUA_TCFGSTORE);
@@ -318,7 +319,7 @@ static const luaL_Reg cpelib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_cpe(lua_State *L) {
+int luaopen_cpe(lua_State* L) {
 	luaL_register(L, lua_tostring(L, -1), cpelib);
 	return 1;
 }
@@ -331,7 +332,7 @@ static const luaL_Reg packetslib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_packets(lua_State *L) {
+int luaopen_packets(lua_State* L) {
 	luaL_register(L, lua_tostring(L, -1), packetslib);
 	return 1;
 }
@@ -344,7 +345,7 @@ static const luaL_Reg worldlib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_world(lua_State *L) {
+int luaopen_world(lua_State* L) {
 	luaL_register(L, lua_tostring(L, -1), worldlib);
 	return 1;
 }
@@ -368,8 +369,8 @@ static const luaL_Reg LuaPlugin_Libs[] = {
 	Lua global functions
 */
 
-static int lunload(lua_State *L) {
-	PLUGIN *pl = LuaPlugin_FindByState(L);
+static int lunload(lua_State* L) {
+	PLUGIN* pl = LuaPlugin_FindByState(L);
 	if(pl)
 		pl->loaded = false;
 	return 0;
@@ -380,8 +381,8 @@ static const luaL_Reg LuaPlugin_Globals[] = {
 	{NULL, NULL}
 };
 
-void LuaPlugin_LoadLibs(lua_State *L) {
-	const luaL_Reg *reg;
+void LuaPlugin_LoadLibs(lua_State* L) {
+	const luaL_Reg* reg;
 	for(reg = LuaPlugin_Libs; reg->func; reg++) {
 		lua_pushcfunction(L, reg->func);
 		lua_pushstring(L, reg->name);
@@ -406,19 +407,38 @@ void LuaPlugin_LoadLibs(lua_State *L) {
 	*/
 }
 
-bool LuaPlugin_Load(const char *name) {
+static bool LuaPlugin_CanLoad(const char* name) {
+	PLUGIN* ptr = headPlugin;
+
+	while(ptr) {
+		if(String_CaselessCompare(ptr->name, name)) {
+			return false;
+		}
+		ptr = ptr->next;
+	}
+
+	return true;
+}
+
+bool LuaPlugin_Load(const char* name) {
+	if(!LuaPlugin_CanLoad(name)) {
+		Log_Error("Plugin %q already loaded.", name);
+		return false;
+	}
+
 	char path[MAX_PATH];
 	String_FormatBuf(path, MAX_PATH, "plugins/%s.lua", name);
 
-	lua_State *L = luaL_newstate();
+	lua_State* L = luaL_newstate();
 	LuaPlugin_LoadLibs(L);
-	PLUGIN *tmp = Memory_Alloc(1, sizeof(PLUGIN));
+	PLUGIN* tmp = Memory_Alloc(1, sizeof(PLUGIN));
 	tmp->name = String_AllocCopy(name);
 	tmp->state = L;
 
 	if(luaL_dofile(L, path)) {
-		LuaError(L);
+		LuaError(tmp->state);
 		LuaPlugin_Close(tmp);
+		LuaPlugin_Free(tmp);
 		return false;
 	}
 
@@ -433,19 +453,60 @@ bool LuaPlugin_Load(const char *name) {
 }
 
 void LuaPlugin_PrintList() {
+	Log_Info("List of loaded plugins:");
+
 	PLUGIN *ptr = headPlugin;
 
 	while(ptr) {
-		Log_Info(ptr->name);
+		printf("%s\n", ptr->name);
 		ptr = ptr->next;
 	}
 }
 
-void LuaPlugin_Start() {
-	LuaPlugin_Load("test");
+/*
+	LuaPlugin commands
+*/
+
+static bool Cmd_Plugins(const char* args, CLIENT* caller, char* out) {
+	char arg[64] = {0};
+
+	if(String_GetArgument(args, arg, 0)) {
+		if(String_CaselessCompare(arg, "list")) {
+			LuaPlugin_PrintList();
+			return false;
+		} else if (String_CaselessCompare(arg, "load")) {
+			if(String_GetArgument(args, arg, 1)) {
+				if(LuaPlugin_Load(arg)) {
+					String_Copy(out, CMD_MAX_OUT, "Plugin loaded successfully");
+				}
+			} else {
+				String_Copy(out, CMD_MAX_OUT, "Invalud argument #2");
+			}
+		} else if(String_CaselessCompare(arg, "unload")) {
+			if(String_GetArgument(args, arg, 1)) {
+				PLUGIN* plugin = LuaPlugin_FindByName(arg);
+				if(!plugin) {
+					String_Copy(out, CMD_MAX_OUT, "This plugin is not loaded");
+				} else {
+					plugin->loaded = false;
+					return false;
+				}
+			} else {
+				String_Copy(out, CMD_MAX_OUT, "Invalud argument #2");
+			}
+		}
+	} else {
+		String_Copy(out, CMD_MAX_OUT, "No arguments given :(");
+	}
+
+	return true;
 }
 
-PLUGIN* LuaPlugin_FindByName(const char *name) {
+void LuaPlugin_Start() {
+	Command_Register("plugins", &Cmd_Plugins);
+}
+
+PLUGIN* LuaPlugin_FindByName(const char* name) {
 	PLUGIN* ptr = headPlugin;
 
 	while(ptr) {
@@ -458,8 +519,8 @@ PLUGIN* LuaPlugin_FindByName(const char *name) {
 	return (PLUGIN*)NULL;
 }
 
-PLUGIN *LuaPlugin_FindByState(lua_State *L) {
-	PLUGIN *ptr = headPlugin;
+PLUGIN* LuaPlugin_FindByState(lua_State* L) {
+	PLUGIN* ptr = headPlugin;
 
 	while(ptr) {
 		if(ptr->state == L) {
@@ -471,15 +532,18 @@ PLUGIN *LuaPlugin_FindByState(lua_State *L) {
 	return (PLUGIN*)NULL;
 }
 
-void LuaPlugin_Remove(PLUGIN *plugin) {
+void LuaPlugin_Remove(PLUGIN* plugin) {
 	if(plugin->prev)
 		plugin->prev->next = plugin->next;
+	else
+		headPlugin = NULL;
+
 	if(plugin->next)
 		plugin->next->prev = plugin->prev;
 }
 
 void LuaPlugin_Tick() {
-	PLUGIN *ptr = headPlugin;
+	PLUGIN* ptr = headPlugin;
 
 	while(ptr) {
 		if(ptr->loaded) {
@@ -487,24 +551,25 @@ void LuaPlugin_Tick() {
 		} else {
 			LuaPlugin_Close(ptr);
 			LuaPlugin_Remove(ptr);
+			Log_Info("Plugin \"%s\" unloaded", ptr->name);
 			LuaPlugin_Free(ptr);
 		}
 		ptr = ptr->next;
 	}
 }
 
-void LuaPlugin_Free(PLUGIN *plugin) {
+void LuaPlugin_Free(PLUGIN* plugin) {
 	free((void*)plugin->name);
 	free(plugin);
 }
 
-void LuaPlugin_Close(PLUGIN *plugin) {
+void LuaPlugin_Close(PLUGIN* plugin) {
 	CallLuaVoid(plugin, "onStop");
 	lua_close(plugin->state);
 }
 
 void LuaPlugin_Stop() {
-	PLUGIN *ptr = headPlugin;
+	PLUGIN* ptr = headPlugin;
 
 	while(ptr) {
 		LuaPlugin_Close(ptr);
