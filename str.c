@@ -44,7 +44,7 @@ uint String_FormatError(uint code, char* buf, uint buflen) {
 	if(len > 0) {
 		for(int i = 0; i < len; i++) {
 			if(buf[i] == '\r' || buf[i] == '\n')
-				buf[i] = ' ';
+				buf[i] = '\0';
 		}
 	} else {
 		Error_Set(ET_SYS, GetLastError());

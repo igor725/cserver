@@ -12,17 +12,14 @@ set LUA_VER=51
 
 set MSVC_OPTS=
 set MSVC_LINKER=
+set MSVC_OBJDIR=objs
 set MSVC_LIBS=ws2_32.lib zlibwapi.lib
-
-set ERROR=0
-set NORUN=0
 
 :argloop
 IF "%1"=="" goto continue
 IF "%1"=="cls" cls
 IF "%1"=="clear" cls
 IF "%1"=="cloc" goto :cloc
-IF "%1"=="gcc" goto gcc
 IF "%1"=="64" set ARCH=x64
 IF "%1"=="noasm" set ZLIB_ADD=WithoutAsm
 IF "%1"=="zdebug" set ZLIB_MODE=Debug
@@ -44,85 +41,91 @@ SHIFT
 goto argloop
 :continue
 
-echo.
+set EXECNAME=server
+set EXECPATH=%ARCH%\%EXECNAME%
+set SERVER_ZDLL=%ARCH%\zlibwapi.dll
+set SERVER_LDLL=%ARCH%\lua%LUA_VER%.dll
+
+IF NOT EXIST %MSVC_OBJDIR% MD %MSVC_OBJDIR%
+IF NOT EXIST %ARCH% MD %ARCH%
+
 echo Build configuration:
 echo Architecture: %ARCH%
 IF "%LUA_ENABLED%"=="0" (
-set MSVC_OPTS=/wd4206
-echo LuaPlugin: disabled
+  set MSVC_OPTS=/wd4206
+  echo LuaPlugin: disabled
 ) else (
-set MSVC_OPTS=%MSVC_OPTS% /DLUA_ENABLED /I%LUA_DIR%\include
-set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%LUA_DIR%\lib_%ARCH%
-set MSVC_LIBS=%MSVC_LIBS% lua%LUA_VER%.lib
-echo LuaPlugin: enabled
+  set MSVC_OPTS=%MSVC_OPTS% /DLUA_ENABLED /I%LUA_DIR%\include
+  set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%LUA_DIR%\lib_%ARCH%
+  set MSVC_LIBS=%MSVC_LIBS% lua%LUA_VER%.lib
+  set LUA_DLL=%LUA_DIR%\lib_%ARCH%\lua%LUA_VER%.dll
+  echo LuaPlugin: enabled
 )
 IF "%DEBUG%"=="0" (
-echo Debug: disabled
+  echo Debug: disabled
 ) else (
-set MSVC_OPTS=%MSVC_OPTS% /Z7
-set MSVC_LINKER=%MSVC_LINKER% /INCREMENTAL:NO /DEBUG /OPT:REF
-echo Debuug: enabled
+  set MSVC_OPTS=%MSVC_OPTS% /Z7
+  set MSVC_LINKER=%MSVC_LINKER% /INCREMENTAL:NO /DEBUG /OPT:REF
+  echo Debug: enabled
 )
 IF "%ZLIB_ADD%"=="WithoutAsm" (echo Assembler: disabled) else (
-echo Assembler: enabled
-echo WARNINING: zlib assembler code may have bugs -- use at your own risk
-ping -n 4 127.0.0.1 > nul 2> nul
-if NOT "%ERRORLEVEL%"=="0" exit /B 0
+  echo Assembler: enabled
+  echo WARNINING: zlib assembler code may have bugs -- use at your own risk
+  ping -n 4 127.0.0.1 > nul 2> nul
+  if NOT "%ERRORLEVEL%"=="0" goto end
 )
-echo.
 
-md %ARCH% > nul 2> nul
-set EXECNAME=server
 set ZLIB_COMPILEDIR=%ZLIB_DIR%\contrib\vstudio\vc14\%ARCH%\ZlibDll%ZLIB_MODE%%ZLIB_ADD%
+set ZLIB_DLL=%ZLIB_COMPILEDIR%\zlibwapi.dll
 
 :msvc
 setlocal
+set MSVC_OPTS=%MSVC_OPTS% /Fo%MSVC_OBJDIR%\ /Fe%EXECPATH%
+set MSVC_OPTS=%MSVC_OPTS% /link /LIBPATH:%ZLIB_COMPILEDIR% %MSVC_LINKER%
+set COPY=%ZLIB_DLL%
+
+copy /Y %ZLIB_DLL% %SERVER_ZDLL% 2> nul > nul
+IF NOT EXIST %SERVER_ZDLL% goto copyerror
+
+IF "%LUA_ENABLED%"=="1" (
+  set COPY=%LUA_DLL%
+  copy /Y %LUA_DLL% %SERVER_LDLL% 2> nul > nul
+  IF NOT EXIST %SERVER_LDLL% goto copyerror
+)
+
 IF "%ARCH%"=="x64" call vcvars64
 IF "%ARCH%"=="x86" call vcvars32
-set MSVC_OPTS=%MSVC_OPTS% /link /LIBPATH:%ZLIB_COMPILEDIR% %MSVC_LINKER%
-copy /Y %ZLIB_COMPILEDIR%\zlibwapi.dll %ARCH% > nul 2> nul
-IF "%LUA_ENABLED%"=="1" copy /Y %LUA_DIR%\lib_%ARCH%\lua%LUA_VER%.dll %ARCH% > nul 2> nul
-IF NOT "%ERRORLEVEL%"=="0" goto copyerror
-cl *.c /MP /W4 /Gm- /I%ZLIB_DIR% %MSVC_LIBS% /Fe%ARCH%\%EXECNAME% %MSVC_OPTS%
-IF NOT "%ERRORLEVEL%"=="0" set ERROR=1
-goto end
-
-:gcc
-setlocal
-IF "%ARCH%"=="x64" call gccvars64
-IF "%ARCH%"=="x86" call gccvars32
-gcc *.c z.dll -lws2_32 -o %ARCH%/%EXECNAME%
-IF NOT "%ERRORLEVEL%"=="0" set ERROR=1
-goto end
-
-:end
-IF "%ERROR%"=="0" (goto binstart) else (goto compileerror)
+cl *.c /MP /W4 /Gm- /I%ZLIB_DIR% %MSVC_LIBS% %MSVC_OPTS%
+IF "%ERRORLEVEL%"=="0" (goto binstart) else (goto compileerror)
 
 :copyerror
-echo %ZLIB_COMPILEDIR%\zlibwapi.dll not found
+echo %COPY% not found
 endlocal
-exit /B 0
+goto end
 
 :compileerror
 endlocal
 echo Something went wrong :(
-exit /B 0
+goto end
 
 :binstart
 IF "%NORUN%"=="0" start /D %ARCH% %EXECNAME%
 IF "%NORUN%"=="2" goto onerun
 endlocal
-exit /B 0
+goto end
 
 :onerun:
 pushd %ARCH%
 %EXECNAME%
 popd
-exit /B 0
+goto end
 
 :cloc
 cloc --exclude-dir=zlib,lua .
-exit /B 0
+goto end
 
 :clean
-del *.obj *.exe *.dll
+del objs\*.obj *.exe *.dll
+
+:end
+exit /B 0

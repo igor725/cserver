@@ -4,7 +4,8 @@
 *.obj
 *.cws
 *.cfg
-zlib*/
-lua*/
-x64/*
-x86/*
+zlib/
+lua/
+objs/
+x64/
+x86/
