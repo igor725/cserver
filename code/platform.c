@@ -37,9 +37,9 @@ bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
 
 	String_FormatBuf(iter->fmt, 256, "%s\\*.%s", dir, ext);
 	if((iter->dirHandle = FindFirstFile(iter->fmt, &iter->fileHandle)) == INVALID_HANDLE_VALUE) {
-		int err = GetLastError();
+		uint err = GetLastError();
 		if(err != ERROR_FILE_NOT_FOUND) {
-			Error_Set(ET_SYS, GetLastError());
+			Error_Set(ET_SYS, err);
 			return false;
 		}
 		iter->state = 2;
@@ -68,8 +68,7 @@ bool Iter_Next(dirIter* iter) {
 bool Iter_Close(dirIter* iter) {
 	if(iter->state == 0)
 		return false;
-	if(iter->dirHandle)
-		FindClose(iter->dirHandle);
+	FindClose(iter->dirHandle);
 	return true;
 }
 
@@ -265,13 +264,13 @@ bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
 	}
 
 	iter->dirHandle = opendir(dir);
-	String_Copy(iter->fmt, 256, ext);
 	if(!iter->dirHandle) {
 		Error_Set(ET_SYS, errno);
 		iter->state = -1;
 		return false;
 	}
 
+	String_Copy(iter->fmt, 256, ext);
 	iter->state = 1;
 	Iter_Next(iter);
 	return true;
@@ -294,7 +293,7 @@ bool Iter_Next(dirIter* iter) {
 	do {
 		if((iter->fileHandle = readdir(iter->dirHandle)) == NULL) {
 			iter->state = 2;
-			return true;
+			return false;
 		} else {
 			iter->cfile = iter->fileHandle->d_name;
 			iter->isDir = iter->fileHandle->d_type == DT_DIR;
