@@ -26,8 +26,8 @@ IF "%1"=="zdebug" set ZLIB_MODE=Debug
 IF "%1"=="zdbg" set ZLIB_MODE=Debug
 IF "%1"=="debug" set DEBUG=1
 IF "%1"=="dbg" set DEBUG=1
-IF "%1"=="norun" set NORUN=1
-IF "%1"=="onerun" set NORUN=2
+IF "%1"=="run" set RUNMODE=0
+IF "%1"=="onerun" set RUNMODE=1
 IF "%1"=="clean" goto clean
 IF "%1"=="2" set MSVC_OPTS=%MSVC_OPTS% /O2
 IF "%1"=="1" set MSVC_OPTS=%MSVC_OPTS% /O1
@@ -95,7 +95,7 @@ IF "%LUA_ENABLED%"=="1" (
 
 IF "%ARCH%"=="x64" call vcvars64
 IF "%ARCH%"=="x86" call vcvars32
-cl *.c /MP /W4 /Gm- /I%ZLIB_DIR% %MSVC_LIBS% %MSVC_OPTS%
+cl .\code\*.c /MP /W4 /Gm- /I.\headers\ /I%ZLIB_DIR% %MSVC_LIBS% %MSVC_OPTS%
 IF "%ERRORLEVEL%"=="0" (goto binstart) else (goto compileerror)
 
 :copyerror
@@ -109,8 +109,8 @@ echo Something went wrong :(
 goto end
 
 :binstart
-IF "%NORUN%"=="0" start /D %ARCH% %EXECNAME%
-IF "%NORUN%"=="2" goto onerun
+IF "%RUNMODE%"=="0" start /D %ARCH% %EXECNAME%
+IF "%RUNMODE%"=="1" goto onerun
 endlocal
 goto end
 
