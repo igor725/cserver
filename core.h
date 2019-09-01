@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/time.h>
+#include <dirent.h>
 
 typedef int SOCKET;
 #define min(a, b) (((a)<(b))?(a):(b))

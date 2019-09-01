@@ -84,6 +84,17 @@ bool Server_InitialWork() {
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
 
+#ifdef ITER_TEST
+	dirIter iter;
+	if(Iter_Init(".", "dll", &iter)) {
+		do {
+			Log_Info("%s - %d", iter.cfile, iter.isDir);
+		} while(Iter_Next(&iter));
+		Iter_Close(&iter);
+	} else
+		Log_FormattedError();
+#endif
+
 	worlds[0] = World_Create("TestWorld");
 	if(!World_Load(worlds[0])){
 		Log_FormattedError();
