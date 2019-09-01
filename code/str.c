@@ -1,6 +1,5 @@
 #include "core.h"
 #include "str.h"
-#include <string.h>
 
 bool String_CaselessCompare(const char* str1, const char* str2) {
 #if defined(WINDOWS)

@@ -23,6 +23,7 @@ typedef int SOCKET;
 #define min(a, b) (((a)<(b))?(a):(b))
 #define max(a, b) (((a)>(b))?(a):(b))
 #define Sleep(ms) (usleep(ms * 1000))
+#define GetLastError() (errno)
 #define INVALID_SOCKET -1
 #define POSIX
 #define SD_SEND   SHUT_WR

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+CFLAGS="-Iheaders -o server"
+LIBS="-lz -lpthread"
+
+LUA_ENABLED=0
+
+for var in "$@"
+do
+    if [ "$var" == "lua" ]; then LUA_ENABLED=1; fi
+    if [ "$var" == "dbg" ]; then CFLAGS="$CFLAGS -g"; fi
+done
+
+if [ $LUA_ENABLED -eq 1 ];
+then
+	LUA_INCDIR=`dirname $(find /usr -name lua.h -print -quit 2> /dev/null)`
+	LUA_LIBFILE=`basename $(find /usr -name liblua*.a -print -quit 2> /dev/null) .a | tail -c +4`
+	CFLAGS="$CFLAGS -I$LUA_INCDIR -DLUA_ENABLED"
+	LIBS="$LIBS -l$LUA_LIBFILE"
+fi
+
+gcc code/*.c $CFLAGS $LIBS
