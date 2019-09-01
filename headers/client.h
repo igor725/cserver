@@ -2,13 +2,13 @@
 #define CLIENT_H
 #include "world.h"
 
-enum SockStatuses {
+enum sockStatuses {
 	CLIENT_OK,
 	CLIENT_WAITCLOSE,
 	CLIENT_AFTERCLOSE
 };
 
-enum States {
+enum playerStates {
 	STATE_MOTD,
 	STATE_WLOADDONE,
 	STATE_WLOADERR,
@@ -16,7 +16,7 @@ enum States {
 };
 
 typedef struct cpeData {
-	bool fmSupport;
+	bool    fmSupport;
 	BlockID heldBlock;
 	short   _extCount;
 	EXT*    headExtension;

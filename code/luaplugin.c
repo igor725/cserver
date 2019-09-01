@@ -80,6 +80,89 @@ int luaopen_event(lua_State* L) {
 }
 
 /*
+	Lua client library
+*/
+
+#define LUA_TCLIENT "client"
+
+static CLIENT* toClient(lua_State* L, int index) {
+	CLIENT* client = lua_touserdata(L, index);
+	if(!client) luaL_typerror(L, index, LUA_TCLIENT);
+	return client;
+}
+
+static void pushClient(lua_State* L, CLIENT* client) {
+	lua_pushlightuserdata(L, client);
+	luaL_getmetatable(L, LUA_TCLIENT);
+	lua_setmetatable(L, -2);
+}
+
+static int lclient_get(lua_State* L) {
+	const char* name = luaL_checkstring(L, 1);
+	CLIENT* client = Client_FindByName(name);
+
+	if(!client)
+		lua_pushnil(L);
+	else
+		pushClient(L, client);
+
+	return 1;
+}
+
+static int lclient_kick(lua_State* L) {
+	CLIENT* client = toClient(L, 1);
+	const char* reason = luaL_checkstring(L, 2);
+	bool succ = false;
+
+	if(!client) {
+		succ = false;
+	}
+
+	succ = true;
+	Client_Kick(client, reason);
+
+	lua_pushboolean(L, succ);
+	return 1;
+}
+
+static const luaL_Reg client_methods[] = {
+	{"get", lclient_get},
+	{"kick", lclient_kick},
+	{NULL, NULL}
+};
+
+static int lclient_tostring(lua_State* L) {
+	CLIENT* client = toClient(L, 1);
+	if(!client->playerData)
+		lua_pushstring(L, "unconnected");
+	else
+		lua_pushstring(L, client->playerData->name);
+	return 1;
+}
+
+static const luaL_Reg client_meta[] = {
+	{"__tostring", lclient_tostring},
+	{NULL, NULL}
+};
+
+int luaopen_client(lua_State* L) {
+	luaL_openlib(L, lua_tostring(L, -1), client_methods, 0);
+
+	luaL_newmetatable(L, LUA_TCLIENT);
+
+	luaL_openlib(L, 0, client_meta, 0);
+	lua_pushstring(L, "__index");
+	lua_pushvalue(L, -3);
+	lua_rawset(L, -3);
+	lua_pushstring(L, "__metatable");
+	lua_pushvalue(L, -3);
+	lua_rawset(L, -3);
+
+	lua_pop(L, 1);
+	return 1;
+}
+
+/*
 	Lua config library
 */
 
@@ -285,7 +368,7 @@ static int lconfig_gc(lua_State* L) {
 }
 
 static int lconfig_tostring(lua_State* L) {
-	lua_pushstring(L, "cfgStore");
+	lua_pushstring(L, LUA_TCFGSTORE);
 	return 1;
 }
 
@@ -313,19 +396,6 @@ int luaopen_config(lua_State* L) {
 }
 
 /*
-	Lua cpe library
-*/
-
-static const luaL_Reg cpelib[] = {
-	{NULL, NULL}
-};
-
-int luaopen_cpe(lua_State* L) {
-	luaL_register(L, lua_tostring(L, -1), cpelib);
-	return 1;
-}
-
-/*
 	Lua packets library
 */
 
@@ -342,12 +412,89 @@ int luaopen_packets(lua_State* L) {
 	Lua world library
 */
 
-static const luaL_Reg worldlib[] = {
+#define LUA_TWORLD "classicWorld"
+
+static WORLD* toWorld(lua_State* L, int index) {
+	WORLD* world = lua_touserdata(L, index);
+	if(!world) luaL_typerror(L, index, LUA_TWORLD);
+	return world;
+}
+
+void pushWorld(lua_State* L, WORLD* world) {
+	lua_pushlightuserdata(L, world);
+	luaL_getmetatable(L, LUA_TWORLD);
+	lua_setmetatable(L, -2);
+}
+
+static int lworld_get(lua_State* L) {
+	const char* name = luaL_checkstring(L, 1);
+	WORLD* world = World_FindByName(name);
+
+	if(!world)
+		lua_pushnil(L);
+	else
+		pushWorld(L, world);
+
+	return 1;
+}
+
+static int lworld_setblock(lua_State* L) {
+	WORLD* world = toWorld(L, 1);
+	ushort x = (ushort)luaL_checkinteger(L, 2);
+	ushort y = (ushort)luaL_checkinteger(L, 3);
+	ushort z = (ushort)luaL_checkinteger(L, 4);
+	BlockID id = (BlockID)luaL_checkinteger(L, 5);
+	bool update = (bool)lua_toboolean(L, 6);
+
+	World_SetBlock(world, x, y, z, id);
+	if(update)
+		Client_UpdateBlock(NULL, world, x, y, z);
+
+	return 0;
+}
+
+static int lworld_getblock(lua_State* L) {
+	WORLD* world = toWorld(L, 1);
+	ushort x = (ushort)luaL_checkinteger(L, 2);
+	ushort y = (ushort)luaL_checkinteger(L, 3);
+	ushort z = (ushort)luaL_checkinteger(L, 4);
+
+	lua_pushinteger(L, World_GetBlock(world, x, y, z));
+	return 1;
+}
+
+static const luaL_Reg world_methods[] = {
+	{"get", lworld_get},
+	{"setblock", lworld_setblock},
+	{"getblock", lworld_getblock},
+	{NULL, NULL}
+};
+
+static int lworld_tostring(lua_State* L) {
+	WORLD* world = toWorld(L, 1);
+	lua_pushstring(L, world->name);
+	return 1;
+}
+
+static const luaL_Reg world_meta[] = {
+	{"__tostring", lworld_tostring},
 	{NULL, NULL}
 };
 
 int luaopen_world(lua_State* L) {
-	luaL_register(L, lua_tostring(L, -1), worldlib);
+	luaL_openlib(L, lua_tostring(L, -1), world_methods, 0);
+
+	luaL_newmetatable(L, LUA_TWORLD);
+
+	luaL_openlib(L, 0, world_meta, 0);
+	lua_pushstring(L, "__index");
+	lua_pushvalue(L, -3);
+	lua_rawset(L, -3);
+	lua_pushstring(L, "__metatable");
+	lua_pushvalue(L, -3);
+	lua_rawset(L, -3);
+
+	lua_pop(L, 1);
 	return 1;
 }
 
@@ -355,8 +502,8 @@ static const luaL_Reg LuaPlugin_Libs[] = {
 	{"", luaopen_base},
 	{"log", luaopen_log},
 	{"event", luaopen_event},
+	{"client", luaopen_client},
 	{"config", luaopen_config},
-	{"cpe", luaopen_cpe},
 	{"packets", luaopen_packets},
 	{"world", luaopen_world},
 	{LUA_TABLIBNAME, luaopen_table},
@@ -569,7 +716,6 @@ void LuaPlugin_Tick() {
 		} else {
 			LuaPlugin_Close(ptr);
 			LuaPlugin_Remove(ptr);
-			Log_Info("Plugin \"%s\" unloaded", ptr->name);
 			LuaPlugin_Free(ptr);
 		}
 		ptr = ptr->next;

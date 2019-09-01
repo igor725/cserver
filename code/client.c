@@ -17,12 +17,25 @@ ClientID Client_FindFreeID() {
 CLIENT* Client_FindByName(const char* name) {
 	for(int i = 0; i < 128; i++) {
 		CLIENT* client = clients[i];
-		if(!client) continue;
+		if(!client || !client->playerData) continue;
 		if(String_CaselessCompare(client->playerData->name, name)) {
 			return client;
 		}
 	}
 	return NULL;
+}
+
+bool Client_Despawn(CLIENT* client) {
+	if(!client->playerData)
+		return false;
+
+	if(!client->playerData->spawned)
+		return false;
+
+	Packet_WriteDespawn(Broadcast, client);
+	client->playerData->spawned = false;
+	Event_OnDespawn(client);
+	return true;
 }
 
 THRET Client_ThreadProc(TARG lpParam) {
@@ -33,11 +46,15 @@ THRET Client_ThreadProc(TARG lpParam) {
 			int len = recv(client->sock, client->rdbuf, 131, 0);
 			if(len <= 0) {
 				client->status = CLIENT_AFTERCLOSE;
+				clients[client->id] = NULL;
 				Socket_Close(client->sock);
+				Client_Despawn(client);
+				Client_Destroy(client);
 				break;
 			}
 			continue;
 		}
+
 		ushort wait = 1;
 
 		if(client->bufpos > 0) {
@@ -60,8 +77,7 @@ THRET Client_ThreadProc(TARG lpParam) {
 			if(len > 0) {
 				client->bufpos += (ushort)len;
 			} else {
-				client->status = CLIENT_AFTERCLOSE;
-				break;
+				client->status = CLIENT_WAITCLOSE;
 			}
 		}
 	}
@@ -74,7 +90,6 @@ THRET Client_MapThreadProc(TARG lpParam) {
 	WORLD* world = client->playerData->currentWorld;
 
 	z_stream stream = {0};
-
 	uchar* data = (uchar*)client->wrbuf;
 	*data = 0x03;
 	ushort* len = (ushort*)++data;
@@ -89,25 +104,19 @@ THRET Client_MapThreadProc(TARG lpParam) {
 		windowBits = -15;
 		maplen -= 4;
 		mapdata += 4;
-		if((ret = deflateInit(&stream, 4)) != Z_OK) {
-			client->playerData->state = STATE_WLOADERR;
-			return 0;
-		}
 	}
 
-	if((ret = deflateInit2_(
+	if((ret = deflateInit2(
 		&stream,
-		4,
+		Z_BEST_COMPRESSION,
 		Z_DEFLATED,
 		windowBits,
 		8,
-		Z_DEFAULT_STRATEGY,
-		zlibVersion(),
-		sizeof(stream)
-	)) != Z_OK) {
+		Z_DEFAULT_STRATEGY)) != Z_OK) {
 		client->playerData->state = STATE_WLOADERR;
 		return 0;
 	}
+
 
 	stream.avail_in = maplen;
 	stream.next_in = mapdata;
@@ -150,6 +159,7 @@ void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort
 		CLIENT* other = clients[i];
 		if(!other || other == client) continue;
 		if(!other->playerData || other->playerData->currentWorld != world) continue;
+		if(other->playerData->state != STATE_INGAME) continue;
 		Packet_WriteSetBlock(other, x, y, z, block);
 	}
 }
@@ -193,8 +203,11 @@ void Client_Destroy(CLIENT* client) {
 	if(client->playerData) {
 		Memory_Free((void*)client->playerData->name);
 		Memory_Free((void*)client->playerData->key);
+		Memory_Free(client->playerData->position);
+		Memory_Free(client->playerData->angle);
 		Memory_Free(client->playerData);
 	}
+
 	if(client->cpeData) {
 		EXT* ptr = client->cpeData->headExtension;
 		while(ptr) {
@@ -202,8 +215,11 @@ void Client_Destroy(CLIENT* client) {
 			Memory_Free(ptr);
 			ptr = ptr->next;
 		}
+		Memory_Free(client->cpeData->appName);
 		Memory_Free(client->cpeData);
 	}
+
+	Memory_Free(client);
 }
 
 int Client_Send(CLIENT* client, int len) {
@@ -224,7 +240,7 @@ bool Client_Spawn(CLIENT* client) {
 	if(client->playerData->spawned)
 		return false;
 
-	for(int i = 0; i < 128; i++) {
+	for(int i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT* other = clients[i];
 		if(!other) continue;
 
@@ -235,19 +251,6 @@ bool Client_Spawn(CLIENT* client) {
 
 	client->playerData->spawned = true;
 	Event_OnSpawn(client);
-	return true;
-}
-
-bool Client_Despawn(CLIENT* client) {
-	if(!client->playerData)
-		return false;
-
-	if(!client->playerData->spawned)
-		return false;
-
-	Packet_WriteDespawn(Broadcast, client);
-	client->playerData->spawned = false;
-	Event_OnDespawn(client);
 	return true;
 }
 
@@ -263,6 +266,7 @@ bool Client_SendMap(CLIENT* client, WORLD* world) {
 		Client_Kick(client, "playerData->mapThread == NULL");
 		return false;
 	}
+
 	return true;
 }
 
@@ -273,7 +277,6 @@ void Client_HandshakeStage2(CLIENT* client) {
 
 void Client_Disconnect(CLIENT* client) {
 	Client_Despawn(client);
-	client->status = CLIENT_WAITCLOSE;
 	shutdown(client->sock, SD_SEND);
 }
 
@@ -296,12 +299,6 @@ void Client_UpdatePositions(CLIENT* client) {
 }
 
 void Client_Tick(CLIENT* client) {
-	if(client->status == CLIENT_AFTERCLOSE) {
-		Client_Disconnect(client);
-		Client_Destroy(client);
-		return;
-	}
-
 	if(!client->playerData) return;
 	switch (client->playerData->state) {
 		case STATE_WLOADDONE:

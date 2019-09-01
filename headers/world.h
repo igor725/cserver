@@ -36,6 +36,7 @@ void World_SetDimensions(WORLD* world, ushort width, ushort height, ushort lengt
 int World_SetBlock(WORLD* world, ushort x, ushort y, ushort z, BlockID id);
 BlockID World_GetBlock(WORLD* world, ushort x, ushort y, ushort z);
 void World_GenerateFlat(WORLD* world);
+WORLD* World_FindByName(const char* name);
 void World_Destroy(WORLD* world);
 bool World_Load(WORLD* world);
 bool World_Save(WORLD* world);

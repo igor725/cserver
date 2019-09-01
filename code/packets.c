@@ -127,12 +127,12 @@ void Packet_WriteSetBlock(CLIENT* client, ushort x, ushort y, ushort z, BlockID 
 	Client_Send(client, 8);
 }
 
-void Packet_WriteHandshake(CLIENT* client) {
+void Packet_WriteHandshake(CLIENT* client, const char* name, const char* motd) {
 	char* data = client->wrbuf;
 	*data = 0x00;
 	*++data = 0x07;
-	WriteString(++data, "Server Name"); data += 63;
-	WriteString(++data, "Server MOTD"); data += 63;
+	WriteString(++data, name); data += 63;
+	WriteString(++data, motd); data += 63;
 	*++data = 0x00;
 	Client_Send(client, 131);
 }
@@ -196,9 +196,17 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 
 	bool cpeEnabled =* ++data == 0x42;
 
-	if(Client_CheckAuth(client))
-		Packet_WriteHandshake(client);
-	else {
+	if(Client_CheckAuth(client)) {
+		const char* name = Config_GetStr(mainCfg, "serverName");
+		const char* motd = Config_GetStr(mainCfg, "serverMotd");
+
+		if(!name)
+			name = "Server name";
+		if(!motd)
+			motd = "Server motd";
+
+		Packet_WriteHandshake(client, name, motd);
+	} else {
 		Client_Kick(client, "Auth failed");
 		return true;
 	}

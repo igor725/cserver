@@ -10,8 +10,6 @@
 #include "luaplugin.h"
 #endif
 
-CFGSTORE* mainCfg;
-
 void Server_Accept() {
 	struct sockaddr_in caddr;
 	socklen_t caddrsz = sizeof caddr;
@@ -75,11 +73,6 @@ bool Server_InitialWork() {
 		Config_SetInt(mainCfg, "port", 25565);
 	}
 
-#ifdef LUA_ENABLED
-	Log_Info("Starting LuaVM");
-	LuaPlugin_Start();
-#endif
-
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
@@ -109,6 +102,11 @@ bool Server_InitialWork() {
 		World_GenerateFlat(tmp);
 		worlds[0] = tmp;
 	}
+
+	#ifdef LUA_ENABLED
+		Log_Info("Starting LuaVM");
+		LuaPlugin_Start();
+	#endif
 
 	Console_StartListen();
 	return Server_Bind(Config_GetStr(mainCfg, "ip"), (ushort)Config_GetInt(mainCfg, "port"));

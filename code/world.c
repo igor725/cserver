@@ -13,6 +13,16 @@ WORLD* World_Create(const char* name) {
 	return tmp;
 }
 
+WORLD* World_FindByName(const char* name) {
+	for(int i = 0; i < MAX_WORLDS; i++) {
+		WORLD* world = worlds[i];
+		if(!world) continue;
+		if(String_CaselessCompare(world->name, name))
+			return world;
+	}
+	return NULL;
+}
+
 void World_SetDimensions(WORLD* world, ushort width, ushort height, ushort length) {
 	WORLDDIMS* wd = world->info->dim;
 	wd->width = width;
