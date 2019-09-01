@@ -266,7 +266,7 @@ bool Iter_Init(const char* dir, const char* ext, dirIter* iter) {
 
 static bool checkExtension(const char* filename, const char* ext) {
 	const char* _ext = strrchr(filename, '.');
-	if((_ext == ext) == NULL) {
+	if(_ext == ext == NULL) {
 		return true;
 	} else {
 		if(!_ext || !ext) return false;
@@ -278,14 +278,16 @@ bool Iter_Next(dirIter* iter) {
 	if(iter->state != 1)
 		return false;
 
-	if((iter->fileHandle = readdir(iter->dirHandle)) == NULL) {
-		Error_Set(ET_SYS, errno);
-		iter->state = -1;
-		return false;
-	} else {
-		iter->cfile = iter->fileHandle->d_name;
-		iter->isDir = iter->fileHandle->d_type == DT_DIR;
-	}
+	do {
+		if((iter->fileHandle = readdir(iter->dirHandle)) == NULL) {
+			Error_Set(ET_SYS, errno);
+			iter->state = -1;
+			return false;
+		} else {
+			iter->cfile = iter->fileHandle->d_name;
+			iter->isDir = iter->fileHandle->d_type == DT_DIR;
+		}
+	} while(!checkExtension(iter->cfile, iter->fmt));
 
 	return true;
 }
