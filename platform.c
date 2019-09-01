@@ -267,7 +267,8 @@ bool Iter_Init(const char* dir, const char* ext, dirIter* iter) {
 	}
 
 	iter->state = 1;
-	return Iter_Next(iter);
+	Iter_Next(iter);
+	return true;
 }
 
 static bool checkExtension(const char* filename, const char* ext) {
@@ -276,7 +277,7 @@ static bool checkExtension(const char* filename, const char* ext) {
 		return true;
 	} else {
 		if(!_ext || !ext) return false;
-		return String_Compare(_ext, ext);
+		return String_Compare(++_ext, ext);
 	}
 }
 

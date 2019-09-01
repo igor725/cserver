@@ -84,23 +84,6 @@ bool Server_InitialWork() {
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
 
-#ifdef ITER_TEST
-	const char* iterExt;
-	#if defined(WINDOWS)
-		iterExt = "dll";
-	#elif defined(POSIX)
-		iterExt = "o";
-	#endif
-	dirIter iter = {0};
-	if(Iter_Init(".", iterExt, &iter)) {
-		do {
-			Log_Info("%s - %d", iter.cfile, iter.isDir);
-		} while(Iter_Next(&iter));
-		Iter_Close(&iter);
-	} else
-		Log_FormattedError();
-#endif
-
 	worlds[0] = World_Create("TestWorld");
 	if(!World_Load(worlds[0])){
 		Log_FormattedError();
@@ -139,9 +122,9 @@ void Server_Stop() {
 		}
 	}
 
+	Console_Close();
 	if(acceptThread)
 		Thread_Close(acceptThread);
-	Console_Close();
 	#ifdef LUA_ENABLED
 		Log_Info("Destroying LuaVM");
 		LuaPlugin_Stop();
