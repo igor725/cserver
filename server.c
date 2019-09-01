@@ -84,7 +84,6 @@ bool Server_InitialWork() {
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
 
-#define ITER_TEST
 #ifdef ITER_TEST
 	const char* iterExt;
 	#if defined(WINDOWS)
@@ -92,7 +91,7 @@ bool Server_InitialWork() {
 	#elif defined(POSIX)
 		iterExt = "o";
 	#endif
-	dirIter iter;
+	dirIter iter = {0};
 	if(Iter_Init(".", iterExt, &iter)) {
 		do {
 			Log_Info("%s - %d", iter.cfile, iter.isDir);

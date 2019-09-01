@@ -272,7 +272,7 @@ bool Iter_Init(const char* dir, const char* ext, dirIter* iter) {
 
 static bool checkExtension(const char* filename, const char* ext) {
 	const char* _ext = strrchr(filename, '.');
-	if(_ext == ext == NULL) {
+	if(_ext == NULL && ext == NULL) {
 		return true;
 	} else {
 		if(!_ext || !ext) return false;
@@ -293,7 +293,7 @@ bool Iter_Next(dirIter* iter) {
 			iter->cfile = iter->fileHandle->d_name;
 			iter->isDir = iter->fileHandle->d_type == DT_DIR;
 		}
-	} while(!checkExtension(iter->cfile, iter->fmt));
+	} while(!iter->cfile || !checkExtension(iter->cfile, iter->fmt));
 
 	return true;
 }
