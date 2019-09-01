@@ -279,6 +279,7 @@ bool Iter_Next(dirIter* iter) {
 		return false;
 
 	if((iter->fileHandle = readdir(iter->dirHandle)) == NULL) {
+		Error_Set(ET_SYS, errno);
 		iter->state = -1;
 		return false;
 	} else {
