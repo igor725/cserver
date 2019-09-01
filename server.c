@@ -84,7 +84,14 @@ bool Server_InitialWork() {
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
 
+#define ITER_TEST
 #ifdef ITER_TEST
+	const char* iterExt;
+	#if defined(WINDOWS)
+		iterExt = "dll";
+	#elif defined(POSIX)
+		iterExt = "o";
+	#endif
 	dirIter iter;
 	if(Iter_Init(".", "dll", &iter)) {
 		do {

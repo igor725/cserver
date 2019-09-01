@@ -264,16 +264,29 @@ bool Iter_Init(const char* dir, const char* ext, dirIter* iter) {
 	return true;
 }
 
+static bool checkExtension(const char* filename, const char* ext) {
+	const char* _ext = strrchr(filename, '.');
+	if((_ext == ext) == NULL) {
+		return true;
+	} else {
+		if(!_ext || !ext) return false;
+		return String_Compare(_ext, ext);
+	}
+}
+
 bool Iter_Next(dirIter* iter) {
 	if(iter->state != 1)
 		return false;
 
 	if((iter->fileHandle = readdir(iter->dirHandle)) == NULL) {
+		iter->state = -1;
 		return false;
 	} else {
 		iter->cfile = iter->fileHandle->d_name;
 		iter->isDir = iter->fileHandle->d_type == DT_DIR;
 	}
+
+	return true;
 }
 
 bool Iter_Close(dirIter* iter) {
