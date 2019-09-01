@@ -177,7 +177,6 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	}
 
 	client->playerData = (PLAYERDATA*)Memory_Alloc(1, sizeof(PLAYERDATA));
-	client->playerData->currentWorld = worlds[0];
 	client->playerData->position = (VECTOR*)Memory_Alloc(1, sizeof(VECTOR));
 	client->playerData->angle = (ANGLE*)Memory_Alloc(1, sizeof(ANGLE));
 
@@ -209,8 +208,7 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 		CPE_StartHandshake(client);
 	} else {
 		Event_OnHandshakeDone(client);
-		if(!Client_SendMap(client))
-			Client_Kick(client, "Map sending failed");
+		Client_HandshakeStage2(client);
 	}
 
 	return true;

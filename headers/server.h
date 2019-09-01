@@ -4,8 +4,6 @@
 
 bool Server_InitialWork();
 void Server_DoStep();
-
-WORLD* worlds[128];
 THREAD acceptThread;
 bool serverActive;
 SOCKET server;

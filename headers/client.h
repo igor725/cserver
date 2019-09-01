@@ -51,19 +51,21 @@ void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort
 bool Client_IsSupportExt(CLIENT* client, const char* packetName);
 void Client_SetPos(CLIENT* client, VECTOR* vec, ANGLE* ang);
 void Client_Kick(CLIENT* client, const char* reason);
+bool Client_SendMap(CLIENT* client, WORLD* world);
+void Client_HandshakeStage2(CLIENT* client);
 CLIENT* Client_FindByName(const char* name);
 int  Client_Send(CLIENT* client, int len);
 void Client_HandlePacket(CLIENT* client);
 void Client_Disconnect(CLIENT* client);
 bool Client_CheckAuth(CLIENT* client);
 THRET Client_ThreadProc(TARG lpParam);
-bool Client_SendMap(CLIENT* client);
 void Client_Destroy(CLIENT* client);
 bool Client_Spawn(CLIENT* client);
 void Client_Tick(CLIENT* client);
 ClientID Client_FindFreeID();
 void Client_Init();
 
-CLIENT* clients[256];
+#define MAX_CLIENTS 128
+CLIENT* clients[MAX_CLIENTS];
 CLIENT* Broadcast;
 #endif

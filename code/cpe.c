@@ -146,8 +146,7 @@ bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
 	--client->cpeData->_extCount;
 	if(client->cpeData->_extCount == 0) {
 		Event_OnHandshakeDone(client);
-		if(!Client_SendMap(client))
-			Client_Kick(client, "Map sending failed");
+		Client_HandshakeStage2(client);
 	}
 
 	return true;

@@ -2,10 +2,10 @@
 #include <zlib.h>
 #include "world.h"
 
-WORLD* World_Create(char* name) {
+WORLD* World_Create(const char* name) {
 	WORLD* tmp = (WORLD*)Memory_Alloc(1, sizeof(WORLD));
 
-	tmp->name = name;
+	tmp->name = String_AllocCopy(name);
 	tmp->info = (WORLDINFO*)Memory_Alloc(1, sizeof(WORLDINFO));
 	tmp->info->dim = (WORLDDIMS*)Memory_Alloc(1, sizeof(WORLDDIMS));
 	tmp->info->spawnVec = (VECTOR*)Memory_Alloc(1, sizeof(VECTOR));
@@ -117,10 +117,8 @@ bool World_ReadInfo(WORLD* world, FILE* fp) {
 }
 
 int World_Save(WORLD* world) {
-	char name[256];
-	sprintf(name, "%s.cws", world->name);
 	FILE* fp;
-	if(!(fp = File_Open(name, "wb")))
+	if(!(fp = File_Open(world->name, "wb")))
 		return false;
 
 	if(!World_WriteInfo(world, fp)) {
@@ -160,10 +158,8 @@ int World_Save(WORLD* world) {
 }
 
 int World_Load(WORLD* world) {
-	char name[256];
-	sprintf(name, "%s.cws", world->name);
 	FILE* fp;
-	if(!(fp = File_Open(name, "rb")))
+	if(!(fp = File_Open(world->name, "rb")))
 		return false;
 
 	if(!World_ReadInfo(world, fp)) {

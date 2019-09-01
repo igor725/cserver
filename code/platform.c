@@ -29,17 +29,21 @@ void Memory_Fill(void* dst, size_t count, int val) {
 
 #define isDir(iter) ((iter->fileHandle.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) > 0)
 
-bool Iter_Init(const char* dir, const char* ext, dirIter* iter) {
-	if(iter->state > 0) {
+bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
+	if(iter->state != 0) {
 		Error_Set(ET_SERVER, EC_ITERINITED);
 		return false;
 	}
 
 	String_FormatBuf(iter->fmt, 256, "%s\\*.%s", dir, ext);
 	if((iter->dirHandle = FindFirstFile(iter->fmt, &iter->fileHandle)) == INVALID_HANDLE_VALUE) {
-		iter->state = -1;
-		Error_Set(ET_SYS, GetLastError());
-		return false;
+		int err = GetLastError();
+		if(err != ERROR_FILE_NOT_FOUND) {
+			Error_Set(ET_SYS, GetLastError());
+			return false;
+		}
+		iter->state = 2;
+		return true;
 	}
 	iter->cfile = iter->fileHandle.cFileName;
 	iter->isDir = isDir(iter);
@@ -55,7 +59,8 @@ bool Iter_Next(dirIter* iter) {
 	if(haveFile) {
 		iter->isDir = isDir(iter);
 		iter->cfile = iter->fileHandle.cFileName;
-	}
+	} else
+		iter->state = 2;
 
 	return haveFile;
 }
@@ -63,7 +68,8 @@ bool Iter_Next(dirIter* iter) {
 bool Iter_Close(dirIter* iter) {
 	if(iter->state == 0)
 		return false;
-	FindClose(iter->dirHandle);
+	if(iter->dirHandle)
+		FindClose(iter->dirHandle);
 	return true;
 }
 
@@ -252,8 +258,8 @@ void Memory_Fill(void* dst, size_t count, int val) {
 	POSIX ITER FUNCTIONS
 */
 
-bool Iter_Init(const char* dir, const char* ext, dirIter* iter) {
-	if(iter->state > 0) {
+bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
+	if(iter->state != 0) {
 		Error_Set(ET_SERVER, EC_ITERINITED);
 		return false;
 	}
@@ -287,9 +293,8 @@ bool Iter_Next(dirIter* iter) {
 
 	do {
 		if((iter->fileHandle = readdir(iter->dirHandle)) == NULL) {
-			Error_Set(ET_SYS, errno);
-			iter->state = -1;
-			return false;
+			iter->state = 2;
+			return true;
 		} else {
 			iter->cfile = iter->fileHandle->d_name;
 			iter->isDir = iter->fileHandle->d_type == DT_DIR;

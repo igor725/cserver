@@ -41,7 +41,7 @@ void  Memory_Fill(void* dst, size_t count, int val);
   ITER FUNCTIONS
 */
 
-bool Iter_Init(const char* path, const char* ext, dirIter* iter);
+bool Iter_Init(dirIter* iter, const char* path, const char* ext);
 bool Iter_Next(dirIter* iter);
 bool Iter_Close(dirIter* iter);
 

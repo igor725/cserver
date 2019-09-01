@@ -1,6 +1,7 @@
 #ifndef WORLD_H
 #define WORLD_H
 #define WORLD_MAGIC 1413563479
+#define MAX_WORLDS  128
 
 enum WorldDataType {
 	DT_DIM,
@@ -23,13 +24,13 @@ typedef struct worldInfo {
 } WORLDINFO;
 
 typedef struct world {
-	char*      name;
-	uint       size;
-	BlockID*   data;
-	WORLDINFO* info;
+	const char* name;
+	uint        size;
+	BlockID*    data;
+	WORLDINFO*  info;
 } WORLD;
 
-WORLD* World_Create(char* name);
+WORLD* World_Create(const char* name);
 uint World_GetOffset(WORLD* world, ushort x, ushort y, ushort z);
 void World_SetDimensions(WORLD* world, ushort width, ushort height, ushort length);
 int World_SetBlock(WORLD* world, ushort x, ushort y, ushort z, BlockID id);
@@ -40,4 +41,5 @@ bool World_Load(WORLD* world);
 bool World_Save(WORLD* world);
 void World_AllocBlockArray(WORLD* world);
 
+WORLD* worlds[MAX_WORLDS];
 #endif

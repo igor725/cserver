@@ -251,20 +251,24 @@ bool Client_Despawn(CLIENT* client) {
 	return true;
 }
 
-bool Client_SendMap(CLIENT* client) {
-	if(!client->playerData->currentWorld)
-		return false;
+bool Client_SendMap(CLIENT* client, WORLD* world) {
 	if(client->playerData->mapThread)
 		return false;
 
-	Packet_WriteLvlInit(client);
 	client->playerData->state = STATE_MOTD;
+	client->playerData->currentWorld = world;
+	Packet_WriteLvlInit(client);
 	client->playerData->mapThread = Thread_Create((TFUNC)&Client_MapThreadProc, client);
 	if(!Thread_IsValid(client->playerData->mapThread)) {
 		Client_Kick(client, "playerData->mapThread == NULL");
 		return false;
 	}
 	return true;
+}
+
+void Client_HandshakeStage2(CLIENT* client) {
+	if(!Client_SendMap(client, worlds[0]))
+		Client_Kick(client, "Map sending failed");
 }
 
 void Client_Disconnect(CLIENT* client) {

@@ -428,7 +428,7 @@ bool LuaPlugin_Load(const char* name) {
 	}
 
 	char path[MAX_PATH];
-	String_FormatBuf(path, MAX_PATH, "plugins/%s.lua", name);
+	String_FormatBuf(path, MAX_PATH, "plugins/%s", name);
 
 	lua_State* L = luaL_newstate();
 	LuaPlugin_LoadLibs(L);
@@ -512,6 +512,16 @@ static bool Cmd_Plugins(const char* args, CLIENT* caller, char* out) {
 
 void LuaPlugin_Start() {
 	Command_Register("plugins", &Cmd_Plugins);
+
+	dirIter pIter;
+	if(Iter_Init(&pIter, "plugins", "lua")) {
+		do {
+			if(pIter.isDir || !pIter.cfile) continue;
+			LuaPlugin_Load(pIter.cfile);
+		} while(Iter_Next(&pIter));
+	} else
+		Log_FormattedError();
+	Iter_Close(&pIter);
 }
 
 PLUGIN* LuaPlugin_FindByName(const char* name) {

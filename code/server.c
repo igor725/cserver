@@ -84,12 +84,30 @@ bool Server_InitialWork() {
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
 
-	worlds[0] = World_Create("TestWorld");
-	if(!World_Load(worlds[0])){
+	int wIndex = -1;
+	dirIter wIter;
+	if(Iter_Init(&wIter, ".", "cws")) {
+		do {
+			if(wIter.isDir || !wIter.cfile) continue;
+			WORLD* tmp = World_Create(wIter.cfile);
+			if(!World_Load(tmp)) {
+				Log_FormattedError();
+				World_Destroy(tmp);
+			} else {
+				Log_Info("World \"%s\" loaded", wIter.cfile);
+				worlds[++wIndex] = tmp;
+			}
+		} while(Iter_Next(&wIter) && wIndex < MAX_WORLDS);
+	} else
 		Log_FormattedError();
-		World_SetDimensions(worlds[0], 128, 128, 128);
-		World_AllocBlockArray(worlds[0]);
-		World_GenerateFlat(worlds[0]);
+	Iter_Close(&wIter);
+
+	if(wIndex < 0) {
+		WORLD* tmp = World_Create("world.cws");
+		World_SetDimensions(tmp, 128, 128, 128);
+		World_AllocBlockArray(tmp);
+		World_GenerateFlat(tmp);
+		worlds[0] = tmp;
 	}
 
 	Console_StartListen();
@@ -100,7 +118,7 @@ void Server_DoStep() {
 #ifdef LUA_ENABLED
 	LuaPlugin_Tick();
 #endif
-	for(int i = 0; i < 128; i++) {
+	for(int i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT* client = clients[i];
 		if(client)
 			Client_Tick(client);
@@ -108,14 +126,14 @@ void Server_DoStep() {
 }
 
 void Server_Stop() {
-	for(int i = 0; i < 128; i++) {
+	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
 		CLIENT* client = clients[i];
 		WORLD* world = worlds[i];
 
-		if(client)
+		if(i < MAX_CLIENTS && client)
 			Client_Kick(client, "Server stopped");
 
-		if(world) {
+		if(i < MAX_WORLDS && world) {
 			if(!World_Save(world))
 				Log_FormattedError();
 			World_Destroy(world);
