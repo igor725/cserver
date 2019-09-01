@@ -22,7 +22,7 @@ void World_SetDimensions(WORLD* world, ushort width, ushort height, ushort lengt
 
 void World_AllocBlockArray(WORLD* world) {
 	if(world->data)
-		free(world->data);
+		Memory_Free(world->data);
 
 	WORLDINFO* wi = world->info;
 	ushort dx = wi->dim->width,
@@ -37,10 +37,10 @@ void World_AllocBlockArray(WORLD* world) {
 
 void World_Destroy(WORLD* world) {
 	if(world->data)
-		free(world->data);
+		Memory_Free(world->data);
 	if(world->info)
-		free(world->info);
-	free(world);
+		Memory_Free(world->info);
+	Memory_Free(world);
 }
 
 void World_GenerateFlat(WORLD* world) {

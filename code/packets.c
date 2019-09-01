@@ -296,6 +296,6 @@ bool Handler_Message(CLIENT* client, char* data) {
 		Log_Chat(formatted);
 	}
 
-	free(message);
+	Memory_Free(message);
 	return true;
 }

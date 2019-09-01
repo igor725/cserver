@@ -1,9 +1,9 @@
 #include "core.h"
-#include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
 
-#if defined(WINDOWS)
 /*
-	WINDOWS MEMORY FUNCTIONS
+	MEMORY FUNCTIONS
 */
 
 void* Memory_Alloc(size_t num, size_t size) {
@@ -23,6 +23,11 @@ void Memory_Fill(void* dst, size_t count, int val) {
 	memset(dst, val, count);
 }
 
+void Memory_Free(void* ptr) {
+	free(ptr);
+}
+
+#if defined(WINDOWS)
 /*
 	WINDOWS ITER FUNCTIONS
 */
@@ -149,6 +154,7 @@ bool File_Close(FILE* fp) {
 /*
 	WINDOWS SOCKET FUNCTIONS
 */
+
 bool Socket_Init() {
 	WSADATA ws;
 	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR) {
@@ -194,6 +200,7 @@ void Socket_Close(SOCKET sock) {
 /*
 	WINDOWS THREAD FUNCTIONS
 */
+
 THREAD Thread_Create(TFUNC func, const TARG lpParam) {
 	return CreateThread(
 		NULL,
@@ -232,27 +239,6 @@ void Time_Format(char* buf, size_t buflen) {
 	);
 }
 #elif defined(POSIX)
-/*
-	POSIX MEMORY FUNCTIONS
-*/
-
-void* Memory_Alloc(size_t num, size_t size) {
-	void* ptr;
-	if((ptr = calloc(num, size)) == NULL) {
-		Error_Set(ET_SYS, errno);
-		return NULL;
-	}
-	return ptr;
-}
-
-void Memory_Copy(void* dst, const void* src, size_t count) {
-	memcpy(dst, src, count);
-}
-
-void Memory_Fill(void* dst, size_t count, int val) {
-	memset(dst, val, count);
-}
-
 /*
 	POSIX ITER FUNCTIONS
 */
@@ -387,6 +373,7 @@ bool File_Close(FILE* fp) {
 /*
 	POSIX SOCKET FUNCTIONS
 */
+
 bool Socket_Init() {
 	return true;
 }
@@ -429,6 +416,7 @@ void Socket_Close(SOCKET fd) {
 /*
 	POSIX THREAD FUNCTIONS
 */
+
 THREAD Thread_Create(TFUNC func, const TARG arg) {
 	pthread_t thread;
 	if(pthread_create(&thread, NULL, func, arg) != 0) {

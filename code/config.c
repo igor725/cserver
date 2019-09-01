@@ -71,7 +71,7 @@ bool Config_Load(CFGSTORE* store) {
 				Config_SetStr(store, hkey, hval);
 				break;
 			case CFG_INT:
-				Config_SetInt(store, hkey, atoi(value));
+				Config_SetInt(store, hkey, String_ToInt(value));
 				break;
 			case CFG_BOOL:
 				Config_SetBool(store, hkey, String_Compare(value, "True"));
@@ -176,7 +176,7 @@ int Config_GetInt(CFGSTORE* store, const char* key) {
 void Config_SetStr(CFGSTORE* store, const char* key, const char* value) {
 	CFGENTRY* ent = Config_GetEntry2(store, key);
 	if(ent->type == CFG_STR)
-		free((void*)ent->value.vchar);
+		Memory_Free((void*)ent->value.vchar);
 	else
 		ent->type = CFG_STR;
 	ent->value.vchar = String_AllocCopy(value);
@@ -210,10 +210,10 @@ void Config_EmptyStore(CFGSTORE* store) {
 	while(ent) {
 		prev = ent;
 		if(ent->type == CFG_STR) {
-			free((void*)ent->value.vchar);
+			Memory_Free((void*)ent->value.vchar);
 		}
 		ent = ent->next;
-		free(prev);
+		Memory_Free(prev);
 	}
 
 	store->modified = true;

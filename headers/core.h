@@ -40,9 +40,8 @@ typedef unsigned char  BlockID;
 typedef char           ClientID;
 typedef unsigned char  Order;
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
+#include <stdio.h>
 #include "platform.h"
 #include "error.h"
 #include "str.h"

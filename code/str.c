@@ -10,6 +10,10 @@ bool String_CaselessCompare(const char* str1, const char* str2) {
 #endif
 }
 
+int String_ToInt(const char* str) {
+	return atoi(str);
+}
+
 bool String_Compare(const char* str1, const char* str2) {
 	return strcmp(str1, str2) == 0;
 }

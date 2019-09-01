@@ -184,25 +184,25 @@ void Client_SetPos(CLIENT* client, VECTOR* pos, ANGLE* ang) {
 
 void Client_Destroy(CLIENT* client) {
 	clients[client->id] = NULL;
-	free(client->rdbuf);
-	free(client->wrbuf);
+	Memory_Free(client->rdbuf);
+	Memory_Free(client->wrbuf);
 
 	if(client->thread)
 		Thread_Close(client->thread);
 
 	if(client->playerData) {
-		free((void*)client->playerData->name);
-		free((void*)client->playerData->key);
-		free(client->playerData);
+		Memory_Free((void*)client->playerData->name);
+		Memory_Free((void*)client->playerData->key);
+		Memory_Free(client->playerData);
 	}
 	if(client->cpeData) {
 		EXT* ptr = client->cpeData->headExtension;
 		while(ptr) {
-			free((void*)ptr->name);
-			free(ptr);
+			Memory_Free((void*)ptr->name);
+			Memory_Free(ptr);
 			ptr = ptr->next;
 		}
-		free(client->cpeData);
+		Memory_Free(client->cpeData);
 	}
 }
 

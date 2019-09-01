@@ -19,6 +19,7 @@ typedef struct {
 typedef pthread_t THREAD;
 typedef void*(*TFUNC)(TARG);
 typedef void* THRET;
+
 typedef struct {
   char fmt[256];
   const char* cfile;
@@ -32,10 +33,11 @@ typedef struct {
 /*
 	MEMORY FUNCTIONS
 */
+
 void* Memory_Alloc(size_t num, size_t size);
 void  Memory_Copy(void* dst, const void* src, size_t count);
 void  Memory_Fill(void* dst, size_t count, int val);
-
+void  Memory_Free(void* ptr);
 
 /*
   ITER FUNCTIONS
@@ -59,6 +61,7 @@ bool File_Close(FILE* fp);
 /*
 	SOCKET FUNCTIONS
 */
+
 bool Socket_Init();
 SOCKET Socket_Bind(const char* ip, ushort port);
 void Socket_Close(SOCKET sock);
@@ -66,6 +69,7 @@ void Socket_Close(SOCKET sock);
 /*
 	THREAD FUNCTIONS
 */
+
 THREAD Thread_Create(TFUNC func, const TARG lpParam);
 bool Thread_IsValid(THREAD th);
 bool Thread_SetName(const char* thName);
@@ -74,5 +78,6 @@ void Thread_Close(THREAD th);
 /*
 	TIME FUNCTIONS
 */
+
 void Time_Format(char* buf, size_t len);
 #endif

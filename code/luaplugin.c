@@ -577,8 +577,8 @@ void LuaPlugin_Tick() {
 }
 
 void LuaPlugin_Free(PLUGIN* plugin) {
-	free((void*)plugin->name);
-	free(plugin);
+	Memory_Free((void*)plugin->name);
+	Memory_Free(plugin);
 }
 
 void LuaPlugin_Close(PLUGIN* plugin) {
