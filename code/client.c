@@ -117,7 +117,6 @@ THRET Client_MapThreadProc(TARG lpParam) {
 		return 0;
 	}
 
-
 	stream.avail_in = maplen;
 	stream.next_in = mapdata;
 
@@ -210,10 +209,13 @@ void Client_Destroy(CLIENT* client) {
 
 	if(client->cpeData) {
 		EXT* ptr = client->cpeData->headExtension;
+		EXT* prev;
+
 		while(ptr) {
+			prev = ptr;
 			Memory_Free((void*)ptr->name);
-			Memory_Free(ptr);
 			ptr = ptr->next;
+			Memory_Free(prev);
 		}
 		Memory_Free(client->cpeData->appName);
 		Memory_Free(client->cpeData);

@@ -660,7 +660,7 @@ static bool Cmd_Plugins(const char* args, CLIENT* caller, char* out) {
 void LuaPlugin_Start() {
 	Command_Register("plugins", &Cmd_Plugins);
 
-	dirIter pIter;
+	dirIter pIter = {0};
 	if(Iter_Init(&pIter, "plugins", "lua")) {
 		do {
 			if(pIter.isDir || !pIter.cfile) continue;

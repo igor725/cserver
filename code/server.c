@@ -78,7 +78,7 @@ bool Server_InitialWork() {
 	Command_RegisterDefault();
 
 	int wIndex = -1;
-	dirIter wIter;
+	dirIter wIter = {0};
 	if(Iter_Init(&wIter, ".", "cws")) {
 		do {
 			if(wIter.isDir || !wIter.cfile) continue;
