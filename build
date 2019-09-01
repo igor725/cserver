@@ -2,7 +2,7 @@
 
 DEBUG=0
 OPT="-O2"
-WARN="-W1"
+WARN=""
 CFLAGS="-pipe -Iheaders -o server"
 LIBS="-lz -lpthread"
 
