@@ -15,7 +15,7 @@ const char* const Error_Strings[] = {
 	"Unknown data type ID",
 	"Unknown cfg entry type",
 	"Unexpected end of cfg file",
-	"This plugin already loaded"
+	"Iterator already inited"
 };
 
 char Error_StrBuf[512] = {0};

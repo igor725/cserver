@@ -30,6 +30,11 @@ void Memory_Fill(void* dst, size_t count, int val) {
 #define isDir(iter) ((iter->fileHandle.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) > 0)
 
 bool Iter_Init(const char* dir, const char* ext, dirIter* iter) {
+	if(iter->state > 0) {
+		Error_Set(ET_SERVER, EC_ITERINITED);
+		return false;
+	}
+
 	String_FormatBuf(iter->fmt, 256, "%s\\*.%s", dir, ext);
 	if((iter->dirHandle = FindFirstFile(iter->fmt, &iter->fileHandle)) == INVALID_HANDLE_VALUE) {
 		iter->state = -1;
@@ -248,8 +253,10 @@ void Memory_Fill(void* dst, size_t count, int val) {
 */
 
 bool Iter_Init(const char* dir, const char* ext, dirIter* iter) {
-	if(iter->state > 0)
+	if(iter->state > 0) {
+		Error_Set(ET_SERVER, EC_ITERINITED);
 		return false;
+	}
 
 	iter->dirHandle = opendir(dir);
 	String_Copy(iter->fmt, 256, ext);
@@ -260,8 +267,7 @@ bool Iter_Init(const char* dir, const char* ext, dirIter* iter) {
 	}
 
 	iter->state = 1;
-	Iter_Next(iter);
-	return true;
+	return Iter_Next(iter);
 }
 
 static bool checkExtension(const char* filename, const char* ext) {

@@ -23,7 +23,8 @@ enum ErrorCodes {
 	EC_MAGIC,
 	EC_WIUNKID,
 	EC_CFGTYPE,
-	EC_CFGEND
+	EC_CFGEND,
+	EC_ITERINITED
 };
 
 void Error_SetCode(const char* efile, int eline, const char* efunc, int etype, uint ecode);

@@ -93,7 +93,7 @@ bool Server_InitialWork() {
 		iterExt = "o";
 	#endif
 	dirIter iter;
-	if(Iter_Init(".", "dll", &iter)) {
+	if(Iter_Init(".", iterExt, &iter)) {
 		do {
 			Log_Info("%s - %d", iter.cfile, iter.isDir);
 		} while(Iter_Next(&iter));
