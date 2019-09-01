@@ -35,11 +35,11 @@ typedef int SOCKET;
 
 typedef unsigned short ushort;
 typedef unsigned char  uchar;
-typedef int            bool;
 typedef unsigned int   uint;
-typedef unsigned char  BlockID;
-typedef char           ClientID;
-typedef unsigned char  Order;
+typedef int            bool;
+typedef uchar          Order;
+typedef uchar          BlockID;
+typedef uchar          ClientID;
 
 #include <stdlib.h>
 #include <stdio.h>

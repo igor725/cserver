@@ -31,7 +31,7 @@ IF "%1"=="onerun" set RUNMODE=1
 IF "%1"=="clean" goto clean
 IF "%1"=="2" set MSVC_OPTS=%MSVC_OPTS% /O2
 IF "%1"=="1" set MSVC_OPTS=%MSVC_OPTS% /O1
-IF "%1"=="noopt" set MSVC_OPTS=%MSVC_OPTS% /Od
+IF "%1"=="0" set MSVC_OPTS=%MSVC_OPTS% /Od
 IF "%1"=="allwarn" set MSVC_OPTS=%MSVC_OPTS% /Wall
 IF "%1"=="w4" set MSVC_OPTS=%MSVC_OPTS% /W4
 IF "%1"=="nowarn" set MSVC_OPTS=%MSVC_OPTS% /W0

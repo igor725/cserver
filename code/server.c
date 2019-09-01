@@ -14,7 +14,7 @@ CFGSTORE* mainCfg;
 
 void Server_Accept() {
 	struct sockaddr_in caddr;
-	int caddrsz = sizeof caddr;
+	socklen_t caddrsz = sizeof caddr;
 
 	SOCKET fd = accept(server, (struct sockaddr*)&caddr, &caddrsz);
 

@@ -293,6 +293,7 @@ bool Iter_Close(dirIter* iter) {
 	if(iter->state == 0)
 		return false;
 	closedir(iter->dirHandle);
+	return true;
 }
 
 /*

@@ -1,14 +1,24 @@
 #!/bin/bash
 
-CFLAGS="-Iheaders -o server"
+DEBUG=0
+OPT="-O2"
+WARN="-W1"
+CFLAGS="-pipe -Iheaders -o server"
 LIBS="-lz -lpthread"
 
 LUA_ENABLED=0
 
-for var in "$@"
+for a in "$@"
 do
-    if [ "$var" == "lua" ]; then LUA_ENABLED=1; fi
-    if [ "$var" == "dbg" ]; then CFLAGS="$CFLAGS -g"; fi
+    if [ "$a" == "lua" ]; then LUA_ENABLED=1; fi
+		if [ "$a" == "dbg" ]; then DEBUG=1; fi
+    if [ "$a" == "wall" ]; then WARN="-Wall"; fi
+    if [ "$a" == "nowarn" ]; then WARN="-W0"; fi
+    if [ "$a" == "0" ]; then OPT="-O0"; fi
+    if [ "$a" == "1" ]; then OPT="-O1"; fi
+    if [ "$a" == "2" ]; then OPT="-O2"; fi
+    if [ "$a" == "3" ]; then OPT="-O3"; fi
+    if [ "$a" == "f" ]; then OPT="-Ofast"; fi
 done
 
 if [ $LUA_ENABLED -eq 1 ];
@@ -19,4 +29,10 @@ then
 	LIBS="$LIBS -l$LUA_LIBFILE"
 fi
 
-gcc code/*.c $CFLAGS $LIBS
+if [ $DEBUG -eq 1 ];
+then
+	CFLAGS="$CFLAGS -g"
+	OPT="-O0"
+fi
+
+gcc code/*.c $WARN $OPT $CFLAGS $LIBS
