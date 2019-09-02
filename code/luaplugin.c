@@ -23,39 +23,52 @@ if(lua_isfunction(plugin->state, -1)) \
 else \
 	lua_pop(plugin->state, 1); \
 
-#define GetLuaPlugin(L) \
+#define GetLuaPlugin \
 PLUGIN* plugin = LuaPlugin_FindByState(L); \
 if(!plugin) \
 	return 0; \
+
+#define VarStrConcat \
+int argc = lua_gettop(L); \
+char buf[4096] = {0}; \
+size_t bufpos = 0; \
+if(argc > 0) { \
+	for(int i = 1; i <= argc; i++) { \
+		lua_getglobal(L, "tostring"); \
+		lua_pushvalue(L, i); \
+		lua_call(L, 1, 1); \
+		const char* str = lua_tostring(L, -1); \
+		lua_pop(L, 1); \
+		bufpos += String_Copy(buf + bufpos, 4096 - bufpos, str); \
+		if(bufpos < 4094) { \
+			buf[bufpos] = 32; \
+			++bufpos; \
+		} \
+	} \
+} \
 
 /*
 	Lua log library
 */
 
 static int llog_info(lua_State* L) {
-	GetLuaPlugin(L);
-
-	const char* str = lua_tostring(L, 1);
-	if(str)
-		Log_Info("%s: %s", plugin->name, str);
+	GetLuaPlugin;
+	VarStrConcat;
+	Log_Info("%s: %s", plugin->name, buf);
 	return 0;
 }
 
 static int llog_error(lua_State* L) {
-	GetLuaPlugin(L);
-
-	const char* str = lua_tostring(L, 1);
-	if(str)
-		Log_Error("%s: %s", plugin->name, str);
+	GetLuaPlugin;
+	VarStrConcat;
+	Log_Error("%s: %s", plugin->name, buf);
 	return 0;
 }
 
 static int llog_warn(lua_State* L) {
-	GetLuaPlugin(L);
-
-	const char* str = lua_tostring(L, 1);
-	if(str)
-		Log_Warn("%s: %s", plugin->name, str);
+	GetLuaPlugin;
+	VarStrConcat;
+	Log_Error("%s: %s", plugin->name, buf);
 	return 0;
 }
 
@@ -542,17 +555,10 @@ void LuaPlugin_LoadLibs(lua_State* L) {
 		lua_setglobal(L, reg->name);
 	}
 
-	/*
-	TODO: Убрать комментарий, когда появится возможность
-	отправки vararg в функцию log.info
-	P.S. Я действительно надеюсь, что это когда-нибудь
-	случится
-
 	lua_getglobal(L, "log");
 	lua_getfield(L, -1, "info");
 	lua_setglobal(L, "print");
 	lua_pop(L, 1);
-	*/
 }
 
 static bool LuaPlugin_CanLoad(const char* name) {
@@ -567,6 +573,8 @@ static bool LuaPlugin_CanLoad(const char* name) {
 
 	return true;
 }
+
+#define checkCompatibility(ver) (LPLUGIN_API_NUM / 100 == ver / 100)
 
 bool LuaPlugin_Load(const char* name) {
 	if(!LuaPlugin_CanLoad(name)) {
@@ -590,8 +598,8 @@ bool LuaPlugin_Load(const char* name) {
 		return false;
 	}
 
-	lua_getglobal(L, "svVerNum");
-	if(lua_isnil(L, -1) || lua_tointeger(L, -1) != SOFTWARE_VERSION_NUM) {
+	lua_getglobal(L, "API_VER");
+	if(lua_isnil(L, -1) || !checkCompatibility((int)lua_tointeger(L, -1))) {
 		Log_Warn("Plugin \"%s\" can't be loaded on this version of the server software", tmp->name);
 		LuaPlugin_Close(tmp);
 		LuaPlugin_Free(tmp);

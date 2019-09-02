@@ -13,6 +13,8 @@
 #define	CFG_STR_NAME  "string"
 #define	CFG_UNK_NAME  "unknown"
 
+#define LPLUGIN_API_NUM 100
+
 typedef struct luaPlugin {
 	const char* name;
 	lua_State* state;

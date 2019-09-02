@@ -49,7 +49,6 @@ typedef uchar          ClientID;
 
 #define SOFTWARE_NAME "C-Server"
 #define SOFTWARE_VERSION "0.1"
-#define SOFTWARE_VERSION_NUM 1
 #define CHATLINE "<%s>: %s"
 #define MAINCFG "server.cfg"
 

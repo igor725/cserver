@@ -24,17 +24,13 @@ size_t String_Length(const char* str) {
 size_t String_Copy(char* dst, size_t len, const char* src) {
 	if(!dst) return 0;
 	if(!src) return 0;
+	size_t blen = len;
 
-#if defined(WINDOWS)
-	strcpy_s(dst, len, src);
-#elif defined(POSIX)
-	if(String_Length(src) < len)
-		strcpy(dst, src);
-	else
-		return 0;
-#endif
+	while((*dst++ = *src++) != '\0' && blen > 2)
+		--blen;
 
-	return len;
+	*dst = 0;
+	return len - blen;
 }
 
 char* String_CopyUnsafe(char* dst, const char* src) {
