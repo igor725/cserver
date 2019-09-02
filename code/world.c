@@ -53,25 +53,6 @@ void World_Destroy(WORLD* world) {
 	Memory_Free(world);
 }
 
-void World_GenerateFlat(WORLD* world) {
-	WORLDINFO* wi = world->info;
-	ushort dx = wi->dim->width,
-	dy = wi->dim->height,
-	dz = wi->dim->length;
-
-	BlockID* data = world->data + 4;
-	int dirtEnd = dx * dz * (dy / 2 - 1);
-	for(int i = 0; i < dirtEnd + dx * dz; i++) {
-		if(i < dirtEnd)
-			data[i] = 3;
-		else
-			data[i] = 2;
-	}
-	wi->spawnVec->x = (float)dx / 2;
-	wi->spawnVec->y = (float)dy / 2;
-	wi->spawnVec->z = (float)dz / 2;
-}
-
 bool _WriteData(FILE* fp, uchar dataType, void* ptr, int size) {
 	if(!File_Write(&dataType, 1, 1, fp))
 		return false;
@@ -232,7 +213,7 @@ uint World_GetOffset(WORLD* world, ushort x, ushort y, ushort z) {
 bool World_SetBlock(WORLD* world, ushort x, ushort y, ushort z, BlockID id) {
 	int offset = World_GetOffset(world, x, y, z);
 
-	if(offset > 3)
+	if(offset > 3 && offset < world->size)
 		world->data[offset] = (char)id;
 	else
 		return false;
@@ -243,7 +224,7 @@ bool World_SetBlock(WORLD* world, ushort x, ushort y, ushort z, BlockID id) {
 BlockID World_GetBlock(WORLD* world, ushort x, ushort y, ushort z) {
 	int offset = World_GetOffset(world, x, y, z);
 
-	if(offset > 3)
+	if(offset > 3 && offset < world->size)
 		return world->data[offset];
 	else
 		return 0;

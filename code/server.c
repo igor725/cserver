@@ -1,11 +1,13 @@
 #include "core.h"
 #include "log.h"
+#include "world.h"
 #include "server.h"
 #include "client.h"
 #include "packets.h"
 #include "config.h"
 #include "console.h"
 #include "command.h"
+#include "generators.h"
 #ifdef LUA_ENABLED
 #include "luaplugin.h"
 #endif
@@ -99,7 +101,7 @@ bool Server_InitialWork() {
 		WORLD* tmp = World_Create("world.cws");
 		World_SetDimensions(tmp, 128, 128, 128);
 		World_AllocBlockArray(tmp);
-		World_GenerateFlat(tmp);
+		Generator_Flat(tmp);
 		worlds[0] = tmp;
 	}
 
