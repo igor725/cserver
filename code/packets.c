@@ -208,13 +208,13 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	bool cpeEnabled =* ++data == 0x42;
 
 	if(Client_CheckAuth(client)) {
-		const char* name = Config_GetStr(mainCfg, "serverName");
-		const char* motd = Config_GetStr(mainCfg, "serverMotd");
+		const char* name = Config_GetStr(mainCfg, "name");
+		const char* motd = Config_GetStr(mainCfg, "motd");
 
 		if(!name)
-			name = "Server name";
+			name = DEFAULT_NAME;
 		if(!motd)
-			motd = "Server motd";
+			motd = DEFAULT_MOTD;
 
 		Packet_WriteHandshake(client, name, motd);
 	} else {

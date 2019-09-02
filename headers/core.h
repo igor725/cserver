@@ -47,11 +47,14 @@ typedef uchar          ClientID;
 #include "error.h"
 #include "str.h"
 
-#define DELIM " "
 #define SOFTWARE_NAME "C-Server"
 #define SOFTWARE_VERSION "0.1"
+#define SOFTWARE_VERSION_NUM 1
 #define CHATLINE "<%s>: %s"
 #define MAINCFG "server.cfg"
+
+#define DEFAULT_NAME "Server name"
+#define DEFAULT_MOTD "Server MOTD"
 
 #define CPE_CHAT      0
 #define CPE_STATUS1   1

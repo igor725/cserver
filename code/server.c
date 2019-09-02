@@ -73,6 +73,8 @@ bool Server_InitialWork() {
 		Config_EmptyStore(mainCfg);
 		Config_SetStr(mainCfg, "ip", "0.0.0.0");
 		Config_SetInt(mainCfg, "port", 25565);
+		Config_SetStr(mainCfg, "name", DEFAULT_NAME);
+		Config_SetStr(mainCfg, "motd", DEFAULT_MOTD);
 	}
 
 	Packet_RegisterDefault();

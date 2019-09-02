@@ -211,10 +211,10 @@ uint World_GetOffset(WORLD* world, ushort x, ushort y, ushort z) {
 }
 
 bool World_SetBlock(WORLD* world, ushort x, ushort y, ushort z, BlockID id) {
-	int offset = World_GetOffset(world, x, y, z);
+	uint offset = World_GetOffset(world, x, y, z);
 
 	if(offset > 3 && offset < world->size)
-		world->data[offset] = (char)id;
+		world->data[offset] = id;
 	else
 		return false;
 
@@ -222,7 +222,7 @@ bool World_SetBlock(WORLD* world, ushort x, ushort y, ushort z, BlockID id) {
 }
 
 BlockID World_GetBlock(WORLD* world, ushort x, ushort y, ushort z) {
-	int offset = World_GetOffset(world, x, y, z);
+	uint offset = World_GetOffset(world, x, y, z);
 
 	if(offset > 3 && offset < world->size)
 		return world->data[offset];

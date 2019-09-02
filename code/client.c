@@ -198,7 +198,7 @@ void Client_SetType(CLIENT* client, bool isOP) {
 	if(!client->playerData)
 		return;
 
-	client->playerData->isOP = true;
+	client->playerData->isOP = isOP;
 	Packet_WriteUpdateType(client);
 }
 

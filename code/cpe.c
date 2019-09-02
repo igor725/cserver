@@ -30,10 +30,12 @@ static const struct extReg serverExtensions[] = {
 	{"HeldBlock", 1},
 	{"TwoWayPing", 1},
 	// {"PlayerClick", 1},
+	{"ChangeModel", 1},
 	{"MessageTypes", 1},
 	{"ClickDistance", 1},
 	{"InventoryOrder", 1},
 	{"EnvWeatherType", 1},
+	{"BlockPermissions", 1},
 	{NULL, 0}
 };
 
@@ -51,7 +53,7 @@ void Packet_RegisterCPEDefault() {
 void CPEPacket_WriteInfo(CLIENT* client) {
 	char* data = client->wrbuf;
 	*data = 0x10;
-	WriteString(++data, SOFTWARE_NAME DELIM SOFTWARE_VERSION); data += 63;
+	WriteString(++data, SOFTWARE_NAME " " SOFTWARE_VERSION); data += 63;
 	*(ushort*)++data = htons(extensionsCount);
 	Client_Send(client, 67);
 }
@@ -116,6 +118,23 @@ void CPEPacket_WriteTwoWayPing(CLIENT* client, uchar direction, short num) {
 	*data = 0x2B;
 	*++data = direction;
 	*(ushort*)++data = num;
+	Client_Send(client, 4);
+}
+
+void CPEPACKET_WriteSetModel(CLIENT* client, ClientID id, const char* model) {
+	char* data = client->wrbuf;
+	*data = 0x01D;
+	*++data = id;
+	WriteString(++data, model);
+	Client_Send(client, 66);
+}
+
+void CPEPacket_WriteBlockPerm(CLIENT* client, BlockID id, bool allowPlace, bool allowDestroy) {
+	char* data = client->wrbuf;
+	*data = 0x1C;
+	*++data = id;
+	*++data = (char)allowPlace;
+	*++data = (char)allowDestroy;
 	Client_Send(client, 4);
 }
 

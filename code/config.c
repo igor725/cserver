@@ -93,8 +93,11 @@ bool Config_Save(CFGSTORE* store) {
 	if(!store->modified)
 		return true;
 
+	char tmpname[256];
+	String_FormatBuf(tmpname, 256, "%s.tmp", store->path);
+
 	FILE* fp;
-	if(!(fp = File_Open(store->path, "w")))
+	if(!(fp = File_Open(tmpname, "w")))
 		return false;
 
 	CFGENTRY* ptr = store->firstCfgEntry;
@@ -125,7 +128,7 @@ bool Config_Save(CFGSTORE* store) {
 	}
 
 	File_Close(fp);
-	return true;
+	return File_Rename(tmpname, store->path);
 }
 
 CFGENTRY* Config_GetEntry(CFGSTORE* store, const char* key) {

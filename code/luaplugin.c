@@ -251,7 +251,7 @@ static int lconfig_set(lua_State* L) {
 			Config_SetStr(store, key, luaL_checkstring(L, 3));
 			break;
 		case LUA_TNUMBER:
-			Config_SetInt(store, key, (int)luaL_checkinteger(L, 3));
+			Config_SetInt(store, key, (int)luaL_checkint(L, 3));
 			break;
 		default:
 			err = "Bad argument #2 (number/boolean/string expected)";
@@ -440,10 +440,10 @@ static int lworld_get(lua_State* L) {
 
 static int lworld_setblock(lua_State* L) {
 	WORLD* world = toWorld(L, 1);
-	ushort x = (ushort)luaL_checkinteger(L, 2);
-	ushort y = (ushort)luaL_checkinteger(L, 3);
-	ushort z = (ushort)luaL_checkinteger(L, 4);
-	BlockID id = (BlockID)luaL_checkinteger(L, 5);
+	ushort x = (ushort)luaL_checkint(L, 2);
+	ushort y = (ushort)luaL_checkint(L, 3);
+	ushort z = (ushort)luaL_checkint(L, 4);
+	BlockID id = (BlockID)luaL_checkint(L, 5);
 	bool update = (bool)lua_toboolean(L, 6);
 
 	World_SetBlock(world, x, y, z, id);
@@ -455,9 +455,9 @@ static int lworld_setblock(lua_State* L) {
 
 static int lworld_getblock(lua_State* L) {
 	WORLD* world = toWorld(L, 1);
-	ushort x = (ushort)luaL_checkinteger(L, 2);
-	ushort y = (ushort)luaL_checkinteger(L, 3);
-	ushort z = (ushort)luaL_checkinteger(L, 4);
+	ushort x = (ushort)luaL_checkint(L, 2);
+	ushort y = (ushort)luaL_checkint(L, 3);
+	ushort z = (ushort)luaL_checkint(L, 4);
 
 	lua_pushinteger(L, World_GetBlock(world, x, y, z));
 	return 1;
@@ -590,12 +590,21 @@ bool LuaPlugin_Load(const char* name) {
 		return false;
 	}
 
-	tmp->next = headPlugin;
-	if(headPlugin)
-		headPlugin->prev = tmp;
-	tmp->loaded = true;
-	headPlugin = tmp;
-	CallLuaVoid(tmp, "onStart");
+	lua_getglobal(L, "svVerNum");
+	if(lua_isnil(L, -1) || lua_tointeger(L, -1) != SOFTWARE_VERSION_NUM) {
+		Log_Warn("Plugin \"%s\" can't be loaded on this version of the server software", tmp->name);
+		LuaPlugin_Close(tmp);
+		LuaPlugin_Free(tmp);
+		return false;
+	} else {
+		lua_pop(L, 1);
+		tmp->next = headPlugin;
+		if(headPlugin)
+			headPlugin->prev = tmp;
+		tmp->loaded = true;
+		headPlugin = tmp;
+		CallLuaVoid(tmp, "onStart");
+	}
 
 	return true;
 }
