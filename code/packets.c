@@ -277,14 +277,14 @@ bool Handler_PosAndOrient(CLIENT* client, char* data) {
 		return false;
 
 	if(client->cpeData) {
-		if(client->cpeData->heldBlock !=* data) {
-			BlockID id = *data;
-			BlockID lastblock = client->cpeData->heldBlock;
-			Event_OnHeldBlockChange(client, &lastblock, &id);
+		if(client->cpeData->heldBlock != *data) {
+			BlockID new = *data;
+			BlockID curr = client->cpeData->heldBlock;
+			Event_OnHeldBlockChange(client, &new, &curr);
 			client->cpeData->heldBlock = *data;
 		}
 	}
-		client->cpeData->heldBlock = *data;
+
 	ReadClPos(client, ++data);
 	client->playerData->positionUpdated = true;
 	return true;

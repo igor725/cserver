@@ -53,6 +53,7 @@ bool Client_IsSupportExt(CLIENT* client, const char* packetName);
 void Client_SetPos(CLIENT* client, VECTOR* vec, ANGLE* ang);
 void Client_SetType(CLIENT* client, bool isOP);
 bool Client_GetType(CLIENT* client);
+bool Client_SetHotbar(CLIENT* client, Order pos, BlockID block);
 void Client_Kick(CLIENT* client, const char* reason);
 bool Client_SendMap(CLIENT* client, WORLD* world);
 void Client_HandshakeStage2(CLIENT* client);

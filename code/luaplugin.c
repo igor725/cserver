@@ -5,6 +5,7 @@
 #include "luaplugin.h"
 #include "command.h"
 #include "packets.h"
+#include "event.h"
 
 static int LuaError(lua_State* L) {
 	PLUGIN* plugin = LuaPlugin_FindByState(L);
@@ -15,13 +16,23 @@ static int LuaError(lua_State* L) {
 	return 0;
 }
 
-#define CallLuaVoid(plugin, func) \
+#define LuaCallback_Start(plugin, func) \
 lua_pushcfunction(plugin->state, LuaError); \
 lua_getglobal(plugin->state, func); \
-if(lua_isfunction(plugin->state, -1)) \
-	lua_pcall(plugin->state, 0, 0, -2); \
-else \
-	lua_pop(plugin->state, 1); \
+if(lua_isfunction(plugin->state, -1)) { \
+
+#define LuaCallback_Call(plugin, argc, out) \
+lua_pcall(plugin->state, argc, out, -2 - argc) \
+
+#define LuaCallback_End(plugin) \
+	} else { \
+		lua_pop(plugin->state, 1); \
+	} \
+
+#define CallLuaVoid(plugin, func) \
+LuaCallback_Start(plugin, func); \
+LuaCallback_Call(plugin, 0, 0); \
+LuaCallback_End(plugin); \
 
 #define GetLuaPlugin \
 PLUGIN* plugin = LuaPlugin_FindByState(L); \
@@ -85,14 +96,6 @@ int luaopen_log(lua_State* L) {
 }
 
 /*
-	Lua event library
-*/
-
-int luaopen_event(lua_State* L) {
-	return 0;
-}
-
-/*
 	Lua client library
 */
 
@@ -102,6 +105,18 @@ static CLIENT* toClient(lua_State* L, int index) {
 	CLIENT* client = lua_touserdata(L, index);
 	if(!client) luaL_typerror(L, index, LUA_TCLIENT);
 	return client;
+}
+
+static CLIENT* checkClient(lua_State* L, int index) {
+	lua_getmetatable(L, index);
+	luaL_getmetatable(L, LUA_TCLIENT);
+	if(lua_rawequal(L, -1, -2)) {
+		CLIENT* c = toClient(L, index);
+		lua_pop(L, 2);
+		return c;
+	}
+	luaL_typerror(L, index, LUA_TCLIENT);
+	return NULL;
 }
 
 static void pushClient(lua_State* L, CLIENT* client) {
@@ -123,23 +138,31 @@ static int lclient_get(lua_State* L) {
 }
 
 static int lclient_kick(lua_State* L) {
-	CLIENT* client = toClient(L, 1);
+	CLIENT* client = checkClient(L, 1);
 	const char* reason = luaL_checkstring(L, 2);
-	bool succ = false;
-
-	if(!client) {
-		succ = false;
-	}
-
-	succ = true;
 	Client_Kick(client, reason);
+	return 0;
+}
 
-	lua_pushboolean(L, succ);
+static int lclient_getname(lua_State* L) {
+	CLIENT* client = checkClient(L, 1);
+	if(!client->playerData)
+		luaL_error(L, "client->playerData == NULL");
+	lua_pushstring(L, client->playerData->name);
 	return 1;
+}
+
+static int lclient_sethotbar(lua_State* L) {
+	CLIENT* client = checkClient(L, 1);
+	Order pos = luaL_checkint(L, 2);
+	BlockID block = luaL_checkint(L, 3);
+
 }
 
 static const luaL_Reg client_methods[] = {
 	{"get", lclient_get},
+	{"getname", lclient_getname},
+	{"sethotbar", lclient_sethotbar},
 	{"kick", lclient_kick},
 	{NULL, NULL}
 };
@@ -514,7 +537,6 @@ int luaopen_world(lua_State* L) {
 static const luaL_Reg LuaPlugin_Libs[] = {
 	{"", luaopen_base},
 	{"log", luaopen_log},
-	{"event", luaopen_event},
 	{"client", luaopen_client},
 	{"config", luaopen_config},
 	{"packets", luaopen_packets},
@@ -674,8 +696,132 @@ static bool Cmd_Plugins(const char* args, CLIENT* caller, char* out) {
 	return true;
 }
 
+static bool elp_onmessage(void* param) {
+	onMessage_t* a = (onMessage_t*)param;
+	PLUGIN* ptr = headPlugin;
+	bool canSend = true;
+
+	while(ptr) {
+		if(ptr->loaded) {
+			LuaCallback_Start(ptr, "onMessage");
+			pushClient(ptr->state, a->client);
+			lua_pushstring(ptr->state, a->message);
+			if(!LuaCallback_Call(ptr, 2, 1)) {
+				if(lua_isboolean(ptr->state, -1)) {
+					if(!(canSend = lua_toboolean(ptr->state, -1)))
+						break;
+				}
+				lua_pop(ptr->state, 1);
+			} else {
+				canSend = false;
+			}
+			LuaCallback_End(ptr);
+		}
+		ptr = ptr->next;
+	}
+
+	return canSend;
+}
+
+static bool elp_onblockplace(void* param) {
+	onBlockPlace_t* a = (onBlockPlace_t*)param;
+	PLUGIN* ptr = headPlugin;
+	bool canPlace = true;
+
+	while(ptr) {
+		if(ptr->loaded) {
+			LuaCallback_Start(ptr, "onBlockPlace");
+			pushClient(ptr->state, a->client);
+			lua_pushinteger(ptr->state, *a->x);
+			lua_pushinteger(ptr->state, *a->y);
+			lua_pushinteger(ptr->state, *a->z);
+			lua_pushinteger(ptr->state, *a->id);
+			if(!LuaCallback_Call(ptr, 5, 1)) {
+				if(lua_isboolean(ptr->state, -1)) {
+					if(!(canPlace = lua_toboolean(ptr->state, -1)))
+						break;
+				}
+				lua_pop(ptr->state, 1);
+			} else {
+				canPlace = false;
+			}
+			LuaCallback_End(ptr);
+		}
+		ptr = ptr->next;
+	}
+
+	return canPlace;
+}
+
+static void elp_onhsdone(void* param) {
+	PLUGIN* ptr = headPlugin;
+
+	while(ptr) {
+		if(ptr->loaded) {
+			LuaCallback_Start(ptr, "onHandshakeDone");
+			pushClient(ptr->state, param);
+			LuaCallback_Call(ptr, 1, 0);
+			LuaCallback_End(ptr);
+		}
+		ptr = ptr->next;
+	}
+}
+
+static void elp_onspawn(void* param) {
+	PLUGIN* ptr = headPlugin;
+
+	while(ptr) {
+		if(ptr->loaded) {
+			LuaCallback_Start(ptr, "onSpawn");
+			pushClient(ptr->state, param);
+			LuaCallback_Call(ptr, 1, 0);
+			LuaCallback_End(ptr);
+		}
+		ptr = ptr->next;
+	}
+}
+
+static void elp_ondespawn(void* param) {
+	PLUGIN* ptr = headPlugin;
+
+	while(ptr) {
+		if(ptr->loaded) {
+			LuaCallback_Start(ptr, "onDespawn");
+			pushClient(ptr->state, param);
+			LuaCallback_Call(ptr, 1, 0);
+			LuaCallback_End(ptr);
+		}
+		ptr = ptr->next;
+	}
+}
+
+static void elp_onheldblockchange(void* param) {
+	onHeldBlockChange_t* a = (onHeldBlockChange_t*)param;
+	PLUGIN* ptr = headPlugin;
+
+	while(ptr) {
+		if(ptr->loaded) {
+			LuaCallback_Start(ptr, "onHeldBlockChange");
+			pushClient(ptr->state, a->client);
+			lua_pushinteger(ptr->state, *a->prev);
+			lua_pushinteger(ptr->state, *a->curr);
+			LuaCallback_Call(ptr, 3, 0);
+			LuaCallback_End(ptr);
+		}
+		ptr = ptr->next;
+	}
+}
+
 void LuaPlugin_Start() {
 	Command_Register("plugins", &Cmd_Plugins, true);
+	Event_RegisterBool(EVT_ONMESSAGE, elp_onmessage);
+	Event_RegisterBool(EVT_ONBLOCKPLACE, elp_onblockplace);
+	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, elp_onhsdone);
+	Event_RegisterVoid(EVT_ONSPAWN, elp_onspawn);
+	Event_RegisterVoid(EVT_ONDESPAWN, elp_ondespawn);
+	// Какого-то хуя вызывает краш, позже разобраться что не так с
+	// этим эвентом
+	Event_RegisterVoid(EVT_ONHELDBLOCKCHNG, elp_onheldblockchange);
 
 	dirIter pIter = {0};
 	if(Iter_Init(&pIter, "plugins", "lua")) {

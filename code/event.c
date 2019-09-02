@@ -67,5 +67,5 @@ void Event_OnDespawn(CLIENT* client) {
 }
 
 void Event_OnHeldBlockChange(CLIENT* client, BlockID* prev, BlockID* curr) {
-	Event_Call(EVT_ONDESPAWN, (void*)&client);
+	Event_Call(EVT_ONHELDBLOCKCHNG, (void*)&client);
 }

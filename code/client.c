@@ -202,6 +202,14 @@ void Client_SetType(CLIENT* client, bool isOP) {
 	Packet_WriteUpdateType(client);
 }
 
+bool Client_SetHotbar(CLIENT* client, Order pos, BlockID block) {
+	if(Client_IsSupportExt(client, "SetHotbar")) {
+		CPEPacket_WriteSetHotBar(client, pos, block);
+		return true;
+	}
+	return false;
+}
+
 bool Client_GetType(CLIENT* client) {
 	if(!client->playerData)
 		return false;
