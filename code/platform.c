@@ -81,6 +81,13 @@ bool Iter_Close(dirIter* iter) {
 	WINDOWS FILE FUNCTIONS
 */
 
+bool File_Rename(const char* path, const char* newpath) {
+	bool succ = MoveFileExA(path, newpath, MOVEFILE_REPLACE_EXISTING);
+	if(!succ)
+		Error_Set(ET_SYS, GetLastError());
+	return succ;
+}
+
 FILE* File_Open(const char* path, const char* mode) {
 	FILE* fp;
 	if((fp = fopen(path, mode)) == NULL) {
@@ -299,6 +306,13 @@ bool Iter_Close(dirIter* iter) {
 /*
 	POSIX FILE FUNCTIONS
 */
+
+bool File_Rename(const char* path, const char* newpath) {
+	int ret = rename(path, newpath);
+	if(ret != 0)
+		Error_Set(ET_SYS, errno);
+	return ret == 0;
+}
 
 FILE* File_Open(const char* path, const char* mode) {
 	FILE* fp;

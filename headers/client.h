@@ -29,6 +29,7 @@ typedef struct playerData {
 	int     state;
 	ANGLE*  angle;
 	VECTOR* position;
+	bool    isOP;
 	bool    spawned;
 	THREAD  mapThread;
 	WORLD*  currentWorld;
@@ -50,6 +51,8 @@ typedef struct client {
 void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort z);
 bool Client_IsSupportExt(CLIENT* client, const char* packetName);
 void Client_SetPos(CLIENT* client, VECTOR* vec, ANGLE* ang);
+void Client_SetType(CLIENT* client, bool isOP);
+bool Client_GetType(CLIENT* client);
 void Client_Kick(CLIENT* client, const char* reason);
 bool Client_SendMap(CLIENT* client, WORLD* world);
 void Client_HandshakeStage2(CLIENT* client);

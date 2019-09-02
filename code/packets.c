@@ -169,6 +169,17 @@ void Packet_WriteChat(CLIENT* client, MessageType type, const char* mesg) {
 	Client_Send(client, 66);
 }
 
+void Packet_WriteUpdateType(CLIENT* client) {
+	char* data = client->wrbuf;
+	*data = 0x0F;
+	*++data = client->playerData->isOP ? 0x64 : 0x00;
+	Client_Send(client, 2);
+}
+
+/*
+	Classic handlers
+*/
+
 bool Handler_Handshake(CLIENT* client, char* data) {
 	uchar protoVer =* data;
 	if(protoVer != 0x07) {

@@ -625,12 +625,12 @@ static void PrintList(CLIENT *client) {
 static bool Cmd_Plugins(const char* args, CLIENT* caller, char* out) {
 	char arg[64] = {0};
 
-	if(String_GetArgument(args, arg, 0)) {
+	if(String_GetArgument(args, arg, 64, 0)) {
 		if(String_CaselessCompare(arg, "list")) {
 			PrintList(caller);
 			return false;
 		} else if (String_CaselessCompare(arg, "load")) {
-			if(String_GetArgument(args, arg, 1)) {
+			if(String_GetArgument(args, arg, 64, 1)) {
 				if(LuaPlugin_Load(arg)) {
 					String_Copy(out, CMD_MAX_OUT, "Plugin loaded successfully");
 				}
@@ -638,7 +638,7 @@ static bool Cmd_Plugins(const char* args, CLIENT* caller, char* out) {
 				String_Copy(out, CMD_MAX_OUT, "Invalud argument #2");
 			}
 		} else if(String_CaselessCompare(arg, "unload")) {
-			if(String_GetArgument(args, arg, 1)) {
+			if(String_GetArgument(args, arg, 64, 1)) {
 				PLUGIN* plugin = LuaPlugin_FindByName(arg);
 				if(!plugin) {
 					String_Copy(out, CMD_MAX_OUT, "This plugin is not loaded");
@@ -658,7 +658,7 @@ static bool Cmd_Plugins(const char* args, CLIENT* caller, char* out) {
 }
 
 void LuaPlugin_Start() {
-	Command_Register("plugins", &Cmd_Plugins);
+	Command_Register("plugins", &Cmd_Plugins, true);
 
 	dirIter pIter = {0};
 	if(Iter_Init(&pIter, "plugins", "lua")) {

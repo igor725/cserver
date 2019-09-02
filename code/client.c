@@ -187,8 +187,24 @@ bool Client_CheckAuth(CLIENT* client) { //TODO: ClassiCube auth
 }
 
 void Client_SetPos(CLIENT* client, VECTOR* pos, ANGLE* ang) {
+	if(!client->playerData)
+		return;
 	Memory_Copy(client->playerData->position, pos, sizeof(VECTOR));
 	Memory_Copy(client->playerData->angle, ang, sizeof(ANGLE));
+}
+
+void Client_SetType(CLIENT* client, bool isOP) {
+	if(!client->playerData)
+		return;
+
+	client->playerData->isOP = true;
+	Packet_WriteUpdateType(client);
+}
+
+bool Client_GetType(CLIENT* client) {
+	if(!client->playerData)
+		return false;
+	return client->playerData->isOP;
 }
 
 void Client_Destroy(CLIENT* client) {

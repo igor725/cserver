@@ -46,7 +46,7 @@ void Server_Accept() {
 	}
 }
 
-THRET Server_AcceptThread(void* lpParam) {
+THRET Server_ThreadProc(void* lpParam) {
 	Thread_SetName("AcceptThread");
 	while(serverActive)Server_Accept();
 	return 0;
@@ -103,10 +103,10 @@ bool Server_InitialWork() {
 		worlds[0] = tmp;
 	}
 
-	#ifdef LUA_ENABLED
-		Log_Info("Starting LuaVM");
-		LuaPlugin_Start();
-	#endif
+#ifdef LUA_ENABLED
+	Log_Info("Starting LuaVM");
+	LuaPlugin_Start();
+#endif
 
 	Console_StartListen();
 	return Server_Bind(Config_GetStr(mainCfg, "ip"), (ushort)Config_GetInt(mainCfg, "port"));
@@ -141,10 +141,10 @@ void Server_Stop() {
 	Console_Close();
 	if(acceptThread)
 		Thread_Close(acceptThread);
-	#ifdef LUA_ENABLED
-		Log_Info("Destroying LuaVM");
-		LuaPlugin_Stop();
-	#endif
+#ifdef LUA_ENABLED
+	Log_Info("Destroying LuaVM");
+	LuaPlugin_Stop();
+#endif
 	Socket_Close(server);
 	Config_Save(mainCfg);
 }
@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
 	if(!(serverActive = Server_InitialWork())) {
 		Log_FormattedError();
 	} else {
-		acceptThread = Thread_Create((TFUNC)&Server_AcceptThread, NULL);
+		acceptThread = Thread_Create((TFUNC)&Server_ThreadProc, NULL);
 		if(!Thread_IsValid(acceptThread)) {
 			Log_Error("acceptThread == NULL");
 			serverActive = false;

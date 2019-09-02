@@ -51,6 +51,7 @@ bool Iter_Close(dirIter* iter);
 	FILE FUNCTIONS
 */
 
+bool File_Rename(const char* path, const char* newpath);
 FILE* File_Open(const char* path, const char* mode);
 size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp);
 bool File_Write(const void* ptr, size_t size, size_t count, FILE* fp);

@@ -128,7 +128,10 @@ bool World_ReadInfo(WORLD* world, FILE* fp) {
 
 int World_Save(WORLD* world) {
 	FILE* fp;
-	if(!(fp = File_Open(world->name, "wb")))
+	char tmpname[256];
+	String_FormatBuf(tmpname, 256, "%s.tmp", world->name);
+
+	if(!(fp = File_Open(tmpname, "wb")))
 		return false;
 
 	if(!World_WriteInfo(world, fp)) {
@@ -164,6 +167,7 @@ int World_Save(WORLD* world) {
 	} while(stream.avail_out == 0);
 
 	File_Close(fp);
+	File_Rename(tmpname, world->name);
 	return true;
 }
 

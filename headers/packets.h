@@ -28,6 +28,7 @@ void Packet_WriteKick(CLIENT* cl, const char* reason);
 void Packet_WriteSpawn(CLIENT* client, CLIENT* other);
 void Packet_WriteDespawn(CLIENT* client, CLIENT* other);
 void Packet_WriteHandshake(CLIENT* cl, const char* name, const char* motd);
+void Packet_WriteUpdateType(CLIENT* cl);
 void Packet_WriteLvlInit(CLIENT* client);
 void Packet_WriteLvlFin(CLIENT* client);
 void Packet_WritePosAndOrient(CLIENT* client, CLIENT* other);
