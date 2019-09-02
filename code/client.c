@@ -182,7 +182,8 @@ char* Client_GetAppName(CLIENT* client) {
 	return client->cpeData->appName;
 }
 
-bool Client_CheckAuth(CLIENT* client) { //TODO: ClassiCube auth
+//TODO: ClassiCube auth and saved playerdata reading
+bool Client_CheckAuth(CLIENT* client) {
 	return true;
 }
 

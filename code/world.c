@@ -167,8 +167,7 @@ int World_Save(WORLD* world) {
 	} while(stream.avail_out == 0);
 
 	File_Close(fp);
-	File_Rename(tmpname, world->name);
-	return true;
+	return File_Rename(tmpname, world->name);
 }
 
 int World_Load(WORLD* world) {
