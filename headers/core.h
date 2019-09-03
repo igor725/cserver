@@ -45,6 +45,7 @@ typedef uchar          ClientID;
 #include <stdio.h>
 #include "platform.h"
 #include "error.h"
+#include "block.h"
 #include "str.h"
 #include "log.h"
 
@@ -56,14 +57,16 @@ typedef uchar          ClientID;
 #define DEFAULT_NAME "Server name"
 #define DEFAULT_MOTD "Server MOTD"
 
-#define CPE_CHAT      0
-#define CPE_STATUS1   1
-#define CPE_STATUS2   2
-#define CPE_STATUS3   3
-#define CPE_BRIGHT1   11
-#define CPE_BRIGHT2   12
-#define CPE_BRIGHT3   13
-#define CPE_ANNOUNCE  100
+enum messageTypes {
+	CPE_CHAT = 0,
+	CPE_STATUS1,
+	CPE_STATUS2,
+	CPE_STATUS3,
+	CPE_BRIGHT1 = 11,
+	CPE_BRIGHT2,
+	CPE_BRIGHT3,
+	CPE_ANNOUNCE = 100
+};
 
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
 

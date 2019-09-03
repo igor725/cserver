@@ -3,7 +3,6 @@
 #include "cpe.h"
 #include "packets.h"
 #include "event.h"
-#include "block.h"
 
 void CPE_RegisterExtension(const char* name, int version) {
 	EXT* tmp = (EXT*)Memory_Alloc(1, sizeof(EXT));

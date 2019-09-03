@@ -38,9 +38,9 @@ if(lua_isfunction(plugin->state, -1)) { \
 lua_pcall(plugin->state, argc, out, -2 - argc) \
 
 #define LuaCallback_End(plugin) \
-	} else { \
-		lua_pop(plugin->state, 1); \
-	} \
+} else { \
+	lua_pop(plugin->state, 2); \
+} \
 
 #define CallLuaVoid(plugin, func) \
 LuaCallback_Start(plugin, func); \
@@ -142,6 +142,12 @@ static int lclient_get(lua_State* L) {
 	return 1;
 }
 
+static int lclient_isop(lua_State* L) {
+	CLIENT* client = checkClient(L, 1);
+	lua_pushboolean(L, Client_GetType(client));
+	return 1;
+}
+
 static int lclient_kick(lua_State* L) {
 	CLIENT* client = checkClient(L, 1);
 	const char* reason = luaL_checkstring(L, 2);
@@ -157,6 +163,12 @@ static int lclient_getname(lua_State* L) {
 	return 1;
 }
 
+static int lclient_getappname(lua_State* L) {
+	CLIENT* client = checkClient(L, 1);
+	lua_pushstring(L, Client_GetAppName(client));
+	return 1;
+}
+
 static int lclient_sethotbar(lua_State* L) {
 	CLIENT* client = checkClient(L, 1);
 	Order pos = (Order)luaL_checkint(L, 2);
@@ -166,20 +178,28 @@ static int lclient_sethotbar(lua_State* L) {
 	return 1;
 }
 
+static int lclient_sendmessage(lua_State* L) {
+	CLIENT* client = checkClient(L, 1);
+	MessageType t = (MessageType)luaL_checkint(L, 2);
+	const char* msg = luaL_checkstring(L, 3);
+	Packet_WriteChat(client, t, msg);
+	return 0;
+}
+
 static const luaL_Reg client_methods[] = {
 	{"get", lclient_get},
+	{"isop", lclient_isop},
 	{"getname", lclient_getname},
+	{"getappname", lclient_getappname},
 	{"sethotbar", lclient_sethotbar},
+	{"sendmessage", lclient_sendmessage},
 	{"kick", lclient_kick},
 	{NULL, NULL}
 };
 
 static int lclient_tostring(lua_State* L) {
 	CLIENT* client = toClient(L, 1);
-	if(!client->playerData)
-		lua_pushstring(L, "unconnected");
-	else
-		lua_pushstring(L, client->playerData->name);
+	lua_pushstring(L, Client_GetName(client));
 	return 1;
 }
 

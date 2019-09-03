@@ -176,7 +176,14 @@ bool Client_IsSupportExt(CLIENT* client, const char* extName) {
 	return false;
 }
 
-char* Client_GetAppName(CLIENT* client) {
+const char* Client_GetName(CLIENT* client) {
+	if(!client->playerData)
+		return "unconnected";
+	else
+		return client->playerData->name;
+}
+
+const char* Client_GetAppName(CLIENT* client) {
 	if(!client->cpeData)
 		return "vanilla";
 	return client->cpeData->appName;
@@ -203,6 +210,7 @@ void Client_SetType(CLIENT* client, bool isOP) {
 }
 
 bool Client_SetHotbar(CLIENT* client, Order pos, BlockID block) {
+	if(!Block_IsValid(block) || pos > 8) return false;
 	if(Client_IsSupportExt(client, "SetHotbar")) {
 		CPEPacket_WriteSetHotBar(client, pos, block);
 		return true;
