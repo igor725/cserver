@@ -372,14 +372,15 @@ size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp) {
 	return count;
 }
 
-bool File_Write(const void* ptr, size_t size, size_t count, FILE* fp) {
+size_t File_Write(const void* ptr, size_t size, size_t count, FILE* fp) {
 	if(!fp) {
 		Error_Set(ET_SYS, EBADF, false);
-		return false;
+		return 0;
 	}
-	if(count != fwrite(ptr, size, count, fp)) {
+	size_t wr = fwrite(ptr, size, count, fp);
+	if(count != wr) {
 		Error_Set(ET_SYS, errno, false);
-		return false;
+		return wr;
 	}
 	return true;
 }
