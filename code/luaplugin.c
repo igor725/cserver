@@ -6,6 +6,20 @@
 #include "packets.h"
 #include "event.h"
 
+static void* checkudata(lua_State* L, int index, const char* tname) {
+	void* ptr = lua_touserdata(L, index);
+	if(ptr) {
+		if(lua_getmetatable(L, index)) {
+			luaL_getmetatable(L, tname);
+			if(!lua_rawequal(L, -1, -2))
+				luaL_typerror(L, index, tname);
+			lua_pop(L, 2);
+			return ptr;
+		}
+	}
+	return NULL;
+}
+
 static int LuaError(lua_State* L) {
 	PLUGIN* plugin = LuaPlugin_FindByState(L);
 	if(plugin)
@@ -89,7 +103,7 @@ static const luaL_Reg loglib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_log(lua_State* L) {
+static int luaopen_log(lua_State* L) {
 	luaL_register(L, lua_tostring(L, -1), loglib);
 	return 1;
 }
@@ -107,15 +121,7 @@ static CLIENT* toClient(lua_State* L, int index) {
 }
 
 static CLIENT* checkClient(lua_State* L, int index) {
-	lua_getmetatable(L, index);
-	luaL_getmetatable(L, LUA_TCLIENT);
-	if(lua_rawequal(L, -1, -2)) {
-		CLIENT* c = toClient(L, index);
-		lua_pop(L, 2);
-		return c;
-	}
-	luaL_typerror(L, index, LUA_TCLIENT);
-	return NULL;
+	return checkudata(L, index, LUA_TCLIENT);
 }
 
 static void pushClient(lua_State* L, CLIENT* client) {
@@ -182,7 +188,7 @@ static const luaL_Reg client_meta[] = {
 	{NULL, NULL}
 };
 
-int luaopen_client(lua_State* L) {
+static int luaopen_client(lua_State* L) {
 	luaL_openlib(L, lua_tostring(L, -1), client_methods, 0);
 
 	luaL_newmetatable(L, LUA_TCLIENT);
@@ -415,7 +421,7 @@ static const luaL_Reg cfg_meta[] = {
 	{NULL, NULL}
 };
 
-int luaopen_config(lua_State* L) {
+static int luaopen_config(lua_State* L) {
 	luaL_openlib(L, lua_tostring(L, -1), cfg_methods, 0);
 
 	luaL_newmetatable(L, LUA_TCFGSTORE);
@@ -440,7 +446,7 @@ static const luaL_Reg packetslib[] = {
 	{NULL, NULL}
 };
 
-int luaopen_packets(lua_State* L) {
+static int luaopen_packets(lua_State* L) {
 	luaL_register(L, lua_tostring(L, -1), packetslib);
 	return 1;
 }
@@ -457,7 +463,7 @@ static WORLD* toWorld(lua_State* L, int index) {
 	return world;
 }
 
-void pushWorld(lua_State* L, WORLD* world) {
+static void pushWorld(lua_State* L, WORLD* world) {
 	lua_pushlightuserdata(L, world);
 	luaL_getmetatable(L, LUA_TWORLD);
 	lua_setmetatable(L, -2);
@@ -518,7 +524,7 @@ static const luaL_Reg world_meta[] = {
 	{NULL, NULL}
 };
 
-int luaopen_world(lua_State* L) {
+static int luaopen_world(lua_State* L) {
 	luaL_openlib(L, lua_tostring(L, -1), world_methods, 0);
 
 	luaL_newmetatable(L, LUA_TWORLD);
@@ -689,6 +695,19 @@ static bool Cmd_Plugins(const char* args, CLIENT* caller, char* out) {
 			} else {
 				String_Copy(out, CMD_MAX_OUT, "Invalud argument #2");
 			}
+		} else if(String_CaselessCompare(arg, "reload")) {
+			if(String_GetArgument(args, arg, 64, 1)) {
+				PLUGIN* plugin = LuaPlugin_FindByName(arg);
+				if(!plugin) {
+					String_Copy(out, CMD_MAX_OUT, "This plugin is not loaded");
+				} else {
+					String_Copy(out, CMD_MAX_OUT, "Plugin reloading queued");
+					plugin->needReload = true;
+					plugin->loaded = false;
+				}
+			} else {
+				String_Copy(out, CMD_MAX_OUT, "Invalud argument #2");
+			}
 		}
 	} else {
 		String_Copy(out, CMD_MAX_OUT, "No arguments given :(");
@@ -820,8 +839,6 @@ void LuaPlugin_Start() {
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, elp_onhsdone);
 	Event_RegisterVoid(EVT_ONSPAWN, elp_onspawn);
 	Event_RegisterVoid(EVT_ONDESPAWN, elp_ondespawn);
-	// Какого-то хуя вызывает краш, позже разобраться что не так с
-	// этим эвентом
 	Event_RegisterVoid(EVT_ONHELDBLOCKCHNG, elp_onheldblockchange);
 
 	dirIter pIter = {0};
@@ -839,7 +856,7 @@ PLUGIN* LuaPlugin_FindByName(const char* name) {
 	PLUGIN* ptr = headPlugin;
 
 	while(ptr) {
-		if(String_Compare(name, ptr->name)) {
+		if(ptr->loaded && String_Compare(name, ptr->name)) {
 			return ptr;
 		}
 		ptr = ptr->next;
@@ -880,6 +897,9 @@ void LuaPlugin_Tick() {
 		} else {
 			LuaPlugin_Close(ptr);
 			LuaPlugin_Remove(ptr);
+			if(ptr->needReload) {
+				LuaPlugin_Load(ptr->name);
+			}
 			LuaPlugin_Free(ptr);
 		}
 		ptr = ptr->next;

@@ -19,6 +19,7 @@ typedef struct luaPlugin {
 	const char* name;
 	lua_State* state;
 	bool loaded;
+	bool needReload;
 	struct luaPlugin* prev;
 	struct luaPlugin* next;
 } PLUGIN;
