@@ -353,8 +353,9 @@ bool File_Rename(const char* path, const char* newpath) {
 
 FILE* File_Open(const char* path, const char* mode) {
 	FILE* fp;
-	if((fp = fopen(path, mode)) == NULL) {
+	if(!(fp = fopen(path, mode))) {
 		Error_Set(ET_SYS, errno, false);
+		return NULL;
 	}
 	return fp;
 }
