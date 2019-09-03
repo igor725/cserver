@@ -34,7 +34,7 @@ bool Config_Load(CFGSTORE* store) {
 		} while(ch != '=' && !feof(fp));
 
 		if(feof(fp)) {
-			Error_Set(ET_SERVER, EC_CFGEND);
+			Error_Set(ET_SERVER, EC_CFGEND, false);
 			return false;
 		}
 
@@ -49,7 +49,7 @@ bool Config_Load(CFGSTORE* store) {
 		}
 
 		if(count < 1) {
-			Error_Set(ET_SERVER, EC_CFGEND);
+			Error_Set(ET_SERVER, EC_CFGEND, false);
 			File_Close(fp);
 			return false;
 		}
@@ -77,7 +77,7 @@ bool Config_Load(CFGSTORE* store) {
 				Config_SetBool(store, hkey, String_Compare(value, "True"));
 				break;
 			default:
-				Error_Set(ET_SERVER, EC_CFGTYPE);
+				Error_Set(ET_SERVER, EC_CFGTYPE, false);
 				File_Close(fp);
 				return false;
 		}

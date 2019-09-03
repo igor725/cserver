@@ -6,7 +6,7 @@ typedef void* TARG;
 typedef void* THREAD;
 typedef uint THRET;
 typedef THRET(*TFUNC)(TARG);
-
+typedef CRITICAL_SECTION MUTEX;
 typedef struct {
   char fmt[256];
   const char* cfile;
@@ -19,6 +19,7 @@ typedef struct {
 typedef pthread_t THREAD;
 typedef void*(*TFUNC)(TARG);
 typedef void* THRET;
+typedef pthread_mutex_t MUTEX;
 
 typedef struct {
   char fmt[256];
@@ -54,7 +55,7 @@ bool Iter_Close(dirIter* iter);
 bool File_Rename(const char* path, const char* newpath);
 FILE* File_Open(const char* path, const char* mode);
 size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp);
-bool File_Write(const void* ptr, size_t size, size_t count, FILE* fp);
+size_t File_Write(const void* ptr, size_t size, size_t count, FILE* fp);
 bool File_Error(FILE* fp);
 bool File_WriteFormat(FILE* fp, const char* fmt, ...);
 bool File_Close(FILE* fp);
@@ -77,8 +78,22 @@ bool Thread_SetName(const char* thName);
 void Thread_Close(THREAD th);
 
 /*
+	MUTEX FUNCTIONS
+*/
+
+MUTEX* Mutex_Create();
+void Mutex_Free(MUTEX* handle);
+void Mutex_Lock(MUTEX* handle);
+void Mutex_Unlock(MUTEX* handle);
+
+/*
 	TIME FUNCTIONS
 */
 
 void Time_Format(char* buf, size_t len);
+
+/*
+	PROCESS FUNCTIONS
+*/
+void Process_Exit(uint ecode);
 #endif

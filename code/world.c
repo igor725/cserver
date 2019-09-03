@@ -78,7 +78,7 @@ bool World_ReadInfo(WORLD* world, FILE* fp) {
 		return false;
 
 	if(WORLD_MAGIC != magic) {
-		Error_Set(ET_SERVER, EC_MAGIC);
+		Error_Set(ET_SERVER, EC_MAGIC, false);
 		return false;
 	}
 
@@ -99,7 +99,7 @@ bool World_ReadInfo(WORLD* world, FILE* fp) {
 			case DT_END:
 				return true;
 			default:
-				Error_Set(ET_SERVER, EC_WIUNKID);
+				Error_Set(ET_SERVER, EC_WIUNKID, false);
 				return false;
 		}
 	}
@@ -125,7 +125,7 @@ int World_Save(WORLD* world) {
 	int ret;
 
 	if((ret = deflateInit(&stream, 4)) != Z_OK) {
-		Error_Set(ET_ZLIB, ret);
+		Error_Set(ET_ZLIB, ret, false);
 		return false;
 	}
 
@@ -137,7 +137,7 @@ int World_Save(WORLD* world) {
 		stream.avail_out = 1024;
 
 		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
-			Error_Set(ET_ZLIB, ret);
+			Error_Set(ET_ZLIB, ret, false);
 			return false;
 		}
 
@@ -168,7 +168,7 @@ int World_Load(WORLD* world) {
 	int ret;
 
 	if((ret = inflateInit(&stream)) != Z_OK) {
-		Error_Set(ET_ZLIB, ret);
+		Error_Set(ET_ZLIB, ret, false);
 		return false;
 	}
 
@@ -189,7 +189,7 @@ int World_Load(WORLD* world) {
 		do {
 			stream.avail_out = 1024;
 			if((ret = inflate(&stream, Z_NO_FLUSH)) == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
-				Error_Set(ET_ZLIB, ret);
+				Error_Set(ET_ZLIB, ret, false);
 				inflateEnd(&stream);
 				return false;
 			}

@@ -1,6 +1,5 @@
 #ifdef LUA_ENABLED
 #include "core.h"
-#include "log.h"
 #include "config.h"
 #include "luaplugin.h"
 #include "command.h"
@@ -154,9 +153,11 @@ static int lclient_getname(lua_State* L) {
 
 static int lclient_sethotbar(lua_State* L) {
 	CLIENT* client = checkClient(L, 1);
-	Order pos = luaL_checkint(L, 2);
-	BlockID block = luaL_checkint(L, 3);
+	Order pos = (Order)luaL_checkint(L, 2);
+	BlockID block = (BlockID)luaL_checkint(L, 3);
 
+	lua_pushboolean(L, Client_SetHotbar(client, pos, block));
+	return 1;
 }
 
 static const luaL_Reg client_methods[] = {

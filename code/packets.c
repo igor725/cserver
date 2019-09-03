@@ -1,5 +1,4 @@
 #include "core.h"
-#include "log.h"
 #include "block.h"
 #include "world.h"
 #include "client.h"
@@ -280,7 +279,7 @@ bool Handler_PosAndOrient(CLIENT* client, char* data) {
 		if(client->cpeData->heldBlock != *data) {
 			BlockID new = *data;
 			BlockID curr = client->cpeData->heldBlock;
-			Event_OnHeldBlockChange(client, &new, &curr);
+			Event_OnHeldBlockChange(client, &curr, &new);
 			client->cpeData->heldBlock = *data;
 		}
 	}

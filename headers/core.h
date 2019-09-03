@@ -46,6 +46,7 @@ typedef uchar          ClientID;
 #include "platform.h"
 #include "error.h"
 #include "str.h"
+#include "log.h"
 
 #define SOFTWARE_NAME "C-Server"
 #define SOFTWARE_VERSION "0.1"

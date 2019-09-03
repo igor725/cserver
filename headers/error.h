@@ -9,7 +9,12 @@ enum ErrorTypes {
 };
 
 #define LNUM ": "
-#define Error_Set(etype, ecode) (Error_SetCode(__FILE__, __LINE__, __func__, etype, ecode))
+#define Error_Set(etype, ecode, abort) \
+Error_SetCode(__FILE__, __LINE__, __func__, etype, ecode); \
+if(abort) { \
+	Log_FormattedError(); \
+	Process_Exit(ecode); \
+} \
 
 int   Error_Type;
 uint  Error_Code;

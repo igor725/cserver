@@ -1,5 +1,4 @@
 #include "core.h"
-#include "log.h"
 
 int Log_Level = 3;
 const char* const Log_Levels[] = {
