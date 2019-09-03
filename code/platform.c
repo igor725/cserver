@@ -345,8 +345,9 @@ bool Iter_Close(dirIter* iter) {
 
 bool File_Rename(const char* path, const char* newpath) {
 	int ret = rename(path, newpath);
-	if(ret != 0)
+	if(ret != 0) {
 		Error_Set(ET_SYS, errno, false);
+	}
 	return ret == 0;
 }
 
