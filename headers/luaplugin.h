@@ -29,7 +29,6 @@ void LuaPLugin_Unload(PLUGIN* plugin);
 void LuaPlugin_Close(PLUGIN* plugin);
 void LuaPlugin_Free(PLUGIN* plugin);
 PLUGIN* LuaPlugin_FindByName(const char* name);
-PLUGIN* LuaPlugin_FindByState(lua_State* L);
 void LuaPlugin_Start();
 void LuaPlugin_Tick();
 void LuaPlugin_Stop();

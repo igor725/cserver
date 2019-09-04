@@ -26,13 +26,87 @@ static void* checkudata(lua_State* L, int index, const char* tname) {
 	return ptr;
 }
 
+static PLUGIN* FindByState(lua_State* L) {
+	PLUGIN* ptr = headPlugin;
+
+	while(ptr) {
+		if(ptr->state == L) {
+			return ptr;
+		}
+		ptr = ptr->next;
+	}
+
+	return (PLUGIN*)NULL;
+}
+
 static int LuaError(lua_State* L) {
-	PLUGIN* plugin = LuaPlugin_FindByState(L);
+	PLUGIN* plugin = FindByState(L);
 	if(plugin)
 		Log_Error("In plugin \"%s\": %s", plugin->name, lua_tostring(L, -1));
 	else
 		Log_Error(lua_tostring(L, -1));
 	return 0;
+}
+
+/*
+	Push/pull/check functions
+*/
+
+#define LUA_TWORLD "classicWorld"
+#define LUA_TCFGSTORE "cfgStore"
+#define LUA_TCLIENT "client"
+
+static WORLD* toWorld(lua_State* L, int index) {
+	WORLD* world = lua_touserdata(L, index);
+	if(!world) luaL_typerror(L, index, LUA_TWORLD);
+	return world;
+}
+
+static WORLD* checkWorld(lua_State* L, int index) {
+	return checkudata(L, index, LUA_TWORLD);
+}
+
+static void pushWorld(lua_State* L, WORLD* world) {
+	lua_pushlightuserdata(L, world);
+	luaL_getmetatable(L, LUA_TWORLD);
+	lua_setmetatable(L, -2);
+}
+
+static CLIENT* toClient(lua_State* L, int index) {
+	CLIENT* client = lua_touserdata(L, index);
+	if(!client) luaL_typerror(L, index, LUA_TCLIENT);
+	return client;
+}
+
+static CLIENT* checkClient(lua_State* L, int index) {
+	return checkudata(L, index, LUA_TCLIENT);
+}
+
+static void pushClient(lua_State* L, CLIENT* client) {
+	lua_pushlightuserdata(L, client);
+	luaL_getmetatable(L, LUA_TCLIENT);
+	lua_setmetatable(L, -2);
+}
+
+static CFGSTORE* toStore(lua_State* L, int index) {
+	CFGSTORE* store = lua_touserdata(L, index);
+	if(!store) luaL_typerror(L, index, LUA_TCFGSTORE);
+	return store;
+}
+
+static CFGSTORE* checkStore(lua_State* L, int index) {
+	CFGSTORE* store;
+	luaL_checktype(L, index, LUA_TUSERDATA);
+	store = luaL_checkudata(L, index, LUA_TCFGSTORE);
+	if(!store) luaL_typerror(L, index, LUA_TCFGSTORE);
+	return store;
+}
+
+static CFGSTORE* pushStore(lua_State* L) {
+	CFGSTORE* store = lua_newuserdata(L, sizeof(CFGSTORE));
+	luaL_getmetatable(L, LUA_TCFGSTORE);
+	lua_setmetatable(L, -2);
+	return store;
 }
 
 #define LuaCallback_Start(plugin, func) \
@@ -54,7 +128,7 @@ LuaCallback_Call(plugin, 0, 0); \
 LuaCallback_End(plugin); \
 
 #define GetLuaPlugin \
-PLUGIN* plugin = LuaPlugin_FindByState(L); \
+PLUGIN* plugin = FindByState(L); \
 if(!plugin) \
 	return 0; \
 
@@ -117,24 +191,6 @@ static int luaopen_log(lua_State* L) {
 /*
 	Lua world library
 */
-
-#define LUA_TWORLD "classicWorld"
-
-static WORLD* toWorld(lua_State* L, int index) {
-	WORLD* world = lua_touserdata(L, index);
-	if(!world) luaL_typerror(L, index, LUA_TWORLD);
-	return world;
-}
-
-static WORLD* checkWorld(lua_State* L, int index) {
-	return checkudata(L, index, LUA_TWORLD);
-}
-
-static void pushWorld(lua_State* L, WORLD* world) {
-	lua_pushlightuserdata(L, world);
-	luaL_getmetatable(L, LUA_TWORLD);
-	lua_setmetatable(L, -2);
-}
 
 static int lworld_get(lua_State* L) {
 	const char* name = luaL_checkstring(L, 1);
@@ -211,24 +267,6 @@ static int luaopen_world(lua_State* L) {
 /*
 	Lua client library
 */
-
-#define LUA_TCLIENT "client"
-
-static CLIENT* toClient(lua_State* L, int index) {
-	CLIENT* client = lua_touserdata(L, index);
-	if(!client) luaL_typerror(L, index, LUA_TCLIENT);
-	return client;
-}
-
-static CLIENT* checkClient(lua_State* L, int index) {
-	return checkudata(L, index, LUA_TCLIENT);
-}
-
-static void pushClient(lua_State* L, CLIENT* client) {
-	lua_pushlightuserdata(L, client);
-	luaL_getmetatable(L, LUA_TCLIENT);
-	lua_setmetatable(L, -2);
-}
 
 static int lclient_get(lua_State* L) {
 	const char* name = luaL_checkstring(L, 1);
@@ -376,29 +414,6 @@ static int luaopen_client(lua_State* L) {
 /*
 	Lua config library
 */
-
-#define LUA_TCFGSTORE "cfgStore"
-
-static CFGSTORE* toStore(lua_State* L, int index) {
-	CFGSTORE* store = lua_touserdata(L, index);
-	if(!store) luaL_typerror(L, index, LUA_TCFGSTORE);
-	return store;
-}
-
-static CFGSTORE* checkStore(lua_State* L, int index) {
-	CFGSTORE* store;
-	luaL_checktype(L, index, LUA_TUSERDATA);
-	store = luaL_checkudata(L, index, LUA_TCFGSTORE);
-	if(!store) luaL_typerror(L, index, LUA_TCFGSTORE);
-	return store;
-}
-
-static CFGSTORE* pushStore(lua_State* L) {
-	CFGSTORE* store = lua_newuserdata(L, sizeof(CFGSTORE));
-	luaL_getmetatable(L, LUA_TCFGSTORE);
-	lua_setmetatable(L, -2);
-	return store;
-}
 
 static int lconfig_newStore(lua_State* L) {
 	const char* filename = luaL_checkstring(L, 1);
@@ -638,7 +653,7 @@ static const luaL_Reg LuaPlugin_Libs[] = {
 */
 
 static int lunload(lua_State* L) {
-	PLUGIN* pl = LuaPlugin_FindByState(L);
+	PLUGIN* pl = FindByState(L);
 	if(pl)
 		pl->loaded = false;
 	return 0;
@@ -935,19 +950,6 @@ PLUGIN* LuaPlugin_FindByName(const char* name) {
 
 	while(ptr) {
 		if(ptr->loaded && String_Compare(name, ptr->name)) {
-			return ptr;
-		}
-		ptr = ptr->next;
-	}
-
-	return (PLUGIN*)NULL;
-}
-
-PLUGIN* LuaPlugin_FindByState(lua_State* L) {
-	PLUGIN* ptr = headPlugin;
-
-	while(ptr) {
-		if(ptr->state == L) {
 			return ptr;
 		}
 		ptr = ptr->next;
