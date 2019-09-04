@@ -38,7 +38,7 @@ typedef struct onHeldBlockChange {
 
 typedef struct onBlockPlace {
 	CLIENT* client;
-	ushort* x, y, z;
+	ushortp x, y, z;
 	BlockID* id;
 } onBlockPlace_t;
 
@@ -49,7 +49,7 @@ typedef struct onPlayerClick {
 	short* yaw;
 	short* pitch;
 	ClientID* tgID;
-	ushort* x, y, z;
+	ushortp x, y, z;
 	char face;
 } onPlayerClick_t;
 

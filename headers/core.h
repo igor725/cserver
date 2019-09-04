@@ -34,6 +34,7 @@ typedef int SOCKET;
 #define false 0
 
 typedef unsigned short ushort;
+typedef ushort*        ushortp;
 typedef unsigned char  uchar;
 typedef unsigned int   uint;
 typedef int            bool;
