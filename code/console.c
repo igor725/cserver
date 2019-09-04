@@ -16,8 +16,8 @@ int Console_ReadLine(char* buf, int buflen) {
 			}
 		}
 	}
+	
 	buf[len] = 0;
-
 	return len;
 }
 

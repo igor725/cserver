@@ -20,7 +20,7 @@ void Generator_Flat(WORLD* world) {
 		else
 			data[i] = 2;
 	}
-	
+
 	wi->spawnVec->x = (float)dx / 2;
 	wi->spawnVec->y = (float)dy / 2;
 	wi->spawnVec->z = (float)dz / 2;

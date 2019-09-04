@@ -148,11 +148,11 @@ static int lclient_isop(lua_State* L) {
 	return 1;
 }
 
-static int lclient_kick(lua_State* L) {
+static int lclient_issuportext(lua_State* L) {
 	CLIENT* client = checkClient(L, 1);
-	const char* reason = luaL_checkstring(L, 2);
-	Client_Kick(client, reason);
-	return 0;
+	const char* ext = luaL_checkstring(L, 2);
+	lua_pushboolean(L, Client_IsSupportExt(client, ext));
+	return 1;
 }
 
 static int lclient_getname(lua_State* L) {
@@ -167,6 +167,13 @@ static int lclient_getappname(lua_State* L) {
 	CLIENT* client = checkClient(L, 1);
 	lua_pushstring(L, Client_GetAppName(client));
 	return 1;
+}
+
+static int lclient_settype(lua_State* L) {
+	CLIENT* client = checkClient(L, 1);
+	bool isOP = lua_toboolean(L, 2);
+	lua_pushboolean(L, Client_SetType(client, isOP));
+	return 0;
 }
 
 static int lclient_sethotbar(lua_State* L) {
@@ -186,13 +193,46 @@ static int lclient_sendmessage(lua_State* L) {
 	return 0;
 }
 
+static int lclient_disconnect(lua_State* L) {
+	CLIENT* client = checkClient(L, 1);
+	Client_Disconnect(client);
+	return 0;
+}
+
+static int lclient_despawn(lua_State* L) {
+	CLIENT* client = checkClient(L, 1);
+	lua_pushboolean(L, Client_Despawn(client));
+	return 1;
+}
+
+static int lclient_spawn(lua_State* L) {
+	CLIENT* client = checkClient(L, 1);
+	lua_pushboolean(L, Client_Spawn(client));
+	return 1;
+}
+
+static int lclient_kick(lua_State* L) {
+	CLIENT* client = checkClient(L, 1);
+	const char* reason = luaL_checkstring(L, 2);
+	Client_Kick(client, reason);
+	return 0;
+}
+
 static const luaL_Reg client_methods[] = {
 	{"get", lclient_get},
-	{"isop", lclient_isop},
 	{"getname", lclient_getname},
 	{"getappname", lclient_getappname},
+
+	{"isop", lclient_isop},
+	{"issupportext", lclient_issuportext},
+
+	{"settype", lclient_settype},
 	{"sethotbar", lclient_sethotbar},
+
 	{"sendmessage", lclient_sendmessage},
+	{"disconnect", lclient_disconnect},
+	{"despawn", lclient_despawn},
+	{"spawn", lclient_spawn},
 	{"kick", lclient_kick},
 	{NULL, NULL}
 };

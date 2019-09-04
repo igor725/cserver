@@ -51,7 +51,7 @@ typedef struct client {
 void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort z);
 bool Client_IsSupportExt(CLIENT* client, const char* packetName);
 void Client_SetPos(CLIENT* client, VECTOR* vec, ANGLE* ang);
-void Client_SetType(CLIENT* client, bool isOP);
+bool Client_SetType(CLIENT* client, bool isOP);
 bool Client_GetType(CLIENT* client);
 const char* Client_GetName(CLIENT* client);
 const char* Client_GetAppName(CLIENT* client);
@@ -67,6 +67,7 @@ bool Client_CheckAuth(CLIENT* client);
 THRET Client_ThreadProc(TARG lpParam);
 void Client_Destroy(CLIENT* client);
 bool Client_Spawn(CLIENT* client);
+bool Client_Despawn(CLIENT* client);
 void Client_Tick(CLIENT* client);
 ClientID Client_FindFreeID();
 void Client_Init();

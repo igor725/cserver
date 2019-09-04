@@ -17,7 +17,6 @@ static bool CHandler_OP(const char* args, CLIENT* caller, char* out) {
 	char arg[64];
 	if(String_GetArgument(args, arg, 64, 0)) {
 		CLIENT* tg = Client_FindByName(arg);
-
 		if(tg) {
 			bool newtype = !Client_GetType(tg);
 			const char* name = tg->playerData->name;
@@ -27,7 +26,6 @@ static bool CHandler_OP(const char* args, CLIENT* caller, char* out) {
 			String_Copy(out, CMD_MAX_OUT, "Player not found");
 		}
 	}
-
 	return true;
 }
 
@@ -44,8 +42,7 @@ static bool CHandler_Test(const char* args, CLIENT* caller, char* out) {
 }
 
 static bool CHandler_Announce(const char* args, CLIENT* caller, char* out) {
-	if(caller == NULL)
-		caller = Broadcast;
+	if(!caller) caller = Broadcast;
 	Packet_WriteChat(caller, CPE_ANNOUNCE, !args ? "Test announcement" : args);
 	return false;
 }
@@ -55,6 +52,11 @@ void Command_RegisterDefault() {
 	Command_Register("stop", &CHandler_Stop, true);
 	Command_Register("test", &CHandler_Test, false);
 	Command_Register("announce", &CHandler_Announce, false);
+}
+
+static bool checkPermissions(COMMAND* cmd, CLIENT* client) {
+	if(!client) return true;
+	return cmd->onlyOP ? client->playerData->isOP : true;
 }
 
 bool Command_Handle(char* cmd, CLIENT* caller) {
@@ -74,9 +76,10 @@ bool Command_Handle(char* cmd, CLIENT* caller) {
 	}
 
 	COMMAND* tmp = headCommand;
+
 	while(tmp) {
 		if(String_CaselessCompare(tmp->name, cmd)) {
-			if(tmp->onlyOP && caller && !caller->playerData->isOP) {
+			if(!checkPermissions(tmp, caller)) {
 				Packet_WriteChat(caller, CPE_CHAT, "Access denied");
 				return true;
 			}
@@ -90,5 +93,6 @@ bool Command_Handle(char* cmd, CLIENT* caller) {
 		}
 		tmp = tmp->next;
 	}
+
 	return false;
 }

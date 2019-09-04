@@ -142,7 +142,6 @@ THRET Client_MapThreadProc(TARG lpParam) {
 	Packet_WriteLvlFin(client);
 	client->playerData->state = STATE_WLOADDONE;
 	Client_Spawn(client);
-
 	return 0;
 }
 
@@ -197,16 +196,18 @@ bool Client_CheckAuth(CLIENT* client) {
 void Client_SetPos(CLIENT* client, VECTOR* pos, ANGLE* ang) {
 	if(!client->playerData)
 		return;
+
 	Memory_Copy(client->playerData->position, pos, sizeof(VECTOR));
 	Memory_Copy(client->playerData->angle, ang, sizeof(ANGLE));
 }
 
-void Client_SetType(CLIENT* client, bool isOP) {
+bool Client_SetType(CLIENT* client, bool isOP) {
 	if(!client->playerData)
-		return;
+		return false;
 
 	client->playerData->isOP = isOP;
 	Packet_WriteUpdateType(client);
+	return true;
 }
 
 bool Client_SetHotbar(CLIENT* client, Order pos, BlockID block) {
