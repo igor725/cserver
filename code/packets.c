@@ -190,7 +190,7 @@ void Packet_WriteChat(CLIENT* client, MessageType type, const char* mesg) {
 
 void Packet_WriteUpdateType(CLIENT* client) {
 	PacketWriter_Start(client);
-	
+
 	*data = 0x0F;
 	*++data = client->playerData->isOP ? 0x64 : 0x00;
 	Client_Send(client, 2);

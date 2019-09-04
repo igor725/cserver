@@ -28,7 +28,7 @@ static const struct extReg serverExtensions[] = {
 	{"SetHotbar", 1},
 	{"HeldBlock", 1},
 	{"TwoWayPing", 1},
-	// {"PlayerClick", 1},
+	{"PlayerClick", 1},
 	{"ChangeModel", 1},
 	{"MessageTypes", 1},
 	{"ClickDistance", 1},
@@ -158,9 +158,12 @@ void CPEPacket_WriteBlockPerm(CLIENT* client, BlockID id, bool allowPlace, bool 
 	PacketWriter_End(client);
 }
 
+#define ValidateClientState(client, st) \
+if(!client->playerData || !client->cpeData || client->playerData->state != st) \
+	return false; \
+
 bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
-	if(!client->playerData || !client->cpeData || client->playerData->state != STATE_MOTD)
-		return false;
+	ValidateClientState(client, STATE_MOTD);
 
 	ReadString(data, &client->cpeData->appName); data += 63;
 	client->cpeData->_extCount = ntohs(*(ushort*)++data);
@@ -168,8 +171,7 @@ bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
 }
 
 bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
-	if(!client->playerData || !client->cpeData || client->playerData->state != STATE_MOTD)
-		return false;
+	ValidateClientState(client, STATE_MOTD);
 
 	EXT* tmp = (EXT*)Memory_Alloc(1, sizeof(EXT));
 	ReadString(data, (void*)&tmp->name);data += 63;
@@ -193,17 +195,6 @@ bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
 
 bool CPEHandler_TwoWayPing(CLIENT* client, char* data) {
 	if(*data == 0) {
-		/*
-			Возможно ли тут перемешивание отправляемых данных клиенту?
-			По факту функция вызывается из потока с данными от клиента,
-			а не из основного, соответственно, если они одновременно
-			будут отправлять пакет клиенту, то произойдёт троллинг.
-			Но вызвать повреждение подготовленных пакетов у меня
-			не получилось ¯\_(ツ)_/¯
-
-			P.S. Стоит всё же предостеречься и реализовать позже
-			что-то типа мьютексов.
-		*/
 		CPEPacket_WriteTwoWayPing(client, 0,* (ushort*)++data);
 		return true;
 	} else if(*data == 1) {
@@ -214,8 +205,24 @@ bool CPEHandler_TwoWayPing(CLIENT* client, char* data) {
 }
 
 bool CPEHandler_PlayerClick(CLIENT* client, char* data) {
-	if(!client->playerData || !client->cpeData || client->playerData->state != STATE_INGAME)
-		return false;
-
+	ValidateClientState(client, STATE_INGAME);
+	char button = *data;
+	char action = *++data;
+	short yaw = *(ushort*)++data; ++data;
+	short pitch = *(ushort*)++data; ++data;
+	ClientID tgID = *++data;
+	ushort tgBlockX = *(ushort*)++data; ++data;
+	ushort tgBlockY = *(ushort*)++data; ++data;
+	ushort tgBlockZ = *(ushort*)++data; ++data;
+	char tgBlockFace = *++data;
+	Event_OnPlayerClick(
+		client, &button,
+		&action, &yaw,
+		&pitch, &tgID,
+		&tgBlockX,
+		&tgBlockY,
+		&tgBlockZ,
+		&tgBlockFace
+	);
 	return true;
 }

@@ -14,13 +14,14 @@ enum eventType {
 	EVT_ONHANDSHAKEDONE,
 	EVT_ONMESSAGE,
 	EVT_ONHELDBLOCKCHNG,
-	EVT_ONBLOCKPLACE
+	EVT_ONBLOCKPLACE,
+	EVT_ONPLAYERCLICK
 };
 
 #define EVT_RTVOID 0
 #define EVT_RTBOOL 1
 
-#define ETYPES     6
+#define ETYPES     7
 #define MAX_EVENTS 64
 
 typedef struct onMessage {
@@ -37,11 +38,20 @@ typedef struct onHeldBlockChange {
 
 typedef struct onBlockPlace {
 	CLIENT* client;
-	ushort* x;
-	ushort* y;
-	ushort* z;
+	ushort* x, y, z;
 	BlockID* id;
 } onBlockPlace_t;
+
+typedef struct onPlayerClick {
+	CLIENT* client;
+	char* button;
+	char* action;
+	short* yaw;
+	short* pitch;
+	ClientID* tgID;
+	ushort* x, y, z;
+	char face;
+} onPlayerClick_t;
 
 typedef struct event {
 	ReturnType rtype;
@@ -62,4 +72,5 @@ void Event_OnHandshakeDone(CLIENT* client);
 bool Event_OnMessage(CLIENT* client, char* message, MessageType* id);
 void Event_OnHeldBlockChange(CLIENT* client, BlockID* prev, BlockID* curr);
 bool Event_OnBlockPlace(CLIENT* client, ushort* x, ushort* y, ushort* z, BlockID* id);
+void Event_OnPlayerClick(CLIENT* client, char* button, char* action, short* yaw, short* pitch, ClientID* tgID, ushort* tgBlockX, ushort* tgBlockY, ushort* tgblockZ, char* tgBlockFace);
 #endif
