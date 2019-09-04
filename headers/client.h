@@ -43,6 +43,7 @@ typedef struct client {
 	char*       rdbuf;
 	char*       wrbuf;
 	ushort      bufpos;
+	MUTEX*      mutex;
 	THREAD      thread;
 	CPEDATA*    cpeData;
 	PLAYERDATA* playerData;

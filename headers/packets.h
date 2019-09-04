@@ -2,6 +2,13 @@
 #define PACKETS_H
 #include "cpe.h"
 
+#define PacketWriter_Start(client) \
+char* data = client->wrbuf; \
+Mutex_Lock(client->mutex); \
+
+#define PacketWriter_End(client) \
+Mutex_Unlock(client->mutex); \
+
 #define MODE_DESTROY 0x00
 #define MODE_PLACE   0x01
 

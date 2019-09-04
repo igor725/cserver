@@ -50,91 +50,112 @@ void Packet_RegisterCPEDefault() {
 }
 
 void CPEPacket_WriteInfo(CLIENT* client) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+
 	*data = 0x10;
 	WriteString(++data, SOFTWARE_NAME " " SOFTWARE_VERSION); data += 63;
 	*(ushort*)++data = htons(extensionsCount);
 	Client_Send(client, 67);
+
+	PacketWriter_End(client);
 }
 
 void CPEPacket_WriteExtEntry(CLIENT* client, EXT* ext) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+
 	*data = 0x11;
 	WriteString(++data, ext->name); data += 63;
 	*(uint*)++data = htonl(ext->version);
 	Client_Send(client, 69);
+
+	PacketWriter_End(client);
 }
 
 void CPEPAcket_WriteClickDistance(CLIENT* client, short dist) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+
 	*data = 0x12;
 	*(short*)++data = dist;
 	Client_Send(client, 3);
+
+	PacketWriter_End(client);
 }
 
 void CPEPacket_WriteInventoryOrder(CLIENT* client, Order order, BlockID block) {
-	if(!Block_IsValid(block))
-		return;
+	PacketWriter_Start(client);
 
-	char* data = client->wrbuf;
 	*data = 0x44;
 	*++data = order;
 	*++data = block;
 	Client_Send(client, 3);
+
+	PacketWriter_End(client);
 }
 
 void CPEPacket_WriteHoldThis(CLIENT* client, BlockID block, bool preventChange) {
-	if(!Block_IsValid(block))
-		return;
+	PacketWriter_Start(client);
 
-	char* data = client->wrbuf;
 	*data = 0x14;
 	*++data = block;
 	*++data = (char)preventChange;
 	Client_Send(client, 3);
+
+	PacketWriter_End(client);
 }
 
 void CPEPacket_WriteSetHotBar(CLIENT* client, Order order, BlockID block) {
-	if(!Block_IsValid(block))
-		return;
+	PacketWriter_Start(client);
 
-	char* data = client->wrbuf;
 	*data = 0x2D;
 	*++data = block;
 	*++data = order;
 	Client_Send(client, 3);
+
+	PacketWriter_End(client);
 }
 
 void CPEPacket_WriteWeatherType(CLIENT* client, Weather type) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+
 	*data = 0x1F;
 	*++data = type;
 	Client_Send(client, 2);
+
+	PacketWriter_End(client);
 }
 
 void CPEPacket_WriteTwoWayPing(CLIENT* client, uchar direction, short num) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+
 	*data = 0x2B;
 	*++data = direction;
 	*(ushort*)++data = num;
 	Client_Send(client, 4);
+
+	PacketWriter_End(client);
 }
 
 void CPEPACKET_WriteSetModel(CLIENT* client, ClientID id, const char* model) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+
 	*data = 0x01D;
 	*++data = id;
 	WriteString(++data, model);
 	Client_Send(client, 66);
+
+	PacketWriter_End(client);
 }
 
 void CPEPacket_WriteBlockPerm(CLIENT* client, BlockID id, bool allowPlace, bool allowDestroy) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+
 	*data = 0x1C;
 	*++data = id;
 	*++data = (char)allowPlace;
 	*++data = (char)allowDestroy;
 	Client_Send(client, 4);
+
+	PacketWriter_End(client);
 }
 
 bool CPEHandler_ExtInfo(CLIENT* client, char* data) {

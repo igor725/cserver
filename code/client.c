@@ -48,7 +48,7 @@ bool Client_ChangeWorld(CLIENT* client, WORLD* world) {
 		Client_Kick(client, "Map sending failed");
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -162,12 +162,13 @@ THRET Client_MapThreadProc(TARG lpParam) {
 void Client_Init() {
 	Broadcast = Memory_Alloc(1, sizeof(CLIENT));
 	Broadcast->wrbuf = Memory_Alloc(2048, 1);
+	Broadcast->mutex = Mutex_Create();
 }
 
 void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort z) {
 	BlockID block = World_GetBlock(world, x, y, z);
 
-	for(int i = 0; i < 128; i++) {
+	for(int i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT* other = clients[i];
 		if(!other || other == client) continue;
 		if(!other->playerData || other->playerData->currentWorld != world) continue;
@@ -192,8 +193,7 @@ bool Client_IsSupportExt(CLIENT* client, const char* extName) {
 const char* Client_GetName(CLIENT* client) {
 	if(!client->playerData)
 		return "unconnected";
-	else
-		return client->playerData->name;
+	return client->playerData->name;
 }
 
 const char* Client_GetAppName(CLIENT* client) {
@@ -210,7 +210,6 @@ bool Client_CheckAuth(CLIENT* client) {
 void Client_SetPos(CLIENT* client, VECTOR* pos, ANGLE* ang) {
 	if(!client->playerData)
 		return;
-
 	Memory_Copy(client->playerData->position, pos, sizeof(VECTOR));
 	Memory_Copy(client->playerData->angle, ang, sizeof(ANGLE));
 }
@@ -218,7 +217,6 @@ void Client_SetPos(CLIENT* client, VECTOR* pos, ANGLE* ang) {
 bool Client_SetType(CLIENT* client, bool isOP) {
 	if(!client->playerData)
 		return false;
-
 	client->playerData->isOP = isOP;
 	Packet_WriteUpdateType(client);
 	return true;
@@ -246,6 +244,9 @@ void Client_Destroy(CLIENT* client) {
 
 	if(client->thread)
 		Thread_Close(client->thread);
+
+	if(client->mutex)
+		Mutex_Free(client->mutex);
 
 	if(client->playerData) {
 		Memory_Free((void*)client->playerData->name);
@@ -277,8 +278,11 @@ int Client_Send(CLIENT* client, int len) {
 		for(int i = 0; i < 128; i++) {
 			CLIENT* bClient = clients[i];
 
-			if(bClient)
+			if(bClient) {
+				Mutex_Lock(bClient->mutex);
 				send(bClient->sock, Broadcast->wrbuf, len, 0);
+				Mutex_Unlock(bClient->mutex);
+			}
 		}
 		return len;
 	}

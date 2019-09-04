@@ -106,72 +106,96 @@ void Packet_WriteLvlInit(CLIENT* client) {
 }
 
 void Packet_WriteLvlFin(CLIENT* client) {
+	PacketWriter_Start(client);
+
 	WORLD* world = client->playerData->currentWorld;
-	char* data = client->wrbuf;
 	*data = 0x04;
 	*(ushort*)++data = htons(world->info->dim->width);++data;
 	*(ushort*)++data = htons(world->info->dim->height);++data;
 	*(ushort*)++data = htons(world->info->dim->length);++data;
 	Client_Send(client, 7);
+
+	PacketWriter_End(client);
 }
 
 void Packet_WriteSetBlock(CLIENT* client, ushort x, ushort y, ushort z, BlockID block) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+
 	*data = 0x06;
 	*(ushort*)++data = htons(x);++data;
 	*(ushort*)++data = htons(y);++data;
 	*(ushort*)++data = htons(z);++data;
 	*++data = block;
 	Client_Send(client, 8);
+
+	PacketWriter_End(client);
 }
 
 void Packet_WriteHandshake(CLIENT* client, const char* name, const char* motd) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+
 	*data = 0x00;
 	*++data = 0x07;
 	WriteString(++data, name); data += 63;
 	WriteString(++data, motd); data += 63;
 	*++data = 0x00;
 	Client_Send(client, 131);
+
+	PacketWriter_End(client);
 }
 
 void Packet_WriteSpawn(CLIENT* client, CLIENT* other) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+
 	*data = 0x07;
 	*++data = client == other ? 0xFF : other->id;
 	WriteString(++data, other->playerData->name); data += 63;
 	WriteClPos(++data, other, true);
 	Client_Send(client, 74);
+
+	PacketWriter_End(client);
 }
 
 void Packet_WriteDespawn(CLIENT* client, CLIENT* other) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+
 	*data = 0x0C;
 	*++data = client == other ? 0xFF : other->id;
 	Client_Send(client, 2);
+
+	PacketWriter_End(client);
 }
 
 void Packet_WritePosAndOrient(CLIENT* client, CLIENT* other) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+
 	*data = 0x08;
 	*++data = client == other ? 0xFF : other->id;
 	WriteClPos(++data, other, false);
 	Client_Send(client, 10);
+
+	PacketWriter_End(client);
 }
 
 void Packet_WriteChat(CLIENT* client, MessageType type, const char* mesg) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+
 	*data = 0x0D;
 	*++data = type;
 	WriteString(++data, mesg);
 	Client_Send(client, 66);
+
+	PacketWriter_End(client);
 }
 
 void Packet_WriteUpdateType(CLIENT* client) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+	
 	*data = 0x0F;
 	*++data = client->playerData->isOP ? 0x64 : 0x00;
 	Client_Send(client, 2);
+
+	PacketWriter_End(client);
 }
 
 /*

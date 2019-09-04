@@ -26,6 +26,7 @@ void Server_Accept() {
 
 		tmp->sock = fd;
 		tmp->bufpos = 0;
+		tmp->mutex = Mutex_Create();
 		tmp->rdbuf = (char*)Memory_Alloc(131, 1);
 		tmp->wrbuf = (char*)Memory_Alloc(2048, 1);
 
