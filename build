@@ -10,29 +10,36 @@ LUA_ENABLED=0
 
 for a in "$@"
 do
-    if [ "$a" == "lua" ]; then LUA_ENABLED=1; fi
-		if [ "$a" == "dbg" ]; then DEBUG=1; fi
-    if [ "$a" == "wall" ]; then WARN="-Wall"; fi
-    if [ "$a" == "nowarn" ]; then WARN="-W0"; fi
-    if [ "$a" == "0" ]; then OPT="-O0"; fi
-    if [ "$a" == "1" ]; then OPT="-O1"; fi
-    if [ "$a" == "2" ]; then OPT="-O2"; fi
-    if [ "$a" == "3" ]; then OPT="-O3"; fi
-    if [ "$a" == "f" ]; then OPT="-Ofast"; fi
+	if [ "$a" == "lua" ]; then LUA_ENABLED=1; fi
+	if [ "$a" == "dbg" ]; then DEBUG=1; fi
+	if [ "$a" == "wall" ]; then WARN="-Wall"; fi
+	if [ "$a" == "nowarn" ]; then WARN="-W0"; fi
+	if [ "$a" == "0" ]; then OPT="-O0"; fi
+	if [ "$a" == "1" ]; then OPT="-O1"; fi
+	if [ "$a" == "2" ]; then OPT="-O2"; fi
+	if [ "$a" == "3" ]; then OPT="-O3"; fi
+	if [ "$a" == "f" ]; then OPT="-Ofast"; fi
 done
 
-if [ $LUA_ENABLED -eq 1 ];
-then
+if [ $LUA_ENABLED -eq 1 ]; then
 	echo -n "Searching liblua*.a and lua.h..."
-	LUA_INCDIR=`dirname $(find /usr -name lua.h -print -quit 2> /dev/null)`
-	LUA_LIBFILE=`basename $(find /usr -name liblua*.a -print -quit 2> /dev/null) .a | tail -c +4`
+	LUA_INCDIR=`dirname $(find /usr -name lua.h -print -quit 2> /dev/null) 2> /dev/null`
+	if [ ! -d "$LUA_INCDIR" ]; then
+		echo "fail, include directory not found"
+		exit 1
+	fi
+	LUA_LIBFILE=$(find /usr -name liblua*.a -print -quit 2> /dev/null)
+	if [ -f "$LUA_LIBFILE" ]; then
+		LUA_LIBFILE=$(basename $LUA_LIBFILE .a 2> /dev/null | tail -c +4)
+	else
+		echo "fail, lua library not found"
+	fi
 	echo "done"
 	CFLAGS="$CFLAGS -I$LUA_INCDIR -DLUA_ENABLED"
 	LIBS="$LIBS -l$LUA_LIBFILE"
 fi
 
-if [ $DEBUG -eq 1 ];
-then
+if [ $DEBUG -eq 1 ]; then
 	CFLAGS="$CFLAGS -g"
 	OPT="-O0"
 fi
@@ -60,6 +67,5 @@ then
 fi
 
 OBJS=$(find objs/ -name "*.o" $LOBJ -printf "objs/%P ")
-PARAMS="-o server ${LIBS} ${OBJS}"
-gcc $PARAMS
+gcc -o server $LIBS $OBJS
 echo "done"
