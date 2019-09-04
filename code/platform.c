@@ -84,8 +84,9 @@ bool Iter_Close(dirIter* iter) {
 
 bool File_Rename(const char* path, const char* newpath) {
 	bool succ = MoveFileExA(path, newpath, MOVEFILE_REPLACE_EXISTING);
-	if(!succ)
+	if(!succ) {
 		Error_Set(ET_SYS, GetLastError(), false);
+	}
 	return succ;
 }
 
@@ -93,6 +94,7 @@ FILE* File_Open(const char* path, const char* mode) {
 	FILE* fp;
 	if((fp = fopen(path, mode)) == NULL) {
 		Error_Set(ET_SYS, GetLastError(), false);
+		return NULL;
 	}
 	return fp;
 }
@@ -100,6 +102,7 @@ FILE* File_Open(const char* path, const char* mode) {
 size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp) {
 	if(!fp) {
 		Error_Set(ET_SYS, ERROR_INVALID_HANDLE, false);
+		return 0;
 	}
 
 	size_t ncount = fread(ptr, size, count, fp);
@@ -321,6 +324,8 @@ bool Iter_Next(dirIter* iter) {
 
 	do {
 		if((iter->fileHandle = readdir(iter->dirHandle)) == NULL) {
+			iter->cfile = NULL;
+			iter->isDir = false;
 			iter->state = 2;
 			return false;
 		} else {
