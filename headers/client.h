@@ -51,6 +51,7 @@ typedef struct client {
 void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort z);
 bool Client_IsSupportExt(CLIENT* client, const char* packetName);
 void Client_SetPos(CLIENT* client, VECTOR* vec, ANGLE* ang);
+bool Client_ChangeWorld(CLIENT* client, WORLD* world);
 bool Client_SetType(CLIENT* client, bool isOP);
 bool Client_GetType(CLIENT* client);
 const char* Client_GetName(CLIENT* client);

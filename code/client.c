@@ -38,6 +38,20 @@ bool Client_Despawn(CLIENT* client) {
 	return true;
 }
 
+bool Client_ChangeWorld(CLIENT* client, WORLD* world) {
+	if(!client->playerData) return false;
+	if(client->playerData->currentWorld == world) return true;
+
+	Client_Despawn(client);
+	Client_SetPos(client, world->info->spawnVec, world->info->spawnAng);
+	if(!Client_SendMap(client, world)) {
+		Client_Kick(client, "Map sending failed");
+		return false;
+	}
+	
+	return true;
+}
+
 THRET Client_ThreadProc(TARG lpParam) {
 	CLIENT* client = (CLIENT*)lpParam;
 
@@ -307,8 +321,7 @@ bool Client_SendMap(CLIENT* client, WORLD* world) {
 }
 
 void Client_HandshakeStage2(CLIENT* client) {
-	if(!Client_SendMap(client, worlds[0]))
-		Client_Kick(client, "Map sending failed");
+	Client_ChangeWorld(client, worlds[0]);
 }
 
 void Client_Disconnect(CLIENT* client) {

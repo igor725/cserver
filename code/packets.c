@@ -189,7 +189,6 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	client->playerData->position = (VECTOR*)Memory_Alloc(1, sizeof(VECTOR));
 	client->playerData->angle = (ANGLE*)Memory_Alloc(1, sizeof(ANGLE));
 
-	Client_SetPos(client, worlds[0]->info->spawnVec, worlds[0]->info->spawnAng);
 	ReadString(++data, (void*)&client->playerData->name); data += 63;
 	ReadString(++data, (void*)&client->playerData->key); data += 63;
 	Thread_SetName(client->playerData->name);
@@ -231,9 +230,12 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	return true;
 }
 
+#define ValidateClient(client) \
+if(!client->playerData || client->playerData->state != STATE_INGAME || !client->playerData->spawned) \
+	return false; \
+
 bool Handler_SetBlock(CLIENT* client, char* data) {
-	if(!client->playerData || client->playerData->state != STATE_INGAME)
-		return false;
+	ValidateClient(client);
 
 	WORLD* world = client->playerData->currentWorld;
 	if(!world) return false;
@@ -271,8 +273,7 @@ bool Handler_SetBlock(CLIENT* client, char* data) {
 }
 
 bool Handler_PosAndOrient(CLIENT* client, char* data) {
-	if(!client->playerData || client->playerData->state != STATE_INGAME)
-		return false;
+	ValidateClient(client);
 
 	if(client->cpeData) {
 		if(client->cpeData->heldBlock != *data) {
@@ -289,8 +290,7 @@ bool Handler_PosAndOrient(CLIENT* client, char* data) {
 }
 
 bool Handler_Message(CLIENT* client, char* data) {
-	if(!client->playerData || client->playerData->state != STATE_INGAME)
-		return false;
+	ValidateClient(client);
 
 	char* message;
 	MessageType type = 0;

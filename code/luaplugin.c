@@ -6,18 +6,24 @@
 #include "packets.h"
 #include "event.h"
 
-static void* checkudata(lua_State* L, int index, const char* tname) {
+static void* testudata(lua_State* L, int index, const char* tname) {
 	void* ptr = lua_touserdata(L, index);
 	if(ptr) {
 		if(lua_getmetatable(L, index)) {
 			luaL_getmetatable(L, tname);
 			if(!lua_rawequal(L, -1, -2))
-				luaL_typerror(L, index, tname);
+				ptr = NULL;
 			lua_pop(L, 2);
 			return ptr;
 		}
 	}
 	return NULL;
+}
+
+static void* checkudata(lua_State* L, int index, const char* tname) {
+	void* ptr = testudata(L, index, tname);
+	if(!ptr) luaL_typerror(L, index, tname);
+	return ptr;
 }
 
 static int LuaError(lua_State* L) {
@@ -109,6 +115,100 @@ static int luaopen_log(lua_State* L) {
 }
 
 /*
+	Lua world library
+*/
+
+#define LUA_TWORLD "classicWorld"
+
+static WORLD* toWorld(lua_State* L, int index) {
+	WORLD* world = lua_touserdata(L, index);
+	if(!world) luaL_typerror(L, index, LUA_TWORLD);
+	return world;
+}
+
+static WORLD* checkWorld(lua_State* L, int index) {
+	return checkudata(L, index, LUA_TWORLD);
+}
+
+static void pushWorld(lua_State* L, WORLD* world) {
+	lua_pushlightuserdata(L, world);
+	luaL_getmetatable(L, LUA_TWORLD);
+	lua_setmetatable(L, -2);
+}
+
+static int lworld_get(lua_State* L) {
+	const char* name = luaL_checkstring(L, 1);
+	WORLD* world = World_FindByName(name);
+
+	if(!world)
+		lua_pushnil(L);
+	else
+		pushWorld(L, world);
+
+	return 1;
+}
+
+static int lworld_setblock(lua_State* L) {
+	WORLD* world = toWorld(L, 1);
+	ushort x = (ushort)luaL_checkint(L, 2);
+	ushort y = (ushort)luaL_checkint(L, 3);
+	ushort z = (ushort)luaL_checkint(L, 4);
+	BlockID id = (BlockID)luaL_checkint(L, 5);
+	bool update = (bool)lua_toboolean(L, 6);
+
+	World_SetBlock(world, x, y, z, id);
+	if(update)
+		Client_UpdateBlock(NULL, world, x, y, z);
+
+	return 0;
+}
+
+static int lworld_getblock(lua_State* L) {
+	WORLD* world = toWorld(L, 1);
+	ushort x = (ushort)luaL_checkint(L, 2);
+	ushort y = (ushort)luaL_checkint(L, 3);
+	ushort z = (ushort)luaL_checkint(L, 4);
+
+	lua_pushinteger(L, World_GetBlock(world, x, y, z));
+	return 1;
+}
+
+static const luaL_Reg world_methods[] = {
+	{"get", lworld_get},
+	{"setblock", lworld_setblock},
+	{"getblock", lworld_getblock},
+	{NULL, NULL}
+};
+
+static int lworld_tostring(lua_State* L) {
+	WORLD* world = toWorld(L, 1);
+	lua_pushstring(L, world->name);
+	return 1;
+}
+
+static const luaL_Reg world_meta[] = {
+	{"__tostring", lworld_tostring},
+	{NULL, NULL}
+};
+
+static int luaopen_world(lua_State* L) {
+	luaL_openlib(L, lua_tostring(L, -1), world_methods, 0);
+
+	luaL_newmetatable(L, LUA_TWORLD);
+
+	luaL_openlib(L, 0, world_meta, 0);
+	lua_pushstring(L, "__index");
+	lua_pushvalue(L, -3);
+	lua_rawset(L, -3);
+	lua_pushstring(L, "__metatable");
+	lua_pushvalue(L, -3);
+	lua_rawset(L, -3);
+
+	lua_pop(L, 1);
+	return 1;
+}
+
+/*
 	Lua client library
 */
 
@@ -185,6 +285,13 @@ static int lclient_sethotbar(lua_State* L) {
 	return 1;
 }
 
+static int lclient_changeworld(lua_State* L) {
+	CLIENT* client = checkClient(L, 1);
+	WORLD* world = checkWorld(L, 2);
+	lua_pushboolean(L, Client_ChangeWorld(client, world));
+	return 1;
+}
+
 static int lclient_sendmessage(lua_State* L) {
 	CLIENT* client = checkClient(L, 1);
 	MessageType t = (MessageType)luaL_checkint(L, 2);
@@ -229,6 +336,7 @@ static const luaL_Reg client_methods[] = {
 	{"settype", lclient_settype},
 	{"sethotbar", lclient_sethotbar},
 
+	{"changeworld", lclient_changeworld},
 	{"sendmessage", lclient_sendmessage},
 	{"disconnect", lclient_disconnect},
 	{"despawn", lclient_despawn},
@@ -508,96 +616,6 @@ static const luaL_Reg packetslib[] = {
 
 static int luaopen_packets(lua_State* L) {
 	luaL_register(L, lua_tostring(L, -1), packetslib);
-	return 1;
-}
-
-/*
-	Lua world library
-*/
-
-#define LUA_TWORLD "classicWorld"
-
-static WORLD* toWorld(lua_State* L, int index) {
-	WORLD* world = lua_touserdata(L, index);
-	if(!world) luaL_typerror(L, index, LUA_TWORLD);
-	return world;
-}
-
-static void pushWorld(lua_State* L, WORLD* world) {
-	lua_pushlightuserdata(L, world);
-	luaL_getmetatable(L, LUA_TWORLD);
-	lua_setmetatable(L, -2);
-}
-
-static int lworld_get(lua_State* L) {
-	const char* name = luaL_checkstring(L, 1);
-	WORLD* world = World_FindByName(name);
-
-	if(!world)
-		lua_pushnil(L);
-	else
-		pushWorld(L, world);
-
-	return 1;
-}
-
-static int lworld_setblock(lua_State* L) {
-	WORLD* world = toWorld(L, 1);
-	ushort x = (ushort)luaL_checkint(L, 2);
-	ushort y = (ushort)luaL_checkint(L, 3);
-	ushort z = (ushort)luaL_checkint(L, 4);
-	BlockID id = (BlockID)luaL_checkint(L, 5);
-	bool update = (bool)lua_toboolean(L, 6);
-
-	World_SetBlock(world, x, y, z, id);
-	if(update)
-		Client_UpdateBlock(NULL, world, x, y, z);
-
-	return 0;
-}
-
-static int lworld_getblock(lua_State* L) {
-	WORLD* world = toWorld(L, 1);
-	ushort x = (ushort)luaL_checkint(L, 2);
-	ushort y = (ushort)luaL_checkint(L, 3);
-	ushort z = (ushort)luaL_checkint(L, 4);
-
-	lua_pushinteger(L, World_GetBlock(world, x, y, z));
-	return 1;
-}
-
-static const luaL_Reg world_methods[] = {
-	{"get", lworld_get},
-	{"setblock", lworld_setblock},
-	{"getblock", lworld_getblock},
-	{NULL, NULL}
-};
-
-static int lworld_tostring(lua_State* L) {
-	WORLD* world = toWorld(L, 1);
-	lua_pushstring(L, world->name);
-	return 1;
-}
-
-static const luaL_Reg world_meta[] = {
-	{"__tostring", lworld_tostring},
-	{NULL, NULL}
-};
-
-static int luaopen_world(lua_State* L) {
-	luaL_openlib(L, lua_tostring(L, -1), world_methods, 0);
-
-	luaL_newmetatable(L, LUA_TWORLD);
-
-	luaL_openlib(L, 0, world_meta, 0);
-	lua_pushstring(L, "__index");
-	lua_pushvalue(L, -3);
-	lua_rawset(L, -3);
-	lua_pushstring(L, "__metatable");
-	lua_pushvalue(L, -3);
-	lua_rawset(L, -3);
-
-	lua_pop(L, 1);
 	return 1;
 }
 
