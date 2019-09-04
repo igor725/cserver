@@ -15,13 +15,14 @@ enum eventType {
 	EVT_ONMESSAGE,
 	EVT_ONHELDBLOCKCHNG,
 	EVT_ONBLOCKPLACE,
-	EVT_ONPLAYERCLICK
+	EVT_ONPLAYERCLICK,
+	EVT_ONDISCONNECT
 };
 
 #define EVT_RTVOID 0
 #define EVT_RTBOOL 1
 
-#define ETYPES     7
+#define ETYPES     8
 #define MAX_EVENTS 64
 
 typedef struct onMessage {
@@ -68,9 +69,10 @@ bool Event_RegisterVoid(EventType type, evtVoidCallback func);
 
 void Event_OnSpawn(CLIENT* client);
 void Event_OnDespawn(CLIENT* client);
+void Event_OnDisconnect(CLIENT* client);
 void Event_OnHandshakeDone(CLIENT* client);
 bool Event_OnMessage(CLIENT* client, char* message, MessageType* id);
 void Event_OnHeldBlockChange(CLIENT* client, BlockID* prev, BlockID* curr);
 bool Event_OnBlockPlace(CLIENT* client, ushort* x, ushort* y, ushort* z, BlockID* id);
-void Event_OnPlayerClick(CLIENT* client, char* button, char* action, short* yaw, short* pitch, ClientID* tgID, ushort* tgBlockX, ushort* tgBlockY, ushort* tgblockZ, char* tgBlockFace);
+void Event_OnClick(CLIENT* client, char* button, char* action, short* yaw, short* pitch, ClientID* tgID, ushort* tgBlockX, ushort* tgBlockY, ushort* tgblockZ, char* tgBlockFace);
 #endif

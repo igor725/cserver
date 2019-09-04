@@ -215,7 +215,7 @@ bool CPEHandler_PlayerClick(CLIENT* client, char* data) {
 	ushort tgBlockY = *(ushort*)++data; ++data;
 	ushort tgBlockZ = *(ushort*)++data; ++data;
 	char tgBlockFace = *++data;
-	Event_OnPlayerClick(
+	Event_OnClick(
 		client, &button,
 		&action, &yaw,
 		&pitch, &tgID,

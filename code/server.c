@@ -7,6 +7,7 @@
 #include "console.h"
 #include "command.h"
 #include "generators.h"
+#include "event.h"
 #ifdef LUA_ENABLED
 #include "luaplugin.h"
 #endif
@@ -63,6 +64,14 @@ bool Server_Bind(const char* ip, ushort port) {
 	return true;
 }
 
+void evt_onconnect(CLIENT* cl) {
+	Log_Info("Player %s connected", cl->playerData->name);
+}
+
+void evt_ondisconnect(CLIENT* cl) {
+	Log_Info("Player %s disconnected", cl->playerData->name);
+}
+
 bool Server_InitialWork() {
 	if(!Socket_Init())
 		return false;
@@ -80,6 +89,8 @@ bool Server_InitialWork() {
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
+	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, &evt_onconnect);
+	Event_RegisterVoid(EVT_ONDISCONNECT, &evt_ondisconnect);
 
 	int wIndex = -1;
 	dirIter wIter = {0};

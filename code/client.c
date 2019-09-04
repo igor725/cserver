@@ -61,6 +61,7 @@ THRET Client_ThreadProc(TARG lpParam) {
 			if(len <= 0) {
 				client->status = CLIENT_AFTERCLOSE;
 				clients[client->id] = NULL;
+				Event_OnDisconnect(client);
 				Socket_Close(client->sock);
 				Client_Despawn(client);
 				Client_Destroy(client);
@@ -91,7 +92,7 @@ THRET Client_ThreadProc(TARG lpParam) {
 			if(len > 0) {
 				client->bufpos += (ushort)len;
 			} else {
-				client->status = CLIENT_WAITCLOSE;
+				Client_Disconnect(client);
 			}
 		}
 	}
@@ -331,6 +332,7 @@ void Client_HandshakeStage2(CLIENT* client) {
 void Client_Disconnect(CLIENT* client) {
 	Client_Despawn(client);
 	shutdown(client->sock, SD_SEND);
+	client->status = CLIENT_WAITCLOSE;
 }
 
 void Client_Kick(CLIENT* client, const char* reason) {

@@ -66,10 +66,14 @@ void Event_OnDespawn(CLIENT* client) {
 	Event_Call(EVT_ONDESPAWN, (void*)client);
 }
 
+void Event_OnDisconnect(CLIENT* client) {
+	Event_Call(EVT_ONDISCONNECT, (void*)client);
+}
+
 void Event_OnHeldBlockChange(CLIENT* client, BlockID* prev, BlockID* curr) {
 	Event_Call(EVT_ONHELDBLOCKCHNG, (void*)&client);
 }
 
-void Event_OnPlayerClick(CLIENT* client, char* button, char* action, short* yaw, short* pitch, ClientID* tgID, ushort* tgBlockX, ushort* tgBlockY, ushort* tgblockZ, char* tgBlockFace) {
+void Event_OnClick(CLIENT* client, char* button, char* action, short* yaw, short* pitch, ClientID* tgID, ushort* tgBlockX, ushort* tgBlockY, ushort* tgblockZ, char* tgBlockFace) {
 	Event_Call(EVT_ONPLAYERCLICK, (void*)&client);
 }
