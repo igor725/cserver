@@ -5,7 +5,6 @@
 #define PacketWriter_Start(client) \
 char* data = client->wrbuf; \
 Mutex_Lock(client->mutex); \
-Log_Info(__func__); \
 
 #define PacketWriter_End(client) \
 Mutex_Unlock(client->mutex); \
