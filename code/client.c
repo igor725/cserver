@@ -59,8 +59,6 @@ THRET Client_ThreadProc(TARG lpParam) {
 		if(client->status == CLIENT_WAITCLOSE) {
 			int len = recv(client->sock, client->rdbuf, 131, 0);
 			if(len <= 0) {
-				client->status = CLIENT_AFTERCLOSE;
-				clients[client->id] = NULL;
 				Event_OnDisconnect(client);
 				Socket_Close(client->sock);
 				Client_Despawn(client);
@@ -318,7 +316,7 @@ bool Client_SendMap(CLIENT* client, WORLD* world) {
 	Packet_WriteLvlInit(client);
 	client->playerData->mapThread = Thread_Create((TFUNC)&Client_MapThreadProc, client);
 	if(!Thread_IsValid(client->playerData->mapThread)) {
-		Client_Kick(client, "playerData->mapThread == NULL");
+		Client_Kick(client, "Can't create map sending thread");
 		return false;
 	}
 
@@ -371,8 +369,8 @@ void Client_Tick(CLIENT* client) {
 }
 
 void Client_HandlePacket(CLIENT* client) {
-	char* data = client->rdbuf; ++data;
-	uchar id = client->rdbuf[0];
+	char* data = client->rdbuf;
+	uchar id = *data; ++data;
 	PACKET* packet = packets[id];
 	bool ret = false;
 

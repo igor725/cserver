@@ -205,7 +205,6 @@ bool Config_GetBool(CFGSTORE* store, const char* key) {
 	return ent->value.vbool;
 }
 
-
 void Config_EmptyStore(CFGSTORE* store) {
 	CFGENTRY* prev,* ent = store->firstCfgEntry;
 	if(!ent) return;

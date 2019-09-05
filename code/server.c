@@ -38,7 +38,7 @@ void Server_Accept() {
 			tmp->thread = Thread_Create((TFUNC)&Client_ThreadProc, tmp);
 			if(!Thread_IsValid(tmp->thread)) {
 				Log_FormattedError();
-				Client_Kick(tmp, "client->thread == NULL");
+				Client_Kick(tmp, "Can't create packet handling thread");
 				return;
 			}
 
@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
 	} else {
 		acceptThread = Thread_Create((TFUNC)&Server_ThreadProc, NULL);
 		if(!Thread_IsValid(acceptThread)) {
-			Log_Error("acceptThread == NULL");
+			Log_Error("Can't create accept thread");
 			serverActive = false;
 		}
 	}

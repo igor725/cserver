@@ -4,8 +4,7 @@
 
 enum sockStatuses {
 	CLIENT_OK,
-	CLIENT_WAITCLOSE,
-	CLIENT_AFTERCLOSE
+	CLIENT_WAITCLOSE
 };
 
 enum playerStates {

@@ -47,11 +47,15 @@ static bool CHandler_Announce(const char* args, CLIENT* caller, char* out) {
 	return false;
 }
 
-static bool CHandler_ChanceWorld(const char* args, CLIENT* caller, char* out) {
+static bool CHandler_ChangeWorld(const char* args, CLIENT* caller, char* out) {
 	if(!caller) return false;
 	WORLD* world = World_FindByName(args);
 	Client_ChangeWorld(caller, world);
 	return false;
+}
+
+static bool CHandler_Kick(const char* args, CLIENT* caller, char* out) {
+	
 }
 
 void Command_RegisterDefault() {
@@ -59,7 +63,7 @@ void Command_RegisterDefault() {
 	Command_Register("stop", &CHandler_Stop, true);
 	Command_Register("test", &CHandler_Test, false);
 	Command_Register("announce", &CHandler_Announce, false);
-	Command_Register("cw", &CHandler_ChanceWorld, false);
+	Command_Register("cw", &CHandler_ChangeWorld, false);
 }
 
 static bool checkPermissions(COMMAND* cmd, CLIENT* client) {

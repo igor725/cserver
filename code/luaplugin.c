@@ -772,7 +772,8 @@ static bool Cmd_Plugins(const char* args, CLIENT* caller, char* out) {
 			if(String_GetArgument(args, arg, 64, 1)) {
 				if(LuaPlugin_Load(arg)) {
 					String_Copy(out, CMD_MAX_OUT, "Plugin loaded successfully");
-				}
+				} else
+					return false;
 			} else {
 				String_Copy(out, CMD_MAX_OUT, "Invalud argument #2");
 			}

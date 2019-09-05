@@ -77,7 +77,7 @@ const char* String_AllocCopy(const char* str) {
 }
 
 size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index) {
-	if(!args) return 0;
+	if(!args || !arg || arrsz < 1) return 0;
 
 	size_t argsize = 0;
 
@@ -86,9 +86,8 @@ size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index) 
 			if(*args == '\0')
 				return 0;
 
-			if(*args == ' ') {
+			if(*args == ' ')
 				--index;
-			}
 
 			++args;
 		} else {
