@@ -89,20 +89,26 @@ short Packet_GetSize(int id, CLIENT* client) {
 */
 
 void Packet_WriteKick(CLIENT* client, const char* reason) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+
 	*data = 0x0E;
 	WriteString(++data, reason);
 	Client_Send(client, 65);
+
+	PacketWriter_End(client);
 }
 
 void Packet_WriteLvlInit(CLIENT* client) {
-	char* data = client->wrbuf;
+	PacketWriter_Start(client);
+
 	*data = 0x02;
 	if(client->cpeData && client->cpeData->fmSupport) {
 		*(uint*)++data = htonl(client->playerData->currentWorld->size - 4);
 		Client_Send(client, 5);
 	} else
 		Client_Send(client, 1);
+
+	PacketWriter_End(client);
 }
 
 void Packet_WriteLvlFin(CLIENT* client) {
@@ -226,7 +232,7 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 		}
 	}
 
-	bool cpeEnabled =* ++data == 0x42;
+	bool cpeEnabled = *++data == 0x42;
 
 	if(Client_CheckAuth(client)) {
 		const char* name = Config_GetStr(mainCfg, "name");
@@ -256,7 +262,7 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 
 #define ValidateClient(client) \
 if(!client->playerData || client->playerData->state != STATE_INGAME || !client->playerData->spawned) \
-	return false; \
+	return true; \
 
 bool Handler_SetBlock(CLIENT* client, char* data) {
 	ValidateClient(client);
@@ -299,13 +305,11 @@ bool Handler_SetBlock(CLIENT* client, char* data) {
 bool Handler_PosAndOrient(CLIENT* client, char* data) {
 	ValidateClient(client);
 
-	if(client->cpeData) {
-		if(client->cpeData->heldBlock != *data) {
-			BlockID new = *data;
-			BlockID curr = client->cpeData->heldBlock;
-			Event_OnHeldBlockChange(client, &curr, &new);
-			client->cpeData->heldBlock = *data;
-		}
+	if(client->cpeData && client->cpeData->heldBlock != *data) {
+		BlockID new = *data;
+		BlockID curr = client->cpeData->heldBlock;
+		Event_OnHeldBlockChange(client, &curr, &new);
+		client->cpeData->heldBlock = *data;
 	}
 
 	ReadClPos(client, ++data);

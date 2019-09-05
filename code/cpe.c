@@ -126,6 +126,10 @@ void CPEPacket_WriteWeatherType(CLIENT* client, Weather type) {
 
 void CPEPacket_WriteTwoWayPing(CLIENT* client, uchar direction, short num) {
 	PacketWriter_Start(client);
+	if(client->playerData->state != STATE_INGAME) {
+		PacketWriter_End(client);
+		return;
+	}
 
 	*data = 0x2B;
 	*++data = direction;
@@ -195,7 +199,7 @@ bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
 
 bool CPEHandler_TwoWayPing(CLIENT* client, char* data) {
 	if(*data == 0) {
-		CPEPacket_WriteTwoWayPing(client, 0,* (ushort*)++data);
+		CPEPacket_WriteTwoWayPing(client, 0, *(ushort*)++data);
 		return true;
 	} else if(*data == 1) {
 		// TODO: Обрабатывать ответ от клиента на пинг пакет

@@ -7,7 +7,7 @@
 #include "event.h"
 
 ClientID Client_FindFreeID() {
-	for(ClientID i = 0; i < 128; i++) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		if(!clients[i])
 			return i;
 	}
@@ -15,7 +15,7 @@ ClientID Client_FindFreeID() {
 }
 
 CLIENT* Client_FindByName(const char* name) {
-	for(int i = 0; i < 128; i++) {
+	for(int i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT* client = clients[i];
 		if(!client || !client->playerData) continue;
 		if(String_CaselessCompare(client->playerData->name, name)) {
@@ -115,7 +115,7 @@ THRET Client_MapThreadProc(TARG lpParam) {
 	int maplen = world->size;
 	int windowBits = 31;
 
-	if(client->cpeData->fmSupport) {
+	if(client->cpeData && client->cpeData->fmSupport) {
 		windowBits = -15;
 		maplen -= 4;
 		mapdata += 4;
@@ -276,7 +276,7 @@ void Client_Destroy(CLIENT* client) {
 
 int Client_Send(CLIENT* client, int len) {
 	if(client == Broadcast) {
-		for(int i = 0; i < 128; i++) {
+		for(int i = 0; i < MAX_CLIENTS; i++) {
 			CLIENT* bClient = clients[i];
 
 			if(bClient) {
@@ -345,7 +345,7 @@ void Client_UpdatePositions(CLIENT* client) {
 		return;
 	client->playerData->positionUpdated = false;
 
-	for(int i = 0; i < 128; i++) {
+	for(int i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT* other = clients[i];
 		if(!other || !other->playerData || other->playerData->state != STATE_INGAME || client == other) continue;
 		if(client->playerData->currentWorld != other->playerData->currentWorld) continue;
@@ -359,6 +359,7 @@ void Client_Tick(CLIENT* client) {
 		case STATE_WLOADDONE:
 			Thread_Close(client->playerData->mapThread);
 			client->playerData->state = STATE_INGAME;
+			client->playerData->mapThread = NULL;
 			break;
 		case STATE_WLOADERR:
 			Client_Kick(client, "Map loading error");
