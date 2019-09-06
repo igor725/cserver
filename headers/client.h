@@ -30,7 +30,7 @@ typedef struct playerData {
 	VECTOR* position;
 	bool    isOP;
 	bool    spawned;
-	WORLD*  currentWorld;
+	WORLD*  world;
 	bool    positionUpdated;
 } PLAYERDATA;
 
@@ -50,6 +50,7 @@ typedef struct client {
 
 void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort z);
 bool Client_IsSupportExt(CLIENT* client, const char* packetName);
+bool Client_IsInSameWorld(CLIENT* client, CLIENT* other);
 void Client_SetPos(CLIENT* client, VECTOR* vec, ANGLE* ang);
 bool Client_ChangeWorld(CLIENT* client, WORLD* world);
 bool Client_SetType(CLIENT* client, bool isOP);

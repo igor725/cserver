@@ -103,7 +103,7 @@ void Packet_WriteLvlInit(CLIENT* client) {
 
 	*data = 0x02;
 	if(client->cpeData && client->cpeData->fmSupport) {
-		*(uint*)++data = htonl(client->playerData->currentWorld->size - 4);
+		*(uint*)++data = htonl(client->playerData->world->size - 4);
 		Client_Send(client, 5);
 	} else
 		Client_Send(client, 1);
@@ -114,11 +114,11 @@ void Packet_WriteLvlInit(CLIENT* client) {
 void Packet_WriteLvlFin(CLIENT* client) {
 	PacketWriter_Start(client);
 
-	WORLD* world = client->playerData->currentWorld;
+	WORLDDIMS* dims = client->playerData->world->info->dim;
 	*data = 0x04;
-	*(ushort*)++data = htons(world->info->dim->width);++data;
-	*(ushort*)++data = htons(world->info->dim->height);++data;
-	*(ushort*)++data = htons(world->info->dim->length);++data;
+	*(ushort*)++data = htons(dims->width); ++data;
+	*(ushort*)++data = htons(dims->height); ++data;
+	*(ushort*)++data = htons(dims->length); ++data;
 	Client_Send(client, 7);
 
 	PacketWriter_End(client);
@@ -128,9 +128,9 @@ void Packet_WriteSetBlock(CLIENT* client, ushort x, ushort y, ushort z, BlockID 
 	PacketWriter_Start(client);
 
 	*data = 0x06;
-	*(ushort*)++data = htons(x);++data;
-	*(ushort*)++data = htons(y);++data;
-	*(ushort*)++data = htons(z);++data;
+	*(ushort*)++data = htons(x); ++data;
+	*(ushort*)++data = htons(y); ++data;
+	*(ushort*)++data = htons(z); ++data;
 	*++data = block;
 	Client_Send(client, 8);
 
@@ -267,7 +267,7 @@ if(!client->playerData || client->playerData->state != STATE_INGAME || !client->
 bool Handler_SetBlock(CLIENT* client, char* data) {
 	ValidateClient(client);
 
-	WORLD* world = client->playerData->currentWorld;
+	WORLD* world = client->playerData->world;
 	if(!world) return false;
 
 	ushort x = ntohs(*(ushort*)data); data += 2;

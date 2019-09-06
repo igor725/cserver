@@ -419,6 +419,7 @@ bool File_WriteFormat(FILE* fp, const char* fmt, ...) {
 		Error_Set(ET_SYS, errno, false);
 		return false;
 	}
+	
 	return true;
 }
 
