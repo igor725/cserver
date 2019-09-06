@@ -30,7 +30,6 @@ typedef struct playerData {
 	VECTOR* position;
 	bool    isOP;
 	bool    spawned;
-	THREAD  mapThread;
 	WORLD*  currentWorld;
 	bool    positionUpdated;
 } PLAYERDATA;
@@ -44,6 +43,7 @@ typedef struct client {
 	ushort      bufpos;
 	MUTEX*      mutex;
 	THREAD      thread;
+	THREAD      mapThread;
 	CPEDATA*    cpeData;
 	PLAYERDATA* playerData;
 } CLIENT;

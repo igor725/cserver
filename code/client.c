@@ -244,6 +244,9 @@ void Client_Destroy(CLIENT* client) {
 	if(client->thread)
 		Thread_Close(client->thread);
 
+	if(client->mapThread)
+		Thread_Close(client->mapThread);
+
 	if(client->mutex)
 		Mutex_Free(client->mutex);
 
@@ -308,14 +311,14 @@ bool Client_Spawn(CLIENT* client) {
 }
 
 bool Client_SendMap(CLIENT* client, WORLD* world) {
-	if(client->playerData->mapThread)
+	if(client->mapThread)
 		return false;
 
 	client->playerData->state = STATE_MOTD;
 	client->playerData->currentWorld = world;
 	Packet_WriteLvlInit(client);
-	client->playerData->mapThread = Thread_Create((TFUNC)&Client_MapThreadProc, client);
-	if(!Thread_IsValid(client->playerData->mapThread)) {
+	client->mapThread = Thread_Create((TFUNC)&Client_MapThreadProc, client);
+	if(!Thread_IsValid(client->mapThread)) {
 		Client_Kick(client, "Can't create map sending thread");
 		return false;
 	}
@@ -355,9 +358,9 @@ void Client_Tick(CLIENT* client) {
 	if(!client->playerData) return;
 	switch (client->playerData->state) {
 		case STATE_WLOADDONE:
-			Thread_Close(client->playerData->mapThread);
 			client->playerData->state = STATE_INGAME;
-			client->playerData->mapThread = NULL;
+			Thread_Close(client->mapThread);
+			client->mapThread = NULL;
 			break;
 		case STATE_WLOADERR:
 			Client_Kick(client, "Map loading error");

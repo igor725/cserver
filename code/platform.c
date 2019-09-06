@@ -482,15 +482,15 @@ void Socket_Close(SOCKET fd) {
 */
 
 THREAD Thread_Create(TFUNC func, const TARG arg) {
-	pthread_t thread;
-	if(pthread_create(&thread, NULL, func, arg) != 0) {
+	THREAD thread = Memory_Alloc(1, sizeof(THREAD));
+	if(pthread_create(thread, NULL, func, arg) != 0) {
 		Error_Set(ET_SYS, errno, true);
 	}
-	return (THREAD)thread;
+	return thread;
 }
 
 bool Thread_IsValid(THREAD th) {
-	return th != (THREAD)NULL;
+	return th != NULL;
 }
 
 bool Thread_SetName(const char* thName) {
@@ -498,13 +498,14 @@ bool Thread_SetName(const char* thName) {
 }
 
 void Thread_Close(THREAD th) {
-	pthread_detach(th);
+	pthread_detach(*th);
+	Memory_Free(th);
 }
 
 void Thread_Join(THREAD th) {
-	int ret = pthread_join(th, NULL);
+	int ret = pthread_join(*th, NULL);
 	if(ret) {
-		Error_Set(ET_SYS, errno, true);
+		Error_Set(ET_SYS, ret, true);
 	}
 }
 

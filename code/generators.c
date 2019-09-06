@@ -38,15 +38,19 @@ int cfgMaxThreads = 2;
 
 static int AddThread(TFUNC func, TARG arg) {
 	for(int i = 0; i < MAX_THREADS; i++) {
-		if(Thread_IsValid(threads[i])) {
-			if(i > cfgMaxThreads) {
-				i = 0;
+		if(i > cfgMaxThreads) {
+			i = 0;
+			if(Thread_IsValid(threads[i])) {
 				Thread_Join(threads[i]);
+				threads[i] = NULL;
 			}
+		}
+		if(!Thread_IsValid(threads[i])) {
 			threads[i] = Thread_Create(func, arg);
-			break;
+			return i;
 		}
 	}
+	return -1;
 }
 
 static void WaitAll() {
@@ -56,15 +60,6 @@ static void WaitAll() {
 	}
 }
 
-static TRET thfunc(TARG arg) {
-	Log_Info("Thread %d started", (int)arg);
-	Sleep(1000);
-	Log_Info("Thread %d stopped", (int)arg);
-	return 0;
-}
-
 void Generator_Default(WORLD* world) {
-	for(int i = 0; i < 10; i++) {
-		AddThread(thfunc, (TARG)i);
-	}
+
 }

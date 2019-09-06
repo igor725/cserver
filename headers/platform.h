@@ -16,7 +16,7 @@ typedef struct {
   WIN32_FIND_DATA fileHandle;
 } dirIter;
 #elif defined(POSIX)
-typedef pthread_t THREAD;
+typedef pthread_t* THREAD;
 typedef void*(*TFUNC)(TARG);
 typedef void* TRET;
 typedef pthread_mutex_t MUTEX;
