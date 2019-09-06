@@ -240,6 +240,11 @@ void Thread_Close(THREAD th) {
 		CloseHandle(th);
 }
 
+void Thread_Join(THREAD th) {
+	WaitForSingleObject(th, INFINITE);
+	Thread_Close(th);
+}
+
 /*
 	WINDOWS MUTEX FUNCTIONS
 */
@@ -485,14 +490,23 @@ THREAD Thread_Create(TFUNC func, const TARG arg) {
 }
 
 bool Thread_IsValid(THREAD th) {
-	return th != (THREAD)-1;
+	return th != (THREAD)NULL;
 }
 
 bool Thread_SetName(const char* thName) {
 	return pthread_setname_np(pthread_self(), thName) == 0;
 }
 
-void Thread_Close(THREAD th) {}
+void Thread_Close(THREAD th) {
+	pthread_detach(th);
+}
+
+void Thread_Join(THREAD th) {
+	int ret = pthread_join(th, NULL);
+	if(ret) {
+		Error_Set(ET_SYS, errno, true);
+	}
+}
 
 /*
 	WINDOWS MUTEX FUNCTIONS

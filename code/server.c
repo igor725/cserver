@@ -49,7 +49,7 @@ void Server_Accept() {
 	}
 }
 
-THRET Server_ThreadProc(void* lpParam) {
+TRET Server_ThreadProc(void* lpParam) {
 	Thread_SetName("AcceptThread");
 	while(serverActive)Server_Accept();
 	return 0;
@@ -167,6 +167,7 @@ void Server_Stop() {
 }
 
 int main(int argc, char** argv) {
+#ifndef TH_TEST
 	if(!(serverActive = Server_InitialWork())) {
 		Log_FormattedError();
 	} else {
@@ -184,4 +185,7 @@ int main(int argc, char** argv) {
 
 	Log_Info("Server stopped");
 	Server_Stop();
+#else
+	Generator_Default(NULL);
+#endif
 }

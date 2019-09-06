@@ -52,7 +52,7 @@ bool Client_ChangeWorld(CLIENT* client, WORLD* world) {
 	return true;
 }
 
-THRET Client_ThreadProc(TARG lpParam) {
+TRET Client_ThreadProc(TARG lpParam) {
 	CLIENT* client = (CLIENT*)lpParam;
 
 	while(1) {
@@ -98,7 +98,7 @@ THRET Client_ThreadProc(TARG lpParam) {
 	return 0;
 }
 
-THRET Client_MapThreadProc(TARG lpParam) {
+TRET Client_MapThreadProc(TARG lpParam) {
 	CLIENT* client = (CLIENT*)lpParam;
 	WORLD* world = client->playerData->currentWorld;
 

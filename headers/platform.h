@@ -4,8 +4,8 @@ typedef void* TARG;
 
 #if defined(WINDOWS)
 typedef void* THREAD;
-typedef uint THRET;
-typedef THRET(*TFUNC)(TARG);
+typedef uint TRET;
+typedef TRET(*TFUNC)(TARG);
 typedef CRITICAL_SECTION MUTEX;
 typedef struct {
   char fmt[256];
@@ -18,7 +18,7 @@ typedef struct {
 #elif defined(POSIX)
 typedef pthread_t THREAD;
 typedef void*(*TFUNC)(TARG);
-typedef void* THRET;
+typedef void* TRET;
 typedef pthread_mutex_t MUTEX;
 
 typedef struct {
@@ -76,6 +76,7 @@ THREAD Thread_Create(TFUNC func, const TARG lpParam);
 bool Thread_IsValid(THREAD th);
 bool Thread_SetName(const char* thName);
 void Thread_Close(THREAD th);
+void Thread_Join(THREAD th);
 
 /*
 	MUTEX FUNCTIONS
