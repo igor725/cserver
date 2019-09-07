@@ -39,8 +39,8 @@ bool Client_Despawn(CLIENT* client) {
 }
 
 bool Client_ChangeWorld(CLIENT* client, WORLD* world) {
-	if(!client->playerData) return false;
-	if(client->playerData->world == world) return true;
+	if(!Client_IsInGame(client)) return false;
+	if(Client_IsInWorld(client, world)) return true;
 
 	Client_Despawn(client);
 	Client_SetPos(client, world->info->spawnVec, world->info->spawnAng);
@@ -170,10 +170,21 @@ void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort
 	for(int i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT* other = clients[i];
 		if(!other || other == client) continue;
-		if(!other->playerData || other->playerData->world != world) continue;
-		if(other->playerData->state != STATE_INGAME) continue;
+		if(!Client_IsInGame(other) || !Client_IsInWorld(client, world)) continue;
 		Packet_WriteSetBlock(other, x, y, z, block);
 	}
+}
+
+bool Client_IsInGame(CLIENT* client) {
+	return client->playerData && client->playerData->state == STATE_INGAME;
+}
+
+bool Client_IsInSameWorld(CLIENT* client, CLIENT* other) {
+	return client->playerData->world == other->playerData->world;
+}
+
+bool Client_IsInWorld(CLIENT* client, WORLD* world) {
+	return client->playerData && client->playerData->world == world;
 }
 
 bool Client_IsSupportExt(CLIENT* client, const char* extName) {
@@ -292,10 +303,6 @@ int Client_Send(CLIENT* client, int len) {
 	return send(client->sock, client->wrbuf, len, 0) == len;
 }
 
-bool Client_IsInSameWorld(CLIENT* client, CLIENT* other) {
-	return client->playerData->world == other->playerData->world;
-}
-
 bool Client_Spawn(CLIENT* client) {
 	if(client->playerData->spawned)
 		return false;
@@ -354,8 +361,7 @@ void Client_UpdatePositions(CLIENT* client) {
 
 	for(int i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT* other = clients[i];
-		if(!other || !other->playerData || other->playerData->state != STATE_INGAME || client == other) continue;
-		if(Client_IsInSameWorld(client, other));
+		if(!other || Client_IsInGame(other) || client == other || !Client_IsInSameWorld(client, other))
 			Packet_WritePosAndOrient(other, client);
 	}
 }

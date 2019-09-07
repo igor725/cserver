@@ -51,6 +51,8 @@ typedef struct client {
 void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort z);
 bool Client_IsSupportExt(CLIENT* client, const char* packetName);
 bool Client_IsInSameWorld(CLIENT* client, CLIENT* other);
+bool Client_IsInWorld(CLIENT* client, WORLD* world);
+bool Client_IsInGame(CLIENT* client);
 void Client_SetPos(CLIENT* client, VECTOR* vec, ANGLE* ang);
 bool Client_ChangeWorld(CLIENT* client, WORLD* world);
 bool Client_SetType(CLIENT* client, bool isOP);
