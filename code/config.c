@@ -211,9 +211,8 @@ void Config_EmptyStore(CFGSTORE* store) {
 
 	while(ent) {
 		prev = ent;
-		if(ent->type == CFG_STR) {
+		if(ent->type == CFG_STR)
 			Memory_Free((void*)ent->value.vchar);
-		}
 		ent = ent->next;
 		Memory_Free(prev);
 	}

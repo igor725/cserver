@@ -490,7 +490,7 @@ static int lconfig_set(lua_State* L) {
 		lua_pushstring(L, err);
 	else
 		lua_pushnil(L);
-	return 1;
+	return 2;
 }
 
 static int lconfig_get(lua_State* L) {
@@ -515,7 +515,6 @@ static int lconfig_get(lua_State* L) {
 			break;
 		default:
 			luaL_error(L, "Internal error, unknown cfgentry type");
-			lua_pushnil(L);
 			break;
 	}
 
@@ -526,6 +525,7 @@ static int lconfig_type(lua_State* L) {
 	CFGSTORE* store = checkStore(L, 1);
 	const char* key = luaL_checkstring(L, 2);
 	CFGENTRY* ent = Config_GetEntry(store, key);
+
 	if(!ent) {
 		lua_pushstring(L, "nil");
 		return 1;
@@ -804,7 +804,7 @@ static bool Cmd_Plugins(const char* args, CLIENT* caller, char* out) {
 			}
 		}
 	} else {
-		String_Copy(out, CMD_MAX_OUT, "No arguments given :(");
+		String_Copy(out, CMD_MAX_OUT, "No arguments given");
 	}
 
 	return true;

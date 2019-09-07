@@ -39,7 +39,6 @@ bool Client_Despawn(CLIENT* client) {
 }
 
 bool Client_ChangeWorld(CLIENT* client, WORLD* world) {
-	if(!Client_IsInGame(client)) return false;
 	if(Client_IsInWorld(client, world)) return true;
 
 	Client_Despawn(client);
@@ -361,7 +360,7 @@ void Client_UpdatePositions(CLIENT* client) {
 
 	for(int i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT* other = clients[i];
-		if(!other || Client_IsInGame(other) || client == other || !Client_IsInSameWorld(client, other))
+		if(other && client != other && Client_IsInGame(other) && Client_IsInSameWorld(client, other))
 			Packet_WritePosAndOrient(other, client);
 	}
 }
