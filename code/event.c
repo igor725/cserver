@@ -28,7 +28,7 @@ bool Event_RegisterVoid(EventType type, evtVoidCallback func) {
 	rgPart2;
 }
 
-static bool Event_Call(EventType type, void* param) {
+bool Event_Call(EventType type, void* param) {
 	bool ret = true;
 
 	for(int pos = 0; pos < MAX_EVENTS; pos++) {
@@ -52,22 +52,6 @@ bool Event_OnMessage(CLIENT* client, char* message, MessageType* id) {
 
 bool Event_OnBlockPlace(CLIENT* client, ushort* x, ushort* y, ushort* z, BlockID* id) {
 	return Event_Call(EVT_ONBLOCKPLACE, (void*)&client);
-}
-
-void Event_OnHandshakeDone(CLIENT* client) {
-	Event_Call(EVT_ONHANDSHAKEDONE, (void*)client);
-}
-
-void Event_OnSpawn(CLIENT* client) {
-	Event_Call(EVT_ONSPAWN, (void*)client);
-}
-
-void Event_OnDespawn(CLIENT* client) {
-	Event_Call(EVT_ONDESPAWN, (void*)client);
-}
-
-void Event_OnDisconnect(CLIENT* client) {
-	Event_Call(EVT_ONDISCONNECT, (void*)client);
 }
 
 void Event_OnHeldBlockChange(CLIENT* client, BlockID* prev, BlockID* curr) {

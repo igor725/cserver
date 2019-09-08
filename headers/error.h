@@ -2,7 +2,7 @@
 #define ERROR_H
 enum ErrorTypes {
 	ET_NOERR = -1,
-	ET_SERVER = 0,
+	ET_SERVER,
 	ET_ZLIB,
 	ET_SYS,
 	ET_STR
@@ -23,7 +23,7 @@ const char* Error_File;
 int   Error_Line;
 
 enum ErrorCodes {
-	EC_OK = 0,
+	EC_OK,
 	EC_NULLPTR,
 	EC_MAGIC,
 	EC_WIUNKID,

@@ -253,7 +253,7 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 		client->cpeData = (CPEDATA*)Memory_Alloc(1, sizeof(CPEDATA));
 		CPE_StartHandshake(client);
 	} else {
-		Event_OnHandshakeDone(client);
+		Event_Call(EVT_ONHANDSHAKEDONE, (void*)client);
 		Client_HandshakeStage2(client);
 	}
 

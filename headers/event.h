@@ -9,7 +9,9 @@ typedef void(*evtVoidCallback)(void* param);
 typedef bool(*evtBoolCallback)(void* param);
 
 enum eventType {
-	EVT_ONSPAWN = 0,
+	EVT_POSTSTART,
+	EVT_ONSTOP,
+	EVT_ONSPAWN,
 	EVT_ONDESPAWN,
 	EVT_ONHANDSHAKEDONE,
 	EVT_ONMESSAGE,
@@ -22,7 +24,7 @@ enum eventType {
 #define EVT_RTVOID 0
 #define EVT_RTBOOL 1
 
-#define ETYPES     8
+#define ETYPES     10
 #define MAX_EVENTS 64
 
 typedef struct onMessage {
@@ -67,10 +69,7 @@ EVENT* Event_List[ETYPES][MAX_EVENTS];
 bool Event_RegisterBool(EventType type, evtBoolCallback func);
 bool Event_RegisterVoid(EventType type, evtVoidCallback func);
 
-void Event_OnSpawn(CLIENT* client);
-void Event_OnDespawn(CLIENT* client);
-void Event_OnDisconnect(CLIENT* client);
-void Event_OnHandshakeDone(CLIENT* client);
+bool Event_Call(EventType type, void* param);
 bool Event_OnMessage(CLIENT* client, char* message, MessageType* id);
 void Event_OnHeldBlockChange(CLIENT* client, BlockID* prev, BlockID* curr);
 bool Event_OnBlockPlace(CLIENT* client, ushort* x, ushort* y, ushort* z, BlockID* id);

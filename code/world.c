@@ -1,5 +1,4 @@
 #include "core.h"
-#include <zlib.h>
 #include "world.h"
 
 WORLD* World_Create(const char* name) {

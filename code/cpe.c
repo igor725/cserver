@@ -190,7 +190,7 @@ bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
 
 	--client->cpeData->_extCount;
 	if(client->cpeData->_extCount == 0) {
-		Event_OnHandshakeDone(client);
+		Event_Call(EVT_ONHANDSHAKEDONE, (void*)client);
 		Client_HandshakeStage2(client);
 	}
 

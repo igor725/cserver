@@ -80,13 +80,11 @@ bool Server_InitialWork() {
 
 	Log_Info("Loading " MAINCFG);
 	mainCfg = Config_Create(MAINCFG);
-	if(!Config_Load(mainCfg)) {
-		Config_EmptyStore(mainCfg);
-		Config_SetStr(mainCfg, "ip", "0.0.0.0");
-		Config_SetInt(mainCfg, "port", 25565);
-		Config_SetStr(mainCfg, "name", DEFAULT_NAME);
-		Config_SetStr(mainCfg, "motd", DEFAULT_MOTD);
-	}
+	Config_SetStr(mainCfg, "ip", "0.0.0.0");
+	Config_SetInt(mainCfg, "port", 25565);
+	Config_SetStr(mainCfg, "name", DEFAULT_NAME);
+	Config_SetStr(mainCfg, "motd", DEFAULT_MOTD);
+	Config_Load(mainCfg);
 
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
@@ -125,6 +123,7 @@ bool Server_InitialWork() {
 #endif
 
 	Console_StartListen();
+	Event_Call(EVT_POSTSTART, NULL);
 	return Server_Bind(Config_GetStr(mainCfg, "ip"), (ushort)Config_GetInt(mainCfg, "port"));
 }
 
@@ -140,6 +139,7 @@ void Server_DoStep() {
 }
 
 void Server_Stop() {
+	Event_Call(EVT_ONSTOP, NULL);
 	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
 		CLIENT* client = clients[i];
 		WORLD* world = worlds[i];

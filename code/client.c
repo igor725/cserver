@@ -1,5 +1,4 @@
 #include "core.h"
-#include "zlib.h"
 #include "world.h"
 #include "client.h"
 #include "packets.h"
@@ -34,7 +33,7 @@ bool Client_Despawn(CLIENT* client) {
 
 	Packet_WriteDespawn(Broadcast, client);
 	client->playerData->spawned = false;
-	Event_OnDespawn(client);
+	Event_Call(EVT_ONDESPAWN, (void*)client);
 	return true;
 }
 
@@ -58,7 +57,7 @@ TRET Client_ThreadProc(TARG lpParam) {
 		if(client->status == CLIENT_WAITCLOSE) {
 			int len = recv(client->sock, client->rdbuf, 131, 0);
 			if(len <= 0) {
-				Event_OnDisconnect(client);
+				Event_Call(EVT_ONDISCONNECT, (void*)client);
 				Socket_Close(client->sock);
 				Client_Despawn(client);
 				Client_Destroy(client);
@@ -318,7 +317,7 @@ bool Client_Spawn(CLIENT* client) {
 	}
 
 	client->playerData->spawned = true;
-	Event_OnSpawn(client);
+	Event_Call(EVT_ONSPAWN, (void*)client);
 	return true;
 }
 

@@ -1,5 +1,4 @@
 #include "core.h"
-#include <zlib.h>
 #include "error.h"
 
 const char* const Error_Types[] = {

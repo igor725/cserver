@@ -4,7 +4,7 @@ typedef unsigned char Weather;
 typedef unsigned char MessageType;
 
 enum WeatherTypes {
-	WEATHER_SUN = 0,
+	WEATHER_SUN,
 	WEATHER_RAIN,
 	WEATHER_SNOW
 };

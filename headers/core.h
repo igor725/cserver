@@ -44,6 +44,7 @@ typedef uchar          ClientID;
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <zlib.h>
 #include "platform.h"
 #include "error.h"
 #include "block.h"
@@ -59,7 +60,7 @@ typedef uchar          ClientID;
 #define DEFAULT_MOTD "Server MOTD"
 
 enum messageTypes {
-	CPE_CHAT = 0,
+	CPE_CHAT,
 	CPE_STATUS1,
 	CPE_STATUS2,
 	CPE_STATUS3,
