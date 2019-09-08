@@ -8,8 +8,14 @@ LIBS="-lz -lpthread"
 
 LUA_ENABLED=0
 
+clean () {
+	rm -rf objs/* server;
+	exit 0;
+}
+
 for a in "$@"
 do
+	if [ "$a" == "clean" ]; then clean; fi
 	if [ "$a" == "lua" ]; then LUA_ENABLED=1; fi
 	if [ "$a" == "dbg" ]; then DEBUG=1; fi
 	if [ "$a" == "wall" ]; then WARN="-Wall"; fi
@@ -45,6 +51,7 @@ if [ $DEBUG -eq 1 ]; then
 fi
 
 echo -n "Compiling..."
+if [ ! -d "objs" ]; then mkdir objs; fi
 pids=()
 for C in `find code/ -type f -name *.c`
 do
