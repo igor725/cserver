@@ -60,12 +60,12 @@ static bool CHandler_Kick(const char* args, CLIENT* caller, char* out) {
 }
 
 void Command_RegisterDefault() {
-	Command_Register("op", &CHandler_OP, true);
-	Command_Register("stop", &CHandler_Stop, true);
-	Command_Register("test", &CHandler_Test, false);
-	Command_Register("announce", &CHandler_Announce, false);
-	Command_Register("cw", &CHandler_ChangeWorld, false);
-	Command_Register("kick", &CHandler_Kick, true);
+	Command_Register("op", CHandler_OP, true);
+	Command_Register("stop", CHandler_Stop, true);
+	Command_Register("test", CHandler_Test, false);
+	Command_Register("announce", CHandler_Announce, false);
+	Command_Register("cw", CHandler_ChangeWorld, false);
+	Command_Register("kick", CHandler_Kick, true);
 }
 
 static bool checkPermissions(COMMAND* cmd, CLIENT* client) {

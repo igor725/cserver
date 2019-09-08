@@ -927,7 +927,7 @@ static void elp_onheldblockchange(void* param) {
 }
 
 void LuaPlugin_Start() {
-	Command_Register("plugins", &Cmd_Plugins, true);
+	Command_Register("plugins", Cmd_Plugins, true);
 	Event_RegisterBool(EVT_ONMESSAGE, elp_onmessage);
 	Event_RegisterBool(EVT_ONBLOCKPLACE, elp_onblockplace);
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, elp_onhsdone);

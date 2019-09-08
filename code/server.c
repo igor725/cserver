@@ -35,7 +35,7 @@ void Server_Accept() {
 		if(id >= 0) {
 			tmp->id = id;
 			tmp->status = CLIENT_OK;
-			tmp->thread = Thread_Create((TFUNC)&Client_ThreadProc, tmp);
+			tmp->thread = Thread_Create(Client_ThreadProc, tmp);
 			if(!Thread_IsValid(tmp->thread)) {
 				Log_FormattedError();
 				Client_Kick(tmp, "Can't create packet handling thread");
@@ -91,8 +91,8 @@ bool Server_InitialWork() {
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
-	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, &evt_onconnect);
-	Event_RegisterVoid(EVT_ONDISCONNECT, &evt_ondisconnect);
+	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, evt_onconnect);
+	Event_RegisterVoid(EVT_ONDISCONNECT, evt_ondisconnect);
 
 	int wIndex = -1;
 	dirIter wIter = {0};
@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
 	if(!(serverActive = Server_InitialWork())) {
 		Log_FormattedError();
 	} else {
-		acceptThread = Thread_Create((TFUNC)&Server_ThreadProc, NULL);
+		acceptThread = Thread_Create(Server_ThreadProc, NULL);
 		if(!Thread_IsValid(acceptThread)) {
 			Log_Error("Can't create accept thread");
 			serverActive = false;

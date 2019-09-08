@@ -16,7 +16,7 @@ int Console_ReadLine(char* buf, int buflen) {
 			}
 		}
 	}
-	
+
 	buf[len] = 0;
 	return len;
 }
@@ -39,7 +39,7 @@ TRET Console_ThreadProc(TARG lpParam) {
 }
 
 void Console_StartListen() {
-	Console_Thread = Thread_Create((TFUNC)&Console_ThreadProc, NULL);
+	Console_Thread = Thread_Create(Console_ThreadProc, NULL);
 	if(!Thread_IsValid(Console_Thread))
 		Log_Warn("The server will NOT handle console commands: Console_Thread == NULL");
 }

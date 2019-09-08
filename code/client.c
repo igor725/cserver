@@ -169,7 +169,7 @@ void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort
 	for(int i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT* other = clients[i];
 		if(!other || other == client) continue;
-		if(!Client_IsInGame(other) || !Client_IsInWorld(client, world)) continue;
+		if(!Client_IsInGame(other) || !Client_IsInWorld(other, world)) continue;
 		Packet_WriteSetBlock(other, x, y, z, block);
 	}
 }
@@ -329,7 +329,7 @@ bool Client_SendMap(CLIENT* client, WORLD* world) {
 	client->playerData->state = STATE_MOTD;
 	client->playerData->world = world;
 	Packet_WriteLvlInit(client);
-	client->mapThread = Thread_Create((TFUNC)&Client_MapThreadProc, client);
+	client->mapThread = Thread_Create(Client_MapThreadProc, client);
 	if(!Thread_IsValid(client->mapThread)) {
 		Client_Kick(client, "Can't create map sending thread");
 		return false;

@@ -221,7 +221,8 @@ THREAD Thread_Create(TFUNC func, const TARG lpParam) {
 	);
 
 	if(!th) {
-		Error_Set(ET_SYS, GetLastError(), true);
+		Error_Set(ET_SYS, GetLastError(), false);
+		return NULL;
 	}
 
 	return th;
@@ -251,7 +252,8 @@ void Thread_Join(THREAD th) {
 
 MUTEX* Mutex_Create() {
 	MUTEX* ptr = (MUTEX*)Memory_Alloc(1, sizeof(MUTEX));
-	InitializeCriticalSection(ptr);
+	if(ptr)
+		InitializeCriticalSection(ptr);
 	return ptr;
 }
 
@@ -419,7 +421,7 @@ bool File_WriteFormat(FILE* fp, const char* fmt, ...) {
 		Error_Set(ET_SYS, errno, false);
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -485,7 +487,8 @@ void Socket_Close(SOCKET fd) {
 THREAD Thread_Create(TFUNC func, const TARG arg) {
 	THREAD thread = Memory_Alloc(1, sizeof(THREAD));
 	if(pthread_create(thread, NULL, func, arg) != 0) {
-		Error_Set(ET_SYS, errno, true);
+		Error_Set(ET_SYS, errno, false);
+		return NULL;
 	}
 	return thread;
 }
@@ -518,7 +521,8 @@ MUTEX* Mutex_Create() {
 	MUTEX* ptr = (MUTEX*)Memory_Alloc(1, sizeof(MUTEX));
 	int ret = pthread_mutex_init(ptr, NULL);
 	if(ret) {
-		Error_Set(ET_SYS, ret, true);
+		Error_Set(ET_SYS, ret, false);
+		return NULL;
 	}
 	return ptr;
 }
@@ -526,7 +530,7 @@ MUTEX* Mutex_Create() {
 void Mutex_Free(MUTEX* handle) {
 	int ret = pthread_mutex_destroy(handle);
 	if(ret) {
-		Error_Set(ET_SYS, ret, true);
+		Error_Set(ET_SYS, ret, false);
 	}
 	Memory_Free(handle);
 }
