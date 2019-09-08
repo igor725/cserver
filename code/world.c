@@ -109,8 +109,10 @@ bool World_ReadInfo(WORLD* world, FILE* fp) {
 
 int World_Save(WORLD* world) {
 	FILE* fp;
+	char path[256];
 	char tmpname[256];
-	String_FormatBuf(tmpname, 256, "%s.tmp", world->name);
+	String_FormatBuf(path, 256, "worlds/%s", world->name);
+	String_FormatBuf(tmpname, 256, "worlds/%s.tmp", world->name);
 
 	if(!(fp = File_Open(tmpname, "wb")))
 		return false;
@@ -148,12 +150,15 @@ int World_Save(WORLD* world) {
 	} while(stream.avail_out == 0);
 
 	File_Close(fp);
-	return File_Rename(tmpname, world->name);
+	return File_Rename(tmpname, path);
 }
 
 int World_Load(WORLD* world) {
 	FILE* fp;
-	if(!(fp = File_Open(world->name, "rb")))
+	char path[256];
+	String_FormatBuf(path, 256, "worlds/%s", world->name);
+
+	if(!(fp = File_Open(path, "rb")))
 		return false;
 
 	if(!World_ReadInfo(world, fp)) {

@@ -94,19 +94,18 @@ bool Server_InitialWork() {
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, evt_onconnect);
 	Event_RegisterVoid(EVT_ONDISCONNECT, evt_ondisconnect);
 
+	Directory_Ensure("worlds");
 	int wIndex = -1;
 	dirIter wIter = {0};
-	if(Iter_Init(&wIter, ".", "cws")) {
+	if(Iter_Init(&wIter, "worlds", "cws")) {
 		do {
 			if(wIter.isDir || !wIter.cfile) continue;
 			WORLD* tmp = World_Create(wIter.cfile);
 			if(!World_Load(tmp)) {
 				Log_FormattedError();
 				World_Destroy(tmp);
-			} else {
-				Log_Info("World \"%s\" loaded", wIter.cfile);
+			} else
 				worlds[++wIndex] = tmp;
-			}
 		} while(Iter_Next(&wIter) && wIndex < MAX_WORLDS);
 	} else
 		Log_FormattedError();

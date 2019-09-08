@@ -27,6 +27,15 @@ void Memory_Free(void* ptr) {
 	free(ptr);
 }
 
+/*
+	Utils
+*/
+
+bool Directory_Ensure(const char* path) {
+	if(Directory_Exists(path)) return true;
+	return Directory_Create(path);
+}
+
 #if defined(WINDOWS)
 /*
 	WINDOWS ITER FUNCTIONS
@@ -79,7 +88,7 @@ bool Iter_Close(dirIter* iter) {
 }
 
 /*
-	WINDOWS FILE FUNCTIONS
+	WINDOWS FILE/DIRECTORY FUNCTIONS
 */
 
 bool File_Rename(const char* path, const char* newpath) {
@@ -158,6 +167,19 @@ bool File_Close(FILE* fp) {
 		return false;
 	}
 	return true;
+}
+
+bool Directory_Exists(const char* path) {
+	uint attr = GetFileAttributes(path);
+	return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
+}
+
+bool Directory_Create(const char* path) {
+	bool succ;
+	if(!(succ = CreateDirectory(path, NULL))) {
+		Error_Set(ET_SYS, GetLastError(), false);
+	}
+	return succ;
 }
 
 /*
@@ -352,7 +374,7 @@ bool Iter_Close(dirIter* iter) {
 }
 
 /*
-	POSIX FILE FUNCTIONS
+	POSIX FILE/DIRECTORY FUNCTIONS
 */
 
 bool File_Rename(const char* path, const char* newpath) {
@@ -431,6 +453,19 @@ bool File_Close(FILE* fp) {
 		return false;
 	}
 	if(fclose(fp) != 0) {
+		Error_Set(ET_SYS, errno, false);
+		return false;
+	}
+	return true;
+}
+
+bool Directory_Exists(const char* path) {
+	struct stat sb;
+	return stat(path, &ss) == 0 && S_ISDIR(ss.st_mode);
+}
+
+bool Directory_Create(const char* path) {
+	if(!mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)) {
 		Error_Set(ET_SYS, errno, false);
 		return false;
 	}

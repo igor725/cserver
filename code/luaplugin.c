@@ -625,21 +625,21 @@ static int luaopen_config(lua_State* L) {
 	Lua packets library
 */
 
-static const luaL_Reg packetslib[] = {
-	{NULL, NULL}
-};
-
-static int luaopen_packets(lua_State* L) {
-	luaL_register(L, lua_tostring(L, -1), packetslib);
-	return 1;
-}
+// static const luaL_Reg packetslib[] = {
+// 	{NULL, NULL}
+// };
+//
+// static int luaopen_packets(lua_State* L) {
+// 	luaL_register(L, lua_tostring(L, -1), packetslib);
+// 	return 1;
+// }
 
 static const luaL_Reg LuaPlugin_Libs[] = {
 	{"", luaopen_base},
 	{"log", luaopen_log},
 	{"client", luaopen_client},
 	{"config", luaopen_config},
-	{"packets", luaopen_packets},
+	// {"packets", luaopen_packets},
 	{"world", luaopen_world},
 	{LUA_TABLIBNAME, luaopen_table},
 	{LUA_STRLIBNAME, luaopen_string},
@@ -935,6 +935,7 @@ void LuaPlugin_Start() {
 	Event_RegisterVoid(EVT_ONDESPAWN, elp_ondespawn);
 	Event_RegisterVoid(EVT_ONHELDBLOCKCHNG, elp_onheldblockchange);
 
+	Directory_Ensure("plugins");
 	dirIter pIter = {0};
 	if(Iter_Init(&pIter, "plugins", "lua")) {
 		do {

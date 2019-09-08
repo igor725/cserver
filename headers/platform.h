@@ -49,7 +49,7 @@ bool Iter_Next(dirIter* iter);
 bool Iter_Close(dirIter* iter);
 
 /*
-	FILE FUNCTIONS
+	FILE/DIRECTORY FUNCTIONS
 */
 
 bool File_Rename(const char* path, const char* newpath);
@@ -59,6 +59,9 @@ size_t File_Write(const void* ptr, size_t size, size_t count, FILE* fp);
 bool File_Error(FILE* fp);
 bool File_WriteFormat(FILE* fp, const char* fmt, ...);
 bool File_Close(FILE* fp);
+bool Directory_Exists(const char* dir);
+bool Directory_Create(const char* dir);
+bool Directory_Ensure(const char* dir);
 
 /*
 	SOCKET FUNCTIONS
