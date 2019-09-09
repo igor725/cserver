@@ -5,7 +5,7 @@ DEBUG=0
 OPT="-O2"
 WARN=""
 CFLAGS="-pipe -Iheaders"
-LIBS="-lz -lpthread"
+LIBS="-lz -lpthread -ldl"
 
 LUA_ENABLED=0
 
