@@ -15,7 +15,7 @@ typedef struct command {
 
 COMMAND* headCommand;
 
-void Command_Register(const char* cmd, cmdFunc func, bool onlyOP);
+API void Command_Register(const char* cmd, cmdFunc func, bool onlyOP);
 bool Command_Handle(char* cmd, CLIENT* caller);
 void Command_RegisterDefault();
 #endif

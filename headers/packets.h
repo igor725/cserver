@@ -26,8 +26,8 @@ typedef struct packet {
 } PACKET;
 
 short Packet_GetSize(int id, CLIENT* client);
-void Packet_Register(int id, const char* name, ushort size, packetHandler handler);
-void Packet_RegisterCPE(int id, const char* extName, int extVersion, ushort extSize);
+API void Packet_Register(int id, const char* name, ushort size, packetHandler handler);
+API void Packet_RegisterCPE(int id, const char* extName, int extVersion, ushort extSize);
 void Packet_RegisterDefault();
 void Packet_RegisterCPEDefault();
 

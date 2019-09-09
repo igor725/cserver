@@ -24,20 +24,20 @@ typedef struct cfgStore {
 	CFGENTRY* lastCfgEntry;
 } CFGSTORE;
 
-CFGENTRY* Config_GetEntry(CFGSTORE* store, const char* key);
+API CFGENTRY* Config_GetEntry(CFGSTORE* store, const char* key);
 
-CFGSTORE* Config_Create(const char* filename);
-void Config_EmptyStore(CFGSTORE* store);
+API CFGSTORE* Config_Create(const char* filename);
+API void Config_EmptyStore(CFGSTORE* store);
 
-bool Config_Load(CFGSTORE* store);
-bool  Config_Save(CFGSTORE* store);
+API bool Config_Load(CFGSTORE* store);
+API bool  Config_Save(CFGSTORE* store);
 
-int   Config_GetInt(CFGSTORE* store, const char* key);
-void  Config_SetInt(CFGSTORE* store, const char* key, int value);
+API int   Config_GetInt(CFGSTORE* store, const char* key);
+API void  Config_SetInt(CFGSTORE* store, const char* key, int value);
 
-const char* Config_GetStr(CFGSTORE* store, const char* key);
-void  Config_SetStr(CFGSTORE* store, const char* key, const char* value);
+API const char* Config_GetStr(CFGSTORE* store, const char* key);
+API void  Config_SetStr(CFGSTORE* store, const char* key, const char* value);
 
-void Config_SetBool(CFGSTORE* store, const char* key, bool value);
-bool Config_GetBool(CFGSTORE* store, const char* key);
+API void Config_SetBool(CFGSTORE* store, const char* key, bool value);
+API bool Config_GetBool(CFGSTORE* store, const char* key);
 #endif

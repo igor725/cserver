@@ -183,6 +183,26 @@ bool Directory_Create(const char* path) {
 }
 
 /*
+	WINDOWS DLIB FUNCTIONS
+*/
+
+bool DLib_Load(const char* path, void** lib) {
+	if(!(*lib = LoadLibrary(path))) {
+		Error_Set(ET_SYS, GetLastError(), false);
+		return false;
+	}
+	return true;
+}
+
+bool DLib_GetSym(void* lib, const char* sname, void** sym) {
+	if(!(*sym = GetProcAddress(lib, name))) {
+		Error_Set(ET_SYS, GetLastError(), false);
+		return false;
+	}
+	return true;
+}
+
+/*
 	WINDOWS SOCKET FUNCTIONS
 */
 
@@ -460,7 +480,7 @@ bool File_Close(FILE* fp) {
 }
 
 bool Directory_Exists(const char* path) {
-	struct stat sb;
+	struct stat ss;
 	return stat(path, &ss) == 0 && S_ISDIR(ss.st_mode);
 }
 
@@ -470,6 +490,20 @@ bool Directory_Create(const char* path) {
 		return false;
 	}
 	return true;
+}
+
+/*
+	POSIX DLIB FUNCTIONS
+*/
+
+bool DLib_Load(const char* path, void** lib) {
+	*lib = dlopen(path, RTLD_NOW);
+	return *lib != NULL;
+}
+
+bool DLib_GetSym(void* lib, const char* sname, void** sym) {
+	*sym = dlsym(lib, sname);
+	return *sym != NULL;
 }
 
 /*

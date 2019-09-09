@@ -307,7 +307,7 @@ static int lclient_getappname(lua_State* L) {
 	return 1;
 }
 
-static int lclient_settype(lua_State* L) {
+static int lclient_setop(lua_State* L) {
 	CLIENT* client = checkClient(L, 1);
 	bool isOP = lua_toboolean(L, 2);
 	lua_pushboolean(L, Client_SetType(client, isOP));
@@ -371,7 +371,7 @@ static const luaL_Reg client_methods[] = {
 	{"isop", lclient_isop},
 	{"issupportext", lclient_issuportext},
 
-	{"settype", lclient_settype},
+	{"setop", lclient_setop},
 	{"sethotbar", lclient_sethotbar},
 
 	{"changeworld", lclient_changeworld},
@@ -825,7 +825,6 @@ static bool elp_onmessage(void* param) {
 					if(!(canSend = lua_toboolean(ptr->state, -1)))
 						break;
 				}
-				lua_pop(ptr->state, 1);
 			} else {
 				canSend = false;
 			}
@@ -855,7 +854,6 @@ static bool elp_onblockplace(void* param) {
 					if(!(canPlace = lua_toboolean(ptr->state, -1)))
 						break;
 				}
-				lua_pop(ptr->state, 1);
 			} else {
 				canPlace = false;
 			}

@@ -30,17 +30,17 @@ typedef struct world {
 	WORLDINFO*  info;
 } WORLD;
 
-WORLD* World_Create(const char* name);
-uint World_GetOffset(WORLD* world, ushort x, ushort y, ushort z);
-void World_SetDimensions(WORLD* world, ushort width, ushort height, ushort length);
-int World_SetBlock(WORLD* world, ushort x, ushort y, ushort z, BlockID id);
-BlockID World_GetBlock(WORLD* world, ushort x, ushort y, ushort z);
-void World_GenerateFlat(WORLD* world);
-WORLD* World_FindByName(const char* name);
-void World_Destroy(WORLD* world);
-bool World_Load(WORLD* world);
-bool World_Save(WORLD* world);
-void World_AllocBlockArray(WORLD* world);
+API WORLD* World_Create(const char* name);
+API uint World_GetOffset(WORLD* world, ushort x, ushort y, ushort z);
+API void World_SetDimensions(WORLD* world, ushort width, ushort height, ushort length);
+API int World_SetBlock(WORLD* world, ushort x, ushort y, ushort z, BlockID id);
+API BlockID World_GetBlock(WORLD* world, ushort x, ushort y, ushort z);
+API void World_GenerateFlat(WORLD* world);
+API WORLD* World_FindByName(const char* name);
+API void World_Destroy(WORLD* world);
+API bool World_Load(WORLD* world);
+API bool World_Save(WORLD* world);
+API void World_AllocBlockArray(WORLD* world);
 
 WORLD* worlds[MAX_WORLDS];
 #endif

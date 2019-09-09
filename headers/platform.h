@@ -35,33 +35,33 @@ typedef struct {
 	MEMORY FUNCTIONS
 */
 
-void* Memory_Alloc(size_t num, size_t size);
-void  Memory_Copy(void* dst, const void* src, size_t count);
-void  Memory_Fill(void* dst, size_t count, int val);
-void  Memory_Free(void* ptr);
+API void* Memory_Alloc(size_t num, size_t size);
+API void  Memory_Copy(void* dst, const void* src, size_t count);
+API void  Memory_Fill(void* dst, size_t count, int val);
+API void  Memory_Free(void* ptr);
 
 /*
   ITER FUNCTIONS
 */
 
-bool Iter_Init(dirIter* iter, const char* path, const char* ext);
-bool Iter_Next(dirIter* iter);
-bool Iter_Close(dirIter* iter);
+API bool Iter_Init(dirIter* iter, const char* path, const char* ext);
+API bool Iter_Next(dirIter* iter);
+API bool Iter_Close(dirIter* iter);
 
 /*
 	FILE/DIRECTORY FUNCTIONS
 */
 
-bool File_Rename(const char* path, const char* newpath);
-FILE* File_Open(const char* path, const char* mode);
-size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp);
-size_t File_Write(const void* ptr, size_t size, size_t count, FILE* fp);
-bool File_Error(FILE* fp);
-bool File_WriteFormat(FILE* fp, const char* fmt, ...);
-bool File_Close(FILE* fp);
-bool Directory_Exists(const char* dir);
-bool Directory_Create(const char* dir);
-bool Directory_Ensure(const char* dir);
+API bool File_Rename(const char* path, const char* newpath);
+API FILE* File_Open(const char* path, const char* mode);
+API size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp);
+API size_t File_Write(const void* ptr, size_t size, size_t count, FILE* fp);
+API bool File_Error(FILE* fp);
+API bool File_WriteFormat(FILE* fp, const char* fmt, ...);
+API bool File_Close(FILE* fp);
+API bool Directory_Exists(const char* dir);
+API bool Directory_Create(const char* dir);
+API bool Directory_Ensure(const char* dir);
 
 /*
 	SOCKET FUNCTIONS
@@ -75,29 +75,30 @@ void Socket_Close(SOCKET sock);
 	THREAD FUNCTIONS
 */
 
-THREAD Thread_Create(TFUNC func, const TARG lpParam);
-bool Thread_IsValid(THREAD th);
-bool Thread_SetName(const char* thName);
-void Thread_Close(THREAD th);
-void Thread_Join(THREAD th);
+API THREAD Thread_Create(TFUNC func, const TARG lpParam);
+API bool Thread_IsValid(THREAD th);
+API bool Thread_SetName(const char* thName);
+API void Thread_Close(THREAD th);
+API void Thread_Join(THREAD th);
 
 /*
 	MUTEX FUNCTIONS
 */
 
-MUTEX* Mutex_Create();
-void Mutex_Free(MUTEX* handle);
-void Mutex_Lock(MUTEX* handle);
-void Mutex_Unlock(MUTEX* handle);
+API MUTEX* Mutex_Create();
+API void Mutex_Free(MUTEX* handle);
+API void Mutex_Lock(MUTEX* handle);
+API void Mutex_Unlock(MUTEX* handle);
 
 /*
 	TIME FUNCTIONS
 */
 
-void Time_Format(char* buf, size_t len);
+API void Time_Format(char* buf, size_t len);
 
 /*
 	PROCESS FUNCTIONS
 */
-void Process_Exit(uint ecode);
+
+API void Process_Exit(uint ecode);
 #endif

@@ -9,14 +9,23 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #define ZLIB_WINAPI
+#ifndef CPLUGIN
+#define API __declspec(dllexport, noinline)
+#define VAR __declspec(dllexport)
+#else
+#define API __declspec(dllimport)
+#define VAR __declspec(dllimport)
+#endif
 #elif defined(__unix__)
 #define _GNU_SOURCE
 #include <errno.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <sys/time.h>
 #include <dirent.h>
 
 typedef int SOCKET;
@@ -28,10 +37,19 @@ typedef int SOCKET;
 #define POSIX
 #define SD_SEND   SHUT_WR
 #define MAX_PATH  PATH_MAX
+#ifndef CPLUGIN
+#define API __attribute__((visibility("default"), noinline))
+#define VAR __attribute__((visibility("default")))
+#else
+#define API
+#define VER
+#endif
 #endif
 
+#ifndef true
 #define true  1
 #define false 0
+#endif
 
 typedef unsigned short ushort;
 typedef ushort*        ushortp;

@@ -37,6 +37,7 @@ IF "%1"=="w4" set MSVC_OPTS=%MSVC_OPTS% /W4
 IF "%1"=="nowarn" set MSVC_OPTS=%MSVC_OPTS% /W0
 IF "%1"=="wx" set MSVC_OPTS=%MSVC_OPTS% /WX
 IF "%1"=="lua" set LUA_ENABLED=1
+IF "%1"=="cp" set MSVC_OPTS=%MSVC_OPTS% /DCP_ENABLED
 SHIFT
 goto argloop
 :continue

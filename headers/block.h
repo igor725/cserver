@@ -53,5 +53,5 @@ enum Blocks {
 	BLOCK_OBSIDIAN = 49,
 };
 
-bool Block_IsValid(BlockID id);
+API bool Block_IsValid(BlockID id);
 #endif

@@ -11,6 +11,9 @@
 #ifdef LUA_ENABLED
 #include "luaplugin.h"
 #endif
+#ifdef CP_ENABLED
+#include "cplugin.h"
+#endif
 
 void Server_Accept() {
 	struct sockaddr_in caddr;
@@ -120,6 +123,10 @@ bool Server_InitialWork() {
 #ifdef LUA_ENABLED
 	Log_Info("Starting LuaVM");
 	LuaPlugin_Start();
+#endif
+#ifdef CP_ENABLED
+	Log_Info("Loading C plugins");
+	CPlugin_Start();
 #endif
 
 	Console_StartListen();
