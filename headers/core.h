@@ -25,6 +25,7 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <dlfcn.h>
 #include <pthread.h>
 #include <dirent.h>
 
