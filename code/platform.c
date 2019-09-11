@@ -195,7 +195,7 @@ bool DLib_Load(const char* path, void** lib) {
 }
 
 bool DLib_GetSym(void* lib, const char* sname, void** sym) {
-	if(!(*sym = GetProcAddress(lib, name))) {
+	if(!(*sym = (void*)GetProcAddress(lib, sname))) {
 		Error_Set(ET_SYS, GetLastError(), false);
 		return false;
 	}
