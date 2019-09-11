@@ -15,6 +15,7 @@ typedef struct {
   void* dirHandle;
   WIN32_FIND_DATA fileHandle;
 } dirIter;
+#define DLIB_EXT "dll"
 #elif defined(POSIX)
 typedef pthread_t* THREAD;
 typedef void*(*TFUNC)(TARG);
@@ -29,6 +30,7 @@ typedef struct {
   DIR* dirHandle;
   struct dirent* fileHandle;
 } dirIter;
+#define DLIB_EXT "so"
 #endif
 
 /*

@@ -29,7 +29,8 @@ enum ErrorCodes {
 	EC_WIUNKID,
 	EC_CFGTYPE,
 	EC_CFGEND,
-	EC_ITERINITED
+	EC_ITERINITED,
+	EC_DLLPLUGVER
 };
 
 void Error_SetCode(const char* efile, int eline, const char* efunc, int etype, uint ecode);

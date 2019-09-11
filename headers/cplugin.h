@@ -1,5 +1,8 @@
 #ifndef CPLUGIN_H
 #define CPLUGIN_H
+
+#define CPLUGIN_API_NUM 100
+
 typedef void (*initFunc)();
 typedef struct cPlugin {
 	const char* name;
