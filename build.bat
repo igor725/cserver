@@ -1,4 +1,5 @@
 @echo off
+setlocal
 set ARCH=x86
 set DEBUG=0
 
@@ -53,7 +54,7 @@ IF NOT EXIST %ARCH% MD %ARCH%
 echo Build configuration:
 echo Architecture: %ARCH%
 IF "%LUA_ENABLED%"=="0" (
-  set MSVC_OPTS=/wd4206
+  set MSVC_OPTS=%MSVC_OPTS% /wd4206
   echo LuaPlugin: disabled
 ) else (
   set MSVC_OPTS=%MSVC_OPTS% /DLUA_ENABLED /I%LUA_DIR%\include
@@ -80,7 +81,6 @@ set ZLIB_COMPILEDIR=%ZLIB_DIR%\contrib\vstudio\vc14\%ARCH%\ZlibDll%ZLIB_MODE%%ZL
 set ZLIB_DLL=%ZLIB_COMPILEDIR%\zlibwapi.dll
 
 :msvc
-setlocal
 set MSVC_OPTS=%MSVC_OPTS% /Fo%MSVC_OBJDIR%\ /Fe%EXECPATH%
 set MSVC_OPTS=%MSVC_OPTS% /link /LIBPATH:%ZLIB_COMPILEDIR% %MSVC_LINKER%
 set COPY=%ZLIB_DLL%
@@ -96,7 +96,7 @@ IF "%LUA_ENABLED%"=="1" (
 
 IF "%ARCH%"=="x64" call vcvars64
 IF "%ARCH%"=="x86" call vcvars32
-cl .\code\*.c /MP /W4 /Gm- /I.\headers\ /I%ZLIB_DIR% %MSVC_LIBS% %MSVC_OPTS%
+cl .\code\*.c /MP /Gm- /I.\headers\ /I%ZLIB_DIR% %MSVC_LIBS% %MSVC_OPTS%
 IF "%ERRORLEVEL%"=="0" (goto binstart) else (goto compileerror)
 
 :copyerror
