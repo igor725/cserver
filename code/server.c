@@ -87,8 +87,10 @@ bool Server_InitialWork() {
 	Config_SetInt(mainCfg, "port", 25565);
 	Config_SetStr(mainCfg, "name", DEFAULT_NAME);
 	Config_SetStr(mainCfg, "motd", DEFAULT_MOTD);
+	Config_SetInt(mainCfg, "loglevel", 3);
 	Config_Load(mainCfg);
 
+	Log_SetLevel(Config_GetInt(mainCfg, "loglevel"));
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();

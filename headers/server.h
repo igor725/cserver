@@ -7,6 +7,6 @@ bool Server_InitialWork();
 void Server_DoStep();
 THREAD acceptThread;
 bool serverActive;
-CFGSTORE* mainCfg;
+VAR CFGSTORE* mainCfg;
 SOCKET server;
 #endif
