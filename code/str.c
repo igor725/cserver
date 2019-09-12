@@ -27,15 +27,13 @@ size_t String_Append(char* dst, size_t len, const char* src) {
 }
 
 size_t String_Copy(char* dst, size_t len, const char* src) {
-	if(!dst) return 0;
-	if(!src) return 0;
-	size_t blen = len;
+	size_t _len = len;
 
-	while(blen > 1 && (*dst++ = *src++) != '\0')
-		--blen;
-
+	while(_len > 1 && (*dst++ = *src++) != '\0')
+		--_len;
 	*dst = 0;
-	return len - blen;
+
+	return len - _len;
 }
 
 char* String_CopyUnsafe(char* dst, const char* src) {
@@ -54,7 +52,6 @@ uint String_FormatError(uint code, char* buf, uint buflen) {
 #elif defined(POSIX)
 	int len = String_Copy(buf, buflen, strerror(code));
 #endif
-
 	return len;
 }
 
@@ -75,39 +72,23 @@ void String_FormatBuf(char* buf, size_t len, const char* str, ...) {
 
 const char* String_AllocCopy(const char* str) {
 	char* ptr = Memory_Alloc(1, String_Length(str) + 1);
-	if(!ptr)
-		return NULL;
 	String_CopyUnsafe(ptr, str);
 	return (const char*)ptr;
 }
 
 size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index) {
-	if(!args || !arg || arrsz < 1) return 0;
-
 	size_t argsize = 0;
 
-	while(1) {
+	while(*args != '\0') {
 		if(index > 0) {
-			if(*args == '\0')
-				return 0;
-
-			if(*args == ' ')
-				--index;
-
+			if(*args == ' ') --index;
 			++args;
 		} else {
-			if(arrsz < argsize) {
-				arg[argsize] = '\0';
-				break;
+			while(arrsz > 1 && (*arg++ = *args++) != ' ') {
+				--arrsz; ++argsize;
 			}
-			arg[argsize] = args[argsize];
-			if(args[argsize] == '\0')
-				break;
-			if(args[argsize] == ' ') {
-				arg[argsize] = '\0';
-				break;
-			}
-			++argsize;
+			*arg = '\0';
+			break;
 		}
 	}
 

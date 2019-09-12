@@ -294,8 +294,7 @@ void Thread_Join(THREAD th) {
 
 MUTEX* Mutex_Create() {
 	MUTEX* ptr = (MUTEX*)Memory_Alloc(1, sizeof(MUTEX));
-	if(ptr)
-		InitializeCriticalSection(ptr);
+	InitializeCriticalSection(ptr);
 	return ptr;
 }
 

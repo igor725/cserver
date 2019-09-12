@@ -6,6 +6,9 @@ enum cfgTypes {
 	CFG_STR  = 's'
 };
 
+#define CFG_KEYLEN 128
+#define CFG_VALUELEN 128
+
 typedef struct cfgEntry {
 	const char*      key;
 	int              type;

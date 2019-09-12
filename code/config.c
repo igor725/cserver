@@ -15,15 +15,15 @@ bool Config_Load(CFGSTORE* store) {
 	int type;
 	int count = 0;
 	int ch = fgetc(fp);
-	char key[128] = {0};
-	char value[128] = {0};
+	char key[CFG_KEYLEN] = {0};
+	char value[CFG_VALUELEN] = {0};
 
 	while(!feof(fp)) {
 		while(ch == '\n') {
 			ch = fgetc(fp);
 		}
-		Memory_Fill(key, 128, 0);
-		Memory_Fill(value, 128, 0);
+		Memory_Fill(key, CFG_KEYLEN, 0);
+		Memory_Fill(value, CFG_VALUELEN, 0);
 
 		do {
 			if(ch != '\n' && ch != '\r' && ch != ' ') {
