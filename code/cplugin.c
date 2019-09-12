@@ -21,7 +21,7 @@ bool CPlugin_Load(const char* name) {
 			Error_Set(ET_SERVER, EC_DLLPLUGVER, true);
 			return false;
 		}
-		(*(initFunc)initSym)();
+		return (*(initFunc)initSym)();
 	}
 	return false;
 }

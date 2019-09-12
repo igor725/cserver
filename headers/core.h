@@ -15,6 +15,7 @@
 #else
 #define API __declspec(dllimport)
 #define VAR __declspec(dllimport)
+#define EXP __declspec(dllexport)
 #endif
 #elif defined(__unix__)
 #define _GNU_SOURCE
@@ -44,6 +45,7 @@ typedef int SOCKET;
 #else
 #define API
 #define VER
+#define EXP
 #endif
 #endif
 

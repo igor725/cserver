@@ -2,6 +2,8 @@
 setlocal
 set ARCH=x86
 set DEBUG=0
+set CODE_ROOT=
+set COMPILER=cl
 
 set ZLIB_ADD=
 set ZLIB_DIR=.\zlib
@@ -13,7 +15,7 @@ set LUA_VER=51
 
 set MSVC_OPTS=
 set MSVC_LINKER=
-set MSVC_OBJDIR=objs
+set OBJDIR=objs
 set MSVC_LIBS=ws2_32.lib zlibwapi.lib
 
 :argloop
@@ -39,17 +41,32 @@ IF "%1"=="nowarn" set MSVC_OPTS=%MSVC_OPTS% /W0
 IF "%1"=="wx" set MSVC_OPTS=%MSVC_OPTS% /WX
 IF "%1"=="lua" set LUA_ENABLED=1
 IF "%1"=="cp" set MSVC_OPTS=%MSVC_OPTS% /DCP_ENABLED
+IF "%1"=="plugbuild" (
+  set BUILD_PLUGIN=1
+  set PLUGNAME=%2
+  goto continue
+)
 SHIFT
 goto argloop
 :continue
 
-set EXECNAME=server
-set EXECPATH=%ARCH%\%EXECNAME%
-set SERVER_ZDLL=%ARCH%\zlibwapi.dll
-set SERVER_LDLL=%ARCH%\lua%LUA_VER%.dll
+IF "%BUILD_PLUGIN%"=="1" (
+  set COMPILER=cl /LD
+  set OUTDIR=%PLUGNAME%\%ARCH%
+  set BINNAME=plugin
+  set OBJDIR=%PLUGNAME%\objs
+  set CODE_ROOT=%PLUGNAME%\
+) else (
+  set BINNAME=server
+  set OUTDIR=%ARCH%
+)
 
-IF NOT EXIST %MSVC_OBJDIR% MD %MSVC_OBJDIR%
-IF NOT EXIST %ARCH% MD %ARCH%
+set BINPATH=%OUTDIR%\%BINNAME%
+set SERVER_ZDLL=%OUTDIR%\zlibwapi.dll
+set SERVER_LDLL=%OUTDIR%\lua%LUA_VER%.dll
+
+IF NOT EXIST %OBJDIR% MD %OBJDIR%
+IF NOT EXIST %OUTDIR% MD %OUTDIR%
 
 echo Build configuration:
 echo Architecture: %ARCH%
@@ -81,23 +98,33 @@ set ZLIB_COMPILEDIR=%ZLIB_DIR%\contrib\vstudio\vc14\%ARCH%\ZlibDll%ZLIB_MODE%%ZL
 set ZLIB_DLL=%ZLIB_COMPILEDIR%\zlibwapi.dll
 
 :msvc
-set MSVC_OPTS=%MSVC_OPTS% /Fo%MSVC_OBJDIR%\ /Fe%EXECPATH%
-set MSVC_OPTS=%MSVC_OPTS% /link /LIBPATH:%ZLIB_COMPILEDIR% %MSVC_LINKER%
+IF "%BUILD_PLUGIN%"=="1" (
+  set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DCPLUGIN /Iheaders\
+  set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%ARCH% /NOENTRY
+  set MSVC_LIBS=%MSVC_LIBS% server.lib
+) else (
 set COPY=%ZLIB_DLL%
+  set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH%
+  copy /Y %ZLIB_DLL% %SERVER_ZDLL% 2> nul > nul
+  IF NOT EXIST %SERVER_ZDLL% goto copyerror
 
-copy /Y %ZLIB_DLL% %SERVER_ZDLL% 2> nul > nul
-IF NOT EXIST %SERVER_ZDLL% goto copyerror
-
-IF "%LUA_ENABLED%"=="1" (
-  set COPY=%LUA_DLL%
-  copy /Y %LUA_DLL% %SERVER_LDLL% 2> nul > nul
-  IF NOT EXIST %SERVER_LDLL% goto copyerror
+  IF "%LUA_ENABLED%"=="1" (
+    set COPY=%LUA_DLL%
+    copy /Y %LUA_DLL% %SERVER_LDLL% 2> nul > nul
+    IF NOT EXIST %SERVER_LDLL% goto copyerror
+  )
 )
+set MSVC_OPTS=%MSVC_OPTS% /Fo%OBJDIR%\
+set MSVC_OPTS=%MSVC_OPTS% /link /LIBPATH:%ZLIB_COMPILEDIR% %MSVC_LINKER%
 
 IF "%ARCH%"=="x64" call vcvars64
 IF "%ARCH%"=="x86" call vcvars32
-cl .\code\*.c /MP /Gm- /I.\headers\ /I%ZLIB_DIR% %MSVC_LIBS% %MSVC_OPTS%
-IF "%ERRORLEVEL%"=="0" (goto binstart) else (goto compileerror)
+%COMPILER% %CODE_ROOT%code\*.c /MP /Gm- /I%CODE_ROOT%headers\ /I%ZLIB_DIR% %MSVC_LIBS% %MSVC_OPTS%
+IF "%BUILD_PLUGIN%"=="1" (
+  goto :end
+) else (
+  IF "%ERRORLEVEL%"=="0" (goto binstart) else (goto compileerror)
+)
 
 :copyerror
 echo %COPY% not found
@@ -110,14 +137,14 @@ echo Something went wrong :(
 goto end
 
 :binstart
-IF "%RUNMODE%"=="0" start /D %ARCH% %EXECNAME%
+IF "%RUNMODE%"=="0" start /D %ARCH% %BINNAME%
 IF "%RUNMODE%"=="1" goto onerun
 endlocal
 goto end
 
 :onerun:
-pushd %ARCH%
-%EXECNAME%
+pushd %OUTDIR%
+%BINNAME%
 popd
 goto end
 
@@ -126,7 +153,7 @@ cloc --exclude-dir=zlib,lua .
 goto end
 
 :clean
-del objs\*.obj *.exe *.dll
+del %OBJDIR%\*.obj %OUTDIR%\*.exe %OUTDIR%\*.dll
 
 :end
 exit /B 0

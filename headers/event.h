@@ -66,8 +66,8 @@ typedef struct event {
 
 EVENT* Event_List[ETYPES][MAX_EVENTS];
 
-bool Event_RegisterBool(EventType type, evtBoolCallback func);
-bool Event_RegisterVoid(EventType type, evtVoidCallback func);
+API bool Event_RegisterBool(EventType type, evtBoolCallback func);
+API bool Event_RegisterVoid(EventType type, evtVoidCallback func);
 
 bool Event_Call(EventType type, void* param);
 bool Event_OnMessage(CLIENT* client, char* message, MessageType* id);
