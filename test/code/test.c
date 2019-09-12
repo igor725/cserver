@@ -36,7 +36,8 @@ static bool CHandler_Plugtest(const char* args, CLIENT* caller, char* out) {
 
 static bool CHandler_Atoggle(const char* args, CLIENT* caller, char* out) {
   enabled = !enabled;
-  String_Copy(out, CMD_MAX_OUT, enabled ? "Announce chat: enabled" : "Announce chat: disabled");
+	String_Append(out, CMD_MAX_OUT, "Announce chat: ");
+  String_Append(out, CMD_MAX_OUT, enabled ? "enabled" : "disabled");
   return true;
 }
 

@@ -21,12 +21,17 @@ size_t String_Length(const char* str) {
 	return strlen(str);
 }
 
+size_t String_Append(char* dst, size_t len, const char* src) {
+	size_t end = String_Length(dst);
+	return String_Copy(dst + end, len - end, src);
+}
+
 size_t String_Copy(char* dst, size_t len, const char* src) {
 	if(!dst) return 0;
 	if(!src) return 0;
 	size_t blen = len;
 
-	while((*dst++ = *src++) != '\0' && blen > 2)
+	while(blen > 1 && (*dst++ = *src++) != '\0')
 		--blen;
 
 	*dst = 0;

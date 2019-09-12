@@ -41,15 +41,16 @@ IF "%1"=="nowarn" set MSVC_OPTS=%MSVC_OPTS% /W0
 IF "%1"=="wx" set MSVC_OPTS=%MSVC_OPTS% /WX
 IF "%1"=="lua" set LUA_ENABLED=1
 IF "%1"=="cp" set MSVC_OPTS=%MSVC_OPTS% /DCP_ENABLED
-IF "%1"=="plugbuild" (
-  set BUILD_PLUGIN=1
-  set PLUGNAME=%2
-  goto continue
-)
+IF "%1"=="pb" goto pluginbuild
+IF "%1"=="pluginbuild" goto pluginbuild
 SHIFT
 goto argloop
-:continue
 
+:pluginbuild
+set BUILD_PLUGIN=1
+set PLUGNAME=%2
+
+:continue
 IF "%BUILD_PLUGIN%"=="1" (
   set COMPILER=cl /LD
   set OUTDIR=%PLUGNAME%\%ARCH%

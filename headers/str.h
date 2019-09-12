@@ -6,6 +6,7 @@
 API bool String_Compare(const char* str1, const char* str2);
 API bool String_CaselessCompare(const char* str1, const char* str2);
 API size_t String_Length(const char* str);
+API size_t String_Append(char* dst, size_t len, const char* src);
 API size_t String_Copy(char* dst, size_t len, const char* src);
 API char* String_CopyUnsafe(char* dst, const char* src);
 API uint String_FormatError(uint code, char* buf, uint buflen);
