@@ -53,13 +53,13 @@ set PLUGNAME=%2
 :continue
 IF "%BUILD_PLUGIN%"=="1" (
   set COMPILER=cl /LD
-  set OUTDIR=%PLUGNAME%\%ARCH%
+  set OUTDIR=%PLUGNAME%\out\%ARCH%
   set BINNAME=%PLUGNAME%
   set OBJDIR=%PLUGNAME%\objs
   set CODE_ROOT=%PLUGNAME%\
 ) else (
   set BINNAME=server
-  set OUTDIR=%ARCH%
+  set OUTDIR=out\%ARCH%
 )
 
 set BINPATH=%OUTDIR%\%BINNAME%
