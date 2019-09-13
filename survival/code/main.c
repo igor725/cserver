@@ -2,6 +2,7 @@
 #include <client.h>
 #include <event.h>
 #include <block.h>
+#include <command.h>
 
 #include "data.h"
 
@@ -25,10 +26,15 @@ static void Survival_OnClick(void* param) {
 	SURVDATA* survDataTg = SurvData_Get(target);
 }
 
-EXP int Plugin_ApiVer = 100;
+static bool CHandler_God(const char* args, CLIENT* caller, char* out) {
+
+}
+
+EXP int Plugin_ApiVer = 50;
 EXP bool Plugin_Init() {
 	Event_RegisterVoid(EVT_ONSPAWN, Survival_OnSpawn);
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, Survival_OnHandshake);
 	Event_RegisterVoid(EVT_ONPLAYERCLICK, Survival_OnClick);
+	Command_Register("god", CHandler_God, true);
 	return true;
 }

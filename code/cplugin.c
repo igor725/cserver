@@ -11,18 +11,29 @@ bool CPlugin_Load(const char* name) {
 	void* plugin;
 	void* verSym;
 	void* initSym;
+	int ver;
 
 	if(DLib_Load(path, &plugin)) {
 		if(!(DLib_GetSym(plugin, "Plugin_ApiVer", &verSym) &&
-		DLib_GetSym(plugin, "Plugin_Init", &initSym)))
+		DLib_GetSym(plugin, "Plugin_Init", &initSym))) {
+			DLib_Unload(plugin);
 			return false;
+		}
 
-		if(*((int*)verSym) / 100 != CPLUGIN_API_NUM / 100) {
-			Error_Set(ET_SERVER, EC_DLLPLUGVER, true);
+		ver = *((int*)verSym);
+		if(ver / 100 != CPLUGIN_API_NUM / 100) {
+			if(ver < CPLUGIN_API_NUM)
+				Log_Error(CPLUGIN_OLDMSG, name, CPLUGIN_API_NUM, ver);
+			else
+				Log_Error(CPLUGIN_UPGMSG, name, ver, CPLUGIN_API_NUM);
+
+			DLib_Unload(plugin);
 			return false;
 		}
 		return (*(initFunc)initSym)();
 	}
+
+	DLib_Unload(plugin);
 	return false;
 }
 
@@ -32,8 +43,7 @@ void CPlugin_Start() {
 	if(Iter_Init(&pIter, "plugins", DLIB_EXT)) {
 		do {
 			if(pIter.isDir || !pIter.cfile) continue;
-			if(!CPlugin_Load(pIter.cfile))
-				Log_FormattedError();
+			CPlugin_Load(pIter.cfile);
 		} while(Iter_Next(&pIter));
 	}
 }

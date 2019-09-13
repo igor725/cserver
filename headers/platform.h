@@ -70,6 +70,7 @@ API bool Directory_Ensure(const char* dir);
 */
 
 bool DLib_Load(const char* path, void** lib);
+bool DLib_Unload(void* lib);
 bool DLib_GetSym(void* lib, const char* sname, void** sym);
 
 /*

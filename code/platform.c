@@ -194,6 +194,10 @@ bool DLib_Load(const char* path, void** lib) {
 	return true;
 }
 
+bool DLib_Unload(void* lib) {
+	return FreeLibrary(lib);
+}
+
 bool DLib_GetSym(void* lib, const char* sname, void** sym) {
 	if(!(*sym = (void*)GetProcAddress(lib, sname))) {
 		Error_Set(ET_SYS, GetLastError(), false);
@@ -498,6 +502,10 @@ bool Directory_Create(const char* path) {
 bool DLib_Load(const char* path, void** lib) {
 	*lib = dlopen(path, RTLD_NOW);
 	return *lib != NULL;
+}
+
+bool DLib_Unload(void* lib) {
+	return dlclose(lib) == 0;
 }
 
 bool DLib_GetSym(void* lib, const char* sname, void** sym) {
