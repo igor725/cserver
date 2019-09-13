@@ -33,7 +33,6 @@ bool CPlugin_Load(const char* name) {
 		return (*(initFunc)initSym)();
 	}
 
-	DLib_Unload(plugin);
 	return false;
 }
 
