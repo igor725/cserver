@@ -507,7 +507,7 @@ bool DLib_Unload(void* lib) {
 	return dlclose(lib) == 0;
 }
 
-const char* DLib_GetError() {
+char* DLib_GetError() {
 	return dlerror();
 }
 
