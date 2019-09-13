@@ -66,6 +66,13 @@ API bool Directory_Create(const char* dir);
 API bool Directory_Ensure(const char* dir);
 
 /*
+	DLIB FUNCTIONS
+*/
+
+bool DLib_Load(const char* path, void** lib);
+bool DLib_GetSym(void* lib, const char* sname, void** sym);
+
+/*
 	SOCKET FUNCTIONS
 */
 
