@@ -508,6 +508,10 @@ bool DLib_Unload(void* lib) {
 	return dlclose(lib) == 0;
 }
 
+const char* DLib_GetError() {
+	return dlerror();
+}
+
 bool DLib_GetSym(void* lib, const char* sname, void** sym) {
 	*sym = dlsym(lib, sname);
 	return *sym != NULL;

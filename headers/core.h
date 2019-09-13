@@ -44,8 +44,8 @@ typedef int SOCKET;
 #define VAR __attribute__((visibility("default")))
 #else
 #define API
-#define VER
-#define EXP
+#define VAR
+#define EXP __attribute__((__visibility__("default")))
 #endif
 #endif
 

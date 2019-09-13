@@ -4,10 +4,14 @@ MAX_WORKERS=10
 DEBUG=0
 OPT="-O2"
 WARN=""
-CFLAGS="-pipe -Iheaders"
+ROOT="."
+CFLAGS="-pipe"
 LIBS="-lz -lpthread -ldl"
+OUTBIN="server"
 
+CP_ENABLED=0
 LUA_ENABLED=0
+PLUGIN_BUILD=0
 
 clean () {
 	rm -rf objs/* server;
@@ -16,9 +20,17 @@ clean () {
 
 for a in "$@"
 do
+	if [ $PLUGIN_BUILD -eq 1 ]; then
+		CFLAGS="$CFLAGS -DCPLUGIN -Iheaders"
+		PLUGIN_NAME="$a"
+		OUTBIN="$a.so"
+		ROOT="$a"
+		break
+	fi
 	if [ "$a" == "clean" ]; then clean; fi
 	if [ "$a" == "lua" ]; then LUA_ENABLED=1; fi
-	if [ "$a" == "cp" ]; then CFLAGS="$CFLAGS -DCP_ENABLED"; fi
+	if [ "$a" == "cp" ]; then CP_ENABLED=1; fi
+	if [ "$a"=="pb" ]; then PLUGIN_BUILD=1; fi
 	if [ "$a" == "dbg" ]; then DEBUG=1; fi
 	if [ "$a" == "wall" ]; then WARN="-Wall"; fi
 	if [ "$a" == "nowarn" ]; then WARN="-W0"; fi
@@ -28,6 +40,10 @@ do
 	if [ "$a" == "3" ]; then OPT="-O3"; fi
 	if [ "$a" == "f" ]; then OPT="-Ofast"; fi
 done
+
+if [ $CP_ENABLED -eq 1 ]; then
+	CFLAGS="$CFLAGS -DCP_ENABLED"
+fi
 
 if [ $LUA_ENABLED -eq 1 ]; then
 	echo -n "Searching liblua*.a and lua.h..."
@@ -53,13 +69,14 @@ if [ $DEBUG -eq 1 ]; then
 fi
 
 echo -n "Compiling..."
-if [ ! -d "objs" ]; then mkdir objs; fi
+OBJDIR="$ROOT/objs"
+if [ ! -d "$OBJDIR" ]; then mkdir $OBJDIR; fi
 pids=()
 cnt=0
-for C in `find code/ -type f -name *.c`
+for C in `find "$ROOT/code/" -type f -name *.c`
 do
-	obj="objs/$(basename $C .c).o"
-	gcc -c $C -o $obj $WARN $OPT $CFLAGS &
+	obj="$OBJDIR/$(basename $C .c).o"
+	gcc -c $C -o $obj -I"$ROOT/headers" $WARN $OPT $CFLAGS &
 	pids+=($!)
 	((cnt++))
 	if [ $cnt -ge $MAX_WORKERS ]; then
@@ -82,7 +99,12 @@ then
 	LOBJ=""
 fi
 
-OBJS=$(find objs/ -name "*.o" $LOBJ -printf "objs/%P ")
-if [ ! -d "out" ]; then mkdir out; fi
-gcc -o out/server $LIBS $OBJS
+OUTDIR="$ROOT/out"
+OBJS=$(find $OBJDIR -name "*.o" $LOBJ -printf "$OBJDIR/%P ")
+if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
+LNK="gcc"
+if [ $PLUGIN_BUILD -eq 1 ]; then
+	LNK="gcc -shared -fPIC"
+fi
+$LNK -o "$OUTDIR/$OUTBIN" $LIBS $OBJS
 echo "done"

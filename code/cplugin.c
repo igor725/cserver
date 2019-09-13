@@ -16,6 +16,7 @@ bool CPlugin_Load(const char* name) {
 	if(DLib_Load(path, &plugin)) {
 		if(!(DLib_GetSym(plugin, "Plugin_ApiVer", &verSym) &&
 		DLib_GetSym(plugin, "Plugin_Init", &initSym))) {
+			Log_Error(DLib_GetError());
 			DLib_Unload(plugin);
 			return false;
 		}
@@ -33,6 +34,7 @@ bool CPlugin_Load(const char* name) {
 		return (*(initFunc)initSym)();
 	}
 
+	Log_Error(DLib_GetError());
 	return false;
 }
 
