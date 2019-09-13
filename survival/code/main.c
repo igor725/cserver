@@ -30,7 +30,7 @@ static bool CHandler_God(const char* args, CLIENT* caller, char* out) {
 
 }
 
-EXP int Plugin_ApiVer = 50;
+EXP int Plugin_ApiVer = 100;
 EXP bool Plugin_Init() {
 	Event_RegisterVoid(EVT_ONSPAWN, Survival_OnSpawn);
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, Survival_OnHandshake);

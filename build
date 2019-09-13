@@ -30,7 +30,7 @@ do
 	if [ "$a" == "clean" ]; then clean; fi
 	if [ "$a" == "lua" ]; then LUA_ENABLED=1; fi
 	if [ "$a" == "cp" ]; then CP_ENABLED=1; fi
-	if [ "$a"=="pb" ]; then PLUGIN_BUILD=1; fi
+	if [ "$a" == "pb" ]; then PLUGIN_BUILD=1; fi
 	if [ "$a" == "dbg" ]; then DEBUG=1; fi
 	if [ "$a" == "wall" ]; then WARN="-Wall"; fi
 	if [ "$a" == "nowarn" ]; then WARN="-W0"; fi
@@ -106,5 +106,5 @@ LNK="gcc"
 if [ $PLUGIN_BUILD -eq 1 ]; then
 	LNK="gcc -shared -fPIC"
 fi
-$LNK -o "$OUTDIR/$OUTBIN" $LIBS $OBJS
+$LNK -rdynamic -o "$OUTDIR/$OUTBIN" $LIBS $OBJS
 echo "done"
