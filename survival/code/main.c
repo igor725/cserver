@@ -5,6 +5,7 @@
 #include <command.h>
 
 #include "data.h"
+#include "gui.h"
 
 static void Survival_OnHandshake(void* param) {
 	CLIENT* cl = (CLIENT*)param;

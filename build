@@ -102,9 +102,9 @@ fi
 OUTDIR="$ROOT/out"
 OBJS=$(find $OBJDIR -name "*.o" $LOBJ -printf "$OBJDIR/%P ")
 if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
-LNK="gcc"
+LNK="gcc -rdynamic"
 if [ $PLUGIN_BUILD -eq 1 ]; then
 	LNK="gcc -shared -fPIC"
 fi
-$LNK -rdynamic -o "$OUTDIR/$OUTBIN" $LIBS $OBJS
+$LNK -o "$OUTDIR/$OUTBIN" $LIBS $OBJS
 echo "done"
