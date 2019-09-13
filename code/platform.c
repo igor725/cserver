@@ -187,10 +187,7 @@ bool Directory_Create(const char* path) {
 */
 
 bool DLib_Load(const char* path, void** lib) {
-	if(!(*lib = LoadLibrary(path))) {
-		Error_Set(ET_SYS, GetLastError(), false);
-		return false;
-	}
+	if(!(*lib = LoadLibrary(path))) return false;
 	return true;
 }
 
@@ -198,11 +195,13 @@ bool DLib_Unload(void* lib) {
 	return FreeLibrary(lib);
 }
 
+char* DLib_GetError(char* buf, size_t len) {
+	String_FormatError(GetLastError(), buf, len);
+	return buf;
+}
+
 bool DLib_GetSym(void* lib, const char* sname, void** sym) {
-	if(!(*sym = (void*)GetProcAddress(lib, sname))) {
-		Error_Set(ET_SYS, GetLastError(), false);
-		return false;
-	}
+	if(!(*sym = (void*)GetProcAddress(lib, sname))) return false;
 	return true;
 }
 

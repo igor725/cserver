@@ -7,6 +7,7 @@
 
 bool CPlugin_Load(const char* name) {
 	char path[256];
+	char error[512];
 	String_FormatBuf(path, 256, "plugins/%s", name);
 	void* plugin;
 	void* verSym;
@@ -16,7 +17,7 @@ bool CPlugin_Load(const char* name) {
 	if(DLib_Load(path, &plugin)) {
 		if(!(DLib_GetSym(plugin, "Plugin_ApiVer", &verSym) &&
 		DLib_GetSym(plugin, "Plugin_Init", &initSym))) {
-			Log_Error(DLib_GetError());
+			Log_Error("%s: %s", path, DLib_GetError(error, 512));
 			DLib_Unload(plugin);
 			return false;
 		}
@@ -34,7 +35,7 @@ bool CPlugin_Load(const char* name) {
 		return (*(initFunc)initSym)();
 	}
 
-	Log_Error(DLib_GetError());
+	Log_Error("%s: %s", path, DLib_GetError(error, 512));
 	return false;
 }
 

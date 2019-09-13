@@ -42,7 +42,7 @@ char* String_CopyUnsafe(char* dst, const char* src) {
 
 uint String_FormatError(uint code, char* buf, uint buflen) {
 #if defined(WINDOWS)
-	int len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, code, 0, buf, buflen, NULL);
+	int len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, buflen, NULL);
 	if(len > 0) {
 		for(int i = 0; i < len; i++) {
 			if(buf[i] == '\r' || buf[i] == '\n')
