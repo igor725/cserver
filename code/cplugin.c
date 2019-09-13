@@ -37,8 +37,4 @@ void CPlugin_Start() {
 		} while(Iter_Next(&pIter));
 	}
 }
-
-void CPlugin_Stop() {
-
-}
 #endif

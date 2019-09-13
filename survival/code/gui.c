@@ -11,7 +11,12 @@ void SurvGui_DrawHealth(SURVDATA* data) {
 	float f = data->health - (float)hlt;
 
 	String_Append(healthstr, 20, "&c");
-	for(int i = 0; i < hlt; i++) {
+	for(int i = 0; i < SURV_MAX_HEALTH; i++) {
+		if (hlt == i)
+			String_Append(healthstr, 20, "&4");
+		else if(hlt + 1 == i)
+			String_Append(healthstr, 20, "&8");
+
 		String_Append(healthstr, 20, "\3");
 	}
 
@@ -19,16 +24,17 @@ void SurvGui_DrawHealth(SURVDATA* data) {
 }
 
 void SurvGui_DrawBreakProgress(SURVDATA* data) {
-	char breakstr[15] = {0};
-	String_Append(breakstr, 10, "[");
+	char breakstr[19] = {0};
+	String_Append(breakstr, 10, "[&a");
 	for(int i = 0; i < 10; i++) {
-		if(i < data->breakProgress) {
+		if(i == data->breakProgress)
+			String_Append(breakstr, 19, "&8");
 
-		} else if(i == data->breakProgress) {
-			String_Append(breakstr, 15, "");
-		}
+		String_Append(breakstr, 19, "|");
 	}
-	String_Append(breakstr, 10, "&f]");
+	String_Append(breakstr, 19, "&f]");
+
+	Client_Chat(data->client, SURV_BREAK_POS, breakstr);
 }
 
 void SurvGui_DrawAll(SURVDATA* data) {

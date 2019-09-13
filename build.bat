@@ -54,7 +54,7 @@ set PLUGNAME=%2
 IF "%BUILD_PLUGIN%"=="1" (
   set COMPILER=cl /LD
   set OUTDIR=%PLUGNAME%\%ARCH%
-  set BINNAME=plugin
+  set BINNAME=%PLUGNAME%
   set OBJDIR=%PLUGNAME%\objs
   set CODE_ROOT=%PLUGNAME%\
 ) else (

@@ -14,6 +14,7 @@ static void Survival_OnSpawn(void* param) {
 	CLIENT* cl = (CLIENT*)param;
 	SURVDATA* survData = SurvData_Get(cl);
 	SurvGui_DrawAll(survData);
+	SurvGui_DrawBreakProgress(survData);
 }
 
 static void Survival_OnClick(void* param) {

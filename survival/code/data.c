@@ -2,7 +2,6 @@
 #include <client.h>
 #include <config.h>
 
-#include "main.h"
 #include "data.h"
 
 SURVDATA* survDataList[MAX_CLIENTS] = {0};
@@ -12,6 +11,7 @@ void SurvData_Create(CLIENT* cl) {
 	ptr->client = cl;
 	ptr->health = 10.0f;
 	ptr->oxygen = 10.0f;
+	ptr->breakProgress = 4;
 	survDataList[cl->id] = ptr;
 }
 
