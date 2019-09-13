@@ -10,7 +10,7 @@ SURVDATA* survDataList[MAX_CLIENTS] = {0};
 void SurvData_Create(CLIENT* cl) {
 	SURVDATA* ptr = (SURVDATA*)Memory_Alloc(1, sizeof(SURVDATA));
 	ptr->client = cl;
-	ptr->health = 20.0f;
+	ptr->health = 10.0f;
 	ptr->oxygen = 10.0f;
 	survDataList[cl->id] = ptr;
 }

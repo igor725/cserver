@@ -24,6 +24,10 @@ CLIENT* Client_FindByName(const char* name) {
 	return NULL;
 }
 
+CLIENT* Client_GetByID(ClientID id) { //TODO: Out of array bounds check
+	return clients[id];
+}
+
 bool Client_Despawn(CLIENT* client) {
 	if(!client->playerData)
 		return false;
@@ -48,6 +52,10 @@ bool Client_ChangeWorld(CLIENT* client, WORLD* world) {
 	}
 
 	return true;
+}
+
+void Client_Chat(CLIENT* client, MessageType type, const char* message) {
+	Packet_WriteChat(client, type, message);
 }
 
 TRET Client_ThreadProc(TARG lpParam) {

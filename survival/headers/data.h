@@ -1,10 +1,18 @@
 #ifndef SURV_DATA_H
 #define SURV_DATA_H
+enum survActions {
+	SURV_ACT_NONE,
+	SURV_ACT_BREAK
+};
+
 typedef struct survivalData {
 	CLIENT* client;
 	BlockID inventory[256];
 	float health;
 	float oxygen;
+	bool showOxygen;
+	int action;
+	int breakProgress;
 } SURVDATA;
 
 void SurvData_Create(CLIENT* cl);

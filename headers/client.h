@@ -59,6 +59,8 @@ API bool Client_SetType(CLIENT* client, bool isOP);
 API bool Client_GetType(CLIENT* client);
 API const char* Client_GetName(CLIENT* client);
 API const char* Client_GetAppName(CLIENT* client);
+API CLIENT* Client_GetByID(ClientID id);
+API void Client_Chat(CLIENT* client, MessageType type, const char* message);
 API bool Client_SetHotbar(CLIENT* client, Order pos, BlockID block);
 API void Client_Kick(CLIENT* client, const char* reason);
 API bool Client_SendMap(CLIENT* client, WORLD* world);

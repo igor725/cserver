@@ -16,7 +16,7 @@ set LUA_VER=51
 set MSVC_OPTS=
 set MSVC_LINKER=
 set OBJDIR=objs
-set MSVC_LIBS=ws2_32.lib zlibwapi.lib
+set MSVC_LIBS=ws2_32.lib zlibwapi.lib kernel32.lib
 
 :argloop
 IF "%1"=="" goto continue

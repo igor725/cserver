@@ -62,6 +62,8 @@ typedef int            bool;
 typedef uchar          Order;
 typedef uchar          BlockID;
 typedef uchar          ClientID;
+typedef unsigned char  Weather;
+typedef unsigned char  MessageType;
 
 #include <stdlib.h>
 #include <stdio.h>

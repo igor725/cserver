@@ -1,8 +1,5 @@
 #ifndef CPE_H
 #define CPE_H
-typedef unsigned char Weather;
-typedef unsigned char MessageType;
-
 enum WeatherTypes {
 	WEATHER_SUN,
 	WEATHER_RAIN,
