@@ -5,9 +5,9 @@ set DEBUG=0
 set CODE_ROOT=
 set COMPILER=cl
 
-set ZLIB_ADD=
+set ZLIB_ADD=WithoutAsm
 set ZLIB_DIR=.\zlib
-set ZLIB_MODE=WithoutAsm
+set ZLIB_MODE=Release
 
 set LUA_ENABLED=0
 set LUA_DIR=.\lua
@@ -24,7 +24,7 @@ IF "%1"=="cls" cls
 IF "%1"=="clear" cls
 IF "%1"=="cloc" goto :cloc
 IF "%1"=="64" set ARCH=x64
-IF "%1"=="noasm" set ZLIB_ADD=Release
+IF "%1"=="asm" set ZLIB_ADD=
 IF "%1"=="zdebug" set ZLIB_MODE=Debug
 IF "%1"=="zdbg" set ZLIB_MODE=Debug
 IF "%1"=="debug" set DEBUG=1
@@ -88,8 +88,8 @@ IF "%DEBUG%"=="0" (
   set MSVC_LINKER=%MSVC_LINKER% /INCREMENTAL:NO /DEBUG /OPT:REF
   echo Debug: enabled
 )
-IF "%ZLIB_ADD%"=="WithoutAsm" (echo Assembler: disabled) else (
-  echo Assembler: enabled
+IF "%ZLIB_ADD%"=="WithoutAsm" (echo zlib asm: disabled) else (
+  echo zlib asm: enabled
   echo WARNINING: zlib assembler code may have bugs -- use at your own risk
   ping -n 4 127.0.0.1 > nul 2> nul
   if NOT "%ERRORLEVEL%"=="0" goto end
@@ -101,7 +101,7 @@ set ZLIB_DLL=%ZLIB_COMPILEDIR%\zlibwapi.dll
 :msvc
 IF "%BUILD_PLUGIN%"=="1" (
   set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DCPLUGIN /Iheaders\
-  set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%ARCH% /NOENTRY
+  set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:out\%ARCH% /NOENTRY
   set MSVC_LIBS=%MSVC_LIBS% server.lib
 ) else (
 set COPY=%ZLIB_DLL%
