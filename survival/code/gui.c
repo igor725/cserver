@@ -12,9 +12,9 @@ void SurvGui_DrawHealth(SURVDATA* data) {
 
 	String_Append(healthstr, 20, "&c");
 	for(int i = 0; i < SURV_MAX_HEALTH; i++) {
-		if (hlt == i)
+		if (hlt == i && f > 0)
 			String_Append(healthstr, 20, "&4");
-		else if(hlt + 1 == i)
+		else if(hlt + 1 == i || f == 0)
 			String_Append(healthstr, 20, "&8");
 
 		String_Append(healthstr, 20, "\3");

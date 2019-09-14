@@ -7,7 +7,7 @@ set COMPILER=cl
 
 set ZLIB_ADD=
 set ZLIB_DIR=.\zlib
-set ZLIB_MODE=Release
+set ZLIB_MODE=WithoutAsm
 
 set LUA_ENABLED=0
 set LUA_DIR=.\lua
@@ -24,7 +24,7 @@ IF "%1"=="cls" cls
 IF "%1"=="clear" cls
 IF "%1"=="cloc" goto :cloc
 IF "%1"=="64" set ARCH=x64
-IF "%1"=="noasm" set ZLIB_ADD=WithoutAsm
+IF "%1"=="noasm" set ZLIB_ADD=Release
 IF "%1"=="zdebug" set ZLIB_MODE=Debug
 IF "%1"=="zdbg" set ZLIB_MODE=Debug
 IF "%1"=="debug" set DEBUG=1

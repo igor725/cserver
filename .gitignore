@@ -7,5 +7,4 @@
 zlib/
 lua/
 objs/
-x64/
-x86/
+out/

@@ -45,8 +45,10 @@ void CPlugin_Start() {
 	if(Iter_Init(&pIter, "plugins", DLIB_EXT)) {
 		do {
 			if(pIter.isDir || !pIter.cfile) continue;
-			CPlugin_Load(pIter.cfile);
+			if(CPlugin_Load(pIter.cfile))
+				Log_Info("Plugin %s loaded", pIter.cfile);
 		} while(Iter_Next(&pIter));
+
 	}
 }
 #endif

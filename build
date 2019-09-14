@@ -5,7 +5,7 @@ DEBUG=0
 OPT="-O2"
 WARN=""
 ROOT="."
-CFLAGS="-pipe"
+CFLAGS="-pipe -fPIC"
 LIBS="-lz -lpthread -ldl"
 OUTBIN="server"
 
@@ -104,7 +104,7 @@ OBJS=$(find $OBJDIR -name "*.o" $LOBJ -printf "$OBJDIR/%P ")
 if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
 LNK="gcc -rdynamic"
 if [ $PLUGIN_BUILD -eq 1 ]; then
-	LNK="gcc -shared -fPIC"
+	LNK="gcc -shared"
 fi
 $LNK -o "$OUTDIR/$OUTBIN" $LIBS $OBJS
 echo "done"
