@@ -77,7 +77,6 @@ typedef unsigned char  MessageType;
 #define SOFTWARE_NAME "C-Server"
 #define SOFTWARE_VERSION "0.1"
 #define CHATLINE "<%s>: %s"
-#define MAINCFG "server.cfg"
 
 #define DEFAULT_NAME "Server name"
 #define DEFAULT_MOTD "Server MOTD"

@@ -5,19 +5,25 @@
 #include "data.h"
 #include "gui.h"
 
+// TODO: Исправить этот пиздец
 void SurvGui_DrawHealth(SURVDATA* data) {
 	char healthstr[20] = {0};
-	int hlt = (int)data->health;
-	float f = data->health - (float)hlt;
+	int health = (int)data->health;
+	float fr = data->health - (float)health;
+	int empty = SURV_MAX_HEALTH - health - (fr > 0 ? 1 : 0);
 
 	String_Append(healthstr, 20, "&c");
-	for(int i = 0; i < SURV_MAX_HEALTH; i++) {
-		if (hlt == i && f > 0)
-			String_Append(healthstr, 20, "&4");
-		else if(hlt + 1 == i || f == 0)
-			String_Append(healthstr, 20, "&8");
-
+	for(int i = 0; i < health; i++) {
 		String_Append(healthstr, 20, "\3");
+	}
+	if(fr > 0) {
+		String_Append(healthstr, 20, "&4\3");
+	}
+	if(empty > 0) {
+		String_Append(healthstr, 20, "&8");
+		for(int i = 0; i < empty; i++) {
+			String_Append(healthstr, 20, "\3");
+		}
 	}
 
 	Client_Chat(data->client, SURV_HEALTH_POS, healthstr);

@@ -13,10 +13,12 @@ static void Survival_OnHandshake(void* param) {
 }
 
 static void Survival_OnSpawn(void* param) {
-	CLIENT* cl = (CLIENT*)param;
-	SURVDATA* survData = SurvData_Get(cl);
+	CLIENT* client = (CLIENT*)param;
+	SURVDATA* survData = SurvData_Get(client);
 	SurvGui_DrawAll(survData);
-	SurvGui_DrawBreakProgress(survData);
+	for(int i = 0; i < 9; i++) {
+		Client_SetHotbar(client, i, 0);
+	}
 }
 
 static void Survival_OnClick(void* param) {
@@ -24,11 +26,17 @@ static void Survival_OnClick(void* param) {
 	CLIENT* client = a->client;
 	SURVDATA* survData = SurvData_Get(client);
 	CLIENT* target = Client_GetByID(*a->tgID);
-	SURVDATA* survDataTg = SurvData_Get(target);
+	SURVDATA* survDataTg = NULL;
+	if(target)
+		survDataTg = SurvData_Get(target);
 }
 
 static bool CHandler_God(const char* args, CLIENT* caller, char* out) {
-
+	SURVDATA* survData = SurvData_Get(caller);
+	bool mode = survData->godMode;
+	survData->godMode = !mode;
+	String_FormatBuf(out, CMD_MAX_OUT, "God mode %s for %s", mode ? "disabled" : "enabled", caller->playerData->name);
+	return true;
 }
 
 EXP int Plugin_ApiVer = 100;

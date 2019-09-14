@@ -37,6 +37,7 @@ typedef struct playerData {
 typedef struct client {
 	ClientID    id;
 	SOCKET      sock;
+	uint        addr;
 	int         status;
 	char*       rdbuf;
 	char*       wrbuf;

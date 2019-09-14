@@ -4,6 +4,7 @@
 #include "packets.h"
 #include "cpe.h"
 #include "event.h"
+#include "config.h"
 
 ClientID Client_FindFreeID() {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {

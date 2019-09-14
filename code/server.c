@@ -31,6 +31,7 @@ void Server_Accept() {
 		tmp->sock = fd;
 		tmp->bufpos = 0;
 		tmp->mutex = Mutex_Create();
+		tmp->addr = ntohl(caddr.sin_addr.s_addr);
 		tmp->rdbuf = (char*)Memory_Alloc(131, 1);
 		tmp->wrbuf = (char*)Memory_Alloc(2048, 1);
 
@@ -88,6 +89,7 @@ bool Server_InitialWork() {
 	Config_SetStr(mainCfg, "name", DEFAULT_NAME);
 	Config_SetStr(mainCfg, "motd", DEFAULT_MOTD);
 	Config_SetInt(mainCfg, "loglevel", 3);
+	Config_SetBool(mainCfg, "alwayslocalop", false);
 	Config_Load(mainCfg);
 
 	Log_SetLevel(Config_GetInt(mainCfg, "loglevel"));

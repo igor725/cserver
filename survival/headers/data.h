@@ -11,6 +11,7 @@ typedef struct survivalData {
 	float health;
 	float oxygen;
 	bool showOxygen;
+	bool godMode;
 	int action;
 	int breakProgress;
 } SURVDATA;

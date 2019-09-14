@@ -144,7 +144,7 @@ void Packet_WriteHandshake(CLIENT* client, const char* name, const char* motd) {
 	*++data = 0x07;
 	WriteString(++data, name); data += 63;
 	WriteString(++data, motd); data += 63;
-	*++data = 0x00;
+	*++data = client->playerData->isOP;
 	Client_Send(client, 131);
 
 	PacketWriter_End(client);
@@ -218,6 +218,9 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	client->playerData = (PLAYERDATA*)Memory_Alloc(1, sizeof(PLAYERDATA));
 	client->playerData->position = (VECTOR*)Memory_Alloc(1, sizeof(VECTOR));
 	client->playerData->angle = (ANGLE*)Memory_Alloc(1, sizeof(ANGLE));
+
+	if(client->addr == INADDR_LOOPBACK && Config_GetBool(mainCfg, "alwayslocalop"))
+		client->playerData->isOP = true;
 
 	ReadString(++data, (void*)&client->playerData->name); data += 63;
 	ReadString(++data, (void*)&client->playerData->key); data += 63;

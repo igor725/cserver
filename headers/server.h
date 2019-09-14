@@ -3,6 +3,8 @@
 #include "world.h"
 #include "config.h"
 
+#define MAINCFG "server.cfg"
+
 bool Server_InitialWork();
 void Server_DoStep();
 THREAD acceptThread;
