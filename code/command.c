@@ -3,17 +3,18 @@
 #include "packets.h"
 #include "server.h"
 
-void Command_Register(const char* cmd, cmdFunc func, bool onlyOP) {
+void Command_Register(const char* cmd, cmdFunc func) {
 	COMMAND* tmp = Memory_Alloc(1, sizeof(COMMAND));
 
 	tmp->name = String_AllocCopy(cmd);
 	tmp->func = func;
-	tmp->onlyOP = onlyOP;
 	tmp->next = headCommand;
 	headCommand = tmp;
 }
 
 static bool CHandler_OP(const char* args, CLIENT* caller, char* out) {
+	Command_OnlyForOP;
+
 	char clientname[64];
 	if(String_GetArgument(args, clientname, 64, 0)) {
 		CLIENT* tg = Client_FindByName(clientname);
@@ -30,6 +31,8 @@ static bool CHandler_OP(const char* args, CLIENT* caller, char* out) {
 }
 
 static bool CHandler_Stop(const char* args, CLIENT* caller, char* out) {
+	Command_OnlyForOP;
+
 	serverActive = false;
 	return false;
 }
@@ -42,24 +45,29 @@ static bool CHandler_Test(const char* args, CLIENT* caller, char* out) {
 }
 
 static bool CHandler_Announce(const char* args, CLIENT* caller, char* out) {
+	Command_OnlyForOP;
+	
 	if(!caller) caller = Broadcast;
 	Packet_WriteChat(caller, CPE_ANNOUNCE, !args ? "Test announcement" : args);
 	return false;
 }
 
 static bool CHandler_ChangeWorld(const char* args, CLIENT* caller, char* out) {
-	if(!caller) return false;
+	Command_OnlyForClient;
+
 	WORLD* world = World_FindByName(args);
 	Client_ChangeWorld(caller, world);
 	return false;
 }
 
 static bool CHandler_Kick(const char* args, CLIENT* caller, char* out) {
+	Command_OnlyForOP;
 	// ????
 	return false;
 }
 
 static bool CHandler_Model(const char* args, CLIENT* caller, char* out) {
+	Command_OnlyForOP;
 	Command_OnlyForClient;
 
 	char modelname[64];
@@ -73,18 +81,13 @@ static bool CHandler_Model(const char* args, CLIENT* caller, char* out) {
 }
 
 void Command_RegisterDefault() {
-	Command_Register("op", CHandler_OP, true);
-	Command_Register("stop", CHandler_Stop, true);
-	Command_Register("test", CHandler_Test, false);
-	Command_Register("announce", CHandler_Announce, false);
-	Command_Register("cw", CHandler_ChangeWorld, false);
-	Command_Register("kick", CHandler_Kick, true);
-	Command_Register("setmodel", CHandler_Model, true);
-}
-
-static bool checkPermissions(COMMAND* cmd, CLIENT* client) {
-	if(!client) return true;
-	return cmd->onlyOP ? client->playerData->isOP : true;
+	Command_Register("op", CHandler_OP);
+	Command_Register("stop", CHandler_Stop);
+	Command_Register("test", CHandler_Test);
+	Command_Register("announce", CHandler_Announce);
+	Command_Register("cw", CHandler_ChangeWorld);
+	Command_Register("kick", CHandler_Kick);
+	Command_Register("setmodel", CHandler_Model);
 }
 
 bool Command_Handle(char* cmd, CLIENT* caller) {
@@ -107,10 +110,6 @@ bool Command_Handle(char* cmd, CLIENT* caller) {
 
 	while(tmp) {
 		if(String_CaselessCompare(tmp->name, cmd)) {
-			if(!checkPermissions(tmp, caller)) {
-				Packet_WriteChat(caller, CPE_CHAT, "Access denied");
-				return true;
-			}
 			if(tmp->func((const char*)args, caller, ret)) {
 				if(caller)
 					Packet_WriteChat(caller, 0, ret);

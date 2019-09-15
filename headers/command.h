@@ -9,18 +9,23 @@ if(!caller) { \
 	return true; \
 } \
 
+#define Command_OnlyForOP \
+if(caller && !caller->playerData->isOP) { \
+	String_Copy(out, CMD_MAX_OUT, "Access denied"); \
+	return true; \
+} \
+
 typedef bool (*cmdFunc)(const char* args, CLIENT* caller, char* out);
 
 typedef struct command {
 	const char*     name;
 	cmdFunc         func;
-	bool            onlyOP;
 	struct command* next;
 } COMMAND;
 
 COMMAND* headCommand;
 
-API void Command_Register(const char* cmd, cmdFunc func, bool onlyOP);
+API void Command_Register(const char* cmd, cmdFunc func);
 bool Command_Handle(char* cmd, CLIENT* caller);
 void Command_RegisterDefault();
 #endif
