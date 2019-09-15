@@ -15,4 +15,5 @@ API void String_FormatBuf(char* buf, size_t len, const char* str, ...);
 API const char* String_AllocCopy(const char* str);
 API size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index);
 API int String_ToInt(const char* str);
+API float String_ToFloat(const char* str);
 #endif

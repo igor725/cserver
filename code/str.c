@@ -13,6 +13,10 @@ int String_ToInt(const char* str) {
 	return atoi(str);
 }
 
+float String_ToFloat(const char* str) {
+	return atof(str);
+}
+
 bool String_Compare(const char* str1, const char* str2) {
 	return strcmp(str1, str2) == 0;
 }
@@ -77,6 +81,8 @@ const char* String_AllocCopy(const char* str) {
 }
 
 size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index) {
+	if(!args) return 0;
+	
 	size_t argsize = 0;
 
 	while(*args != '\0') {
