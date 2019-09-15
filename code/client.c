@@ -43,6 +43,7 @@ bool Client_Despawn(CLIENT* client) {
 }
 
 bool Client_ChangeWorld(CLIENT* client, WORLD* world) {
+	if(!world) return false;
 	if(Client_IsInWorld(client, world)) return true;
 
 	Client_Despawn(client);

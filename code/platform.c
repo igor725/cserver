@@ -537,7 +537,7 @@ SOCKET Socket_Bind(const char* ip, ushort port) {
 	ssa.sin_port = htons(port);
 	ssa.sin_addr.s_addr = inet_addr(ip);
 
-	if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0) {
+	if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) == -1) {
 		Error_Set(ET_SYS, errno, false);
 		return INVALID_SOCKET;
 	}

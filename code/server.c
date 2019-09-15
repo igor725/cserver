@@ -68,12 +68,12 @@ bool Server_Bind(const char* ip, ushort port) {
 	return true;
 }
 
-void evt_onconnect(void* param) {
+static void evt_onconnect(void* param) {
 	CLIENT* cl = (CLIENT*)param;
 	Log_Info("Player %s connected", cl->playerData->name);
 }
 
-void evt_ondisconnect(void* param) {
+static void evt_ondisconnect(void* param) {
 	CLIENT* cl = (CLIENT*)param;
 	Log_Info("Player %s disconnected", cl->playerData->name);
 }

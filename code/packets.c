@@ -60,10 +60,10 @@ void Packet_Register(int id, const char* name, ushort size, packetHandler handle
 }
 
 void Packet_RegisterDefault() {
-	Packet_Register(0x00, "Handshake", 131, &Handler_Handshake);
-	Packet_Register(0x05, "SetBlock", 9, &Handler_SetBlock);
-	Packet_Register(0x08, "PosAndOrient", 10, &Handler_PosAndOrient);
-	Packet_Register(0x0D, "Message", 66, &Handler_Message);
+	Packet_Register(0x00, "Handshake", 131, Handler_Handshake);
+	Packet_Register(0x05, "SetBlock", 9, Handler_SetBlock);
+	Packet_Register(0x08, "PosAndOrient", 10, Handler_PosAndOrient);
+	Packet_Register(0x0D, "Message", 66, Handler_Message);
 }
 
 void Packet_RegisterCPE(int id, const char* name, int version, ushort size) {
