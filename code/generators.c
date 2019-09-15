@@ -2,6 +2,7 @@
 #include "world.h"
 #include "platform.h"
 #include "generators.h"
+#include "math.h"
 
 /*
 	Flat generator
@@ -61,5 +62,7 @@ static void WaitAll() {
 }
 
 void Generator_Default(WORLD* world) {
-
+	RNGState rnd;
+	Random_Seed(&rnd, 1337);
+	
 }

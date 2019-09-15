@@ -17,6 +17,8 @@
 #define VAR __declspec(dllimport)
 #define EXP __declspec(dllexport)
 #endif
+typedef signed __int64 int64;
+typedef unsigned __int64 uint64;
 #elif defined(__unix__)
 #define _GNU_SOURCE
 #include <errno.h>
@@ -31,6 +33,8 @@
 #include <dirent.h>
 
 typedef int SOCKET;
+typedef unsigned __INT64_TYPE uint64;
+typedef signed __INT64_TYPE int64;
 #define min(a, b) (((a)<(b))?(a):(b))
 #define max(a, b) (((a)>(b))?(a):(b))
 #define Sleep(ms) (usleep(ms * 1000))
