@@ -14,9 +14,9 @@ void Command_Register(const char* cmd, cmdFunc func, bool onlyOP) {
 }
 
 static bool CHandler_OP(const char* args, CLIENT* caller, char* out) {
-	char arg[64];
-	if(String_GetArgument(args, arg, 64, 0)) {
-		CLIENT* tg = Client_FindByName(arg);
+	char clientname[64];
+	if(String_GetArgument(args, clientname, 64, 0)) {
+		CLIENT* tg = Client_FindByName(clientname);
 		if(tg) {
 			bool newtype = !Client_GetType(tg);
 			const char* name = tg->playerData->name;
@@ -59,6 +59,19 @@ static bool CHandler_Kick(const char* args, CLIENT* caller, char* out) {
 	return false;
 }
 
+static bool CHandler_Model(const char* args, CLIENT* caller, char* out) {
+	Command_OnlyForClient;
+
+	char modelname[64];
+	if(String_GetArgument(args, modelname, 64, 0)) {
+		if(!Client_SetModel(caller, modelname)) {
+			String_Copy(out, CMD_MAX_OUT, "Model changing error");
+			return true;
+		}
+	}
+	return false;
+}
+
 void Command_RegisterDefault() {
 	Command_Register("op", CHandler_OP, true);
 	Command_Register("stop", CHandler_Stop, true);
@@ -66,6 +79,7 @@ void Command_RegisterDefault() {
 	Command_Register("announce", CHandler_Announce, false);
 	Command_Register("cw", CHandler_ChangeWorld, false);
 	Command_Register("kick", CHandler_Kick, true);
+	Command_Register("setmodel", CHandler_Model, true);
 }
 
 static bool checkPermissions(COMMAND* cmd, CLIENT* client) {

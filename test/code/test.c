@@ -43,17 +43,38 @@ static bool CHandler_Plugtest(const char* args, CLIENT* caller, char* out) {
 
 static bool CHandler_Atoggle(const char* args, CLIENT* caller, char* out) {
   enabled = !enabled;
-	String_Append(out, CMD_MAX_OUT, "Announce chat: ");
+	String_Copy(out, CMD_MAX_OUT, "Announce chat: ");
   String_Append(out, CMD_MAX_OUT, enabled ? "enabled" : "disabled");
   return true;
 }
 
-EXP int Plugin_ApiVer = 100; // Текущая версия API плагинов 1.0.0
-EXP bool Plugin_Init() { // Основная функция, вызывается после подгрузки плагина
-  Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента
-  Command_Register("plugtest", CHandler_Plugtest, false); // Регистрация команды для всех
-  Command_Register("atoggle", CHandler_Atoggle, true); // Регистрация команды только для операторов
-  Log_Info("Test plugin loaded"); // Отправка в консоль INFO сообщения
+/*
+** Если в начало обработчика команды
+** сунуть макрос Command_OnlyForClient,
+** то команда будет выполнена только в том
+** случае, если вызвана она была игроком,
+** в противном случае в консоль выводится
+** сообщение о том, что команду может вызвать
+** только игрок.
+*/
+static bool CHandler_ClientOnly(const char* args, CLIENT* caller, char* out) {
+	Command_OnlyForClient;
+
+	String_FormatBuf(out, CMD_MAX_OUT, "Client-only command called by %s", caller->playerData->name);
+	return true;
+}
+
+EXP int Plugin_ApiVer = 100; // Текущая версия API плагинов 1.0.0.
+EXP bool Plugin_Init() { // Основная функция, вызывается после подгрузки плагина.
+  Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.
+	/*
+	** Третий аргумент Command_Register говорит о том
+	** могут ли простые смертные вызывать эту команду.
+	*/
+  Command_Register("plugtest", CHandler_Plugtest, false);
+  Command_Register("atoggle", CHandler_Atoggle, true);
+	Command_Register("clonly", CHandler_ClientOnly, false);
+  Log_Info("Test plugin loaded"); // Отправка в консоль INFO сообщения.
   Log_Debug("It's a debug message");
   Log_Warn("It's a warning message");
   return true;

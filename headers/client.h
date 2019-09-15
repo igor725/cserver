@@ -19,6 +19,7 @@ typedef struct cpeData {
 	BlockID heldBlock;
 	short   _extCount;
 	EXT*    headExtension;
+	char    model[64];
 	char*   appName;
 } CPEDATA;
 

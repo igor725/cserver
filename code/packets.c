@@ -93,9 +93,8 @@ void Packet_WriteKick(CLIENT* client, const char* reason) {
 
 	*data = 0x0E;
 	WriteString(++data, reason);
-	Client_Send(client, 65);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 65);
 }
 
 void Packet_WriteLvlInit(CLIENT* client) {
@@ -104,11 +103,10 @@ void Packet_WriteLvlInit(CLIENT* client) {
 	*data = 0x02;
 	if(client->cpeData && client->cpeData->fmSupport) {
 		*(uint*)++data = htonl(client->playerData->world->size - 4);
-		Client_Send(client, 5);
-	} else
-		Client_Send(client, 1);
-
-	PacketWriter_End(client);
+		PacketWriter_End(client, 5);
+	} else {
+		PacketWriter_End(client, 1);
+	}
 }
 
 void Packet_WriteLvlFin(CLIENT* client) {
@@ -119,9 +117,8 @@ void Packet_WriteLvlFin(CLIENT* client) {
 	*(ushort*)++data = htons(dims->width); ++data;
 	*(ushort*)++data = htons(dims->height); ++data;
 	*(ushort*)++data = htons(dims->length); ++data;
-	Client_Send(client, 7);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 7);
 }
 
 void Packet_WriteSetBlock(CLIENT* client, ushort x, ushort y, ushort z, BlockID block) {
@@ -132,9 +129,8 @@ void Packet_WriteSetBlock(CLIENT* client, ushort x, ushort y, ushort z, BlockID 
 	*(ushort*)++data = htons(y); ++data;
 	*(ushort*)++data = htons(z); ++data;
 	*++data = block;
-	Client_Send(client, 8);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 8);
 }
 
 void Packet_WriteHandshake(CLIENT* client, const char* name, const char* motd) {
@@ -145,9 +141,8 @@ void Packet_WriteHandshake(CLIENT* client, const char* name, const char* motd) {
 	WriteString(++data, name); data += 63;
 	WriteString(++data, motd); data += 63;
 	*++data = client->playerData->isOP;
-	Client_Send(client, 131);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 131);
 }
 
 void Packet_WriteSpawn(CLIENT* client, CLIENT* other) {
@@ -157,9 +152,8 @@ void Packet_WriteSpawn(CLIENT* client, CLIENT* other) {
 	*++data = client == other ? 0xFF : other->id;
 	WriteString(++data, other->playerData->name); data += 63;
 	WriteClPos(++data, other, true);
-	Client_Send(client, 74);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 74);
 }
 
 void Packet_WriteDespawn(CLIENT* client, CLIENT* other) {
@@ -167,9 +161,8 @@ void Packet_WriteDespawn(CLIENT* client, CLIENT* other) {
 
 	*data = 0x0C;
 	*++data = client == other ? 0xFF : other->id;
-	Client_Send(client, 2);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 2);
 }
 
 void Packet_WritePosAndOrient(CLIENT* client, CLIENT* other) {
@@ -178,9 +171,8 @@ void Packet_WritePosAndOrient(CLIENT* client, CLIENT* other) {
 	*data = 0x08;
 	*++data = client == other ? 0xFF : other->id;
 	WriteClPos(++data, other, false);
-	Client_Send(client, 10);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 10);
 }
 
 void Packet_WriteChat(CLIENT* client, MessageType type, const char* mesg) {
@@ -189,9 +181,8 @@ void Packet_WriteChat(CLIENT* client, MessageType type, const char* mesg) {
 	*data = 0x0D;
 	*++data = type;
 	WriteString(++data, mesg);
-	Client_Send(client, 66);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 66);
 }
 
 void Packet_WriteUpdateType(CLIENT* client) {
@@ -199,9 +190,8 @@ void Packet_WriteUpdateType(CLIENT* client) {
 
 	*data = 0x0F;
 	*++data = client->playerData->isOP ? 0x64 : 0x00;
-	Client_Send(client, 2);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 2);
 }
 
 /*
@@ -254,6 +244,7 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 
 	if(cpeEnabled) {
 		client->cpeData = (CPEDATA*)Memory_Alloc(1, sizeof(CPEDATA));
+		String_CopyUnsafe(client->cpeData->model, "humanoid");
 		CPE_StartHandshake(client);
 	} else {
 		Event_Call(EVT_ONHANDSHAKEDONE, (void*)client);

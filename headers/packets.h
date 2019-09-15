@@ -6,7 +6,10 @@
 char* data = client->wrbuf; \
 Mutex_Lock(client->mutex); \
 
-#define PacketWriter_End(client) \
+#define PacketWriter_End(client, size) \
+if(size > 0) { \
+	Client_Send(client, size); \
+} \
 Mutex_Unlock(client->mutex); \
 
 #define MODE_DESTROY 0x00

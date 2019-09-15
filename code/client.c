@@ -25,8 +25,8 @@ CLIENT* Client_FindByName(const char* name) {
 	return NULL;
 }
 
-CLIENT* Client_GetByID(ClientID id) { //TODO: Out of array bounds check
-	return clients[id];
+CLIENT* Client_GetByID(ClientID id) {
+	return id < MAX_CLIENTS ? clients[id] : NULL;
 }
 
 bool Client_Despawn(CLIENT* client) {
@@ -249,6 +249,21 @@ bool Client_SetHotbar(CLIENT* client, Order pos, BlockID block) {
 	return false;
 }
 
+bool Client_SetModel(CLIENT* client, const char* model) {
+	if(!client->cpeData) return false;
+	if(!CPE_CheckModel(model)) return false;
+
+	String_Copy(client->cpeData->model, 64, model);
+
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		CLIENT* other = Client_GetByID(i);
+		if(!other || Client_IsSupportExt(other, "SetModel")) continue;
+		CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, model);
+	}
+
+	return true;
+}
+
 bool Client_GetType(CLIENT* client) {
 	if(!client->playerData)
 		return false;
@@ -319,11 +334,19 @@ bool Client_Spawn(CLIENT* client) {
 		CLIENT* other = clients[i];
 		if(!other) continue;
 
-		if(Client_IsInSameWorld(client, other))
+		if(Client_IsInSameWorld(client, other)) {
 			Packet_WriteSpawn(other, client);
 
-		if(client != other && Client_IsInSameWorld(client, other))
-			Packet_WriteSpawn(client, other);
+			if(other->cpeData && client->cpeData)
+				CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, client->cpeData->model);
+
+			if(client != other) {
+				Packet_WriteSpawn(client, other);
+
+				if(other->cpeData && client->cpeData)
+					CPEPacket_WriteSetModel(client, other->id, other->cpeData->model);
+			}
+		}
 	}
 
 	client->playerData->spawned = true;

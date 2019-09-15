@@ -1,4 +1,5 @@
 #include "core.h"
+#include "block.h"
 #include "client.h"
 #include "cpe.h"
 #include "packets.h"
@@ -38,15 +39,51 @@ static const struct extReg serverExtensions[] = {
 	{NULL, 0}
 };
 
+static const char* validModelNames[] = {
+	"chicken",
+	"creeper",
+	"humanoid",
+	"pig",
+	"sheep",
+	"skeleton",
+	"sheep",
+	"sheep_nofur",
+	"skeleton",
+	"spider",
+	"zombie",
+	"head",
+	"sit",
+	"chibi",
+	NULL
+};
+
+bool CPE_CheckModel(const char* model) {
+	const char* cmdl;
+	for(int i = 0; ; i++) {
+		if(!(cmdl = validModelNames[i])) break;
+
+		if(String_CaselessCompare(model, cmdl)) {
+			return true;
+		}
+	}
+
+	int blockId;
+	if((blockId = String_ToInt(model)) > 0) {
+		return Block_IsValid(blockId);
+	}
+
+	return false;
+}
+
 void Packet_RegisterCPEDefault() {
 	const struct extReg* ext;
 	for(ext = serverExtensions; ext->name; ext++) {
 		CPE_RegisterExtension(ext->name, ext->version);
 	}
-	Packet_Register(0x10, "ExtInfo", 67, &CPEHandler_ExtInfo);
-	Packet_Register(0x11, "ExtEntry", 69, &CPEHandler_ExtEntry);
-	Packet_Register(0x2B, "TwoWayPing", 4, &CPEHandler_TwoWayPing);
-	Packet_Register(0x22, "PlayerClick", 15, &CPEHandler_PlayerClick);
+	Packet_Register(0x10, "ExtInfo", 67, CPEHandler_ExtInfo);
+	Packet_Register(0x11, "ExtEntry", 69, CPEHandler_ExtEntry);
+	Packet_Register(0x2B, "TwoWayPing", 4, CPEHandler_TwoWayPing);
+	Packet_Register(0x22, "PlayerClick", 15, CPEHandler_PlayerClick);
 }
 
 void CPEPacket_WriteInfo(CLIENT* client) {
@@ -55,9 +92,8 @@ void CPEPacket_WriteInfo(CLIENT* client) {
 	*data = 0x10;
 	WriteString(++data, SOFTWARE_NAME " " SOFTWARE_VERSION); data += 63;
 	*(ushort*)++data = htons(extensionsCount);
-	Client_Send(client, 67);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 67);
 }
 
 void CPEPacket_WriteExtEntry(CLIENT* client, EXT* ext) {
@@ -66,19 +102,17 @@ void CPEPacket_WriteExtEntry(CLIENT* client, EXT* ext) {
 	*data = 0x11;
 	WriteString(++data, ext->name); data += 63;
 	*(uint*)++data = htonl(ext->version);
-	Client_Send(client, 69);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 69);
 }
 
-void CPEPAcket_WriteClickDistance(CLIENT* client, short dist) {
+void CPEPacket_WriteClickDistance(CLIENT* client, short dist) {
 	PacketWriter_Start(client);
 
 	*data = 0x12;
 	*(short*)++data = dist;
-	Client_Send(client, 3);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 3);
 }
 
 void CPEPacket_WriteInventoryOrder(CLIENT* client, Order order, BlockID block) {
@@ -87,9 +121,8 @@ void CPEPacket_WriteInventoryOrder(CLIENT* client, Order order, BlockID block) {
 	*data = 0x44;
 	*++data = order;
 	*++data = block;
-	Client_Send(client, 3);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 3);
 }
 
 void CPEPacket_WriteHoldThis(CLIENT* client, BlockID block, bool preventChange) {
@@ -98,9 +131,8 @@ void CPEPacket_WriteHoldThis(CLIENT* client, BlockID block, bool preventChange) 
 	*data = 0x14;
 	*++data = block;
 	*++data = (char)preventChange;
-	Client_Send(client, 3);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 3);
 }
 
 void CPEPacket_WriteSetHotBar(CLIENT* client, Order order, BlockID block) {
@@ -109,9 +141,8 @@ void CPEPacket_WriteSetHotBar(CLIENT* client, Order order, BlockID block) {
 	*data = 0x2D;
 	*++data = block;
 	*++data = order;
-	Client_Send(client, 3);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 3);
 }
 
 void CPEPacket_WriteWeatherType(CLIENT* client, Weather type) {
@@ -119,35 +150,32 @@ void CPEPacket_WriteWeatherType(CLIENT* client, Weather type) {
 
 	*data = 0x1F;
 	*++data = type;
-	Client_Send(client, 2);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 2);
 }
 
 void CPEPacket_WriteTwoWayPing(CLIENT* client, uchar direction, short num) {
 	PacketWriter_Start(client);
 	if(client->playerData->state != STATE_INGAME) {
-		PacketWriter_End(client);
+		PacketWriter_End(client, 0);
 		return;
 	}
 
 	*data = 0x2B;
 	*++data = direction;
 	*(ushort*)++data = num;
-	Client_Send(client, 4);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 4);
 }
 
-void CPEPACKET_WriteSetModel(CLIENT* client, ClientID id, const char* model) {
+void CPEPacket_WriteSetModel(CLIENT* client, ClientID id, const char* model) {
 	PacketWriter_Start(client);
 
 	*data = 0x01D;
 	*++data = id;
 	WriteString(++data, model);
-	Client_Send(client, 66);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 66);
 }
 
 void CPEPacket_WriteBlockPerm(CLIENT* client, BlockID id, bool allowPlace, bool allowDestroy) {
@@ -157,16 +185,19 @@ void CPEPacket_WriteBlockPerm(CLIENT* client, BlockID id, bool allowPlace, bool 
 	*++data = id;
 	*++data = (char)allowPlace;
 	*++data = (char)allowDestroy;
-	Client_Send(client, 4);
 
-	PacketWriter_End(client);
+	PacketWriter_End(client, 4);
 }
+
+/*
+	CPE packet handlers
+*/
 
 #define ValidateClientState(client, st) \
 if(!client->playerData || !client->cpeData || client->playerData->state != st) \
 	return false; \
 
-bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
+static bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
 	ValidateClientState(client, STATE_MOTD);
 
 	ReadString(data, &client->cpeData->appName); data += 63;
@@ -174,7 +205,7 @@ bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
 	return true;
 }
 
-bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
+static bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
 	ValidateClientState(client, STATE_MOTD);
 
 	EXT* tmp = (EXT*)Memory_Alloc(1, sizeof(EXT));
@@ -197,7 +228,7 @@ bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
 	return true;
 }
 
-bool CPEHandler_TwoWayPing(CLIENT* client, char* data) {
+static bool CPEHandler_TwoWayPing(CLIENT* client, char* data) {
 	if(*data == 0) {
 		CPEPacket_WriteTwoWayPing(client, 0, *(ushort*)++data);
 		return true;
@@ -208,7 +239,7 @@ bool CPEHandler_TwoWayPing(CLIENT* client, char* data) {
 	return false;
 }
 
-bool CPEHandler_PlayerClick(CLIENT* client, char* data) {
+static bool CPEHandler_PlayerClick(CLIENT* client, char* data) {
 	ValidateClientState(client, STATE_INGAME);
 	char button = *data;
 	char action = *++data;
