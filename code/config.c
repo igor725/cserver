@@ -85,6 +85,7 @@ bool Config_Load(CFGSTORE* store) {
 		ch = fgetc(fp);
 	}
 
+	store->modified = false;
 	File_Close(fp);
 	return true;
 }
@@ -193,10 +194,10 @@ const char* Config_GetStr(CFGSTORE* store, const char* key) {
 
 void Config_SetBool(CFGSTORE* store, const char* key, bool value) {
 	CFGENTRY* ent = Config_GetEntry2(store, key);
+	ent->type = CFG_BOOL;
 	if(ent->value.vbool != value) {
 		ent->value.vbool = value;
 		store->modified = true;
-		ent->type = CFG_BOOL;
 	}
 }
 

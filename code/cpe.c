@@ -26,6 +26,8 @@ void CPE_StartHandshake(CLIENT* client) {
 
 static const struct extReg serverExtensions[] = {
 	{"FastMap", 1},
+	{"EmoteFix", 1},
+	{"FullCP437", 1},
 	{"SetHotbar", 1},
 	{"HeldBlock", 1},
 	{"TwoWayPing", 1},

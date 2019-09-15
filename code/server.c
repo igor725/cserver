@@ -118,7 +118,7 @@ bool Server_InitialWork() {
 
 	if(wIndex < 0) {
 		WORLD* tmp = World_Create("world.cws");
-		World_SetDimensions(tmp, 128, 128, 128);
+		World_SetDimensions(tmp, 256, 256, 256);
 		World_AllocBlockArray(tmp);
 		Generator_Flat(tmp);
 		worlds[0] = tmp;
