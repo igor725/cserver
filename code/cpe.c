@@ -199,7 +199,7 @@ void CPEPacket_WriteBlockPerm(CLIENT* client, BlockID id, bool allowPlace, bool 
 if(!client->playerData || !client->cpeData || client->playerData->state != st) \
 	return false; \
 
-static bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
+bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
 	ValidateClientState(client, STATE_MOTD);
 
 	ReadString(data, &client->cpeData->appName); data += 63;
@@ -207,7 +207,7 @@ static bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
 	return true;
 }
 
-static bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
+bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
 	ValidateClientState(client, STATE_MOTD);
 
 	EXT* tmp = (EXT*)Memory_Alloc(1, sizeof(EXT));
@@ -230,7 +230,7 @@ static bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
 	return true;
 }
 
-static bool CPEHandler_TwoWayPing(CLIENT* client, char* data) {
+bool CPEHandler_TwoWayPing(CLIENT* client, char* data) {
 	if(*data == 0) {
 		CPEPacket_WriteTwoWayPing(client, 0, *(ushort*)++data);
 		return true;
@@ -241,7 +241,7 @@ static bool CPEHandler_TwoWayPing(CLIENT* client, char* data) {
 	return false;
 }
 
-static bool CPEHandler_PlayerClick(CLIENT* client, char* data) {
+bool CPEHandler_PlayerClick(CLIENT* client, char* data) {
 	ValidateClientState(client, STATE_INGAME);
 	char button = *data;
 	char action = *++data;

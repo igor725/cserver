@@ -33,8 +33,8 @@ typedef unsigned __int64 uint64;
 #include <dirent.h>
 
 typedef int SOCKET;
-typedef unsigned __INT64_TYPE uint64;
-typedef signed __INT64_TYPE int64;
+typedef unsigned __INT64_TYPE__ uint64;
+typedef signed __INT64_TYPE__ int64;
 #define min(a, b) (((a)<(b))?(a):(b))
 #define max(a, b) (((a)>(b))?(a):(b))
 #define Sleep(ms) (usleep(ms * 1000))
