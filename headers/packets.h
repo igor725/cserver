@@ -14,9 +14,6 @@ Mutex_Unlock(client->mutex); \
 Mutex_Unlock(client->mutex); \
 return; \
 
-#define MODE_DESTROY 0x00
-#define MODE_PLACE   0x01
-
 typedef bool (*packetHandler)(CLIENT*, char*);
 
 typedef struct packet {

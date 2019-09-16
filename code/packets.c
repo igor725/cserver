@@ -272,7 +272,7 @@ bool Handler_SetBlock(CLIENT* client, char* data) {
 	BlockID pblock = block;
 
 	switch(mode) {
-		case MODE_PLACE:
+		case 0x01:
 			if(!Block_IsValid(block)) {
 				Client_Kick(client, "Invalid block ID");
 				return false;
@@ -283,7 +283,7 @@ bool Handler_SetBlock(CLIENT* client, char* data) {
 			} else
 				Packet_WriteSetBlock(client, x, y, z, World_GetBlock(world, x, y, z));
 			break;
-		case MODE_DESTROY:
+		case 0x00:
 			block = 0;
 			if(Event_OnBlockPlace(client, &x, &y, &z, &block)) {
 				World_SetBlock(world, x, y, z, block);

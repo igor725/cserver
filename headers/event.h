@@ -10,6 +10,7 @@ typedef bool(*evtBoolCallback)(void* param);
 
 enum eventType {
 	EVT_POSTSTART,
+	EVT_ONTICK,
 	EVT_ONSTOP,
 	EVT_ONSPAWN,
 	EVT_ONDESPAWN,
@@ -21,10 +22,12 @@ enum eventType {
 	EVT_ONDISCONNECT
 };
 
-#define EVT_RTVOID 0
-#define EVT_RTBOOL 1
+enum eventReturn {
+	EVT_RTVOID,
+	EVT_RTBOOL
+};
 
-#define ETYPES     10
+#define ETYPES     11
 #define MAX_EVENTS 64
 
 typedef struct onMessage {

@@ -22,9 +22,8 @@ int Console_ReadLine(char* buf, int buflen) {
 }
 
 void Console_HandleCommand(char* cmd) {
-	if(!Command_Handle(cmd, NULL)) {
+	if(!Command_Handle(cmd, NULL))
 		Log_Info("Unknown command");
-	}
 }
 
 TRET Console_ThreadProc(TARG lpParam) {

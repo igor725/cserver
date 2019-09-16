@@ -213,9 +213,8 @@ bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
 	ReadString(data, (void*)&tmp->name);data += 63;
 	tmp->version = ntohl(*(uint*)++data);
 
-	if(String_CaselessCompare(tmp->name, "FastMap")) {
+	if(String_CaselessCompare(tmp->name, "FastMap"))
 		client->cpeData->fmSupport = true;
-	}
 
 	tmp->next = client->cpeData->headExtension;
 	client->cpeData->headExtension = tmp;
