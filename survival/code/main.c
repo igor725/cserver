@@ -33,6 +33,8 @@ static void Survival_OnClick(void* param) {
 }
 
 static bool CHandler_God(const char* args, CLIENT* caller, char* out) {
+	Command_OnlyForOP;
+	
 	SURVDATA* survData = SurvData_Get(caller);
 	bool mode = survData->godMode;
 	survData->godMode = !mode;
@@ -54,7 +56,7 @@ EXP bool Plugin_Init() {
 	Event_RegisterVoid(EVT_ONSPAWN, Survival_OnSpawn);
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, Survival_OnHandshake);
 	Event_RegisterVoid(EVT_ONPLAYERCLICK, Survival_OnClick);
-	Command_Register("god", CHandler_God, true);
-	Command_Register("hurt", CHandler_Hurt, false);
+	Command_Register("god", CHandler_God);
+	Command_Register("hurt", CHandler_Hurt);
 	return true;
 }
