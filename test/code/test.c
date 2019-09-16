@@ -42,6 +42,9 @@ static bool CHandler_Plugtest(const char* args, CLIENT* caller, char* out) {
 }
 
 static bool CHandler_Atoggle(const char* args, CLIENT* caller, char* out) {
+	// Макрос проверяет была ли запущена команда администратором
+	Command_OnlyForOP;
+
   enabled = !enabled;
 	String_Copy(out, CMD_MAX_OUT, "Announce chat: ");
   String_Append(out, CMD_MAX_OUT, enabled ? "enabled" : "disabled");
@@ -67,13 +70,9 @@ static bool CHandler_ClientOnly(const char* args, CLIENT* caller, char* out) {
 EXP int Plugin_ApiVer = 100; // Текущая версия API плагинов 1.0.0.
 EXP bool Plugin_Init() { // Основная функция, вызывается после подгрузки плагина.
   Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.
-	/*
-	** Третий аргумент Command_Register говорит о том
-	** могут ли простые смертные вызывать эту команду.
-	*/
-  Command_Register("plugtest", CHandler_Plugtest, false);
-  Command_Register("atoggle", CHandler_Atoggle, true);
-	Command_Register("clonly", CHandler_ClientOnly, false);
+  Command_Register("plugtest", CHandler_Plugtest);
+  Command_Register("atoggle", CHandler_Atoggle);
+	Command_Register("clonly", CHandler_ClientOnly);
   Log_Info("Test plugin loaded"); // Отправка в консоль INFO сообщения.
   Log_Debug("It's a debug message");
   Log_Warn("It's a warning message");

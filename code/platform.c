@@ -507,8 +507,9 @@ bool DLib_Unload(void* lib) {
 	return dlclose(lib) == 0;
 }
 
-char* DLib_GetError() {
-	return dlerror();
+char* DLib_GetError(char* buf, size_t len) {
+	String_Copy(buf, len, dlerror());
+	return buf;
 }
 
 bool DLib_GetSym(void* lib, const char* sname, void** sym) {

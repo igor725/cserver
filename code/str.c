@@ -14,7 +14,7 @@ int String_ToInt(const char* str) {
 }
 
 float String_ToFloat(const char* str) {
-	return atof(str);
+	return (float)atof(str);
 }
 
 bool String_Compare(const char* str1, const char* str2) {
@@ -44,9 +44,9 @@ char* String_CopyUnsafe(char* dst, const char* src) {
 	return strcpy(dst, src);
 }
 
-uint String_FormatError(uint code, char* buf, uint buflen) {
+uint String_FormatError(uint code, char* buf, size_t buflen) {
 #if defined(WINDOWS)
-	int len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, buflen, NULL);
+	int len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, (uint)buflen, NULL);
 	if(len > 0) {
 		for(int i = 0; i < len; i++) {
 			if(buf[i] == '\r' || buf[i] == '\n')
@@ -82,7 +82,7 @@ const char* String_AllocCopy(const char* str) {
 
 size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index) {
 	if(!args) return 0;
-	
+
 	size_t argsize = 0;
 
 	while(*args != '\0') {

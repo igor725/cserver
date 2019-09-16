@@ -140,7 +140,7 @@ void Packet_WriteHandshake(CLIENT* client, const char* name, const char* motd) {
 	*++data = 0x07;
 	WriteString(++data, name); data += 63;
 	WriteString(++data, motd); data += 63;
-	*++data = client->playerData->isOP;
+	*++data = (char)client->playerData->isOP;
 
 	PacketWriter_End(client, 131);
 }

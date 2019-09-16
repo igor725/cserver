@@ -69,9 +69,9 @@ bool CPE_CheckModel(const char* model) {
 		}
 	}
 
-	int blockId;
-	if((blockId = String_ToInt(model)) > 0) {
-		return Block_IsValid(blockId);
+	BlockID block;
+	if((block = (BlockID)String_ToInt(model)) > 0) {
+		return Block_IsValid(block);
 	}
 
 	return false;
@@ -159,8 +159,7 @@ void CPEPacket_WriteWeatherType(CLIENT* client, Weather type) {
 void CPEPacket_WriteTwoWayPing(CLIENT* client, uchar direction, short num) {
 	PacketWriter_Start(client);
 	if(client->playerData->state != STATE_INGAME) {
-		PacketWriter_End(client, 0);
-		return;
+		PacketWriter_Stop(client);
 	}
 
 	*data = 0x2B;
