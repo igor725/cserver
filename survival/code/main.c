@@ -8,12 +8,12 @@
 #include "damage.h"
 #include "gui.h"
 
-static void Survival_OnHandshake(void* param) {
+void Survival_OnHandshake(void* param) {
 	CLIENT* cl = (CLIENT*)param;
 	SurvData_Create(cl);
 }
 
-static void Survival_OnSpawn(void* param) {
+void Survival_OnSpawn(void* param) {
 	CLIENT* client = (CLIENT*)param;
 	SURVDATA* survData = SurvData_Get(client);
 	SurvGui_DrawAll(survData);
@@ -22,7 +22,7 @@ static void Survival_OnSpawn(void* param) {
 	}
 }
 
-static void Survival_OnClick(void* param) {
+void Survival_OnClick(void* param) {
 	onPlayerClick_t* a = (onPlayerClick_t*)param;
 	CLIENT* client = a->client;
 	SURVDATA* survData = SurvData_Get(client);
@@ -32,9 +32,9 @@ static void Survival_OnClick(void* param) {
 		survDataTg = SurvData_Get(target);
 }
 
-static bool CHandler_God(const char* args, CLIENT* caller, char* out) {
+bool CHandler_God(const char* args, CLIENT* caller, char* out) {
 	Command_OnlyForOP;
-	
+
 	SURVDATA* survData = SurvData_Get(caller);
 	bool mode = survData->godMode;
 	survData->godMode = !mode;
@@ -42,7 +42,7 @@ static bool CHandler_God(const char* args, CLIENT* caller, char* out) {
 	return true;
 }
 
-static bool CHandler_Hurt(const char* args, CLIENT* caller, char* out) {
+bool CHandler_Hurt(const char* args, CLIENT* caller, char* out) {
 	char damage[32];
 	if(String_GetArgument(args, damage, 32, 0)) {
 		float dmg = String_ToFloat(damage);

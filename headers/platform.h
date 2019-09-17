@@ -79,8 +79,8 @@ bool DLib_GetSym(void* lib, const char* sname, void** sym);
 */
 
 bool Socket_Init();
-SOCKET Socket_Bind(const char* ip, ushort port);
-void Socket_Close(SOCKET sock);
+API SOCKET Socket_Bind(const char* ip, ushort port);
+API void Socket_Close(SOCKET sock);
 
 /*
 	THREAD FUNCTIONS
