@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdarg.h>
 
+API int String_CaselessFind(const char* str1, const char* str2);
+API int String_Find(const char* str1, const char* str2);
 API bool String_Compare(const char* str1, const char* str2);
 API bool String_CaselessCompare(const char* str1, const char* str2);
 API size_t String_Length(const char* str);
