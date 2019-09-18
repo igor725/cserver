@@ -10,7 +10,7 @@ int String_CaselessFind(const char* str1, const char* str2) {
 }
 
 bool String_CaselessCompare(const char* str1, const char* str2) {
-	return String_Find(str1, str2) == 0;
+	return String_CaselessFind(str1, str2) == 0;
 }
 
 int String_Find(const char* str1, const char* str2) {
