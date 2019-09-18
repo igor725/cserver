@@ -1,6 +1,8 @@
 #include <core.h>
 
 #include "http.h"
+#include "sha1.h"
+#include "b64.h"
 
 SOCKET httpServer;
 
@@ -123,14 +125,30 @@ static void writeHTTPBody(WEBCLIENT* wcl) {
 static void GenerateResponse(WEBCLIENT* wcl) {
 	writeHTTPCode(wcl);
 	writeDefaultHTTPHeaders(wcl);
+	if(wcl->wsUpgrade) {
+		char acceptKey[64] = {0};
+		String_Append(acceptKey, 64, wcl->wsKey);
+		String_Append(acceptKey, 64, GUID);
+
+		SHA1_CTX ctx;
+		SHA1Init(&ctx);
+		SHA1Update(&ctx, acceptKey, String_Length(acceptKey));
+		SHA1Final(acceptKey, &ctx);
+		const char* b64acceptKey = b64_encode(acceptKey, 20);
+
+		writeHTTPHeader(wcl, "Sec-WebSocket-Protocol", CPL_WSPROTO);
+		writeHTTPHeader(wcl, "Sec-WebSocket-Accept", b64acceptKey);
+		writeHTTPHeader(wcl, "Upgrade", "websocket");
+		writeHTTPHeader(wcl, "Connection", "Upgrade");
+
+		Memory_Free((void*)b64acceptKey);
+	}
 	writeHTTPBody(wcl);
 }
 
 static void freeWsClient(WEBCLIENT* wcl) {
 	if(wcl->request)
 		Memory_Free((void*)wcl->request);
-	if(wcl->wsProto)
-		Memory_Free((void*)wcl->wsProto);
 	if(wcl->wsKey)
 		Memory_Free((void*)wcl->wsKey);
 
@@ -162,23 +180,26 @@ static char* ReadSockUntil(WEBCLIENT* wcl, size_t len, char sym) {
 static void wclSetError(WEBCLIENT* wcl, int code, const char* error) {
 	wcl->respCode = code;
 	wcl->respBody = error;
+	wcl->wsUpgrade = false;
 }
 
 static void ReadHeader(WEBCLIENT* wcl, const char* value) {
 	const char* key = wcl->buffer;
 
 	if(String_CaselessCompare(key, "Upgrade")) {
-		if(String_Find(value, "websocket")) {
+		if(String_FindSubstr(value, "websocket")) {
 			wcl->wsUpgrade = true;
 		}
 	} else if(String_CaselessCompare(key, "Sec-WebSocket-Key")) {
 		wcl->wsKey = String_AllocCopy(value);
 	} else if(String_CaselessCompare(key, "Sec-WebSocket-Protocol")) {
-
+		if(!String_FindSubstr(value, CPL_WSPROTO)) {
+			wclSetError(wcl, 400, "Unknown websocket protocol.");
+		}
 	} else if(String_CaselessCompare(key, "Sec-WebSocket-Version")) {
 		wcl->wsVersion = String_ToInt(value);
 		if(wcl->wsVersion != 13) {
-			wclSetError(wcl, 400, "Invalud WebSocket-Version");
+			wclSetError(wcl, 400, "Invalid WebSocket-Version.");
 		}
 	}
 }
@@ -187,13 +208,19 @@ static void Handle_GetRequest(WEBCLIENT* wcl, char* buffer) {
 	wcl->request = String_AllocCopy(ReadSockUntil(wcl, 512, ' '));
 	char* httpver = ReadSockUntil(wcl, 1024, '\n');
 
-	while(wcl->respCode >= 400) {
+	while(wcl->respCode < 400) {
 		char* value = ReadSockUntil(wcl, 1024, '\n');
 		if(!String_Length(value)) break;
 
 		while(*value != ':') ++value;
 		*value = '\0'; value += 2;
 		ReadHeader(wcl, value);
+	}
+
+	if(wcl->wsUpgrade) {
+		wcl->wsFrame = (WSFRAME*)Memory_Alloc(1, sizeof(WSFRAME));
+		WebSocket_Setup(wcl->wsFrame, wcl->sock);
+		wcl->respCode = 101;
 	}
 
 	GenerateResponse(wcl);

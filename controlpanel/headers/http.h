@@ -3,6 +3,7 @@
 #include "websocket.h"
 
 #define HTTP_SERVER_NAME "CPL Server v1"
+#define CPL_WSPROTO "CPLwsprotov1"
 
 typedef struct webHeader {
 	const char* key;
@@ -18,7 +19,6 @@ typedef struct webClient {
 	const char* request;
 	bool wsUpgrade;
 	int wsVersion;
-	const char* wsProto;
 	const char* wsKey;
 	WSFRAME* wsFrame;
 } WEBCLIENT;

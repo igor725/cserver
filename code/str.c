@@ -1,24 +1,20 @@
 #include "core.h"
 #include "str.h"
 
-int String_CaselessFind(const char* str1, const char* str2) {
-#if defined(WINDOWS)
-	return _stricmp(str1, str2);
-#elif defined(POSIX)
-	return strcasecmp(str1, str2);
-#endif
+char* String_FindSubstr(const char* str, const char* strsrch) {
+	return strstr(str, strsrch);
 }
 
 bool String_CaselessCompare(const char* str1, const char* str2) {
-	return String_CaselessFind(str1, str2) == 0;
-}
-
-int String_Find(const char* str1, const char* str2) {
-	return strcmp(str1, str2);
+	#if defined(WINDOWS)
+		return _stricmp(str1, str2) == 0;
+	#elif defined(POSIX)
+		return strcasecmp(str1, str2) == 0;
+	#endif
 }
 
 bool String_Compare(const char* str1, const char* str2) {
-	return String_Find(str1, str2) == 0;
+	return strcmp(str1, str2) == 0;
 }
 
 int String_ToInt(const char* str) {
