@@ -170,6 +170,10 @@ void Server_Stop() {
 	Log_Info("Destroying LuaVM");
 	LuaPlugin_Stop();
 #endif
+#ifdef CP_ENABLED
+	Log_Info("Unloading plugins");
+	CPlugin_Stop();
+#endif
 	Socket_Close(server);
 	Config_Save(mainCfg);
 }

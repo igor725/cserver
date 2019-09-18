@@ -28,6 +28,19 @@ bool Event_RegisterVoid(EventType type, evtVoidCallback func) {
 	rgPart2;
 }
 
+bool Event_Unregister(EventType type, void* callbackPtr) {
+	for(int pos = 0; pos < MAX_EVENTS; pos++) {
+		EVENT* evt = Event_List[type][pos];
+		if(!evt) continue;
+		
+		if(evt->func.fvoid == callbackPtr) {
+			Event_List[type][pos] = NULL;
+			return true;
+		}
+	}
+	return false;
+}
+
 bool Event_Call(EventType type, void* param) {
 	bool ret = true;
 

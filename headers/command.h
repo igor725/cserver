@@ -21,11 +21,13 @@ typedef struct command {
 	const char*     name;
 	cmdFunc         func;
 	struct command* next;
+	struct command* prev;
 } COMMAND;
 
 COMMAND* headCommand;
 
 API void Command_Register(const char* cmd, cmdFunc func);
+API void Command_Unregister(const char* cmd);
 bool Command_Handle(char* cmd, CLIENT* caller);
 void Command_RegisterDefault();
 #endif

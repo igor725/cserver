@@ -8,8 +8,34 @@ void Command_Register(const char* cmd, cmdFunc func) {
 
 	tmp->name = String_AllocCopy(cmd);
 	tmp->func = func;
+	if(headCommand)
+		headCommand->prev = tmp;
 	tmp->next = headCommand;
 	headCommand = tmp;
+}
+
+static void Command_Destroy(COMMAND* cmd) {
+	if(cmd->prev)
+		cmd->prev->next = cmd->prev;
+
+	if(cmd->next) {
+		cmd->next->prev = cmd->next;
+		headCommand = cmd->next->prev;
+	} else
+		headCommand = NULL;
+
+	Memory_Free((void*)cmd->name);
+	Memory_Free(cmd);
+}
+
+void Command_Unregister(const char* cmd) {
+	COMMAND* tmp = headCommand;
+
+	while(tmp) {
+		if(String_CaselessCompare(tmp->name, cmd))
+			Command_Destroy(tmp);
+		tmp = tmp->next;
+	}
 }
 
 static bool CHandler_OP(const char* args, CLIENT* caller, char* out) {
@@ -46,7 +72,7 @@ static bool CHandler_Test(const char* args, CLIENT* caller, char* out) {
 
 static bool CHandler_Announce(const char* args, CLIENT* caller, char* out) {
 	Command_OnlyForOP;
-	
+
 	if(!caller) caller = Broadcast;
 	Packet_WriteChat(caller, CPE_ANNOUNCE, !args ? "Test announcement" : args);
 	return false;

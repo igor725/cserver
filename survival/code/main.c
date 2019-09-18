@@ -8,12 +8,12 @@
 #include "damage.h"
 #include "gui.h"
 
-void Survival_OnHandshake(void* param) {
+static void Survival_OnHandshake(void* param) {
 	CLIENT* cl = (CLIENT*)param;
 	SurvData_Create(cl);
 }
 
-void Survival_OnSpawn(void* param) {
+static void Survival_OnSpawn(void* param) {
 	CLIENT* client = (CLIENT*)param;
 	SURVDATA* survData = SurvData_Get(client);
 	SurvGui_DrawAll(survData);
@@ -22,7 +22,7 @@ void Survival_OnSpawn(void* param) {
 	}
 }
 
-void Survival_OnClick(void* param) {
+static void Survival_OnClick(void* param) {
 	onPlayerClick_t* a = (onPlayerClick_t*)param;
 	CLIENT* client = a->client;
 	SURVDATA* survData = SurvData_Get(client);
@@ -32,7 +32,7 @@ void Survival_OnClick(void* param) {
 		survDataTg = SurvData_Get(target);
 }
 
-bool CHandler_God(const char* args, CLIENT* caller, char* out) {
+static bool CHandler_God(const char* args, CLIENT* caller, char* out) {
 	Command_OnlyForOP;
 
 	SURVDATA* survData = SurvData_Get(caller);
@@ -42,7 +42,7 @@ bool CHandler_God(const char* args, CLIENT* caller, char* out) {
 	return true;
 }
 
-bool CHandler_Hurt(const char* args, CLIENT* caller, char* out) {
+static bool CHandler_Hurt(const char* args, CLIENT* caller, char* out) {
 	char damage[32];
 	if(String_GetArgument(args, damage, 32, 0)) {
 		float dmg = String_ToFloat(damage);
@@ -52,11 +52,14 @@ bool CHandler_Hurt(const char* args, CLIENT* caller, char* out) {
 }
 
 EXP int Plugin_ApiVer = 100;
-EXP bool Plugin_Init() {
+EXP bool Plugin_Load() {
 	Event_RegisterVoid(EVT_ONSPAWN, Survival_OnSpawn);
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, Survival_OnHandshake);
 	Event_RegisterVoid(EVT_ONPLAYERCLICK, Survival_OnClick);
 	Command_Register("god", CHandler_God);
 	Command_Register("hurt", CHandler_Hurt);
 	return true;
+}
+EXP bool Plugin_Unload() {
+	return false;
 }

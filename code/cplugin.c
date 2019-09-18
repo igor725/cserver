@@ -16,7 +16,7 @@ bool CPlugin_Load(const char* name) {
 
 	if(DLib_Load(path, &plugin)) {
 		if(!(DLib_GetSym(plugin, "Plugin_ApiVer", &verSym) &&
-		DLib_GetSym(plugin, "Plugin_Init", &initSym))) {
+		DLib_GetSym(plugin, "Plugin_Load", &initSym))) {
 			Log_Error("%s: %s", path, DLib_GetError(error, 512));
 			DLib_Unload(plugin);
 			return false;
@@ -32,11 +32,41 @@ bool CPlugin_Load(const char* name) {
 			DLib_Unload(plugin);
 			return false;
 		}
-		return (*(initFunc)initSym)();
+
+		CPLUGIN* splugin = (CPLUGIN*)Memory_Alloc(1, sizeof(CPLUGIN));
+		splugin->name = String_AllocCopy(name);
+		splugin->lib = plugin;
+		DLib_GetSym(plugin, "Plugin_Unload", (void*)&splugin->unload);
+		int pluginId = -1;
+		for(int i = 0; i < MAX_PLUGINS; i++) {
+			if(!pluginsList[i]) {
+				pluginsList[i] = splugin;
+				pluginId = i;
+			}
+		}
+		splugin->id = pluginId;
+		if(pluginId == -1 || !(*(pluginFunc)initSym)())
+			CPlugin_Unload(splugin);
+
+		return false;
 	}
 
 	Log_Error("%s: %s", path, DLib_GetError(error, 512));
 	return false;
+}
+
+bool CPlugin_Unload(CPLUGIN* plugin) {
+	if(plugin->unload && !(*(pluginFunc)plugin->unload)())
+		return false;
+
+	if(plugin->name)
+		Memory_Free((void*)plugin->name);
+	if(plugin->id != -1)
+		pluginsList[plugin->id] = NULL;
+
+	DLib_Unload(plugin->lib);
+	Memory_Free(plugin);
+	return true;
 }
 
 void CPlugin_Start() {
@@ -45,10 +75,16 @@ void CPlugin_Start() {
 	if(Iter_Init(&pIter, "plugins", DLIB_EXT)) {
 		do {
 			if(pIter.isDir || !pIter.cfile) continue;
-			if(CPlugin_Load(pIter.cfile))
-				Log_Info("Plugin %s loaded", pIter.cfile);
+			CPlugin_Load(pIter.cfile);
 		} while(Iter_Next(&pIter));
+	}
+}
 
+void CPlugin_Stop() {
+	for(int i = 0; i < MAX_PLUGINS; i++) {
+		CPLUGIN* plugin = pluginsList[i];
+		if(!plugin || !plugin->unload) continue;
+		(*(pluginFunc)plugin->unload)();
 	}
 }
 #endif

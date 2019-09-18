@@ -52,6 +52,20 @@ static bool CHandler_Atoggle(const char* args, CLIENT* caller, char* out) {
 }
 
 /*
+** Исходя из названия команды,
+** даже самому тупенькому будет понятно:
+** Эта команда уничтожает сама себя после
+** исполнения, то есть когда она будет
+** вызвана однажды - её нельзя будет вызвать
+** вновь, вплоть до перезапуска сервера.
+*/
+static bool CHandler_SelfDestroy(const char* args, CLIENT* caller, char* out) {
+	Command_Unregister("selfdestroy");
+	String_Copy(out, CMD_MAX_OUT, "This command can't be called anymore");
+	return true;
+}
+
+/*
 ** Если в начало обработчика команды
 ** сунуть макрос Command_OnlyForClient,
 ** то команда будет выполнена только в том
@@ -68,13 +82,31 @@ static bool CHandler_ClientOnly(const char* args, CLIENT* caller, char* out) {
 }
 
 EXP int Plugin_ApiVer = 100; // Текущая версия API плагинов 1.0.0.
-EXP bool Plugin_Init() { // Основная функция, вызывается после подгрузки плагина.
+EXP bool Plugin_Load() { // Основная функция, вызывается после подгрузки плагина.
   Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.
   Command_Register("plugtest", CHandler_Plugtest);
   Command_Register("atoggle", CHandler_Atoggle);
+	Command_Register("selfdestroy", CHandler_SelfDestroy);
 	Command_Register("clonly", CHandler_ClientOnly);
   Log_Info("Test plugin loaded"); // Отправка в консоль INFO сообщения.
   Log_Debug("It's a debug message");
   Log_Warn("It's a warning message");
   return true;
+}
+EXP bool Plugin_Unload() {
+	Event_Unregister(EVT_ONMESSAGE, onmesgfunc);
+	Command_Unregister("plugtest");
+	Command_Unregister("atoggle");
+	Command_Unregister("selfdestroy");
+	Command_Unregister("clonly");
+
+	/*
+	** Возврат true говорит о том, что
+	** плагин может быть выгружен в данный
+	** момент без ущерба работоспособности
+	** сервера. Если функция вернёт false
+	** то плагин останется в памяти
+	** нетронутым.
+	*/
+	return true;
 }

@@ -4,7 +4,7 @@
 #include "sha1.h"
 #include "b64.h"
 
-SOCKET httpServer;
+SOCKET httpServer = INVALID_SOCKET;
 
 /*
 ** Позаимствовано здеся:
@@ -107,12 +107,14 @@ static void writeDefaultHTTPHeaders(WEBCLIENT* wcl) {
 }
 
 static void writeHTTPBody(WEBCLIENT* wcl) {
-	if(wcl->respBody && wcl->respLength == 0)
-		wcl->respLength = String_Length(wcl->respBody);
+	if(wcl->wsUpgrade) {
+		if(wcl->respBody && wcl->respLength == 0)
+			wcl->respLength = String_Length(wcl->respBody);
 
-	char size[8];
-	String_FormatBuf(size, 8, "%d", wcl->respLength);
-	writeHTTPHeader(wcl, "Content-Length", size);
+		char size[8];
+		String_FormatBuf(size, 8, "%d", wcl->respLength);
+		writeHTTPHeader(wcl, "Content-Length", size);
+	}
 	String_Copy(wcl->buffer, 1024, "\r\n");
 
 	if(wcl->respBody && wcl->respLength > 0) {
@@ -253,7 +255,7 @@ static TRET AcceptThreadProc(TARG param) {
 			break;
 	}
 
-	Socket_Close(httpServer);
+	Http_CloseServer();
 	return 0;
 }
 
@@ -261,6 +263,14 @@ bool Http_StartServer(const char* ip, ushort port) {
 	httpServer = Socket_Bind(ip, port);
 	if(httpServer != INVALID_SOCKET) {
 		Thread_Create(AcceptThreadProc, NULL);
+		return true;
+	}
+	return false;
+}
+
+bool Http_CloseServer() {
+	if(httpServer != INVALID_SOCKET) {
+		Socket_Close(httpServer);
 		return true;
 	}
 	return false;
