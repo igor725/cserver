@@ -56,6 +56,7 @@ API bool Client_IsInSameWorld(CLIENT* client, CLIENT* other);
 API bool Client_IsInWorld(CLIENT* client, WORLD* world);
 API bool Client_IsInGame(CLIENT* client);
 void Client_SetPos(CLIENT* client, VECTOR* vec, ANGLE* ang);
+API bool Client_SetWeather(CLIENT* client, Weather type);
 API bool Client_ChangeWorld(CLIENT* client, WORLD* world);
 API bool Client_SetType(CLIENT* client, bool isOP);
 API bool Client_GetType(CLIENT* client);
