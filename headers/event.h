@@ -19,7 +19,8 @@ enum eventType {
 	EVT_ONHELDBLOCKCHNG,
 	EVT_ONBLOCKPLACE,
 	EVT_ONPLAYERCLICK,
-	EVT_ONDISCONNECT
+	EVT_ONDISCONNECT,
+	EVT_ONWEATHER
 };
 
 enum eventReturn {
@@ -27,7 +28,7 @@ enum eventReturn {
 	EVT_RTBOOL
 };
 
-#define ETYPES     11
+#define ETYPES     12
 #define MAX_EVENTS 64
 
 typedef struct onMessage {

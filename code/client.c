@@ -232,6 +232,14 @@ void Client_SetPos(CLIENT* client, VECTOR* pos, ANGLE* ang) {
 	Memory_Copy(client->playerData->angle, ang, sizeof(ANGLE));
 }
 
+bool Client_SetWeather(CLIENT* client, Weather type) {
+	if(Client_IsSupportExt(client, "EnvWeatherType")) {
+		CPEPacket_WriteWeatherType(client, type);
+		return true;
+	}
+	return false;
+}
+
 bool Client_SetType(CLIENT* client, bool isOP) {
 	if(!client->playerData)
 		return false;
@@ -330,6 +338,7 @@ bool Client_Spawn(CLIENT* client) {
 	if(client->playerData->spawned)
 		return false;
 
+	Client_SetWeather(client, client->playerData->world->info->wt);
 	for(int i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT* other = clients[i];
 		if(!other) continue;

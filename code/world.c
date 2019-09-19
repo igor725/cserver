@@ -1,5 +1,7 @@
 #include "core.h"
+#include "client.h"
 #include "world.h"
+#include "event.h"
 
 WORLD* World_Create(const char* name) {
 	WORLD* tmp = (WORLD*)Memory_Alloc(1, sizeof(WORLD));
@@ -27,6 +29,20 @@ void World_SetDimensions(WORLD* world, ushort width, ushort height, ushort lengt
 	wd->width = width;
 	wd->height = height;
 	wd->length = length;
+}
+
+void World_SetWeather(WORLD* world, Weather type) {
+	world->info->wt = type;
+	Event_Call(EVT_ONWEATHER, world);
+	for(int i = 0; i < MAX_CLIENTS; i++) {
+		CLIENT* client = clients[i];
+		if(client && Client_IsInWorld(client, world))
+			Client_SetWeather(client, type);
+	}
+}
+
+Weather World_GetWeather(WORLD* world) {
+	return world->info->wt;
 }
 
 void World_AllocBlockArray(WORLD* world) {
@@ -67,6 +83,7 @@ bool World_WriteInfo(WORLD* world, FILE* fp) {
 	return _WriteData(fp, DT_DIM, world->info->dim, sizeof(WORLDDIMS)) &&
 	_WriteData(fp, DT_SV, world->info->spawnVec, sizeof(VECTOR)) &&
 	_WriteData(fp, DT_SA, world->info->spawnAng, sizeof(ANGLE)) &&
+	_WriteData(fp, DT_WT, &world->info->wt, sizeof(Weather)) &&
 	_WriteData(fp, DT_END, NULL, 0);
 }
 
@@ -93,6 +110,10 @@ bool World_ReadInfo(WORLD* world, FILE* fp) {
 				break;
 			case DT_SA:
 				if(File_Read(world->info->spawnAng, sizeof(ANGLE), 1, fp) != 1)
+					return false;
+				break;
+			case DT_WT:
+				if(File_Read(&world->info->wt, sizeof(Weather), 1, fp) != 1)
 					return false;
 				break;
 			case DT_END:

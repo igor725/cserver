@@ -7,6 +7,7 @@ enum WorldDataType {
 	DT_DIM,
 	DT_SV,
 	DT_SA,
+	DT_WT,
 
 	DT_END = 0xFF
 };
@@ -21,6 +22,7 @@ typedef struct worldInfo {
 	WORLDDIMS*  dim;
 	VECTOR*     spawnVec;
 	ANGLE*      spawnAng;
+	Weather     wt;
 } WORLDINFO;
 
 typedef struct world {
@@ -41,6 +43,8 @@ API void World_Destroy(WORLD* world);
 API bool World_Load(WORLD* world);
 API bool World_Save(WORLD* world);
 API void World_AllocBlockArray(WORLD* world);
+API void World_SetWeather(WORLD* world, Weather type);
+API Weather World_GetWeather(WORLD* world);
 
 WORLD* worlds[MAX_WORLDS];
 #endif
