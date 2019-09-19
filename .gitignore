@@ -5,6 +5,5 @@
 *.cws
 *.cfg
 zlib/
-lua/
 objs/
 out/

@@ -8,12 +8,7 @@
 #include "command.h"
 #include "generators.h"
 #include "event.h"
-#ifdef LUA_ENABLED
-#include "luaplugin.h"
-#endif
-#ifdef CP_ENABLED
 #include "cplugin.h"
-#endif
 
 void Server_Accept() {
 	struct sockaddr_in caddr;
@@ -124,14 +119,8 @@ bool Server_InitialWork() {
 		worlds[0] = tmp;
 	}
 
-#ifdef LUA_ENABLED
-	Log_Info("Starting LuaVM");
-	LuaPlugin_Start();
-#endif
-#ifdef CP_ENABLED
 	Log_Info("Loading C plugins");
 	CPlugin_Start();
-#endif
 
 	Console_StartListen();
 	Event_Call(EVT_POSTSTART, NULL);
@@ -166,14 +155,10 @@ void Server_Stop() {
 	Console_Close();
 	if(acceptThread)
 		Thread_Close(acceptThread);
-#ifdef LUA_ENABLED
-	Log_Info("Destroying LuaVM");
-	LuaPlugin_Stop();
-#endif
-#ifdef CP_ENABLED
+
 	Log_Info("Unloading plugins");
 	CPlugin_Stop();
-#endif
+
 	Socket_Close(server);
 	Config_Save(mainCfg);
 }

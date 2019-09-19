@@ -1,4 +1,3 @@
-#ifdef CP_ENABLED
 #include "core.h"
 #include "event.h"
 #include "client.h"
@@ -87,4 +86,3 @@ void CPlugin_Stop() {
 		(*(pluginFunc)plugin->unload)();
 	}
 }
-#endif

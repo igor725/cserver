@@ -9,10 +9,6 @@ set ZLIB_ADD=WithoutAsm
 set ZLIB_DIR=.\zlib
 set ZLIB_MODE=Release
 
-set LUA_ENABLED=0
-set LUA_DIR=.\lua
-set LUA_VER=51
-
 set MSVC_OPTS=
 set MSVC_LINKER=
 set OBJDIR=objs
@@ -39,8 +35,6 @@ IF "%1"=="allwarn" set MSVC_OPTS=%MSVC_OPTS% /Wall
 IF "%1"=="w4" set MSVC_OPTS=%MSVC_OPTS% /W4
 IF "%1"=="nowarn" set MSVC_OPTS=%MSVC_OPTS% /W0
 IF "%1"=="wx" set MSVC_OPTS=%MSVC_OPTS% /WX
-IF "%1"=="lua" set LUA_ENABLED=1
-IF "%1"=="cp" set MSVC_OPTS=%MSVC_OPTS% /DCP_ENABLED
 IF "%1"=="pb" goto pluginbuild
 IF "%1"=="pluginbuild" goto pluginbuild
 SHIFT
@@ -64,23 +58,12 @@ IF "%BUILD_PLUGIN%"=="1" (
 
 set BINPATH=%OUTDIR%\%BINNAME%
 set SERVER_ZDLL=%OUTDIR%\zlibwapi.dll
-set SERVER_LDLL=%OUTDIR%\lua%LUA_VER%.dll
 
 IF NOT EXIST %OBJDIR% MD %OBJDIR%
 IF NOT EXIST %OUTDIR% MD %OUTDIR%
 
 echo Build configuration:
 echo Architecture: %ARCH%
-IF "%LUA_ENABLED%"=="0" (
-  set MSVC_OPTS=%MSVC_OPTS% /wd4206
-  echo LuaPlugin: disabled
-) else (
-  set MSVC_OPTS=%MSVC_OPTS% /DLUA_ENABLED /I%LUA_DIR%\include
-  set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%LUA_DIR%\lib_%ARCH%
-  set MSVC_LIBS=%MSVC_LIBS% lua%LUA_VER%.lib
-  set LUA_DLL=%LUA_DIR%\lib_%ARCH%\lua%LUA_VER%.dll
-  echo LuaPlugin: enabled
-)
 IF "%DEBUG%"=="0" (
   echo Debug: disabled
 ) else (
@@ -108,12 +91,6 @@ set COPY=%ZLIB_DLL%
   set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH%
   copy /Y %ZLIB_DLL% %SERVER_ZDLL% 2> nul > nul
   IF NOT EXIST %SERVER_ZDLL% goto copyerror
-
-  IF "%LUA_ENABLED%"=="1" (
-    set COPY=%LUA_DLL%
-    copy /Y %LUA_DLL% %SERVER_LDLL% 2> nul > nul
-    IF NOT EXIST %SERVER_LDLL% goto copyerror
-  )
 )
 set MSVC_OPTS=%MSVC_OPTS% /Fo%OBJDIR%\
 set MSVC_OPTS=%MSVC_OPTS% /link /LIBPATH:%ZLIB_COMPILEDIR% %MSVC_LINKER%
@@ -150,7 +127,7 @@ popd
 goto end
 
 :cloc
-cloc --exclude-dir=zlib,lua .
+cloc --exclude-dir=zlib .
 goto end
 
 :clean

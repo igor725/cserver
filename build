@@ -10,8 +10,6 @@ CFLAGS="-pipe -fPIC"
 LIBS="-lz -lpthread -ldl"
 OUTBIN="server"
 
-CP_ENABLED=0
-LUA_ENABLED=0
 PLUGIN_BUILD=0
 
 clean () {
@@ -30,8 +28,6 @@ do
 		break
 	fi
 	if [ "$a" == "clean" ]; then clean; fi
-	if [ "$a" == "lua" ]; then LUA_ENABLED=1; fi
-	if [ "$a" == "cp" ]; then CP_ENABLED=1; fi
 	if [ "$a" == "pb" ]; then PLUGIN_BUILD=1; fi
 	if [ "$a" == "dbg" ]; then DEBUG=1; fi
 	if [ "$a" == "wall" ]; then WARN="-Wall"; fi
@@ -42,29 +38,6 @@ do
 	if [ "$a" == "3" ]; then OPT="-O3"; fi
 	if [ "$a" == "f" ]; then OPT="-Ofast"; fi
 done
-
-if [ $CP_ENABLED -eq 1 ]; then
-	CFLAGS="$CFLAGS -DCP_ENABLED"
-fi
-
-if [ $LUA_ENABLED -eq 1 ]; then
-	echo -n "Searching liblua*.a and lua.h..."
-	LUA_INCDIR=`dirname $(find /usr -name lua.h -print -quit 2> /dev/null) 2> /dev/null`
-	if [ ! -d "$LUA_INCDIR" ]; then
-		echo "fail, include directory not found"
-		exit 1
-	fi
-	LUA_LIBFILE=$(find /usr -name liblua*.a -print -quit 2> /dev/null)
-	if [ -f "$LUA_LIBFILE" ]; then
-		LUA_LIBFILE=$(basename $LUA_LIBFILE .a 2> /dev/null | tail -c +4)
-	else
-		echo "fail, lua library not found"
-		exit 1
-	fi
-	echo "done"
-	CFLAGS="$CFLAGS -I$LUA_INCDIR -DLUA_ENABLED"
-	LIBS="$LIBS -l$LUA_LIBFILE"
-fi
 
 if [ $DEBUG -eq 1 ]; then
 	CFLAGS="$CFLAGS -g"
@@ -94,13 +67,9 @@ done
 echo "done"
 
 echo -n "Linking..."
-LOBJ="-not -name luaplugin.o"
-if [ $LUA_ENABLED -eq 1 ]; then
-	LOBJ=""
-fi
 
 OUTDIR="$ROOT/out"
-OBJS=$(find $OBJDIR -name "*.o" $LOBJ -printf "$OBJDIR/%P ")
+OBJS=$(find $OBJDIR -name "*.o" -printf "$OBJDIR/%P ")
 if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
 $LNK -o "$OUTDIR/$OUTBIN" $LIBS $OBJS
 echo "done"
