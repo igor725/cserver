@@ -102,17 +102,17 @@ uint WebSocket_Encode(char* buf, uint len, const char* data, uint dlen, char opc
 	if(dlen < 126) {
 		*++buf = dlen;
 	} else if(len < 65535) {
+		outlen += 2;
 		*++buf = 126;
 		*(ushort*)++buf = htons(dlen); ++buf;
-		outlen += 2;
 	} else {
+		outlen += 4;
 		*++buf = 127;
 		*(uint*)++buf = htonl(dlen); buf += 3;
-		outlen += 4;
 	}
 
 	if(len < outlen) return 0;
 
-	Memory_Copy(buf, data, dlen);
+	Memory_Copy(++buf, data, dlen);
 	return outlen;
 }

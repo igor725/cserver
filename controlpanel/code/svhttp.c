@@ -132,8 +132,8 @@ static void GenerateResponse(WEBCLIENT* wcl) {
 	writeHTTPCode(wcl);
 	writeDefaultHTTPHeaders(wcl);
 	if(wcl->wsUpgrade) {
-		char acceptKey[64] = {0};
-		String_Append(acceptKey, 64, wcl->wsKey);
+		char acceptKey[64];
+		String_Copy(acceptKey, 64, wcl->wsKey);
 		String_Append(acceptKey, 64, GUID);
 
 		SHA1_CTX ctx;
@@ -216,17 +216,6 @@ static bool HandleWebSocketFrame(WEBCLIENT* wcl) {
 	WSFRAME* ws = wcl->wsFrame;
 	if(ws->opcode == 0x08)
 		return true;
-
-	/*
-	** По какой-то неведомой мне причине этот фрейм
-	** не доходит до получателя, возможно проблема в
-	** WebSocket_Encode, неправильно пишутся флаги,
-	** но я ничего подозрительного, из-за чего всё
-	** может не работать, пока не нашёл.
-	** P.S. Хотя бы получение фреймов работает ¯\_(ツ)_/¯
-	*/
-	uint len = WebSocket_Encode(wcl->buffer, HTTP_BUFFER_LEN, "Received", 8, 1);
-	if(len) sendBuffer(wcl, len);
 
 	return false;
 }
