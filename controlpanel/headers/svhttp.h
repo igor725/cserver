@@ -23,6 +23,6 @@ typedef struct webClient {
 	WSFRAME* wsFrame;
 } WEBCLIENT;
 
-bool WebSocket_StartServer(const char* ip, ushort port);
+bool Http_StartServer(const char* ip, ushort port);
 bool Http_CloseServer();
 #endif
