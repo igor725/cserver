@@ -18,6 +18,7 @@ typedef struct ws_frame {
 	char opcode;
 	char mask[4];
 	uint payload_len;
+	uint _maxlen;
 	char* payload;
 	ushort _dneed;
 	ushort _drcvd;
@@ -27,5 +28,7 @@ typedef struct ws_frame {
 } WSFRAME;
 
 void WebSocket_Setup(WSFRAME* ws, SOCKET fd);
-int WebSocket_ReceiveFrame(WSFRAME* ws);
+bool WebSocket_ReceiveFrame(WSFRAME* ws);
+void WebSocket_DestroyFrame(WSFRAME* ws);
+uint WebSocket_Encode(char* buf, uint len, const char* data, uint dlen, char opcode);
 #endif

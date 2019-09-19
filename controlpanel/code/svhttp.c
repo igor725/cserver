@@ -89,15 +89,19 @@ static const WEBHEADER defaultHeaders[] = {
 	{NULL, NULL}
 };
 
+static int sendBuffer(WEBCLIENT* wcl, int len) {
+	return send(wcl->sock, wcl->buffer, len, 0);
+}
+
 static void writeHTTPCode(WEBCLIENT* wcl) {
 	const char* phrase = getReasonPhrase(wcl->respCode);
-	String_FormatBuf(wcl->buffer, 1024, "HTTP/1.1 %d %s\r\n", wcl->respCode, phrase);
-	send(wcl->sock, wcl->buffer, String_Length(wcl->buffer), 0);
+	String_FormatBuf(wcl->buffer, HTTP_BUFFER_LEN, "HTTP/1.1 %d %s\r\n", wcl->respCode, phrase);
+	sendBuffer(wcl, String_Length(wcl->buffer));
 }
 
 static void writeHTTPHeader(WEBCLIENT* wcl, const char* key, const char* value) {
-	String_FormatBuf(wcl->buffer, 1024, "%s: %s\r\n", key, value);
-	send(wcl->sock, wcl->buffer, String_Length(wcl->buffer), 0);
+	String_FormatBuf(wcl->buffer, HTTP_BUFFER_LEN, "%s: %s\r\n", key, value);
+	sendBuffer(wcl, String_Length(wcl->buffer));
 }
 
 static void writeDefaultHTTPHeaders(WEBCLIENT* wcl) {
@@ -115,13 +119,13 @@ static void writeHTTPBody(WEBCLIENT* wcl) {
 		String_FormatBuf(size, 8, "%d", wcl->respLength);
 		writeHTTPHeader(wcl, "Content-Length", size);
 	}
-	String_Copy(wcl->buffer, 1024, "\r\n");
+	String_Copy(wcl->buffer, HTTP_BUFFER_LEN, "\r\n");
 
 	if(wcl->respBody && wcl->respLength > 0) {
-		String_Append(wcl->buffer, 1024, wcl->respBody);
+		String_Append(wcl->buffer, HTTP_BUFFER_LEN, wcl->respBody);
 	}
 
-	send(wcl->sock, wcl->buffer, wcl->respLength + 2, 0);
+	sendBuffer(wcl, wcl->respLength + 2);
 }
 
 static void GenerateResponse(WEBCLIENT* wcl) {
@@ -153,6 +157,8 @@ static void freeWsClient(WEBCLIENT* wcl) {
 		Memory_Free((void*)wcl->request);
 	if(wcl->wsKey)
 		Memory_Free((void*)wcl->wsKey);
+	if(wcl->wsFrame)
+		WebSocket_DestroyFrame(wcl->wsFrame);
 
 	Memory_Free(wcl);
 }
@@ -206,12 +212,31 @@ static void ReadHeader(WEBCLIENT* wcl, const char* value) {
 	}
 }
 
-static void Handle_GetRequest(WEBCLIENT* wcl, char* buffer) {
+static bool HandleWebSocketFrame(WEBCLIENT* wcl) {
+	WSFRAME* ws = wcl->wsFrame;
+	if(ws->opcode == 0x08)
+		return true;
+
+	/*
+	** По какой-то неведомой мне причине этот фрейм
+	** не доходит до получателя, возможно проблема в
+	** WebSocket_Encode, неправильно пишутся флаги,
+	** но я ничего подозрительного, из-за чего всё
+	** может не работать, пока не нашёл.
+	** P.S. Хотя бы получение фреймов работает ¯\_(ツ)_/¯
+	*/
+	uint len = WebSocket_Encode(wcl->buffer, HTTP_BUFFER_LEN, "Received", 8, 1);
+	if(len) sendBuffer(wcl, len);
+
+	return false;
+}
+
+static void HandleGetRequest(WEBCLIENT* wcl, char* buffer) {
 	wcl->request = String_AllocCopy(ReadSockUntil(wcl, 512, ' '));
-	char* httpver = ReadSockUntil(wcl, 1024, '\n');
+	char* httpver = ReadSockUntil(wcl, HTTP_BUFFER_LEN, '\n');
 
 	while(wcl->respCode < 400) {
-		char* value = ReadSockUntil(wcl, 1024, '\n');
+		char* value = ReadSockUntil(wcl, HTTP_BUFFER_LEN, '\n');
 		if(!String_Length(value)) break;
 
 		while(*value != ':') ++value;
@@ -226,6 +251,16 @@ static void Handle_GetRequest(WEBCLIENT* wcl, char* buffer) {
 	}
 
 	GenerateResponse(wcl);
+
+	if(wcl->wsUpgrade) {
+		while(1) {
+			if(WebSocket_ReceiveFrame(wcl->wsFrame)) {
+				if(!HandleWebSocketFrame(wcl))
+					continue;
+			}
+			break;
+		}
+	}
 }
 
 static TRET ClientThreadProc(TARG param) {
@@ -234,9 +269,8 @@ static TRET ClientThreadProc(TARG param) {
 	wcl->sock = (SOCKET)param;
 
 	int ret = recv(wcl->sock, wcl->buffer, 4, 0);
-	if(ret && String_CaselessCompare(wcl->buffer, "get ")) {
-		Handle_GetRequest(wcl, wcl->buffer);
-	}
+	if(ret && String_CaselessCompare(wcl->buffer, "get "))
+		HandleGetRequest(wcl, wcl->buffer);
 
 	wclClose(wcl);
 	return 0;

@@ -9,14 +9,11 @@ void WebSocket_Setup(WSFRAME* ws, SOCKET fd) {
 	ws->sock = fd;
 }
 
-int WebSocket_ReceiveFrame(WSFRAME* ws) {
+bool WebSocket_ReceiveFrame(WSFRAME* ws) {
 	if(!ws->ready) return -1;
 
 	if(ws->state == WS_ST_DONE) {
 		ws->state = WS_ST_HDR;
-		ws->payload_len = 0;
-		Memory_Free(ws->payload);
-		ws->payload = NULL;
 		ws->_dneed = 2;
 	}
 
@@ -24,7 +21,7 @@ int WebSocket_ReceiveFrame(WSFRAME* ws) {
 		int len = recv(ws->sock, ws->hdr, ws->_dneed, 0);
 
 		if(len == ws->_dneed) {
-			char len = *ws->hdr & 0x7F;
+			char len = *(ws->hdr + 1) & 0x7F;
 
 			if(len == 126) {
 				ws->state = WS_ST_PLEN;
@@ -69,25 +66,53 @@ int WebSocket_ReceiveFrame(WSFRAME* ws) {
 	}
 
 	if(ws->state == WS_ST_RECVPL) {
+		if(ws->_maxlen < ws->_dneed) {
+			Memory_Free(ws->payload);
+			ws->_maxlen = ws->_dneed;
+			ws->payload = Memory_Alloc(1, ws->_dneed + 1);
+		} else
+			Memory_Fill(ws->payload, ws->_maxlen, 0);
 
+		int len = recv(ws->sock, ws->payload, ws->_dneed, 0);
+
+		if(len == ws->_dneed) {
+			for(int i = 0; i < len; i++) {
+				ws->payload[i] = ws->payload[i] ^ ws->mask[i % 4];
+			}
+
+			ws->state = WS_ST_DONE;
+			return true;
+		}
 	}
 
-	return -1;
+	return false;
 }
 
-bool WebSocket_Encode(char* buf, size_t len, const char* data, size_t dlen, char opcode) {
-	if(len + 2 < dlen) return false;
+void WebSocket_DestroyFrame(WSFRAME* ws) {
+	if(ws->payload)
+		Memory_Free(ws->payload);
+}
+
+uint WebSocket_Encode(char* buf, uint len, const char* data, uint dlen, char opcode) {
+	uint outlen = dlen + 2;
+	if(len < outlen) return 0;
 
 	*buf = 0x80 | (opcode & 0x0F);
 
 	if(dlen < 126) {
 		*++buf = dlen;
 	} else if(len < 65535) {
+		*++buf = 126;
 		*(ushort*)++buf = htons(dlen); ++buf;
+		outlen += 2;
 	} else {
+		*++buf = 127;
 		*(uint*)++buf = htonl(dlen); buf += 3;
+		outlen += 4;
 	}
 
+	if(len < outlen) return 0;
+
 	Memory_Copy(buf, data, dlen);
-	return true;
+	return outlen;
 }
