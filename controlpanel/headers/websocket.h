@@ -25,4 +25,7 @@ typedef struct ws_frame {
 	bool masked;
 	bool ready;
 } WSFRAME;
+
+void WebSocket_Setup(WSFRAME* ws, SOCKET fd);
+int WebSocket_ReceiveFrame(WSFRAME* ws);
 #endif

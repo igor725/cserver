@@ -22,4 +22,7 @@ typedef struct webClient {
 	const char* wsKey;
 	WSFRAME* wsFrame;
 } WEBCLIENT;
+
+bool WebSocket_StartServer(const char* ip, ushort port);
+bool Http_CloseServer();
 #endif

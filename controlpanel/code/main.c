@@ -3,7 +3,7 @@
 #include <server.h>
 #include <event.h>
 
-#include "http.h"
+#include "svhttp.h"
 
 CFGSTORE* cplStore;
 

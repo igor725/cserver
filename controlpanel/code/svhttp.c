@@ -1,6 +1,6 @@
 #include <core.h>
 
-#include "http.h"
+#include "svhttp.h"
 #include "sha1.h"
 #include "b64.h"
 
