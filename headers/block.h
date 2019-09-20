@@ -53,5 +53,8 @@ enum Blocks {
 	BLOCK_OBSIDIAN = 49,
 };
 
+VAR const char* Block_Names[];
+
 API bool Block_IsValid(BlockID id);
+API const char* Block_GetName(BlockID id);
 #endif
