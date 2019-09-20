@@ -21,8 +21,8 @@ const char* Block_Names[] = {
 	"Red Mushroom", "Gold Block",
 	"Iron Block", "Double Slab",
 	"Slab", "Brick", "TNT", "Bookshelf",
-	"Mossy stone", "Obsidian",
-	"Cobblestone slab", "Rope", "Sandstone",
+	"Mossy Stone", "Obsidian",
+	"Cobblestone Slab", "Rope", "Sandstone",
 	"Snow", "Fire", "Light-Pink Wool",
 	"Forest-Green Wool", "Brown Wool",
 	"Deep-Blue Wool", "Turquoise Wool", "Ice",
@@ -37,5 +37,5 @@ bool Block_IsValid(BlockID id) {
 const char* Block_GetName(BlockID id) {
 	if(Block_IsValid(id))
 		return Block_Names[id];
-	return NULL;
+	return "Unnamed block";
 }
