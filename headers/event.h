@@ -56,7 +56,7 @@ typedef struct onPlayerClick {
 	short* yaw;
 	short* pitch;
 	ClientID* tgID;
-	ushortp x, y, z;
+	shortp x, y, z;
 	char face;
 } onPlayerClick_t;
 

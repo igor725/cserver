@@ -60,6 +60,7 @@ typedef signed __INT64_TYPE__ int64;
 
 typedef unsigned short ushort;
 typedef ushort*        ushortp;
+typedef short*         shortp;
 typedef unsigned char  uchar;
 typedef unsigned int   uint;
 typedef int            bool;

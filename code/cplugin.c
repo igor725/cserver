@@ -41,6 +41,7 @@ bool CPlugin_Load(const char* name) {
 			if(!pluginsList[i]) {
 				pluginsList[i] = splugin;
 				pluginId = i;
+				break;
 			}
 		}
 		splugin->id = pluginId;

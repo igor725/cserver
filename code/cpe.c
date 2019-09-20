@@ -243,13 +243,14 @@ bool CPEHandler_PlayerClick(CLIENT* client, char* data) {
 	ValidateClientState(client, STATE_INGAME);
 	char button = *data;
 	char action = *++data;
-	short yaw = *(ushort*)++data; ++data;
-	short pitch = *(ushort*)++data; ++data;
+	short yaw = ntohs(*(ushort*)++data); ++data;
+	short pitch = ntohs(*(ushort*)++data); ++data;
 	ClientID tgID = *++data;
-	ushort tgBlockX = *(ushort*)++data; ++data;
-	ushort tgBlockY = *(ushort*)++data; ++data;
-	ushort tgBlockZ = *(ushort*)++data; ++data;
+	short tgBlockX = ntohs(*(short*)++data); ++data;
+	short tgBlockY = ntohs(*(short*)++data); ++data;
+	short tgBlockZ = ntohs(*(short*)++data); ++data;
 	char tgBlockFace = *++data;
+
 	Event_OnClick(
 		client, &button,
 		&action, &yaw,
