@@ -42,8 +42,22 @@ goto argloop
 
 :pluginbuild
 set BUILD_PLUGIN=1
-set PLUGNAME=%2
-IF "%3"=="install" set PLUGINSTALL=1
+SHIFT
+set PLUGNAME=%1
+SHIFT
+IF "%1"=="install" (
+set PLUGINSTALL=1
+SHIFT
+)
+IF NOT "%1"=="" (
+goto libloop
+)
+
+:libloop
+IF "%1"=="" goto continue
+set MSVC_LIBS=%MSVC_LIBS% %1
+SHIFT
+goto libloop
 
 :continue
 IF "%BUILD_PLUGIN%"=="1" (

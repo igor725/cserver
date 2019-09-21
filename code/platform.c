@@ -286,8 +286,7 @@ bool Thread_SetName(const char* name) {
 }
 
 void Thread_Close(THREAD th) {
-	if(th)
-		CloseHandle(th);
+	if(th) CloseHandle(th);
 }
 
 void Thread_Join(THREAD th) {
