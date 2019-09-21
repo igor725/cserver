@@ -239,8 +239,7 @@ bool Directory_Create(const char* path) {
 */
 
 bool DLib_Load(const char* path, void** lib) {
-	if(!(*lib = LoadLibrary(path))) return false;
-	return true;
+	return (*lib = LoadLibrary(path)) != NULL;
 }
 
 bool DLib_Unload(void* lib) {
@@ -253,8 +252,7 @@ char* DLib_GetError(char* buf, size_t len) {
 }
 
 bool DLib_GetSym(void* lib, const char* sname, void** sym) {
-	if(!(*sym = (void*)GetProcAddress(lib, sname))) return false;
-	return true;
+	return (*sym = (void*)GetProcAddress(lib, sname)) != NULL;
 }
 
 /*
@@ -505,8 +503,7 @@ bool Directory_Create(const char* path) {
 */
 
 bool DLib_Load(const char* path, void** lib) {
-	*lib = dlopen(path, RTLD_NOW);
-	return *lib != NULL;
+	return (*lib = dlopen(path, RTLD_NOW)) != NULL;
 }
 
 bool DLib_Unload(void* lib) {
@@ -519,8 +516,7 @@ char* DLib_GetError(char* buf, size_t len) {
 }
 
 bool DLib_GetSym(void* lib, const char* sname, void** sym) {
-	*sym = dlsym(lib, sname);
-	return *sym != NULL;
+	return (*sym = dlsym(lib, sname)) != NULL;
 }
 
 /*

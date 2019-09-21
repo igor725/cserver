@@ -38,29 +38,30 @@ void Generator_Flat(WORLD* world) {
 THREAD threads[MAX_THREADS] = {0};
 int cfgMaxThreads = 2;
 
-static int AddThread(TFUNC func, TARG arg) {
-	for(int i = 0; i < MAX_THREADS; i++) {
-		if(i > cfgMaxThreads) {
-			i = 0;
-			if(Thread_IsValid(threads[i])) {
-				Thread_Join(threads[i]);
-				threads[i] = NULL;
-			}
-		}
-		if(!Thread_IsValid(threads[i])) {
-			threads[i] = Thread_Create(func, arg);
-			return i;
-		}
-	}
-	return -1;
-}
-
-static void WaitAll() {
-	for(int i = 0; i < MAX_THREADS; i++) {
-		if(Thread_IsValid(threads[i]))
-			Thread_Join(threads[i]);
-	}
-}
+// Функции закоменчены, чтобы избежать варнингов
+// static int AddThread(TFUNC func, TARG arg) {
+// 	for(int i = 0; i < MAX_THREADS; i++) {
+// 		if(i > cfgMaxThreads) {
+// 			i = 0;
+// 			if(Thread_IsValid(threads[i])) {
+// 				Thread_Join(threads[i]);
+// 				threads[i] = NULL;
+// 			}
+// 		}
+// 		if(!Thread_IsValid(threads[i])) {
+// 			threads[i] = Thread_Create(func, arg);
+// 			return i;
+// 		}
+// 	}
+// 	return -1;
+// }
+//
+// static void WaitAll() {
+// 	for(int i = 0; i < MAX_THREADS; i++) {
+// 		if(Thread_IsValid(threads[i]))
+// 			Thread_Join(threads[i]);
+// 	}
+// }
 
 void Generator_Default(WORLD* world) {
 	RNGState rnd;
