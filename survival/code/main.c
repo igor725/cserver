@@ -29,10 +29,10 @@ static float fsquare(float a) {
 
 static double root(double n){
   double lo = 0, hi = n, mid;
-  for(int i = 0 ; i < 1000 ; i++){
-      mid = (lo+hi)/2;
-      if(mid*mid == n) return mid;
-      if(mid*mid > n) hi = mid;
+  for(int i = 0; i < 1000; i++){
+      mid = (lo + hi)/2;
+      if(mid * mid == n) return mid;
+      if(mid * mid > n) hi = mid;
       else lo = mid;
   }
   return mid;
@@ -74,7 +74,7 @@ static void Survival_OnClick(void* param) {
 	if(dist_block < dist_entity) {
 		SurvivalBrk_Start(survData, x, y, z);
 	} else if(dist_entity < dist_block && dist_entity < 3.5) {
-		
+
 	}
 }
 

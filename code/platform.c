@@ -28,6 +28,58 @@ void Memory_Free(void* ptr) {
 }
 
 /*
+	Socket functions
+*/
+
+#if defined(WINDOWS)
+#define SOCKERR Error_Set(ET_SYS, WSAGetLastError(), false); \
+return INVALID_SOCKET
+#elif defined(POSIX)
+#define closesocket close
+#define SOCKERR Error_Set(ET_SYS, errno, false); \
+return INVALID_SOCKET
+#endif
+
+bool Socket_Init() {
+#ifdef WINDOWS
+	WSADATA ws;
+	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR) {
+		SOCKERR;
+	}
+#endif
+	return true;
+}
+
+SOCKET Socket_Bind(const char* ip, ushort port) {
+	SOCKET fd;
+
+	if(INVALID_SOCKET == (fd = socket(AF_INET, SOCK_STREAM, 0))) {
+		SOCKERR;
+	}
+
+	struct sockaddr_in ssa;
+	ssa.sin_family = AF_INET;
+	ssa.sin_port = htons(port);
+	if(inet_pton(AF_INET, ip, &ssa.sin_addr.s_addr) <= 0) {
+		SOCKERR;
+	}
+
+	if(bind(fd, (const struct sockaddr*)&ssa, sizeof(ssa)) == -1) {
+		SOCKERR;
+	}
+
+	if(listen(fd, SOMAXCONN) == -1) {
+		SOCKERR;
+	}
+
+	return fd;
+}
+
+void Socket_Close(SOCKET sock) {
+	closesocket(sock);
+}
+
+/*
 	Utils
 */
 
@@ -203,52 +255,6 @@ char* DLib_GetError(char* buf, size_t len) {
 bool DLib_GetSym(void* lib, const char* sname, void** sym) {
 	if(!(*sym = (void*)GetProcAddress(lib, sname))) return false;
 	return true;
-}
-
-/*
-	WINDOWS SOCKET FUNCTIONS
-*/
-
-bool Socket_Init() {
-	WSADATA ws;
-	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR) {
-		Error_Set(ET_SYS, WSAGetLastError(), false);
-		return false;
-	}
-	return true;
-}
-
-SOCKET Socket_Bind(const char* ip, ushort port) {
-	SOCKET fd;
-
-	if(INVALID_SOCKET == (fd = socket(AF_INET, SOCK_STREAM, 0))) {
-		Error_Set(ET_SYS, WSAGetLastError(), false);
-		return INVALID_SOCKET;
-	}
-
-	struct sockaddr_in ssa;
-	ssa.sin_family = AF_INET;
-	ssa.sin_port = htons(port);
-	if(inet_pton(AF_INET, ip, &ssa.sin_addr.s_addr) <= 0) {
-		Error_Set(ET_SYS, WSAGetLastError(), false);
-		return INVALID_SOCKET;
-	}
-
-	if(bind(fd, (const struct sockaddr*)&ssa, sizeof ssa) == -1) {
-		Error_Set(ET_SYS, WSAGetLastError(), false);
-		return INVALID_SOCKET;
-	}
-
-	if(listen(fd, SOMAXCONN) == -1) {
-		Error_Set(ET_SYS, WSAGetLastError(), false);
-		return INVALID_SOCKET;
-	}
-
-	return fd;
-}
-
-void Socket_Close(SOCKET sock) {
-	closesocket(sock);
 }
 
 /*
@@ -515,49 +521,6 @@ char* DLib_GetError(char* buf, size_t len) {
 bool DLib_GetSym(void* lib, const char* sname, void** sym) {
 	*sym = dlsym(lib, sname);
 	return *sym != NULL;
-}
-
-/*
-	POSIX SOCKET FUNCTIONS
-*/
-
-bool Socket_Init() {
-	return true;
-}
-
-SOCKET Socket_Bind(const char* ip, ushort port) {
-	SOCKET fd;
-
-	if((fd = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
-		Error_Set(ET_SYS, errno, false);
-		return INVALID_SOCKET;
-	}
-
-	struct sockaddr_in ssa;
-	ssa.sin_family = AF_INET;
-	ssa.sin_port = htons(port);
-	ssa.sin_addr.s_addr = inet_addr(ip);
-
-	if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) == -1) {
-		Error_Set(ET_SYS, errno, false);
-		return INVALID_SOCKET;
-	}
-
-	if(bind(fd, (const struct sockaddr*)&ssa, sizeof(ssa)) == -1) {
-		Error_Set(ET_SYS, errno, false);
-		return INVALID_SOCKET;
-	}
-
-	if(listen(fd, SOMAXCONN) == -1) {
-		Error_Set(ET_SYS, errno, false);
-		return INVALID_SOCKET;
-	}
-
-	return fd;
-}
-
-void Socket_Close(SOCKET fd) {
-	close(fd);
 }
 
 /*

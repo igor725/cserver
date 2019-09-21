@@ -20,16 +20,19 @@ EXP bool Plugin_Load() {
 	Config_SetInt(cplStore, "port", 8080);
 	Config_Load(cplStore);
 
-	Event_RegisterVoid(EVT_ONSTOP, onStop);
-	const char* ip = Config_GetStr(mainCfg, "ip");
-	ushort port = Config_GetInt(cplStore, "port");
+	if(Config_GetBool(cplStore, "enabled")) {
+		Event_RegisterVoid(EVT_ONSTOP, onStop);
+		const char* ip = Config_GetStr(mainCfg, "ip");
+		ushort port = Config_GetInt(cplStore, "port");
 
-	if(Http_StartServer(ip, port))
-		Log_Info("CPL http server started on %s:%d", ip, port);
-	else
-		return false;
+		if(Http_StartServer(ip, port))
+			Log_Info("CPL http server started on %s:%d", ip, port);
+		else
+			return false;
 
-	return true;
+		return true;
+	}
+	return false;
 }
 
 EXP bool Plugin_Unload() {

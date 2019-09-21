@@ -138,6 +138,7 @@ void Server_DoStep() {
 
 void Server_Stop() {
 	Event_Call(EVT_ONSTOP, NULL);
+	Log_Info("Saving worlds");
 	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
 		CLIENT* client = clients[i];
 		WORLD* world = worlds[i];
@@ -160,6 +161,7 @@ void Server_Stop() {
 	CPlugin_Stop();
 
 	Socket_Close(server);
+	Log_Info("Saving server.cfg");
 	Config_Save(mainCfg);
 }
 
@@ -179,6 +181,7 @@ int main(int argc, char** argv) {
 		Sleep(10);
 	}
 
-	Log_Info("Server stopped");
+	Log_Info("Main loop done");
 	Server_Stop();
+	return 0;
 }
