@@ -12,21 +12,22 @@
 bool Gui_Enabled = true;
 bool Gui_Done = false;
 
+#define STRSTATE(state) (state == SDL_PRESSED ? "pressed" : "released")
+
 static void Gui_Mouse(char state, char clicks, int button, int x, int y) {
-	Log_Info(MOUSE_LOG, button, state == SDL_PRESSED ? "pressed" : "released", clicks, x, y);
+	Log_Info(MOUSE_LOG, button, STRSTATE(state), clicks, x, y);
 }
 
 static void Gui_MouseWheel(int x, int y) {
 	Log_Info(WHEEL_LOG, x, y);
 }
 
-static void Gui_TextInput(char* text) {
+static void Gui_TextInput(const char* text) {
 	Log_Info(TEXT_LOG, text);
 }
 
 static void Gui_Key(char state, char repeat, SDL_Keysym* keysym) {
-	Log_Info(KEY_LOG, keysym->scancode, keysym->mod, repeat,
-		state == SDL_PRESSED ? "pressed" : "released");
+	Log_Info(KEY_LOG, keysym->scancode, keysym->mod, repeat, STRSTATE(state));
 }
 
 static void Gui_FileDrop(const char* fdir) {
