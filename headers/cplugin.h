@@ -14,7 +14,7 @@ typedef struct c_plugin {
 	pluginFunc unload;
 } CPLUGIN;
 
-CPLUGIN* pluginsList[MAX_PLUGINS];
+CPLUGIN* CPlugin_List[MAX_PLUGINS];
 
 bool CPlugin_Load(const char* name);
 bool CPlugin_Unload(CPLUGIN* plugin);

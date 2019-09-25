@@ -14,7 +14,7 @@ void onStop(void* ptr) {
 EXP int Plugin_ApiVer = 100;
 EXP bool Plugin_Load() {
 	cplStore = Config_Create("cp.cfg");
-	if(!cplStore || !mainCfg) return false;
+	if(!cplStore || !Server_Config) return false;
 
 	Config_SetBool(cplStore, "enabled", true);
 	Config_SetInt(cplStore, "port", 8080);
@@ -22,7 +22,7 @@ EXP bool Plugin_Load() {
 
 	if(Config_GetBool(cplStore, "enabled")) {
 		Event_RegisterVoid(EVT_ONSTOP, onStop);
-		const char* ip = Config_GetStr(mainCfg, "ip");
+		const char* ip = Config_GetStr(Server_Config, "ip");
 		ushort port = Config_GetInt(cplStore, "port");
 
 		if(Http_StartServer(ip, port))

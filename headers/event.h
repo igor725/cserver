@@ -28,9 +28,6 @@ enum eventReturn {
 	EVT_RTBOOL
 };
 
-#define ETYPES     12
-#define MAX_EVENTS 64
-
 typedef struct onMessage {
 	CLIENT* client;
 	char* message;
@@ -68,7 +65,7 @@ typedef struct event {
 	} func;
 } EVENT;
 
-EVENT* Event_List[ETYPES][MAX_EVENTS];
+EVENT* Event_List[EVENT_TYPES][MAX_EVENTS];
 
 API bool Event_RegisterBool(EventType type, evtBoolCallback func);
 API bool Event_RegisterVoid(EventType type, evtVoidCallback func);

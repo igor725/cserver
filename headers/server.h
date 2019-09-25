@@ -3,12 +3,10 @@
 #include "world.h"
 #include "config.h"
 
-#define MAINCFG "server.cfg"
-
 bool Server_InitialWork();
 void Server_DoStep();
-THREAD acceptThread;
-VAR bool serverActive;
-VAR CFGSTORE* mainCfg;
-SOCKET server;
+THREAD Server_AcceptThread;
+VAR bool Server_Active;
+VAR CFGSTORE* Server_Config;
+SOCKET Server_Socket;
 #endif

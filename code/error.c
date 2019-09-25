@@ -21,6 +21,8 @@ const char* const Error_Strings[] = {
 char Error_StrBuf[512] = {0};
 int Error_Type = ET_NOERR;
 uint Error_Code = 0;
+const char* Error_File;
+const char* Error_Func;
 
 const char* Error_GetString() {
 	switch(Error_Type) {

@@ -27,6 +27,7 @@ typedef struct packet {
 	packetHandler cpeHandler;
 } PACKET;
 
+PACKET* Packet_Get(int id);
 short Packet_GetSize(int id, CLIENT* client);
 API void Packet_Register(int id, const char* name, ushort size, packetHandler handler);
 API void Packet_RegisterCPE(int id, const char* extName, int extVersion, ushort extSize);
@@ -51,6 +52,4 @@ bool Handler_Handshake(CLIENT* client, char* data);
 bool Handler_SetBlock(CLIENT* client, char* data);
 bool Handler_PosAndOrient(CLIENT* client, char* data);
 bool Handler_Message(CLIENT* client, char* data);
-
-extern PACKET* packets[256];
 #endif

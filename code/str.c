@@ -6,11 +6,11 @@ char* String_FindSubstr(const char* str, const char* strsrch) {
 }
 
 bool String_CaselessCompare(const char* str1, const char* str2) {
-	#if defined(WINDOWS)
-		return _stricmp(str1, str2) == 0;
-	#elif defined(POSIX)
-		return strcasecmp(str1, str2) == 0;
-	#endif
+#if defined(WINDOWS)
+	return _stricmp(str1, str2) == 0;
+#elif defined(POSIX)
+	return strcasecmp(str1, str2) == 0;
+#endif
 }
 
 bool String_Compare(const char* str1, const char* str2) {
@@ -84,9 +84,18 @@ const char* String_AllocCopy(const char* str) {
 	return (const char*)ptr;
 }
 
+const char* String_FromArgument(const char* args, int index) {
+	if(!args || *args == '\0') return 0;
+	do {
+		if(index > 0 && *args != ' ') --index;
+		if(index == 0) return args;
+	} while(*args++ != '\0');
+
+	return NULL;
+}
+
 size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index) {
 	if(!args) return 0;
-
 	size_t argsize = 0;
 
 	while(*args != '\0') {

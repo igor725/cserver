@@ -24,7 +24,7 @@ typedef struct command {
 	struct command* prev;
 } COMMAND;
 
-COMMAND* headCommand;
+COMMAND* Command_Head;
 
 API void Command_Register(const char* cmd, cmdFunc func);
 API void Command_Unregister(const char* cmd);

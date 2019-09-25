@@ -28,7 +28,4 @@ void CPEPacket_WriteSetHotBar(CLIENT* client, Order order, BlockID block);
 void CPEPacket_WriteSetModel(CLIENT* client, ClientID id, const char* model);
 void CPEPacket_WriteInventoryOrder(CLIENT* client, Order order, BlockID block);
 void CPEPacket_WriteHoldThis(CLIENT* client, BlockID block, bool preventChange);
-
-EXT* headExtension;
-ushort extensionsCount;
 #endif

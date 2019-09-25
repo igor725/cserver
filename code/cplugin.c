@@ -38,8 +38,8 @@ bool CPlugin_Load(const char* name) {
 		DLib_GetSym(plugin, "Plugin_Unload", (void*)&splugin->unload);
 		int pluginId = -1;
 		for(int i = 0; i < MAX_PLUGINS; i++) {
-			if(!pluginsList[i]) {
-				pluginsList[i] = splugin;
+			if(!CPlugin_List[i]) {
+				CPlugin_List[i] = splugin;
 				pluginId = i;
 				break;
 			}
@@ -62,7 +62,7 @@ bool CPlugin_Unload(CPLUGIN* plugin) {
 	if(plugin->name)
 		Memory_Free((void*)plugin->name);
 	if(plugin->id != -1)
-		pluginsList[plugin->id] = NULL;
+		CPlugin_List[plugin->id] = NULL;
 
 	DLib_Unload(plugin->lib);
 	Memory_Free(plugin);
@@ -82,7 +82,7 @@ void CPlugin_Start() {
 
 void CPlugin_Stop() {
 	for(int i = 0; i < MAX_PLUGINS; i++) {
-		CPLUGIN* plugin = pluginsList[i];
+		CPLUGIN* plugin = CPlugin_List[i];
 		if(!plugin || !plugin->unload) continue;
 		(*(pluginFunc)plugin->unload)();
 	}

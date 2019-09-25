@@ -6,7 +6,7 @@
 #include "packets.h"
 #include "command.h"
 
-PACKET* packets[256] = {0};
+PACKET* Packets_List[MAX_PACKETS] = {0};
 
 int ReadString(const char* data, char** dst) {
 	int end = 63;
@@ -56,7 +56,7 @@ void Packet_Register(int id, const char* name, ushort size, packetHandler handle
 	tmp->name = name;
 	tmp->size = size;
 	tmp->handler = handler;
-	packets[id] = tmp;
+	Packets_List[id] = tmp;
 }
 
 void Packet_RegisterDefault() {
@@ -67,14 +67,18 @@ void Packet_RegisterDefault() {
 }
 
 void Packet_RegisterCPE(int id, const char* name, int version, ushort size) {
-	PACKET* tmp = packets[id];
+	PACKET* tmp = Packets_List[id];
 	tmp->extName = name;
 	tmp->extVersion = version;
 	tmp->extSize = size;
 }
 
+PACKET* Packet_Get(int id) {
+	return id < MAX_PACKETS ? Packets_List[id] : NULL;
+}
+
 short Packet_GetSize(int id, CLIENT* client) {
-	PACKET* packet = packets[id];
+	PACKET* packet = Packets_List[id];
 	if(!packet)
 		return -1;
 
@@ -209,7 +213,7 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	client->playerData->position = (VECTOR*)Memory_Alloc(1, sizeof(VECTOR));
 	client->playerData->angle = (ANGLE*)Memory_Alloc(1, sizeof(ANGLE));
 
-	if(client->addr == INADDR_LOOPBACK && Config_GetBool(mainCfg, "alwayslocalop"))
+	if(client->addr == INADDR_LOOPBACK && Config_GetBool(Server_Config, "alwayslocalop"))
 		client->playerData->isOP = true;
 
 	ReadString(++data, (void*)&client->playerData->name); data += 63;
@@ -217,7 +221,7 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	Thread_SetName(client->playerData->name);
 
 	for(int i = 0; i < 128; i++) {
-		CLIENT* other = clients[i];
+		CLIENT* other = Clients_List[i];
 		if(!other || other == client) continue;
 		if(String_CaselessCompare(client->playerData->name, other->playerData->name)) {
 			Client_Kick(client, "This name already in use");
@@ -228,8 +232,8 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	bool cpeEnabled = *++data == 0x42;
 
 	if(Client_CheckAuth(client)) {
-		const char* name = Config_GetStr(mainCfg, "name");
-		const char* motd = Config_GetStr(mainCfg, "motd");
+		const char* name = Config_GetStr(Server_Config, "name");
+		const char* motd = Config_GetStr(Server_Config, "motd");
 
 		if(!name)
 			name = DEFAULT_NAME;

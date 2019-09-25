@@ -82,7 +82,6 @@ void Client_Tick(CLIENT* client);
 ClientID Client_FindFreeID();
 void Client_Init();
 
-#define MAX_CLIENTS 128
-CLIENT* clients[MAX_CLIENTS];
 CLIENT* Broadcast;
+CLIENT* Clients_List[MAX_CLIENTS];
 #endif

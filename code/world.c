@@ -16,7 +16,7 @@ WORLD* World_Create(const char* name) {
 
 WORLD* World_FindByName(const char* name) {
 	for(int i = 0; i < MAX_WORLDS; i++) {
-		WORLD* world = worlds[i];
+		WORLD* world = Worlds_List[i];
 		if(!world) continue;
 		if(String_CaselessCompare(world->name, name))
 			return world;
@@ -35,7 +35,7 @@ void World_SetWeather(WORLD* world, Weather type) {
 	world->info->wt = type;
 	Event_Call(EVT_ONWEATHER, world);
 	for(int i = 0; i < MAX_CLIENTS; i++) {
-		CLIENT* client = clients[i];
+		CLIENT* client = Clients_List[i];
 		if(client && Client_IsInWorld(client, world))
 			Client_SetWeather(client, type);
 	}

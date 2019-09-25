@@ -30,7 +30,7 @@ static float fsquare(float a) {
 static double root(double n){
   double lo = 0, hi = n, mid;
   for(int i = 0; i < 1000; i++){
-      mid = (lo + hi)/2;
+      mid = (lo + hi) / 2;
       if(mid * mid == n) return mid;
       if(mid * mid > n) hi = mid;
       else lo = mid;
@@ -49,8 +49,7 @@ static void Survival_OnClick(void* param) {
 	SURVDATA* survData = SurvData_Get(client);
 	CLIENT* target = Client_GetByID(*a->tgID);
 	SURVDATA* survDataTg;
-	if(target)
-		survDataTg = SurvData_Get(target);
+	if(target) survDataTg = SurvData_Get(target);
 
 	if(*a->button != 0) return;
 
@@ -59,8 +58,8 @@ static void Survival_OnClick(void* param) {
 		return;
 	}
 
-	float dist_entity = 32768;
-	float dist_block = 32768;
+	float dist_entity = 32768.0f;
+	float dist_block = 32768.0f;
 
 	VECTOR* pv = client->playerData->position;
 
@@ -74,7 +73,7 @@ static void Survival_OnClick(void* param) {
 	if(dist_block < dist_entity) {
 		SurvivalBrk_Start(survData, x, y, z);
 	} else if(dist_entity < dist_block && dist_entity < 3.5) {
-
+		SurvivalInt_Start(survData, survDataTg);
 	}
 }
 
@@ -86,6 +85,7 @@ static bool CHandler_God(const char* args, CLIENT* caller, char* out) {
 	bool mode = survData->godMode;
 	survData->godMode = !mode;
 	String_FormatBuf(out, CMD_MAX_OUT, "God mode %s for %s", mode ? "disabled" : "enabled", caller->playerData->name);
+
 	return true;
 }
 
@@ -97,6 +97,7 @@ static bool CHandler_Hurt(const char* args, CLIENT* caller, char* out) {
 		float dmg = String_ToFloat(damage);
 		SurvDamage_Hurt(SurvData_Get(caller), NULL, dmg);
 	}
+
 	return false;
 }
 

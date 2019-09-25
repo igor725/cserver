@@ -8,10 +8,10 @@ void Command_Register(const char* cmd, cmdFunc func) {
 
 	tmp->name = String_AllocCopy(cmd);
 	tmp->func = func;
-	if(headCommand)
-		headCommand->prev = tmp;
-	tmp->next = headCommand;
-	headCommand = tmp;
+	if(Command_Head)
+		Command_Head->prev = tmp;
+	tmp->next = Command_Head;
+	Command_Head = tmp;
 }
 
 static void Command_Destroy(COMMAND* cmd) {
@@ -20,16 +20,16 @@ static void Command_Destroy(COMMAND* cmd) {
 
 	if(cmd->next) {
 		cmd->next->prev = cmd->next;
-		headCommand = cmd->next->prev;
+		Command_Head = cmd->next->prev;
 	} else
-		headCommand = NULL;
+		Command_Head = NULL;
 
 	Memory_Free((void*)cmd->name);
 	Memory_Free(cmd);
 }
 
 void Command_Unregister(const char* cmd) {
-	COMMAND* tmp = headCommand;
+	COMMAND* tmp = Command_Head;
 
 	while(tmp) {
 		if(String_CaselessCompare(tmp->name, cmd))
@@ -59,7 +59,7 @@ static bool CHandler_OP(const char* args, CLIENT* caller, char* out) {
 static bool CHandler_Stop(const char* args, CLIENT* caller, char* out) {
 	Command_OnlyForOP;
 
-	serverActive = false;
+	Server_Active = false;
 	return false;
 }
 
@@ -132,7 +132,7 @@ bool Command_Handle(char* cmd, CLIENT* caller) {
 		}
 	}
 
-	COMMAND* tmp = headCommand;
+	COMMAND* tmp = Command_Head;
 
 	while(tmp) {
 		if(String_CaselessCompare(tmp->name, cmd)) {

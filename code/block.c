@@ -31,11 +31,19 @@ const char* Block_Names[] = {
 };
 
 bool Block_IsValid(BlockID id) {
-	return id >= 0 && id <= 49;
+	return Block_Names[id] != NULL;
 }
 
 const char* Block_GetName(BlockID id) {
 	if(Block_IsValid(id))
 		return Block_Names[id];
 	return "Unnamed block";
+}
+
+void Block_SetName(BlockID id, const char* name) {
+	if(name) Block_Names[id] = name;
+}
+
+void Block_DelName(BlockID id) {
+	Block_Names[id] = NULL;
 }

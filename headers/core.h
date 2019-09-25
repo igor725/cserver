@@ -70,7 +70,6 @@ typedef uchar          ClientID;
 typedef unsigned char  Weather;
 typedef unsigned char  MessageType;
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <zlib.h>
 #include "platform.h"
@@ -82,6 +81,17 @@ typedef unsigned char  MessageType;
 #define SOFTWARE_NAME "C-Server"
 #define SOFTWARE_VERSION "0.1"
 #define CHATLINE "<%s>: %s"
+#define MAINCFG "server.cfg"
+
+#define MAX_CLIENTS 128
+#define MAX_WORLDS  128
+#define MAX_PACKETS 256
+#define MAX_EVENTS  64
+#define EVENT_TYPES 12
+
+#define CFG_STRLEN 128
+
+#define WORLD_MAGIC 1413563479
 
 #define DEFAULT_NAME "Server name"
 #define DEFAULT_MOTD "Server MOTD"

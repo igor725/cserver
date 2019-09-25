@@ -14,6 +14,10 @@ void Log_SetLevel(int level) {
 	Log_Level = min(max(-1, level), 4);
 }
 
+int Log_GetLevel() {
+	return Log_Level;
+}
+
 void Log_Print(int level, const char* str, va_list* args) {
 	if(level > Log_Level) return;
 

@@ -8,34 +8,28 @@
 
 ClientID Client_FindFreeID() {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		if(!clients[i])
-			return i;
+		if(!Clients_List[i]) return i;
 	}
 	return (ClientID)-1;
 }
 
 CLIENT* Client_FindByName(const char* name) {
 	for(int i = 0; i < MAX_CLIENTS; i++) {
-		CLIENT* client = clients[i];
+		CLIENT* client = Clients_List[i];
 		if(!client || !client->playerData) continue;
-		if(String_CaselessCompare(client->playerData->name, name)) {
+		if(String_CaselessCompare(client->playerData->name, name))
 			return client;
-		}
 	}
 	return NULL;
 }
 
 CLIENT* Client_GetByID(ClientID id) {
-	return id < MAX_CLIENTS ? clients[id] : NULL;
+	return id < MAX_CLIENTS ? Clients_List[id] : NULL;
 }
 
 bool Client_Despawn(CLIENT* client) {
-	if(!client->playerData)
-		return false;
-
-	if(!client->playerData->spawned)
-		return false;
-
+	if(!client->playerData) return false;
+	if(!client->playerData->spawned) return false;
 	Packet_WriteDespawn(Broadcast, client);
 	client->playerData->spawned = false;
 	Event_Call(EVT_ONDESPAWN, (void*)client);
@@ -45,14 +39,12 @@ bool Client_Despawn(CLIENT* client) {
 bool Client_ChangeWorld(CLIENT* client, WORLD* world) {
 	if(!world) return false;
 	if(Client_IsInWorld(client, world)) return true;
-
 	Client_Despawn(client);
 	Client_SetPos(client, world->info->spawnVec, world->info->spawnAng);
 	if(!Client_SendMap(client, world)) {
 		Client_Kick(client, "Map sending failed");
 		return false;
 	}
-
 	return true;
 }
 
@@ -176,7 +168,7 @@ void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort
 	BlockID block = World_GetBlock(world, x, y, z);
 
 	for(int i = 0; i < MAX_CLIENTS; i++) {
-		CLIENT* other = clients[i];
+		CLIENT* other = Clients_List[i];
 		if(!other || other == client) continue;
 		if(!Client_IsInGame(other) || !Client_IsInWorld(other, world)) continue;
 		Packet_WriteSetBlock(other, x, y, z, block);
@@ -196,8 +188,7 @@ bool Client_IsInWorld(CLIENT* client, WORLD* world) {
 }
 
 bool Client_IsSupportExt(CLIENT* client, const char* extName) {
-	if(!client->cpeData)
-		return false;
+	if(!client->cpeData) return false;
 
 	EXT* ptr = client->cpeData->headExtension;
 	while(ptr) {
@@ -209,14 +200,12 @@ bool Client_IsSupportExt(CLIENT* client, const char* extName) {
 }
 
 const char* Client_GetName(CLIENT* client) {
-	if(!client->playerData)
-		return "unconnected";
+	if(!client->playerData) return "unconnected";
 	return client->playerData->name;
 }
 
 const char* Client_GetAppName(CLIENT* client) {
-	if(!client->cpeData)
-		return "vanilla";
+	if(!client->cpeData) return "vanilla";
 	return client->cpeData->appName;
 }
 
@@ -226,8 +215,7 @@ bool Client_CheckAuth(CLIENT* client) {
 }
 
 void Client_SetPos(CLIENT* client, VECTOR* pos, ANGLE* ang) {
-	if(!client->playerData)
-		return;
+	if(!client->playerData) return;
 	Memory_Copy(client->playerData->position, pos, sizeof(VECTOR));
 	Memory_Copy(client->playerData->angle, ang, sizeof(ANGLE));
 }
@@ -241,8 +229,7 @@ bool Client_SetWeather(CLIENT* client, Weather type) {
 }
 
 bool Client_SetType(CLIENT* client, bool isOP) {
-	if(!client->playerData)
-		return false;
+	if(!client->playerData) return false;
 	client->playerData->isOP = isOP;
 	Packet_WriteUpdateType(client);
 	return true;
@@ -260,7 +247,6 @@ bool Client_SetHotbar(CLIENT* client, Order pos, BlockID block) {
 bool Client_SetModel(CLIENT* client, const char* model) {
 	if(!client->cpeData) return false;
 	if(!CPE_CheckModel(model)) return false;
-
 	String_Copy(client->cpeData->model, 64, model);
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
@@ -273,24 +259,17 @@ bool Client_SetModel(CLIENT* client, const char* model) {
 }
 
 bool Client_GetType(CLIENT* client) {
-	if(!client->playerData)
-		return false;
-	return client->playerData->isOP;
+	return client->playerData ? client->playerData->isOP : false;
 }
 
 void Client_Destroy(CLIENT* client) {
-	clients[client->id] = NULL;
+	Clients_List[client->id] = NULL;
 	Memory_Free(client->rdbuf);
 	Memory_Free(client->wrbuf);
 
-	if(client->thread)
-		Thread_Close(client->thread);
-
-	if(client->mapThread)
-		Thread_Close(client->mapThread);
-
-	if(client->mutex)
-		Mutex_Free(client->mutex);
+	if(client->thread) Thread_Close(client->thread);
+	if(client->mapThread) Thread_Close(client->mapThread);
+	if(client->mutex) Mutex_Free(client->mutex);
 
 	if(client->playerData) {
 		Memory_Free((void*)client->playerData->name);
@@ -320,7 +299,7 @@ void Client_Destroy(CLIENT* client) {
 int Client_Send(CLIENT* client, int len) {
 	if(client == Broadcast) {
 		for(int i = 0; i < MAX_CLIENTS; i++) {
-			CLIENT* bClient = clients[i];
+			CLIENT* bClient = Clients_List[i];
 
 			if(bClient) {
 				Mutex_Lock(bClient->mutex);
@@ -335,12 +314,11 @@ int Client_Send(CLIENT* client, int len) {
 }
 
 bool Client_Spawn(CLIENT* client) {
-	if(client->playerData->spawned)
-		return false;
+	if(client->playerData->spawned) return false;
 
 	Client_SetWeather(client, client->playerData->world->info->wt);
 	for(int i = 0; i < MAX_CLIENTS; i++) {
-		CLIENT* other = clients[i];
+		CLIENT* other = Clients_List[i];
 		if(!other) continue;
 
 		if(Client_IsInSameWorld(client, other)) {
@@ -364,8 +342,7 @@ bool Client_Spawn(CLIENT* client) {
 }
 
 bool Client_SendMap(CLIENT* client, WORLD* world) {
-	if(client->mapThread)
-		return false;
+	if(client->mapThread) return false;
 
 	client->playerData->state = STATE_MOTD;
 	client->playerData->world = world;
@@ -380,7 +357,7 @@ bool Client_SendMap(CLIENT* client, WORLD* world) {
 }
 
 void Client_HandshakeStage2(CLIENT* client) {
-	Client_ChangeWorld(client, worlds[0]);
+	Client_ChangeWorld(client, Worlds_List[0]);
 }
 
 void Client_Disconnect(CLIENT* client) {
@@ -395,12 +372,11 @@ void Client_Kick(CLIENT* client, const char* reason) {
 }
 
 void Client_UpdatePositions(CLIENT* client) {
-	if(!client->playerData->positionUpdated)
-		return;
+	if(!client->playerData->positionUpdated) return;
 	client->playerData->positionUpdated = false;
 
 	for(int i = 0; i < MAX_CLIENTS; i++) {
-		CLIENT* other = clients[i];
+		CLIENT* other = Clients_List[i];
 		if(other && client != other && Client_IsInGame(other) && Client_IsInSameWorld(client, other))
 			Packet_WritePosAndOrient(other, client);
 	}
@@ -426,7 +402,7 @@ void Client_Tick(CLIENT* client) {
 void Client_HandlePacket(CLIENT* client) {
 	char* data = client->rdbuf;
 	uchar id = *data; ++data;
-	PACKET* packet = packets[id];
+	PACKET* packet = Packet_Get(id);
 	bool ret = false;
 
 	if(packet->haveCPEImp && Client_IsSupportExt(client, packet->extName))

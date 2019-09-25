@@ -18,9 +18,7 @@ if(abort) { \
 
 int   Error_Type;
 uint  Error_Code;
-const char* Error_Func;
-const char* Error_File;
-int   Error_Line;
+uint  Error_Line;
 
 enum ErrorCodes {
 	EC_OK,

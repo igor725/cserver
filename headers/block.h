@@ -57,4 +57,6 @@ VAR const char* Block_Names[256];
 
 API bool Block_IsValid(BlockID id);
 API const char* Block_GetName(BlockID id);
+API void Block_SetName(BlockID id, const char* name);
+API void Block_DelName(BlockID id);
 #endif

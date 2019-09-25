@@ -2,6 +2,8 @@
 #include "console.h"
 #include "command.h"
 
+THREAD conThread;
+
 int Console_ReadLine(char* buf, int buflen) {
 	int len = 0;
 	int c = 0;
@@ -38,12 +40,11 @@ TRET Console_ThreadProc(TARG lpParam) {
 }
 
 void Console_StartListen() {
-	Console_Thread = Thread_Create(Console_ThreadProc, NULL);
-	if(!Thread_IsValid(Console_Thread))
+	conThread = Thread_Create(Console_ThreadProc, NULL);
+	if(!Thread_IsValid(conThread))
 		Log_Warn("The server will NOT handle console commands: Console_Thread == NULL");
 }
 
 void Console_Close() {
-	if(Console_Thread)
-		Thread_Close(Console_Thread);
+	if(conThread) Thread_Close(conThread);
 }

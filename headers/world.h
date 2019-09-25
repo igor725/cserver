@@ -1,8 +1,5 @@
 #ifndef WORLD_H
 #define WORLD_H
-#define WORLD_MAGIC 1413563479
-#define MAX_WORLDS  128
-
 enum WorldDataType {
 	DT_DIM,
 	DT_SV,
@@ -46,5 +43,5 @@ API void World_AllocBlockArray(WORLD* world);
 API void World_SetWeather(WORLD* world, Weather type);
 API Weather World_GetWeather(WORLD* world);
 
-WORLD* worlds[MAX_WORLDS];
+WORLD* Worlds_List[MAX_WORLDS];
 #endif

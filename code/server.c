@@ -14,10 +14,10 @@ void Server_Accept() {
 	struct sockaddr_in caddr;
 	socklen_t caddrsz = sizeof caddr;
 
-	SOCKET fd = accept(server, (struct sockaddr*)&caddr, &caddrsz);
+	SOCKET fd = accept(Server_Socket, (struct sockaddr*)&caddr, &caddrsz);
 
 	if(fd != INVALID_SOCKET) {
-		if(!serverActive) {
+		if(!Server_Active) {
 			Socket_Close(fd);
 			return;
 		}
@@ -41,7 +41,7 @@ void Server_Accept() {
 				return;
 			}
 
-			clients[id] = tmp;
+			Clients_List[id] = tmp;
 		} else {
 			Client_Kick(tmp, "Server is full");
 		}
@@ -50,12 +50,12 @@ void Server_Accept() {
 
 TRET Server_ThreadProc(void* lpParam) {
 	Thread_SetName("AcceptThread");
-	while(serverActive)Server_Accept();
+	while(Server_Active)Server_Accept();
 	return 0;
 }
 
 bool Server_Bind(const char* ip, ushort port) {
-	if((server = Socket_Bind(ip, port)) == INVALID_SOCKET)
+	if((Server_Socket = Socket_Bind(ip, port)) == INVALID_SOCKET)
 		return false;
 
 	Client_Init();
@@ -78,16 +78,16 @@ bool Server_InitialWork() {
 		return false;
 
 	Log_Info("Loading " MAINCFG);
-	mainCfg = Config_Create(MAINCFG);
-	Config_SetStr(mainCfg, "ip", "0.0.0.0");
-	Config_SetInt(mainCfg, "port", 25565);
-	Config_SetStr(mainCfg, "name", DEFAULT_NAME);
-	Config_SetStr(mainCfg, "motd", DEFAULT_MOTD);
-	Config_SetInt(mainCfg, "loglevel", 3);
-	Config_SetBool(mainCfg, "alwayslocalop", false);
-	Config_Load(mainCfg);
+	Server_Config = Config_Create(MAINCFG);
+	Config_SetStr(Server_Config, "ip", "0.0.0.0");
+	Config_SetInt(Server_Config, "port", 25565);
+	Config_SetStr(Server_Config, "name", DEFAULT_NAME);
+	Config_SetStr(Server_Config, "motd", DEFAULT_MOTD);
+	Config_SetInt(Server_Config, "loglevel", 3);
+	Config_SetBool(Server_Config, "alwayslocalop", false);
+	Config_Load(Server_Config);
 
-	Log_SetLevel(Config_GetInt(mainCfg, "loglevel"));
+	Log_SetLevel(Config_GetInt(Server_Config, "loglevel"));
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
@@ -105,7 +105,7 @@ bool Server_InitialWork() {
 				Log_FormattedError();
 				World_Destroy(tmp);
 			} else
-				worlds[++wIndex] = tmp;
+				Worlds_List[++wIndex] = tmp;
 		} while(Iter_Next(&wIter) && wIndex < MAX_WORLDS);
 	} else
 		Log_FormattedError();
@@ -116,7 +116,7 @@ bool Server_InitialWork() {
 		World_SetDimensions(tmp, 256, 256, 256);
 		World_AllocBlockArray(tmp);
 		Generator_Flat(tmp);
-		worlds[0] = tmp;
+		Worlds_List[0] = tmp;
 	}
 
 	Log_Info("Loading C plugins");
@@ -124,13 +124,13 @@ bool Server_InitialWork() {
 
 	Console_StartListen();
 	Event_Call(EVT_POSTSTART, NULL);
-	return Server_Bind(Config_GetStr(mainCfg, "ip"), (ushort)Config_GetInt(mainCfg, "port"));
+	return Server_Bind(Config_GetStr(Server_Config, "ip"), (ushort)Config_GetInt(Server_Config, "port"));
 }
 
 void Server_DoStep() {
 	Event_Call(EVT_ONTICK, NULL);
 	for(int i = 0; i < MAX_CLIENTS; i++) {
-		CLIENT* client = clients[i];
+		CLIENT* client = Clients_List[i];
 		if(client)
 			Client_Tick(client);
 	}
@@ -140,8 +140,8 @@ void Server_Stop() {
 	Event_Call(EVT_ONSTOP, NULL);
 	Log_Info("Saving worlds");
 	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
-		CLIENT* client = clients[i];
-		WORLD* world = worlds[i];
+		CLIENT* client = Clients_List[i];
+		WORLD* world = Worlds_List[i];
 
 		if(i < MAX_CLIENTS && client)
 			Client_Kick(client, "Server stopped");
@@ -154,29 +154,29 @@ void Server_Stop() {
 	}
 
 	Console_Close();
-	if(acceptThread)
-		Thread_Close(acceptThread);
+	if(Server_AcceptThread)
+		Thread_Close(Server_AcceptThread);
 
 	Log_Info("Unloading plugins");
 	CPlugin_Stop();
 
-	Socket_Close(server);
+	Socket_Close(Server_Socket);
 	Log_Info("Saving server.cfg");
-	Config_Save(mainCfg);
+	Config_Save(Server_Config);
 }
 
 int main(int argc, char** argv) {
-	if(!(serverActive = Server_InitialWork())) {
+	if(!(Server_Active = Server_InitialWork())) {
 		Log_FormattedError();
 	} else {
-		acceptThread = Thread_Create(Server_ThreadProc, NULL);
-		if(!Thread_IsValid(acceptThread)) {
+		Server_AcceptThread = Thread_Create(Server_ThreadProc, NULL);
+		if(!Thread_IsValid(Server_AcceptThread)) {
 			Log_Error("Can't create accept thread");
-			serverActive = false;
+			Server_Active = false;
 		}
 	}
 
-	while(serverActive) {
+	while(Server_Active) {
 		Server_DoStep();
 		Sleep(10);
 	}

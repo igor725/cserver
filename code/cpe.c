@@ -5,6 +5,9 @@
 #include "packets.h"
 #include "event.h"
 
+EXT* headExtension;
+ushort extensionsCount;
+
 void CPE_RegisterExtension(const char* name, int version) {
 	EXT* tmp = (EXT*)Memory_Alloc(1, sizeof(EXT));
 
