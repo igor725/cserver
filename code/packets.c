@@ -21,7 +21,7 @@ int ReadString(const char* data, char** dst) {
 }
 
 void WriteString(char* data, const char* string) {
-	uchar size = min((uchar)String_Length(string), 64);
+	uint8_t size = min((uint8_t)String_Length(string), 64);
 	Memory_Fill(data + size, 64, 0);
 	Memory_Copy(data, string, size);
 }
@@ -33,24 +33,24 @@ void ReadClPos(CLIENT* client, char* data) {
 	vec->x = (float)ntohs(*(short*)data) / 32;++data;
 	vec->y = (float)ntohs(*(short*)++data) / 32;++data;
 	vec->z = (float)ntohs(*(short*)++data) / 32;++data;
-	ang->yaw = (((float)(uchar)*++data) / 256) * 360;
-	ang->pitch = (((float)(uchar)*++data) / 256) * 360;
+	ang->yaw = (((float)(uint8_t)*++data) / 256) * 360;
+	ang->pitch = (((float)(uint8_t)*++data) / 256) * 360;
 }
 
 char* WriteClPos(char* data, CLIENT* client, bool stand) {
 	VECTOR* vec = client->playerData->position;
 	ANGLE* ang = client->playerData->angle;
 
-	*(ushort*)data = htons((ushort)(vec->x * 32));++data;
-	*(ushort*)++data = htons((ushort)(vec->y * 32 + (stand ? 51 : 0)));++data;
-	*(ushort*)++data = htons((ushort)(vec->z * 32));++data;
-	*(uchar*)++data = (uchar)((ang->yaw / 360) * 256);
-	*(uchar*)++data = (uchar)((ang->pitch / 360) * 256);
+	*(uint16_t*)data = htons((uint16_t)(vec->x * 32));++data;
+	*(uint16_t*)++data = htons((uint16_t)(vec->y * 32 + (stand ? 51 : 0)));++data;
+	*(uint16_t*)++data = htons((uint16_t)(vec->z * 32));++data;
+	*(uint8_t*)++data = (uint8_t)((ang->yaw / 360) * 256);
+	*(uint8_t*)++data = (uint8_t)((ang->pitch / 360) * 256);
 
 	return data;
 }
 
-void Packet_Register(int id, const char* name, ushort size, packetHandler handler) {
+void Packet_Register(int id, const char* name, uint16_t size, packetHandler handler) {
 	PACKET* tmp = (PACKET*)Memory_Alloc(1, sizeof(PACKET));
 
 	tmp->name = name;
@@ -66,7 +66,7 @@ void Packet_RegisterDefault() {
 	Packet_Register(0x0D, "Message", 66, Handler_Message);
 }
 
-void Packet_RegisterCPE(int id, const char* name, int version, ushort size) {
+void Packet_RegisterCPE(int id, const char* name, int version, uint16_t size) {
 	PACKET* tmp = Packets_List[id];
 	tmp->extName = name;
 	tmp->extVersion = version;
@@ -106,7 +106,7 @@ void Packet_WriteLvlInit(CLIENT* client) {
 
 	*data = 0x02;
 	if(client->cpeData && client->cpeData->fmSupport) {
-		*(uint*)++data = htonl(client->playerData->world->size - 4);
+		*(uint32_t*)++data = htonl(client->playerData->world->size - 4);
 		PacketWriter_End(client, 5);
 	} else {
 		PacketWriter_End(client, 1);
@@ -118,20 +118,20 @@ void Packet_WriteLvlFin(CLIENT* client) {
 
 	WORLDDIMS* dims = client->playerData->world->info->dim;
 	*data = 0x04;
-	*(ushort*)++data = htons(dims->width); ++data;
-	*(ushort*)++data = htons(dims->height); ++data;
-	*(ushort*)++data = htons(dims->length); ++data;
+	*(uint16_t*)++data = htons(dims->width); ++data;
+	*(uint16_t*)++data = htons(dims->height); ++data;
+	*(uint16_t*)++data = htons(dims->length); ++data;
 
 	PacketWriter_End(client, 7);
 }
 
-void Packet_WriteSetBlock(CLIENT* client, ushort x, ushort y, ushort z, BlockID block) {
+void Packet_WriteSetBlock(CLIENT* client, uint16_t x, uint16_t y, uint16_t z, BlockID block) {
 	PacketWriter_Start(client);
 
 	*data = 0x06;
-	*(ushort*)++data = htons(x); ++data;
-	*(ushort*)++data = htons(y); ++data;
-	*(ushort*)++data = htons(z); ++data;
+	*(uint16_t*)++data = htons(x); ++data;
+	*(uint16_t*)++data = htons(y); ++data;
+	*(uint16_t*)++data = htons(z); ++data;
 	*++data = block;
 
 	PacketWriter_End(client, 8);
@@ -203,7 +203,7 @@ void Packet_WriteUpdateType(CLIENT* client) {
 */
 
 bool Handler_Handshake(CLIENT* client, char* data) {
-	uchar protoVer =* data;
+	uint8_t protoVer =* data;
 	if(protoVer != 0x07) {
 		Client_Kick(client, "Invalid protocol version");
 		return true;
@@ -268,10 +268,10 @@ bool Handler_SetBlock(CLIENT* client, char* data) {
 	WORLD* world = client->playerData->world;
 	if(!world) return false;
 
-	ushort x = ntohs(*(ushort*)data); data += 2;
-	ushort y = ntohs(*(ushort*)data); data += 2;
-	ushort z = ntohs(*(ushort*)data); data += 2;
-	uchar mode = *(uchar*)data; ++data;
+	uint16_t x = ntohs(*(uint16_t*)data); data += 2;
+	uint16_t y = ntohs(*(uint16_t*)data); data += 2;
+	uint16_t z = ntohs(*(uint16_t*)data); data += 2;
+	uint8_t mode = *(uint8_t*)data; ++data;
 	BlockID block = *(BlockID*)data;
 	BlockID pblock = block;
 

@@ -282,7 +282,7 @@ static TRET AcceptThreadProc(TARG param) {
 	return 0;
 }
 
-bool Http_StartServer(const char* ip, ushort port) {
+bool Http_StartServer(const char* ip, uint16_t port) {
 	httpServer = Socket_Bind(ip, port);
 	if(httpServer != INVALID_SOCKET) {
 		Thread_Create(AcceptThreadProc, NULL);

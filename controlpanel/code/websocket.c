@@ -47,7 +47,7 @@ bool WebSocket_ReceiveFrame(WSFRAME* ws) {
 
 		if(len == ws->_dneed) {
 			if(ws->_dneed == 2) {
-				ws->payload_len = ntohs((ushort)ws->payload_len);
+				ws->payload_len = ntohs((uint16_t)ws->payload_len);
 			} else {
 				ws->payload_len = ntohl(ws->payload_len);
 			}
@@ -93,8 +93,8 @@ void WebSocket_DestroyFrame(WSFRAME* ws) {
 		Memory_Free(ws->payload);
 }
 
-uint WebSocket_Encode(char* buf, uint len, const char* data, uint dlen, char opcode) {
-	uint outlen = dlen + 2;
+uint32_t WebSocket_Encode(char* buf, uint32_t len, const char* data, uint32_t dlen, char opcode) {
+	uint32_t outlen = dlen + 2;
 	if(len < outlen) return 0;
 
 	*buf = 0x80 | (opcode & 0x0F);
@@ -104,11 +104,11 @@ uint WebSocket_Encode(char* buf, uint len, const char* data, uint dlen, char opc
 	} else if(len < 65535) {
 		outlen += 2;
 		*++buf = 126;
-		*(ushort*)++buf = htons(dlen); ++buf;
+		*(uint16_t*)++buf = htons(dlen); ++buf;
 	} else {
 		outlen += 4;
 		*++buf = 127;
-		*(uint*)++buf = htonl(dlen); buf += 3;
+		*(uint32_t*)++buf = htonl(dlen); buf += 3;
 	}
 
 	if(len < outlen) return 0;

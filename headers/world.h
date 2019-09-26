@@ -10,9 +10,7 @@ enum WorldDataType {
 };
 
 typedef struct worldDims {
-	ushort width;
-	ushort height;
-	ushort length;
+	uint16_t width, height, length;
 } WORLDDIMS;
 
 typedef struct worldInfo {
@@ -24,16 +22,16 @@ typedef struct worldInfo {
 
 typedef struct world {
 	const char* name;
-	uint        size;
+	uint32_t    size;
 	BlockID*    data;
 	WORLDINFO*  info;
 } WORLD;
 
 API WORLD* World_Create(const char* name);
-API uint World_GetOffset(WORLD* world, ushort x, ushort y, ushort z);
-API void World_SetDimensions(WORLD* world, ushort width, ushort height, ushort length);
-API int World_SetBlock(WORLD* world, ushort x, ushort y, ushort z, BlockID id);
-API BlockID World_GetBlock(WORLD* world, ushort x, ushort y, ushort z);
+API uint32_t World_GetOffset(WORLD* world, uint16_t x, uint16_t y, uint16_t z);
+API void World_SetDimensions(WORLD* world, uint16_t width, uint16_t height, uint16_t length);
+API int World_SetBlock(WORLD* world, uint16_t x, uint16_t y, uint16_t z, BlockID id);
+API BlockID World_GetBlock(WORLD* world, uint16_t x, uint16_t y, uint16_t z);
 API void World_GenerateFlat(WORLD* world);
 API WORLD* World_FindByName(const char* name);
 API void World_Destroy(WORLD* world);

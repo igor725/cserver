@@ -49,9 +49,9 @@ char* String_CopyUnsafe(char* dst, const char* src) {
 	return strcpy(dst, src);
 }
 
-uint String_FormatError(uint code, char* buf, size_t buflen) {
+uint32_t String_FormatError(uint32_t code, char* buf, size_t buflen) {
 #if defined(WINDOWS)
-	int len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, (uint)buflen, NULL);
+	int len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, (uint32_t)buflen, NULL);
 	if(len > 0) {
 		for(int i = 0; i < len; i++) {
 			if(buf[i] == '\r' || buf[i] == '\n')

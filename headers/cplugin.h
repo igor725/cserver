@@ -9,7 +9,7 @@
 typedef bool (*pluginFunc)();
 typedef struct c_plugin {
 	const char* name;
-	int id;
+	uint32_t id;
 	void* lib;
 	pluginFunc unload;
 } CPLUGIN;

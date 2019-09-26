@@ -58,20 +58,17 @@ typedef signed __INT64_TYPE__ int64;
 #define false 0
 #endif
 
-typedef unsigned short ushort;
-typedef ushort*        ushortp;
-typedef short*         shortp;
-typedef unsigned char  uchar;
-typedef unsigned int   uint;
-typedef int            bool;
-typedef uchar          Order;
-typedef uchar          BlockID;
-typedef uchar          ClientID;
-typedef unsigned char  Weather;
-typedef unsigned char  MessageType;
-
+#include <stdint.h>
 #include <stdio.h>
 #include <zlib.h>
+
+typedef int              bool;
+typedef uint8_t          Order;
+typedef uint8_t          BlockID;
+typedef uint8_t          ClientID;
+typedef uint8_t          Weather;
+typedef uint8_t          MessageType;
+
 #include "platform.h"
 #include "error.h"
 #include "block.h"

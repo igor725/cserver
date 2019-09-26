@@ -38,11 +38,11 @@ typedef struct playerData {
 typedef struct client {
 	ClientID    id;
 	SOCKET      sock;
-	uint        addr;
+	uint32_t    addr;
 	int         status;
 	char*       rdbuf;
 	char*       wrbuf;
-	ushort      bufpos;
+	uint16_t    bufpos;
 	MUTEX*      mutex;
 	THREAD      thread;
 	THREAD      mapThread;
@@ -50,7 +50,7 @@ typedef struct client {
 	PLAYERDATA* playerData;
 } CLIENT;
 
-void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort z);
+void Client_UpdateBlock(CLIENT* client, WORLD* world, uint16_t x, uint16_t y, uint16_t z);
 API bool Client_IsSupportExt(CLIENT* client, const char* packetName);
 API bool Client_IsInSameWorld(CLIENT* client, CLIENT* other);
 API bool Client_IsInWorld(CLIENT* client, WORLD* world);

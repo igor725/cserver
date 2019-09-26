@@ -6,7 +6,7 @@
 #include "event.h"
 
 EXT* headExtension;
-ushort extensionsCount;
+uint16_t extensionsCount;
 
 void CPE_RegisterExtension(const char* name, int version) {
 	EXT* tmp = (EXT*)Memory_Alloc(1, sizeof(EXT));
@@ -96,7 +96,7 @@ void CPEPacket_WriteInfo(CLIENT* client) {
 
 	*data = 0x10;
 	WriteString(++data, SOFTWARE_NAME " " SOFTWARE_VERSION); data += 63;
-	*(ushort*)++data = htons(extensionsCount);
+	*(uint16_t*)++data = htons(extensionsCount);
 
 	PacketWriter_End(client, 67);
 }
@@ -106,7 +106,7 @@ void CPEPacket_WriteExtEntry(CLIENT* client, EXT* ext) {
 
 	*data = 0x11;
 	WriteString(++data, ext->name); data += 63;
-	*(uint*)++data = htonl(ext->version);
+	*(uint32_t*)++data = htonl(ext->version);
 
 	PacketWriter_End(client, 69);
 }
@@ -159,7 +159,7 @@ void CPEPacket_WriteWeatherType(CLIENT* client, Weather type) {
 	PacketWriter_End(client, 2);
 }
 
-void CPEPacket_WriteTwoWayPing(CLIENT* client, uchar direction, short num) {
+void CPEPacket_WriteTwoWayPing(CLIENT* client, uint8_t direction, short num) {
 	PacketWriter_Start(client);
 	if(client->playerData->state != STATE_INGAME) {
 		PacketWriter_Stop(client);
@@ -167,7 +167,7 @@ void CPEPacket_WriteTwoWayPing(CLIENT* client, uchar direction, short num) {
 
 	*data = 0x2B;
 	*++data = direction;
-	*(ushort*)++data = num;
+	*(uint16_t*)++data = num;
 
 	PacketWriter_End(client, 4);
 }
@@ -205,7 +205,7 @@ bool CPEHandler_ExtInfo(CLIENT* client, char* data) {
 	ValidateClientState(client, STATE_MOTD);
 
 	ReadString(data, &client->cpeData->appName); data += 63;
-	client->cpeData->_extCount = ntohs(*(ushort*)++data);
+	client->cpeData->_extCount = ntohs(*(uint16_t*)++data);
 	return true;
 }
 
@@ -214,7 +214,7 @@ bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
 
 	EXT* tmp = (EXT*)Memory_Alloc(1, sizeof(EXT));
 	ReadString(data, (void*)&tmp->name);data += 63;
-	tmp->version = ntohl(*(uint*)++data);
+	tmp->version = ntohl(*(uint32_t*)++data);
 
 	if(String_CaselessCompare(tmp->name, "FastMap"))
 		client->cpeData->fmSupport = true;
@@ -233,7 +233,7 @@ bool CPEHandler_ExtEntry(CLIENT* client, char* data) {
 
 bool CPEHandler_TwoWayPing(CLIENT* client, char* data) {
 	if(*data == 0) {
-		CPEPacket_WriteTwoWayPing(client, 0, *(ushort*)++data);
+		CPEPacket_WriteTwoWayPing(client, 0, *(uint16_t*)++data);
 		return true;
 	} else if(*data == 1) {
 		// TODO: Обрабатывать ответ от клиента на пинг пакет
@@ -246,8 +246,8 @@ bool CPEHandler_PlayerClick(CLIENT* client, char* data) {
 	ValidateClientState(client, STATE_INGAME);
 	char button = *data;
 	char action = *++data;
-	short yaw = ntohs(*(ushort*)++data); ++data;
-	short pitch = ntohs(*(ushort*)++data); ++data;
+	short yaw = ntohs(*(uint16_t*)++data); ++data;
+	short pitch = ntohs(*(uint16_t*)++data); ++data;
 	ClientID tgID = *++data;
 	short tgBlockX = ntohs(*(short*)++data); ++data;
 	short tgBlockY = ntohs(*(short*)++data); ++data;

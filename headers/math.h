@@ -1,6 +1,6 @@
 #ifndef MATH_H
 #define MATH_H
-typedef uint64 RNGState;
+typedef uint64_t RNGState;
 
 API void Random_Seed(RNGState* rnd, int seed);
 API int Random_Next(RNGState* rnd, int n);

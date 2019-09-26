@@ -4,7 +4,7 @@ typedef void* TARG;
 
 #if defined(WINDOWS)
 typedef void* THREAD;
-typedef uint TRET;
+typedef uint32_t TRET;
 typedef TRET(*TFUNC)(TARG);
 typedef CRITICAL_SECTION MUTEX;
 typedef struct {
@@ -79,7 +79,7 @@ bool DLib_GetSym(void* lib, const char* sname, void** sym);
 */
 
 bool Socket_Init();
-API SOCKET Socket_Bind(const char* ip, ushort port);
+API SOCKET Socket_Bind(const char* ip, uint16_t port);
 API void Socket_Close(SOCKET sock);
 
 /*
@@ -111,5 +111,5 @@ API void Time_Format(char* buf, size_t len);
 	PROCESS FUNCTIONS
 */
 
-API void Process_Exit(uint ecode);
+API void Process_Exit(uint32_t ecode);
 #endif

@@ -49,7 +49,7 @@ bool Socket_Init() {
 	return true;
 }
 
-SOCKET Socket_Bind(const char* ip, ushort port) {
+SOCKET Socket_Bind(const char* ip, uint16_t port) {
 	SOCKET fd;
 
 	if(INVALID_SOCKET == (fd = socket(AF_INET, SOCK_STREAM, 0))) {
@@ -102,7 +102,7 @@ bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
 
 	String_FormatBuf(iter->fmt, 256, "%s\\*.%s", dir, ext);
 	if((iter->dirHandle = FindFirstFile(iter->fmt, &iter->fileHandle)) == INVALID_HANDLE_VALUE) {
-		uint err = GetLastError();
+		uint32_t err = GetLastError();
 		if(err != ERROR_FILE_NOT_FOUND) {
 			Error_Print2(ET_SYS, err, false);
 			iter->state = -1;
@@ -223,7 +223,7 @@ bool File_Close(FILE* fp) {
 }
 
 bool Directory_Exists(const char* path) {
-	uint attr = GetFileAttributes(path);
+	uint32_t attr = GetFileAttributes(path);
 	return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
@@ -336,7 +336,7 @@ void Time_Format(char* buf, size_t buflen) {
 	WINDOWS PROCESS FUNCTIONS
 */
 
-void Process_Exit(uint code) {
+void Process_Exit(uint32_t code) {
 	ExitProcess(code);
 }
 #elif defined(POSIX)
@@ -611,7 +611,7 @@ void Time_Format(char* buf, size_t buflen) {
 	POSIX PROCESS FUNCTIONS
 */
 
-void Process_Exit(uint code) {
+void Process_Exit(uint32_t code) {
 	exit(code);
 }
 #endif

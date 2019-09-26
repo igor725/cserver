@@ -6,8 +6,6 @@ By Steve Reid <steve@edmweb.com>
 */
 #ifndef _SHA1
 #define _SHA1
-
-#include <stdint.h>
 #define HASH_SIZE 20
 typedef struct {
     uint32_t state[5];

@@ -68,7 +68,7 @@ TRET Client_ThreadProc(TARG lpParam) {
 			continue;
 		}
 
-		ushort wait = 1;
+		uint16_t wait = 1;
 
 		if(client->bufpos > 0) {
 			short packetSize = Packet_GetSize(*client->rdbuf, client);
@@ -88,7 +88,7 @@ TRET Client_ThreadProc(TARG lpParam) {
 			int len = recv(client->sock, client->rdbuf + client->bufpos, wait, 0);
 
 			if(len > 0) {
-				client->bufpos += (ushort)len;
+				client->bufpos += (uint16_t)len;
 			} else {
 				Client_Disconnect(client);
 			}
@@ -103,13 +103,13 @@ TRET Client_MapThreadProc(TARG lpParam) {
 	WORLD* world = client->playerData->world;
 
 	z_stream stream = {0};
-	uchar* data = (uchar*)client->wrbuf;
+	uint8_t* data = (uint8_t*)client->wrbuf;
 	*data = 0x03;
-	ushort* len = (ushort*)++data;
-	uchar* out = data + 2;
+	uint16_t* len = (uint16_t*)++data;
+	uint8_t* out = data + 2;
 	int ret;
 
-	uchar* mapdata = world->data;
+	uint8_t* mapdata = world->data;
 	int maplen = world->size;
 	int windowBits = 31;
 
@@ -143,7 +143,7 @@ TRET Client_MapThreadProc(TARG lpParam) {
 			return 0;
 		}
 
-		*len = htons(1024 - (ushort)stream.avail_out);
+		*len = htons(1024 - (uint16_t)stream.avail_out);
 		if(!Client_Send(client, 1028)) {
 			client->playerData->state = STATE_WLOADERR;
 			deflateEnd(&stream);
@@ -164,7 +164,7 @@ void Client_Init() {
 	Broadcast->mutex = Mutex_Create();
 }
 
-void Client_UpdateBlock(CLIENT* client, WORLD* world, ushort x, ushort y, ushort z) {
+void Client_UpdateBlock(CLIENT* client, WORLD* world, uint16_t x, uint16_t y, uint16_t z) {
 	BlockID block = World_GetBlock(world, x, y, z);
 
 	for(int i = 0; i < MAX_CLIENTS; i++) {
@@ -401,7 +401,7 @@ void Client_Tick(CLIENT* client) {
 
 void Client_HandlePacket(CLIENT* client) {
 	char* data = client->rdbuf;
-	uchar id = *data; ++data;
+	uint8_t id = *data; ++data;
 	PACKET* packet = Packet_Get(id);
 	bool ret = false;
 

@@ -53,7 +53,7 @@ TRET Server_ThreadProc(void* lpParam) {
 	return 0;
 }
 
-bool Server_Bind(const char* ip, ushort port) {
+bool Server_Bind(const char* ip, uint16_t port) {
 	if((Server_Socket = Socket_Bind(ip, port)) == INVALID_SOCKET)
 		return false;
 
@@ -121,7 +121,7 @@ bool Server_InitialWork() {
 
 	Console_StartListen();
 	Event_Call(EVT_POSTSTART, NULL);
-	return Server_Bind(Config_GetStr(Server_Config, "ip"), (ushort)Config_GetInt(Server_Config, "port"));
+	return Server_Bind(Config_GetStr(Server_Config, "ip"), (uint16_t)Config_GetInt(Server_Config, "port"));
 }
 
 void Server_DoStep() {

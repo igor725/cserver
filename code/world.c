@@ -24,7 +24,7 @@ WORLD* World_FindByName(const char* name) {
 	return NULL;
 }
 
-void World_SetDimensions(WORLD* world, ushort width, ushort height, ushort length) {
+void World_SetDimensions(WORLD* world, uint16_t width, uint16_t height, uint16_t length) {
 	WORLDDIMS* wd = world->info->dim;
 	wd->width = width;
 	wd->height = height;
@@ -50,13 +50,13 @@ void World_AllocBlockArray(WORLD* world) {
 		Memory_Free(world->data);
 
 	WORLDINFO* wi = world->info;
-	ushort dx = wi->dim->width,
+	uint16_t dx = wi->dim->width,
 	dy = wi->dim->height,
 	dz = wi->dim->length;
 
 	world->size = 4 + dx * dy * dz;
 	BlockID* data = (BlockID*)Memory_Alloc(world->size, sizeof(BlockID));
-	*(uint*)data = htonl(world->size - 4);
+	*(uint32_t*)data = htonl(world->size - 4);
 	world->data = data;
 }
 
@@ -66,7 +66,7 @@ void World_Destroy(WORLD* world) {
 	Memory_Free(world);
 }
 
-bool _WriteData(FILE* fp, uchar dataType, void* ptr, int size) {
+bool _WriteData(FILE* fp, uint8_t dataType, void* ptr, int size) {
 	if(!File_Write(&dataType, 1, 1, fp))
 		return false;
 	if(ptr && !File_Write(ptr, size, 1, fp))
@@ -86,8 +86,8 @@ bool World_WriteInfo(WORLD* world, FILE* fp) {
 }
 
 bool World_ReadInfo(WORLD* world, FILE* fp) {
-	uchar id = 0;
-	uint magic = 0;
+	uint8_t id = 0;
+	uint32_t magic = 0;
 	if(!File_Read(&magic, 4, 1, fp))
 		return false;
 
@@ -141,7 +141,7 @@ int World_Save(WORLD* world) {
 	}
 
 	z_stream stream = {0};
-	uchar out[1024];
+	uint8_t out[1024];
 	int ret;
 
 	if((ret = deflateInit(&stream, 4)) != Z_OK) {
@@ -150,7 +150,7 @@ int World_Save(WORLD* world) {
 	}
 
 	stream.avail_in = world->size;
-	stream.next_in = (uchar*)world->data;
+	stream.next_in = (uint8_t*)world->data;
 
 	do {
 		stream.next_out = out;
@@ -187,7 +187,7 @@ int World_Load(WORLD* world) {
 	}
 
 	z_stream stream = {0};
-	uchar in[1024];
+	uint8_t in[1024];
 	int ret;
 
 	if((ret = inflateInit(&stream)) != Z_OK) {
@@ -195,10 +195,10 @@ int World_Load(WORLD* world) {
 		return false;
 	}
 
-	stream.next_out = (uchar*)world->data;
+	stream.next_out = (uint8_t*)world->data;
 
 	do {
-		stream.avail_in = (uint)File_Read(in, 1, 1024, fp);
+		stream.avail_in = (uint32_t)File_Read(in, 1, 1024, fp);
 		if(File_Error(fp)) {
 			inflateEnd(&stream);
 			return false;
@@ -223,9 +223,9 @@ int World_Load(WORLD* world) {
 	return true;
 }
 
-uint World_GetOffset(WORLD* world, ushort x, ushort y, ushort z) {
+uint32_t World_GetOffset(WORLD* world, uint16_t x, uint16_t y, uint16_t z) {
 	WORLDDIMS* wd = world->info->dim;
-	ushort dx = wd->width, dy = wd->height, dz = wd->length;
+	uint16_t dx = wd->width, dy = wd->height, dz = wd->length;
 
 	if(x > dx || y > dy || z > dz)
 		return 0;
@@ -233,8 +233,8 @@ uint World_GetOffset(WORLD* world, ushort x, ushort y, ushort z) {
 	return z * dz + y * (dx * dy) + x + 4;
 }
 
-bool World_SetBlock(WORLD* world, ushort x, ushort y, ushort z, BlockID id) {
-	uint offset = World_GetOffset(world, x, y, z);
+bool World_SetBlock(WORLD* world, uint16_t x, uint16_t y, uint16_t z, BlockID id) {
+	uint32_t offset = World_GetOffset(world, x, y, z);
 
 	if(offset > 3 && offset < world->size)
 		world->data[offset] = id;
@@ -244,8 +244,8 @@ bool World_SetBlock(WORLD* world, ushort x, ushort y, ushort z, BlockID id) {
 	return true;
 }
 
-BlockID World_GetBlock(WORLD* world, ushort x, ushort y, ushort z) {
-	uint offset = World_GetOffset(world, x, y, z);
+BlockID World_GetBlock(WORLD* world, uint16_t x, uint16_t y, uint16_t z) {
+	uint32_t offset = World_GetOffset(world, x, y, z);
 
 	if(offset > 3 && offset < world->size)
 		return world->data[offset];

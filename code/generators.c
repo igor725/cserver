@@ -11,7 +11,7 @@
 
 void Generator_Flat(WORLD* world) {
 	WORLDINFO* wi = world->info;
-	ushort dx = wi->dim->width,
+	uint16_t dx = wi->dim->width,
 	dy = wi->dim->height,
 	dz = wi->dim->length;
 
