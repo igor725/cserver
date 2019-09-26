@@ -97,20 +97,20 @@ const char* String_FromArgument(const char* args, int index) {
 
 size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index) {
 	if(!args) return 0;
-	size_t argsize = 0;
+	const char* tmp = arg;
 
 	while(*args != '\0') {
 		if(index > 0) {
 			if(*args == ' ') --index;
 			++args;
 		} else {
-			while(arrsz > 1 && (*arg++ = *args++) != ' ') {
-				--arrsz; ++argsize;
-			}
+			do {
+				*arg++ = *args++;
+			} while(arg - tmp < arrsz && *args != '\0' && *args != ' ');
 			*arg = '\0';
 			break;
 		}
 	}
 
-	return argsize;
+	return (size_t)(arg - tmp);
 }
