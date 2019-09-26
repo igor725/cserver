@@ -75,5 +75,5 @@ bool Event_Call(EventType type, void* param);
 bool Event_OnMessage(CLIENT* client, char* message, MessageType* id);
 void Event_OnHeldBlockChange(CLIENT* client, BlockID* prev, BlockID* curr);
 bool Event_OnBlockPlace(CLIENT* client, ushort* x, ushort* y, ushort* z, BlockID* id);
-void Event_OnClick(CLIENT* client, char* button, char* action, short* yaw, short* pitch, ClientID* tgID, ushort* tgBlockX, ushort* tgBlockY, ushort* tgblockZ, char* tgBlockFace);
+void Event_OnClick(CLIENT* client, char* button, char* action, short* yaw, short* pitch, ClientID* tgID, short* tgBlockX, short* tgBlockY, short* tgblockZ, char* tgBlockFace);
 #endif

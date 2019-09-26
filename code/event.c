@@ -32,7 +32,7 @@ bool Event_Unregister(EventType type, void* callbackPtr) {
 	for(int pos = 0; pos < MAX_EVENTS; pos++) {
 		EVENT* evt = Event_List[type][pos];
 		if(!evt) continue;
-		
+
 		if(evt->func.fvoid == callbackPtr) {
 			Event_List[type][pos] = NULL;
 			return true;
@@ -71,6 +71,6 @@ void Event_OnHeldBlockChange(CLIENT* client, BlockID* prev, BlockID* curr) {
 	Event_Call(EVT_ONHELDBLOCKCHNG, (void*)&client);
 }
 
-void Event_OnClick(CLIENT* client, char* button, char* action, short* yaw, short* pitch, ClientID* tgID, ushort* tgBlockX, ushort* tgBlockY, ushort* tgblockZ, char* tgBlockFace) {
+void Event_OnClick(CLIENT* client, char* button, char* action, short* yaw, short* pitch, ClientID* tgID, short* tgBlockX, short* tgBlockY, short* tgblockZ, char* tgBlockFace) {
 	Event_Call(EVT_ONPLAYERCLICK, (void*)&client);
 }
