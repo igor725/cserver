@@ -56,13 +56,12 @@ void Error_CallStack() {
 void Error_CallStack() {
 	void* stack[64];
 	int frames = backtrace(stack, 64);
-	Log_Info("Frames: %d", frames);
 
 	for(int i = 0; i < frames; i++) {
 		Dl_info dli = {0};
 		dladdr(stack[i], &dli);
 		if(i > 2) {
-			Log_Debug("Symbol: %s - 0x%0X", dli.dli_sname, dli.dli_saddr);
+			Log_Debug("Symbol: %s - 0x%0X, %s", dli.dli_sname, dli.dli_saddr, dli.dli_fname);
 			}
 		if(String_Compare(dli.dli_sname, "main")) break;
 	}

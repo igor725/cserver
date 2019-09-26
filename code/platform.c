@@ -167,7 +167,7 @@ size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp) {
 
 	size_t ncount = fread(ptr, size, count, fp);
 	if(count != ncount) {
-		return count;
+		return ncount;
 	}
 	return count;
 }
@@ -425,9 +425,8 @@ size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp) {
 		return 0;
 	}
 
-	int ncount;
-	if(count != (ncount = fread(ptr, size, count, fp))) {
-		Error_Print2(ET_SYS, errno, false);
+	size_t ncount = fread(ptr, size, count, fp);
+	if(count != ncount) {
 		return ncount;
 	}
 	return count;

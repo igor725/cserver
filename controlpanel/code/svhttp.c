@@ -138,9 +138,9 @@ static void GenerateResponse(WEBCLIENT* wcl) {
 
 		SHA1_CTX ctx;
 		SHA1Init(&ctx);
-		SHA1Update(&ctx, acceptKey, String_Length(acceptKey));
-		SHA1Final(acceptKey, &ctx);
-		const char* b64acceptKey = b64_encode(acceptKey, 20);
+		SHA1Update(&ctx, (uint8_t*)acceptKey, String_Length(acceptKey));
+		SHA1Final((uint8_t*)acceptKey, &ctx);
+		const char* b64acceptKey = b64_encode((uint8_t*)acceptKey, 20);
 
 		writeHTTPHeader(wcl, "Sec-WebSocket-Protocol", CPL_WSPROTO);
 		writeHTTPHeader(wcl, "Sec-WebSocket-Accept", b64acceptKey);
