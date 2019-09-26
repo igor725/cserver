@@ -11,6 +11,7 @@ LIBS="-lz -lpthread -ldl"
 OUTBIN="server"
 
 PLUGIN_BUILD=0
+PLUGIN_INSTALL=0
 
 clean () {
 	rm -rf objs/* server
@@ -20,14 +21,17 @@ clean () {
 for a in "$@"
 do
 	if [ $PLUGIN_BUILD -eq 1 ]; then
-		if [ -n "$PLUGIN_NAME" ]; then
+		if [ ! -n "$PLUGIN_NAME" ]; then
 			CFLAGS="$CFLAGS -DCPLUGIN -Iheaders"
 			LNK="gcc -shared"
 			PLUGIN_NAME="$a"
 			OUTBIN="$a.so"
 			ROOT="$a"
 		else
-			if [ "$a" == "install" ]; then PLUGIN_INSTALL=1; fi
+			if [ "$a" == "install" ]; then
+				PLUGIN_INSTALL=1
+				break
+			fi
 		fi
 		continue
 	fi
