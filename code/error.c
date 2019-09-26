@@ -61,8 +61,8 @@ void Error_CallStack() {
 		Dl_info dli = {0};
 		dladdr(stack[i], &dli);
 		if(i > 2) {
-			Log_Debug("Symbol: %s - 0x%0X, %s", dli.dli_sname, dli.dli_saddr, dli.dli_fname);
-			}
+			Log_Debug("Symbol: %s - 0x%0X", dli.dli_sname, dli.dli_saddr);
+		}
 		if(String_Compare(dli.dli_sname, "main")) break;
 	}
 }
