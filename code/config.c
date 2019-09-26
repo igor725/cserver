@@ -10,6 +10,7 @@ CFGSTORE* Config_Create(const char* filename) {
 bool Config_Load(CFGSTORE* store) {
 	FILE* fp;
 	if(!(fp = File_Open(store->path, "r"))) {
+		if(errno == ENOENT) return true;
 		Error_PrintSys;
 		return false;
 	}

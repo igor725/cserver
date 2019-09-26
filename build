@@ -78,6 +78,8 @@ OUTDIR="$ROOT/out"
 OBJS=$(find $OBJDIR -name "*.o" -printf "$OBJDIR/%P ")
 if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
 $LNK -o "$OUTDIR/$OUTBIN" $LIBS $OBJS
+echo -ne "done\nStripping..."
+stript "$OUTDIR/$OUTBIN"
 if [ $PLUGIN_INSTALL -eq 1 ]; then
 	echo -ne "done\nCopying to plugins directory..."
 	cp "$OUTDIR/$OUTBIN" "out/plugins/$OUTBIN"
