@@ -50,7 +50,7 @@ void Error_CallStack() {
 		if(String_Compare(symbol.Name, "main")) break; // Символы после main не несут смысловой нагрузки
 	}
 }
-#elif POSIX
+#elif defined(POSIX)
 void Error_CallStack() {
 	Log_Debug("Call stack printing not implemented");
 }
