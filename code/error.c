@@ -1,6 +1,5 @@
 #include "core.h"
 #include "error.h"
-#include <dbghelp.h>
 
 const char* const Types[] = {
 	"SERVER",
