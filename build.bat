@@ -12,7 +12,7 @@ set ZLIB_MODE=Release
 set MSVC_OPTS=
 set MSVC_LINKER=
 set OBJDIR=objs
-set MSVC_LIBS=ws2_32.lib zlibwapi.lib kernel32.lib
+set MSVC_LIBS=ws2_32.lib zlibwapi.lib
 
 :argloop
 IF "%1"=="" goto continue
@@ -49,9 +49,7 @@ IF "%1"=="install" (
 set PLUGINSTALL=1
 SHIFT
 )
-IF NOT "%1"=="" (
-goto libloop
-)
+IF NOT "%1"=="" goto libloop
 
 :libloop
 IF "%1"=="" goto continue
@@ -60,6 +58,8 @@ SHIFT
 goto libloop
 
 :continue
+IF "%ZLIB_MODE%"=="Debug" set ZLIB_ADD=
+
 IF "%BUILD_PLUGIN%"=="1" (
   set COMPILER=cl /LD
   set OUTDIR=%PLUGNAME%\out\%ARCH%
@@ -79,9 +79,7 @@ IF NOT EXIST %OUTDIR% MD %OUTDIR%
 
 echo Build configuration:
 echo Architecture: %ARCH%
-IF "%DEBUG%"=="0" (
-  echo Debug: disabled
-) else (
+IF "%DEBUG%"=="0" (echo Debug: disabled) else (
   set MSVC_OPTS=%MSVC_OPTS% /Z7
   set MSVC_LINKER=%MSVC_LINKER% /INCREMENTAL:NO /DEBUG /OPT:REF
   echo Debug: enabled

@@ -20,12 +20,16 @@ clean () {
 for a in "$@"
 do
 	if [ $PLUGIN_BUILD -eq 1 ]; then
-		CFLAGS="$CFLAGS -DCPLUGIN -Iheaders"
-		LNK="gcc -shared"
-		PLUGIN_NAME="$a"
-		OUTBIN="$a.so"
-		ROOT="$a"
-		break
+		if [ -n "$PLUGIN_NAME" ]; then
+			CFLAGS="$CFLAGS -DCPLUGIN -Iheaders"
+			LNK="gcc -shared"
+			PLUGIN_NAME="$a"
+			OUTBIN="$a.so"
+			ROOT="$a"
+		else
+			if [ "$a" == "install" ]; then PLUGIN_INSTALL=1; fi
+		fi
+		continue
 	fi
 	if [ "$a" == "clean" ]; then clean; fi
 	if [ "$a" == "pb" ]; then PLUGIN_BUILD=1; fi
@@ -64,12 +68,16 @@ done
 for pid in ${pids[@]}; do
 	wait $pid
 done
-echo "done"
-
-echo -n "Linking..."
+echo -ne "done\nLinking..."
 
 OUTDIR="$ROOT/out"
 OBJS=$(find $OBJDIR -name "*.o" -printf "$OBJDIR/%P ")
 if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
 $LNK -o "$OUTDIR/$OUTBIN" $LIBS $OBJS
-echo "done"
+if [ $PLUGIN_INSTALL -eq 1 ]; then
+	echo -ne "done\nCopying to plugins directory..."
+	cp "$OUTDIR/$OUTBIN" "out/plugins/$OUTBIN"
+	echo "done"
+else
+	echo "done"
+fi
