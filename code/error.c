@@ -19,17 +19,18 @@ const char* const Strings[] = {
 };
 
 #if defined(WINDOWS)
+#include <dbghelp.h>
 void Error_CallStack() {
 	if(Log_GetLevel() < LOG_DEBUG) {
 		return;
 	}
-	void* stack[100];
+	void* stack[64];
 	uint16_t frames;
 	SYMBOL_INFO symbol = {0};
 	HANDLE process = GetCurrentProcess();
 	SymInitialize(process, NULL, true);
 
-	frames = CaptureStackBackTrace(0, 100, stack, NULL);
+	frames = CaptureStackBackTrace(0, 64, stack, NULL);
 
 	symbol.MaxNameLen = 255;
 	symbol.SizeOfStruct = sizeof(SYMBOL_INFO);
@@ -51,8 +52,20 @@ void Error_CallStack() {
 	}
 }
 #elif defined(POSIX)
+#include <execinfo.h>
 void Error_CallStack() {
-	Log_Debug("Call stack printing not implemented");
+	void* stack[64];
+	int frames = backtrace(stack, 64);
+	Log_Info("Frames: %d", frames);
+
+	for(int i = 0; i < frames; i++) {
+		Dl_info dli = {0};
+		dladdr(stack[i], &dli);
+		if(i > 2) {
+			Log_Debug("Symbol: %s - 0x%0X", dli.dli_sname, dli.dli_saddr);
+			}
+		if(String_Compare(dli.dli_sname, "main")) break;
+	}
 }
 #endif
 

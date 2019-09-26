@@ -6,7 +6,7 @@ OPT="-O2"
 WARN=""
 ROOT="."
 LNK="gcc -rdynamic"
-CFLAGS="-pipe -fPIC"
+CFLAGS="-pipe -fPIC -funwind-tables"
 LIBS="-lz -lpthread -ldl"
 OUTBIN="server"
 
@@ -14,7 +14,7 @@ PLUGIN_BUILD=0
 PLUGIN_INSTALL=0
 
 clean () {
-	rm -rf objs/* server
+	rm -rf objs/* out/server
 	exit 0
 }
 

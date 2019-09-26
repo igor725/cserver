@@ -8,7 +8,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#include <dbghelp.h>
 #define ZLIB_WINAPI
 #ifndef CPLUGIN
 #define API __declspec(dllexport, noinline)
