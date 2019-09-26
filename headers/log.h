@@ -8,5 +8,4 @@ API void Log_Warn(const char* str, ...);
 API void Log_Debug(const char* str, ...);
 API void Log_SetLevel(int level);
 API int  Log_GetLevel();
-API void Log_FormattedError();
 #endif

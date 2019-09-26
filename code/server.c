@@ -36,7 +36,6 @@ void Server_Accept() {
 			tmp->status = CLIENT_OK;
 			tmp->thread = Thread_Create(Client_ThreadProc, tmp);
 			if(!Thread_IsValid(tmp->thread)) {
-				Log_FormattedError();
 				Client_Kick(tmp, "Can't create packet handling thread");
 				return;
 			}
@@ -85,7 +84,7 @@ bool Server_InitialWork() {
 	Config_SetStr(Server_Config, "motd", DEFAULT_MOTD);
 	Config_SetInt(Server_Config, "loglevel", 3);
 	Config_SetBool(Server_Config, "alwayslocalop", false);
-	Config_Load(Server_Config);
+	if(!Config_Load(Server_Config)) Process_Exit(1);
 
 	Log_SetLevel(Config_GetInt(Server_Config, "loglevel"));
 	Packet_RegisterDefault();
@@ -101,14 +100,12 @@ bool Server_InitialWork() {
 		do {
 			if(wIter.isDir || !wIter.cfile) continue;
 			WORLD* tmp = World_Create(wIter.cfile);
-			if(!World_Load(tmp)) {
-				Log_FormattedError();
+			if(!World_Load(tmp))
 				World_Destroy(tmp);
-			} else
+			else
 				Worlds_List[++wIndex] = tmp;
 		} while(Iter_Next(&wIter) && wIndex < MAX_WORLDS);
-	} else
-		Log_FormattedError();
+	}
 	Iter_Close(&wIter);
 
 	if(wIndex < 0) {
@@ -147,8 +144,7 @@ void Server_Stop() {
 			Client_Kick(client, "Server stopped");
 
 		if(i < MAX_WORLDS && world) {
-			if(!World_Save(world))
-				Log_FormattedError();
+			World_Save(world);
 			World_Destroy(world);
 		}
 	}
@@ -166,9 +162,7 @@ void Server_Stop() {
 }
 
 int main(int argc, char** argv) {
-	if(!(Server_Active = Server_InitialWork())) {
-		Log_FormattedError();
-	} else {
+	if((Server_Active = Server_InitialWork())) {
 		Server_AcceptThread = Thread_Create(Server_ThreadProc, NULL);
 		if(!Thread_IsValid(Server_AcceptThread)) {
 			Log_Error("Can't create accept thread");

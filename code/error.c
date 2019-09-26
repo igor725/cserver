@@ -1,13 +1,13 @@
 #include "core.h"
 #include "error.h"
 
-const char* const Error_Types[] = {
+const char* const Types[] = {
 	"SERVER",
 	"ZLIB",
 	"SYSTEM"
 };
 
-const char* const Error_Strings[] = {
+const char* const Strings[] = {
 	"All ok",
 	"Pointer is NULL",
 	"Invalid magic",
@@ -18,60 +18,28 @@ const char* const Error_Strings[] = {
 	"Invalid C-plugin version"
 };
 
-char Error_StrBuf[512] = {0};
-int Error_Type = ET_NOERR;
-uint Error_Code = 0;
-const char* Error_File;
-const char* Error_Func;
+void Error_CallStack() {
 
-const char* Error_GetString() {
-	switch(Error_Type) {
+}
+
+void Error_Print(int type, uint code, const char* file, uint line, const char* func) {
+	char strbuf[1024] = {0};
+	char errbuf[512] = {0};
+
+	switch(type) {
 		case ET_SERVER:
-			return Error_Strings[Error_Code];
+			String_Copy(errbuf, 512, Strings[code]);
+			break;
 		case ET_ZLIB:
-			return zError(Error_Code);
+			String_Copy(errbuf, 512, zError(code));
+			break;
 		case ET_SYS:
-			if(String_FormatError(Error_Code, Error_StrBuf, 512) > 0)
-				return Error_StrBuf;
-			else
-				return "[Unexpected error]";
-		default:
-			return Error_Strings[0];
+			if(!String_FormatError(code, errbuf, 512)) {
+				String_Copy(errbuf, 512, "Unexpected error");
+			}
+			break;
 	}
-}
 
-void Error_SetCode(const char* efile, int eline, const char* efunc, int etype, uint ecode) {
-	Error_File = efile;
-	Error_Line = eline;
-	Error_Func = efunc;
-	Error_Type = etype;
-	Error_Code = ecode;
-}
-
-const char* Error_GetFunc() {
-	if(Error_Func)
-		return Error_Func;
-	else
-		return "[unknown function]";
-}
-
-const char* Error_GetFile() {
-	if(Error_File)
-		return Error_File;
-	else
-		return "[unknown file]";
-}
-
-const char* Error_GetType() {
-	if(Error_Type == ET_NOERR)
-		return "NOERR";
-	return Error_Types[Error_Type];
-}
-
-void Error_SetSuccess() {
-	Error_Type = ET_NOERR;
-	Error_File = NULL;
-	Error_Func = NULL;
-	Error_Line = -1;
-	Error_Code = 0;
+	String_FormatBuf(strbuf, 1024, ERR_FMT, file, line, func, Types[type], errbuf);
+	if(String_Length(strbuf)) Log_Error(strbuf);
 }

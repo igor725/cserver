@@ -44,19 +44,6 @@ void Log_Error(const char* str, ...) {
 	va_end(args);
 }
 
-void Log_FormattedError() {
-	if(Error_Type == ET_NOERR) {
-		Log_Warn("Log_FormattedError() called, but Error_Type is ET_NOERR");
-		return;
-	}
-	Log_Error("%s:%d in %s(...): %s/%s (%d)",
-		Error_GetFile(), Error_Line,
-		Error_GetFunc(), Error_GetType(),
-		Error_GetString(), Error_Code
-	);
-	Error_SetSuccess();
-}
-
 void Log_Info(const char* str, ...) {
 	va_list args;
 	va_start(args, str);

@@ -9,8 +9,10 @@ CFGSTORE* Config_Create(const char* filename) {
 
 bool Config_Load(CFGSTORE* store) {
 	FILE* fp;
-	if(!(fp = File_Open(store->path, "r")))
+	if(!(fp = File_Open(store->path, "r"))) {
+		Error_PrintSys;
 		return false;
+	}
 
 	int type;
 	int count = 0;
@@ -34,7 +36,7 @@ bool Config_Load(CFGSTORE* store) {
 		} while(ch != '=' && !feof(fp));
 
 		if(feof(fp)) {
-			Error_Set(ET_SERVER, EC_CFGEND, false);
+			Error_Print2(ET_SERVER, EC_CFGEND, false);
 			return false;
 		}
 
@@ -49,7 +51,7 @@ bool Config_Load(CFGSTORE* store) {
 		}
 
 		if(count < 1) {
-			Error_Set(ET_SERVER, EC_CFGEND, false);
+			Error_Print2(ET_SERVER, EC_CFGEND, false);
 			File_Close(fp);
 			return false;
 		}
@@ -58,6 +60,7 @@ bool Config_Load(CFGSTORE* store) {
 		const char* hkey,* hval;
 
 		if(!(hkey = String_AllocCopy(key))) {
+			Error_PrintSys;
 			File_Close(fp);
 			return false;
 		}
@@ -77,11 +80,10 @@ bool Config_Load(CFGSTORE* store) {
 				Config_SetBool(store, hkey, String_Compare(value, "True"));
 				break;
 			default:
-				Error_Set(ET_SERVER, EC_CFGTYPE, false);
+				Error_Print2(ET_SERVER, EC_CFGTYPE, false);
 				File_Close(fp);
 				return false;
 		}
-
 		ch = fgetc(fp);
 	}
 
@@ -91,15 +93,16 @@ bool Config_Load(CFGSTORE* store) {
 }
 
 bool Config_Save(CFGSTORE* store) {
-	if(!store->modified)
-		return true;
+	if(!store->modified) return true;
 
 	char tmpname[256];
 	String_FormatBuf(tmpname, 256, "%s.tmp", store->path);
 
 	FILE* fp;
-	if(!(fp = File_Open(tmpname, "w")))
+	if(!(fp = File_Open(tmpname, "w"))) {
+		Error_PrintSys;
 		return false;
+	}
 
 	CFGENTRY* ptr = store->firstCfgEntry;
 	store->modified = false;

@@ -8,18 +8,6 @@ enum ErrorTypes {
 	ET_STR
 };
 
-#define LNUM ": "
-#define Error_Set(etype, ecode, abort) \
-Error_SetCode(__FILE__, __LINE__, __func__, etype, ecode); \
-if(abort) { \
-	Log_FormattedError(); \
-	Process_Exit(ecode); \
-} \
-
-int   Error_Type;
-uint  Error_Code;
-uint  Error_Line;
-
 enum ErrorCodes {
 	EC_OK,
 	EC_NULLPTR,
@@ -31,11 +19,13 @@ enum ErrorCodes {
 	EC_DLLPLUGVER
 };
 
-void Error_SetCode(const char* efile, int eline, const char* efunc, int etype, uint ecode);
-void Error_SetStr_(const char* efile, int eline, const char* efunc, const char* estr);
-const char* Error_GetString();
-const char* Error_GetFunc();
-const char* Error_GetFile();
-const char* Error_GetType();
-void Error_SetSuccess();
+#define ERR_FMT "%s on line %d in func %s: %s/%s"
+#define Error_Print2(etype, ecode, abort) \
+Error_Print(etype, ecode, __FILE__, __LINE__, __func__); \
+if(abort) { \
+	Process_Exit(ecode); \
+}
+#define Error_PrintSys Error_Print2(ET_SYS, GetLastError(), false); \
+
+API void Error_Print(int type, uint code, const char* file, uint line, const char* func);
 #endif
