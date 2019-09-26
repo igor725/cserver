@@ -18,6 +18,8 @@ const char* const Strings[] = {
 	"Invalid C-plugin version"
 };
 
+#define SYM_DBG "Symbol: %s - 0x%0X"
+
 #if defined(WINDOWS)
 #include <dbghelp.h>
 void Error_CallStack() {
@@ -38,7 +40,7 @@ void Error_CallStack() {
 	for(int i = 0; i < frames; i++) {
 		SymFromAddr(process, (uintptr_t)stack[i], 0, &symbol);
 		if(i > 2) {
-			Log_Debug("Symbol: %s - 0x%0X", symbol.Name, symbol.Address);
+			Log_Debug(SYM_DBG, symbol.Name, symbol.Address);
 #if _MSC_VER
 			IMAGEHLP_LINE line = {0};
 			uint32_t lineOffset;
@@ -61,7 +63,7 @@ void Error_CallStack() {
 		Dl_info dli = {0};
 		dladdr(stack[i], &dli);
 		if(i > 2) {
-			Log_Debug("Symbol: %s - 0x%0X", dli.dli_sname, dli.dli_saddr);
+			Log_Debug(SYM_DBG, dli.dli_sname, dli.dli_saddr);
 		}
 		if(String_Compare(dli.dli_sname, "main")) break;
 	}
