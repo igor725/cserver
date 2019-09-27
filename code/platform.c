@@ -262,7 +262,9 @@ void Thread_Join(THREAD th) {
 
 MUTEX* Mutex_Create() {
 	MUTEX* ptr = (MUTEX*)Memory_Alloc(1, sizeof(MUTEX));
-	if(!ptr) Error_Print2(ET_SYS, GetLastError(), true);
+	if(!ptr) {
+		Error_Print2(ET_SYS, GetLastError(), true);
+	}
 	InitializeCriticalSection(ptr);
 	return ptr;
 }

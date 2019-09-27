@@ -1,10 +1,13 @@
 #include <core.h>
+#include <contrib/minizip/unzip.h>
 
 #include "svhttp.h"
 #include "sha1.h"
 #include "b64.h"
 
 SOCKET httpServer = INVALID_SOCKET;
+MUTEX* zMutex;
+unzFile zData;
 
 /*
 ** Позаимствовано здеся:
@@ -128,6 +131,38 @@ static void writeHTTPBody(WEBCLIENT* wcl) {
 	sendBuffer(wcl, wcl->respLength + 2);
 }
 
+static bool SendZippedFile(WEBCLIENT* wcl, const char* name) {
+	unz_file_info info;
+	char size[8];
+	size_t done = 0;
+
+	Mutex_Lock(zMutex);
+	if(unzLocateFile(zData, name, false) == UNZ_OK) {
+		unzOpenCurrentFile(zData);
+		unzGetCurrentFileInfo(zData, &info, NULL, 0, NULL, 0, NULL, 0);
+		String_FormatBuf(size, 8, "%d", info.uncompressed_size);
+		writeHTTPHeader(wcl, "Content-Length", size);
+		writeHTTPHeader(wcl, "Content-Type", "text/html");
+		String_Copy(wcl->buffer, HTTP_BUFFER_LEN, "\r\n");
+		sendBuffer(wcl, 2);
+
+		while(done != info.uncompressed_size) {
+			int blocksz = min(1024, info.uncompressed_size - done);
+			if(unzReadCurrentFile(zData, wcl->buffer, blocksz) > 0) {
+				sendBuffer(wcl, blocksz);
+				done += blocksz;
+			}
+		}
+
+		unzCloseCurrentFile(zData);
+		Mutex_Unlock(zMutex);
+		return true;
+	}
+
+	Mutex_Unlock(zMutex);
+	return false;
+}
+
 static void GenerateResponse(WEBCLIENT* wcl) {
 	writeHTTPCode(wcl);
 	writeDefaultHTTPHeaders(wcl);
@@ -239,7 +274,14 @@ static void HandleGetRequest(WEBCLIENT* wcl, char* buffer) {
 		wcl->respCode = 101;
 	}
 
-	GenerateResponse(wcl);
+	writeHTTPCode(wcl);
+	writeDefaultHTTPHeaders(wcl);
+	if(String_CaselessCompare(wcl->request, "/")) {
+		SendZippedFile(wcl, "index.html");
+	} else {
+		SendZippedFile(wcl, wcl->request + 1);
+	}
+	// GenerateResponse(wcl);
 
 	if(wcl->wsUpgrade) {
 		while(1) {
@@ -283,6 +325,13 @@ static TRET AcceptThreadProc(TARG param) {
 }
 
 bool Http_StartServer(const char* ip, uint16_t port) {
+	zData = unzOpen(CPL_ZIP);
+	zMutex = Mutex_Create();
+	if(!zData) {
+		Log_Error("Can't open " CPL_ZIP);
+		return false;
+	}
+
 	httpServer = Socket_Bind(ip, port);
 	if(httpServer != INVALID_SOCKET) {
 		Thread_Create(AcceptThreadProc, NULL);
@@ -292,6 +341,8 @@ bool Http_StartServer(const char* ip, uint16_t port) {
 }
 
 bool Http_CloseServer() {
+	if(zMutex) Mutex_Free(zMutex);
+	if(zData) unzClose(zData);
 	if(httpServer != INVALID_SOCKET) {
 		Socket_Close(httpServer);
 		return true;
