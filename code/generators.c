@@ -9,8 +9,8 @@
 	Flat generator
 */
 
-void Generator_Flat(WORLD* world) {
-	WORLDINFO* wi = world->info;
+void Generator_Flat(WORLD world) {
+	WORLDINFO wi = world->info;
 	uint16_t dx = wi->dim->width,
 	dy = wi->dim->height,
 	dz = wi->dim->length;
@@ -63,7 +63,7 @@ int cfgMaxThreads = 2;
 // 	}
 // }
 
-void Generator_Default(WORLD* world) {
+void Generator_Default(WORLD world) {
 	RNGState rnd;
 	Random_Seed(&rnd, 1337);
 }

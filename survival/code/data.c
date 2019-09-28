@@ -6,7 +6,7 @@
 
 SURVDATA* survDataList[MAX_CLIENTS] = {0};
 
-void SurvData_Create(CLIENT* cl) {
+void SurvData_Create(CLIENT cl) {
 	SURVDATA* ptr = (SURVDATA*)Memory_Alloc(1, sizeof(SURVDATA));
 	ptr->client = cl;
 	ptr->health = 10.0f;
@@ -14,6 +14,6 @@ void SurvData_Create(CLIENT* cl) {
 	survDataList[cl->id] = ptr;
 }
 
-SURVDATA* SurvData_Get(CLIENT* cl) {
+SURVDATA* SurvData_Get(CLIENT cl) {
 	return survDataList[cl->id];
 }

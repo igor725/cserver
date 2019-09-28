@@ -38,12 +38,12 @@ void Command_Unregister(const char* cmd) {
 	}
 }
 
-static bool CHandler_OP(const char* args, CLIENT* caller, char* out) {
+static bool CHandler_OP(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForOP;
 
 	char clientname[64];
 	if(String_GetArgument(args, clientname, 64, 0)) {
-		CLIENT* tg = Client_FindByName(clientname);
+		CLIENT tg = Client_FindByName(clientname);
 		if(tg) {
 			bool newtype = !Client_GetType(tg);
 			const char* name = tg->playerData->name;
@@ -56,21 +56,21 @@ static bool CHandler_OP(const char* args, CLIENT* caller, char* out) {
 	return true;
 }
 
-static bool CHandler_Stop(const char* args, CLIENT* caller, char* out) {
+static bool CHandler_Stop(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForOP;
 
 	Server_Active = false;
 	return false;
 }
 
-static bool CHandler_Test(const char* args, CLIENT* caller, char* out) {
+static bool CHandler_Test(const char* args, CLIENT caller, char* out) {
 	sprintf(out, "Command \"test\" called by %s with args: %s",
 		caller ? caller->playerData->name : "console", args
 	);
 	return true;
 }
 
-static bool CHandler_Announce(const char* args, CLIENT* caller, char* out) {
+static bool CHandler_Announce(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForOP;
 
 	if(!caller) caller = Broadcast;
@@ -78,21 +78,21 @@ static bool CHandler_Announce(const char* args, CLIENT* caller, char* out) {
 	return false;
 }
 
-static bool CHandler_ChangeWorld(const char* args, CLIENT* caller, char* out) {
+static bool CHandler_ChangeWorld(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForClient;
 
-	WORLD* world = World_FindByName(args);
+	WORLD world = World_FindByName(args);
 	Client_ChangeWorld(caller, world);
 	return false;
 }
 
-static bool CHandler_Kick(const char* args, CLIENT* caller, char* out) {
+static bool CHandler_Kick(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForOP;
 	// ????
 	return false;
 }
 
-static bool CHandler_Model(const char* args, CLIENT* caller, char* out) {
+static bool CHandler_Model(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForOP;
 	Command_OnlyForClient;
 
@@ -116,7 +116,7 @@ void Command_RegisterDefault() {
 	Command_Register("setmodel", CHandler_Model);
 }
 
-bool Command_Handle(char* cmd, CLIENT* caller) {
+bool Command_Handle(char* cmd, CLIENT caller) {
 	char ret[CMD_MAX_OUT] = {0};
 	char* args = cmd;
 

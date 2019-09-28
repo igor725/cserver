@@ -15,7 +15,7 @@ if(caller && !caller->playerData->isOP) { \
 	return true; \
 } \
 
-typedef bool (*cmdFunc)(const char* args, CLIENT* caller, char* out);
+typedef bool (*cmdFunc)(const char* args, CLIENT caller, char* out);
 
 typedef struct command {
 	const char*     name;
@@ -28,6 +28,6 @@ COMMAND* Command_Head;
 
 API void Command_Register(const char* cmd, cmdFunc func);
 API void Command_Unregister(const char* cmd);
-bool Command_Handle(char* cmd, CLIENT* caller);
+bool Command_Handle(char* cmd, CLIENT caller);
 void Command_RegisterDefault();
 #endif

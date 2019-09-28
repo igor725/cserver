@@ -87,7 +87,7 @@ if(!String_GetArgument(args, name, 64, 1)) { \
 	return true; \
 }
 
-static bool CHandler_Plugins(const char* args, CLIENT* caller, char* out) {
+static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
 	char command[64];
 	char name[64];
 	CPLUGIN* plugin;

@@ -10,12 +10,12 @@
 #include "break.h"
 
 static void Survival_OnHandshake(void* param) {
-	CLIENT* cl = (CLIENT*)param;
+	CLIENT cl = (CLIENT)param;
 	SurvData_Create(cl);
 }
 
 static void Survival_OnSpawn(void* param) {
-	CLIENT* client = (CLIENT*)param;
+	CLIENT client = (CLIENT)param;
 	SURVDATA* survData = SurvData_Get(client);
 	SurvGui_DrawAll(survData);
 	for(int i = 0; i < 9; i++) {
@@ -44,10 +44,10 @@ static float distance(float x1, float y1, float z1, float x2, float y2, float z2
 
 static void Survival_OnClick(void* param) {
 	onPlayerClick_t* a = (onPlayerClick_t*)param;
-	CLIENT* client = a->client;
+	CLIENT client = a->client;
 	short x = *a->x, y = *a->y, z = *a->z;
 	SURVDATA* survData = SurvData_Get(client);
-	CLIENT* target = Client_GetByID(*a->tgID);
+	CLIENT target = Client_GetByID(*a->tgID);
 	SURVDATA* survDataTg;
 	if(target) survDataTg = SurvData_Get(target);
 
@@ -77,7 +77,7 @@ static void Survival_OnClick(void* param) {
 	}
 }
 
-static bool CHandler_God(const char* args, CLIENT* caller, char* out) {
+static bool CHandler_God(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForClient;
 	Command_OnlyForOP;
 
@@ -89,7 +89,7 @@ static bool CHandler_God(const char* args, CLIENT* caller, char* out) {
 	return true;
 }
 
-static bool CHandler_Hurt(const char* args, CLIENT* caller, char* out) {
+static bool CHandler_Hurt(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForClient;
 
 	char damage[32];
@@ -101,6 +101,17 @@ static bool CHandler_Hurt(const char* args, CLIENT* caller, char* out) {
 	return false;
 }
 
+static bool CHandler_PvP(const char* args, CLIENT caller, char* out) {
+	Command_OnlyForClient;
+
+	SURVDATA* survData = SurvData_Get(caller);
+	bool mode = survData->pvpMode;
+	survData->pvpMode = !mode;
+	String_FormatBuf(out, CMD_MAX_OUT, "PvP mode %s", mode ? "disabled" : "enabled");
+
+	return true;
+}
+
 EXP int Plugin_ApiVer = 100;
 EXP bool Plugin_Load() {
 	Event_RegisterVoid(EVT_ONSPAWN, Survival_OnSpawn);
@@ -108,6 +119,7 @@ EXP bool Plugin_Load() {
 	Event_RegisterVoid(EVT_ONPLAYERCLICK, Survival_OnClick);
 	Command_Register("god", CHandler_God);
 	Command_Register("hurt", CHandler_Hurt);
+	Command_Register("pvp", CHandler_PvP);
 	return true;
 }
 EXP bool Plugin_Unload() {

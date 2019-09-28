@@ -21,7 +21,7 @@ void Server_Accept() {
 			Socket_Close(fd);
 			return;
 		}
-	 	CLIENT* tmp = (CLIENT*)Memory_Alloc(1, sizeof(CLIENT));
+	 	CLIENT tmp = (CLIENT)Memory_Alloc(1, sizeof(struct client));
 
 		tmp->sock = fd;
 		tmp->bufpos = 0;
@@ -63,12 +63,12 @@ bool Server_Bind(const char* ip, uint16_t port) {
 }
 
 static void evt_onconnect(void* param) {
-	CLIENT* cl = (CLIENT*)param;
+	CLIENT cl = (CLIENT)param;
 	Log_Info("Player %s connected", cl->playerData->name);
 }
 
 static void evt_ondisconnect(void* param) {
-	CLIENT* cl = (CLIENT*)param;
+	CLIENT cl = (CLIENT)param;
 	Log_Info("Player %s disconnected", cl->playerData->name);
 }
 
@@ -99,7 +99,7 @@ bool Server_InitialWork() {
 	if(Iter_Init(&wIter, "worlds", "cws")) {
 		do {
 			if(wIter.isDir || !wIter.cfile) continue;
-			WORLD* tmp = World_Create(wIter.cfile);
+			WORLD tmp = World_Create(wIter.cfile);
 			if(!World_Load(tmp))
 				World_Destroy(tmp);
 			else
@@ -109,7 +109,7 @@ bool Server_InitialWork() {
 	Iter_Close(&wIter);
 
 	if(wIndex < 0) {
-		WORLD* tmp = World_Create("world.cws");
+		WORLD tmp = World_Create("world.cws");
 		World_SetDimensions(tmp, 256, 256, 256);
 		World_AllocBlockArray(tmp);
 		Generator_Flat(tmp);
@@ -127,7 +127,7 @@ bool Server_InitialWork() {
 void Server_DoStep() {
 	Event_Call(EVT_ONTICK, NULL);
 	for(int i = 0; i < MAX_CLIENTS; i++) {
-		CLIENT* client = Clients_List[i];
+		CLIENT client = Clients_List[i];
 		if(client)
 			Client_Tick(client);
 	}
@@ -137,8 +137,8 @@ void Server_Stop() {
 	Event_Call(EVT_ONSTOP, NULL);
 	Log_Info("Saving worlds");
 	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
-		CLIENT* client = Clients_List[i];
-		WORLD* world = Worlds_List[i];
+		CLIENT client = Clients_List[i];
+		WORLD world = Worlds_List[i];
 
 		if(i < MAX_CLIENTS && client)
 			Client_Kick(client, "Server stopped");

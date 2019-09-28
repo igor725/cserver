@@ -3,20 +3,20 @@
 #include "world.h"
 #include "event.h"
 
-WORLD* World_Create(const char* name) {
-	WORLD* tmp = (WORLD*)Memory_Alloc(1, sizeof(WORLD));
+WORLD World_Create(const char* name) {
+	WORLD tmp = (WORLD)Memory_Alloc(1, sizeof(struct world));
 
 	tmp->name = String_AllocCopy(name);
-	tmp->info = (WORLDINFO*)Memory_Alloc(1, sizeof(WORLDINFO));
-	tmp->info->dim = (WORLDDIMS*)Memory_Alloc(1, sizeof(WORLDDIMS));
+	tmp->info = (WORLDINFO)Memory_Alloc(1, sizeof(struct worldInfo));
+	tmp->info->dim = (WORLDDIMS)Memory_Alloc(1, sizeof(struct worldDims));
 	tmp->info->spawnVec = (VECTOR*)Memory_Alloc(1, sizeof(VECTOR));
 	tmp->info->spawnAng = (ANGLE*)Memory_Alloc(1, sizeof(ANGLE));
 	return tmp;
 }
 
-WORLD* World_FindByName(const char* name) {
+WORLD World_FindByName(const char* name) {
 	for(int i = 0; i < MAX_WORLDS; i++) {
-		WORLD* world = Worlds_List[i];
+		WORLD world = Worlds_List[i];
 		if(!world) continue;
 		if(String_CaselessCompare(world->name, name))
 			return world;
@@ -24,32 +24,32 @@ WORLD* World_FindByName(const char* name) {
 	return NULL;
 }
 
-void World_SetDimensions(WORLD* world, uint16_t width, uint16_t height, uint16_t length) {
-	WORLDDIMS* wd = world->info->dim;
+void World_SetDimensions(WORLD world, uint16_t width, uint16_t height, uint16_t length) {
+	WORLDDIMS wd = world->info->dim;
 	wd->width = width;
 	wd->height = height;
 	wd->length = length;
 }
 
-void World_SetWeather(WORLD* world, Weather type) {
+void World_SetWeather(WORLD world, Weather type) {
 	world->info->wt = type;
 	Event_Call(EVT_ONWEATHER, world);
 	for(int i = 0; i < MAX_CLIENTS; i++) {
-		CLIENT* client = Clients_List[i];
+		CLIENT client = Clients_List[i];
 		if(client && Client_IsInWorld(client, world))
 			Client_SetWeather(client, type);
 	}
 }
 
-Weather World_GetWeather(WORLD* world) {
+Weather World_GetWeather(WORLD world) {
 	return world->info->wt;
 }
 
-void World_AllocBlockArray(WORLD* world) {
+void World_AllocBlockArray(WORLD world) {
 	if(world->data)
 		Memory_Free(world->data);
 
-	WORLDINFO* wi = world->info;
+	WORLDINFO wi = world->info;
 	uint16_t dx = wi->dim->width,
 	dy = wi->dim->height,
 	dz = wi->dim->length;
@@ -60,7 +60,7 @@ void World_AllocBlockArray(WORLD* world) {
 	world->data = data;
 }
 
-void World_Destroy(WORLD* world) {
+void World_Destroy(WORLD world) {
 	if(world->data) Memory_Free(world->data);
 	if(world->info) Memory_Free(world->info);
 	Memory_Free(world);
@@ -74,18 +74,18 @@ bool _WriteData(FILE* fp, uint8_t dataType, void* ptr, int size) {
 	return true;
 }
 
-bool World_WriteInfo(WORLD* world, FILE* fp) {
+bool World_WriteInfo(WORLD world, FILE* fp) {
 	int magic = WORLD_MAGIC;
 	if(!File_Write((char*)&magic, 4, 1, fp))
 		return false;
-	return _WriteData(fp, DT_DIM, world->info->dim, sizeof(WORLDDIMS)) &&
+	return _WriteData(fp, DT_DIM, world->info->dim, sizeof(worldDims)) &&
 	_WriteData(fp, DT_SV, world->info->spawnVec, sizeof(VECTOR)) &&
 	_WriteData(fp, DT_SA, world->info->spawnAng, sizeof(ANGLE)) &&
 	_WriteData(fp, DT_WT, &world->info->wt, sizeof(Weather)) &&
 	_WriteData(fp, DT_END, NULL, 0);
 }
 
-bool World_ReadInfo(WORLD* world, FILE* fp) {
+bool World_ReadInfo(WORLD world, FILE* fp) {
 	uint8_t id = 0;
 	uint32_t magic = 0;
 	if(!File_Read(&magic, 4, 1, fp))
@@ -99,7 +99,7 @@ bool World_ReadInfo(WORLD* world, FILE* fp) {
 	while(File_Read(&id, 1, 1, fp) == 1) {
 		switch (id) {
 			case DT_DIM:
-				if(File_Read(world->info->dim, sizeof(WORLDDIMS), 1, fp) != 1)
+				if(File_Read(world->info->dim, sizeof(worldDims), 1, fp) != 1)
 					return false;
 				break;
 			case DT_SV:
@@ -125,7 +125,7 @@ bool World_ReadInfo(WORLD* world, FILE* fp) {
 	return false;
 }
 
-int World_Save(WORLD* world) {
+int World_Save(WORLD world) {
 	FILE* fp;
 	char path[256];
 	char tmpname[256];
@@ -171,7 +171,7 @@ int World_Save(WORLD* world) {
 	return File_Rename(tmpname, path);
 }
 
-int World_Load(WORLD* world) {
+int World_Load(WORLD world) {
 	FILE* fp;
 	char path[256];
 	String_FormatBuf(path, 256, "worlds/%s", world->name);
@@ -223,8 +223,8 @@ int World_Load(WORLD* world) {
 	return true;
 }
 
-uint32_t World_GetOffset(WORLD* world, uint16_t x, uint16_t y, uint16_t z) {
-	WORLDDIMS* wd = world->info->dim;
+uint32_t World_GetOffset(WORLD world, uint16_t x, uint16_t y, uint16_t z) {
+	WORLDDIMS wd = world->info->dim;
 	uint16_t dx = wd->width, dy = wd->height, dz = wd->length;
 
 	if(x > dx || y > dy || z > dz)
@@ -233,7 +233,7 @@ uint32_t World_GetOffset(WORLD* world, uint16_t x, uint16_t y, uint16_t z) {
 	return z * dz + y * (dx * dy) + x + 4;
 }
 
-bool World_SetBlock(WORLD* world, uint16_t x, uint16_t y, uint16_t z, BlockID id) {
+bool World_SetBlock(WORLD world, uint16_t x, uint16_t y, uint16_t z, BlockID id) {
 	uint32_t offset = World_GetOffset(world, x, y, z);
 
 	if(offset > 3 && offset < world->size)
@@ -244,7 +244,7 @@ bool World_SetBlock(WORLD* world, uint16_t x, uint16_t y, uint16_t z, BlockID id
 	return true;
 }
 
-BlockID World_GetBlock(WORLD* world, uint16_t x, uint16_t y, uint16_t z) {
+BlockID World_GetBlock(WORLD world, uint16_t x, uint16_t y, uint16_t z) {
 	uint32_t offset = World_GetOffset(world, x, y, z);
 
 	if(offset > 3 && offset < world->size)

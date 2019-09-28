@@ -26,7 +26,7 @@ void WriteString(char* data, const char* string) {
 	Memory_Copy(data, string, size);
 }
 
-void ReadClPos(CLIENT* client, char* data) {
+void ReadClPos(CLIENT client, char* data) {
 	VECTOR* vec = client->playerData->position;
 	ANGLE* ang = client->playerData->angle;
 
@@ -37,7 +37,7 @@ void ReadClPos(CLIENT* client, char* data) {
 	ang->pitch = (((float)(uint8_t)*++data) / 256) * 360;
 }
 
-char* WriteClPos(char* data, CLIENT* client, bool stand) {
+char* WriteClPos(char* data, CLIENT client, bool stand) {
 	VECTOR* vec = client->playerData->position;
 	ANGLE* ang = client->playerData->angle;
 
@@ -77,7 +77,7 @@ PACKET* Packet_Get(int id) {
 	return id < MAX_PACKETS ? Packets_List[id] : NULL;
 }
 
-short Packet_GetSize(int id, CLIENT* client) {
+short Packet_GetSize(int id, CLIENT client) {
 	PACKET* packet = Packets_List[id];
 	if(!packet)
 		return -1;
@@ -92,7 +92,7 @@ short Packet_GetSize(int id, CLIENT* client) {
 	VANILLA
 */
 
-void Packet_WriteKick(CLIENT* client, const char* reason) {
+void Packet_WriteKick(CLIENT client, const char* reason) {
 	PacketWriter_Start(client);
 
 	*data = 0x0E;
@@ -101,7 +101,7 @@ void Packet_WriteKick(CLIENT* client, const char* reason) {
 	PacketWriter_End(client, 65);
 }
 
-void Packet_WriteLvlInit(CLIENT* client) {
+void Packet_WriteLvlInit(CLIENT client) {
 	PacketWriter_Start(client);
 
 	*data = 0x02;
@@ -113,10 +113,10 @@ void Packet_WriteLvlInit(CLIENT* client) {
 	}
 }
 
-void Packet_WriteLvlFin(CLIENT* client) {
+void Packet_WriteLvlFin(CLIENT client) {
 	PacketWriter_Start(client);
 
-	WORLDDIMS* dims = client->playerData->world->info->dim;
+	WORLDDIMS dims = client->playerData->world->info->dim;
 	*data = 0x04;
 	*(uint16_t*)++data = htons(dims->width); ++data;
 	*(uint16_t*)++data = htons(dims->height); ++data;
@@ -125,7 +125,7 @@ void Packet_WriteLvlFin(CLIENT* client) {
 	PacketWriter_End(client, 7);
 }
 
-void Packet_WriteSetBlock(CLIENT* client, uint16_t x, uint16_t y, uint16_t z, BlockID block) {
+void Packet_WriteSetBlock(CLIENT client, uint16_t x, uint16_t y, uint16_t z, BlockID block) {
 	PacketWriter_Start(client);
 
 	*data = 0x06;
@@ -137,7 +137,7 @@ void Packet_WriteSetBlock(CLIENT* client, uint16_t x, uint16_t y, uint16_t z, Bl
 	PacketWriter_End(client, 8);
 }
 
-void Packet_WriteHandshake(CLIENT* client, const char* name, const char* motd) {
+void Packet_WriteHandshake(CLIENT client, const char* name, const char* motd) {
 	PacketWriter_Start(client);
 
 	*data = 0x00;
@@ -149,7 +149,7 @@ void Packet_WriteHandshake(CLIENT* client, const char* name, const char* motd) {
 	PacketWriter_End(client, 131);
 }
 
-void Packet_WriteSpawn(CLIENT* client, CLIENT* other) {
+void Packet_WriteSpawn(CLIENT client, CLIENT other) {
 	PacketWriter_Start(client);
 
 	*data = 0x07;
@@ -160,7 +160,7 @@ void Packet_WriteSpawn(CLIENT* client, CLIENT* other) {
 	PacketWriter_End(client, 74);
 }
 
-void Packet_WriteDespawn(CLIENT* client, CLIENT* other) {
+void Packet_WriteDespawn(CLIENT client, CLIENT other) {
 	PacketWriter_Start(client);
 
 	*data = 0x0C;
@@ -169,7 +169,7 @@ void Packet_WriteDespawn(CLIENT* client, CLIENT* other) {
 	PacketWriter_End(client, 2);
 }
 
-void Packet_WritePosAndOrient(CLIENT* client, CLIENT* other) {
+void Packet_WritePosAndOrient(CLIENT client, CLIENT other) {
 	PacketWriter_Start(client);
 
 	*data = 0x08;
@@ -179,7 +179,7 @@ void Packet_WritePosAndOrient(CLIENT* client, CLIENT* other) {
 	PacketWriter_End(client, 10);
 }
 
-void Packet_WriteChat(CLIENT* client, MessageType type, const char* mesg) {
+void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg) {
 	PacketWriter_Start(client);
 
 	*data = 0x0D;
@@ -189,7 +189,7 @@ void Packet_WriteChat(CLIENT* client, MessageType type, const char* mesg) {
 	PacketWriter_End(client, 66);
 }
 
-void Packet_WriteUpdateType(CLIENT* client) {
+void Packet_WriteUpdateType(CLIENT client) {
 	PacketWriter_Start(client);
 
 	*data = 0x0F;
@@ -202,7 +202,7 @@ void Packet_WriteUpdateType(CLIENT* client) {
 	Classic handlers
 */
 
-bool Handler_Handshake(CLIENT* client, char* data) {
+bool Handler_Handshake(CLIENT client, char* data) {
 	uint8_t protoVer =* data;
 	if(protoVer != 0x07) {
 		Client_Kick(client, "Invalid protocol version");
@@ -221,7 +221,7 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 	Thread_SetName(client->playerData->name);
 
 	for(int i = 0; i < 128; i++) {
-		CLIENT* other = Clients_List[i];
+		CLIENT other = Clients_List[i];
 		if(!other || other == client) continue;
 		if(String_CaselessCompare(client->playerData->name, other->playerData->name)) {
 			Client_Kick(client, "This name already in use");
@@ -262,10 +262,10 @@ bool Handler_Handshake(CLIENT* client, char* data) {
 if(!client->playerData || client->playerData->state != STATE_INGAME || !client->playerData->spawned) \
 	return true; \
 
-bool Handler_SetBlock(CLIENT* client, char* data) {
+bool Handler_SetBlock(CLIENT client, char* data) {
 	ValidateClient(client);
 
-	WORLD* world = client->playerData->world;
+	WORLD world = client->playerData->world;
 	if(!world) return false;
 
 	uint16_t x = ntohs(*(uint16_t*)data); data += 2;
@@ -300,7 +300,7 @@ bool Handler_SetBlock(CLIENT* client, char* data) {
 	return true;
 }
 
-bool Handler_PosAndOrient(CLIENT* client, char* data) {
+bool Handler_PosAndOrient(CLIENT client, char* data) {
 	ValidateClient(client);
 
 	if(client->cpeData && client->cpeData->heldBlock != *data) {
@@ -315,7 +315,7 @@ bool Handler_PosAndOrient(CLIENT* client, char* data) {
 	return true;
 }
 
-bool Handler_Message(CLIENT* client, char* data) {
+bool Handler_Message(CLIENT client, char* data) {
 	ValidateClient(client);
 
 	char* message;

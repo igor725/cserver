@@ -91,28 +91,28 @@ static const WEBHEADER defaultHeaders[] = {
 	{NULL, NULL}
 };
 
-static int sendBuffer(WEBCLIENT* wcl, uint32_t len) {
+static int sendBuffer(WEBCLIENT wcl, uint32_t len) {
 	return send(wcl->sock, wcl->buffer, len, 0);
 }
 
-static void writeHTTPCode(WEBCLIENT* wcl) {
+static void writeHTTPCode(WEBCLIENT wcl) {
 	const char* phrase = getReasonPhrase(wcl->respCode);
 	String_FormatBuf(wcl->buffer, HTTP_BUFFER_LEN, "HTTP/1.1 %d %s\r\n", wcl->respCode, phrase);
 	sendBuffer(wcl, String_Length(wcl->buffer));
 }
 
-static void writeHTTPHeader(WEBCLIENT* wcl, const char* key, const char* value) {
+static void writeHTTPHeader(WEBCLIENT wcl, const char* key, const char* value) {
 	String_FormatBuf(wcl->buffer, HTTP_BUFFER_LEN, "%s: %s\r\n", key, value);
 	sendBuffer(wcl, String_Length(wcl->buffer));
 }
 
-static void writeDefaultHTTPHeaders(WEBCLIENT* wcl) {
+static void writeDefaultHTTPHeaders(WEBCLIENT wcl) {
 	for(const WEBHEADER* hdr = defaultHeaders; hdr ->key; hdr++) {
 		writeHTTPHeader(wcl, hdr->key, hdr->value);
 	}
 }
 
-static void writeHTTPBody(WEBCLIENT* wcl) {
+static void writeHTTPBody(WEBCLIENT wcl) {
 	if(!wcl->wsUpgrade) {
 		if(wcl->respBody && wcl->respLength == 0)
 			wcl->respLength = String_Length(wcl->respBody);
@@ -133,7 +133,7 @@ static void writeHTTPBody(WEBCLIENT* wcl) {
 	}
 }
 
-static bool SendZippedFile(WEBCLIENT* wcl, const char* name) {
+static bool SendZippedFile(WEBCLIENT wcl, const char* name) {
 	unz_file_info info;
 	char size[8];
 	size_t done = 0;
@@ -167,7 +167,7 @@ static bool SendZippedFile(WEBCLIENT* wcl, const char* name) {
 	return false;
 }
 
-static void GenerateResponse(WEBCLIENT* wcl) {
+static void GenerateResponse(WEBCLIENT wcl) {
 	writeHTTPCode(wcl);
 	writeDefaultHTTPHeaders(wcl);
 	if(wcl->wsUpgrade) {
@@ -191,20 +191,20 @@ static void GenerateResponse(WEBCLIENT* wcl) {
 	writeHTTPBody(wcl);
 }
 
-static void freeWsClient(WEBCLIENT* wcl) {
+static void freeWsClient(WEBCLIENT wcl) {
 	if(wcl->request) Memory_Free((void*)wcl->request);
 	if(wcl->wsKey) Memory_Free((void*)wcl->wsKey);
 	if(wcl->wsFrame) WebSocket_DestroyFrame(wcl->wsFrame);
 	Memory_Free(wcl);
 }
 
-static void wclClose(WEBCLIENT* wcl) {
+static void wclClose(WEBCLIENT wcl) {
 	shutdown(wcl->sock, SD_SEND);
 	Socket_Close(wcl->sock);
 	freeWsClient(wcl);
 }
 
-static char* ReadSockUntil(WEBCLIENT* wcl, size_t len, char sym) {
+static char* ReadSockUntil(WEBCLIENT wcl, size_t len, char sym) {
 	char* tmp = wcl->buffer;
 
 	do {
@@ -219,13 +219,13 @@ static char* ReadSockUntil(WEBCLIENT* wcl, size_t len, char sym) {
 	return wcl->buffer;
 }
 
-static void wclSetError(WEBCLIENT* wcl, int code, const char* error) {
+static void wclSetError(WEBCLIENT wcl, int code, const char* error) {
 	wcl->respCode = code;
 	wcl->respBody = error;
 	wcl->wsUpgrade = false;
 }
 
-static void ReadHeader(WEBCLIENT* wcl, const char* value) {
+static void ReadHeader(WEBCLIENT wcl, const char* value) {
 	const char* key = wcl->buffer;
 
 	if(String_CaselessCompare(key, "Upgrade")) {
@@ -246,12 +246,12 @@ static void ReadHeader(WEBCLIENT* wcl, const char* value) {
 	}
 }
 
-static void sendFrame(WEBCLIENT* wcl, const char* data, uint32_t dlen, char opcode) {
+static void sendFrame(WEBCLIENT wcl, const char* data, uint32_t dlen, char opcode) {
 	uint32_t len = WebSocket_Encode(wcl->buffer, 1024, data, dlen, opcode);
 	if(len) sendBuffer(wcl, len);
 }
 
-static bool HandleWebSocketFrame(WEBCLIENT* wcl) {
+static bool HandleWebSocketFrame(WEBCLIENT wcl) {
 	WSFRAME* ws = wcl->wsFrame;
 	if(ws->opcode == 0x08) return true;
 
@@ -278,7 +278,7 @@ static char* TrimParams(char* str) {
 	return tmp;
 }
 
-static void HandleGetRequest(WEBCLIENT* wcl, char* buffer) {
+static void HandleGetRequest(WEBCLIENT wcl, char* buffer) {
 	wcl->request = String_AllocCopy(TrimParams(ReadSockUntil(wcl, 512, ' ')));
 	char* httpver = ReadSockUntil(wcl, HTTP_BUFFER_LEN, '\n');
 
@@ -316,7 +316,7 @@ static void HandleGetRequest(WEBCLIENT* wcl, char* buffer) {
 }
 
 static TRET ClientThreadProc(TARG param) {
-	WEBCLIENT* wcl = (WEBCLIENT*)Memory_Alloc(1, sizeof(WEBCLIENT));
+	WEBCLIENT wcl = (WEBCLIENT)Memory_Alloc(1, sizeof(WEBCLIENT));
 	wcl->respCode = 200;
 	wcl->sock = (SOCKET)param;
 

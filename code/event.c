@@ -59,18 +59,18 @@ bool Event_Call(EventType type, void* param) {
 	return ret;
 }
 
-bool Event_OnMessage(CLIENT* client, char* message, MessageType* id) {
+bool Event_OnMessage(CLIENT client, char* message, MessageType* id) {
 	return Event_Call(EVT_ONMESSAGE, (void*)&client);
 }
 
-bool Event_OnBlockPlace(CLIENT* client, uint16_t* x, uint16_t* y, uint16_t* z, BlockID* id) {
+bool Event_OnBlockPlace(CLIENT client, uint16_t* x, uint16_t* y, uint16_t* z, BlockID* id) {
 	return Event_Call(EVT_ONBLOCKPLACE, (void*)&client);
 }
 
-void Event_OnHeldBlockChange(CLIENT* client, BlockID* prev, BlockID* curr) {
+void Event_OnHeldBlockChange(CLIENT client, BlockID* prev, BlockID* curr) {
 	Event_Call(EVT_ONHELDBLOCKCHNG, (void*)&client);
 }
 
-void Event_OnClick(CLIENT* client, char* button, char* action, short* yaw, short* pitch, ClientID* tgID, short* tgBlockX, short* tgBlockY, short* tgblockZ, char* tgBlockFace) {
+void Event_OnClick(CLIENT client, char* button, char* action, short* yaw, short* pitch, ClientID* tgID, short* tgBlockX, short* tgBlockY, short* tgblockZ, char* tgBlockFace) {
 	Event_Call(EVT_ONPLAYERCLICK, (void*)&client);
 }

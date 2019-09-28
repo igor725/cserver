@@ -6,16 +6,17 @@ enum survActions {
 };
 
 typedef struct survivalData {
-	CLIENT* client;
+	CLIENT client;
 	BlockID inventory[256];
 	float health;
 	float oxygen;
 	bool showOxygen;
 	bool godMode;
+	bool pvpMode;
 	int action;
 	int breakProgress;
 } SURVDATA;
 
-void SurvData_Create(CLIENT* cl);
-SURVDATA* SurvData_Get(CLIENT* cl);
+void SurvData_Create(CLIENT cl);
+SURVDATA* SurvData_Get(CLIENT cl);
 #endif
