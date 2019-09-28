@@ -78,7 +78,7 @@ bool World_WriteInfo(WORLD world, FILE* fp) {
 	int magic = WORLD_MAGIC;
 	if(!File_Write((char*)&magic, 4, 1, fp))
 		return false;
-	return _WriteData(fp, DT_DIM, world->info->dim, sizeof(worldDims)) &&
+	return _WriteData(fp, DT_DIM, world->info->dim, sizeof(struct worldDims)) &&
 	_WriteData(fp, DT_SV, world->info->spawnVec, sizeof(VECTOR)) &&
 	_WriteData(fp, DT_SA, world->info->spawnAng, sizeof(ANGLE)) &&
 	_WriteData(fp, DT_WT, &world->info->wt, sizeof(Weather)) &&
@@ -99,7 +99,7 @@ bool World_ReadInfo(WORLD world, FILE* fp) {
 	while(File_Read(&id, 1, 1, fp) == 1) {
 		switch (id) {
 			case DT_DIM:
-				if(File_Read(world->info->dim, sizeof(worldDims), 1, fp) != 1)
+				if(File_Read(world->info->dim, sizeof(struct worldDims), 1, fp) != 1)
 					return false;
 				break;
 			case DT_SV:
