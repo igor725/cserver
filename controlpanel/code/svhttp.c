@@ -114,7 +114,7 @@ static void writeDefaultHTTPHeaders(WEBCLIENT* wcl) {
 }
 
 static void writeHTTPBody(WEBCLIENT* wcl) {
-	if(wcl->wsUpgrade) {
+	if(!wcl->wsUpgrade) {
 		if(wcl->respBody && wcl->respLength == 0)
 			wcl->respLength = String_Length(wcl->respBody);
 
@@ -122,13 +122,16 @@ static void writeHTTPBody(WEBCLIENT* wcl) {
 		String_FormatBuf(size, 8, "%d", wcl->respLength);
 		writeHTTPHeader(wcl, "Content-Length", size);
 	}
+
 	String_Copy(wcl->buffer, HTTP_BUFFER_LEN, "\r\n");
+	sendBuffer(wcl, 2);
 
-	if(wcl->respBody && wcl->respLength > 0) {
-		String_Append(wcl->buffer, HTTP_BUFFER_LEN, wcl->respBody);
+	if(!wcl->wsUpgrade) {
+		if(wcl->respBody && wcl->respLength > 0) {
+			String_Append(wcl->buffer, HTTP_BUFFER_LEN, wcl->respBody);
+		}
+		sendBuffer(wcl, wcl->respLength + 2);
 	}
-
-	sendBuffer(wcl, wcl->respLength + 2);
 }
 
 static bool SendZippedFile(WEBCLIENT* wcl, const char* name) {
@@ -140,6 +143,8 @@ static bool SendZippedFile(WEBCLIENT* wcl, const char* name) {
 	if(unzLocateFile(zData, name, false) == UNZ_OK) {
 		unzOpenCurrentFile(zData);
 		unzGetCurrentFileInfo(zData, &info, NULL, 0, NULL, 0, NULL, 0);
+		writeHTTPCode(wcl);
+		writeDefaultHTTPHeaders(wcl);
 		String_FormatBuf(size, 8, "%d", info.uncompressed_size);
 		writeHTTPHeader(wcl, "Content-Length", size);
 		writeHTTPHeader(wcl, "Content-Type", "text/html");
@@ -255,8 +260,28 @@ static bool HandleWebSocketFrame(WEBCLIENT* wcl) {
 	return false;
 }
 
+/*
+** Пока что параметры URL нам не пригодятся
+** от слова совсем. Я, например, не могу
+** придумать, где их можно было бы
+** применить вместо вебсокет-сообщений.
+** Так что пусть весь остальной код считает,
+** что этих параметров нет, даже если они
+** есть.
+*/
+static char* TrimParams(char* str) {
+	char* tmp = str;
+	while(*str++ != '\0') {
+		if(*str == '?') {
+			*str = '\0';
+			break;
+		}
+	}
+	return tmp;
+}
+
 static void HandleGetRequest(WEBCLIENT* wcl, char* buffer) {
-	wcl->request = String_AllocCopy(ReadSockUntil(wcl, 512, ' '));
+	wcl->request = String_AllocCopy(TrimParams(ReadSockUntil(wcl, 512, ' ')));
 	char* httpver = ReadSockUntil(wcl, HTTP_BUFFER_LEN, '\n');
 
 	while(wcl->respCode < 400) {
@@ -272,16 +297,15 @@ static void HandleGetRequest(WEBCLIENT* wcl, char* buffer) {
 		wcl->wsFrame = (WSFRAME*)Memory_Alloc(1, sizeof(WSFRAME));
 		WebSocket_Setup(wcl->wsFrame, wcl->sock);
 		wcl->respCode = 101;
-	}
-
-	writeHTTPCode(wcl);
-	writeDefaultHTTPHeaders(wcl);
-	if(String_CaselessCompare(wcl->request, "/")) {
-		SendZippedFile(wcl, "index.html");
 	} else {
-		SendZippedFile(wcl, wcl->request + 1);
+		const char* filename = "index.html";
+		if(!String_CaselessCompare(wcl->request, "/")) {
+			filename = wcl->request + 1;
+		}
+		if(!SendZippedFile(wcl, filename)) {
+			wclSetError(wcl, 404, "Specified file not found in " CPL_ZIP);
+		}
 	}
-	// GenerateResponse(wcl);
 
 	if(wcl->wsUpgrade) {
 		while(1) {
@@ -291,6 +315,8 @@ static void HandleGetRequest(WEBCLIENT* wcl, char* buffer) {
 			}
 			break;
 		}
+	} else {
+		GenerateResponse(wcl);
 	}
 }
 

@@ -3,7 +3,7 @@
 #include "websocket.h"
 
 #define HTTP_SERVER_NAME "CPL Server v1"
-#define CPL_WSPROTO "CPLwsprotov1"
+#define CPL_WSPROTO "CPLprotov1"
 #define CPL_ZIP "cpldata.zip"
 #define HTTP_BUFFER_LEN 1024
 typedef struct webHeader {
