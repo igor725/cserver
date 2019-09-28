@@ -6,6 +6,7 @@
 #define CPL_WSPROTO "CPLprotov1"
 #define CPL_ZIP "cpldata.zip"
 #define HTTP_BUFFER_LEN 1024
+
 typedef struct webHeader {
 	const char* key;
 	const char* value;
