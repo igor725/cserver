@@ -110,7 +110,7 @@ set MSVC_OPTS=%MSVC_OPTS% /link /LIBPATH:%ZLIB_COMPILEDIR% %MSVC_LINKER%
 
 IF "%ARCH%"=="x64" call vcvars64
 IF "%ARCH%"=="x86" call vcvars32
-%COMPILER% %CODE_ROOT%code\*.c /MP /Gm- /I%CODE_ROOT%headers\ /I%ZLIB_DIR% %MSVC_LIBS% %MSVC_OPTS%
+%COMPILER% %CODE_ROOT%code\*.c /MP /Gm- /I%CODE_ROOT%headers /I%ZLIB_DIR% /I%ZLIB_DIR%\contrib %MSVC_LIBS% %MSVC_OPTS%
 IF "%BUILD_PLUGIN%"=="1" (
 	IF "%PLUGINSTALL%"=="1" copy /y %OUTDIR%\%BINNAME%.dll out\%ARCH%\plugins\
   goto :end

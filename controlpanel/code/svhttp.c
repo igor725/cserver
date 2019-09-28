@@ -1,5 +1,5 @@
 #include <core.h>
-#include <contrib/minizip/unzip.h>
+#include <minizip/unzip.h>
 
 #include "svhttp.h"
 #include "sha1.h"
