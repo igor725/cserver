@@ -101,7 +101,7 @@ bool Server_InitialWork() {
 			if(wIter.isDir || !wIter.cfile) continue;
 			WORLD tmp = World_Create(wIter.cfile);
 			if(!World_Load(tmp))
-				World_Destroy(tmp);
+				World_Free(tmp);
 			else
 				Worlds_List[++wIndex] = tmp;
 		} while(Iter_Next(&wIter) && wIndex < MAX_WORLDS);
@@ -145,7 +145,7 @@ void Server_Stop() {
 
 		if(i < MAX_WORLDS && world) {
 			World_Save(world);
-			World_Destroy(world);
+			World_Free(world);
 		}
 	}
 

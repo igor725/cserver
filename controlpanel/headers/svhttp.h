@@ -21,8 +21,8 @@ typedef struct webClient {
 	bool wsUpgrade;
 	int wsVersion;
 	const char* wsKey;
-	WSFRAME* wsFrame;
-} WEBCLIENT;
+	WSFRAME wsFrame;
+} *WEBCLIENT;
 
 bool Http_StartServer(const char* ip, uint16_t port);
 bool Http_CloseServer();

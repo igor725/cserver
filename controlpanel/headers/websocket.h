@@ -11,7 +11,7 @@ enum wState {
 	WS_ST_DONE
 };
 
-typedef struct ws_frame {
+typedef struct wsFrame {
 	SOCKET sock;
 	char hdr[2];
 	char state;
@@ -25,10 +25,10 @@ typedef struct ws_frame {
 	bool fin;
 	bool masked;
 	bool ready;
-} WSFRAME;
+} *WSFRAME;
 
-void WebSocket_Setup(WSFRAME* ws, SOCKET fd);
-bool WebSocket_ReceiveFrame(WSFRAME* ws);
-void WebSocket_DestroyFrame(WSFRAME* ws);
+void WebSocket_Setup(WSFRAME ws, SOCKET fd);
+bool WebSocket_ReceiveFrame(WSFRAME ws);
+void WebSocket_FreeFrame(WSFRAME ws);
 uint32_t WebSocket_Encode(char* buf, uint32_t len, const char* data, uint32_t dlen, char opcode);
 #endif

@@ -2,14 +2,14 @@
 
 #include "websocket.h"
 
-void WebSocket_Setup(WSFRAME* ws, SOCKET fd) {
+void WebSocket_Setup(WSFRAME ws, SOCKET fd) {
 	ws->state = WS_ST_HDR;
 	ws->ready = true;
 	ws->_dneed = 2;
 	ws->sock = fd;
 }
 
-bool WebSocket_ReceiveFrame(WSFRAME* ws) {
+bool WebSocket_ReceiveFrame(WSFRAME ws) {
 	if(!ws->ready) return -1;
 
 	if(ws->state == WS_ST_DONE) {
@@ -88,9 +88,9 @@ bool WebSocket_ReceiveFrame(WSFRAME* ws) {
 	return false;
 }
 
-void WebSocket_DestroyFrame(WSFRAME* ws) {
-	if(ws->payload)
-		Memory_Free(ws->payload);
+void WebSocket_FreeFrame(WSFRAME ws) {
+	if(ws->payload) Memory_Free(ws->payload);
+	Memory_Free(ws);
 }
 
 uint32_t WebSocket_Encode(char* buf, uint32_t len, const char* data, uint32_t dlen, char opcode) {

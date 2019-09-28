@@ -63,7 +63,7 @@ TRET Client_ThreadProc(TARG lpParam) {
 					Event_Call(EVT_ONDISCONNECT, (void*)client);
 				Socket_Close(client->sock);
 				Client_Despawn(client);
-				Client_Destroy(client);
+				Client_Free(client);
 				break;
 			}
 			continue;
@@ -263,7 +263,7 @@ bool Client_GetType(CLIENT client) {
 	return client->playerData ? client->playerData->isOP : false;
 }
 
-void Client_Destroy(CLIENT client) {
+void Client_Free(CLIENT client) {
 	Clients_List[client->id] = NULL;
 	Memory_Free(client->rdbuf);
 	Memory_Free(client->wrbuf);

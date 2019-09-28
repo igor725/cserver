@@ -14,7 +14,7 @@ void Command_Register(const char* cmd, cmdFunc func) {
 	Command_Head = tmp;
 }
 
-static void Command_Destroy(COMMAND* cmd) {
+static void Command_Free(COMMAND* cmd) {
 	if(cmd->prev)
 		cmd->prev->next = cmd->prev;
 
@@ -33,7 +33,7 @@ void Command_Unregister(const char* cmd) {
 
 	while(tmp) {
 		if(String_CaselessCompare(tmp->name, cmd))
-			Command_Destroy(tmp);
+			Command_Free(tmp);
 		tmp = tmp->next;
 	}
 }

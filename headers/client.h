@@ -75,7 +75,7 @@ void Client_HandlePacket(CLIENT client);
 void Client_Disconnect(CLIENT client);
 bool Client_CheckAuth(CLIENT client);
 TRET Client_ThreadProc(TARG lpParam);
-void Client_Destroy(CLIENT client);
+void Client_Free(CLIENT client);
 API bool Client_Spawn(CLIENT client);
 API bool Client_Despawn(CLIENT client);
 void Client_Tick(CLIENT client);

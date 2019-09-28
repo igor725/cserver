@@ -46,8 +46,7 @@ Weather World_GetWeather(WORLD world) {
 }
 
 void World_AllocBlockArray(WORLD world) {
-	if(world->data)
-		Memory_Free(world->data);
+	if(world->data) Memory_Free(world->data);
 
 	WORLDINFO wi = world->info;
 	uint16_t dx = wi->dim->width,
@@ -60,7 +59,7 @@ void World_AllocBlockArray(WORLD world) {
 	world->data = data;
 }
 
-void World_Destroy(WORLD world) {
+void World_Free(WORLD world) {
 	if(world->data) Memory_Free(world->data);
 	if(world->info) Memory_Free(world->info);
 	Memory_Free(world);

@@ -107,7 +107,7 @@ static void writeHTTPHeader(WEBCLIENT wcl, const char* key, const char* value) {
 }
 
 static void writeDefaultHTTPHeaders(WEBCLIENT wcl) {
-	for(const WEBHEADER* hdr = defaultHeaders; hdr ->key; hdr++) {
+	for(const WEBHEADER* hdr = defaultHeaders; hdr->key; hdr++) {
 		writeHTTPHeader(wcl, hdr->key, hdr->value);
 	}
 }
@@ -194,7 +194,7 @@ static void GenerateResponse(WEBCLIENT wcl) {
 static void freeWsClient(WEBCLIENT wcl) {
 	if(wcl->request) Memory_Free((void*)wcl->request);
 	if(wcl->wsKey) Memory_Free((void*)wcl->wsKey);
-	if(wcl->wsFrame) WebSocket_DestroyFrame(wcl->wsFrame);
+	if(wcl->wsFrame) WebSocket_FreeFrame(wcl->wsFrame);
 	Memory_Free(wcl);
 }
 
@@ -252,7 +252,7 @@ static void sendFrame(WEBCLIENT wcl, const char* data, uint32_t dlen, char opcod
 }
 
 static bool HandleWebSocketFrame(WEBCLIENT wcl) {
-	WSFRAME* ws = wcl->wsFrame;
+	WSFRAME ws = wcl->wsFrame;
 	if(ws->opcode == 0x08) return true;
 
 	return false;
@@ -292,7 +292,7 @@ static void HandleGetRequest(WEBCLIENT wcl, char* buffer) {
 	}
 
 	if(wcl->wsUpgrade) {
-		wcl->wsFrame = (WSFRAME*)Memory_Alloc(1, sizeof(WSFRAME));
+		wcl->wsFrame = (WSFRAME)Memory_Alloc(1, sizeof(struct wsFrame));
 		WebSocket_Setup(wcl->wsFrame, wcl->sock);
 		wcl->respCode = 101;
 		GenerateResponse(wcl);
@@ -316,7 +316,7 @@ static void HandleGetRequest(WEBCLIENT wcl, char* buffer) {
 }
 
 static TRET ClientThreadProc(TARG param) {
-	WEBCLIENT wcl = (WEBCLIENT)Memory_Alloc(1, sizeof(WEBCLIENT));
+	WEBCLIENT wcl = (WEBCLIENT)Memory_Alloc(1, sizeof(struct webClient));
 	wcl->respCode = 200;
 	wcl->sock = (SOCKET)param;
 
@@ -330,7 +330,7 @@ static TRET ClientThreadProc(TARG param) {
 
 static TRET AcceptThreadProc(TARG param) {
 	struct sockaddr_in caddr;
-	socklen_t caddrsz = sizeof caddr;
+	socklen_t caddrsz = sizeof(caddr);
 
 	while(1) {
 		SOCKET client = accept(httpServer, (struct sockaddr*)&caddr, &caddrsz);

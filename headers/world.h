@@ -34,7 +34,7 @@ API int World_SetBlock(WORLD world, uint16_t x, uint16_t y, uint16_t z, BlockID 
 API BlockID World_GetBlock(WORLD world, uint16_t x, uint16_t y, uint16_t z);
 API void World_GenerateFlat(WORLD world);
 API WORLD World_FindByName(const char* name);
-API void World_Destroy(WORLD world);
+API void World_Free(WORLD world);
 API bool World_Load(WORLD world);
 API bool World_Save(WORLD world);
 API void World_AllocBlockArray(WORLD world);
