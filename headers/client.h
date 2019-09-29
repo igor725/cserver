@@ -61,6 +61,7 @@ API bool Client_ChangeWorld(CLIENT client, WORLD world);
 API bool Client_SetType(CLIENT client, bool isOP);
 API bool Client_GetType(CLIENT client);
 API bool Client_SetModel(CLIENT client, const char* model);
+API bool Client_SetBlockPerm(CLIENT client, BlockID block, bool allowPlace, bool allowDestroy);
 API const char* Client_GetName(CLIENT client);
 API const char* Client_GetAppName(CLIENT client);
 API CLIENT Client_GetByID(ClientID id);

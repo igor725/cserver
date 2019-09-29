@@ -21,6 +21,9 @@ static void Survival_OnSpawn(void* param) {
 	for(int i = 0; i < 9; i++) {
 		Client_SetHotbar(client, i, 0);
 	}
+	for(int i = 0; i < 256; i++) {
+		Client_SetBlockPerm(client, i, false, false);
+	}
 }
 
 static float fsquare(float a) {
@@ -73,7 +76,13 @@ static void Survival_OnClick(void* param) {
 	if(dist_block < dist_entity) {
 		SurvivalBrk_Start(survData, x, y, z);
 	} else if(dist_entity < dist_block && dist_entity < 3.5) {
-		SurvivalInt_Start(survData, survDataTg);
+		if(survData->pvpMode && survDataTg->pvpMode) {
+			SurvDamage_Hurt(survDataTg, survData, SURV_DEFAULT_HIT);
+			// TODO: Knockback
+		} else {
+			if(!survData->pvpMode)
+				Client_Chat(client, 0, "Enable pvp mode (/pvp) first.");
+		}
 	}
 }
 

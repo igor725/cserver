@@ -245,6 +245,15 @@ bool Client_SetHotbar(CLIENT client, Order pos, BlockID block) {
 	return false;
 }
 
+bool Client_SetBlockPerm(CLIENT client, BlockID block, bool allowPlace, bool allowDestroy) {
+	if(!Block_IsValid(block)) return false;
+	if(Client_IsSupportExt(client, "BlockPermissions")) {
+		CPEPacket_WriteBlockPerm(client, block, allowPlace, allowDestroy);
+		return true;
+	}
+	return false;
+}
+
 bool Client_SetModel(CLIENT client, const char* model) {
 	if(!client->cpeData) return false;
 	if(!CPE_CheckModel(model)) return false;
