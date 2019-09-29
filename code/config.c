@@ -25,8 +25,6 @@ bool Config_Load(CFGSTORE* store) {
 		while(ch == '\n') {
 			ch = fgetc(fp);
 		}
-		Memory_Fill(key, CFG_STRLEN, 0);
-		Memory_Fill(value, CFG_STRLEN, 0);
 
 		do {
 			if(ch != '\n' && ch != '\r' && ch != ' ') {

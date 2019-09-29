@@ -62,12 +62,12 @@ typedef signed __INT64_TYPE__ int64;
 #include <stdio.h>
 #include <zlib.h>
 
-typedef int              bool;
-typedef uint8_t          Order;
-typedef uint8_t          BlockID;
-typedef uint8_t          ClientID;
-typedef uint8_t          Weather;
-typedef uint8_t          MessageType;
+typedef uint8_t bool;
+typedef uint8_t Order;
+typedef uint8_t BlockID;
+typedef uint8_t ClientID;
+typedef uint8_t Weather;
+typedef uint8_t MessageType;
 
 #include "platform.h"
 #include "error.h"

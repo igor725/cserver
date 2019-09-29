@@ -28,18 +28,22 @@ typedef struct world {
 } *WORLD;
 
 API WORLD World_Create(const char* name);
-API uint32_t World_GetOffset(WORLD world, uint16_t x, uint16_t y, uint16_t z);
-API void World_SetDimensions(WORLD world, uint16_t width, uint16_t height, uint16_t length);
-API int World_SetBlock(WORLD world, uint16_t x, uint16_t y, uint16_t z, BlockID id);
-API BlockID World_GetBlock(WORLD world, uint16_t x, uint16_t y, uint16_t z);
-API void World_GenerateFlat(WORLD world);
-API WORLD World_FindByName(const char* name);
-API void World_Free(WORLD world);
+API void World_AllocBlockArray(WORLD world);
 API bool World_Load(WORLD world);
 API bool World_Save(WORLD world);
-API void World_AllocBlockArray(WORLD world);
+API void World_Free(WORLD world);
+
+API void World_GenerateFlat(WORLD world);
+
+API void World_SetDimensions(WORLD world, uint16_t width, uint16_t height, uint16_t length);
+API bool World_SetBlock(WORLD world, uint16_t x, uint16_t y, uint16_t z, BlockID id);
 API void World_SetWeather(WORLD world, Weather type);
+
+API uint32_t World_GetOffset(WORLD world, uint16_t x, uint16_t y, uint16_t z);
+API BlockID World_GetBlock(WORLD world, uint16_t x, uint16_t y, uint16_t z);
 API Weather World_GetWeather(WORLD world);
+
+API WORLD World_FindByName(const char* name);
 
 WORLD Worlds_List[MAX_WORLDS];
 #endif

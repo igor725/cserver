@@ -124,7 +124,7 @@ bool World_ReadInfo(WORLD world, FILE* fp) {
 	return false;
 }
 
-int World_Save(WORLD world) {
+bool World_Save(WORLD world) {
 	FILE* fp;
 	char path[256];
 	char tmpname[256];
@@ -170,7 +170,7 @@ int World_Save(WORLD world) {
 	return File_Rename(tmpname, path);
 }
 
-int World_Load(WORLD world) {
+bool World_Load(WORLD world) {
 	FILE* fp;
 	char path[256];
 	String_FormatBuf(path, 256, "worlds/%s", world->name);

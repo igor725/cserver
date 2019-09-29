@@ -10,8 +10,7 @@
 #include "break.h"
 
 static void Survival_OnHandshake(void* param) {
-	CLIENT cl = (CLIENT)param;
-	SurvData_Create(cl);
+	SurvData_Create((CLIENT)param);
 }
 
 static void Survival_OnSpawn(void* param) {
@@ -74,7 +73,10 @@ static void Survival_OnClick(void* param) {
 	}
 
 	if(dist_block < dist_entity) {
-		SurvivalBrk_Start(survData, x, y, z);
+		if(!survData->breakStarted) {
+			SurvivalBrk_Start(survData, x, y, z);
+			survData->breakStarted = !survData->breakStarted;
+		}
 	} else if(dist_entity < dist_block && dist_entity < 3.5) {
 		if(survData->pvpMode && survDataTg->pvpMode) {
 			SurvDamage_Hurt(survDataTg, survData, SURV_DEFAULT_HIT);

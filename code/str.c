@@ -86,9 +86,10 @@ const char* String_AllocCopy(const char* str) {
 }
 
 const char* String_FromArgument(const char* args, int index) {
-	if(!args || *args == '\0') return 0;
+	if(!args || *args == '\0') return NULL;
+
 	do {
-		if(index > 0 && *args != ' ') --index;
+		if(index > 0 && *args == ' ') --index;
 		if(index == 0) return args;
 	} while(*args++ != '\0');
 

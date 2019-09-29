@@ -377,6 +377,7 @@ void Client_Disconnect(CLIENT client) {
 }
 
 void Client_Kick(CLIENT client, const char* reason) {
+	if(!reason) reason = "Kicked without reason";
 	Packet_WriteKick(client, reason);
 	Client_Disconnect(client);
 }

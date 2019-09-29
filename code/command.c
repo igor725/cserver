@@ -88,8 +88,22 @@ static bool CHandler_ChangeWorld(const char* args, CLIENT caller, char* out) {
 
 static bool CHandler_Kick(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForOP;
-	// ????
-	return false;
+	char playername[64];
+
+	if(String_GetArgument(args, playername, 64, 0)) {
+		CLIENT tg = Client_FindByName(playername);
+		if(tg) {
+			const char* reason = String_FromArgument(args, 1);
+			Client_Kick(tg, reason);
+			String_FormatBuf(out, CMD_MAX_OUT, "Player %s kicked", playername);
+		} else {
+			String_Copy(out, CMD_MAX_OUT, "Player not found");
+		}
+	} else {
+		String_Copy(out, CMD_MAX_OUT, "Invalid argument #1");
+	}
+
+	return true;
 }
 
 static bool CHandler_Model(const char* args, CLIENT caller, char* out) {
