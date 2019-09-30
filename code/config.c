@@ -32,7 +32,8 @@ bool Config_Load(CFGSTORE* store) {
 				count++;
 			}
 			ch = fgetc(fp);
-		} while(ch != '=' && !feof(fp));
+		} while(ch != '=' && !feof(fp) && count < CFG_STRLEN);
+		key[count] = '\0';
 
 		if(feof(fp)) {
 			Error_Print2(ET_SERVER, EC_CFGEND, false);
@@ -42,12 +43,13 @@ bool Config_Load(CFGSTORE* store) {
 		count = 0;
 		type = fgetc(fp);
 
-		while((ch = fgetc(fp)) != EOF && ch != '\n') {
+		while((ch = fgetc(fp)) != EOF && ch != '\n' && count < CFG_STRLEN) {
 			if(ch != '\r') {
 				value[count] = (char)ch;
 				count++;
 			}
 		}
+		value[count] = '\0';
 
 		if(count < 1) {
 			Error_Print2(ET_SERVER, EC_CFGEND, false);
@@ -55,34 +57,23 @@ bool Config_Load(CFGSTORE* store) {
 			return false;
 		}
 
-		count = 0;
-		const char* hkey,* hval;
-
-		if(!(hkey = String_AllocCopy(key))) {
-			Error_PrintSys;
-			File_Close(fp);
-			return false;
-		}
-
 		switch (type) {
 			case CFG_STR:
-				if(!(hval = String_AllocCopy(value))) {
-					File_Close(fp);
-					return false;
-				}
-				Config_SetStr(store, hkey, hval);
+				Config_SetStr(store, key, value);
 				break;
 			case CFG_INT:
-				Config_SetInt(store, hkey, String_ToInt(value));
+				Config_SetInt(store, key, String_ToInt(value));
 				break;
 			case CFG_BOOL:
-				Config_SetBool(store, hkey, String_Compare(value, "True"));
+				Config_SetBool(store, key, String_Compare(value, "True"));
 				break;
 			default:
 				Error_Print2(ET_SERVER, EC_CFGTYPE, false);
 				File_Close(fp);
 				return false;
 		}
+
+		count = 0;
 		ch = fgetc(fp);
 	}
 

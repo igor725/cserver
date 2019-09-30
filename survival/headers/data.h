@@ -13,6 +13,7 @@ typedef struct survivalData {
 	bool showOxygen;
 	bool godMode;
 	bool pvpMode;
+	short lastclick[3];
 	bool breakStarted;
 	int breakProgress;
 } SURVDATA;

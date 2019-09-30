@@ -73,11 +73,20 @@ static void Survival_OnClick(void* param) {
 	}
 
 	if(dist_block < dist_entity) {
+		if(survData->lastclick[0] != x ||
+			survData->lastclick[1] != y || survData->lastclick[2] != z) {
+				SurvivalBrk_Stop(survData);
+			}
 		if(!survData->breakStarted) {
 			SurvivalBrk_Start(survData, x, y, z);
-			survData->breakStarted = !survData->breakStarted;
+			survData->lastclick[0] = x;
+			survData->lastclick[1] = y;
+			survData->lastclick[2] = z;
 		}
 	} else if(dist_entity < dist_block && dist_entity < 3.5) {
+		if(survData->breakStarted) {
+			SurvivalBrk_Stop(survData);
+		}
 		if(survData->pvpMode && survDataTg->pvpMode) {
 			SurvDamage_Hurt(survDataTg, survData, SURV_DEFAULT_HIT);
 			// TODO: Knockback
