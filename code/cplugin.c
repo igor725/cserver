@@ -33,20 +33,22 @@ bool CPlugin_Load(const char* name) {
 			return false;
 		}
 
-		CPLUGIN* splugin = (CPLUGIN*)Memory_Alloc(1, sizeof(CPLUGIN));
+		CPLUGIN splugin = (CPLUGIN)Memory_Alloc(1, sizeof(CPLUGIN));
+		DLib_GetSym(plugin, "Plugin_Unload", (void*)&splugin->unload);
+		
 		splugin->name = String_AllocCopy(name);
 		splugin->lib = plugin;
-		DLib_GetSym(plugin, "Plugin_Unload", (void*)&splugin->unload);
-		int pluginId = -1;
+		splugin->id = -1;
+
 		for(int i = 0; i < MAX_PLUGINS; i++) {
 			if(!CPlugin_List[i]) {
 				CPlugin_List[i] = splugin;
-				pluginId = i;
+				splugin->id = i;
 				break;
 			}
 		}
-		splugin->id = pluginId;
-		if(pluginId == -1 || !(*(pluginFunc)initSym)()) {
+
+		if(splugin->id == -1 || !(*(pluginFunc)initSym)()) {
 			CPlugin_Unload(splugin);
 			return false;
 		}
@@ -58,19 +60,17 @@ bool CPlugin_Load(const char* name) {
 	return false;
 }
 
-CPLUGIN* CPlugin_Get(const char* name) {
+CPLUGIN CPlugin_Get(const char* name) {
 	for(int i = 0; i < MAX_PLUGINS; i++) {
-		CPLUGIN* ptr = CPlugin_List[i];
-		if(!ptr) continue;
-		if(String_Compare(ptr->name, name)) return ptr;
+		CPLUGIN ptr = CPlugin_List[i];
+		if(ptr && String_Compare(ptr->name, name)) return ptr;
 	}
 	return NULL;
 }
 
-bool CPlugin_Unload(CPLUGIN* plugin) {
+bool CPlugin_Unload(CPLUGIN plugin) {
 	if(plugin->unload && !(*(pluginFunc)plugin->unload)())
 		return false;
-
 	if(plugin->name)
 		Memory_Free((void*)plugin->name);
 	if(plugin->id != -1)
@@ -90,7 +90,7 @@ if(!String_GetArgument(args, name, 64, 1)) { \
 static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
 	char command[64];
 	char name[64];
-	CPLUGIN* plugin;
+	CPLUGIN plugin;
 
 	if(String_GetArgument(args, command, 64, 0)) {
 		if(String_CaselessCompare(command, "load")) {
@@ -99,7 +99,6 @@ static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
 				String_FormatBuf(out, CMD_MAX_OUT, "Plugin %s successfully loaded", name);
 			else
 				String_FormatBuf(out, CMD_MAX_OUT, "Plugin %s can't be loaded", name);
-
 		} else if(String_CaselessCompare(command, "unload")) {
 			GetPluginName;
 			plugin = CPlugin_Get(name);
@@ -114,37 +113,35 @@ static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
 		} else if(String_CaselessCompare(command, "list")) {
 			Log_Info("Loaded plugins list:");
 			for(int i = 0; i < MAX_PLUGINS; i++) {
-				CPLUGIN* plugin = CPlugin_List[i];
-				if(!plugin) continue;
-				Log_Info(plugin->name);
+				CPLUGIN plugin = CPlugin_List[i];
+				if(plugin) Log_Info(plugin->name);
 			}
 			return false;
-		} else {
+		} else
 			String_Copy(out, CMD_MAX_OUT, "Unknown plugins command");
-		}
-	} else {
+	} else
 		String_Copy(out, CMD_MAX_OUT, "Usage: plugin <command> [pluginName]");
-	}
 
 	return true;
 }
 
 void CPlugin_Start() {
-	Command_Register("plugins", CHandler_Plugins);
 	Directory_Ensure("plugins");
+	Command_Register("plugins", CHandler_Plugins);
+
 	dirIter pIter = {0};
 	if(Iter_Init(&pIter, "plugins", DLIB_EXT)) {
 		do {
-			if(pIter.isDir || !pIter.cfile) continue;
-			CPlugin_Load(pIter.cfile);
+			if(!pIter.isDir || pIter.cfile)
+				CPlugin_Load(pIter.cfile);
 		} while(Iter_Next(&pIter));
 	}
 }
 
 void CPlugin_Stop() {
 	for(int i = 0; i < MAX_PLUGINS; i++) {
-		CPLUGIN* plugin = CPlugin_List[i];
-		if(!plugin || !plugin->unload) continue;
-		(*(pluginFunc)plugin->unload)();
+		CPLUGIN plugin = CPlugin_List[i];
+		if(plugin || plugin->unload)
+			(*(pluginFunc)plugin->unload)();
 	}
 }

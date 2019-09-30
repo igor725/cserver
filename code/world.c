@@ -17,8 +17,7 @@ WORLD World_Create(const char* name) {
 WORLD World_FindByName(const char* name) {
 	for(int i = 0; i < MAX_WORLDS; i++) {
 		WORLD world = Worlds_List[i];
-		if(!world) continue;
-		if(String_CaselessCompare(world->name, name))
+		if(world && String_CaselessCompare(world->name, name))
 			return world;
 	}
 	return NULL;
@@ -175,15 +174,13 @@ bool World_Load(WORLD world) {
 	char path[256];
 	String_FormatBuf(path, 256, "worlds/%s", world->name);
 
-	if(!(fp = File_Open(path, "rb")))
-		return false;
+	if(!(fp = File_Open(path, "rb"))) return false;
 
 	if(!World_ReadInfo(world, fp)) {
 		File_Close(fp);
 		return false;
-	} else {
+	} else
 		World_AllocBlockArray(world);
-	}
 
 	z_stream stream = {0};
 	uint8_t in[1024];
@@ -203,9 +200,7 @@ bool World_Load(WORLD world) {
 			return false;
 		}
 
-		if(stream.avail_in == 0)
-			break;
-
+		if(stream.avail_in == 0) break;
 		stream.next_in = in;
 
 		do {
@@ -226,9 +221,7 @@ uint32_t World_GetOffset(WORLD world, uint16_t x, uint16_t y, uint16_t z) {
 	WORLDDIMS wd = world->info->dim;
 	uint16_t dx = wd->width, dy = wd->height, dz = wd->length;
 
-	if(x > dx || y > dy || z > dz)
-		return 0;
-
+	if(x > dx || y > dy || z > dz) return 0;
 	return z * dz + y * (dx * dy) + x + 4;
 }
 

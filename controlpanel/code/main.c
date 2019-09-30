@@ -4,7 +4,7 @@
 
 #include "svhttp.h"
 
-CFGSTORE* cplStore;
+CFGSTORE cplStore;
 bool loaded = false;
 
 EXP int Plugin_ApiVer = 100;
