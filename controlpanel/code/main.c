@@ -5,6 +5,7 @@
 #include "svhttp.h"
 
 CFGSTORE* cplStore;
+bool loaded = false;
 
 EXP int Plugin_ApiVer = 100;
 
@@ -14,7 +15,7 @@ EXP bool Plugin_Load() {
 
 	Config_SetBool(cplStore, "enabled", true);
 	Config_SetInt(cplStore, "port", 8080);
-	Config_Load(cplStore);
+	if(!Config_Load(cplStore)) return false;
 
 	if(Config_GetBool(cplStore, "enabled")) {
 		const char* ip = Config_GetStr(Server_Config, "ip");
@@ -25,6 +26,7 @@ EXP bool Plugin_Load() {
 		else
 			return false;
 
+		loaded = true;
 		return true;
 	}
 
@@ -34,7 +36,7 @@ EXP bool Plugin_Load() {
 EXP bool Plugin_Unload() {
 	Http_CloseServer();
 	if(cplStore) {
-		Config_Save(cplStore);
+		if(loaded) Config_Save(cplStore);
 		Config_EmptyStore(cplStore);
 		Memory_Free(cplStore);
 	}
