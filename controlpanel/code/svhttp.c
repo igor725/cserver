@@ -318,7 +318,7 @@ static void HandleGetRequest(WEBCLIENT wcl, char* buffer) {
 	}
 
 	if(wcl->wsUpgrade) {
-		wcl->wsFrame = (WSFRAME)Memory_Alloc(1, sizeof(struct wsFrame));
+		wcl->wsFrame = Memory_Alloc(1, sizeof(struct wsFrame));
 		WebSocket_Setup(wcl->wsFrame, wcl->sock);
 		wcl->respCode = 101;
 		GenerateResponse(wcl);
@@ -342,7 +342,7 @@ static void HandleGetRequest(WEBCLIENT wcl, char* buffer) {
 }
 
 static TRET ClientThreadProc(TARG param) {
-	WEBCLIENT wcl = (WEBCLIENT)Memory_Alloc(1, sizeof(struct webClient));
+	WEBCLIENT wcl = Memory_Alloc(1, sizeof(struct webClient));
 	wcl->respCode = 200;
 	wcl->sock = (SOCKET)param;
 

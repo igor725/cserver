@@ -5,7 +5,7 @@
 #define rgPart1 \
 for(int pos = 0; pos < MAX_EVENTS; pos++) { \
 	if(!Event_List[type][pos]) { \
-		EVENT* evt = (EVENT*)Memory_Alloc(1, sizeof(EVENT)); \
+		EVENT* evt = Memory_Alloc(1, sizeof(EVENT)); \
 
 #define rgPart2 \
 		Event_List[type][pos] = evt; \

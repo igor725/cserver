@@ -2,7 +2,7 @@
 #include "config.h"
 
 CFGSTORE Config_Create(const char* filename) {
-	CFGSTORE store = Memory_Alloc(1, sizeof(CFGSTORE));
+	CFGSTORE store = Memory_Alloc(1, sizeof(struct cfgStore));
 	store->path = String_AllocCopy(filename);
 	return store;
 }
@@ -142,7 +142,7 @@ CFGENTRY Config_GetEntry2(CFGSTORE store, const char* key) {
 	CFGENTRY ent = Config_GetEntry(store, key);
 
 	if(!ent) {
-		ent = (CFGENTRY)Memory_Alloc(1, sizeof(CFGENTRY));
+		ent = Memory_Alloc(1, sizeof(struct cfgEntry));
 		ent->key = String_AllocCopy(key);
 
 		if(store->firstCfgEntry)

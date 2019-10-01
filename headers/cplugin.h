@@ -7,7 +7,7 @@
 #define CPLUGIN_UPGMSG "Please upgrade your server software. Plugin %s compiled for PluginAPI v%03d, but server uses v%d."
 
 typedef bool (*pluginFunc)();
-typedef struct c_plugin {
+typedef struct cPlugin {
 	const char* name;
 	uint32_t id;
 	void* lib;

@@ -9,7 +9,7 @@ EXT* headExtension;
 uint16_t extensionsCount;
 
 void CPE_RegisterExtension(const char* name, int version) {
-	EXT* tmp = (EXT*)Memory_Alloc(1, sizeof(EXT));
+	EXT* tmp = Memory_Alloc(1, sizeof(EXT));
 
 	tmp->name = name;
 	tmp->version = version;
@@ -95,7 +95,7 @@ void CPEPacket_WriteInfo(CLIENT client) {
 	PacketWriter_Start(client);
 
 	*data = 0x10;
-	WriteString(++data, SOFTWARE_NAME " " SOFTWARE_VERSION); data += 63;
+	WriteNetString(++data, SOFTWARE_NAME " " SOFTWARE_VERSION); data += 63;
 	*(uint16_t*)++data = htons(extensionsCount);
 
 	PacketWriter_End(client, 67);
@@ -105,7 +105,7 @@ void CPEPacket_WriteExtEntry(CLIENT client, EXT* ext) {
 	PacketWriter_Start(client);
 
 	*data = 0x11;
-	WriteString(++data, ext->name); data += 63;
+	WriteNetString(++data, ext->name); data += 63;
 	*(uint32_t*)++data = htonl(ext->version);
 
 	PacketWriter_End(client, 69);
@@ -177,7 +177,7 @@ void CPEPacket_WriteSetModel(CLIENT client, ClientID id, const char* model) {
 
 	*data = 0x01D;
 	*++data = id;
-	WriteString(++data, model);
+	WriteNetString(++data, model);
 
 	PacketWriter_End(client, 66);
 }
@@ -204,7 +204,7 @@ if(!client->playerData || !client->cpeData || client->playerData->state != st) \
 bool CPEHandler_ExtInfo(CLIENT client, char* data) {
 	ValidateClientState(client, STATE_MOTD);
 
-	ReadString(data, &client->cpeData->appName); data += 63;
+	ReadNetString(data, &client->cpeData->appName); data += 63;
 	client->cpeData->_extCount = ntohs(*(uint16_t*)++data);
 	return true;
 }
@@ -212,8 +212,8 @@ bool CPEHandler_ExtInfo(CLIENT client, char* data) {
 bool CPEHandler_ExtEntry(CLIENT client, char* data) {
 	ValidateClientState(client, STATE_MOTD);
 
-	EXT* tmp = (EXT*)Memory_Alloc(1, sizeof(EXT));
-	ReadString(data, (void*)&tmp->name);data += 63;
+	EXT* tmp = Memory_Alloc(1, sizeof(EXT));
+	ReadNetString(data, (void*)&tmp->name);data += 63;
 	tmp->version = ntohl(*(uint32_t*)++data);
 
 	if(String_CaselessCompare(tmp->name, "FastMap"))

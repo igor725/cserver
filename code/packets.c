@@ -6,9 +6,9 @@
 #include "packets.h"
 #include "command.h"
 
-PACKET* Packets_List[MAX_PACKETS] = {0};
+PACKET Packets_List[MAX_PACKETS] = {0};
 
-int ReadString(const char* data, char** dst) {
+int ReadNetString(const char* data, char** dst) {
 	int end = 63;
 	while(data[end] == ' ') --end;
 	++end;
@@ -20,7 +20,7 @@ int ReadString(const char* data, char** dst) {
 	return end;
 }
 
-void WriteString(char* data, const char* string) {
+void WriteNetString(char* data, const char* string) {
 	uint8_t size = min((uint8_t)String_Length(string), 64);
 	Memory_Fill(data + size, 64, 0);
 	Memory_Copy(data, string, size);
@@ -51,7 +51,7 @@ char* WriteClPos(char* data, CLIENT client, bool stand) {
 }
 
 void Packet_Register(int id, const char* name, uint16_t size, packetHandler handler) {
-	PACKET* tmp = (PACKET*)Memory_Alloc(1, sizeof(PACKET));
+	PACKET tmp = Memory_Alloc(1, sizeof(struct packet));
 
 	tmp->name = name;
 	tmp->size = size;
@@ -66,26 +66,13 @@ void Packet_RegisterDefault() {
 	Packet_Register(0x0D, "Message", 66, Handler_Message);
 }
 
-void Packet_RegisterCPE(int id, const char* name, int version, uint16_t size) {
-	PACKET* tmp = Packets_List[id];
-	tmp->extName = name;
-	tmp->extVersion = version;
-	tmp->extSize = size;
-}
-
-PACKET* Packet_Get(int id) {
+PACKET Packet_Get(int id) {
 	return id < MAX_PACKETS ? Packets_List[id] : NULL;
 }
 
 short Packet_GetSize(int id, CLIENT client) {
-	PACKET* packet = Packets_List[id];
-	if(!packet)
-		return -1;
-
-	if(packet->haveCPEImp)
-		return Client_IsSupportExt(client, packet->extName) ? packet->extSize : packet->size;
-	else
-		return packet->size;
+	PACKET packet = Packets_List[id];
+	return packet ? packet->size : -1;
 }
 
 /*
@@ -96,7 +83,7 @@ void Packet_WriteKick(CLIENT client, const char* reason) {
 	PacketWriter_Start(client);
 
 	*data = 0x0E;
-	WriteString(++data, reason);
+	WriteNetString(++data, reason);
 
 	PacketWriter_End(client, 65);
 }
@@ -142,8 +129,8 @@ void Packet_WriteHandshake(CLIENT client, const char* name, const char* motd) {
 
 	*data = 0x00;
 	*++data = 0x07;
-	WriteString(++data, name); data += 63;
-	WriteString(++data, motd); data += 63;
+	WriteNetString(++data, name); data += 63;
+	WriteNetString(++data, motd); data += 63;
 	*++data = (char)client->playerData->isOP;
 
 	PacketWriter_End(client, 131);
@@ -154,7 +141,7 @@ void Packet_WriteSpawn(CLIENT client, CLIENT other) {
 
 	*data = 0x07;
 	*++data = client == other ? 0xFF : other->id;
-	WriteString(++data, other->playerData->name); data += 63;
+	WriteNetString(++data, other->playerData->name); data += 63;
 	WriteClPos(++data, other, true);
 
 	PacketWriter_End(client, 74);
@@ -184,7 +171,7 @@ void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg) {
 
 	*data = 0x0D;
 	*++data = type;
-	WriteString(++data, mesg);
+	WriteNetString(++data, mesg);
 
 	PacketWriter_End(client, 66);
 }
@@ -209,15 +196,15 @@ bool Handler_Handshake(CLIENT client, char* data) {
 		return true;
 	}
 
-	client->playerData = (PLAYERDATA*)Memory_Alloc(1, sizeof(PLAYERDATA));
-	client->playerData->position = (VECTOR*)Memory_Alloc(1, sizeof(VECTOR));
-	client->playerData->angle = (ANGLE*)Memory_Alloc(1, sizeof(ANGLE));
+	client->playerData = Memory_Alloc(1, sizeof(PLAYERDATA));
+	client->playerData->position = Memory_Alloc(1, sizeof(VECTOR));
+	client->playerData->angle = Memory_Alloc(1, sizeof(ANGLE));
 
 	if(client->addr == INADDR_LOOPBACK && Config_GetBool(Server_Config, "alwayslocalop"))
 		client->playerData->isOP = true;
 
-	ReadString(++data, (void*)&client->playerData->name); data += 63;
-	ReadString(++data, (void*)&client->playerData->key); data += 63;
+	ReadNetString(++data, (void*)&client->playerData->name); data += 63;
+	ReadNetString(++data, (void*)&client->playerData->key); data += 63;
 	Thread_SetName(client->playerData->name);
 
 	for(int i = 0; i < 128; i++) {
@@ -247,7 +234,7 @@ bool Handler_Handshake(CLIENT client, char* data) {
 	}
 
 	if(cpeEnabled) {
-		client->cpeData = (CPEDATA*)Memory_Alloc(1, sizeof(CPEDATA));
+		client->cpeData = Memory_Alloc(1, sizeof(CPEDATA));
 		String_CopyUnsafe(client->cpeData->model, "humanoid");
 		CPE_StartHandshake(client);
 	} else {
@@ -320,7 +307,7 @@ bool Handler_Message(CLIENT client, char* data) {
 
 	char* message;
 	MessageType type = 0;
-	int len = ReadString(++data, &message);
+	int len = ReadNetString(++data, &message);
 
 	for(int i = 0; i < len; i++) {
 		if(message[i] == '%' && ISHEX(message[i + 1]))

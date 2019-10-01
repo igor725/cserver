@@ -19,18 +19,12 @@ typedef bool (*packetHandler)(CLIENT, char*);
 typedef struct packet {
 	const char* name;
 	uint16_t size;
-	bool haveCPEImp;
-	const char* extName;
-	int extVersion;
-	uint16_t extSize;
 	packetHandler handler;
-	packetHandler cpeHandler;
-} PACKET;
+} *PACKET;
 
-PACKET* Packet_Get(int id);
+PACKET Packet_Get(int id);
 short Packet_GetSize(int id, CLIENT client);
 API void Packet_Register(int id, const char* name, uint16_t size, packetHandler handler);
-API void Packet_RegisterCPE(int id, const char* extName, int extVersion, uint16_t extSize);
 void Packet_RegisterDefault();
 void Packet_RegisterCPEDefault();
 
@@ -45,8 +39,8 @@ void Packet_WritePosAndOrient(CLIENT client, CLIENT other);
 void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg);
 void Packet_WriteSetBlock(CLIENT client, uint16_t x, uint16_t y, uint16_t z, BlockID block);
 
-int  ReadString(const char* data, char** dst);
-void WriteString(char* data, const char* string);
+int  ReadNetString(const char* data, char** dst);
+void WriteNetString(char* data, const char* string);
 
 bool Handler_Handshake(CLIENT client, char* data);
 bool Handler_SetBlock(CLIENT client, char* data);

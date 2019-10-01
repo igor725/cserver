@@ -4,13 +4,13 @@
 #include "event.h"
 
 WORLD World_Create(const char* name) {
-	WORLD tmp = (WORLD)Memory_Alloc(1, sizeof(struct world));
+	WORLD tmp = Memory_Alloc(1, sizeof(struct world));
 
 	tmp->name = String_AllocCopy(name);
-	tmp->info = (WORLDINFO)Memory_Alloc(1, sizeof(struct worldInfo));
-	tmp->info->dim = (WORLDDIMS)Memory_Alloc(1, sizeof(struct worldDims));
-	tmp->info->spawnVec = (VECTOR*)Memory_Alloc(1, sizeof(VECTOR));
-	tmp->info->spawnAng = (ANGLE*)Memory_Alloc(1, sizeof(ANGLE));
+	tmp->info = Memory_Alloc(1, sizeof(struct worldInfo));
+	tmp->info->dim = Memory_Alloc(1, sizeof(struct worldDims));
+	tmp->info->spawnVec = Memory_Alloc(1, sizeof(VECTOR));
+	tmp->info->spawnAng = Memory_Alloc(1, sizeof(ANGLE));
 	return tmp;
 }
 
@@ -53,7 +53,7 @@ void World_AllocBlockArray(WORLD world) {
 	dz = wi->dim->length;
 
 	world->size = 4 + dx * dy * dz;
-	BlockID* data = (BlockID*)Memory_Alloc(world->size, sizeof(BlockID));
+	BlockID* data = Memory_Alloc(world->size, sizeof(BlockID));
 	*(uint32_t*)data = htonl(world->size - 4);
 	world->data = data;
 }

@@ -21,14 +21,14 @@ void Server_Accept() {
 			Socket_Close(fd);
 			return;
 		}
-	 	CLIENT tmp = (CLIENT)Memory_Alloc(1, sizeof(struct client));
+	 	CLIENT tmp = Memory_Alloc(1, sizeof(struct client));
 
 		tmp->sock = fd;
 		tmp->bufpos = 0;
 		tmp->mutex = Mutex_Create();
 		tmp->addr = ntohl(caddr.sin_addr.s_addr);
-		tmp->rdbuf = (char*)Memory_Alloc(131, 1);
-		tmp->wrbuf = (char*)Memory_Alloc(2048, 1);
+		tmp->rdbuf = Memory_Alloc(131, 1);
+		tmp->wrbuf = Memory_Alloc(2048, 1);
 
 		ClientID id = Client_FindFreeID();
 		if(id >= 0) {

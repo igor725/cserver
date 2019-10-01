@@ -261,7 +261,7 @@ void Thread_Join(THREAD th) {
 */
 
 MUTEX* Mutex_Create() {
-	MUTEX* ptr = (MUTEX*)Memory_Alloc(1, sizeof(MUTEX));
+	MUTEX* ptr = Memory_Alloc(1, sizeof(MUTEX));
 	if(!ptr) {
 		Error_Print2(ET_SYS, GetLastError(), true);
 	}
@@ -434,7 +434,7 @@ void Thread_Join(THREAD th) {
 */
 
 MUTEX* Mutex_Create() {
-	MUTEX* ptr = (MUTEX*)Memory_Alloc(1, sizeof(MUTEX));
+	MUTEX* ptr = Memory_Alloc(1, sizeof(MUTEX));
 	int ret = pthread_mutex_init(ptr, NULL);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);

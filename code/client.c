@@ -413,18 +413,8 @@ void Client_Tick(CLIENT client) {
 void Client_HandlePacket(CLIENT client) {
 	char* data = client->rdbuf;
 	uint8_t id = *data; ++data;
-	PACKET* packet = Packet_Get(id);
-	bool ret = false;
+	PACKET packet = Packet_Get(id);
 
-	if(packet->haveCPEImp && Client_IsSupportExt(client, packet->extName))
-		if(!packet->cpeHandler)
-			ret = packet->handler(client, data);
-		else
-			ret = packet->cpeHandler(client, data);
-	else
-		if(packet->handler)
-			ret = packet->handler(client, data);
-
-	if(!ret)
+	if(!packet || !packet->handler(client, data))
 		Client_Kick(client, "Packet reading error");
 }

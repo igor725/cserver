@@ -33,9 +33,9 @@ bool CPlugin_Load(const char* name) {
 			return false;
 		}
 
-		CPLUGIN splugin = (CPLUGIN)Memory_Alloc(1, sizeof(CPLUGIN));
+		CPLUGIN splugin = Memory_Alloc(1, sizeof(struct cPlugin));
 		DLib_GetSym(plugin, "Plugin_Unload", (void*)&splugin->unload);
-		
+
 		splugin->name = String_AllocCopy(name);
 		splugin->lib = plugin;
 		splugin->id = -1;
@@ -132,7 +132,7 @@ void CPlugin_Start() {
 	dirIter pIter = {0};
 	if(Iter_Init(&pIter, "plugins", DLIB_EXT)) {
 		do {
-			if(!pIter.isDir || pIter.cfile)
+			if(!pIter.isDir && pIter.cfile)
 				CPlugin_Load(pIter.cfile);
 		} while(Iter_Next(&pIter));
 	}
@@ -141,7 +141,7 @@ void CPlugin_Start() {
 void CPlugin_Stop() {
 	for(int i = 0; i < MAX_PLUGINS; i++) {
 		CPLUGIN plugin = CPlugin_List[i];
-		if(plugin || plugin->unload)
+		if(plugin && plugin->unload)
 			(*(pluginFunc)plugin->unload)();
 	}
 }
