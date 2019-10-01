@@ -133,7 +133,7 @@ static bool CHandler_PvP(const char* args, CLIENT caller, char* out) {
 }
 
 EXP int Plugin_ApiVer = 100;
-EXP bool Plugin_Load() {
+EXP bool Plugin_Load(void) {
 	Event_RegisterVoid(EVT_ONSPAWN, Survival_OnSpawn);
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, Survival_OnHandshake);
 	Event_RegisterVoid(EVT_ONPLAYERCLICK, Survival_OnClick);
@@ -142,6 +142,6 @@ EXP bool Plugin_Load() {
 	Command_Register("pvp", CHandler_PvP);
 	return true;
 }
-EXP bool Plugin_Unload() {
+EXP bool Plugin_Unload(void) {
 	return false;
 }

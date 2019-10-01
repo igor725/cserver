@@ -80,7 +80,7 @@ return INVALID_SOCKET
 return INVALID_SOCKET
 #endif
 
-bool Socket_Init() {
+bool Socket_Init(void) {
 #ifdef WINDOWS
 	WSADATA ws;
 	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR) {
@@ -260,7 +260,7 @@ void Thread_Join(THREAD th) {
 	WINDOWS MUTEX FUNCTIONS
 */
 
-MUTEX* Mutex_Create() {
+MUTEX* Mutex_Create(void) {
 	MUTEX* ptr = Memory_Alloc(1, sizeof(MUTEX));
 	if(!ptr) {
 		Error_Print2(ET_SYS, GetLastError(), true);
@@ -433,7 +433,7 @@ void Thread_Join(THREAD th) {
 	WINDOWS MUTEX FUNCTIONS
 */
 
-MUTEX* Mutex_Create() {
+MUTEX* Mutex_Create(void) {
 	MUTEX* ptr = Memory_Alloc(1, sizeof(MUTEX));
 	int ret = pthread_mutex_init(ptr, NULL);
 	if(ret) {

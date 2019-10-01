@@ -9,7 +9,7 @@ bool loaded = false;
 
 EXP int Plugin_ApiVer = 100;
 
-EXP bool Plugin_Load() {
+EXP bool Plugin_Load(void) {
 	cplStore = Config_Create("cp.cfg");
 	if(!cplStore || !Server_Config) return false;
 
@@ -33,7 +33,7 @@ EXP bool Plugin_Load() {
 	return false;
 }
 
-EXP bool Plugin_Unload() {
+EXP bool Plugin_Unload(void) {
 	Http_CloseServer();
 	if(cplStore) {
 		if(loaded) Config_Save(cplStore);

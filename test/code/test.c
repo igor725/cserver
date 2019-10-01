@@ -82,7 +82,7 @@ static bool CHandler_ClientOnly(const char* args, CLIENT caller, char* out) {
 }
 
 EXP int Plugin_ApiVer = 100; // Текущая версия API плагинов 1.0.0.
-EXP bool Plugin_Load() { // Основная функция, вызывается после подгрузки плагина.
+EXP bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
   Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.
   Command_Register("plugtest", CHandler_Plugtest);
   Command_Register("atoggle", CHandler_Atoggle);
@@ -93,7 +93,7 @@ EXP bool Plugin_Load() { // Основная функция, вызываетс�
   Log_Warn("It's a warning message");
   return true;
 }
-EXP bool Plugin_Unload() {
+EXP bool Plugin_Unload(void) {
 	Event_Unregister(EVT_ONMESSAGE, onmesgfunc);
 	Command_Unregister("plugtest");
 	Command_Unregister("atoggle");

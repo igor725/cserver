@@ -80,7 +80,7 @@ bool CPE_CheckModel(const char* model) {
 	return false;
 }
 
-void Packet_RegisterCPEDefault() {
+void Packet_RegisterCPEDefault(void) {
 	const struct extReg* ext;
 	for(ext = serverExtensions; ext->name; ext++) {
 		CPE_RegisterExtension(ext->name, ext->version);

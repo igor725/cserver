@@ -25,8 +25,8 @@ typedef struct packet {
 PACKET Packet_Get(int id);
 short Packet_GetSize(int id, CLIENT client);
 API void Packet_Register(int id, const char* name, uint16_t size, packetHandler handler);
-void Packet_RegisterDefault();
-void Packet_RegisterCPEDefault();
+void Packet_RegisterDefault(void);
+void Packet_RegisterCPEDefault(void);
 
 void Packet_WriteKick(CLIENT cl, const char* reason);
 void Packet_WriteSpawn(CLIENT client, CLIENT other);

@@ -56,7 +56,7 @@ int cfgMaxThreads = 2;
 // 	return -1;
 // }
 //
-// static void WaitAll() {
+// static void WaitAll(void) {
 // 	for(int i = 0; i < MAX_THREADS; i++) {
 // 		if(Thread_IsValid(threads[i]))
 // 			Thread_Join(threads[i]);

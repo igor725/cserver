@@ -1,27 +1,26 @@
 @echo off
+IF "%VCToolsVersion%"=="" goto vcerror
+
 setlocal
-set ARCH=x86
+set ARCH=%VSCMD_ARG_TGT_ARCH%
 set DEBUG=0
 set CODE_ROOT=
 set COMPILER=cl
 
-set ZLIB_ADD=WithoutAsm
+set ZLIB_ADD=
 set ZLIB_DIR=.\zlib
-set ZLIB_MODE=Release
+set ZLIB_MODE=ReleaseWithoutAsm
 
-set MSVC_OPTS=
+set MSVC_OPTS=/MP /Gm-
 set MSVC_LINKER=
 set OBJDIR=objs
 set MSVC_LIBS=ws2_32.lib zlibwapi.lib kernel32.lib dbghelp.lib
 
 :argloop
 IF "%1"=="" goto continue
+
 IF "%1"=="cls" cls
-IF "%1"=="clear" cls
 IF "%1"=="cloc" goto :cloc
-IF "%1"=="64" set ARCH=x64
-IF "%1"=="asm" set ZLIB_ADD=
-IF "%1"=="zdebug" set ZLIB_MODE=Debug
 IF "%1"=="zdbg" set ZLIB_MODE=Debug
 IF "%1"=="debug" set DEBUG=1
 IF "%1"=="dbg" set DEBUG=1
@@ -31,9 +30,9 @@ IF "%1"=="clean" goto clean
 IF "%1"=="2" set MSVC_OPTS=%MSVC_OPTS% /O2
 IF "%1"=="1" set MSVC_OPTS=%MSVC_OPTS% /O1
 IF "%1"=="0" set MSVC_OPTS=%MSVC_OPTS% /Od
-IF "%1"=="allwarn" set MSVC_OPTS=%MSVC_OPTS% /Wall
+IF "%1"=="wall" set MSVC_OPTS=%MSVC_OPTS% /Wall
 IF "%1"=="w4" set MSVC_OPTS=%MSVC_OPTS% /W4
-IF "%1"=="nowarn" set MSVC_OPTS=%MSVC_OPTS% /W0
+IF "%1"=="w0" set MSVC_OPTS=%MSVC_OPTS% /W0
 IF "%1"=="wx" set MSVC_OPTS=%MSVC_OPTS% /WX
 IF "%1"=="pb" goto pluginbuild
 IF "%1"=="pluginbuild" goto pluginbuild
@@ -58,8 +57,6 @@ SHIFT
 goto libloop
 
 :continue
-IF "%ZLIB_MODE%"=="Debug" set ZLIB_ADD=
-
 IF "%BUILD_PLUGIN%"=="1" (
   set COMPILER=cl /LD
   set OUTDIR=%PLUGNAME%\out\%ARCH%
@@ -84,14 +81,8 @@ IF "%DEBUG%"=="0" (echo Debug: disabled) else (
   set MSVC_LINKER=%MSVC_LINKER% /INCREMENTAL:NO /DEBUG /OPT:REF
   echo Debug: enabled
 )
-IF "%ZLIB_ADD%"=="WithoutAsm" (echo zlib asm: disabled) else (
-  echo zlib asm: enabled
-  echo WARNINING: zlib assembler code may have bugs -- use at your own risk
-  ping -n 4 127.0.0.1 > nul 2> nul
-  if NOT "%ERRORLEVEL%"=="0" goto end
-)
 
-set ZLIB_COMPILEDIR=%ZLIB_DIR%\contrib\vstudio\vc14\%ARCH%\ZlibDll%ZLIB_MODE%%ZLIB_ADD%
+set ZLIB_COMPILEDIR=%ZLIB_DIR%\contrib\vstudio\vc14\%ARCH%\ZlibDll%ZLIB_MODE%
 set ZLIB_DLL=%ZLIB_COMPILEDIR%\zlibwapi.dll
 
 :msvc
@@ -108,9 +99,7 @@ set COPY=%ZLIB_DLL%
 set MSVC_OPTS=%MSVC_OPTS% /Fo%OBJDIR%\
 set MSVC_OPTS=%MSVC_OPTS% /link /LIBPATH:%ZLIB_COMPILEDIR% %MSVC_LINKER%
 
-IF "%ARCH%"=="x64" call vcvars64
-IF "%ARCH%"=="x86" call vcvars32
-%COMPILER% %CODE_ROOT%code\*.c /MP /Gm- /I%CODE_ROOT%headers /I%ZLIB_DIR% /I%ZLIB_DIR%\contrib %MSVC_LIBS% %MSVC_OPTS%
+%COMPILER% %CODE_ROOT%code\*.c /I%CODE_ROOT%headers /I%ZLIB_DIR% /I%ZLIB_DIR%\contrib %MSVC_LIBS% %MSVC_OPTS%
 IF "%BUILD_PLUGIN%"=="1" (
 	IF "%PLUGINSTALL%"=="1" copy /y %OUTDIR%\%BINNAME%.dll out\%ARCH%\plugins\
   goto :end
@@ -120,18 +109,15 @@ IF "%BUILD_PLUGIN%"=="1" (
 
 :copyerror
 echo %COPY% not found
-endlocal
 goto end
 
 :compileerror
-endlocal
 echo Something went wrong :(
 goto end
 
 :binstart
 IF "%RUNMODE%"=="0" start /D %ARCH% %BINNAME%
 IF "%RUNMODE%"=="1" goto onerun
-endlocal
 goto end
 
 :onerun:
@@ -144,8 +130,14 @@ goto end
 cloc --exclude-dir=zlib .
 goto end
 
+:vcerror
+echo Error: Script must be runned from VS Native Command Prompt.
+echo Note: Also you can call "vcvars64" or "vcvars32" to configure VS Env.
+goto end
+
 :clean
 del %OBJDIR%\*.obj %OUTDIR%\*.exe %OUTDIR%\*.dll
 
 :end
+endlocal
 exit /B 0

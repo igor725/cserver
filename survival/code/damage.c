@@ -12,6 +12,6 @@ void SurvDamage_Hurt(SURVDATA* target, SURVDATA* attacker, float damage) {
 	SurvGui_DrawHealth(target);
 }
 
-void SurvDamage_Tick() {
+void SurvDamage_Tick(void) {
 
 }

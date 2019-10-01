@@ -125,7 +125,7 @@ static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
 	return true;
 }
 
-void CPlugin_Start() {
+void CPlugin_Start(void) {
 	Directory_Ensure("plugins");
 	Command_Register("plugins", CHandler_Plugins);
 
@@ -138,7 +138,7 @@ void CPlugin_Start() {
 	}
 }
 
-void CPlugin_Stop() {
+void CPlugin_Stop(void) {
 	for(int i = 0; i < MAX_PLUGINS; i++) {
 		CPLUGIN plugin = CPlugin_List[i];
 		if(plugin && plugin->unload)

@@ -10,7 +10,7 @@
 #include "event.h"
 #include "cplugin.h"
 
-void Server_Accept() {
+void Server_Accept(void) {
 	struct sockaddr_in caddr;
 	socklen_t caddrsz = sizeof caddr;
 
@@ -72,7 +72,7 @@ static void evt_ondisconnect(void* param) {
 	Log_Info("Player %s disconnected", cl->playerData->name);
 }
 
-bool Server_InitialWork() {
+bool Server_InitialWork(void) {
 	if(!Socket_Init())
 		return false;
 
@@ -124,7 +124,7 @@ bool Server_InitialWork() {
 	return Server_Bind(Config_GetStr(Server_Config, "ip"), (uint16_t)Config_GetInt(Server_Config, "port"));
 }
 
-void Server_DoStep() {
+void Server_DoStep(void) {
 	Event_Call(EVT_ONTICK, NULL);
 	for(int i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT client = Clients_List[i];
@@ -133,7 +133,7 @@ void Server_DoStep() {
 	}
 }
 
-void Server_Stop() {
+void Server_Stop(void) {
 	Event_Call(EVT_ONSTOP, NULL);
 	Log_Info("Saving worlds");
 	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {

@@ -6,7 +6,7 @@
 #include "event.h"
 #include "config.h"
 
-ClientID Client_FindFreeID() {
+ClientID Client_FindFreeID(void) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		if(!Clients_List[i]) return i;
 	}
@@ -159,7 +159,7 @@ TRET Client_MapThreadProc(TARG lpParam) {
 	return 0;
 }
 
-void Client_Init() {
+void Client_Init(void) {
 	Broadcast = Memory_Alloc(1, sizeof(struct client));
 	Broadcast->wrbuf = Memory_Alloc(2048, 1);
 	Broadcast->mutex = Mutex_Create();

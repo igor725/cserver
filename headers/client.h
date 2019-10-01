@@ -59,8 +59,8 @@ bool Client_CheckAuth(CLIENT client);
 TRET Client_ThreadProc(TARG lpParam);
 void Client_Free(CLIENT client);
 void Client_Tick(CLIENT client);
-ClientID Client_FindFreeID();
-void Client_Init();
+ClientID Client_FindFreeID(void);
+void Client_Init(void);
 
 API bool Client_ChangeWorld(CLIENT client, WORLD world);
 API void Client_Chat(CLIENT client, MessageType type, const char* message);

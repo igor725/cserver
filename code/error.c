@@ -22,7 +22,7 @@ const char* const Strings[] = {
 
 #if defined(WINDOWS)
 #include <dbghelp.h>
-void Error_CallStack() {
+void Error_CallStack(void) {
 	if(Log_GetLevel() < LOG_DEBUG) {
 		return;
 	}
@@ -55,7 +55,7 @@ void Error_CallStack() {
 }
 #elif defined(POSIX)
 #include <execinfo.h>
-void Error_CallStack() {
+void Error_CallStack(void) {
 	void* stack[64];
 	int frames = backtrace(stack, 64);
 

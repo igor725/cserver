@@ -120,7 +120,7 @@ static bool CHandler_Model(const char* args, CLIENT caller, char* out) {
 	return false;
 }
 
-void Command_RegisterDefault() {
+void Command_RegisterDefault(void) {
 	Command_Register("op", CHandler_OP);
 	Command_Register("stop", CHandler_Stop);
 	Command_Register("test", CHandler_Test);

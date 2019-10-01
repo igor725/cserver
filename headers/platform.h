@@ -71,14 +71,14 @@ API bool Directory_Ensure(const char* dir);
 
 bool DLib_Load(const char* path, void** lib);
 bool DLib_Unload(void* lib);
-char* DLib_GetError();
+char* DLib_GetError(char* buf, size_t len);
 bool DLib_GetSym(void* lib, const char* sname, void** sym);
 
 /*
 	SOCKET FUNCTIONS
 */
 
-bool Socket_Init();
+bool Socket_Init(void);
 API SOCKET Socket_Bind(const char* ip, uint16_t port);
 API void Socket_Close(SOCKET sock);
 
@@ -96,7 +96,7 @@ API void Thread_Join(THREAD th);
 	MUTEX FUNCTIONS
 */
 
-API MUTEX* Mutex_Create();
+API MUTEX* Mutex_Create(void);
 API void Mutex_Free(MUTEX* handle);
 API void Mutex_Lock(MUTEX* handle);
 API void Mutex_Unlock(MUTEX* handle);

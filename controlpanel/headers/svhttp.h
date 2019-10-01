@@ -26,5 +26,5 @@ typedef struct webClient {
 } *WEBCLIENT;
 
 bool Http_StartServer(const char* ip, uint16_t port);
-bool Http_CloseServer();
+bool Http_CloseServer(void);
 #endif

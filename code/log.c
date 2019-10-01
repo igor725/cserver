@@ -14,7 +14,7 @@ void Log_SetLevel(int level) {
 	Log_Level = min(max(-1, level), 4);
 }
 
-int Log_GetLevel() {
+int Log_GetLevel(void) {
 	return Log_Level;
 }
 

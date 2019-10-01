@@ -62,7 +62,7 @@ typedef signed __INT64_TYPE__ int64;
 #include <stdio.h>
 #include <zlib.h>
 
-typedef uint8_t bool;
+typedef uint32_t bool;
 typedef uint8_t Order;
 typedef uint8_t BlockID;
 typedef uint8_t ClientID;

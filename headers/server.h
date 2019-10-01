@@ -8,6 +8,6 @@ VAR bool Server_Active;
 VAR CFGSTORE Server_Config;
 SOCKET Server_Socket;
 
-bool Server_InitialWork();
-void Server_DoStep();
+bool Server_InitialWork(void);
+void Server_DoStep(void);
 #endif

@@ -59,7 +59,7 @@ void Packet_Register(int id, const char* name, uint16_t size, packetHandler hand
 	Packets_List[id] = tmp;
 }
 
-void Packet_RegisterDefault() {
+void Packet_RegisterDefault(void) {
 	Packet_Register(0x00, "Handshake", 131, Handler_Handshake);
 	Packet_Register(0x05, "SetBlock", 9, Handler_SetBlock);
 	Packet_Register(0x08, "PosAndOrient", 10, Handler_PosAndOrient);
