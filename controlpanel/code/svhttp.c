@@ -90,8 +90,8 @@ static const WEBHEADER defaultHeaders[] = {
 	{NULL, NULL}
 };
 
-static int sendBuffer(WEBCLIENT wcl, uint32_t len) {
-	return send(wcl->sock, wcl->buffer, len, 0);
+static int sendBuffer(WEBCLIENT wcl, size_t len) {
+	return send(wcl->sock, wcl->buffer, (uint32_t)len, 0);
 }
 
 static void writeHTTPCode(WEBCLIENT wcl) {
@@ -135,7 +135,7 @@ static void writeHTTPBody(WEBCLIENT wcl) {
 static bool SendZippedFile(WEBCLIENT wcl, const char* name) {
 	unz_file_info info;
 	char size[8];
-	size_t done = 0;
+	uint32_t done = 0;
 
 	Mutex_Lock(zMutex);
 	if(unzLocateFile(zData, name, false) == UNZ_OK) {
@@ -150,7 +150,7 @@ static bool SendZippedFile(WEBCLIENT wcl, const char* name) {
 		sendBuffer(wcl, 2);
 
 		while(done != info.uncompressed_size) {
-			int blocksz = min(1024, info.uncompressed_size - done);
+			uint32_t blocksz = min(1024, info.uncompressed_size - done);
 			if(unzReadCurrentFile(zData, wcl->buffer, blocksz) > 0) {
 				sendBuffer(wcl, blocksz);
 				done += blocksz;
@@ -169,7 +169,7 @@ static bool SendZippedFile(WEBCLIENT wcl, const char* name) {
 const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 static char* SHA1toB64(uint8_t* in) {
-	char* out = in + 20;
+	char* out = (char*)in + 20;
 	out[28] = '\0';
 
 	for (int i = 0, j = 0; i < 20; i += 3, j += 4) {
@@ -205,7 +205,7 @@ static void GenerateResponse(WEBCLIENT wcl) {
 
 		SHA1_CTX ctx;
 		SHA1Init(&ctx);
-		SHA1Update(&ctx, (uint8_t*)acceptKey, String_Length(acceptKey));
+		SHA1Update(&ctx, (uint8_t*)acceptKey, (uint32_t)String_Length(acceptKey));
 		SHA1Final((uint8_t*)acceptKey, &ctx);
 
 		writeHTTPHeader(wcl, "Sec-WebSocket-Protocol", CPL_WSPROTO);
@@ -307,6 +307,11 @@ static char* TrimParams(char* str) {
 static void HandleGetRequest(WEBCLIENT wcl, char* buffer) {
 	wcl->request = String_AllocCopy(TrimParams(ReadSockUntil(wcl, 512, ' ')));
 	char* httpver = ReadSockUntil(wcl, HTTP_BUFFER_LEN, '\n');
+
+	if(!String_CaselessCompare(httpver, "HTTP/1.1")) {
+		wclSetError(wcl, 505, "Invalid HTTP version");
+		return;
+	}
 
 	while(wcl->respCode < 400) {
 		char* value = ReadSockUntil(wcl, HTTP_BUFFER_LEN, '\n');

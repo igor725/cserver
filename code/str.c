@@ -1,6 +1,6 @@
-#include <stdlib.h>
 #include "core.h"
 #include "str.h"
+#include <stdlib.h>
 
 char* String_FindSubstr(const char* str, const char* strsrch) {
 	return strstr(str, strsrch);
@@ -107,7 +107,7 @@ size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index) 
 		} else {
 			do {
 				*arg++ = *args++;
-			} while(arg - tmp < arrsz && *args != '\0' && *args != ' ');
+			} while((size_t)(arg - tmp) < arrsz && *args != '\0' && *args != ' ');
 			*arg = '\0';
 			break;
 		}

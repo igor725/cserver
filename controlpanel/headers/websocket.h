@@ -20,7 +20,7 @@ typedef struct wsFrame {
 	uint32_t payload_len;
 	uint32_t _maxlen;
 	char* payload;
-	uint16_t _dneed;
+	uint32_t _dneed;
 	uint16_t _drcvd;
 	bool fin;
 	bool masked;

@@ -10,7 +10,7 @@ void WebSocket_Setup(WSFRAME ws, SOCKET fd) {
 }
 
 bool WebSocket_ReceiveFrame(WSFRAME ws) {
-	if(!ws->ready) return -1;
+	if(!ws->ready) return false;
 
 	if(ws->state == WS_ST_DONE) {
 		ws->state = WS_ST_HDR;
@@ -18,20 +18,20 @@ bool WebSocket_ReceiveFrame(WSFRAME ws) {
 	}
 
 	if(ws->state == WS_ST_HDR) {
-		int len = recv(ws->sock, ws->hdr, ws->_dneed, 0);
+		uint32_t len = recv(ws->sock, ws->hdr, ws->_dneed, 0);
 
 		if(len == ws->_dneed) {
-			char len = *(ws->hdr + 1) & 0x7F;
+			char plen = *(ws->hdr + 1) & 0x7F;
 
-			if(len == 126) {
+			if(plen == 126) {
 				ws->state = WS_ST_PLEN;
 				ws->_dneed = 2;
-			} else if(len == 127) {
+			} else if(plen == 127) {
 				ws->state = WS_ST_PLEN;
 				ws->_dneed = 4;
-			} else if(len < 126) {
+			} else if(plen < 126) {
 				ws->state = WS_ST_MASK;
-				ws->payload_len = len;
+				ws->payload_len = plen;
 				ws->_dneed = 4;
 			}
 
@@ -43,7 +43,7 @@ bool WebSocket_ReceiveFrame(WSFRAME ws) {
 	}
 
 	if(ws->state == WS_ST_PLEN) {
-		int len = recv(ws->sock, (char*)&ws->payload_len, ws->_dneed, 0);
+		uint32_t len = recv(ws->sock, (char*)&ws->payload_len, ws->_dneed, 0);
 
 		if(len == ws->_dneed) {
 			if(ws->_dneed == 2) {
@@ -57,7 +57,7 @@ bool WebSocket_ReceiveFrame(WSFRAME ws) {
 	}
 
 	if(ws->state == WS_ST_MASK) {
-		int len = recv(ws->sock, ws->mask, ws->_dneed, 0);
+		uint32_t len = recv(ws->sock, ws->mask, ws->_dneed, 0);
 
 		if(len == ws->_dneed) {
 			ws->state = WS_ST_RECVPL;
@@ -73,10 +73,10 @@ bool WebSocket_ReceiveFrame(WSFRAME ws) {
 		} else
 			Memory_Fill(ws->payload, ws->_maxlen, 0);
 
-		int len = recv(ws->sock, ws->payload, ws->_dneed, 0);
+		uint32_t len = recv(ws->sock, ws->payload, ws->_dneed, 0);
 
 		if(len == ws->_dneed) {
-			for(int i = 0; i < len; i++) {
+			for(uint32_t i = 0; i < len; i++) {
 				ws->payload[i] = ws->payload[i] ^ ws->mask[i % 4];
 			}
 
@@ -100,11 +100,11 @@ uint32_t WebSocket_Encode(char* buf, uint32_t len, const char* data, uint32_t dl
 	*buf = 0x80 | (opcode & 0x0F);
 
 	if(dlen < 126) {
-		*++buf = dlen;
+		*++buf = (char)dlen;
 	} else if(len < 65535) {
 		outlen += 2;
 		*++buf = 126;
-		*(uint16_t*)++buf = htons(dlen); ++buf;
+		*(uint16_t*)++buf = htons((uint16_t)dlen); ++buf;
 	} else {
 		outlen += 4;
 		*++buf = 127;

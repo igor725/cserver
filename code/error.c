@@ -43,9 +43,8 @@ void Error_CallStack(void) {
 			Log_Debug(SYM_DBG, symbol.Name, symbol.Address);
 #if _MSC_VER
 			IMAGEHLP_LINE line = {0};
-			uint32_t lineOffset;
 			line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
-			if(SymGetLineFromAddr(process, symbol.Address, &lineOffset, &line)) {
+			if(SymGetLineFromAddr(process, symbol.Address, NULL, &line)) {
 				Log_Debug("\tFile: %s: %d", line.FileName, line.LineNumber);
 			}
 #endif

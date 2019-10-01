@@ -9,16 +9,16 @@ bool CPlugin_Load(const char* name) {
 	char path[256];
 	char error[512];
 	String_FormatBuf(path, 256, "plugins/%s", name);
-	void* plugin;
+	void* lib;
 	void* verSym;
 	void* initSym;
 	int ver;
 
-	if(DLib_Load(path, &plugin)) {
-		if(!(DLib_GetSym(plugin, "Plugin_ApiVer", &verSym) &&
-		DLib_GetSym(plugin, "Plugin_Load", &initSym))) {
+	if(DLib_Load(path, &lib)) {
+		if(!(DLib_GetSym(lib, "Plugin_ApiVer", &verSym) &&
+		DLib_GetSym(lib, "Plugin_Load", &initSym))) {
 			Log_Error("%s: %s", path, DLib_GetError(error, 512));
-			DLib_Unload(plugin);
+			DLib_Unload(lib);
 			return false;
 		}
 
@@ -29,27 +29,27 @@ bool CPlugin_Load(const char* name) {
 			else
 				Log_Error(CPLUGIN_UPGMSG, name, ver, CPLUGIN_API_NUM);
 
-			DLib_Unload(plugin);
+			DLib_Unload(lib);
 			return false;
 		}
 
-		CPLUGIN splugin = Memory_Alloc(1, sizeof(struct cPlugin));
-		DLib_GetSym(plugin, "Plugin_Unload", (void*)&splugin->unload);
+		CPLUGIN plugin = Memory_Alloc(1, sizeof(struct cPlugin));
+		DLib_GetSym(lib, "Plugin_Unload", (void*)&plugin->unload);
 
-		splugin->name = String_AllocCopy(name);
-		splugin->lib = plugin;
-		splugin->id = -1;
+		plugin->name = String_AllocCopy(name);
+		plugin->lib = plugin;
+		plugin->id = -1;
 
 		for(int i = 0; i < MAX_PLUGINS; i++) {
 			if(!CPlugin_List[i]) {
-				CPlugin_List[i] = splugin;
-				splugin->id = i;
+				CPlugin_List[i] = plugin;
+				plugin->id = i;
 				break;
 			}
 		}
 
-		if(splugin->id == -1 || !(*(pluginFunc)initSym)()) {
-			CPlugin_Unload(splugin);
+		if(plugin->id == -1 || !(*(pluginFunc)initSym)()) {
+			CPlugin_Unload(plugin);
 			return false;
 		}
 
@@ -113,7 +113,7 @@ static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
 		} else if(String_CaselessCompare(command, "list")) {
 			Log_Info("Loaded plugins list:");
 			for(int i = 0; i < MAX_PLUGINS; i++) {
-				CPLUGIN plugin = CPlugin_List[i];
+				plugin = CPlugin_List[i];
 				if(plugin) Log_Info(plugin->name);
 			}
 			return false;

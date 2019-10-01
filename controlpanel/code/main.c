@@ -19,7 +19,7 @@ EXP bool Plugin_Load(void) {
 
 	if(Config_GetBool(cplStore, "enabled")) {
 		const char* ip = Config_GetStr(Server_Config, "ip");
-		uint16_t port = Config_GetInt(cplStore, "port");
+		uint16_t port = (uint16_t)Config_GetInt(cplStore, "port");
 
 		if(Http_StartServer(ip, port))
 			Log_Info("CPL http server started on %s:%d", ip, port);

@@ -94,7 +94,7 @@ EXP bool Plugin_Load(void) { // Основная функция, вызывае�
   return true;
 }
 EXP bool Plugin_Unload(void) {
-	Event_Unregister(EVT_ONMESSAGE, onmesgfunc);
+	Event_Unregister(EVT_ONMESSAGE, (void*)onmesgfunc);
 	Command_Unregister("plugtest");
 	Command_Unregister("atoggle");
 	Command_Unregister("selfdestroy");

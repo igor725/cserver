@@ -17,10 +17,10 @@ static void Survival_OnSpawn(void* param) {
 	CLIENT client = (CLIENT)param;
 	SURVDATA* survData = SurvData_Get(client);
 	SurvGui_DrawAll(survData);
-	for(int i = 0; i < 9; i++) {
+	for(Order i = 0; i < 9; i++) {
 		Client_SetHotbar(client, i, 0);
 	}
-	for(int i = 0; i < 256; i++) {
+	for(BlockID i = 0; i < 256; i++) {
 		Client_SetBlockPerm(client, i, false, false);
 	}
 }
@@ -50,7 +50,7 @@ static void Survival_OnClick(void* param) {
 	short x = *a->x, y = *a->y, z = *a->z;
 	SURVDATA* survData = SurvData_Get(client);
 	CLIENT target = Client_GetByID(*a->tgID);
-	SURVDATA* survDataTg;
+	SURVDATA* survDataTg = NULL;
 	if(target) survDataTg = SurvData_Get(target);
 
 	if(*a->button != 0) return;
