@@ -4,7 +4,7 @@
 #include "server.h"
 
 void Command_Register(const char* cmd, cmdFunc func) {
-	COMMAND* tmp = Memory_Alloc(1, sizeof(COMMAND));
+	COMMAND tmp = Memory_Alloc(1, sizeof(struct command));
 
 	tmp->name = String_AllocCopy(cmd);
 	tmp->func = func;
@@ -14,7 +14,7 @@ void Command_Register(const char* cmd, cmdFunc func) {
 	Command_Head = tmp;
 }
 
-static void Command_Free(COMMAND* cmd) {
+static void Command_Free(COMMAND cmd) {
 	if(cmd->prev)
 		cmd->prev->next = cmd->prev;
 
@@ -29,7 +29,7 @@ static void Command_Free(COMMAND* cmd) {
 }
 
 void Command_Unregister(const char* cmd) {
-	COMMAND* tmp = Command_Head;
+	COMMAND tmp = Command_Head;
 
 	while(tmp) {
 		if(String_CaselessCompare(tmp->name, cmd))
@@ -43,7 +43,7 @@ static bool CHandler_OP(const char* args, CLIENT caller, char* out) {
 
 	char clientname[64];
 	if(String_GetArgument(args, clientname, 64, 0)) {
-		CLIENT tg = Client_FindByName(clientname);
+		CLIENT tg = Client_GetByName(clientname);
 		if(tg) {
 			bool newtype = !Client_GetType(tg);
 			const char* name = tg->playerData->name;
@@ -81,7 +81,7 @@ static bool CHandler_Announce(const char* args, CLIENT caller, char* out) {
 static bool CHandler_ChangeWorld(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForClient;
 
-	WORLD world = World_FindByName(args);
+	WORLD world = World_GetByName(args);
 	Client_ChangeWorld(caller, world);
 	return false;
 }
@@ -91,7 +91,7 @@ static bool CHandler_Kick(const char* args, CLIENT caller, char* out) {
 	char playername[64];
 
 	if(String_GetArgument(args, playername, 64, 0)) {
-		CLIENT tg = Client_FindByName(playername);
+		CLIENT tg = Client_GetByName(playername);
 		if(tg) {
 			const char* reason = String_FromArgument(args, 1);
 			Client_Kick(tg, reason);
@@ -146,7 +146,7 @@ bool Command_Handle(char* cmd, CLIENT caller) {
 		}
 	}
 
-	COMMAND* tmp = Command_Head;
+	COMMAND tmp = Command_Head;
 
 	while(tmp) {
 		if(String_CaselessCompare(tmp->name, cmd)) {

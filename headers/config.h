@@ -24,7 +24,7 @@ typedef struct cfgStore {
 	CFGENTRY lastCfgEntry;
 } *CFGSTORE;
 
-API CFGENTRY Config_GetEntry(CFGSTORE store, const char* key);
+CFGENTRY Config_GetEntry(CFGSTORE store, const char* key);
 
 API CFGSTORE Config_Create(const char* filename);
 API void Config_EmptyStore(CFGSTORE store);

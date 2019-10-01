@@ -16,8 +16,10 @@ typedef struct cPlugin {
 
 CPLUGIN CPlugin_List[MAX_PLUGINS];
 
-bool CPlugin_Load(const char* name);
-bool CPlugin_Unload(CPLUGIN plugin);
+API bool CPlugin_Load(const char* name);
+API bool CPlugin_Unload(CPLUGIN plugin);
+API CPLUGIN CPlugin_Get(const char* name);
+
 void CPlugin_Start();
 void CPlugin_Stop();
 #endif

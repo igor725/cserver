@@ -196,7 +196,7 @@ bool Handler_Handshake(CLIENT client, char* data) {
 		return true;
 	}
 
-	client->playerData = Memory_Alloc(1, sizeof(PLAYERDATA));
+	client->playerData = Memory_Alloc(1, sizeof(struct playerData));
 	client->playerData->position = Memory_Alloc(1, sizeof(VECTOR));
 	client->playerData->angle = Memory_Alloc(1, sizeof(ANGLE));
 
@@ -234,7 +234,7 @@ bool Handler_Handshake(CLIENT client, char* data) {
 	}
 
 	if(cpeEnabled) {
-		client->cpeData = Memory_Alloc(1, sizeof(CPEDATA));
+		client->cpeData = Memory_Alloc(1, sizeof(struct cpeData));
 		String_CopyUnsafe(client->cpeData->model, "humanoid");
 		CPE_StartHandshake(client);
 	} else {

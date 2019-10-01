@@ -14,7 +14,7 @@ WORLD World_Create(const char* name) {
 	return tmp;
 }
 
-WORLD World_FindByName(const char* name) {
+WORLD World_GetByName(const char* name) {
 	for(int i = 0; i < MAX_WORLDS; i++) {
 		WORLD world = Worlds_List[i];
 		if(world && String_CaselessCompare(world->name, name))

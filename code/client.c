@@ -13,7 +13,7 @@ ClientID Client_FindFreeID() {
 	return (ClientID)-1;
 }
 
-CLIENT Client_FindByName(const char* name) {
+CLIENT Client_GetByName(const char* name) {
 	for(int i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT client = Clients_List[i];
 		if(!client || !client->playerData) continue;
@@ -59,7 +59,7 @@ TRET Client_ThreadProc(TARG lpParam) {
 		if(client->status == CLIENT_WAITCLOSE) {
 			int len = recv(client->sock, client->rdbuf, 131, 0);
 			if(len <= 0) {
-				if(client->playerData->state > STATE_MOTD)
+				if(client->playerData->state > STATE_WLOADDONE)
 					Event_Call(EVT_ONDISCONNECT, (void*)client);
 				Socket_Close(client->sock);
 				Client_Despawn(client);
@@ -415,6 +415,7 @@ void Client_HandlePacket(CLIENT client) {
 	uint8_t id = *data; ++data;
 	PACKET packet = Packet_Get(id);
 
-	if(!packet || !packet->handler(client, data))
+	if(!packet || !packet->handler(client, data)) {
 		Client_Kick(client, "Packet reading error");
+	}
 }

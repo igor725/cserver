@@ -5,7 +5,7 @@
 #define rgPart1 \
 for(int pos = 0; pos < MAX_EVENTS; pos++) { \
 	if(!Event_List[type][pos]) { \
-		EVENT* evt = Memory_Alloc(1, sizeof(EVENT)); \
+		EVENT evt = Memory_Alloc(1, sizeof(struct event)); \
 
 #define rgPart2 \
 		Event_List[type][pos] = evt; \
@@ -30,7 +30,7 @@ bool Event_RegisterVoid(EventType type, evtVoidCallback func) {
 
 bool Event_Unregister(EventType type, void* callbackPtr) {
 	for(int pos = 0; pos < MAX_EVENTS; pos++) {
-		EVENT* evt = Event_List[type][pos];
+		EVENT evt = Event_List[type][pos];
 		if(!evt) continue;
 
 		if(evt->func.fvoid == callbackPtr) {
@@ -45,7 +45,7 @@ bool Event_Call(EventType type, void* param) {
 	bool ret = true;
 
 	for(int pos = 0; pos < MAX_EVENTS; pos++) {
-		EVENT* evt = Event_List[type][pos];
+		EVENT evt = Event_List[type][pos];
 		if(!evt) continue;
 
 		if(evt->rtype == EVT_RTBOOL)
