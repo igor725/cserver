@@ -189,11 +189,7 @@ bool Directory_Exists(const char* path) {
 }
 
 bool Directory_Create(const char* path) {
-	bool succ;
-	if(!(succ = CreateDirectory(path, NULL))) {
-		Error_Print2(ET_SYS, GetLastError(), false);
-	}
-	return succ;
+	return CreateDirectory(path, NULL);
 }
 
 /*

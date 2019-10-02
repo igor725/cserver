@@ -162,7 +162,9 @@ void Server_Stop(void) {
 }
 
 int main(int argc, char** argv) {
-	if((Server_Active = Server_InitialWork())) {
+	Server_Active = Server_InitialWork();
+
+	if(Server_Active) {
 		Server_AcceptThread = Thread_Create(Server_ThreadProc, NULL);
 		if(!Thread_IsValid(Server_AcceptThread)) {
 			Log_Error("Can't create accept thread");

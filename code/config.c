@@ -8,8 +8,8 @@ CFGSTORE Config_Create(const char* filename) {
 }
 
 bool Config_Load(CFGSTORE store) {
-	FILE* fp;
-	if(!(fp = File_Open(store->path, "r"))) {
+	FILE* fp = File_Open(store->path, "r");
+	if(!fp) {
 		if(errno == ENOENT) return true;
 		Error_PrintSys;
 		return false;
@@ -88,8 +88,8 @@ bool Config_Save(CFGSTORE store) {
 	char tmpname[256];
 	String_FormatBuf(tmpname, 256, "%s.tmp", store->path);
 
-	FILE* fp;
-	if(!(fp = File_Open(tmpname, "w"))) {
+	FILE* fp = File_Open(tmpname, "w");
+	if(!fp) {
 		Error_PrintSys;
 		return false;
 	}

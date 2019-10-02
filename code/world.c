@@ -124,13 +124,13 @@ bool World_ReadInfo(WORLD world, FILE* fp) {
 }
 
 bool World_Save(WORLD world) {
-	FILE* fp;
 	char path[256];
 	char tmpname[256];
 	String_FormatBuf(path, 256, "worlds/%s", world->name);
 	String_FormatBuf(tmpname, 256, "worlds/%s.tmp", world->name);
 
-	if(!(fp = File_Open(tmpname, "wb")))
+	FILE* fp = File_Open(tmpname, "wb");
+	if(!fp)
 		return false;
 
 	if(!World_WriteInfo(world, fp)) {
@@ -170,11 +170,11 @@ bool World_Save(WORLD world) {
 }
 
 bool World_Load(WORLD world) {
-	FILE* fp;
 	char path[256];
 	String_FormatBuf(path, 256, "worlds/%s", world->name);
 
-	if(!(fp = File_Open(path, "rb"))) return false;
+	FILE* fp = File_Open(path, "rb");
+	if(!fp) return false;
 
 	if(!World_ReadInfo(world, fp)) {
 		File_Close(fp);

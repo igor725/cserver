@@ -63,10 +63,8 @@ static const char* validModelNames[] = {
 };
 
 bool CPE_CheckModel(const char* model) {
-	const char* cmdl;
-	for(int i = 0; ; i++) {
-		if(!(cmdl = validModelNames[i])) break;
-
+	for(int i = 0; validModelNames[i]; i++) {
+		const char* cmdl = validModelNames[i];
 		if(String_CaselessCompare(model, cmdl)) {
 			return true;
 		}
