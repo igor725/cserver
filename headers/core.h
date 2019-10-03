@@ -111,11 +111,11 @@ enum messageTypes {
 
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
 
-typedef struct ext {
+typedef struct cpeExt {
 	const char* name;
 	int   version;
-	struct ext*  next;
-} EXT;
+	struct cpeExt*  next;
+} *EXT;
 
 typedef struct vector {
 	float x;

@@ -59,7 +59,7 @@ TRET Client_ThreadProc(TARG lpParam) {
 		if(client->status == CLIENT_WAITCLOSE) {
 			int len = recv(client->sock, client->rdbuf, 131, 0);
 			if(len <= 0) {
-				if(client->playerData->state > STATE_WLOADDONE)
+				if(client->playerData && client->playerData->state > STATE_WLOADDONE)
 					Event_Call(EVT_ONDISCONNECT, (void*)client);
 				Socket_Close(client->sock);
 				Client_Despawn(client);
@@ -191,7 +191,7 @@ bool Client_IsInWorld(CLIENT client, WORLD world) {
 bool Client_IsSupportExt(CLIENT client, const char* extName) {
 	if(!client->cpeData) return false;
 
-	EXT* ptr = client->cpeData->headExtension;
+	EXT ptr = client->cpeData->headExtension;
 	while(ptr) {
 		if(String_CaselessCompare(ptr->name, extName))
 			return true;
@@ -290,8 +290,7 @@ void Client_Free(CLIENT client) {
 	}
 
 	if(client->cpeData) {
-		EXT* ptr = client->cpeData->headExtension;
-		EXT* prev;
+		EXT prev, ptr = client->cpeData->headExtension;
 
 		while(ptr) {
 			prev = ptr;
@@ -299,7 +298,7 @@ void Client_Free(CLIENT client) {
 			ptr = ptr->next;
 			Memory_Free(prev);
 		}
-		Memory_Free(client->cpeData->appName);
+		Memory_Free((void*)client->cpeData->appName);
 		Memory_Free(client->cpeData);
 	}
 

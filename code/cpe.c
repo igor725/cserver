@@ -5,11 +5,11 @@
 #include "packets.h"
 #include "event.h"
 
-EXT* headExtension;
+EXT headExtension;
 uint16_t extensionsCount;
 
 void CPE_RegisterExtension(const char* name, int version) {
-	EXT* tmp = Memory_Alloc(1, sizeof(EXT));
+	EXT tmp = Memory_Alloc(1, sizeof(struct cpeExt));
 
 	tmp->name = name;
 	tmp->version = version;
@@ -20,7 +20,7 @@ void CPE_RegisterExtension(const char* name, int version) {
 
 void CPE_StartHandshake(CLIENT client) {
 	CPEPacket_WriteInfo(client);
-	EXT* ptr = headExtension;
+	EXT ptr = headExtension;
 	while(ptr) {
 		CPEPacket_WriteExtEntry(client, ptr);
 		ptr = ptr->next;
@@ -99,7 +99,7 @@ void CPEPacket_WriteInfo(CLIENT client) {
 	PacketWriter_End(client, 67);
 }
 
-void CPEPacket_WriteExtEntry(CLIENT client, EXT* ext) {
+void CPEPacket_WriteExtEntry(CLIENT client, EXT ext) {
 	PacketWriter_Start(client);
 
 	*data = 0x11;
@@ -202,7 +202,7 @@ if(!client->playerData || !client->cpeData || client->playerData->state != st) \
 bool CPEHandler_ExtInfo(CLIENT client, char* data) {
 	ValidateClientState(client, STATE_MOTD);
 
-	ReadNetString(data, &client->cpeData->appName); data += 63;
+	ReadNetString(data, (char**)&client->cpeData->appName); data += 63;
 	client->cpeData->_extCount = ntohs(*(uint16_t*)++data);
 	return true;
 }
@@ -210,7 +210,7 @@ bool CPEHandler_ExtInfo(CLIENT client, char* data) {
 bool CPEHandler_ExtEntry(CLIENT client, char* data) {
 	ValidateClientState(client, STATE_MOTD);
 
-	EXT* tmp = Memory_Alloc(1, sizeof(EXT));
+	EXT tmp = Memory_Alloc(1, sizeof(struct cpeExt));
 	ReadNetString(data, (void*)&tmp->name);data += 63;
 	tmp->version = ntohl(*(uint32_t*)++data);
 

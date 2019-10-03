@@ -15,12 +15,12 @@ enum playerStates {
 };
 
 typedef struct cpeData {
-	bool    fmSupport;
-	BlockID heldBlock;
-	short   _extCount;
-	EXT*    headExtension;
-	char    model[64];
-	char*   appName;
+	bool        fmSupport;
+	BlockID     heldBlock;
+	short       _extCount;
+	EXT         headExtension;
+	char        model[64];
+	const char* appName;
 } *CPEDATA;
 
 typedef struct playerData {
