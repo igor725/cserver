@@ -211,7 +211,7 @@ bool CPEHandler_ExtEntry(CLIENT client, char* data) {
 	ValidateClientState(client, STATE_MOTD);
 
 	EXT tmp = Memory_Alloc(1, sizeof(struct cpeExt));
-	ReadNetString(data, (void*)&tmp->name);data += 63;
+	ReadNetString(data, &tmp->name);data += 63;
 	tmp->version = ntohl(*(uint32_t*)++data);
 
 	if(String_CaselessCompare(tmp->name, "FastMap"))

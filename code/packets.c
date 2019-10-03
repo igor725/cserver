@@ -8,7 +8,7 @@
 
 PACKET Packets_List[MAX_PACKETS] = {0};
 
-int ReadNetString(const char* data, char** dst) {
+int ReadNetString(const char* data, const char** dst) {
 	int end = 63;
 	while(data[end] == ' ') --end;
 	++end;
@@ -203,8 +203,8 @@ bool Handler_Handshake(CLIENT client, char* data) {
 	if(client->addr == INADDR_LOOPBACK && Config_GetBool(Server_Config, "alwayslocalop"))
 		client->playerData->isOP = true;
 
-	ReadNetString(++data, (void*)&client->playerData->name); data += 63;
-	ReadNetString(++data, (void*)&client->playerData->key); data += 63;
+	ReadNetString(++data, &client->playerData->name); data += 63;
+	ReadNetString(++data, &client->playerData->key); data += 63;
 	Thread_SetName(client->playerData->name);
 
 	for(int i = 0; i < 128; i++) {
