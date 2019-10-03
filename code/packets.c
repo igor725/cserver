@@ -8,20 +8,23 @@
 
 PACKET Packets_List[MAX_PACKETS] = {0};
 
-int ReadNetString(const char* data, const char** dst) {
-	int end = 63;
-	while(data[end] == ' ') --end;
-	++end;
+uint8_t ReadNetString(const char* data, const char** dst) {
+	uint8_t end;
+	for(end = 63; end > 0; --end) {
+		if(end == 0) break;
+		if(data[end - 1] != ' ') break;
+	}
 
 	char* str = Memory_Alloc(end + 1, 1);
 	Memory_Copy(str, data, end);
-	str[end] = 0;
+	str[end] = '\0';
 	dst[0] = str;
+
 	return end;
 }
 
 void WriteNetString(char* data, const char* string) {
-	uint8_t size = min((uint8_t)String_Length(string), 64);
+	size_t size = min(String_Length(string), 64);
 	Memory_Fill(data + size, 64, 0);
 	Memory_Copy(data, string, size);
 }
@@ -307,7 +310,7 @@ bool Handler_Message(CLIENT client, char* data) {
 
 	char* message;
 	MessageType type = 0;
-	int len = ReadNetString(++data, &message);
+	uint8_t len = ReadNetString(++data, &message);
 
 	for(int i = 0; i < len; i++) {
 		if(message[i] == '%' && ISHEX(message[i + 1]))
