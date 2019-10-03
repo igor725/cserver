@@ -1,5 +1,9 @@
 #ifndef CPE_H
 #define CPE_H
+
+#define ValidateCpeClient(client, ret) \
+if(!client->cpeData) return ret;
+
 enum WeatherTypes {
 	WEATHER_SUN,
 	WEATHER_RAIN,
@@ -18,6 +22,7 @@ bool CPEHandler_ExtInfo(CLIENT client, char* data);
 bool CPEHandler_ExtEntry(CLIENT client, char* data);
 bool CPEHandler_TwoWayPing(CLIENT client, char* data);
 bool CPEHandler_PlayerClick(CLIENT client, char* data);
+bool CPEHandler_PosAndOrient(CLIENT client, char* data);
 
 void CPEPacket_WriteInfo(CLIENT client);
 void CPEPacket_WriteExtEntry(CLIENT client, EXT ext);

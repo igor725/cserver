@@ -41,6 +41,7 @@ static const struct extReg serverExtensions[] = {
 	{"InventoryOrder", 1},
 	{"EnvWeatherType", 1},
 	{"BlockPermissions", 1},
+	{"ExtEntityPositions", 1},
 	{NULL, 0}
 };
 
@@ -87,6 +88,7 @@ void Packet_RegisterCPEDefault(void) {
 	Packet_Register(0x11, "ExtEntry", 69, CPEHandler_ExtEntry);
 	Packet_Register(0x2B, "TwoWayPing", 4, CPEHandler_TwoWayPing);
 	Packet_Register(0x22, "PlayerClick", 15, CPEHandler_PlayerClick);
+	Packet_RegisterCPE(0x08, "ExtEntityPositions", 1, 16, CPEHandler_PosAndOrient);
 }
 
 void CPEPacket_WriteInfo(CLIENT client) {
@@ -195,12 +197,26 @@ void CPEPacket_WriteBlockPerm(CLIENT client, BlockID id, bool allowPlace, bool a
 	CPE packet handlers
 */
 
-#define ValidateClientState(client, st) \
-if(!client->playerData || !client->cpeData || client->playerData->state != st) \
-	return false; \
+bool CPEHandler_PosAndOrient(CLIENT client, char* data) {
+	ValidateCpeClient(client, false);
+	ValidateClientState(client, STATE_INGAME, false);
+
+	if(client->cpeData && client->cpeData->heldBlock != *data) {
+		BlockID new = *data;
+		BlockID curr = client->cpeData->heldBlock;
+		Event_OnHeldBlockChange(client, &curr, &new);
+		client->cpeData->heldBlock = *data;
+	}
+
+	Client_ReadPos(client, ++data, true);
+	client->playerData->positionUpdated = true;
+
+	return true;
+}
 
 bool CPEHandler_ExtInfo(CLIENT client, char* data) {
-	ValidateClientState(client, STATE_MOTD);
+	ValidateCpeClient(client, false);
+	ValidateClientState(client, STATE_MOTD, false);
 
 	ReadNetString(data, (char**)&client->cpeData->appName); data += 63;
 	client->cpeData->_extCount = ntohs(*(uint16_t*)++data);
@@ -208,7 +224,8 @@ bool CPEHandler_ExtInfo(CLIENT client, char* data) {
 }
 
 bool CPEHandler_ExtEntry(CLIENT client, char* data) {
-	ValidateClientState(client, STATE_MOTD);
+	ValidateCpeClient(client, false);
+	ValidateClientState(client, STATE_MOTD, false);
 
 	EXT tmp = Memory_Alloc(1, sizeof(struct cpeExt));
 	ReadNetString(data, &tmp->name);data += 63;
@@ -230,6 +247,8 @@ bool CPEHandler_ExtEntry(CLIENT client, char* data) {
 }
 
 bool CPEHandler_TwoWayPing(CLIENT client, char* data) {
+	ValidateCpeClient(client, false);
+
 	if(*data == 0) {
 		CPEPacket_WriteTwoWayPing(client, 0, *(uint16_t*)++data);
 		return true;
@@ -241,7 +260,9 @@ bool CPEHandler_TwoWayPing(CLIENT client, char* data) {
 }
 
 bool CPEHandler_PlayerClick(CLIENT client, char* data) {
-	ValidateClientState(client, STATE_INGAME);
+	ValidateCpeClient(client, false);
+	ValidateClientState(client, STATE_INGAME, false);
+
 	char button = *data;
 	char action = *++data;
 	short yaw = ntohs(*(uint16_t*)++data); ++data;

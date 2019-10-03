@@ -2,6 +2,10 @@
 #define PACKETS_H
 #include "cpe.h"
 
+#define ValidateClientState(client, st, ret) \
+if(!client->playerData || client->playerData->state != st) \
+	return ret; \
+
 #define PacketWriter_Start(client) \
 char* data = client->wrbuf; \
 Mutex_Lock(client->mutex); \
@@ -19,12 +23,18 @@ typedef bool (*packetHandler)(CLIENT, char*);
 typedef struct packet {
 	const char* name;
 	uint16_t size;
+	bool haveCPEImp;
+	const char* extName;
+	int extVersion;
+	uint16_t extSize;
 	packetHandler handler;
+	packetHandler cpeHandler;
 } *PACKET;
 
 PACKET Packet_Get(int id);
 short Packet_GetSize(int id, CLIENT client);
 API void Packet_Register(int id, const char* name, uint16_t size, packetHandler handler);
+API void Packet_RegisterCPE(int id, const char* extName, int extVersion, uint16_t extSize, packetHandler handler);
 void Packet_RegisterDefault(void);
 void Packet_RegisterCPEDefault(void);
 

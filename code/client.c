@@ -188,13 +188,15 @@ bool Client_IsInWorld(CLIENT client, WORLD world) {
 	return client->playerData && client->playerData->world == world;
 }
 
-bool Client_IsSupportExt(CLIENT client, const char* extName) {
+bool Client_IsSupportExt(CLIENT client, const char* extName, int* verPtr) {
 	if(!client->cpeData) return false;
 
 	EXT ptr = client->cpeData->headExtension;
 	while(ptr) {
-		if(String_CaselessCompare(ptr->name, extName))
+		if(String_CaselessCompare(ptr->name, extName)) {
+			if(verPtr) *verPtr = ptr->version;
 			return true;
+		}
 		ptr = ptr->next;
 	}
 	return false;
@@ -222,7 +224,7 @@ void Client_SetPos(CLIENT client, VECTOR* pos, ANGLE* ang) {
 }
 
 bool Client_SetWeather(CLIENT client, Weather type) {
-	if(Client_IsSupportExt(client, "EnvWeatherType")) {
+	if(Client_IsSupportExt(client, "EnvWeatherType", NULL)) {
 		CPEPacket_WriteWeatherType(client, type);
 		return true;
 	}
@@ -238,7 +240,7 @@ bool Client_SetType(CLIENT client, bool isOP) {
 
 bool Client_SetHotbar(CLIENT client, Order pos, BlockID block) {
 	if(!Block_IsValid(block) || pos > 8) return false;
-	if(Client_IsSupportExt(client, "SetHotbar")) {
+	if(Client_IsSupportExt(client, "SetHotbar", NULL)) {
 		CPEPacket_WriteSetHotBar(client, pos, block);
 		return true;
 	}
@@ -247,7 +249,7 @@ bool Client_SetHotbar(CLIENT client, Order pos, BlockID block) {
 
 bool Client_SetBlockPerm(CLIENT client, BlockID block, bool allowPlace, bool allowDestroy) {
 	if(!Block_IsValid(block)) return false;
-	if(Client_IsSupportExt(client, "BlockPermissions")) {
+	if(Client_IsSupportExt(client, "BlockPermissions", NULL)) {
 		CPEPacket_WriteBlockPerm(client, block, allowPlace, allowDestroy);
 		return true;
 	}
@@ -261,7 +263,7 @@ bool Client_SetModel(CLIENT client, const char* model) {
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT other = Client_GetByID(i);
-		if(!other || Client_IsSupportExt(other, "SetModel")) continue;
+		if(!other || Client_IsSupportExt(other, "SetModel", NULL)) continue;
 		CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, model);
 	}
 
@@ -413,8 +415,22 @@ void Client_HandlePacket(CLIENT client) {
 	char* data = client->rdbuf;
 	uint8_t id = *data; ++data;
 	PACKET packet = Packet_Get(id);
+	bool ret = false, cpePacket = false;
 
-	if(!packet || !packet->handler(client, data)) {
-		Client_Kick(client, "Packet reading error");
+	if(packet->haveCPEImp) {
+		int version = 0;
+		cpePacket = Client_IsSupportExt(client, packet->extName, &version);
+		if(cpePacket) cpePacket = version == packet->extVersion;
 	}
+
+	if(cpePacket)
+		if(!packet->cpeHandler)
+			ret = packet->handler(client, data);
+		else
+			ret = packet->cpeHandler(client, data);
+	else
+		if(packet->handler)
+			ret = packet->handler(client, data);
+
+	if(!ret) Client_Kick(client, "Packet reading error");
 }

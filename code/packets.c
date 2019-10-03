@@ -29,28 +29,49 @@ void WriteNetString(char* data, const char* string) {
 	Memory_Copy(data, string, size);
 }
 
-void ReadClPos(CLIENT client, char* data) {
+void Client_ReadPos(CLIENT client, char* data, bool extended) {
 	VECTOR* vec = client->playerData->position;
 	ANGLE* ang = client->playerData->angle;
 
-	vec->x = (float)ntohs(*(short*)data) / 32;++data;
-	vec->y = (float)ntohs(*(short*)++data) / 32;++data;
-	vec->z = (float)ntohs(*(short*)++data) / 32;++data;
-	ang->yaw = (((float)(uint8_t)*++data) / 256) * 360;
-	ang->pitch = (((float)(uint8_t)*++data) / 256) * 360;
+	if(extended) {
+		vec->x = (float)ntohl(*(int*)data) / 32; data += 3;
+		vec->y = (float)ntohl(*(int*)++data) / 32; data += 3;
+		vec->z = (float)ntohl(*(int*)++data) / 32; data += 3;
+		ang->yaw = (((float)(uint8_t)*++data) / 256) * 360;
+		ang->pitch = (((float)(uint8_t)*++data) / 256) * 360;
+	} else {
+		vec->x = (float)ntohs(*(short*)data) / 32; ++data;
+		vec->y = (float)ntohs(*(short*)++data) / 32; ++data;
+		vec->z = (float)ntohs(*(short*)++data) / 32; ++data;
+		ang->yaw = (((float)(uint8_t)*++data) / 256) * 360;
+		ang->pitch = (((float)(uint8_t)*++data) / 256) * 360;
+	}
 }
 
-char* WriteClPos(char* data, CLIENT client, bool stand) {
+uint32_t WriteClPos(char* data, CLIENT client, bool stand, bool extended) {
 	VECTOR* vec = client->playerData->position;
 	ANGLE* ang = client->playerData->angle;
 
-	*(uint16_t*)data = htons((uint16_t)(vec->x * 32));++data;
-	*(uint16_t*)++data = htons((uint16_t)(vec->y * 32 + (stand ? 51 : 0)));++data;
-	*(uint16_t*)++data = htons((uint16_t)(vec->z * 32));++data;
-	*(uint8_t*)++data = (uint8_t)((ang->yaw / 360) * 256);
-	*(uint8_t*)++data = (uint8_t)((ang->pitch / 360) * 256);
+	uint32_t x = (uint32_t)(vec->x * 32), y = (uint32_t)(vec->y * 32 + (stand ? 51 : 0)), z = (uint32_t)(vec->z * 32);
+	uint8_t yaw = (uint8_t)((ang->yaw / 360) * 256), pitch = (uint8_t)((ang->pitch / 360) * 256);
 
-	return data;
+	if(extended) {
+		*(uint32_t*)data = htonl((uint32_t)x); data += 3;
+		*(uint32_t*)++data = htonl((uint32_t)y); data += 3;
+		*(uint32_t*)++data = htonl((uint32_t)z); data += 3;
+		*(uint8_t*)++data = (uint8_t)yaw;
+		*(uint8_t*)++data = (uint8_t)pitch;
+
+		return 12;
+	} else {
+		*(uint16_t*)data = htons((uint16_t)x); ++data;
+		*(uint16_t*)++data = htons((uint16_t)y); ++data;
+		*(uint16_t*)++data = htons((uint16_t)z); ++data;
+		*(uint8_t*)++data = (uint8_t)yaw;
+		*(uint8_t*)++data = (uint8_t)pitch;
+
+		return 6;
+	}
 }
 
 void Packet_Register(int id, const char* name, uint16_t size, packetHandler handler) {
@@ -60,6 +81,16 @@ void Packet_Register(int id, const char* name, uint16_t size, packetHandler hand
 	tmp->size = size;
 	tmp->handler = handler;
 	Packets_List[id] = tmp;
+}
+
+void Packet_RegisterCPE(int id, const char* name, int version, uint16_t size, packetHandler handler) {
+	PACKET tmp = Packets_List[id];
+
+	tmp->extName = name;
+	tmp->extVersion = version;
+	tmp->cpeHandler = handler;
+	tmp->extSize = size;
+	tmp->haveCPEImp = true;
 }
 
 void Packet_RegisterDefault(void) {
@@ -74,8 +105,13 @@ PACKET Packet_Get(int id) {
 }
 
 short Packet_GetSize(int id, CLIENT client) {
-	PACKET packet = Packets_List[id];
-	return packet ? packet->size : -1;
+	PACKET packet = Packet_Get(id);
+	if(!packet) return -1;
+
+	if(packet->haveCPEImp)
+		return Client_IsSupportExt(client, packet->extName, NULL) ? packet->extSize : packet->size;
+	else
+		return packet->size;
 }
 
 /*
@@ -145,9 +181,10 @@ void Packet_WriteSpawn(CLIENT client, CLIENT other) {
 	*data = 0x07;
 	*++data = client == other ? 0xFF : other->id;
 	WriteNetString(++data, other->playerData->name); data += 63;
-	WriteClPos(++data, other, true);
+	bool extended = Client_IsSupportExt(client, "ExtEntityPositions", NULL);
+	uint32_t len = WriteClPos(++data, other, true, extended);
 
-	PacketWriter_End(client, 74);
+	PacketWriter_End(client, 68 + len);
 }
 
 void Packet_WriteDespawn(CLIENT client, CLIENT other) {
@@ -164,9 +201,10 @@ void Packet_WritePosAndOrient(CLIENT client, CLIENT other) {
 
 	*data = 0x08;
 	*++data = client == other ? 0xFF : other->id;
-	WriteClPos(++data, other, false);
+	bool extended = Client_IsSupportExt(client, "ExtEntityPositions", NULL);
+	uint32_t len = WriteClPos(++data, other, false, extended);
 
-	PacketWriter_End(client, 10);
+	PacketWriter_End(client, 4 + len);
 }
 
 void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg) {
@@ -248,12 +286,8 @@ bool Handler_Handshake(CLIENT client, char* data) {
 	return true;
 }
 
-#define ValidateClient(client) \
-if(!client->playerData || client->playerData->state != STATE_INGAME || !client->playerData->spawned) \
-	return true; \
-
 bool Handler_SetBlock(CLIENT client, char* data) {
-	ValidateClient(client);
+	ValidateClientState(client, STATE_INGAME, false);
 
 	WORLD world = client->playerData->world;
 	if(!world) return false;
@@ -291,7 +325,7 @@ bool Handler_SetBlock(CLIENT client, char* data) {
 }
 
 bool Handler_PosAndOrient(CLIENT client, char* data) {
-	ValidateClient(client);
+	ValidateClientState(client, STATE_INGAME, false);
 
 	if(client->cpeData && client->cpeData->heldBlock != *data) {
 		BlockID new = *data;
@@ -300,13 +334,13 @@ bool Handler_PosAndOrient(CLIENT client, char* data) {
 		client->cpeData->heldBlock = *data;
 	}
 
-	ReadClPos(client, ++data);
+	Client_ReadPos(client, ++data, false);
 	client->playerData->positionUpdated = true;
 	return true;
 }
 
 bool Handler_Message(CLIENT client, char* data) {
-	ValidateClient(client);
+	ValidateClientState(client, STATE_INGAME, true);
 
 	char* message;
 	MessageType type = 0;

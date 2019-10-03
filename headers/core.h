@@ -113,7 +113,7 @@ enum messageTypes {
 
 typedef struct cpeExt {
 	const char* name;
-	int   version;
+	int version;
 	struct cpeExt*  next;
 } *EXT;
 
