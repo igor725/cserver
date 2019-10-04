@@ -33,7 +33,7 @@ void World_SetDimensions(WORLD world, uint16_t width, uint16_t height, uint16_t 
 void World_SetWeather(WORLD world, Weather type) {
 	world->info->wt = type;
 	Event_Call(EVT_ONWEATHER, world);
-	for(int i = 0; i < MAX_CLIENTS; i++) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT client = Clients_List[i];
 		if(client && Client_IsInWorld(client, world))
 			Client_SetWeather(client, type);

@@ -199,10 +199,29 @@ void Packet_WritePosAndOrient(CLIENT client, CLIENT other) {
 
 void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg) {
 	PacketWriter_Start(client);
+	if(client == Broadcast) {
+		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+			CLIENT tg = Clients_List[i];
+			if(tg) Packet_WriteChat(tg, type, mesg);
+		}
+		PacketWriter_Stop(client);
+		return;
+	}
+
+	char mesg_out[64] = {0};
+	String_Copy(mesg_out, 64, mesg);
+
+	if(!Client_IsSupportExt(client, "FullCP437", 1)) {
+		for(int i = 0; i < 64; i++) {
+			if(mesg_out[i] == '\0') break;
+			if(mesg_out[i] < ' ' || mesg_out[i] > '~')
+				mesg_out[i] = '?';
+		}
+	}
 
 	*data = 0x0D;
 	*++data = type;
-	WriteNetString(++data, mesg);
+	WriteNetString(++data, mesg_out);
 
 	PacketWriter_End(client, 66);
 }

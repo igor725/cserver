@@ -14,7 +14,7 @@ ClientID Client_FindFreeID(void) {
 }
 
 CLIENT Client_GetByName(const char* name) {
-	for(int i = 0; i < MAX_CLIENTS; i++) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT client = Clients_List[i];
 		if(!client || !client->playerData) continue;
 		if(String_CaselessCompare(client->playerData->name, name))
@@ -196,7 +196,7 @@ void Client_Init(void) {
 void Client_UpdateBlock(CLIENT client, WORLD world, uint16_t x, uint16_t y, uint16_t z) {
 	BlockID block = World_GetBlock(world, x, y, z);
 
-	for(int i = 0; i < MAX_CLIENTS; i++) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT other = Clients_List[i];
 		if(!other || other == client) continue;
 		if(!Client_IsInGame(other) || !Client_IsInWorld(other, world)) continue;
@@ -355,7 +355,7 @@ bool Client_Spawn(CLIENT client) {
 	if(client->playerData->spawned) return false;
 
 	Client_SetWeather(client, client->playerData->world->info->wt);
-	for(int i = 0; i < MAX_CLIENTS; i++) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT other = Clients_List[i];
 		if(!other) continue;
 
@@ -414,7 +414,7 @@ void Client_UpdatePositions(CLIENT client) {
 	if(!client->playerData->positionUpdated) return;
 	client->playerData->positionUpdated = false;
 
-	for(int i = 0; i < MAX_CLIENTS; i++) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT other = Clients_List[i];
 		if(other && client != other && Client_IsInGame(other) && Client_IsInSameWorld(client, other))
 			Packet_WritePosAndOrient(other, client);

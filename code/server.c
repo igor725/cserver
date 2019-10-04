@@ -126,7 +126,7 @@ bool Server_InitialWork(void) {
 
 void Server_DoStep(void) {
 	Event_Call(EVT_ONTICK, NULL);
-	for(int i = 0; i < MAX_CLIENTS; i++) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT client = Clients_List[i];
 		if(client)
 			Client_Tick(client);
