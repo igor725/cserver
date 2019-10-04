@@ -93,7 +93,7 @@ typedef uint8_t  MessageType;
 
 #define CFG_STRLEN 128
 
-#define WORLD_MAGIC 1413563479
+#define WORLD_MAGIC 0x54414457
 
 #define DEFAULT_NAME "Server name"
 #define DEFAULT_MOTD "Server MOTD"

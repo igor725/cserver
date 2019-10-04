@@ -250,6 +250,22 @@ void Client_SetPos(CLIENT client, VECTOR* pos, ANGLE* ang) {
 	Memory_Copy(client->playerData->angle, ang, sizeof(ANGLE));
 }
 
+bool Client_SetProperty(CLIENT client, uint8_t property, int value) {
+	if(Client_IsSupportExt(client, "EnvMapAspect", 1)) {
+		CPEPacket_WriteMapProperty(client, property, value);
+		return true;
+	}
+	return false;
+}
+
+bool Client_SetTexturePack(CLIENT client, const char* url) {
+	if(Client_IsSupportExt(client, "EnvMapAspect", 1)) {
+		CPEPacket_WriteTexturePack(client, url);
+		return true;
+	}
+	return false;
+}
+
 bool Client_SetWeather(CLIENT client, Weather type) {
 	if(Client_IsSupportExt(client, "EnvWeatherType", 1)) {
 		CPEPacket_WriteWeatherType(client, type);
@@ -353,8 +369,13 @@ int Client_Send(CLIENT client, int len) {
 
 bool Client_Spawn(CLIENT client) {
 	if(client->playerData->spawned) return false;
+	WORLD world = client->playerData->world;
 
-	Client_SetWeather(client, client->playerData->world->info->wt);
+	Client_SetWeather(client, world->info->wt);
+	for(uint8_t prop = 0; prop < WORLD_PROPS_COUNT; prop++) {
+		Client_SetProperty(client, prop, World_GetProperty(world, prop));
+	}
+
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT other = Clients_List[i];
 		if(!other) continue;

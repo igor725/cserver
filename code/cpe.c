@@ -159,6 +159,25 @@ void CPEPacket_WriteWeatherType(CLIENT client, Weather type) {
 	PacketWriter_End(client, 2);
 }
 
+void CPEPacket_WriteTexturePack(CLIENT client, const char* url) {
+	PacketWriter_Start(client);
+
+	*data = 0x28;
+	String_Copy(++data, 64, url);
+
+	PacketWriter_End(client, 65);
+}
+
+void CPEPacket_WriteMapProperty(CLIENT client, uint8_t property, int value) {
+	PacketWriter_Start(client);
+
+	*data = 0x29;
+	*++data = property;
+	*(int*)++data = htonl(value);
+
+	PacketWriter_End(client, 6);
+}
+
 void CPEPacket_WriteTwoWayPing(CLIENT client, uint8_t direction, short num) {
 	PacketWriter_Start(client);
 	if(client->playerData->state != STATE_INGAME) {

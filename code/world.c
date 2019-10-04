@@ -7,10 +7,20 @@ WORLD World_Create(const char* name) {
 	WORLD tmp = Memory_Alloc(1, sizeof(struct world));
 
 	tmp->name = String_AllocCopy(name);
-	tmp->info = Memory_Alloc(1, sizeof(struct worldInfo));
-	tmp->info->dim = Memory_Alloc(1, sizeof(struct worldDims));
-	tmp->info->spawnVec = Memory_Alloc(1, sizeof(VECTOR));
-	tmp->info->spawnAng = Memory_Alloc(1, sizeof(ANGLE));
+	WORLDINFO wi = Memory_Alloc(1, sizeof(struct worldInfo));
+	wi->dim = Memory_Alloc(1, sizeof(struct worldDims));
+	wi->spawnVec = Memory_Alloc(1, sizeof(VECTOR));
+	wi->spawnAng = Memory_Alloc(1, sizeof(ANGLE));
+	wi->props[PROP_SIDEBLOCK] = 7;
+	wi->props[PROP_EDGEBLOCK] = 8;
+	wi->props[PROP_FOGDIST] = 0;
+	wi->props[PROP_SPDCLOUDS] = 256;
+	wi->props[PROP_SPDWEATHER] = 256;
+	wi->props[PROP_FADEWEATHER] = 128;
+	wi->props[PROP_EXPFOG] = 0;
+	wi->props[PROP_SIDEOFFSET] = -2;
+	tmp->info = wi;
+
 	return tmp;
 }
 
@@ -30,7 +40,43 @@ void World_SetDimensions(WORLD world, uint16_t width, uint16_t height, uint16_t 
 	wd->length = length;
 }
 
-void World_SetWeather(WORLD world, Weather type) {
+bool World_SetProperty(WORLD world, uint8_t property, int value) {
+	if(property > WORLD_PROPS_COUNT) return false;
+
+	world->info->props[property] = value;
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		CLIENT client = Clients_List[i];
+		if(client && Client_IsInWorld(client, world))
+			Client_SetProperty(client, property, value);
+	}
+
+	return true;
+}
+
+int World_GetProperty(WORLD world, uint8_t property) {
+	if(property > WORLD_PROPS_COUNT) return 0;
+	return world->info->props[property];
+}
+
+bool World_SetTexturePack(WORLD world, const char* url) {
+	if(!url) {
+		world->info->texturepack[0] = '\0';
+		return true;
+	}
+	if(String_Copy(world->info->texturepack, 64, url) == String_Length(url)) {
+		world->info->texturepack[0] = '\0';
+		return true;
+	}
+	return false;
+}
+
+const char* World_GetTexturePack(WORLD world) {
+	return world->info->texturepack;
+}
+
+bool World_SetWeather(WORLD world, Weather type) {
+	if(type > 2) return false;
+
 	world->info->wt = type;
 	Event_Call(EVT_ONWEATHER, world);
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
@@ -38,6 +84,7 @@ void World_SetWeather(WORLD world, Weather type) {
 		if(client && Client_IsInWorld(client, world))
 			Client_SetWeather(client, type);
 	}
+	return true;
 }
 
 Weather World_GetWeather(WORLD world) {
@@ -74,12 +121,15 @@ bool _WriteData(FILE* fp, uint8_t dataType, void* ptr, int size) {
 
 bool World_WriteInfo(WORLD world, FILE* fp) {
 	int magic = WORLD_MAGIC;
-	if(!File_Write((char*)&magic, 4, 1, fp))
+	if(!File_Write((char*)&magic, 4, 1, fp)) {
+		Error_PrintSys;
 		return false;
+	}
 	return _WriteData(fp, DT_DIM, world->info->dim, sizeof(struct worldDims)) &&
 	_WriteData(fp, DT_SV, world->info->spawnVec, sizeof(VECTOR)) &&
 	_WriteData(fp, DT_SA, world->info->spawnAng, sizeof(ANGLE)) &&
 	_WriteData(fp, DT_WT, &world->info->wt, sizeof(Weather)) &&
+	_WriteData(fp, DT_PROPS, world->info->props, sizeof(int) * WORLD_PROPS_COUNT) &&
 	_WriteData(fp, DT_END, NULL, 0);
 }
 
@@ -90,7 +140,7 @@ bool World_ReadInfo(WORLD world, FILE* fp) {
 		return false;
 
 	if(WORLD_MAGIC != magic) {
-		Error_Print2(ET_SERVER, EC_MAGIC, false);
+		Error_Print2(ET_SERVER, EC_MAGIC, true);
 		return false;
 	}
 
@@ -112,6 +162,10 @@ bool World_ReadInfo(WORLD world, FILE* fp) {
 				if(File_Read(&world->info->wt, sizeof(Weather), 1, fp) != 1)
 					return false;
 				break;
+			case DT_PROPS:
+				if(File_Read(world->info->props, sizeof(int) * WORLD_PROPS_COUNT, 1, fp) != 1)
+					return false;
+				break;
 			case DT_END:
 				return true;
 			default:
@@ -130,8 +184,7 @@ bool World_Save(WORLD world) {
 	String_FormatBuf(tmpname, 256, "worlds/%s.tmp", world->name);
 
 	FILE* fp = File_Open(tmpname, "wb");
-	if(!fp)
-		return false;
+	if(!fp) return false;
 
 	if(!World_WriteInfo(world, fp)) {
 		File_Close(fp);
@@ -179,8 +232,9 @@ bool World_Load(WORLD world) {
 	if(!World_ReadInfo(world, fp)) {
 		File_Close(fp);
 		return false;
-	} else
-		World_AllocBlockArray(world);
+	}
+
+	World_AllocBlockArray(world);
 
 	z_stream stream = {0};
 	uint8_t in[1024];
