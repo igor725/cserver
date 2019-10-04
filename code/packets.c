@@ -104,16 +104,6 @@ PACKET Packet_Get(int id) {
 	return id < MAX_PACKETS ? Packets_List[id] : NULL;
 }
 
-short Packet_GetSize(int id, CLIENT client) {
-	PACKET packet = Packet_Get(id);
-	if(!packet) return -1;
-
-	if(packet->haveCPEImp)
-		return Client_IsSupportExt(client, packet->extName, NULL) ? packet->extSize : packet->size;
-	else
-		return packet->size;
-}
-
 /*
 	VANILLA
 */
@@ -181,7 +171,7 @@ void Packet_WriteSpawn(CLIENT client, CLIENT other) {
 	*data = 0x07;
 	*++data = client == other ? 0xFF : other->id;
 	WriteNetString(++data, other->playerData->name); data += 63;
-	bool extended = Client_IsSupportExt(client, "ExtEntityPositions", NULL);
+	bool extended = Client_IsSupportExt(client, "ExtEntityPositions", 1);
 	uint32_t len = WriteClPos(++data, other, true, extended);
 
 	PacketWriter_End(client, 68 + len);
@@ -201,7 +191,7 @@ void Packet_WritePosAndOrient(CLIENT client, CLIENT other) {
 
 	*data = 0x08;
 	*++data = client == other ? 0xFF : other->id;
-	bool extended = Client_IsSupportExt(client, "ExtEntityPositions", NULL);
+	bool extended = Client_IsSupportExt(client, "ExtEntityPositions", 1);
 	uint32_t len = WriteClPos(++data, other, false, extended);
 
 	PacketWriter_End(client, 4 + len);

@@ -32,7 +32,6 @@ typedef struct packet {
 } *PACKET;
 
 PACKET Packet_Get(int id);
-short Packet_GetSize(int id, CLIENT client);
 API void Packet_Register(int id, const char* name, uint16_t size, packetHandler handler);
 API void Packet_RegisterCPE(int id, const char* extName, int extVersion, uint16_t extSize, packetHandler handler);
 void Packet_RegisterDefault(void);

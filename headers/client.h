@@ -54,7 +54,7 @@ void Client_UpdateBlock(CLIENT client, WORLD world, uint16_t x, uint16_t y, uint
 void Client_ReadPos(CLIENT client, char* data, bool extended);
 void Client_SetPos(CLIENT client, VECTOR* vec, ANGLE* ang);
 int  Client_Send(CLIENT client, int len);
-void Client_HandlePacket(CLIENT client);
+void Client_HandlePacket(CLIENT client, bool extended);
 void Client_HandshakeStage2(CLIENT client);
 bool Client_CheckAuth(CLIENT client);
 TRET Client_ThreadProc(TARG lpParam);
@@ -68,7 +68,7 @@ API void Client_Chat(CLIENT client, MessageType type, const char* message);
 API void Client_Kick(CLIENT client, const char* reason);
 API bool Client_SendMap(CLIENT client, WORLD world);
 
-API bool Client_IsSupportExt(CLIENT client, const char* packetName, int* verPtr);
+API bool Client_IsSupportExt(CLIENT client, const char* extName, int extVer);
 API bool Client_IsInSameWorld(CLIENT client, CLIENT other);
 API bool Client_IsInWorld(CLIENT client, WORLD world);
 API bool Client_IsInGame(CLIENT client);

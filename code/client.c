@@ -55,6 +55,9 @@ void Client_Chat(CLIENT client, MessageType type, const char* message) {
 TRET Client_ThreadProc(TARG lpParam) {
 	CLIENT client = (CLIENT)lpParam;
 
+	short packetSize = 0, wait = 1;
+	bool extended = false;
+
 	while(1) {
 		if(client->status == CLIENT_WAITCLOSE) {
 			int len = recv(client->sock, client->rdbuf, 131, 0);
@@ -69,23 +72,7 @@ TRET Client_ThreadProc(TARG lpParam) {
 			continue;
 		}
 
-		uint16_t wait = 1;
-
-		if(client->bufpos > 0) {
-			short packetSize = Packet_GetSize(*client->rdbuf, client);
-
-			if(packetSize < 1) {
-				Client_Kick(client, "Invalid packet ID");
-				continue;
-			}
-			wait = packetSize - client->bufpos;
-		}
-
-		if(wait == 0) {
-			Client_HandlePacket(client);
-			client->bufpos = 0;
-			continue;
-		} else if(wait > 0) {
+		if(wait > 0) {
 			int len = recv(client->sock, client->rdbuf + client->bufpos, wait, 0);
 
 			if(len > 0) {
@@ -93,6 +80,30 @@ TRET Client_ThreadProc(TARG lpParam) {
 			} else {
 				Client_Disconnect(client);
 			}
+		}
+
+		if(client->bufpos == 1) {
+			PACKET packet = Packet_Get(*client->rdbuf);
+			if(!packet) {
+				Client_Kick(client, "Invalid packet ID");
+				continue;
+			}
+
+			packetSize = packet->size;
+			if(packet->haveCPEImp) {
+				extended = Client_IsSupportExt(client, packet->extName, packet->extVersion);
+				if(extended) packetSize = packet->extSize;
+			}
+
+			wait = packetSize - client->bufpos;
+		}
+
+		if(client->bufpos == packetSize) {
+			Client_HandlePacket(client, extended);
+			client->bufpos = 0;
+			extended = false;
+			wait = 1;
+			continue;
 		}
 	}
 
@@ -188,14 +199,13 @@ bool Client_IsInWorld(CLIENT client, WORLD world) {
 	return client->playerData && client->playerData->world == world;
 }
 
-bool Client_IsSupportExt(CLIENT client, const char* extName, int* verPtr) {
+bool Client_IsSupportExt(CLIENT client, const char* extName, int extVer) {
 	if(!client->cpeData) return false;
 
 	EXT ptr = client->cpeData->headExtension;
 	while(ptr) {
 		if(String_CaselessCompare(ptr->name, extName)) {
-			if(verPtr) *verPtr = ptr->version;
-			return true;
+			return ptr->version == extVer;
 		}
 		ptr = ptr->next;
 	}
@@ -224,7 +234,7 @@ void Client_SetPos(CLIENT client, VECTOR* pos, ANGLE* ang) {
 }
 
 bool Client_SetWeather(CLIENT client, Weather type) {
-	if(Client_IsSupportExt(client, "EnvWeatherType", NULL)) {
+	if(Client_IsSupportExt(client, "EnvWeatherType", 1)) {
 		CPEPacket_WriteWeatherType(client, type);
 		return true;
 	}
@@ -240,7 +250,7 @@ bool Client_SetType(CLIENT client, bool isOP) {
 
 bool Client_SetHotbar(CLIENT client, Order pos, BlockID block) {
 	if(!Block_IsValid(block) || pos > 8) return false;
-	if(Client_IsSupportExt(client, "SetHotbar", NULL)) {
+	if(Client_IsSupportExt(client, "SetHotbar", 1)) {
 		CPEPacket_WriteSetHotBar(client, pos, block);
 		return true;
 	}
@@ -249,7 +259,7 @@ bool Client_SetHotbar(CLIENT client, Order pos, BlockID block) {
 
 bool Client_SetBlockPerm(CLIENT client, BlockID block, bool allowPlace, bool allowDestroy) {
 	if(!Block_IsValid(block)) return false;
-	if(Client_IsSupportExt(client, "BlockPermissions", NULL)) {
+	if(Client_IsSupportExt(client, "BlockPermissions", 1)) {
 		CPEPacket_WriteBlockPerm(client, block, allowPlace, allowDestroy);
 		return true;
 	}
@@ -263,7 +273,7 @@ bool Client_SetModel(CLIENT client, const char* model) {
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT other = Client_GetByID(i);
-		if(!other || Client_IsSupportExt(other, "SetModel", NULL)) continue;
+		if(!other || Client_IsSupportExt(other, "SetModel", 1)) continue;
 		CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, model);
 	}
 
@@ -411,19 +421,13 @@ void Client_Tick(CLIENT client) {
 	}
 }
 
-void Client_HandlePacket(CLIENT client) {
+void Client_HandlePacket(CLIENT client, bool extended) {
 	char* data = client->rdbuf;
 	uint8_t id = *data; ++data;
 	PACKET packet = Packet_Get(id);
-	bool ret = false, cpePacket = false;
+	bool ret = false;
 
-	if(packet->haveCPEImp) {
-		int version = 0;
-		cpePacket = Client_IsSupportExt(client, packet->extName, &version);
-		if(cpePacket) cpePacket = version == packet->extVersion;
-	}
-
-	if(cpePacket)
+	if(extended)
 		if(!packet->cpeHandler)
 			ret = packet->handler(client, data);
 		else
