@@ -52,11 +52,28 @@ void Client_Chat(CLIENT client, MessageType type, const char* message) {
 	Packet_WriteChat(client, type, message);
 }
 
+static void HandlePacket(CLIENT client, PACKET packet, bool extended) {
+	char* data = client->rdbuf + 1;
+	bool ret = false;
+
+	if(extended)
+		if(!packet->cpeHandler)
+			ret = packet->handler(client, data);
+		else
+			ret = packet->cpeHandler(client, data);
+	else
+		if(packet->handler)
+			ret = packet->handler(client, data);
+
+	if(!ret) Client_Kick(client, "Packet reading error");
+}
+
 TRET Client_ThreadProc(TARG lpParam) {
 	CLIENT client = (CLIENT)lpParam;
 
 	short packetSize = 0, wait = 1;
 	bool extended = false;
+	PACKET packet = NULL;
 
 	while(1) {
 		if(client->status == CLIENT_WAITCLOSE) {
@@ -83,7 +100,7 @@ TRET Client_ThreadProc(TARG lpParam) {
 		}
 
 		if(client->bufpos == 1) {
-			PACKET packet = Packet_Get(*client->rdbuf);
+			packet = Packet_Get(*client->rdbuf);
 			if(!packet) {
 				Client_Kick(client, "Invalid packet ID");
 				continue;
@@ -99,7 +116,7 @@ TRET Client_ThreadProc(TARG lpParam) {
 		}
 
 		if(client->bufpos == packetSize) {
-			Client_HandlePacket(client, extended);
+			HandlePacket(client, packet, extended);
 			client->bufpos = 0;
 			extended = false;
 			wait = 1;
@@ -419,22 +436,4 @@ void Client_Tick(CLIENT client) {
 			Client_UpdatePositions(client);
 			break;
 	}
-}
-
-void Client_HandlePacket(CLIENT client, bool extended) {
-	char* data = client->rdbuf;
-	uint8_t id = *data; ++data;
-	PACKET packet = Packet_Get(id);
-	bool ret = false;
-
-	if(extended)
-		if(!packet->cpeHandler)
-			ret = packet->handler(client, data);
-		else
-			ret = packet->cpeHandler(client, data);
-	else
-		if(packet->handler)
-			ret = packet->handler(client, data);
-
-	if(!ret) Client_Kick(client, "Packet reading error");
 }

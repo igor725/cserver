@@ -54,7 +54,6 @@ void Client_UpdateBlock(CLIENT client, WORLD world, uint16_t x, uint16_t y, uint
 void Client_ReadPos(CLIENT client, char* data, bool extended);
 void Client_SetPos(CLIENT client, VECTOR* vec, ANGLE* ang);
 int  Client_Send(CLIENT client, int len);
-void Client_HandlePacket(CLIENT client, bool extended);
 void Client_HandshakeStage2(CLIENT client);
 bool Client_CheckAuth(CLIENT client);
 TRET Client_ThreadProc(TARG lpParam);
