@@ -6,13 +6,6 @@
 #include "event.h"
 #include "config.h"
 
-ClientID Client_FindFreeID(void) {
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		if(!Clients_List[i]) return i;
-	}
-	return (ClientID)-1;
-}
-
 CLIENT Client_GetByName(const char* name) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT client = Clients_List[i];
@@ -74,6 +67,8 @@ TRET Client_ThreadProc(TARG lpParam) {
 	short packetSize = 0, wait = 1;
 	bool extended = false;
 	PACKET packet = NULL;
+	time_t lasttime = 0;
+	uint16_t pps = 0;
 
 	while(1) {
 		if(client->status == CLIENT_WAITCLOSE) {
@@ -117,6 +112,15 @@ TRET Client_ThreadProc(TARG lpParam) {
 
 		if(client->bufpos == packetSize) {
 			HandlePacket(client, packet, extended);
+			time_t t = Time_Get();
+			if(lasttime != t) {
+				if(pps > CLIENT_MAX_PPS) {
+					Client_Kick(client, "Too many packets per second");
+				}
+				lasttime = t;
+				pps = 0;
+			}
+			pps += 1;
 			client->bufpos = 0;
 			extended = false;
 			wait = 1;
@@ -244,10 +248,10 @@ bool Client_CheckAuth(CLIENT client) {
 	return true;
 }
 
-void Client_SetPos(CLIENT client, VECTOR* pos, ANGLE* ang) {
+void Client_SetPos(CLIENT client, VECTOR pos, ANGLE ang) {
 	if(!client->playerData) return;
-	Memory_Copy(client->playerData->position, pos, sizeof(VECTOR));
-	Memory_Copy(client->playerData->angle, ang, sizeof(ANGLE));
+	Memory_Copy(client->playerData->position, pos, sizeof(struct vector));
+	Memory_Copy(client->playerData->angle, ang, sizeof(struct angle));
 }
 
 bool Client_SetProperty(CLIENT client, uint8_t property, int value) {
@@ -357,14 +361,14 @@ int Client_Send(CLIENT client, int len) {
 
 			if(bClient) {
 				Mutex_Lock(bClient->mutex);
-				send(bClient->sock, Broadcast->wrbuf, len, 0);
+				Socket_Send(bClient->sock, Broadcast->wrbuf, len);
 				Mutex_Unlock(bClient->mutex);
 			}
 		}
 		return len;
 	}
 
-	return send(client->sock, client->wrbuf, len, 0) == len;
+	return Socket_Send(client->sock, client->wrbuf, len) == len;
 }
 
 bool Client_Spawn(CLIENT client) {
@@ -421,7 +425,7 @@ void Client_HandshakeStage2(CLIENT client) {
 
 void Client_Disconnect(CLIENT client) {
 	Client_Despawn(client);
-	shutdown(client->sock, SD_SEND);
+	Socket_Shutdown(client->sock, SD_SEND);
 	client->status = CLIENT_WAITCLOSE;
 }
 

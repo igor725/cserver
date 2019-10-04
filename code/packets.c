@@ -30,8 +30,8 @@ void WriteNetString(char* data, const char* string) {
 }
 
 void Client_ReadPos(CLIENT client, char* data, bool extended) {
-	VECTOR* vec = client->playerData->position;
-	ANGLE* ang = client->playerData->angle;
+	VECTOR vec = client->playerData->position;
+	ANGLE ang = client->playerData->angle;
 
 	if(extended) {
 		vec->x = (float)ntohl(*(int*)data) / 32; data += 3;
@@ -49,8 +49,8 @@ void Client_ReadPos(CLIENT client, char* data, bool extended) {
 }
 
 uint32_t WriteClPos(char* data, CLIENT client, bool stand, bool extended) {
-	VECTOR* vec = client->playerData->position;
-	ANGLE* ang = client->playerData->angle;
+	VECTOR vec = client->playerData->position;
+	ANGLE ang = client->playerData->angle;
 
 	uint32_t x = (uint32_t)(vec->x * 32), y = (uint32_t)(vec->y * 32 + (stand ? 51 : 0)), z = (uint32_t)(vec->z * 32);
 	uint8_t yaw = (uint8_t)((ang->yaw / 360) * 256), pitch = (uint8_t)((ang->pitch / 360) * 256);
@@ -247,8 +247,8 @@ bool Handler_Handshake(CLIENT client, char* data) {
 	}
 
 	client->playerData = Memory_Alloc(1, sizeof(struct playerData));
-	client->playerData->position = Memory_Alloc(1, sizeof(VECTOR));
-	client->playerData->angle = Memory_Alloc(1, sizeof(ANGLE));
+	client->playerData->position = Memory_Alloc(1, sizeof(struct vector));
+	client->playerData->angle = Memory_Alloc(1, sizeof(struct angle));
 
 	if(client->addr == INADDR_LOOPBACK && Config_GetBool(Server_Config, "alwayslocalop"))
 		client->playerData->isOP = true;

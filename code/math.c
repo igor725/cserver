@@ -9,12 +9,12 @@ void Random_Seed(RNGState* seed, int seedInit) {
 }
 
 int Random_Next(RNGState* seed, int n) {
-	int64 raw;
+	int64_t raw;
 	int bits, val;
 
 	if ((n & -n) == n) { /* i.e., n is a power of 2 */
 		*seed = (*seed * RND_VALUE + 0xBLL) & RND_MASK;
-		raw   = (int64)(*seed >> (48 - 31));
+		raw   = (int64_t)(*seed >> (48 - 31));
 		return (int)((n * raw) >> 31);
 	}
 

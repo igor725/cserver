@@ -5,12 +5,13 @@
 
 WORLD World_Create(const char* name) {
 	WORLD tmp = Memory_Alloc(1, sizeof(struct world));
-
 	tmp->name = String_AllocCopy(name);
+
 	WORLDINFO wi = Memory_Alloc(1, sizeof(struct worldInfo));
 	wi->dim = Memory_Alloc(1, sizeof(struct worldDims));
-	wi->spawnVec = Memory_Alloc(1, sizeof(VECTOR));
-	wi->spawnAng = Memory_Alloc(1, sizeof(ANGLE));
+	wi->spawnVec = Memory_Alloc(1, sizeof(struct vector));
+	wi->spawnAng = Memory_Alloc(1, sizeof(struct angle));
+	
 	wi->props[PROP_SIDEBLOCK] = 7;
 	wi->props[PROP_EDGEBLOCK] = 8;
 	wi->props[PROP_FOGDIST] = 0;
@@ -126,8 +127,8 @@ bool World_WriteInfo(WORLD world, FILE* fp) {
 		return false;
 	}
 	return _WriteData(fp, DT_DIM, world->info->dim, sizeof(struct worldDims)) &&
-	_WriteData(fp, DT_SV, world->info->spawnVec, sizeof(VECTOR)) &&
-	_WriteData(fp, DT_SA, world->info->spawnAng, sizeof(ANGLE)) &&
+	_WriteData(fp, DT_SV, world->info->spawnVec, sizeof(struct vector)) &&
+	_WriteData(fp, DT_SA, world->info->spawnAng, sizeof(struct angle)) &&
 	_WriteData(fp, DT_WT, &world->info->wt, sizeof(Weather)) &&
 	_WriteData(fp, DT_PROPS, world->info->props, sizeof(int) * WORLD_PROPS_COUNT) &&
 	_WriteData(fp, DT_END, NULL, 0);
@@ -151,11 +152,11 @@ bool World_ReadInfo(WORLD world, FILE* fp) {
 					return false;
 				break;
 			case DT_SV:
-				if(File_Read(world->info->spawnVec, sizeof(VECTOR), 1, fp) != 1)
+				if(File_Read(world->info->spawnVec, sizeof(struct vector), 1, fp) != 1)
 					return false;
 				break;
 			case DT_SA:
-				if(File_Read(world->info->spawnAng, sizeof(ANGLE), 1, fp) != 1)
+				if(File_Read(world->info->spawnAng, sizeof(struct angle), 1, fp) != 1)
 					return false;
 				break;
 			case DT_WT:

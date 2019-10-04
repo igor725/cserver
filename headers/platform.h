@@ -80,6 +80,9 @@ bool DLib_GetSym(void* lib, const char* sname, void** sym);
 
 bool Socket_Init(void);
 API SOCKET Socket_Bind(const char* ip, uint16_t port);
+API SOCKET Socket_Accept(SOCKET sock, struct sockaddr_in* addr);
+API int Socket_Send(SOCKET sock, char* buf, int len);
+API void Socket_Shutdown(SOCKET sock, int how);
 API void Socket_Close(SOCKET sock);
 
 /*
@@ -106,6 +109,7 @@ API void Mutex_Unlock(MUTEX* handle);
 */
 
 API void Time_Format(char* buf, size_t len);
+API time_t Time_Get();
 
 /*
 	PROCESS FUNCTIONS

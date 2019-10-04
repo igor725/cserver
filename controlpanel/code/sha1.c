@@ -150,7 +150,7 @@ void SHA1Transform(uint32_t state[5], const uint8_t buffer[64])
 	/* Wipe variables */
 	a = b = c = d = e = 0;
 	#ifdef SHA1HANDSOFF
-	Memory_Fill(block, '\0', sizeof(block));
+	Memory_Fill(block, sizeof(block), 0);
 	#endif
 }
 
@@ -218,6 +218,6 @@ void SHA1Final(uint8_t digest[20], SHA1_CTX* context)
 		((context->state[i>>2] >> ((3-(i & 3)) * 8) ) & 255);
 	}
 	/* Wipe variables */
-	Memory_Fill(context, '\0', sizeof(*context));
-	Memory_Fill(&finalcount, '\0', sizeof(finalcount));
+	Memory_Fill(context, sizeof(*context), 0);
+	Memory_Fill(&finalcount, sizeof(finalcount), 0);
 }

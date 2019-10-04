@@ -1,10 +1,7 @@
 #include "core.h"
 #include <stdio.h>
 #include <stdlib.h>
-
-/*
-	MEMORY FUNCTIONS
-*/
+#include <time.h>
 
 void* Memory_Alloc(size_t num, size_t size) {
 	void* ptr;
@@ -25,10 +22,6 @@ void Memory_Fill(void* dst, size_t count, int val) {
 void Memory_Free(void* ptr) {
 	free(ptr);
 }
-
-/*
-	File functions
-*/
 
 bool File_Rename(const char* path, const char* newpath) {
 #if defined(WINDOWS)
@@ -67,17 +60,12 @@ bool File_Close(FILE* fp) {
 	return fclose(fp) != 0;
 }
 
-/*
-	Socket functions
-*/
-
 #if defined(WINDOWS)
 #define SOCKERR Error_Print2(ET_SYS, WSAGetLastError(), false); \
-return INVALID_SOCKET
+return INVALID_SOCKET;
 #elif defined(POSIX)
-#define closesocket close
 #define SOCKERR Error_Print2(ET_SYS, errno, false); \
-return INVALID_SOCKET
+return INVALID_SOCKET;
 #endif
 
 bool Socket_Init(void) {
@@ -93,13 +81,14 @@ bool Socket_Init(void) {
 SOCKET Socket_Bind(const char* ip, uint16_t port) {
 	SOCKET fd;
 
-	if(INVALID_SOCKET == (fd = socket(AF_INET, SOCK_STREAM, 0))) {
+	if((fd = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
 		SOCKERR;
 	}
 
 	struct sockaddr_in ssa;
 	ssa.sin_family = AF_INET;
 	ssa.sin_port = htons(port);
+
 	if(inet_pton(AF_INET, ip, &ssa.sin_addr.s_addr) <= 0) {
 		SOCKERR;
 	}
@@ -115,13 +104,30 @@ SOCKET Socket_Bind(const char* ip, uint16_t port) {
 	return fd;
 }
 
-void Socket_Close(SOCKET sock) {
-	closesocket(sock);
+SOCKET Socket_Accept(SOCKET sock, struct sockaddr_in* addr) {
+	socklen_t len = sizeof(struct sockaddr_in);
+	return accept(sock, (struct sockaddr*)addr, &len);
 }
 
-/*
-	Utils
-*/
+int Socket_Send(SOCKET sock, char* buf, int len) {
+	return send(sock, buf, len, 0);
+}
+
+void Socket_Shutdown(SOCKET sock, int how) {
+	shutdown(sock, how);
+}
+
+void Socket_Close(SOCKET sock) {
+#if defined(WINDOWS)
+	closesocket(sock);
+#elif defined(POSIX)
+	close(sock);
+#endif
+}
+
+time_t Time_Get() {
+	return time(NULL);
+}
 
 bool Directory_Ensure(const char* path) {
 	if(Directory_Exists(path)) return true;
@@ -129,10 +135,6 @@ bool Directory_Ensure(const char* path) {
 }
 
 #if defined(WINDOWS)
-/*
-	WINDOWS ITER FUNCTIONS
-*/
-
 #define isDir(iter) ((iter->fileHandle.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) > 0)
 
 bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
@@ -179,10 +181,6 @@ bool Iter_Close(dirIter* iter) {
 	return true;
 }
 
-/*
-	WINDOWS DIRECTORY FUNCTIONS
-*/
-
 bool Directory_Exists(const char* path) {
 	uint32_t attr = GetFileAttributes(path);
 	return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
@@ -191,10 +189,6 @@ bool Directory_Exists(const char* path) {
 bool Directory_Create(const char* path) {
 	return CreateDirectory(path, NULL);
 }
-
-/*
-	WINDOWS DLIB FUNCTIONS
-*/
 
 bool DLib_Load(const char* path, void** lib) {
 	return (*lib = LoadLibrary(path)) != NULL;
@@ -212,10 +206,6 @@ char* DLib_GetError(char* buf, size_t len) {
 bool DLib_GetSym(void* lib, const char* sname, void** sym) {
 	return (*sym = (void*)GetProcAddress(lib, sname)) != NULL;
 }
-
-/*
-	WINDOWS THREAD FUNCTIONS
-*/
 
 THREAD Thread_Create(TFUNC func, const TARG lpParam) {
 	THREAD th = CreateThread(
@@ -252,10 +242,6 @@ void Thread_Join(THREAD th) {
 	Thread_Close(th);
 }
 
-/*
-	WINDOWS MUTEX FUNCTIONS
-*/
-
 MUTEX* Mutex_Create(void) {
 	MUTEX* ptr = Memory_Alloc(1, sizeof(MUTEX));
 	if(!ptr) {
@@ -278,9 +264,6 @@ void Mutex_Unlock(MUTEX* handle) {
 	LeaveCriticalSection(handle);
 }
 
-/*
-	WINDOWS TIME FUNCTIONS
-*/
 void Time_Format(char* buf, size_t buflen) {
 	SYSTEMTIME time;
 	GetSystemTime(&time);
@@ -292,18 +275,10 @@ void Time_Format(char* buf, size_t buflen) {
 	);
 }
 
-/*
-	WINDOWS PROCESS FUNCTIONS
-*/
-
 void Process_Exit(uint32_t code) {
 	ExitProcess(code);
 }
 #elif defined(POSIX)
-/*
-	POSIX ITER FUNCTIONS
-*/
-
 bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
 	if(iter->state != 0) {
 		Error_Print2(ET_SERVER, EC_ITERINITED, false);
@@ -358,10 +333,6 @@ bool Iter_Close(dirIter* iter) {
 	return true;
 }
 
-/*
-	POSIX DIRECTORY FUNCTIONS
-*/
-
 bool Directory_Exists(const char* path) {
 	struct stat ss;
 	return stat(path, &ss) == 0 && S_ISDIR(ss.st_mode);
@@ -370,10 +341,6 @@ bool Directory_Exists(const char* path) {
 bool Directory_Create(const char* path) {
 	return mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0;
 }
-
-/*
-	POSIX DLIB FUNCTIONS
-*/
 
 bool DLib_Load(const char* path, void** lib) {
 	return (*lib = dlopen(path, RTLD_NOW)) != NULL;
@@ -391,10 +358,6 @@ char* DLib_GetError(char* buf, size_t len) {
 bool DLib_GetSym(void* lib, const char* sname, void** sym) {
 	return (*sym = dlsym(lib, sname)) != NULL;
 }
-
-/*
-	POSIX THREAD FUNCTIONS
-*/
 
 THREAD Thread_Create(TFUNC func, const TARG arg) {
 	THREAD thread = Memory_Alloc(1, sizeof(THREAD));
@@ -424,10 +387,6 @@ void Thread_Join(THREAD th) {
 		Error_Print2(ET_SYS, ret, true);
 	}
 }
-
-/*
-	WINDOWS MUTEX FUNCTIONS
-*/
 
 MUTEX* Mutex_Create(void) {
 	MUTEX* ptr = Memory_Alloc(1, sizeof(MUTEX));
@@ -461,10 +420,6 @@ void Mutex_Unlock(MUTEX* handle) {
 	}
 }
 
-/*
-	POSIX TIME FUNCTIONS
-*/
-
 void Time_Format(char* buf, size_t buflen) {
 	struct timeval tv;
 	struct tm* tm;
@@ -480,10 +435,6 @@ void Time_Format(char* buf, size_t buflen) {
 		);
 	}
 }
-
-/*
-	POSIX PROCESS FUNCTIONS
-*/
 
 void Process_Exit(uint32_t code) {
 	exit(code);

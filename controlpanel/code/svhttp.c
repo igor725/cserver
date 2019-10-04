@@ -91,7 +91,7 @@ static const WEBHEADER defaultHeaders[] = {
 };
 
 static int sendBuffer(WEBCLIENT wcl, size_t len) {
-	return send(wcl->sock, wcl->buffer, (uint32_t)len, 0);
+	return Socket_Send(wcl->sock, wcl->buffer, (uint32_t)len);
 }
 
 static void writeHTTPCode(WEBCLIENT wcl) {
@@ -225,7 +225,7 @@ static void freeWsClient(WEBCLIENT wcl) {
 }
 
 static void wclClose(WEBCLIENT wcl) {
-	shutdown(wcl->sock, SD_SEND);
+	Socket_Shutdown(wcl->sock, SD_SEND);
 	Socket_Close(wcl->sock);
 	freeWsClient(wcl);
 }

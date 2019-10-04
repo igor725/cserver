@@ -63,12 +63,12 @@ static void Survival_OnClick(void* param) {
 	float dist_entity = 32768.0f;
 	float dist_block = 32768.0f;
 
-	VECTOR* pv = client->playerData->position;
+	VECTOR pv = client->playerData->position;
 
 	if(x != -1 && y != -1 && z != -1) {
 		dist_block = distance(x + .5f, y + .5f, z + .5f, pv->x, pv->y, pv->z);
 	} else if(target) {
-		VECTOR* pvt = target->playerData->position;
+		VECTOR pvt = target->playerData->position;
 		dist_entity = distance(pvt->x, pvt->y, pvt->z, pv->x, pv->y, pv->z);
 	}
 

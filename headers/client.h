@@ -27,8 +27,8 @@ typedef struct playerData {
 	const char*   key;
 	const char*   name;
 	int     state;
-	ANGLE*  angle;
-	VECTOR* position;
+	ANGLE  angle;
+	VECTOR position;
 	bool    isOP;
 	bool    spawned;
 	WORLD  world;
@@ -46,20 +46,19 @@ typedef struct client {
 	MUTEX*      mutex;
 	THREAD      thread;
 	THREAD      mapThread;
-	CPEDATA    cpeData;
-	PLAYERDATA playerData;
+	CPEDATA     cpeData;
+	PLAYERDATA  playerData;
 } *CLIENT;
 
 void Client_UpdateBlock(CLIENT client, WORLD world, uint16_t x, uint16_t y, uint16_t z);
 void Client_ReadPos(CLIENT client, char* data, bool extended);
-void Client_SetPos(CLIENT client, VECTOR* vec, ANGLE* ang);
+void Client_SetPos(CLIENT client, VECTOR vec, ANGLE ang);
 int  Client_Send(CLIENT client, int len);
 void Client_HandshakeStage2(CLIENT client);
 bool Client_CheckAuth(CLIENT client);
 TRET Client_ThreadProc(TARG lpParam);
 void Client_Free(CLIENT client);
 void Client_Tick(CLIENT client);
-ClientID Client_FindFreeID(void);
 void Client_Init(void);
 
 API bool Client_ChangeWorld(CLIENT client, WORLD world);

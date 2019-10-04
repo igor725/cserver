@@ -17,9 +17,6 @@
 #    define VAR __declspec(dllimport)
 #    define EXP __declspec(dllexport)
 #  endif
-
-typedef signed __int64 int64;
-typedef unsigned __int64 uint64;
 #elif defined(__unix__)
 #  define POSIX
 #  define _GNU_SOURCE
@@ -52,8 +49,6 @@ typedef unsigned __int64 uint64;
 #  define MAX_PATH  PATH_MAX
 
 typedef int SOCKET;
-typedef unsigned __INT64_TYPE__ uint64;
-typedef signed __INT64_TYPE__ int64;
 #else
 #  error Unknown OS
 #endif
@@ -70,8 +65,8 @@ typedef signed __INT64_TYPE__ int64;
 typedef uint32_t bool;
 typedef uint8_t  Order;
 typedef uint8_t  BlockID;
-typedef uint8_t  ClientID;
 typedef uint8_t  Weather;
+typedef uint8_t  ClientID;
 typedef uint8_t  MessageType;
 
 #include "platform.h"
@@ -91,7 +86,8 @@ typedef uint8_t  MessageType;
 #define MAX_EVENTS  64
 #define EVENT_TYPES 12
 
-#define CFG_STRLEN 128
+#define CFG_STRLEN     128
+#define CLIENT_MAX_PPS 128
 
 #define WORLD_MAGIC 0x54414457
 
@@ -121,10 +117,10 @@ typedef struct vector {
 	float x;
 	float y;
 	float z;
-} VECTOR;
+} *VECTOR;
 
 typedef struct angle {
 	float yaw;
 	float pitch;
-} ANGLE;
+} *ANGLE;
 #endif
