@@ -218,7 +218,7 @@ bool CPEHandler_ExtInfo(CLIENT client, char* data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_MOTD, false);
 
-	ReadNetString(data, (char**)&client->cpeData->appName); data += 63;
+	ReadNetString(data, &client->cpeData->appName); data += 63;
 	client->cpeData->_extCount = ntohs(*(uint16_t*)++data);
 	return true;
 }

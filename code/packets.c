@@ -334,7 +334,7 @@ bool Handler_Message(CLIENT client, char* data) {
 
 	char* message;
 	MessageType type = 0;
-	uint8_t len = ReadNetString(++data, &message);
+	uint8_t len = ReadNetString(++data, (const char**)&message);
 
 	for(int i = 0; i < len; i++) {
 		if(message[i] == '%' && ISHEX(message[i + 1]))
