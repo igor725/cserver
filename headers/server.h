@@ -5,9 +5,7 @@
 
 THREAD Server_AcceptThread;
 VAR bool Server_Active;
+VAR uint16_t Server_Delta;
 VAR CFGSTORE Server_Config;
 SOCKET Server_Socket;
-
-bool Server_InitialWork(void);
-void Server_DoStep(void);
 #endif

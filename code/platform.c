@@ -125,10 +125,6 @@ void Socket_Close(SOCKET sock) {
 #endif
 }
 
-time_t Time_Get() {
-	return time(NULL);
-}
-
 bool Directory_Ensure(const char* path) {
 	if(Directory_Exists(path)) return true;
 	return Directory_Create(path);
@@ -273,6 +269,12 @@ void Time_Format(char* buf, size_t buflen) {
 		time.wSecond,
 		time.wMilliseconds
 	);
+}
+
+uint64_t Time_GetMSec() {
+	FILETIME ft; GetSystemTimeAsFileTime(&ft);
+	uint64_t time = ft.dwLowDateTime | ((uint64_t)ft.dwHighDateTime << 32);
+	return (time / 10000) + 50491123200000ULL;
 }
 
 void Process_Exit(uint32_t code) {
@@ -434,6 +436,11 @@ void Time_Format(char* buf, size_t buflen) {
 			(int) (tv.tv_usec / 1000)
 		);
 	}
+}
+
+uint64_t Time_GetMSec() {
+	struct timeval cur; gettimeofday(&cur, NULL);
+	return (uint64_t)cur.tv_sec * 1000 + 62135596800000ULL + (cur.tv_usec / 1000);
 }
 
 void Process_Exit(uint32_t code) {

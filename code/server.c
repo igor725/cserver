@@ -40,11 +40,6 @@ void Server_Accept(void) {
 			tmp->id = id;
 			tmp->status = CLIENT_OK;
 			tmp->thread = Thread_Create(Client_ThreadProc, tmp);
-			if(!Thread_IsValid(tmp->thread)) {
-				Client_Kick(tmp, "Can't create packet handling thread");
-				return;
-			}
-
 			Clients_List[id] = tmp;
 		} else {
 			Client_Kick(tmp, "Server is full");
@@ -77,7 +72,7 @@ static void evt_ondisconnect(void* param) {
 	Log_Info("Player %s disconnected", cl->playerData->name);
 }
 
-bool Server_InitialWork(void) {
+static bool Server_InitialWork(void) {
 	if(!Socket_Init())
 		return false;
 
@@ -129,7 +124,7 @@ bool Server_InitialWork(void) {
 	return Server_Bind(Config_GetStr(Server_Config, "ip"), (uint16_t)Config_GetInt(Server_Config, "port"));
 }
 
-void Server_DoStep(void) {
+static void Server_DoStep(void) {
 	Event_Call(EVT_ONTICK, NULL);
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT client = Clients_List[i];
@@ -169,15 +164,16 @@ void Server_Stop(void) {
 int main(int argc, char** argv) {
 	Server_Active = Server_InitialWork();
 
-	if(Server_Active) {
+	if(Server_Active)
 		Server_AcceptThread = Thread_Create(Server_ThreadProc, NULL);
-		if(!Thread_IsValid(Server_AcceptThread)) {
-			Log_Error("Can't create accept thread");
-			Server_Active = false;
-		}
-	}
 
+	uint64_t curr = Time_GetMSec(), last = 0;
 	while(Server_Active) {
+		last = curr;
+		curr = Time_GetMSec();
+		Server_Delta = (uint16_t)(curr - last);
+		if(Server_Delta > 500)
+			Log_Warn("Last server tick took %dms!", Server_Delta);
 		Server_DoStep();
 		Sleep(10);
 	}

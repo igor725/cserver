@@ -1,6 +1,7 @@
 #include "core.h"
 #include "world.h"
 #include "client.h"
+#include "server.h"
 #include "packets.h"
 #include "cpe.h"
 #include "event.h"
@@ -67,8 +68,6 @@ TRET Client_ThreadProc(TARG lpParam) {
 	short packetSize = 0, wait = 1;
 	bool extended = false;
 	PACKET packet = NULL;
-	time_t lasttime = 0;
-	uint16_t pps = 0;
 
 	while(1) {
 		if(client->status == CLIENT_WAITCLOSE) {
@@ -112,15 +111,7 @@ TRET Client_ThreadProc(TARG lpParam) {
 
 		if(client->bufpos == packetSize) {
 			HandlePacket(client, packet, extended);
-			time_t t = Time_Get();
-			if(lasttime != t) {
-				if(pps > CLIENT_MAX_PPS) {
-					Client_Kick(client, "Too many packets per second");
-				}
-				lasttime = t;
-				pps = 0;
-			}
-			pps += 1;
+			client->pps += 1;
 			client->bufpos = 0;
 			extended = false;
 			wait = 1;
@@ -411,11 +402,6 @@ bool Client_SendMap(CLIENT client, WORLD world) {
 	client->playerData->world = world;
 	Packet_WriteLvlInit(client);
 	client->mapThread = Thread_Create(Client_MapThreadProc, client);
-	if(!Thread_IsValid(client->mapThread)) {
-		Client_Kick(client, "Can't create map sending thread");
-		return false;
-	}
-
 	return true;
 }
 
@@ -448,6 +434,18 @@ void Client_UpdatePositions(CLIENT client) {
 
 void Client_Tick(CLIENT client) {
 	if(!client->playerData) return;
+
+	if(client->ppstm < 1000) {
+		client->ppstm += Server_Delta;
+	} else {
+		if(client->pps > CLIENT_MAX_PPS) {
+			Client_Kick(client, "Too many packets per second");
+			return;
+		}
+		client->pps = 0;
+		client->ppstm = 0;
+	}
+
 	switch (client->playerData->state) {
 		case STATE_WLOADDONE:
 			client->playerData->state = STATE_INGAME;

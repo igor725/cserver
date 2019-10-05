@@ -109,7 +109,7 @@ API void Mutex_Unlock(MUTEX* handle);
 */
 
 API void Time_Format(char* buf, size_t len);
-API time_t Time_Get();
+API uint64_t Time_GetMSec();
 
 /*
 	PROCESS FUNCTIONS
