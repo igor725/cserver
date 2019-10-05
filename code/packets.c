@@ -29,7 +29,7 @@ void WriteNetString(char* data, const char* string) {
 	Memory_Copy(data, string, size);
 }
 
-void Client_ReadPos(CLIENT client, char* data, bool extended) {
+void ReadClPos(CLIENT client, char* data, bool extended) {
 	VECTOR vec = client->playerData->position;
 	ANGLE ang = client->playerData->angle;
 
@@ -295,6 +295,17 @@ bool Handler_Handshake(CLIENT client, char* data) {
 	return true;
 }
 
+static void UpdateBlock(CLIENT client, WORLD world, uint16_t x, uint16_t y, uint16_t z) {
+	BlockID block = World_GetBlock(world, x, y, z);
+
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		CLIENT other = Clients_List[i];
+		if(!other || other == client) continue;
+		if(!Client_IsInGame(other) || !Client_IsInWorld(other, world)) continue;
+		Packet_WriteSetBlock(other, x, y, z, block);
+	}
+}
+
 bool Handler_SetBlock(CLIENT client, char* data) {
 	ValidateClientState(client, STATE_INGAME, false);
 
@@ -316,7 +327,7 @@ bool Handler_SetBlock(CLIENT client, char* data) {
 			}
 			if(Event_OnBlockPlace(client, &x, &y, &z, &block)) {
 				World_SetBlock(world, x, y, z, block);
-				Client_UpdateBlock(pblock != block ? NULL : client, world, x, y, z);
+				UpdateBlock(pblock != block ? NULL : client, world, x, y, z);
 			} else
 				Packet_WriteSetBlock(client, x, y, z, World_GetBlock(world, x, y, z));
 			break;
@@ -324,7 +335,7 @@ bool Handler_SetBlock(CLIENT client, char* data) {
 			block = 0;
 			if(Event_OnBlockPlace(client, &x, &y, &z, &block)) {
 				World_SetBlock(world, x, y, z, block);
-				Client_UpdateBlock(pblock != block ? NULL : client, world, x, y, z);
+				UpdateBlock(pblock != block ? NULL : client, world, x, y, z);
 			} else
 				Packet_WriteSetBlock(client, x, y, z, World_GetBlock(world, x, y, z));
 			break;
@@ -343,7 +354,7 @@ bool Handler_PosAndOrient(CLIENT client, char* data) {
 		client->cpeData->heldBlock = *data;
 	}
 
-	Client_ReadPos(client, ++data, false);
+	ReadClPos(client, ++data, false);
 	client->playerData->positionUpdated = true;
 	return true;
 }

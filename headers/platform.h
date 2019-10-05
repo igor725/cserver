@@ -64,6 +64,7 @@ API bool File_Close(FILE* fp);
 API bool Directory_Exists(const char* dir);
 API bool Directory_Create(const char* dir);
 API bool Directory_Ensure(const char* dir);
+API bool Directory_SetCurrentDir(const char* path);
 
 /*
 	DLIB FUNCTIONS

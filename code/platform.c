@@ -182,6 +182,10 @@ bool Directory_Exists(const char* path) {
 	return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
+bool Directory_SetCurrentDir(const char* path) {
+	return SetCurrentDirectory(path);
+}
+
 bool Directory_Create(const char* path) {
 	return CreateDirectory(path, NULL);
 }
@@ -301,7 +305,7 @@ bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
 }
 
 static bool checkExtension(const char* filename, const char* ext) {
-	const char* _ext = strrchr(filename, '.');
+	const char* _ext = String_LastChar(filename, '.');
 	if(_ext == NULL && ext == NULL) {
 		return true;
 	} else {
@@ -338,6 +342,10 @@ bool Iter_Close(dirIter* iter) {
 bool Directory_Exists(const char* path) {
 	struct stat ss;
 	return stat(path, &ss) == 0 && S_ISDIR(ss.st_mode);
+}
+
+bool Directory_SetCurrentDir(const char* path) {
+	return chdir(path) == 0;
 }
 
 bool Directory_Create(const char* path) {

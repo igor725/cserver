@@ -79,6 +79,10 @@ void String_FormatBuf(char* buf, size_t len, const char* str, ...) {
 	va_end(args);
 }
 
+char* String_LastChar(char* str, char sym) {
+	return strrchr(str, sym);
+}
+
 const char* String_AllocCopy(const char* str) {
 	char* ptr = Memory_Alloc(1, String_Length(str) + 1);
 	String_CopyUnsafe(ptr, str);

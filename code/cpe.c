@@ -227,7 +227,7 @@ bool CPEHandler_PosAndOrient(CLIENT client, char* data) {
 		client->cpeData->heldBlock = *data;
 	}
 
-	Client_ReadPos(client, ++data, true);
+	ReadClPos(client, ++data, true);
 	client->playerData->positionUpdated = true;
 
 	return true;

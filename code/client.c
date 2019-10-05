@@ -199,17 +199,6 @@ void Client_Init(void) {
 	Client_Broadcast->mutex = Mutex_Create();
 }
 
-void Client_UpdateBlock(CLIENT client, WORLD world, uint16_t x, uint16_t y, uint16_t z) {
-	BlockID block = World_GetBlock(world, x, y, z);
-
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		CLIENT other = Clients_List[i];
-		if(!other || other == client) continue;
-		if(!Client_IsInGame(other) || !Client_IsInWorld(other, world)) continue;
-		Packet_WriteSetBlock(other, x, y, z, block);
-	}
-}
-
 bool Client_IsInGame(CLIENT client) {
 	return client->playerData && client->playerData->state == STATE_INGAME;
 }

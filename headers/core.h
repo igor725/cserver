@@ -3,6 +3,7 @@
 #if defined(_WIN32)
 #  pragma warning(disable:4100)
 #  define WINDOWS
+#  define PATH_DELIM '\\'
 #  define WIN32_LEAN_AND_MEAN
 #  define _CRT_SECURE_NO_WARNINGS
 #  include <winsock2.h>
@@ -19,6 +20,7 @@
 #  endif
 #elif defined(__unix__)
 #  define POSIX
+#  define PATH_DELIM '/'
 #  define _GNU_SOURCE
 #  include <errno.h>
 #  include <sys/socket.h>

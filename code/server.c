@@ -89,10 +89,10 @@ static bool InitialWork(void) {
 		do {
 			if(wIter.isDir || !wIter.cfile) continue;
 			WORLD tmp = World_Create(wIter.cfile);
-			if(!World_Load(tmp))
-				World_Free(tmp);
-			else
+			if(World_Load(tmp))
 				Worlds_List[++wIndex] = tmp;
+			else
+				World_Free(tmp);
 		} while(Iter_Next(&wIter) && wIndex < MAX_WORLDS);
 	}
 	Iter_Close(&wIter);
@@ -143,7 +143,7 @@ static void Stop(void) {
 		Thread_Close(Server_AcceptThread);
 
 	Socket_Close(Server_Socket);
-	Log_Info("Saving server.cfg");
+	Log_Info("Saving " MAINCFG);
 	Config_Save(Server_Config);
 
 	Log_Info("Unloading plugins");
@@ -151,6 +151,15 @@ static void Stop(void) {
 }
 
 int main(int argc, char** argv) {
+	char* path = (char*)String_AllocCopy(argv[0]);
+	char* lastSlash = String_LastChar(path, PATH_DELIM);
+	if(lastSlash) {
+		*lastSlash = '\0';
+		Log_Info("Changing current directory to \"%s\"", path);
+		Directory_SetCurrentDir(path);
+	}
+	Memory_Free(path);
+
 	Server_Active = InitialWork();
 
 	if(Server_Active)
