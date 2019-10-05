@@ -11,7 +11,7 @@ WORLD World_Create(const char* name) {
 	wi->dim = Memory_Alloc(1, sizeof(struct worldDims));
 	wi->spawnVec = Memory_Alloc(1, sizeof(struct vector));
 	wi->spawnAng = Memory_Alloc(1, sizeof(struct angle));
-	
+
 	wi->props[PROP_SIDEBLOCK] = 7;
 	wi->props[PROP_EDGEBLOCK] = 8;
 	wi->props[PROP_FOGDIST] = 0;

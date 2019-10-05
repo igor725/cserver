@@ -80,7 +80,7 @@ static const char* getReasonPhrase(int code) {
 		case 510: return "Not Extended";
 		case 511: return "Network Authentication Required";
 
-		default: return 0;
+		default: return NULL;
 	}
 }
 
@@ -348,11 +348,11 @@ static void HandleGetRequest(WEBCLIENT wcl, char* buffer) {
 
 static TRET ClientThreadProc(TARG param) {
 	WEBCLIENT wcl = Memory_Alloc(1, sizeof(struct webClient));
-	wcl->respCode = 200;
 	wcl->sock = (SOCKET)param;
+	wcl->respCode = 200;
 
 	int ret = recv(wcl->sock, wcl->buffer, 4, 0);
-	if(ret && String_CaselessCompare(wcl->buffer, "get "))
+	if(ret && String_CaselessCompare(wcl->buffer, "GET "))
 		HandleGetRequest(wcl, wcl->buffer);
 
 	wclClose(wcl);
@@ -361,15 +361,13 @@ static TRET ClientThreadProc(TARG param) {
 
 static TRET AcceptThreadProc(TARG param) {
 	struct sockaddr_in caddr;
-	socklen_t caddrsz = sizeof(caddr);
 
 	while(1) {
-		SOCKET client = accept(httpServer, (struct sockaddr*)&caddr, &caddrsz);
+		SOCKET client = Socket_Accept(httpServer, &caddr);
 
 		if(client != INVALID_SOCKET) {
 			Thread_Create(ClientThreadProc, (TARG)client);
-		} else
-			break;
+		}
 	}
 
 	Http_CloseServer();
@@ -393,7 +391,7 @@ bool Http_StartServer(const char* ip, uint16_t port) {
 }
 
 bool Http_CloseServer() {
-	if(zMutex) Mutex_Free(zMutex); // Почему это крашит сервер?
+	if(zMutex) Mutex_Free(zMutex); // Почему это крашит сервер под виндой?
 	if(zData) unzClose(zData);
 	if(httpServer != INVALID_SOCKET) {
 		Socket_Close(httpServer);

@@ -70,5 +70,5 @@ API int World_GetProperty(WORLD world, uint8_t property);
 API Weather World_GetWeather(WORLD world);
 API WORLD World_GetByName(const char* name);
 
-WORLD Worlds_List[MAX_WORLDS];
+VAR WORLD Worlds_List[MAX_WORLDS];
 #endif

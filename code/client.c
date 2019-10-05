@@ -7,6 +7,17 @@
 #include "event.h"
 #include "config.h"
 
+bool Client_Add(CLIENT client) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		if(!Clients_List[i]) {
+			client->id = i;
+			Clients_List[i] = client;
+			return true;
+		}
+	}
+	return false;
+}
+
 CLIENT Client_GetByName(const char* name) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT client = Clients_List[i];
@@ -24,7 +35,7 @@ CLIENT Client_GetByID(ClientID id) {
 bool Client_Despawn(CLIENT client) {
 	if(!client->playerData) return false;
 	if(!client->playerData->spawned) return false;
-	Packet_WriteDespawn(Broadcast, client);
+	Packet_WriteDespawn(Client_Broadcast, client);
 	client->playerData->spawned = false;
 	Event_Call(EVT_ONDESPAWN, (void*)client);
 	return true;
@@ -183,9 +194,9 @@ TRET Client_MapThreadProc(TARG lpParam) {
 }
 
 void Client_Init(void) {
-	Broadcast = Memory_Alloc(1, sizeof(struct client));
-	Broadcast->wrbuf = Memory_Alloc(2048, 1);
-	Broadcast->mutex = Mutex_Create();
+	Client_Broadcast = Memory_Alloc(1, sizeof(struct client));
+	Client_Broadcast->wrbuf = Memory_Alloc(2048, 1);
+	Client_Broadcast->mutex = Mutex_Create();
 }
 
 void Client_UpdateBlock(CLIENT client, WORLD world, uint16_t x, uint16_t y, uint16_t z) {
@@ -300,7 +311,7 @@ bool Client_SetModel(CLIENT client, const char* model) {
 	String_Copy(client->cpeData->model, 64, model);
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		CLIENT other = Client_GetByID(i);
+		CLIENT other = Clients_List[i];
 		if(!other || Client_IsSupportExt(other, "SetModel", 1)) continue;
 		CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, model);
 	}
@@ -346,13 +357,13 @@ void Client_Free(CLIENT client) {
 }
 
 int Client_Send(CLIENT client, int len) {
-	if(client == Broadcast) {
-		for(int i = 0; i < MAX_CLIENTS; i++) {
+	if(client == Client_Broadcast) {
+		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			CLIENT bClient = Clients_List[i];
 
 			if(bClient) {
 				Mutex_Lock(bClient->mutex);
-				Socket_Send(bClient->sock, Broadcast->wrbuf, len);
+				Socket_Send(bClient->sock, Client_Broadcast->wrbuf, len);
 				Mutex_Unlock(bClient->mutex);
 			}
 		}

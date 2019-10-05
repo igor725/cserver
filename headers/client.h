@@ -58,9 +58,11 @@ void Client_SetPos(CLIENT client, VECTOR vec, ANGLE ang);
 int  Client_Send(CLIENT client, int len);
 void Client_HandshakeStage2(CLIENT client);
 bool Client_CheckAuth(CLIENT client);
+void Client_Disconnect(CLIENT client);
 TRET Client_ThreadProc(TARG lpParam);
 void Client_Free(CLIENT client);
 void Client_Tick(CLIENT client);
+bool Client_Add(CLIENT client);
 void Client_Init(void);
 
 API bool Client_ChangeWorld(CLIENT client, WORLD world);
@@ -86,11 +88,10 @@ API const char* Client_GetName(CLIENT client);
 API const char* Client_GetAppName(CLIENT client);
 API CLIENT Client_GetByID(ClientID id);
 API CLIENT Client_GetByName(const char* name);
-void Client_Disconnect(CLIENT client);
 
 API bool Client_Spawn(CLIENT client);
 API bool Client_Despawn(CLIENT client);
 
-CLIENT Broadcast;
-CLIENT Clients_List[MAX_CLIENTS];
+VAR CLIENT Client_Broadcast;
+VAR CLIENT Clients_List[MAX_CLIENTS];
 #endif

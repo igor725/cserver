@@ -73,7 +73,7 @@ static bool CHandler_Test(const char* args, CLIENT caller, char* out) {
 static bool CHandler_Announce(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForOP;
 
-	if(!caller) caller = Broadcast;
+	if(!caller) caller = Client_Broadcast;
 	Packet_WriteChat(caller, CPE_ANNOUNCE, !args ? "Test announcement" : args);
 	return false;
 }

@@ -1,8 +1,7 @@
 @echo off
-IF "%VCToolsVersion%"=="" goto vcerror
-
 setlocal
 set ARCH=%VSCMD_ARG_TGT_ARCH%
+IF "%ARCH%"=="" goto vcerror
 set DEBUG=0
 set CODE_ROOT=
 set COMPILER=cl
@@ -18,7 +17,6 @@ set MSVC_LIBS=ws2_32.lib zlibwapi.lib kernel32.lib dbghelp.lib
 
 :argloop
 IF "%1"=="" goto continue
-
 IF "%1"=="cls" cls
 IF "%1"=="cloc" goto :cloc
 IF "%1"=="zdbg" set ZLIB_MODE=Debug
@@ -42,11 +40,13 @@ goto argloop
 :pluginbuild
 set BUILD_PLUGIN=1
 SHIFT
+
 set PLUGNAME=%1
 SHIFT
+
 IF "%1"=="install" (
-set PLUGINSTALL=1
-SHIFT
+	set PLUGINSTALL=1
+	SHIFT
 )
 IF NOT "%1"=="" goto libloop
 

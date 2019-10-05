@@ -10,13 +10,6 @@
 #include "event.h"
 #include "cplugin.h"
 
-static ClientID FindFreeID(void) {
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		if(!Clients_List[i]) return i;
-	}
-	return 0xFF;
-}
-
 static void AcceptFunc(void) {
 	struct sockaddr_in caddr;
 	SOCKET fd = Socket_Accept(Server_Socket, &caddr);
@@ -30,20 +23,16 @@ static void AcceptFunc(void) {
 
 		tmp->sock = fd;
 		tmp->bufpos = 0;
+		tmp->status = CLIENT_OK;
 		tmp->mutex = Mutex_Create();
 		tmp->addr = ntohl(caddr.sin_addr.s_addr);
 		tmp->rdbuf = Memory_Alloc(131, 1);
 		tmp->wrbuf = Memory_Alloc(2048, 1);
 
-		ClientID id = FindFreeID();
-		if(id != 0xFF) {
-			tmp->id = id;
-			tmp->status = CLIENT_OK;
+		if(Client_Add(tmp))
 			tmp->thread = Thread_Create(Client_ThreadProc, tmp);
-			Clients_List[id] = tmp;
-		} else {
+		else
 			Client_Kick(tmp, "Server is full");
-		}
 	}
 }
 

@@ -199,7 +199,7 @@ void Packet_WritePosAndOrient(CLIENT client, CLIENT other) {
 
 void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg) {
 	PacketWriter_Start(client);
-	if(client == Broadcast) {
+	if(client == Client_Broadcast) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			CLIENT tg = Clients_List[i];
 			if(tg) Packet_WriteChat(tg, type, mesg);
@@ -368,7 +368,7 @@ bool Handler_Message(CLIENT client, char* data) {
 			if(!Command_Handle(message + 1, client))
 				Packet_WriteChat(client, type, "Unknown command");
 		} else
-			Packet_WriteChat(Broadcast, type, formatted);
+			Packet_WriteChat(Client_Broadcast, type, formatted);
 		Log_Chat(formatted);
 	}
 
