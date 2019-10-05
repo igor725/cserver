@@ -393,7 +393,7 @@ bool Http_StartServer(const char* ip, uint16_t port) {
 }
 
 bool Http_CloseServer() {
-	if(zMutex) Mutex_Free(zMutex);
+	if(zMutex) Mutex_Free(zMutex); // Почему это крашит сервер?
 	if(zData) unzClose(zData);
 	if(httpServer != INVALID_SOCKET) {
 		Socket_Close(httpServer);

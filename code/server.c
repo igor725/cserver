@@ -17,7 +17,7 @@ static ClientID FindFreeID(void) {
 	return 0xFF;
 }
 
-void Server_Accept(void) {
+static void AcceptFunc(void) {
 	struct sockaddr_in caddr;
 	SOCKET fd = Socket_Accept(Server_Socket, &caddr);
 
@@ -47,13 +47,13 @@ void Server_Accept(void) {
 	}
 }
 
-TRET Server_ThreadProc(void* lpParam) {
+static TRET AcceptThreadProc(void* lpParam) {
 	Thread_SetName("AcceptThread");
-	while(Server_Active)Server_Accept();
+	while(Server_Active) AcceptFunc();
 	return 0;
 }
 
-bool Server_Bind(const char* ip, uint16_t port) {
+static bool Bind(const char* ip, uint16_t port) {
 	if((Server_Socket = Socket_Bind(ip, port)) == INVALID_SOCKET)
 		return false;
 
@@ -62,17 +62,17 @@ bool Server_Bind(const char* ip, uint16_t port) {
 	return true;
 }
 
-static void evt_onconnect(void* param) {
+static void onConnect(void* param) {
 	CLIENT cl = (CLIENT)param;
 	Log_Info("Player %s connected", cl->playerData->name);
 }
 
-static void evt_ondisconnect(void* param) {
+static void onDisconnect(void* param) {
 	CLIENT cl = (CLIENT)param;
 	Log_Info("Player %s disconnected", cl->playerData->name);
 }
 
-static bool Server_InitialWork(void) {
+static bool InitialWork(void) {
 	if(!Socket_Init())
 		return false;
 
@@ -90,8 +90,8 @@ static bool Server_InitialWork(void) {
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
-	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, evt_onconnect);
-	Event_RegisterVoid(EVT_ONDISCONNECT, evt_ondisconnect);
+	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, onConnect);
+	Event_RegisterVoid(EVT_ONDISCONNECT, onDisconnect);
 
 	Directory_Ensure("worlds");
 	int wIndex = -1;
@@ -121,10 +121,10 @@ static bool Server_InitialWork(void) {
 
 	Console_StartListen();
 	Event_Call(EVT_POSTSTART, NULL);
-	return Server_Bind(Config_GetStr(Server_Config, "ip"), (uint16_t)Config_GetInt(Server_Config, "port"));
+	return Bind(Config_GetStr(Server_Config, "ip"), (uint16_t)Config_GetInt(Server_Config, "port"));
 }
 
-static void Server_DoStep(void) {
+static void DoStep(void) {
 	Event_Call(EVT_ONTICK, NULL);
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT client = Clients_List[i];
@@ -133,7 +133,7 @@ static void Server_DoStep(void) {
 	}
 }
 
-void Server_Stop(void) {
+static void Stop(void) {
 	Event_Call(EVT_ONSTOP, NULL);
 	Log_Info("Saving worlds");
 	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
@@ -153,19 +153,19 @@ void Server_Stop(void) {
 	if(Server_AcceptThread)
 		Thread_Close(Server_AcceptThread);
 
-	Log_Info("Unloading plugins");
-	CPlugin_Stop();
-
 	Socket_Close(Server_Socket);
 	Log_Info("Saving server.cfg");
 	Config_Save(Server_Config);
+
+	Log_Info("Unloading plugins");
+	CPlugin_Stop();
 }
 
 int main(int argc, char** argv) {
-	Server_Active = Server_InitialWork();
+	Server_Active = InitialWork();
 
 	if(Server_Active)
-		Server_AcceptThread = Thread_Create(Server_ThreadProc, NULL);
+		Server_AcceptThread = Thread_Create(AcceptThreadProc, NULL);
 
 	uint64_t curr = Time_GetMSec(), last = 0;
 	while(Server_Active) {
@@ -174,11 +174,11 @@ int main(int argc, char** argv) {
 		Server_Delta = (uint16_t)(curr - last);
 		if(Server_Delta > 500)
 			Log_Warn("Last server tick took %dms!", Server_Delta);
-		Server_DoStep();
+		DoStep();
 		Sleep(10);
 	}
 
 	Log_Info("Main loop done");
-	Server_Stop();
+	Stop();
 	return 0;
 }

@@ -101,7 +101,13 @@ set MSVC_OPTS=%MSVC_OPTS% /link /LIBPATH:%ZLIB_COMPILEDIR% %MSVC_LINKER%
 
 %COMPILER% %CODE_ROOT%code\*.c /I%CODE_ROOT%headers /I%ZLIB_DIR% /I%ZLIB_DIR%\contrib %MSVC_OPTS% %MSVC_LIBS%
 IF "%BUILD_PLUGIN%"=="1" (
-	IF "%PLUGINSTALL%"=="1" copy /y %OUTDIR%\%BINNAME%.dll out\%ARCH%\plugins\
+	IF "%PLUGINSTALL%"=="1" (
+		IF "%DEBUG%"=="1" (
+			copy /y %OUTDIR%\%BINNAME%.* out\%ARCH%\plugins\
+		) else (
+			copy /y %OUTDIR%\%BINNAME%.dll out\%ARCH%\plugins\
+		)
+	)
   goto :end
 ) else (
   IF "%ERRORLEVEL%"=="0" (goto binstart) else (goto compileerror)

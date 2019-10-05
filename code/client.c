@@ -373,9 +373,7 @@ bool Client_Spawn(CLIENT client) {
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT other = Clients_List[i];
-		if(!other) continue;
-
-		if(Client_IsInSameWorld(client, other)) {
+		if(other && Client_IsInSameWorld(client, other)) {
 			Packet_WriteSpawn(other, client);
 
 			if(other->cpeData && client->cpeData)
