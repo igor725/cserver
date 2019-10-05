@@ -151,14 +151,14 @@ static void Stop(void) {
 }
 
 int main(int argc, char** argv) {
-	char* path = (char*)String_AllocCopy(argv[0]);
-	char* lastSlash = String_LastChar(path, PATH_DELIM);
+	const char* path = String_AllocCopy(argv[0]);
+	char* lastSlash = (char*)String_LastChar(path, PATH_DELIM);
 	if(lastSlash) {
 		*lastSlash = '\0';
 		Log_Info("Changing current directory to \"%s\"", path);
 		Directory_SetCurrentDir(path);
 	}
-	Memory_Free(path);
+	Memory_Free((char*)path);
 
 	Server_Active = InitialWork();
 

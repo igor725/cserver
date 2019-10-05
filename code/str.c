@@ -79,7 +79,7 @@ void String_FormatBuf(char* buf, size_t len, const char* str, ...) {
 	va_end(args);
 }
 
-char* String_LastChar(char* str, char sym) {
+const char* String_LastChar(const char* str, char sym) {
 	return strrchr(str, sym);
 }
 
