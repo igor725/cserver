@@ -9,6 +9,25 @@ if(!caller) { \
 	return true; \
 } \
 
+#define Command_PrintUsage \
+String_Copy(out, CMD_MAX_OUT, "Usage: "); \
+String_Append(out, CMD_MAX_OUT, cmdUsage); \
+return true;
+
+#define Command_Print(str) \
+String_Copy(out, CMD_MAX_OUT, str); \
+return true;
+
+#define Command_ArgToWorldName(wn, idx) \
+if(String_GetArgument(args, wn, 64, idx)) { \
+	const char* wndot = String_LastChar(wn, '.'); \
+	if(!wndot || !String_CaselessCompare(wndot, ".cws")) \
+		String_Append(wn, 64, ".cws"); \
+} else { \
+	Command_PrintUsage; \
+}
+
+
 #define Command_OnlyForOP \
 if(caller && !caller->playerData->isOP) { \
 	String_Copy(out, CMD_MAX_OUT, "Access denied"); \

@@ -2,6 +2,7 @@
 #include "command.h"
 #include "packets.h"
 #include "server.h"
+#include "generators.h"
 
 void Command_Register(const char* cmd, cmdFunc func) {
 	COMMAND tmp = Memory_Alloc(1, sizeof(struct command));
@@ -50,7 +51,7 @@ static bool CHandler_OP(const char* args, CLIENT caller, char* out) {
 			Client_SetType(tg, newtype);
 			String_FormatBuf(out, CMD_MAX_OUT, "Player %s %s", name, newtype ? "opped" : "deopped");
 		} else {
-			String_Copy(out, CMD_MAX_OUT, "Player not found");
+			Command_Print("Player not found");
 		}
 	}
 	return true;
@@ -79,17 +80,26 @@ static bool CHandler_Announce(const char* args, CLIENT caller, char* out) {
 }
 
 static bool CHandler_ChangeWorld(const char* args, CLIENT caller, char* out) {
+	const char* cmdUsage = "/chworld <worldname>";
 	Command_OnlyForClient;
 
-	WORLD world = World_GetByName(args);
-	Client_ChangeWorld(caller, world);
-	return false;
+	char worldname[64];
+	Command_ArgToWorldName(worldname, 0);
+	WORLD world = World_GetByName(worldname);
+	if(world) {
+		if(Client_IsInWorld(caller, world)) {
+			Command_Print("You already in this world.");
+		}
+		if(Client_ChangeWorld(caller, world)) return false;
+	}
+	Command_Print("World not found.");
 }
 
 static bool CHandler_Kick(const char* args, CLIENT caller, char* out) {
+	const char* cmdUsage = "/kick <player> [reason]";
 	Command_OnlyForOP;
-	char playername[64];
 
+	char playername[64];
 	if(String_GetArgument(args, playername, 64, 0)) {
 		CLIENT tg = Client_GetByName(playername);
 		if(tg) {
@@ -97,27 +107,83 @@ static bool CHandler_Kick(const char* args, CLIENT caller, char* out) {
 			Client_Kick(tg, reason);
 			String_FormatBuf(out, CMD_MAX_OUT, "Player %s kicked", playername);
 		} else {
-			String_Copy(out, CMD_MAX_OUT, "Player not found");
+			Command_Print("Player not found.");
 		}
-	} else {
-		String_Copy(out, CMD_MAX_OUT, "Invalid argument #1");
 	}
 
-	return true;
+	Command_PrintUsage;
 }
 
 static bool CHandler_Model(const char* args, CLIENT caller, char* out) {
+	const char* cmdUsage = "/model <modelname/blockid>";
 	Command_OnlyForOP;
 	Command_OnlyForClient;
 
 	char modelname[64];
 	if(String_GetArgument(args, modelname, 64, 0)) {
 		if(!Client_SetModel(caller, modelname)) {
-			String_Copy(out, CMD_MAX_OUT, "Model changing error");
+			Command_Print("Invalid model name.");
+		}
+		Command_Print("Model changed successfully.");
+	}
+
+	Command_PrintUsage;
+}
+
+static bool CHandler_GenWorld(const char* args, CLIENT caller, char* out) {
+	const char* cmdUsage = "/genworld <name> <x> <y> <z>";
+	Command_OnlyForOP;
+	Command_OnlyForClient;
+
+	char worldname[64], x[6], y[6], z[6];
+	if(String_GetArgument(args, x, 6, 1) &&
+	String_GetArgument(args, y, 6, 2) &&
+	String_GetArgument(args, z, 6, 3)) {
+		uint16_t _x = (uint16_t)String_ToInt(x),
+		_y = (uint16_t)String_ToInt(y),
+		_z = (uint16_t)String_ToInt(z);
+
+		if(_x > 0 && _y > 0 && _z > 0) {
+			Command_ArgToWorldName(worldname, 0);
+			WORLD tmp = World_Create(worldname);
+			World_SetDimensions(tmp, _x, _y, _z);
+			World_AllocBlockArray(tmp);
+			Generator_Flat(tmp);
+
+			if(World_Add(tmp)) {
+				String_FormatBuf(out, CMD_MAX_OUT, "World \"%s\" created.", worldname);
+			} else {
+				World_Free(tmp);
+				Command_Print("Too many worlds already loaded.");
+			}
+
 			return true;
 		}
 	}
-	return false;
+
+	Command_PrintUsage;
+}
+
+static bool CHandler_UnlWorld(const char* args, CLIENT caller, char* out) {
+	const char* cmdUsage = "/unlworld <worldname>";
+	Command_OnlyForOP;
+
+	char worldname[64];
+	Command_ArgToWorldName(worldname, 0);
+	WORLD tmp = World_GetByName(worldname);
+	if(tmp) {
+		if(tmp->id == 0) {
+			Command_Print("Can't unload world with id 0.");
+		}
+		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+			CLIENT c = Clients_List[i];
+			if(c && Client_IsInWorld(c, tmp)) Client_ChangeWorld(c, Worlds_List[0]);
+		}
+		World_Save(tmp);
+		World_Free(tmp);
+		Command_Print("World unloaded");
+	}
+	Command_Print("World not found.");
 }
 
 void Command_RegisterDefault(void) {
@@ -125,9 +191,11 @@ void Command_RegisterDefault(void) {
 	Command_Register("stop", CHandler_Stop);
 	Command_Register("test", CHandler_Test);
 	Command_Register("announce", CHandler_Announce);
-	Command_Register("cw", CHandler_ChangeWorld);
+	Command_Register("chworld", CHandler_ChangeWorld);
 	Command_Register("kick", CHandler_Kick);
 	Command_Register("setmodel", CHandler_Model);
+	Command_Register("genworld", CHandler_GenWorld);
+	Command_Register("unlworld", CHandler_UnlWorld);
 }
 
 bool Command_Handle(char* cmd, CLIENT caller) {

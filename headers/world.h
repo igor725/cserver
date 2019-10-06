@@ -45,15 +45,17 @@ typedef struct worldInfo {
 } *WORLDINFO;
 
 typedef struct world {
+	int         id;
 	const char* name;
 	uint32_t    size;
 	BlockID*    data;
-	WORLDINFO  info;
+	WORLDINFO   info;
 } *WORLD;
 
 API WORLD World_Create(const char* name);
 API void World_AllocBlockArray(WORLD world);
 API void World_Free(WORLD world);
+API bool World_Add(WORLD world);
 
 API bool World_Load(WORLD world);
 API bool World_Save(WORLD world);

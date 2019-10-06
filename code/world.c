@@ -6,6 +6,7 @@
 WORLD World_Create(const char* name) {
 	WORLD tmp = Memory_Alloc(1, sizeof(struct world));
 	tmp->name = String_AllocCopy(name);
+	tmp->id = -1;
 
 	WORLDINFO wi = Memory_Alloc(1, sizeof(struct worldInfo));
 	wi->dim = Memory_Alloc(1, sizeof(struct worldDims));
@@ -23,6 +24,23 @@ WORLD World_Create(const char* name) {
 	tmp->info = wi;
 
 	return tmp;
+}
+
+bool World_Add(WORLD world) {
+	if(world->id == -1) {
+		for(int i = 0; i < MAX_WORLDS; i++) {
+			if(!Worlds_List[i]) {
+				world->id = i;
+				Worlds_List[i] = world;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	if(world->id > MAX_WORLDS) return false;
+	Worlds_List[world->id] = world;
+	return true;
 }
 
 WORLD World_GetByName(const char* name) {
@@ -109,6 +127,7 @@ void World_AllocBlockArray(WORLD world) {
 void World_Free(WORLD world) {
 	if(world->data) Memory_Free(world->data);
 	if(world->info) Memory_Free(world->info);
+	if(world->id != -1) Worlds_List[world->id] = NULL;
 	Memory_Free(world);
 }
 

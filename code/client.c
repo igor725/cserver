@@ -42,8 +42,8 @@ bool Client_Despawn(CLIENT client) {
 }
 
 bool Client_ChangeWorld(CLIENT client, WORLD world) {
-	if(!world) return false;
-	if(Client_IsInWorld(client, world)) return true;
+	if(Client_IsInWorld(client, world)) return false;
+
 	Client_Despawn(client);
 	Client_SetPos(client, world->info->spawnVec, world->info->spawnAng);
 	if(!Client_SendMap(client, world)) {
@@ -136,6 +136,7 @@ TRET Client_ThreadProc(TARG lpParam) {
 TRET Client_MapThreadProc(TARG lpParam) {
 	CLIENT client = (CLIENT)lpParam;
 	WORLD world = client->playerData->world;
+	Mutex_Lock(client->mutex);
 
 	z_stream stream = {0};
 	uint8_t* data = (uint8_t*)client->wrbuf;
@@ -187,6 +188,7 @@ TRET Client_MapThreadProc(TARG lpParam) {
 	} while(stream.avail_out == 0);
 
 	deflateEnd(&stream);
+	Mutex_Unlock(client->mutex);
 	Packet_WriteLvlFin(client);
 	client->playerData->state = STATE_WLOADDONE;
 	Client_Spawn(client);

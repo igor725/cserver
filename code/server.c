@@ -89,9 +89,8 @@ static bool InitialWork(void) {
 		do {
 			if(wIter.isDir || !wIter.cfile) continue;
 			WORLD tmp = World_Create(wIter.cfile);
-			if(World_Load(tmp))
-				Worlds_List[++wIndex] = tmp;
-			else
+			tmp->id = ++wIndex;
+			if(!World_Load(tmp) || !World_Add(tmp))
 				World_Free(tmp);
 		} while(Iter_Next(&wIter) && wIndex < MAX_WORLDS);
 	}
