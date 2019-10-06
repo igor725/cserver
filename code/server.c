@@ -114,10 +114,12 @@ static bool InitialWork(void) {
 
 static void DoStep(void) {
 	Event_Call(EVT_ONTICK, NULL);
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		CLIENT client = Clients_List[i];
-		if(client)
-			Client_Tick(client);
+	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
+		CLIENT client = Client_GetByID((ClientID)i);
+		WORLD world = World_GetByID(i);
+
+		if(i < MAX_CLIENTS && client) Client_Tick(client);
+		if(i < MAX_WORLDS && world) World_Tick(world);
 	}
 }
 
@@ -125,14 +127,15 @@ static void Stop(void) {
 	Event_Call(EVT_ONSTOP, NULL);
 	Log_Info("Saving worlds");
 	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
-		CLIENT client = Clients_List[i];
-		WORLD world = Worlds_List[i];
+		CLIENT client = Client_GetByID((ClientID)i);
+		WORLD world = World_GetByID(i);
 
 		if(i < MAX_CLIENTS && client)
 			Client_Kick(client, "Server stopped");
 
 		if(i < MAX_WORLDS && world) {
-			World_Save(world);
+			if(World_Save(world))
+				Thread_Join(world->thread);
 			World_Free(world);
 		}
 	}
@@ -150,14 +153,16 @@ static void Stop(void) {
 }
 
 int main(int argc, char** argv) {
-	const char* path = String_AllocCopy(argv[0]);
-	char* lastSlash = (char*)String_LastChar(path, PATH_DELIM);
-	if(lastSlash) {
-		*lastSlash = '\0';
-		Log_Info("Changing current directory to \"%s\"", path);
-		Directory_SetCurrentDir(path);
+	if(argc < 2 || !String_CaselessCompare(argv[1], "nochdir")) {
+		const char* path = String_AllocCopy(argv[0]);
+		char* lastSlash = (char*)String_LastChar(path, PATH_DELIM);
+		if(lastSlash) {
+			*lastSlash = '\0';
+			Log_Info("Changing current directory to \"%s\"", path);
+			Directory_SetCurrentDir(path);
+		}
+		Memory_Free((char*)path);
 	}
-	Memory_Free((char*)path);
 
 	Server_Active = InitialWork();
 

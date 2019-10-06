@@ -79,22 +79,6 @@ static bool CHandler_Announce(const char* args, CLIENT caller, char* out) {
 	return false;
 }
 
-static bool CHandler_ChangeWorld(const char* args, CLIENT caller, char* out) {
-	const char* cmdUsage = "/chworld <worldname>";
-	Command_OnlyForClient;
-
-	char worldname[64];
-	Command_ArgToWorldName(worldname, 0);
-	WORLD world = World_GetByName(worldname);
-	if(world) {
-		if(Client_IsInWorld(caller, world)) {
-			Command_Print("You already in this world.");
-		}
-		if(Client_ChangeWorld(caller, world)) return false;
-	}
-	Command_Print("World not found.");
-}
-
 static bool CHandler_Kick(const char* args, CLIENT caller, char* out) {
 	const char* cmdUsage = "/kick <player> [reason]";
 	Command_OnlyForOP;
@@ -114,7 +98,7 @@ static bool CHandler_Kick(const char* args, CLIENT caller, char* out) {
 	Command_PrintUsage;
 }
 
-static bool CHandler_Model(const char* args, CLIENT caller, char* out) {
+static bool CHandler_SetModel(const char* args, CLIENT caller, char* out) {
 	const char* cmdUsage = "/model <modelname/blockid>";
 	Command_OnlyForOP;
 	Command_OnlyForClient;
@@ -128,6 +112,22 @@ static bool CHandler_Model(const char* args, CLIENT caller, char* out) {
 	}
 
 	Command_PrintUsage;
+}
+
+static bool CHandler_ChgWorld(const char* args, CLIENT caller, char* out) {
+	const char* cmdUsage = "/chworld <worldname>";
+	Command_OnlyForClient;
+
+	char worldname[64];
+	Command_ArgToWorldName(worldname, 0);
+	WORLD world = World_GetByName(worldname);
+	if(world) {
+		if(Client_IsInWorld(caller, world)) {
+			Command_Print("You already in this world.");
+		}
+		if(Client_ChangeWorld(caller, world)) return false;
+	}
+	Command_Print("World not found.");
 }
 
 static bool CHandler_GenWorld(const char* args, CLIENT caller, char* out) {
@@ -179,9 +179,22 @@ static bool CHandler_UnlWorld(const char* args, CLIENT caller, char* out) {
 			CLIENT c = Clients_List[i];
 			if(c && Client_IsInWorld(c, tmp)) Client_ChangeWorld(c, Worlds_List[0]);
 		}
+		tmp->saveUnload = true;
 		World_Save(tmp);
-		World_Free(tmp);
-		Command_Print("World unloaded");
+		Command_Print("World unloading scheduled.");
+	}
+	Command_Print("World not found.");
+}
+
+static bool CHandler_SavWorld(const char* args, CLIENT caller, char* out) {
+	const char* cmdUsage = "/svworld <worldname>";
+	Command_OnlyForOP;
+
+	char worldname[64];
+	Command_ArgToWorldName(worldname, 0);
+	WORLD tmp = World_GetByName(worldname);
+	if(tmp && World_Save(tmp)) {
+		Command_Print("World saving scheduled.");
 	}
 	Command_Print("World not found.");
 }
@@ -191,11 +204,12 @@ void Command_RegisterDefault(void) {
 	Command_Register("stop", CHandler_Stop);
 	Command_Register("test", CHandler_Test);
 	Command_Register("announce", CHandler_Announce);
-	Command_Register("chworld", CHandler_ChangeWorld);
 	Command_Register("kick", CHandler_Kick);
-	Command_Register("setmodel", CHandler_Model);
+	Command_Register("setmodel", CHandler_SetModel);
+	Command_Register("chgworld", CHandler_ChgWorld);
 	Command_Register("genworld", CHandler_GenWorld);
 	Command_Register("unlworld", CHandler_UnlWorld);
+	Command_Register("savworld", CHandler_SavWorld);
 }
 
 bool Command_Handle(char* cmd, CLIENT caller) {

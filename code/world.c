@@ -6,6 +6,7 @@
 WORLD World_Create(const char* name) {
 	WORLD tmp = Memory_Alloc(1, sizeof(struct world));
 	tmp->name = String_AllocCopy(name);
+	tmp->saveDone = true;
 	tmp->id = -1;
 
 	WORLDINFO wi = Memory_Alloc(1, sizeof(struct worldInfo));
@@ -50,6 +51,10 @@ WORLD World_GetByName(const char* name) {
 			return world;
 	}
 	return NULL;
+}
+
+WORLD World_GetByID(int id) {
+	return id < MAX_WORLDS ? Worlds_List[id] : NULL;
 }
 
 void World_SetDimensions(WORLD world, uint16_t width, uint16_t height, uint16_t length) {
@@ -197,7 +202,9 @@ bool World_ReadInfo(WORLD world, FILE* fp) {
 	return false;
 }
 
-bool World_Save(WORLD world) {
+static TRET wSaveThread(TARG param) {
+	WORLD world = (WORLD)param;
+
 	char path[256];
 	char tmpname[256];
 	String_FormatBuf(path, 256, "worlds/%s", world->name);
@@ -239,7 +246,18 @@ bool World_Save(WORLD world) {
 	} while(stream.avail_out == 0);
 
 	File_Close(fp);
-	return File_Rename(tmpname, path);
+	File_Rename(tmpname, path);
+	world->saveDone = true;
+	return 0;
+}
+
+bool World_Save(WORLD world) {
+	if(world->saveDone) {
+		world->saveDone = false;
+		world->thread = Thread_Create(wSaveThread, world);
+		return true;
+	}
+	return false;
 }
 
 bool World_Load(WORLD world) {
@@ -317,4 +335,12 @@ BlockID World_GetBlock(WORLD world, uint16_t x, uint16_t y, uint16_t z) {
 		return world->data[offset];
 	else
 		return 0;
+}
+
+void World_Tick(WORLD world) {
+	if(world->thread && world->saveDone) {
+		Thread_Close(world->thread);
+		world->thread = NULL;
+		if(world->saveUnload) World_Free(world);
+	}
 }

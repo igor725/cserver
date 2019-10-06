@@ -50,7 +50,12 @@ typedef struct world {
 	uint32_t    size;
 	BlockID*    data;
 	WORLDINFO   info;
+	THREAD      thread;
+	bool        saveUnload;
+	bool        saveDone;
 } *WORLD;
+
+void World_Tick(WORLD world);
 
 API WORLD World_Create(const char* name);
 API void World_AllocBlockArray(WORLD world);
@@ -71,6 +76,7 @@ API BlockID World_GetBlock(WORLD world, uint16_t x, uint16_t y, uint16_t z);
 API int World_GetProperty(WORLD world, uint8_t property);
 API Weather World_GetWeather(WORLD world);
 API WORLD World_GetByName(const char* name);
+API WORLD World_GetByID(int id);
 
 VAR WORLD Worlds_List[MAX_WORLDS];
 #endif
