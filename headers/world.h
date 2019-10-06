@@ -39,8 +39,8 @@ typedef struct worldInfo {
 	WORLDDIMS   dim;
 	int         props[WORLD_PROPS_COUNT];
 	char        texturepack[64];
-	VECTOR     spawnVec;
-	ANGLE      spawnAng;
+	VECTOR      spawnVec;
+	ANGLE       spawnAng;
 	Weather     wt;
 } *WORLDINFO;
 

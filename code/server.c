@@ -107,7 +107,6 @@ static bool InitialWork(void) {
 	Log_Info("Loading C plugins");
 	CPlugin_Start();
 
-	Console_StartListen();
 	Event_Call(EVT_POSTSTART, NULL);
 	return Bind(Config_GetStr(Server_Config, "ip"), (uint16_t)Config_GetInt(Server_Config, "port"));
 }
@@ -164,10 +163,10 @@ int main(int argc, char** argv) {
 		Memory_Free((char*)path);
 	}
 
-	Server_Active = InitialWork();
-
-	if(Server_Active)
+	if((Server_Active = InitialWork()) == true) {
+		Console_StartListen();
 		Server_AcceptThread = Thread_Create(AcceptThreadProc, NULL);
+	}
 
 	uint64_t curr = Time_GetMSec(), last = 0;
 	while(Server_Active) {

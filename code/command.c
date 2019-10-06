@@ -133,7 +133,6 @@ static bool CHandler_ChgWorld(const char* args, CLIENT caller, char* out) {
 static bool CHandler_GenWorld(const char* args, CLIENT caller, char* out) {
 	const char* cmdUsage = "/genworld <name> <x> <y> <z>";
 	Command_OnlyForOP;
-	Command_OnlyForClient;
 
 	char worldname[64], x[6], y[6], z[6];
 	if(String_GetArgument(args, x, 6, 1) &&
@@ -222,8 +221,7 @@ bool Command_Handle(char* cmd, CLIENT caller) {
 			args = NULL;
 			break;
 		} else if (*args == 32) {
-			*args = 0;
-			++args;
+			*args++ = 0;
 			break;
 		}
 	}

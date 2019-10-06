@@ -1,6 +1,7 @@
 #include "core.h"
 #include "console.h"
 #include "command.h"
+#include "server.h"
 
 THREAD conThread;
 
@@ -32,8 +33,8 @@ TRET Console_ThreadProc(TARG lpParam) {
 	Thread_SetName("Console listener");
 	char buf[4096] = {0};
 
-	while(1) {
-		if(Console_ReadLine(buf, 4096) > 0)
+	while(Server_Active) {
+		if(Console_ReadLine(buf, 4096) > 0 && Server_Active)
 			Console_HandleCommand(buf);
 	}
 	return 0;
