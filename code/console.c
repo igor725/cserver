@@ -11,10 +11,8 @@ int Console_ReadLine(char* buf, int buflen) {
 
 	while((c = getc(stdin)) != EOF && c != '\n') {
 		if(c != '\r') {
-			buf[len] = (char)c;
-			len++;
+			buf[len++] = (char)c;
 			if(len > buflen) {
-				len--;
 				break;
 			}
 		}
@@ -31,10 +29,10 @@ void Console_HandleCommand(char* cmd) {
 
 TRET Console_ThreadProc(TARG lpParam) {
 	Thread_SetName("Console listener");
-	char buf[4096] = {0};
+	char buf[CON_STR_LEN] = {0};
 
 	while(Server_Active) {
-		if(Console_ReadLine(buf, 4096) > 0 && Server_Active)
+		if(Console_ReadLine(buf, CON_STR_LEN) > 0 && Server_Active)
 			Console_HandleCommand(buf);
 	}
 	return 0;
