@@ -18,8 +18,8 @@ bool Config_Load(CFGSTORE store) {
 	int type;
 	int count = 0;
 	int ch = fgetc(fp);
-	char key[CFG_STRLEN] = {0};
-	char value[CFG_STRLEN] = {0};
+	char key[MAX_CLIENT_PPS] = {0};
+	char value[MAX_CLIENT_PPS] = {0};
 
 	while(!feof(fp)) {
 		while(ch == '\n') {
@@ -32,7 +32,7 @@ bool Config_Load(CFGSTORE store) {
 				count++;
 			}
 			ch = fgetc(fp);
-		} while(ch != '=' && !feof(fp) && count < CFG_STRLEN);
+		} while(ch != '=' && !feof(fp) && count < MAX_CLIENT_PPS);
 		key[count] = '\0';
 
 		if(feof(fp)) {
@@ -43,7 +43,7 @@ bool Config_Load(CFGSTORE store) {
 		count = 0;
 		type = fgetc(fp);
 
-		while((ch = fgetc(fp)) != EOF && ch != '\n' && count < CFG_STRLEN) {
+		while((ch = fgetc(fp)) != EOF && ch != '\n' && count < MAX_CLIENT_PPS) {
 			if(ch != '\r') {
 				value[count] = (char)ch;
 				count++;

@@ -2,11 +2,6 @@
 #define CLIENT_H
 #include "world.h"
 
-enum sockStatuses {
-	CLIENT_OK,
-	CLIENT_WAITCLOSE
-};
-
 enum playerStates {
 	STATE_MOTD,
 	STATE_WLOADDONE,
@@ -19,7 +14,7 @@ typedef struct cpeData {
 	BlockID     heldBlock;
 	short       _extCount;
 	EXT         headExtension;
-	char        model[64];
+	char        model[16];
 	const char* appName;
 } *CPEDATA;
 
@@ -40,7 +35,7 @@ typedef struct client {
 	uint32_t    ppstm;
 	SOCKET      sock;
 	uint32_t    addr;
-	int         status;
+	bool        closed;
 	char*       rdbuf;
 	char*       wrbuf;
 	uint16_t    bufpos;
@@ -51,7 +46,6 @@ typedef struct client {
 	PLAYERDATA  playerData;
 } *CLIENT;
 
-void ReadClPos(CLIENT client, char* data, bool extended);
 void Client_SetPos(CLIENT client, VECTOR vec, ANGLE ang);
 void Client_UpdatePositions(CLIENT client);
 int  Client_Send(CLIENT client, int len);

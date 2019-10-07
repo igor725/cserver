@@ -81,20 +81,20 @@ typedef uint8_t  MessageType;
 #define SOFTWARE_VERSION "0.1"
 #define CHATLINE "<%s>: %s"
 #define MAINCFG "server.cfg"
-
-#define MAX_CLIENTS 128
-#define MAX_WORLDS  128
-#define MAX_PACKETS 256
-#define MAX_EVENTS  64
-#define EVENT_TYPES 12
-
-#define CFG_STRLEN     128
-#define CLIENT_MAX_PPS 128
-
 #define WORLD_MAGIC 0x54414457
 
-#define DEFAULT_NAME "Server name"
-#define DEFAULT_MOTD "Server MOTD"
+#define MAX_CLIENT_PPS 128
+#define MAX_CLIENTS    128
+#define MAX_WORLDS     128
+#define MAX_PACKETS    256
+#define MAX_CLIENT_PPS 128
+#define MAX_EVENTS     64
+#define EVENT_TYPES    12
+
+#define DEFAULT_NAME   "Server name"
+#define DEFAULT_MOTD   "Server MOTD"
+
+#define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
 
 enum messageTypes {
 	CPE_CHAT,
@@ -106,8 +106,6 @@ enum messageTypes {
 	CPE_BRIGHT3,
 	CPE_ANNOUNCE = 100
 };
-
-#define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
 
 typedef struct cpeExt {
 	const char* name;

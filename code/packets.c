@@ -61,17 +61,15 @@ uint32_t WriteClPos(char* data, CLIENT client, bool stand, bool extended) {
 		*(uint32_t*)++data = htonl((uint32_t)z); data += 3;
 		*(uint8_t*)++data = (uint8_t)yaw;
 		*(uint8_t*)++data = (uint8_t)pitch;
-
-		return 12;
 	} else {
 		*(uint16_t*)data = htons((uint16_t)x); ++data;
 		*(uint16_t*)++data = htons((uint16_t)y); ++data;
 		*(uint16_t*)++data = htons((uint16_t)z); ++data;
 		*(uint8_t*)++data = (uint8_t)yaw;
 		*(uint8_t*)++data = (uint8_t)pitch;
-
-		return 6;
 	}
+
+	return extended ? 12 : 6;
 }
 
 void Packet_Register(int id, const char* name, uint16_t size, packetHandler handler) {

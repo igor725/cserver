@@ -7,14 +7,14 @@ EVENT Event_List[EVENT_TYPES][MAX_EVENTS] = {0};
 #define rgPart1 \
 for(int pos = 0; pos < MAX_EVENTS; pos++) { \
 	if(!Event_List[type][pos]) { \
-		EVENT evt = Memory_Alloc(1, sizeof(struct event)); \
+		EVENT evt = Memory_Alloc(1, sizeof(struct event));
 
 #define rgPart2 \
 		Event_List[type][pos] = evt; \
 		return true; \
 	} \
 } \
-return false; \
+return false;
 
 bool Event_RegisterBool(EventType type, evtBoolCallback func) {
 	rgPart1;

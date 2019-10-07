@@ -23,7 +23,6 @@ static void AcceptFunc(void) {
 
 		tmp->sock = fd;
 		tmp->bufpos = 0;
-		tmp->status = CLIENT_OK;
 		tmp->mutex = Mutex_Create();
 		tmp->addr = ntohl(caddr.sin_addr.s_addr);
 		tmp->rdbuf = Memory_Alloc(131, 1);
@@ -57,6 +56,7 @@ static void onConnect(void* param) {
 }
 
 static void onDisconnect(void* param) {
+	if(!Server_Active) return;
 	CLIENT cl = (CLIENT)param;
 	Log_Info("Player %s disconnected", cl->playerData->name);
 }
@@ -157,7 +157,6 @@ int main(int argc, char** argv) {
 		char* lastSlash = (char*)String_LastChar(path, PATH_DELIM);
 		if(lastSlash) {
 			*lastSlash = '\0';
-			Log_Info("Changing current directory to \"%s\"", path);
 			Directory_SetCurrentDir(path);
 		}
 		Memory_Free((char*)path);
@@ -165,6 +164,7 @@ int main(int argc, char** argv) {
 
 	if((Server_Active = InitialWork()) == true) {
 		Console_StartListen();
+		Server_StartTime = Time_GetMSec();
 		Server_AcceptThread = Thread_Create(AcceptThreadProc, NULL);
 	}
 

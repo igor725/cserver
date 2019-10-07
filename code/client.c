@@ -81,7 +81,7 @@ TRET Client_ThreadProc(TARG lpParam) {
 	PACKET packet = NULL;
 
 	while(1) {
-		if(client->status == CLIENT_WAITCLOSE) {
+		if(client->closed) {
 			int len = recv(client->sock, client->rdbuf, 131, 0);
 			if(len <= 0) {
 				if(client->playerData && client->playerData->state > STATE_WLOADDONE)
@@ -299,7 +299,7 @@ bool Client_SetBlockPerm(CLIENT client, BlockID block, bool allowPlace, bool all
 bool Client_SetModel(CLIENT client, const char* model) {
 	if(!client->cpeData) return false;
 	if(!CPE_CheckModel(model)) return false;
-	String_Copy(client->cpeData->model, 64, model);
+	String_Copy(client->cpeData->model, 16, model);
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT other = Clients_List[i];
@@ -412,7 +412,7 @@ void Client_HandshakeStage2(CLIENT client) {
 void Client_Disconnect(CLIENT client) {
 	Client_Despawn(client);
 	Socket_Shutdown(client->sock, SD_SEND);
-	client->status = CLIENT_WAITCLOSE;
+	client->closed = true;
 }
 
 void Client_Kick(CLIENT client, const char* reason) {
@@ -435,7 +435,7 @@ void Client_Tick(CLIENT client) {
 	if(client->ppstm < 1000) {
 		client->ppstm += Server_Delta;
 	} else {
-		if(client->pps > CLIENT_MAX_PPS) {
+		if(client->pps > MAX_CLIENT_PPS) {
 			Client_Kick(client, "Too many packets per second");
 			return;
 		}
