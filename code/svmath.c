@@ -1,5 +1,5 @@
 #include "core.h"
-#include "math.h"
+#include "svmath.h"
 
 #define RND_VALUE (0x5DEECE66DULL)
 #define RND_MASK ((1ULL << 48) - 1)

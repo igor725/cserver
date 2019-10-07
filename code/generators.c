@@ -3,7 +3,7 @@
 #include "world.h"
 #include "platform.h"
 #include "generators.h"
-#include "math.h"
+#include "svmath.h"
 
 /*
 	Flat generator
