@@ -65,8 +65,6 @@ typedef struct event {
 	} func;
 } *EVENT;
 
-EVENT Event_List[EVENT_TYPES][MAX_EVENTS];
-
 API bool Event_RegisterBool(EventType type, evtBoolCallback func);
 API bool Event_RegisterVoid(EventType type, evtVoidCallback func);
 API bool Event_Unregister(EventType type, void* callbackPtr);

@@ -355,7 +355,7 @@ bool Handler_PosAndOrient(CLIENT client, char* data) {
 	}
 
 	ReadClPos(client, ++data, false);
-	client->playerData->positionUpdated = true;
+	Client_UpdatePositions(client);
 	return true;
 }
 

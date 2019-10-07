@@ -5,6 +5,8 @@
 #include "cplugin.h"
 #include "command.h"
 
+CPLUGIN CPlugin_List[MAX_PLUGINS] = {0};
+
 bool CPlugin_Load(const char* name) {
 	char path[256];
 	char error[512];

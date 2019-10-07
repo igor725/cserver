@@ -4,6 +4,8 @@
 #include "server.h"
 #include "generators.h"
 
+COMMAND Command_Head;
+
 void Command_Register(const char* cmd, cmdFunc func) {
 	COMMAND tmp = Memory_Alloc(1, sizeof(struct command));
 

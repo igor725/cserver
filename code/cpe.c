@@ -228,8 +228,7 @@ bool CPEHandler_PosAndOrient(CLIENT client, char* data) {
 	}
 
 	ReadClPos(client, ++data, true);
-	client->playerData->positionUpdated = true;
-
+	Client_UpdatePositions(client);
 	return true;
 }
 

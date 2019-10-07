@@ -32,7 +32,6 @@ typedef struct playerData {
 	bool    isOP;
 	bool    spawned;
 	WORLD  world;
-	bool    positionUpdated;
 } *PLAYERDATA;
 
 typedef struct client {
@@ -54,6 +53,7 @@ typedef struct client {
 
 void ReadClPos(CLIENT client, char* data, bool extended);
 void Client_SetPos(CLIENT client, VECTOR vec, ANGLE ang);
+void Client_UpdatePositions(CLIENT client);
 int  Client_Send(CLIENT client, int len);
 void Client_HandshakeStage2(CLIENT client);
 bool Client_CheckAuth(CLIENT client);

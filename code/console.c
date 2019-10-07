@@ -6,8 +6,7 @@
 THREAD conThread;
 
 int Console_ReadLine(char* buf, int buflen) {
-	int len = 0;
-	int c = 0;
+	int len = 0, c = 0;
 
 	while((c = getc(stdin)) != EOF && c != '\n') {
 		if(c != '\r') {

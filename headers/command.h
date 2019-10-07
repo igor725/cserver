@@ -43,8 +43,6 @@ typedef struct command {
 	struct command* prev;
 } *COMMAND;
 
-COMMAND Command_Head;
-
 API void Command_Register(const char* cmd, cmdFunc func);
 API void Command_Unregister(const char* cmd);
 void Command_RegisterDefault(void);

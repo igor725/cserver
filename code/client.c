@@ -422,9 +422,6 @@ void Client_Kick(CLIENT client, const char* reason) {
 }
 
 void Client_UpdatePositions(CLIENT client) {
-	if(!client->playerData->positionUpdated) return;
-	client->playerData->positionUpdated = false;
-
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT other = Clients_List[i];
 		if(other && client != other && Client_IsInGame(other) && Client_IsInSameWorld(client, other))
@@ -454,9 +451,6 @@ void Client_Tick(CLIENT client) {
 			break;
 		case STATE_WLOADERR:
 			Client_Kick(client, "Map loading error");
-			break;
-		case STATE_INGAME:
-			Client_UpdatePositions(client);
 			break;
 	}
 }
