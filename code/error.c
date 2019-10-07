@@ -1,8 +1,6 @@
 #include "core.h"
 #include "error.h"
 
-EVENT Event_List[EVENT_TYPES][MAX_EVENTS] = {0};
-
 const char* const Types[] = {
 	"SERVER",
 	"ZLIB",

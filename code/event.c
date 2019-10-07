@@ -2,6 +2,8 @@
 #include "client.h"
 #include "event.h"
 
+EVENT Event_List[EVENT_TYPES][MAX_EVENTS] = {0};
+
 #define rgPart1 \
 for(int pos = 0; pos < MAX_EVENTS; pos++) { \
 	if(!Event_List[type][pos]) { \
