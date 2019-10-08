@@ -1,7 +1,7 @@
 #include "core.h"
 #include "block.h"
 
-const char* Block_Names[] = {
+const char* Block_Names[256] = {
 	"Air", "Stone", "Grass", "Dirt",
 	"Cobblestone", "Planks", "Sapling",
 	"Bedrock", "Water", "Still Water",

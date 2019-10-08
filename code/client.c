@@ -247,6 +247,12 @@ void Client_SetPos(CLIENT client, VECTOR pos, ANGLE ang) {
 	Memory_Copy(client->playerData->angle, ang, sizeof(struct angle));
 }
 
+bool Client_SetBlock(CLIENT client, short x, short y, short z, BlockID id) {
+	if(!client->playerData || client->playerData->state != STATE_INGAME) return false;
+	Packet_WriteSetBlock(client, x, y, z, id);
+	return true;
+}
+
 bool Client_SetProperty(CLIENT client, uint8_t property, int value) {
 	if(Client_IsSupportExt(client, "EnvMapAspect", 1)) {
 		CPEPacket_WriteMapProperty(client, property, value);

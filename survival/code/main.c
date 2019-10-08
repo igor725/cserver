@@ -20,9 +20,24 @@ static void Survival_OnSpawn(void* param) {
 	for(Order i = 0; i < 9; i++) {
 		Client_SetHotbar(client, i, 0);
 	}
-	for(BlockID i = 0; i < 256; i++) {
+	for(BlockID i = 0; i < 255; i++) {
 		Client_SetBlockPerm(client, i, false, false);
 	}
+}
+
+static void Survival_OnTick(void* param) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		SURVDATA survData = SurvData_GetByID(i);
+		if(!survData) continue;
+
+		if(survData->breakStarted) {
+			SurvivalBrk_Tick(survData);
+		}
+	}
+}
+
+static void Survival_OnDisconnect(void* param) {
+	SurvData_Free((CLIENT)param);
 }
 
 static float fsquare(float a) {
@@ -54,7 +69,6 @@ static void Survival_OnClick(void* param) {
 	if(target) survDataTg = SurvData_Get(target);
 
 	if(*a->button != 0) return;
-
 	if(*a->action == 1) {
 		SurvivalBrk_Stop(survData);
 		return;
@@ -73,19 +87,23 @@ static void Survival_OnClick(void* param) {
 	}
 
 	if(dist_block < dist_entity) {
-		if(survData->lastclick[0] != x ||
-			survData->lastclick[1] != y || survData->lastclick[2] != z) {
+		if(survData->breakStarted && (survData->lastclick[0] != x ||
+			survData->lastclick[1] != y || survData->lastclick[2] != z)) {
 				SurvivalBrk_Stop(survData);
+				return;
 			}
 		if(!survData->breakStarted) {
-			SurvivalBrk_Start(survData, x, y, z);
-			survData->lastclick[0] = x;
-			survData->lastclick[1] = y;
-			survData->lastclick[2] = z;
+			BlockID bid = World_GetBlock(client->playerData->world, x, y, z);
+			SurvivalBrk_Start(survData, x, y, z, bid);
 		}
+		
+		survData->lastclick[0] = x;
+		survData->lastclick[1] = y;
+		survData->lastclick[2] = z;
 	} else if(dist_entity < dist_block && dist_entity < 3.5) {
 		if(survData->breakStarted) {
 			SurvivalBrk_Stop(survData);
+			return;
 		}
 		if(survData->pvpMode && survDataTg->pvpMode) {
 			SurvDamage_Hurt(survDataTg, survData, SURV_DEFAULT_HIT);
@@ -134,6 +152,7 @@ static bool CHandler_PvP(const char* args, CLIENT caller, char* out) {
 
 EXP int Plugin_ApiVer = 100;
 EXP bool Plugin_Load(void) {
+	Event_RegisterVoid(EVT_ONTICK, Survival_OnTick);
 	Event_RegisterVoid(EVT_ONSPAWN, Survival_OnSpawn);
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, Survival_OnHandshake);
 	Event_RegisterVoid(EVT_ONPLAYERCLICK, Survival_OnClick);

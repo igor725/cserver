@@ -15,9 +15,13 @@ typedef struct survivalData {
 	bool pvpMode;
 	short lastclick[3];
 	bool breakStarted;
-	int breakProgress;
+	int breakTimer;
+	uint8_t breakProgress;
+	BlockID breakBlock;
 } *SURVDATA;
 
 void SurvData_Create(CLIENT cl);
+void SurvData_Free(CLIENT cl);
 SURVDATA SurvData_Get(CLIENT cl);
+SURVDATA SurvData_GetByID(ClientID id);
 #endif
