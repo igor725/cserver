@@ -87,6 +87,12 @@ SOCKET Socket_Bind(const char* ip, uint16_t port) {
 	ssa.sin_family = AF_INET;
 	ssa.sin_port = htons(port);
 
+#if defined(POSIX)
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0) {
+		SOCKERR;
+	}
+#endif
+
 	if(!inet_pton(AF_INET, ip, &ssa.sin_addr.s_addr)) {
 		SOCKERR;
 	}
