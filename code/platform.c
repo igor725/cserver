@@ -88,7 +88,7 @@ SOCKET Socket_Bind(const char* ip, uint16_t port) {
 	ssa.sin_port = htons(port);
 
 #if defined(POSIX)
-	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0) {
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0) {
 		SOCKERR;
 	}
 #endif
