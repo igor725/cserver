@@ -4,16 +4,16 @@
 
 #include "data.h"
 
-SURVDATA* survDataList[MAX_CLIENTS] = {0};
+SURVDATA survDataList[MAX_CLIENTS] = {0};
 
 void SurvData_Create(CLIENT cl) {
-	SURVDATA* ptr = Memory_Alloc(1, sizeof(SURVDATA));
+	SURVDATA ptr = Memory_Alloc(1, sizeof(struct survData));
 	ptr->client = cl;
 	ptr->health = 10.0f;
 	ptr->oxygen = 10.0f;
 	survDataList[cl->id] = ptr;
 }
 
-SURVDATA* SurvData_Get(CLIENT cl) {
+SURVDATA SurvData_Get(CLIENT cl) {
 	return survDataList[cl->id];
 }

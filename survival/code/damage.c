@@ -5,7 +5,7 @@
 #include "gui.h"
 #include "damage.h"
 
-void SurvDamage_Hurt(SURVDATA* target, SURVDATA* attacker, float damage) {
+void SurvDamage_Hurt(SURVDATA target, SURVDATA attacker, float damage) {
 	if(damage <= 0 || target->godMode) return;
 
 	target->health -= min(damage, target->health);

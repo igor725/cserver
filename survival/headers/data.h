@@ -16,8 +16,8 @@ typedef struct survivalData {
 	short lastclick[3];
 	bool breakStarted;
 	int breakProgress;
-} SURVDATA;
+} *SURVDATA;
 
 void SurvData_Create(CLIENT cl);
-SURVDATA* SurvData_Get(CLIENT cl);
+SURVDATA SurvData_Get(CLIENT cl);
 #endif

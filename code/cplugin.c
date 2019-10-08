@@ -5,15 +5,13 @@
 #include "cplugin.h"
 #include "command.h"
 
-CPLUGIN CPlugin_List[MAX_PLUGINS] = {0};
+CPLUGIN PList[MAX_PLUGINS] = {0};
 
 bool CPlugin_Load(const char* name) {
 	char path[256];
 	char error[512];
 	String_FormatBuf(path, 256, "plugins/%s", name);
-	void* lib;
-	void* verSym;
-	void* initSym;
+	void *lib, *verSym, *initSym;
 	int ver;
 
 	if(DLib_Load(path, &lib)) {
@@ -43,8 +41,8 @@ bool CPlugin_Load(const char* name) {
 		plugin->id = -1;
 
 		for(int i = 0; i < MAX_PLUGINS; i++) {
-			if(!CPlugin_List[i]) {
-				CPlugin_List[i] = plugin;
+			if(!PList[i]) {
+				PList[i] = plugin;
 				plugin->id = i;
 				break;
 			}
@@ -64,7 +62,7 @@ bool CPlugin_Load(const char* name) {
 
 CPLUGIN CPlugin_Get(const char* name) {
 	for(int i = 0; i < MAX_PLUGINS; i++) {
-		CPLUGIN ptr = CPlugin_List[i];
+		CPLUGIN ptr = PList[i];
 		if(ptr && String_Compare(ptr->name, name)) return ptr;
 	}
 	return NULL;
@@ -76,7 +74,7 @@ bool CPlugin_Unload(CPLUGIN plugin) {
 	if(plugin->name)
 		Memory_Free((void*)plugin->name);
 	if(plugin->id != -1)
-		CPlugin_List[plugin->id] = NULL;
+		PList[plugin->id] = NULL;
 
 	DLib_Unload(plugin->lib);
 	Memory_Free(plugin);
@@ -115,7 +113,7 @@ static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
 		} else if(String_CaselessCompare(command, "list")) {
 			Log_Info("Loaded plugins list:");
 			for(int i = 0; i < MAX_PLUGINS; i++) {
-				plugin = CPlugin_List[i];
+				plugin = PList[i];
 				if(plugin) Log_Info(plugin->name);
 			}
 			return false;
@@ -142,7 +140,7 @@ void CPlugin_Start(void) {
 
 void CPlugin_Stop(void) {
 	for(int i = 0; i < MAX_PLUGINS; i++) {
-		CPLUGIN plugin = CPlugin_List[i];
+		CPLUGIN plugin = PList[i];
 		if(plugin && plugin->unload)
 			(*(pluginFunc)plugin->unload)();
 	}

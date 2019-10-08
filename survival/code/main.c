@@ -15,7 +15,7 @@ static void Survival_OnHandshake(void* param) {
 
 static void Survival_OnSpawn(void* param) {
 	CLIENT client = (CLIENT)param;
-	SURVDATA* survData = SurvData_Get(client);
+	SURVDATA survData = SurvData_Get(client);
 	SurvGui_DrawAll(survData);
 	for(Order i = 0; i < 9; i++) {
 		Client_SetHotbar(client, i, 0);
@@ -48,9 +48,9 @@ static void Survival_OnClick(void* param) {
 	onPlayerClick_t* a = (onPlayerClick_t*)param;
 	CLIENT client = a->client;
 	short x = *a->x, y = *a->y, z = *a->z;
-	SURVDATA* survData = SurvData_Get(client);
+	SURVDATA survData = SurvData_Get(client);
 	CLIENT target = Client_GetByID(*a->tgID);
-	SURVDATA* survDataTg = NULL;
+	SURVDATA survDataTg = NULL;
 	if(target) survDataTg = SurvData_Get(target);
 
 	if(*a->button != 0) return;
@@ -101,7 +101,7 @@ static bool CHandler_God(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForClient;
 	Command_OnlyForOP;
 
-	SURVDATA* survData = SurvData_Get(caller);
+	SURVDATA survData = SurvData_Get(caller);
 	bool mode = survData->godMode;
 	survData->godMode = !mode;
 	String_FormatBuf(out, CMD_MAX_OUT, "God mode %s for %s", mode ? "disabled" : "enabled", caller->playerData->name);
@@ -124,7 +124,7 @@ static bool CHandler_Hurt(const char* args, CLIENT caller, char* out) {
 static bool CHandler_PvP(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForClient;
 
-	SURVDATA* survData = SurvData_Get(caller);
+	SURVDATA survData = SurvData_Get(caller);
 	bool mode = survData->pvpMode;
 	survData->pvpMode = !mode;
 	String_FormatBuf(out, CMD_MAX_OUT, "PvP mode %s", mode ? "disabled" : "enabled");

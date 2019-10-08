@@ -253,7 +253,6 @@ bool Handler_Handshake(CLIENT client, char* data) {
 
 	ReadNetString(++data, &client->playerData->name); data += 63;
 	ReadNetString(++data, &client->playerData->key); data += 63;
-	Thread_SetName(client->playerData->name);
 
 	for(int i = 0; i < 128; i++) {
 		CLIENT other = Clients_List[i];

@@ -27,7 +27,6 @@ void Console_HandleCommand(char* cmd) {
 }
 
 TRET Console_ThreadProc(TARG lpParam) {
-	Thread_SetName("Console listener");
 	char buf[CON_STR_LEN] = {0};
 
 	while(Server_Active) {

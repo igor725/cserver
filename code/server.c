@@ -36,7 +36,6 @@ static void AcceptFunc(void) {
 }
 
 static TRET AcceptThreadProc(void* lpParam) {
-	Thread_SetName("AcceptThread");
 	while(Server_Active) AcceptFunc();
 	return 0;
 }

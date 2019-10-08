@@ -61,15 +61,13 @@ bool File_Close(FILE* fp) {
 }
 
 #if defined(WINDOWS)
-#define SOCKERR Error_Print2(ET_SYS, WSAGetLastError(), false); \
-return INVALID_SOCKET;
+#  define SOCKERR Error_Print2(ET_SYS, WSAGetLastError(), false); return INVALID_SOCKET;
 #elif defined(POSIX)
-#define SOCKERR Error_Print2(ET_SYS, errno, false); \
-return INVALID_SOCKET;
+#  define SOCKERR Error_Print2(ET_SYS, errno, false); return INVALID_SOCKET;
 #endif
 
 bool Socket_Init(void) {
-#ifdef WINDOWS
+#if defined(WINDOWS)
 	WSADATA ws;
 	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR) {
 		SOCKERR;
@@ -89,7 +87,7 @@ SOCKET Socket_Bind(const char* ip, uint16_t port) {
 	ssa.sin_family = AF_INET;
 	ssa.sin_port = htons(port);
 
-	if(inet_pton(AF_INET, ip, &ssa.sin_addr.s_addr) <= 0) {
+	if(!inet_pton(AF_INET, ip, &ssa.sin_addr.s_addr)) {
 		SOCKERR;
 	}
 
@@ -150,6 +148,7 @@ bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
 		iter->state = 2;
 		return true;
 	}
+
 	iter->cfile = iter->fileHandle.cFileName;
 	iter->isDir = isDir(iter);
 	iter->state = 1;
@@ -207,7 +206,7 @@ bool DLib_GetSym(void* lib, const char* sname, void** sym) {
 	return (*sym = (void*)GetProcAddress(lib, sname)) != NULL;
 }
 
-THREAD Thread_Create(TFUNC func, const TARG lpParam) {
+THREAD Thread_Create(TFUNC func, TARG lpParam) {
 	THREAD th = CreateThread(
 		NULL,
 		0,
@@ -227,10 +226,6 @@ THREAD Thread_Create(TFUNC func, const TARG lpParam) {
 
 bool Thread_IsValid(THREAD th) {
 	return th != (THREAD)NULL;
-}
-
-bool Thread_SetName(const char* name) {
-	return false; //????
 }
 
 void Thread_Close(THREAD th) {
@@ -369,7 +364,7 @@ bool DLib_GetSym(void* lib, const char* sname, void** sym) {
 	return (*sym = dlsym(lib, sname)) != NULL;
 }
 
-THREAD Thread_Create(TFUNC func, const TARG arg) {
+THREAD Thread_Create(TFUNC func, TARG arg) {
 	THREAD thread = Memory_Alloc(1, sizeof(THREAD));
 	if(pthread_create(thread, NULL, func, arg) != 0) {
 		Error_Print2(ET_SYS, errno, true);
@@ -380,10 +375,6 @@ THREAD Thread_Create(TFUNC func, const TARG arg) {
 
 bool Thread_IsValid(THREAD th) {
 	return th != NULL;
-}
-
-bool Thread_SetName(const char* thName) {
-	return pthread_setname_np(pthread_self(), thName) == 0;
 }
 
 void Thread_Close(THREAD th) {

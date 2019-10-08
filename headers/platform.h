@@ -92,7 +92,6 @@ API void Socket_Close(SOCKET sock);
 
 API THREAD Thread_Create(TFUNC func, const TARG lpParam);
 API bool Thread_IsValid(THREAD th);
-API bool Thread_SetName(const char* thName);
 API void Thread_Close(THREAD th);
 API void Thread_Join(THREAD th);
 

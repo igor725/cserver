@@ -6,7 +6,7 @@
 #include "gui.h"
 
 // TODO: Исправить этот пиздец
-void SurvGui_DrawHealth(SURVDATA* data) {
+void SurvGui_DrawHealth(SURVDATA data) {
 	char healthstr[20] = {0};
 	int health = (int)data->health;
 	float fr = data->health - (float)health;
@@ -29,7 +29,7 @@ void SurvGui_DrawHealth(SURVDATA* data) {
 	Client_Chat(data->client, SURV_HEALTH_POS, healthstr);
 }
 
-void SurvGui_DrawBreakProgress(SURVDATA* data) {
+void SurvGui_DrawBreakProgress(SURVDATA data) {
 	char breakstr[19] = {0};
 	
 	String_Append(breakstr, 10, "[&a");
@@ -44,6 +44,6 @@ void SurvGui_DrawBreakProgress(SURVDATA* data) {
 	Client_Chat(data->client, SURV_BREAK_POS, breakstr);
 }
 
-void SurvGui_DrawAll(SURVDATA* data) {
+void SurvGui_DrawAll(SURVDATA data) {
 	SurvGui_DrawHealth(data);
 }
