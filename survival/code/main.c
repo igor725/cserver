@@ -96,7 +96,7 @@ static void Survival_OnClick(void* param) {
 			BlockID bid = World_GetBlock(client->playerData->world, x, y, z);
 			SurvivalBrk_Start(survData, x, y, z, bid);
 		}
-		
+
 		survData->lastclick[0] = x;
 		survData->lastclick[1] = y;
 		survData->lastclick[2] = z;
@@ -154,6 +154,7 @@ EXP int Plugin_ApiVer = 100;
 EXP bool Plugin_Load(void) {
 	Event_RegisterVoid(EVT_ONTICK, Survival_OnTick);
 	Event_RegisterVoid(EVT_ONSPAWN, Survival_OnSpawn);
+	Event_RegisterVoid(EVT_ONDISCONNECT, Survival_OnDisconnect);
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, Survival_OnHandshake);
 	Event_RegisterVoid(EVT_ONPLAYERCLICK, Survival_OnClick);
 	Command_Register("god", CHandler_God);

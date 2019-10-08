@@ -12,7 +12,6 @@ static const int BreakTimings[256] = {
 static void UpdateBlock(WORLD world, short x, short y, short z, BlockID bid) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT cl = Client_GetByID(i);
-
 		if(cl && Client_IsInWorld(cl, world)) Client_SetBlock(cl, x, y, z, bid);
 	}
 }
