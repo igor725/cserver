@@ -5,18 +5,27 @@ DEBUG=0
 OPT="-O2"
 WARN=""
 ROOT="."
-LNK="gcc -rdynamic"
+GCC="gcc -fdiagnostics-color=always"
+LNK="$GCC -rdynamic"
 CFLAGS="-pipe -fPIC -funwind-tables"
 LIBS="-lz -lpthread -ldl"
 OUTBIN="server"
 
 PLUGIN_BUILD=0
 PLUGIN_INSTALL=0
-PLUGINS_DIR="out/plugins"
+PLUGINS_DIR="$ROOT/out/plugins"
 
 clean () {
 	rm -rf objs/* out/server
 	exit 0
+}
+
+dowait () {
+	wait $1;
+	if [ $? -ne 0 ]; then
+		echo -ne "error\nCompiler errors:\n$(cat /tmp/gcc_stderr)\n"
+		exit 1
+	fi
 }
 
 for a in "$@"
@@ -55,37 +64,43 @@ fi
 
 echo -n "Compiling..."
 OBJDIR="$ROOT/objs"
+OBJS=""
 if [ ! -d "$OBJDIR" ]; then mkdir $OBJDIR; fi
+echo -n "" > /tmp/gcc_stderr
 pids=()
 cnt=0
 for C in `find "$ROOT/code/" -type f -name *.c`; do
-	obj="$OBJDIR/$(basename $C .c).o"
-	gcc -c $C -o $obj -I"$ROOT/headers" $WARN $OPT $CFLAGS &
+	objpath="$OBJDIR/$(basename $C .c).o"
+	OBJS="$OBJS $objpath"
+	$GCC -c $C -o $objpath -I"$ROOT/headers" $WARN $OPT $CFLAGS 2>> /tmp/gcc_stderr &
 	pids+=($!)
 	((cnt++))
 	if [ $cnt -ge $MAX_WORKERS ]; then
-		wait ${pids[-1]}
+		dowait ${pids[-1]}
 		unset pids[-1]
 		((cnt--))
 	fi
 done
 
 for pid in ${pids[@]}; do
-	wait $pid
+	dowait $pid
 done
 echo -ne "done\nLinking..."
-
 OUTDIR="$ROOT/out"
-OBJS=$(find $OBJDIR -name "*.o" -printf "$OBJDIR/%P ")
 if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
-$LNK -o "$OUTDIR/$OUTBIN" $LIBS $OBJS
+$LNK -o "$OUTDIR/$OUTBIN" $LIBS $OBJS 2>> /tmp/gcc_stderr
+if [ $? -ne 0 ]; then
+	echo -ne "error\nLinker errors:\n$(cat /tmp/gcc_stderr)\n"
+	exit 1
+fi
 echo -ne "done\nStripping..."
 strip "$OUTDIR/$OUTBIN"
 if [ $PLUGIN_INSTALL -eq 1 ]; then
 	echo -ne "done\nCopying to plugins directory..."
 	if [ ! -d "$PLUGINS_DIR" ]; then mkdir $PLUGINS_DIR; fi
-	cp "$OUTDIR/$OUTBIN" "out/plugins/$OUTBIN"
+	cp "$OUTDIR/$OUTBIN" "$PLUGINS_DIR/$OUTBIN"
 	echo "done"
 else
 	echo "done"
 fi
+exit 0
