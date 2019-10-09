@@ -49,7 +49,7 @@ void Error_CallStack(void) {
 			}
 #endif
 		}
-		if(String_Compare(symbol.Name, "main")) break; // Символы после main не несут смысловой нагрузки
+		if(symbol.Name && String_Compare(symbol.Name, "main")) break;
 	}
 }
 #elif defined(POSIX)
@@ -64,7 +64,7 @@ void Error_CallStack(void) {
 		if(i > 2) {
 			Log_Debug(SYM_DBG, dli.dli_sname, dli.dli_saddr);
 		}
-		if(String_Compare(dli.dli_sname, "main")) break;
+		if(dli.dli_sname && String_Compare(dli.dli_sname, "main")) break;
 	}
 }
 #endif

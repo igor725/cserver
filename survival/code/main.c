@@ -31,7 +31,7 @@ static void Survival_OnTick(void* param) {
 		if(!survData) continue;
 
 		if(survData->breakStarted) {
-			SurvivalBrk_Tick(survData);
+			SurvBrk_Tick(survData);
 		}
 	}
 }
@@ -61,6 +61,8 @@ static float distance(float x1, float y1, float z1, float x2, float y2, float z2
 
 static void Survival_OnClick(void* param) {
 	onPlayerClick_t* a = (onPlayerClick_t*)param;
+	if(*a->button != 0) return;
+
 	CLIENT client = a->client;
 	short x = *a->x, y = *a->y, z = *a->z;
 	SURVDATA survData = SurvData_Get(client);
@@ -68,9 +70,8 @@ static void Survival_OnClick(void* param) {
 	SURVDATA survDataTg = NULL;
 	if(target) survDataTg = SurvData_Get(target);
 
-	if(*a->button != 0) return;
 	if(*a->action == 1) {
-		SurvivalBrk_Stop(survData);
+		SurvBrk_Stop(survData);
 		return;
 	}
 
@@ -89,12 +90,12 @@ static void Survival_OnClick(void* param) {
 	if(dist_block < dist_entity) {
 		if(survData->breakStarted && (survData->lastclick[0] != x ||
 			survData->lastclick[1] != y || survData->lastclick[2] != z)) {
-				SurvivalBrk_Stop(survData);
+				SurvBrk_Stop(survData);
 				return;
 			}
 		if(!survData->breakStarted) {
 			BlockID bid = World_GetBlock(client->playerData->world, x, y, z);
-			SurvivalBrk_Start(survData, x, y, z, bid);
+			SurvBrk_Start(survData, x, y, z, bid);
 		}
 
 		survData->lastclick[0] = x;
@@ -102,11 +103,11 @@ static void Survival_OnClick(void* param) {
 		survData->lastclick[2] = z;
 	} else if(dist_entity < dist_block && dist_entity < 3.5) {
 		if(survData->breakStarted) {
-			SurvivalBrk_Stop(survData);
+			SurvBrk_Stop(survData);
 			return;
 		}
 		if(survData->pvpMode && survDataTg->pvpMode) {
-			SurvDamage_Hurt(survDataTg, survData, SURV_DEFAULT_HIT);
+			SurvDmg_Hurt(survDataTg, survData, SURV_DEFAULT_HIT);
 			// TODO: Knockback
 		} else {
 			if(!survData->pvpMode)
@@ -133,7 +134,7 @@ static bool CHandler_Hurt(const char* args, CLIENT caller, char* out) {
 	char damage[32];
 	if(String_GetArgument(args, damage, 32, 0)) {
 		float dmg = String_ToFloat(damage);
-		SurvDamage_Hurt(SurvData_Get(caller), NULL, dmg);
+		SurvDmg_Hurt(SurvData_Get(caller), NULL, dmg);
 	}
 
 	return false;

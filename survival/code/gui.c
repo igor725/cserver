@@ -31,15 +31,16 @@ void SurvGui_DrawHealth(SURVDATA data) {
 
 void SurvGui_DrawBreakProgress(SURVDATA data) {
 	char breakstr[19] = {0};
-	
-	String_Append(breakstr, 10, "[&a");
-	for(int i = 0; i < 10; i++) {
-		if(i == data->breakProgress)
-			String_Append(breakstr, 19, "&8");
 
-		String_Append(breakstr, 19, "|");
+	if(data->breakStarted) {
+		String_Append(breakstr, 10, "[&a");
+		for(int i = 0; i < 10; i++) {
+			if(i == data->breakProgress)
+				String_Append(breakstr, 19, "&8");
+			String_Append(breakstr, 19, "|");
+		}
+		String_Append(breakstr, 19, "&f]");
 	}
-	String_Append(breakstr, 19, "&f]");
 
 	Client_Chat(data->client, SURV_BREAK_POS, breakstr);
 }

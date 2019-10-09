@@ -4,6 +4,7 @@
 
 #include "data.h"
 #include "break.h"
+#include "gui.h"
 
 static const int BreakTimings[256] = {
 	0,4000,500,500,4000,1100,0,-1
@@ -16,38 +17,44 @@ static void UpdateBlock(WORLD world, short x, short y, short z, BlockID bid) {
 	}
 }
 
-void SurvivalBrk_Start(SURVDATA survData, short x, short y, short z, BlockID block) {
-	survData->breakStarted = true;
-	survData->breakBlock = block;
-	survData->breakTimer = 0;
+void SurvBrk_Start(SURVDATA data, short x, short y, short z, BlockID block) {
+	data->breakStarted = true;
+	data->breakBlock = block;
+	data->breakTimer = 0;
 }
 
-void SurvivalBrk_Stop(SURVDATA survData) {
-	survData->breakStarted = false;
+void SurvBrk_Stop(SURVDATA data) {
+	data->breakProgress = 0;
+	data->breakStarted = false;
+	SurvGui_DrawBreakProgress(data);
 }
 
-void SurvivalBrk_Done(SURVDATA survData) {
-	short* pos = survData->lastclick;
+void SurvBrk_Done(SURVDATA data) {
+	short* pos = data->lastclick;
 	short x = pos[0], y = pos[1], z = pos[2];
-	WORLD world = survData->client->playerData->world;
+	WORLD world = data->client->playerData->world;
 
-	SurvivalBrk_Stop(survData);
+	SurvBrk_Stop(data);
 	World_SetBlock(world, x, y, z, 0);
 	UpdateBlock(world, x, y, z, 0);
 }
 
-void SurvivalBrk_Tick(SURVDATA survData) {
-	int breakTime = BreakTimings[survData->breakBlock];
+void SurvBrk_Tick(SURVDATA data) {
+	int breakTime = BreakTimings[data->breakBlock];
 	if(breakTime == -1) {
-		SurvivalBrk_Done(survData);
+		SurvBrk_Done(data);
 		return;
 	} else if(breakTime == 0) {
-		SurvivalBrk_Stop(survData);
+		SurvBrk_Stop(data);
 		return;
 	}
 
-	survData->breakTimer += Server_Delta;
-	float df = (survData->breakTimer / (float)breakTime);
-	survData->breakProgress = (uint8_t)(df * SURV_MAX_BRK);
-	if(survData->breakTimer >= breakTime) SurvivalBrk_Done(survData);
+	data->breakTimer += Server_Delta;
+	float df = (data->breakTimer / (float)breakTime);
+	uint8_t newProgress = (uint8_t)(df * SURV_MAX_BRK);
+	if(newProgress > data->breakProgress) {
+		data->breakProgress = newProgress;
+		SurvGui_DrawBreakProgress(data);
+	}
+	if(data->breakTimer >= breakTime) SurvBrk_Done(data);
 }

@@ -12,6 +12,7 @@ OUTBIN="server"
 
 PLUGIN_BUILD=0
 PLUGIN_INSTALL=0
+PLUGINS_DIR="out/plugins"
 
 clean () {
 	rm -rf objs/* out/server
@@ -37,9 +38,9 @@ do
 	fi
 	if [ "$a" == "clean" ]; then clean; fi
 	if [ "$a" == "pb" ]; then PLUGIN_BUILD=1; fi
-	if [ "$a" == "dbg" ]; then DEBUG=1; fi
 	if [ "$a" == "wall" ]; then WARN="-Wall"; fi
 	if [ "$a" == "nowarn" ]; then WARN="-W0"; fi
+	if [ "$a" == "dbg" ]; then DEBUG=1; OPT="-O0"; fi
 	if [ "$a" == "0" ]; then OPT="-O0"; fi
 	if [ "$a" == "1" ]; then OPT="-O1"; fi
 	if [ "$a" == "2" ]; then OPT="-O2"; fi
@@ -82,6 +83,7 @@ echo -ne "done\nStripping..."
 strip "$OUTDIR/$OUTBIN"
 if [ $PLUGIN_INSTALL -eq 1 ]; then
 	echo -ne "done\nCopying to plugins directory..."
+	if [ ! -d "$PLUGINS_DIR" ]; then mkdir $PLUGINS_DIR; fi
 	cp "$OUTDIR/$OUTBIN" "out/plugins/$OUTBIN"
 	echo "done"
 else
