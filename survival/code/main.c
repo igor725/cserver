@@ -15,8 +15,8 @@ static void Survival_OnHandshake(void* param) {
 
 static void Survival_OnSpawn(void* param) {
 	CLIENT client = (CLIENT)param;
-	SURVDATA survData = SurvData_Get(client);
-	SurvGui_DrawAll(survData);
+	SURVDATA data = SurvData_Get(client);
+	SurvGui_DrawAll(data);
 	for(Order i = 0; i < 9; i++) {
 		Client_SetHotbar(client, i, 0);
 	}
@@ -27,11 +27,11 @@ static void Survival_OnSpawn(void* param) {
 
 static void Survival_OnTick(void* param) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		SURVDATA survData = SurvData_GetByID(i);
-		if(!survData) continue;
+		SURVDATA data = SurvData_GetByID(i);
+		if(!data) continue;
 
-		if(survData->breakStarted) {
-			SurvBrk_Tick(survData);
+		if(data->breakStarted) {
+			SurvBrk_Tick(data);
 		}
 	}
 }
@@ -65,13 +65,13 @@ static void Survival_OnClick(void* param) {
 
 	CLIENT client = a->client;
 	short x = *a->x, y = *a->y, z = *a->z;
-	SURVDATA survData = SurvData_Get(client);
+	SURVDATA data = SurvData_Get(client);
 	CLIENT target = Client_GetByID(*a->tgID);
-	SURVDATA survDataTg = NULL;
-	if(target) survDataTg = SurvData_Get(target);
+	SURVDATA dataTg = NULL;
+	if(target) dataTg = SurvData_Get(target);
 
 	if(*a->action == 1) {
-		SurvBrk_Stop(survData);
+		SurvBrk_Stop(data);
 		return;
 	}
 
@@ -88,29 +88,29 @@ static void Survival_OnClick(void* param) {
 	}
 
 	if(dist_block < dist_entity) {
-		if(survData->breakStarted && (survData->lastclick[0] != x ||
-			survData->lastclick[1] != y || survData->lastclick[2] != z)) {
-				SurvBrk_Stop(survData);
+		if(data->breakStarted && (data->lastclick[0] != x ||
+			data->lastclick[1] != y || data->lastclick[2] != z)) {
+				SurvBrk_Stop(data);
 				return;
 			}
-		if(!survData->breakStarted) {
+		if(!data->breakStarted) {
 			BlockID bid = World_GetBlock(client->playerData->world, x, y, z);
-			SurvBrk_Start(survData, x, y, z, bid);
+			SurvBrk_Start(data, x, y, z, bid);
 		}
 
-		survData->lastclick[0] = x;
-		survData->lastclick[1] = y;
-		survData->lastclick[2] = z;
+		data->lastclick[0] = x;
+		data->lastclick[1] = y;
+		data->lastclick[2] = z;
 	} else if(dist_entity < dist_block && dist_entity < 3.5) {
-		if(survData->breakStarted) {
-			SurvBrk_Stop(survData);
+		if(data->breakStarted) {
+			SurvBrk_Stop(data);
 			return;
 		}
-		if(survData->pvpMode && survDataTg->pvpMode) {
-			SurvDmg_Hurt(survDataTg, survData, SURV_DEFAULT_HIT);
+		if(data->pvpMode && dataTg->pvpMode) {
+			SurvDmg_Hurt(dataTg, data, SURV_DEFAULT_HIT);
 			// TODO: Knockback
 		} else {
-			if(!survData->pvpMode)
+			if(!data->pvpMode)
 				Client_Chat(client, 0, "Enable pvp mode (/pvp) first.");
 		}
 	}
