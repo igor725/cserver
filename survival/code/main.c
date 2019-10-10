@@ -1,13 +1,13 @@
 #include <core.h>
 #include <client.h>
 #include <event.h>
-#include <block.h>
 #include <command.h>
 
 #include "data.h"
 #include "damage.h"
 #include "gui.h"
 #include "break.h"
+#include "inventory.h"
 
 static void Survival_OnHandshake(void* param) {
 	SurvData_Create((CLIENT)param);
@@ -17,12 +17,7 @@ static void Survival_OnSpawn(void* param) {
 	CLIENT client = (CLIENT)param;
 	SURVDATA data = SurvData_Get(client);
 	SurvGui_DrawAll(data);
-	for(Order i = 0; i < 9; i++) {
-		Client_SetHotbar(client, i, 0);
-	}
-	for(BlockID i = 0; i < 255; i++) {
-		Client_SetBlockPerm(client, i, false, false);
-	}
+	SurvInv_Init(data);
 }
 
 static void Survival_OnTick(void* param) {

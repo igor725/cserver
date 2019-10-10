@@ -69,6 +69,7 @@ API bool Client_IsInWorld(CLIENT client, WORLD world);
 API bool Client_IsInGame(CLIENT client);
 
 API bool Client_SetWeather(CLIENT client, Weather type);
+API bool Client_SetInvOrder(CLIENT client, Order order, BlockID block);
 API bool Client_SetProperty(CLIENT client, uint8_t property, int value);
 API bool Client_SetTexturePack(CLIENT client, const char* url);
 API bool Client_SetType(CLIENT client, bool isOP);

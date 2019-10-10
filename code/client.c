@@ -284,6 +284,16 @@ bool Client_SetType(CLIENT client, bool isOP) {
 	return true;
 }
 
+bool Client_SetInvOrder(CLIENT client, Order order, BlockID block) {
+	if(!Block_IsValid(block)) return false;
+
+	if(Client_IsSupportExt(client, "InventoryOrder", 1)) {
+		CPEPacket_WriteInventoryOrder(client, order, block);
+		return true;
+	}
+	return false;
+}
+
 bool Client_SetHotbar(CLIENT client, Order pos, BlockID block) {
 	if(!Block_IsValid(block) || pos > 8) return false;
 	if(Client_IsSupportExt(client, "SetHotbar", 1)) {

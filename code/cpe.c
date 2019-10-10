@@ -123,7 +123,7 @@ void CPEPacket_WriteClickDistance(CLIENT client, short dist) {
 void CPEPacket_WriteInventoryOrder(CLIENT client, Order order, BlockID block) {
 	PacketWriter_Start(client);
 
-	*data = 0x44;
+	*data = 0x2C;
 	*++data = order;
 	*++data = block;
 
