@@ -42,10 +42,10 @@ void SurvBrk_Done(SURVDATA data) {
 void SurvBrk_Tick(SURVDATA data) {
 	int breakTime = BreakTimings[data->breakBlock];
 	if(breakTime == -1) {
-		SurvBrk_Done(data);
+		SurvBrk_Stop(data);
 		return;
 	} else if(breakTime == 0) {
-		SurvBrk_Stop(data);
+		SurvBrk_Done(data);
 		return;
 	}
 
