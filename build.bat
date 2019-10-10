@@ -64,7 +64,7 @@ IF "%BUILD_PLUGIN%"=="1" (
   set OBJDIR=%PLUGNAME%\objs
   set CODE_ROOT=%PLUGNAME%\
 ) else (
-  set BINNAME=server
+  set BINNAME=server.exe
   set OUTDIR=out\%ARCH%
 )
 
@@ -122,7 +122,7 @@ echo Something went wrong :(
 goto end
 
 :binstart
-IF "%RUNMODE%"=="0" start /D %ARCH% %BINNAME%
+IF "%RUNMODE%"=="0" start /D %OUTDIR% %BINNAME%
 IF "%RUNMODE%"=="1" goto onerun
 goto end
 
