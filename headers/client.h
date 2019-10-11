@@ -76,6 +76,7 @@ API bool Client_SetType(CLIENT client, bool isOP);
 API bool Client_SetBlock(CLIENT client, short x, short y, short z, BlockID id);
 API bool Client_SetModel(CLIENT client, const char* model);
 API bool Client_SetBlockPerm(CLIENT client, BlockID block, bool allowPlace, bool allowDestroy);
+API bool Client_SetHeld(CLIENT client, BlockID block, bool canChange);
 API bool Client_SetHotbar(CLIENT client, Order pos, BlockID block);
 
 API bool Client_GetType(CLIENT client);

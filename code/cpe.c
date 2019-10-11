@@ -124,8 +124,8 @@ void CPEPacket_WriteInventoryOrder(CLIENT client, Order order, BlockID block) {
 	PacketWriter_Start(client);
 
 	*data = 0x2C;
-	*++data = order;
 	*++data = block;
+	*++data = order;
 
 	PacketWriter_End(client, 3);
 }

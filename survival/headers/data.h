@@ -7,9 +7,9 @@ enum survActions {
 
 typedef struct survivalData {
 	CLIENT client;
-	BlockID inventory[256];
-	float health;
-	float oxygen;
+	uint16_t inventory[256];
+	uint8_t health;
+	uint8_t oxygen;
 	bool showOxygen;
 	bool godMode;
 	bool pvpMode;

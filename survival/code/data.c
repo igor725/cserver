@@ -9,8 +9,8 @@ SURVDATA survDataList[MAX_CLIENTS] = {0};
 void SurvData_Create(CLIENT cl) {
 	SURVDATA ptr = Memory_Alloc(1, sizeof(struct survivalData));
 	ptr->client = cl;
-	ptr->health = 10.0f;
-	ptr->oxygen = 10.0f;
+	ptr->health = 20;
+	ptr->oxygen = 10;
 	survDataList[cl->id] = ptr;
 }
 

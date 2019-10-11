@@ -42,7 +42,7 @@ typedef struct onHeldBlockChange {
 
 typedef struct onBlockPlace {
 	CLIENT client;
-	uint16_t *x, *y, *z;
+	short *x, *y, *z;
 	BlockID* id;
 } onBlockPlace_t;
 

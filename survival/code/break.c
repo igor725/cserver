@@ -5,6 +5,7 @@
 #include "data.h"
 #include "break.h"
 #include "gui.h"
+#include "inventory.h"
 
 static const int BreakTimings[256] = {
 	0,4000,500,500,4000,1100,0,-1
@@ -32,11 +33,16 @@ void SurvBrk_Stop(SURVDATA data) {
 void SurvBrk_Done(SURVDATA data) {
 	short* pos = data->lastclick;
 	short x = pos[0], y = pos[1], z = pos[2];
-	WORLD world = data->client->playerData->world;
+	CLIENT client = data->client;
+	WORLD world = client->playerData->world;
+	BlockID id = data->breakBlock;
 
-	SurvBrk_Stop(data);
+	SurvInv_Add(data, id, 1);
+	Client_SetHeld(client, id, false);
+	SurvGui_DrawBlockInfo(data, id);
 	World_SetBlock(world, x, y, z, 0);
 	UpdateBlock(world, x, y, z, 0);
+	SurvBrk_Stop(data);
 }
 
 void SurvBrk_Tick(SURVDATA data) {

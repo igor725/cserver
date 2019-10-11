@@ -294,6 +294,15 @@ bool Client_SetInvOrder(CLIENT client, Order order, BlockID block) {
 	return false;
 }
 
+bool Client_SetHeld(CLIENT client, BlockID block, bool canChange) {
+	if(!Block_IsValid(block)) return false;
+	if(Client_IsSupportExt(client, "heldBlock", 1)) {
+		CPEPacket_WriteHoldThis(client, block, canChange);
+		return true;
+	}
+	return false;
+}
+
 bool Client_SetHotbar(CLIENT client, Order pos, BlockID block) {
 	if(!Block_IsValid(block) || pos > 8) return false;
 	if(Client_IsSupportExt(client, "SetHotbar", 1)) {

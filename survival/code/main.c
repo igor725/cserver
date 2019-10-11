@@ -2,6 +2,7 @@
 #include <client.h>
 #include <event.h>
 #include <command.h>
+#include <block.h>
 
 #include "data.h"
 #include "damage.h"
@@ -20,14 +21,34 @@ static void Survival_OnSpawn(void* param) {
 	SurvInv_Init(data);
 }
 
+static bool Survival_OnBlockPlace(void* param) {
+	onBlockPlace_t* a = (onBlockPlace_t*)param;
+	CLIENT client = a->client;
+	SURVDATA data = SurvData_Get(client);
+	BlockID id = *a->id;
+
+	if(SurvInv_Take(data, id, 1)) {
+		if(SurvInv_Get(data, id) < 1) {
+			Client_SetHeld(client, 0, false);
+			SurvGui_DrawBlockInfo(data, 0);
+			return true;
+		}
+		SurvGui_DrawBlockInfo(data, id);
+		return true;
+	}
+	return false;
+}
+
+static void Survival_OnHeldChange(void* param) {
+	onHeldBlockChange_t* a = (onHeldBlockChange_t*)param;
+	SURVDATA data = SurvData_Get(a->client);
+	SurvGui_DrawBlockInfo(data, *a->curr);
+}
+
 static void Survival_OnTick(void* param) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		SURVDATA data = SurvData_GetByID(i);
-		if(!data) continue;
-
-		if(data->breakStarted) {
-			SurvBrk_Tick(data);
-		}
+		if(data && data->breakStarted) SurvBrk_Tick(data);
 	}
 }
 
@@ -90,7 +111,7 @@ static void Survival_OnClick(void* param) {
 			}
 		if(!data->breakStarted) {
 			BlockID bid = World_GetBlock(client->playerData->world, x, y, z);
-			SurvBrk_Start(data, x, y, z, bid);
+			if(bid > BLOCK_AIR) SurvBrk_Start(data, x, y, z, bid);
 		}
 
 		data->lastclick[0] = x;
@@ -102,7 +123,7 @@ static void Survival_OnClick(void* param) {
 			return;
 		}
 		if(data->pvpMode && dataTg->pvpMode) {
-			SurvDmg_Hurt(dataTg, data, SURV_DEFAULT_HIT);
+			SurvDmg_Hurt(dataTg, data, 1);
 			// TODO: Knockback
 		} else {
 			if(!data->pvpMode)
@@ -128,7 +149,7 @@ static bool CHandler_Hurt(const char* args, CLIENT caller, char* out) {
 
 	char damage[32];
 	if(String_GetArgument(args, damage, 32, 0)) {
-		float dmg = String_ToFloat(damage);
+		uint8_t dmg = (uint8_t)(String_ToFloat(damage) * 2);
 		SurvDmg_Hurt(SurvData_Get(caller), NULL, dmg);
 	}
 
@@ -150,6 +171,8 @@ EXP int Plugin_ApiVer = 100;
 EXP bool Plugin_Load(void) {
 	Event_RegisterVoid(EVT_ONTICK, Survival_OnTick);
 	Event_RegisterVoid(EVT_ONSPAWN, Survival_OnSpawn);
+	Event_RegisterVoid(EVT_ONHELDBLOCKCHNG, Survival_OnHeldChange);
+	Event_RegisterBool(EVT_ONBLOCKPLACE, Survival_OnBlockPlace);
 	Event_RegisterVoid(EVT_ONDISCONNECT, Survival_OnDisconnect);
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, Survival_OnHandshake);
 	Event_RegisterVoid(EVT_ONPLAYERCLICK, Survival_OnClick);
