@@ -144,7 +144,7 @@ static bool CHandler_God(const char* args, CLIENT caller, char* out) {
 	SURVDATA survData = SurvData_Get(caller);
 	bool mode = survData->godMode;
 	survData->godMode = !mode;
-	String_FormatBuf(out, CMD_MAX_OUT, "God mode %s for %s", mode ? "disabled" : "enabled", caller->playerData->name);
+	String_FormatBuf(out, CMD_MAX_OUT, "God mode %s", mode ? "disabled" : "enabled");
 
 	return true;
 }
