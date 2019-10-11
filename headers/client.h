@@ -10,7 +10,6 @@ enum playerStates {
 };
 
 typedef struct cpeData {
-	bool        fmSupport;
 	BlockID     heldBlock;
 	short       _extCount;
 	EXT         headExtension;
@@ -63,7 +62,7 @@ API void Client_Chat(CLIENT client, MessageType type, const char* message);
 API void Client_Kick(CLIENT client, const char* reason);
 API bool Client_SendMap(CLIENT client, WORLD world);
 
-API bool Client_IsSupportExt(CLIENT client, const char* extName, int extVer);
+API bool Client_IsSupportExt(CLIENT client, uint32_t extCRC32, int extVer);
 API bool Client_IsInSameWorld(CLIENT client, CLIENT other);
 API bool Client_IsInWorld(CLIENT client, WORLD world);
 API bool Client_IsInGame(CLIENT client);

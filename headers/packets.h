@@ -24,7 +24,7 @@ typedef struct packet {
 	const char* name;
 	uint16_t size;
 	bool haveCPEImp;
-	const char* extName;
+	uint32_t extCRC32;
 	int extVersion;
 	uint16_t extSize;
 	packetHandler handler;
@@ -33,7 +33,7 @@ typedef struct packet {
 
 PACKET Packet_Get(int id);
 API void Packet_Register(int id, const char* name, uint16_t size, packetHandler handler);
-API void Packet_RegisterCPE(int id, const char* extName, int extVersion, uint16_t extSize, packetHandler handler);
+API void Packet_RegisterCPE(int id, uint32_t extCRC32, int extVersion, uint16_t extSize, packetHandler handler);
 void Packet_RegisterDefault(void);
 void Packet_RegisterCPEDefault(void);
 

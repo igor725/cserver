@@ -113,7 +113,7 @@ TRET Client_ThreadProc(TARG lpParam) {
 
 			packetSize = packet->size;
 			if(packet->haveCPEImp) {
-				extended = Client_IsSupportExt(client, packet->extName, packet->extVersion);
+				extended = Client_IsSupportExt(client, packet->extCRC32, packet->extVersion);
 				if(extended) packetSize = packet->extSize;
 			}
 
@@ -149,7 +149,7 @@ TRET Client_MapThreadProc(TARG lpParam) {
 	int maplen = world->size;
 	int windowBits = 31;
 
-	if(client->cpeData && client->cpeData->fmSupport) {
+	if(client->cpeData && Client_IsSupportExt(client, EXT_FASTMAP, 1)) {
 		windowBits = -15;
 		maplen -= 4;
 		mapdata += 4;
@@ -213,14 +213,12 @@ bool Client_IsInWorld(CLIENT client, WORLD world) {
 	return client->playerData && client->playerData->world == world;
 }
 
-bool Client_IsSupportExt(CLIENT client, const char* extName, int extVer) {
+bool Client_IsSupportExt(CLIENT client, uint32_t extCRC32, int extVer) {
 	if(!client->cpeData) return false;
 
 	EXT ptr = client->cpeData->headExtension;
 	while(ptr) {
-		if(String_CaselessCompare(ptr->name, extName)) {
-			return ptr->version == extVer;
-		}
+		if(ptr->crc32 == extCRC32) return ptr->version == extVer;
 		ptr = ptr->next;
 	}
 	return false;
@@ -254,7 +252,7 @@ bool Client_SetBlock(CLIENT client, short x, short y, short z, BlockID id) {
 }
 
 bool Client_SetProperty(CLIENT client, uint8_t property, int value) {
-	if(Client_IsSupportExt(client, "EnvMapAspect", 1)) {
+	if(Client_IsSupportExt(client, EXT_MAPASPECT, 1)) {
 		CPEPacket_WriteMapProperty(client, property, value);
 		return true;
 	}
@@ -262,7 +260,7 @@ bool Client_SetProperty(CLIENT client, uint8_t property, int value) {
 }
 
 bool Client_SetTexturePack(CLIENT client, const char* url) {
-	if(Client_IsSupportExt(client, "EnvMapAspect", 1)) {
+	if(Client_IsSupportExt(client, EXT_MAPASPECT, 1)) {
 		CPEPacket_WriteTexturePack(client, url);
 		return true;
 	}
@@ -270,7 +268,7 @@ bool Client_SetTexturePack(CLIENT client, const char* url) {
 }
 
 bool Client_SetWeather(CLIENT client, Weather type) {
-	if(Client_IsSupportExt(client, "EnvWeatherType", 1)) {
+	if(Client_IsSupportExt(client, EXT_WEATHER, 1)) {
 		CPEPacket_WriteWeatherType(client, type);
 		return true;
 	}
@@ -287,7 +285,7 @@ bool Client_SetType(CLIENT client, bool isOP) {
 bool Client_SetInvOrder(CLIENT client, Order order, BlockID block) {
 	if(!Block_IsValid(block)) return false;
 
-	if(Client_IsSupportExt(client, "InventoryOrder", 1)) {
+	if(Client_IsSupportExt(client, EXT_INVORDER, 1)) {
 		CPEPacket_WriteInventoryOrder(client, order, block);
 		return true;
 	}
@@ -296,7 +294,7 @@ bool Client_SetInvOrder(CLIENT client, Order order, BlockID block) {
 
 bool Client_SetHeld(CLIENT client, BlockID block, bool canChange) {
 	if(!Block_IsValid(block)) return false;
-	if(Client_IsSupportExt(client, "heldBlock", 1)) {
+	if(Client_IsSupportExt(client, EXT_HELDBLOCK, 1)) {
 		CPEPacket_WriteHoldThis(client, block, canChange);
 		return true;
 	}
@@ -305,7 +303,7 @@ bool Client_SetHeld(CLIENT client, BlockID block, bool canChange) {
 
 bool Client_SetHotbar(CLIENT client, Order pos, BlockID block) {
 	if(!Block_IsValid(block) || pos > 8) return false;
-	if(Client_IsSupportExt(client, "SetHotbar", 1)) {
+	if(Client_IsSupportExt(client, EXT_SETHOTBAR, 1)) {
 		CPEPacket_WriteSetHotBar(client, pos, block);
 		return true;
 	}
@@ -314,7 +312,7 @@ bool Client_SetHotbar(CLIENT client, Order pos, BlockID block) {
 
 bool Client_SetBlockPerm(CLIENT client, BlockID block, bool allowPlace, bool allowDestroy) {
 	if(!Block_IsValid(block)) return false;
-	if(Client_IsSupportExt(client, "BlockPermissions", 1)) {
+	if(Client_IsSupportExt(client, EXT_BLOCKPERM, 1)) {
 		CPEPacket_WriteBlockPerm(client, block, allowPlace, allowDestroy);
 		return true;
 	}
@@ -328,7 +326,7 @@ bool Client_SetModel(CLIENT client, const char* model) {
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT other = Clients_List[i];
-		if(!other || Client_IsSupportExt(other, "SetModel", 1)) continue;
+		if(!other || Client_IsSupportExt(other, EXT_CHANGEMODEL, 1)) continue;
 		CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, model);
 	}
 

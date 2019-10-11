@@ -119,3 +119,25 @@ size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index) 
 
 	return (size_t)(arg - tmp);
 }
+
+/*
+	Взято здеся:
+	https://stackoverflow.com/questions/21001659/crc32-algorithm-implementation-in-c-without-a-look-up-table-and-with-a-public-li
+*/
+uint32_t String_CRC32(const uint8_t* message) {
+	int i, j;
+	uint32_t byte, crc, mask;
+
+	i = 0;
+	crc = 0xFFFFFFFF;
+	while (message[i] != 0) {
+		byte = message[i];
+		crc = crc ^ byte;
+		for (j = 7; j >= 0; j--) {
+			mask = ~((crc & 1) - 1);
+			crc = (crc >> 1) ^ (0xEDB88320 & mask);
+		}
+		i = i + 1;
+	}
+	return ~crc;
+}

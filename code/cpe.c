@@ -88,7 +88,7 @@ void Packet_RegisterCPEDefault(void) {
 	Packet_Register(0x11, "ExtEntry", 69, CPEHandler_ExtEntry);
 	Packet_Register(0x2B, "TwoWayPing", 4, CPEHandler_TwoWayPing);
 	Packet_Register(0x22, "PlayerClick", 15, CPEHandler_PlayerClick);
-	Packet_RegisterCPE(0x08, "ExtEntityPositions", 1, 16, CPEHandler_PosAndOrient);
+	Packet_RegisterCPE(0x08, EXT_ENTPOS, 1, 16, CPEHandler_PosAndOrient);
 }
 
 void CPEPacket_WriteInfo(CLIENT client) {
@@ -248,9 +248,7 @@ bool CPEHandler_ExtEntry(CLIENT client, char* data) {
 	EXT tmp = Memory_Alloc(1, sizeof(struct cpeExt));
 	ReadNetString(data, &tmp->name);data += 63;
 	tmp->version = ntohl(*(uint32_t*)++data);
-
-	if(String_CaselessCompare(tmp->name, "FastMap"))
-		client->cpeData->fmSupport = true;
+	tmp->crc32 = String_CRC32((uint8_t*)tmp->name);
 
 	tmp->next = client->cpeData->headExtension;
 	client->cpeData->headExtension = tmp;
