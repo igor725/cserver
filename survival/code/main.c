@@ -22,7 +22,7 @@ static void Survival_OnSpawn(void* param) {
 }
 
 static bool Survival_OnBlockPlace(void* param) {
-	onBlockPlace_t* a = (onBlockPlace_t*)param;
+	onBlockPlace_t a = param;
 	CLIENT client = a->client;
 	SURVDATA data = SurvData_Get(client);
 	BlockID id = *a->id;
@@ -46,7 +46,7 @@ static bool Survival_OnBlockPlace(void* param) {
 }
 
 static void Survival_OnHeldChange(void* param) {
-	onHeldBlockChange_t* a = (onHeldBlockChange_t*)param;
+	onHeldBlockChange_t a = param;
 	SURVDATA data = SurvData_Get(a->client);
 	SurvGui_DrawBlockInfo(data, *a->curr);
 }
@@ -82,7 +82,7 @@ static float distance(float x1, float y1, float z1, float x2, float y2, float z2
 }
 
 static void Survival_OnClick(void* param) {
-	onPlayerClick_t* a = (onPlayerClick_t*)param;
+	onPlayerClick_t a = param;
 	if(*a->button != 0) return;
 
 	CLIENT client = a->client;

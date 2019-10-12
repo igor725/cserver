@@ -32,20 +32,20 @@ typedef struct onMessage {
 	CLIENT client;
 	char* message;
 	MessageType* type;
-} onMessage_t;
+} *onMessage_t;
 
 typedef struct onHeldBlockChange {
 	CLIENT client;
 	BlockID* prev;
 	BlockID* curr;
-} onHeldBlockChange_t;
+} *onHeldBlockChange_t;
 
 typedef struct onBlockPlace {
 	CLIENT client;
 	uint8_t* mode;
 	short *x, *y, *z;
 	BlockID* id;
-} onBlockPlace_t;
+} *onBlockPlace_t;
 
 typedef struct onPlayerClick {
 	CLIENT client;
@@ -55,8 +55,8 @@ typedef struct onPlayerClick {
 	short* pitch;
 	ClientID* tgID;
 	short *x, *y, *z;
-	char face;
-} onPlayerClick_t;
+	char* face;
+} *onPlayerClick_t;
 
 typedef struct event {
 	ReturnType rtype;
