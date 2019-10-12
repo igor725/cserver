@@ -322,7 +322,7 @@ bool Handler_SetBlock(CLIENT client, char* data) {
 				Client_Kick(client, "Invalid block ID");
 				return false;
 			}
-			if(Event_OnBlockPlace(client, &x, &y, &z, &block)) {
+			if(Event_OnBlockPlace(client, &mode, &x, &y, &z, &block)) {
 				World_SetBlock(world, x, y, z, block);
 				UpdateBlock(pblock != block ? NULL : client, world, x, y, z);
 			} else
@@ -330,7 +330,7 @@ bool Handler_SetBlock(CLIENT client, char* data) {
 			break;
 		case 0x00:
 			block = 0;
-			if(Event_OnBlockPlace(client, &x, &y, &z, &block)) {
+			if(Event_OnBlockPlace(client, &mode, &x, &y, &z, &block)) {
 				World_SetBlock(world, x, y, z, block);
 				UpdateBlock(pblock != block ? NULL : client, world, x, y, z);
 			} else

@@ -7,11 +7,11 @@ enum cfgTypes {
 };
 
 typedef struct cfgEntry {
-	const char*      key;
-	int              type;
+	const char* key;
+	int type;
 	union {
-		int   vint;
-		bool  vbool;
+		int vint;
+		bool vbool;
 		const char* vchar;
 	} value;
 	struct cfgEntry* next;

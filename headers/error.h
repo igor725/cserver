@@ -15,17 +15,24 @@ enum ErrorCodes {
 	EC_WIUNKID,
 	EC_CFGTYPE,
 	EC_CFGEND,
+	EC_CFGINVGET,
 	EC_ITERINITED,
 	EC_DLLPLUGVER
 };
 
-#define ERR_FMT "%s: %d in function %s: %s/%s"
+#define ERR_FMT "%s: %d in function %s: %s"
 #define Error_Print2(etype, ecode, abort) \
 Error_Print(etype, ecode, __FILE__, __LINE__, __func__); \
+if(abort) { \
+	Process_Exit(ecode); \
+}
+#define Error_PrintF2(etype, ecode, abort, ...) \
+Error_PrintF(etype, ecode, __FILE__, __LINE__, __func__, __VA_ARGS__); \
 if(abort) { \
 	Process_Exit(ecode); \
 }
 #define Error_PrintSys Error_Print2(ET_SYS, GetLastError(), false); \
 
 API void Error_Print(int type, uint32_t code, const char* file, uint32_t line, const char* func);
+API void Error_PrintF(int type, uint32_t code, const char* file, uint32_t line, const char* func, ...);
 #endif

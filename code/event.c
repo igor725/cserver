@@ -65,7 +65,7 @@ bool Event_OnMessage(CLIENT client, char* message, MessageType* id) {
 	return Event_Call(EVT_ONMESSAGE, (void*)&client);
 }
 
-bool Event_OnBlockPlace(CLIENT client, uint16_t* x, uint16_t* y, uint16_t* z, BlockID* id) {
+bool Event_OnBlockPlace(CLIENT client, uint8_t* mode, uint16_t* x, uint16_t* y, uint16_t* z, BlockID* id) {
 	return Event_Call(EVT_ONBLOCKPLACE, (void*)&client);
 }
 

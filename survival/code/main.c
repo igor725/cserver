@@ -26,13 +26,14 @@ static bool Survival_OnBlockPlace(void* param) {
 	CLIENT client = a->client;
 	SURVDATA data = SurvData_Get(client);
 	BlockID id = *a->id;
+	uint8_t mode = *a->mode;
 
-	if(id == BLOCK_AIR) {
+	if(mode == 0x00 && id == BLOCK_AIR) {
 		Client_Kick(client, "Your client seems to be ignoring the setBlockPermission packet.");
 		return false;
 	}
 
-	if(SurvInv_Take(data, id, 1)) {
+	if(mode == 0x01 && SurvInv_Take(data, id, 1)) {
 		if(SurvInv_Get(data, id) < 1) {
 			Client_SetHeld(client, 0, false);
 			SurvGui_DrawBlockInfo(data, 0);

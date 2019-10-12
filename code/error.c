@@ -1,21 +1,16 @@
 #include "core.h"
 #include "error.h"
 
-const char* const Types[] = {
-	"SERVER",
-	"ZLIB",
-	"SYSTEM"
-};
-
 const char* const Strings[] = {
-	"All ok",
-	"Pointer is NULL",
-	"Invalid magic",
-	"Unknown data type ID",
-	"Unknown cfg entry type",
-	"Unexpected end of cfg file",
-	"Iterator already inited",
-	"Invalid C-plugin version"
+	"All ok.",
+	"Pointer is NULL.",
+	"Invalid magic.",
+	"World \"%s\" corrupted.",
+	"Unknown cfg entry type in file \"%s\": \"%c\" - is not a valid variable type.",
+	"Unexpected end of cfg file \"%s\".",
+	"Trying to get cfg entry \"%s\" from file \"%s\" as \"%c\", but the variable has type \"%c\".",
+	"Iterator already inited.",
+	"Invalid C-plugin version."
 };
 
 #define SYM_DBG "Symbol: %s - 0x%0X"
@@ -69,25 +64,46 @@ void Error_CallStack(void) {
 }
 #endif
 
+static void getErrorStr(int type, uint32_t code, char* errbuf, size_t sz, va_list* args) {
+	switch(type) {
+		case ET_SERVER:
+			if(!args)
+				String_Copy(errbuf, sz, Strings[code]);
+			else
+				String_FormatBufVararg(errbuf, sz, Strings[code], args);
+			break;
+		case ET_ZLIB:
+			String_Copy(errbuf, sz, zError(code));
+			break;
+		case ET_SYS:
+			if(!String_FormatError(code, errbuf, sz)) {
+				String_Copy(errbuf, sz, "Unexpected error");
+			}
+			break;
+	}
+}
+
 void Error_Print(int type, uint32_t code, const char* file, uint32_t line, const char* func) {
 	char strbuf[1024] = {0};
 	char errbuf[512] = {0};
 
-	switch(type) {
-		case ET_SERVER:
-			String_Copy(errbuf, 512, Strings[code]);
-			break;
-		case ET_ZLIB:
-			String_Copy(errbuf, 512, zError(code));
-			break;
-		case ET_SYS:
-			if(!String_FormatError(code, errbuf, 512)) {
-				String_Copy(errbuf, 512, "Unexpected error");
-			}
-			break;
+	getErrorStr(type, code, errbuf, 512, NULL);
+	String_FormatBuf(strbuf, 1024, ERR_FMT, file, line, func, errbuf);
+	if(String_Length(strbuf)) {
+		Log_Error(strbuf);
+		Error_CallStack();
 	}
+}
 
-	String_FormatBuf(strbuf, 1024, ERR_FMT, file, line, func, Types[type], errbuf);
+void Error_PrintF(int type, uint32_t code, const char* file, uint32_t line, const char* func, ...) {
+	char strbuf[1024] = {0};
+	char errbuf[512] = {0};
+
+	va_list args;
+	va_start(args, func);
+	getErrorStr(type, code, errbuf, 512, &args);
+	va_end(args);
+	String_FormatBuf(strbuf, 1024, ERR_FMT, file, line, func, errbuf);
 	if(String_Length(strbuf)) {
 		Log_Error(strbuf);
 		Error_CallStack();

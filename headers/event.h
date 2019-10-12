@@ -42,6 +42,7 @@ typedef struct onHeldBlockChange {
 
 typedef struct onBlockPlace {
 	CLIENT client;
+	uint8_t* mode;
 	short *x, *y, *z;
 	BlockID* id;
 } onBlockPlace_t;
@@ -72,6 +73,6 @@ API bool Event_Unregister(EventType type, void* callbackPtr);
 bool Event_Call(EventType type, void* param);
 bool Event_OnMessage(CLIENT client, char* message, MessageType* id);
 void Event_OnHeldBlockChange(CLIENT client, BlockID* prev, BlockID* curr);
-bool Event_OnBlockPlace(CLIENT client, uint16_t* x, uint16_t* y, uint16_t* z, BlockID* id);
+bool Event_OnBlockPlace(CLIENT client, uint8_t* mode, uint16_t* x, uint16_t* y, uint16_t* z, BlockID* id);
 void Event_OnClick(CLIENT client, char* button, char* action, short* yaw, short* pitch, ClientID* tgID, short* tgBlockX, short* tgBlockY, short* tgblockZ, char* tgBlockFace);
 #endif
