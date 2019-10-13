@@ -28,7 +28,7 @@ static bool Survival_OnBlockPlace(void* param) {
 	BlockID id = *a->id;
 	uint8_t mode = a->mode;
 
-	if(mode == 0x00 && id == BLOCK_AIR) {
+	if(mode == 0x00) {
 		Client_Kick(client, "Your client seems to be ignoring the setBlockPermission packet.");
 		return false;
 	}
