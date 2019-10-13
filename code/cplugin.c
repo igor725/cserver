@@ -20,7 +20,7 @@ bool CPlugin_Load(const char* name) {
 		}
 
 		ver = *((int*)verSym);
-		if(ver / 100 != CPLUGIN_API_NUM / 100) {
+		if(ver != CPLUGIN_API_NUM) {
 			if(ver < CPLUGIN_API_NUM)
 				Log_Error(CPLUGIN_OLDMSG, name, CPLUGIN_API_NUM, ver);
 			else
