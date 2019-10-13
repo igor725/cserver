@@ -7,7 +7,6 @@
 #include "gui.h"
 #include "inventory.h"
 
-// TODO: Исправить этот пиздец
 void SurvGui_DrawHealth(SURVDATA data) {
 	char healthstr[20] = {0};
 	uint8_t hltf = data->health / 2;
@@ -35,7 +34,7 @@ void SurvGui_DrawBreakProgress(SURVDATA data) {
 	char breakstr[19] = {0};
 
 	if(data->breakStarted) {
-		String_Append(breakstr, 10, "[&a");
+		String_Append(breakstr, 19, "[&a");
 		for(int i = 0; i < 10; i++) {
 			if(i == data->breakProgress)
 				String_Append(breakstr, 19, "&8");
@@ -49,7 +48,6 @@ void SurvGui_DrawBreakProgress(SURVDATA data) {
 
 void SurvGui_DrawBlockInfo(SURVDATA data, BlockID id) {
 	char blockinfo[64] = {0};
-	CLIENT client = data->client;
 
 	if(id > BLOCK_AIR) {
 		const char* bn = Block_GetName(id);
@@ -57,7 +55,7 @@ void SurvGui_DrawBlockInfo(SURVDATA data, BlockID id) {
 		String_FormatBuf(blockinfo, 64, "%s (%d)", bn, bc);
 	}
 
-	Client_Chat(client, CPE_BRIGHT1, blockinfo);
+	Client_Chat(data->client, CPE_BRIGHT1, blockinfo);
 }
 
 void SurvGui_DrawAll(SURVDATA data) {
