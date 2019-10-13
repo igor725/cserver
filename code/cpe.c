@@ -222,8 +222,8 @@ bool CPEHandler_PosAndOrient(CLIENT client, char* data) {
 	if(client->cpeData && client->cpeData->heldBlock != *data) {
 		BlockID new = *data;
 		BlockID curr = client->cpeData->heldBlock;
-		Event_OnHeldBlockChange(client, &curr, &new);
-		client->cpeData->heldBlock = *data;
+		Event_OnHeldBlockChange(client, curr, new);
+		client->cpeData->heldBlock = new;
 	}
 
 	ReadClPos(client, ++data, true);
@@ -289,13 +289,13 @@ bool CPEHandler_PlayerClick(CLIENT client, char* data) {
 	char tgBlockFace = *++data;
 
 	Event_OnClick(
-		client, &button,
-		&action, &yaw,
-		&pitch, &tgID,
-		&tgBlockX,
-		&tgBlockY,
-		&tgBlockZ,
-		&tgBlockFace
+		client, button,
+		action, yaw,
+		pitch, tgID,
+		tgBlockX,
+		tgBlockY,
+		tgBlockZ,
+		tgBlockFace
 	);
 	return true;
 }

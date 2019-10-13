@@ -61,18 +61,44 @@ bool Event_Call(EventType type, void* param) {
 	return ret;
 }
 
-bool Event_OnMessage(CLIENT client, char* message, MessageType* id) {
-	return Event_Call(EVT_ONMESSAGE, (void*)&client);
+bool Event_OnMessage(CLIENT client, char* message, MessageType* type) {
+	struct onMessage params = {0};
+	params.client = client;
+	params.message = message;
+	params.type = type;
+	return Event_Call(EVT_ONMESSAGE, &params);
 }
 
-bool Event_OnBlockPlace(CLIENT client, uint8_t* mode, uint16_t* x, uint16_t* y, uint16_t* z, BlockID* id) {
-	return Event_Call(EVT_ONBLOCKPLACE, (void*)&client);
+bool Event_OnBlockPlace(CLIENT client, uint8_t mode, uint16_t x, uint16_t y, uint16_t z, BlockID* id) {
+	struct onBlockPlace params = {0};
+	params.client = client;
+	params.mode = mode;
+	params.x = x;
+	params.y = y;
+	params.z = z;
+	params.id = id;
+	return Event_Call(EVT_ONBLOCKPLACE, &params);
 }
 
-void Event_OnHeldBlockChange(CLIENT client, BlockID* prev, BlockID* curr) {
-	Event_Call(EVT_ONHELDBLOCKCHNG, (void*)&client);
+void Event_OnHeldBlockChange(CLIENT client, BlockID prev, BlockID curr) {
+	struct onHeldBlockChange params = {0};
+	params.client = client;
+	params.prev = prev;
+	params.curr = curr;
+	Event_Call(EVT_ONHELDBLOCKCHNG, &params);
 }
 
-void Event_OnClick(CLIENT client, char* button, char* action, short* yaw, short* pitch, ClientID* tgID, short* tgBlockX, short* tgBlockY, short* tgblockZ, char* tgBlockFace) {
-	Event_Call(EVT_ONPLAYERCLICK, (void*)&client);
+void Event_OnClick(CLIENT client, char btn, char act, short yaw, short pitch, ClientID id, short x, short y, short z, char face) {
+	struct onPlayerClick params = {0};
+	params.client = client;
+	params.button = btn;
+	params.action = act;
+	params.yaw = yaw;
+	params.pitch = pitch;
+	params.id = id;
+	params.x = x;
+	params.y = y;
+	params.z = z;
+	params.face = face;
+	Event_Call(EVT_ONPLAYERCLICK, &params);
 }

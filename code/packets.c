@@ -321,7 +321,7 @@ bool Handler_SetBlock(CLIENT client, char* data) {
 				Client_Kick(client, "Invalid block ID");
 				return false;
 			}
-			if(Event_OnBlockPlace(client, &mode, &x, &y, &z, &block)) {
+			if(Event_OnBlockPlace(client, mode, x, y, z, &block)) {
 				World_SetBlock(world, x, y, z, block);
 				UpdateBlock(pblock != block ? NULL : client, world, x, y, z);
 			} else
@@ -329,7 +329,7 @@ bool Handler_SetBlock(CLIENT client, char* data) {
 			break;
 		case 0x00:
 			block = 0;
-			if(Event_OnBlockPlace(client, &mode, &x, &y, &z, &block)) {
+			if(Event_OnBlockPlace(client, mode, x, y, z, &block)) {
 				World_SetBlock(world, x, y, z, block);
 				UpdateBlock(pblock != block ? NULL : client, world, x, y, z);
 			} else
@@ -346,8 +346,8 @@ bool Handler_PosAndOrient(CLIENT client, char* data) {
 	if(client->cpeData && client->cpeData->heldBlock != *data) {
 		BlockID new = *data;
 		BlockID curr = client->cpeData->heldBlock;
-		Event_OnHeldBlockChange(client, &curr, &new);
-		client->cpeData->heldBlock = *data;
+		Event_OnHeldBlockChange(client, curr, new);
+		client->cpeData->heldBlock = new;
 	}
 
 	ReadClPos(client, ++data, false);

@@ -27,7 +27,7 @@
 */
 static void onmesgfunc(void* param) {
   if(enabled) {
-    *(onMessage_t)param->type = CPE_ANNOUNCE;
+    *((onMessage_p)param)->type = CPE_ANNOUNCE;
   }
 }
 

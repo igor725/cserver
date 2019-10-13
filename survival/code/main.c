@@ -22,11 +22,11 @@ static void Survival_OnSpawn(void* param) {
 }
 
 static bool Survival_OnBlockPlace(void* param) {
-	onBlockPlace_t a = param;
+	onBlockPlace_p a = param;
 	CLIENT client = a->client;
 	SURVDATA data = SurvData_Get(client);
 	BlockID id = *a->id;
-	uint8_t mode = *a->mode;
+	uint8_t mode = a->mode;
 
 	if(mode == 0x00 && id == BLOCK_AIR) {
 		Client_Kick(client, "Your client seems to be ignoring the setBlockPermission packet.");
@@ -46,9 +46,9 @@ static bool Survival_OnBlockPlace(void* param) {
 }
 
 static void Survival_OnHeldChange(void* param) {
-	onHeldBlockChange_t a = param;
+	onHeldBlockChange_p a = param;
 	SURVDATA data = SurvData_Get(a->client);
-	SurvGui_DrawBlockInfo(data, *a->curr);
+	SurvGui_DrawBlockInfo(data, a->curr);
 }
 
 static void Survival_OnTick(void* param) {
@@ -82,19 +82,19 @@ static float distance(float x1, float y1, float z1, float x2, float y2, float z2
 }
 
 static void Survival_OnClick(void* param) {
-	onPlayerClick_t a = param;
-	if(*a->button != 0) return;
-	
+	onPlayerClick_p a = param;
+	if(a->button != 0) return;
+
 	CLIENT client = a->client;
 	SURVDATA data = SurvData_Get(client);
 
-	if(*a->action == 1) {
+	if(a->action == 1) {
 		SurvBrk_Stop(data);
 		return;
 	}
 
-	short x = *a->x, y = *a->y, z = *a->z;
-	CLIENT target = Client_GetByID(*a->tgID);
+	short x = a->x, y = a->y, z = a->z;
+	CLIENT target = Client_GetByID(a->id);
 	SURVDATA dataTg = NULL;
 	if(target) dataTg = SurvData_Get(target);
 
