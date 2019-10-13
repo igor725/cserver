@@ -1,6 +1,7 @@
 #include "core.h"
+#include "log.h"
 
-int Log_Level = 3;
+int Log_Level = LOG_CHAT;
 const char* const Log_Levels[] = {
 	"ERROR",
 	"INFO ",
@@ -11,7 +12,7 @@ const char* const Log_Levels[] = {
 
 
 void Log_SetLevel(int level) {
-	Log_Level = min(max(-1, level), 4);
+	Log_Level = min(max(-1, level), LOG_DEBUG);
 }
 
 int Log_GetLevel(void) {

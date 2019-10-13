@@ -21,6 +21,7 @@ typedef pthread_t* THREAD;
 typedef void*(*TFUNC)(TARG);
 typedef void* TRET;
 typedef pthread_mutex_t MUTEX;
+typedef int SOCKET;
 
 typedef struct {
   char fmt[256];

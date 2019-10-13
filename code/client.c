@@ -1,11 +1,8 @@
 #include "core.h"
-#include "world.h"
 #include "client.h"
 #include "server.h"
 #include "packets.h"
-#include "cpe.h"
 #include "event.h"
-#include "config.h"
 
 bool Client_Add(CLIENT client) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {

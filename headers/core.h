@@ -45,12 +45,9 @@
 #  define min(a, b) (((a)<(b))?(a):(b))
 #  define max(a, b) (((a)>(b))?(a):(b))
 #  define Sleep(ms) (usleep(ms * 1000))
-#  define GetLastError() (errno)
 #  define INVALID_SOCKET -1
 #  define SD_SEND   SHUT_WR
 #  define MAX_PATH  PATH_MAX
-
-typedef int SOCKET;
 #else
 #  error Unknown OS
 #endif
@@ -84,15 +81,15 @@ typedef uint8_t  MessageType;
 #define WORLD_MAGIC 0x54414457
 
 #define MAX_CLIENT_PPS 128
-#define MAX_CLIENTS    128
-#define MAX_WORLDS     128
-#define MAX_PACKETS    256
+#define MAX_CLIENTS 128
+#define MAX_WORLDS 128
+#define MAX_PACKETS 256
 #define MAX_CLIENT_PPS 128
-#define MAX_EVENTS     64
-#define EVENT_TYPES    12
+#define MAX_EVENTS 64
+#define EVENT_TYPES 12
 
-#define DEFAULT_NAME   "Server name"
-#define DEFAULT_MOTD   "Server MOTD"
+#define DEFAULT_NAME "Server name"
+#define DEFAULT_MOTD "Server MOTD"
 
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
 

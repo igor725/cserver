@@ -31,7 +31,11 @@ Error_PrintF(etype, ecode, __FILE__, __LINE__, __func__, __VA_ARGS__); \
 if(abort) { \
 	Process_Exit(ecode); \
 }
-#define Error_PrintSys Error_Print2(ET_SYS, GetLastError(), false); \
+#if defined(WINDOWS)
+#  define Error_PrintSys(abort) Error_Print2(ET_SYS, GetLastError(), abort);
+#elif defined(POSIX)
+#  define Error_PrintSys(abort) Error_Print2(ET_SYS, errno, abort);
+#endif
 
 API void Error_Print(int type, uint32_t code, const char* file, uint32_t line, const char* func);
 API void Error_PrintF(int type, uint32_t code, const char* file, uint32_t line, const char* func, ...);

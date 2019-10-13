@@ -84,18 +84,19 @@ static float distance(float x1, float y1, float z1, float x2, float y2, float z2
 static void Survival_OnClick(void* param) {
 	onPlayerClick_t a = param;
 	if(*a->button != 0) return;
-
+	
 	CLIENT client = a->client;
-	short x = *a->x, y = *a->y, z = *a->z;
 	SURVDATA data = SurvData_Get(client);
-	CLIENT target = Client_GetByID(*a->tgID);
-	SURVDATA dataTg = NULL;
-	if(target) dataTg = SurvData_Get(target);
 
 	if(*a->action == 1) {
 		SurvBrk_Stop(data);
 		return;
 	}
+
+	short x = *a->x, y = *a->y, z = *a->z;
+	CLIENT target = Client_GetByID(*a->tgID);
+	SURVDATA dataTg = NULL;
+	if(target) dataTg = SurvData_Get(target);
 
 	float dist_entity = 32768.0f;
 	float dist_block = 32768.0f;

@@ -6,7 +6,7 @@
 void* Memory_Alloc(size_t num, size_t size) {
 	void* ptr;
 	if((ptr = calloc(num, size)) == NULL) {
-		Error_Print2(ET_SYS, GetLastError(), true);
+		Error_PrintSys(true);
 	}
 	return ptr;
 }

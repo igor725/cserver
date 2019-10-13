@@ -147,7 +147,7 @@ bool _WriteData(FILE* fp, uint8_t dataType, void* ptr, int size) {
 bool World_WriteInfo(WORLD world, FILE* fp) {
 	int magic = WORLD_MAGIC;
 	if(!File_Write((char*)&magic, 4, 1, fp)) {
-		Error_PrintSys;
+		Error_PrintSys(false);
 		return false;
 	}
 	return _WriteData(fp, DT_DIM, world->info->dim, sizeof(struct worldDims)) &&

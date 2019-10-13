@@ -11,7 +11,7 @@ bool Config_Load(CFGSTORE store) {
 	FILE* fp = File_Open(store->path, "r");
 	if(!fp) {
 		if(errno == ENOENT) return true;
-		Error_PrintSys;
+		Error_PrintSys(false);
 		return false;
 	}
 
@@ -90,7 +90,7 @@ bool Config_Save(CFGSTORE store) {
 
 	FILE* fp = File_Open(tmpname, "w");
 	if(!fp) {
-		Error_PrintSys;
+		Error_PrintSys(false);
 		return false;
 	}
 

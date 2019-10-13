@@ -1,7 +1,5 @@
 #include "core.h"
-#include "block.h"
 #include "world.h"
-#include "platform.h"
 #include "generators.h"
 #include "svmath.h"
 

@@ -1,7 +1,4 @@
 #include "core.h"
-#include "event.h"
-#include "client.h"
-#include "server.h"
 #include "cplugin.h"
 #include "command.h"
 

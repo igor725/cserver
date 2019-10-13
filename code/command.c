@@ -1,6 +1,5 @@
 #include "core.h"
 #include "command.h"
-#include "packets.h"
 #include "server.h"
 #include "generators.h"
 
@@ -77,7 +76,7 @@ static bool CHandler_Announce(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForOP;
 
 	if(!caller) caller = Client_Broadcast;
-	Packet_WriteChat(caller, CPE_ANNOUNCE, !args ? "Test announcement" : args);
+	Client_Chat(caller, CPE_ANNOUNCE, !args ? "Test announcement" : args);
 	return false;
 }
 
@@ -234,7 +233,7 @@ bool Command_Handle(char* cmd, CLIENT caller) {
 		if(String_CaselessCompare(tmp->name, cmd)) {
 			if(tmp->func((const char*)args, caller, ret)) {
 				if(caller)
-					Packet_WriteChat(caller, 0, ret);
+					Client_Chat(caller, CPE_CHAT, ret);
 				else
 					Log_Info(ret);
 			}
