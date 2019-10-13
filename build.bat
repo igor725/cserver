@@ -1,7 +1,7 @@
 @echo off
 setlocal
 set ARCH=%VSCMD_ARG_TGT_ARCH%
-IF "%ARCH%"=="" goto vcerror
+set CLEAN=0
 set DEBUG=0
 set CODE_ROOT=
 set COMPILER=cl
@@ -24,7 +24,7 @@ IF "%1"=="debug" set DEBUG=1
 IF "%1"=="dbg" set DEBUG=1
 IF "%1"=="run" set RUNMODE=0
 IF "%1"=="onerun" set RUNMODE=1
-IF "%1"=="clean" goto clean
+IF "%1"=="clean" set CLEAN=1
 IF "%1"=="2" set MSVC_OPTS=%MSVC_OPTS% /O2
 IF "%1"=="1" set MSVC_OPTS=%MSVC_OPTS% /O1
 IF "%1"=="0" set MSVC_OPTS=%MSVC_OPTS% /Od
@@ -73,6 +73,8 @@ set SERVER_ZDLL=%OUTDIR%\zlibwapi.dll
 
 IF NOT EXIST %OBJDIR% MD %OBJDIR%
 IF NOT EXIST %OUTDIR% MD %OUTDIR%
+if "%CLEAN%"=="1" goto clean
+IF "%ARCH%"=="" goto vcerror
 
 echo Build configuration:
 echo Architecture: %ARCH%
@@ -85,7 +87,6 @@ IF "%DEBUG%"=="0" (echo Debug: disabled) else (
 set ZLIB_COMPILEDIR=%ZLIB_DIR%\contrib\vstudio\vc14\%ARCH%\ZlibDll%ZLIB_MODE%
 set ZLIB_DLL=%ZLIB_COMPILEDIR%\zlibwapi.dll
 
-:msvc
 IF "%BUILD_PLUGIN%"=="1" (
   set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DCPLUGIN /Iheaders\
   set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:out\%ARCH% /NOENTRY
