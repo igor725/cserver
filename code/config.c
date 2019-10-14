@@ -242,7 +242,7 @@ void Config_EmptyStore(CFGSTORE store) {
 }
 
 void Config_DestroyStore(CFGSTORE store) {
+	Memory_Free((void*)store->path);
 	Config_EmptyStore(store);
-	Memory_Free(store->path);
 	Memory_Free(store);
 }
