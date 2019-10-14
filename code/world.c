@@ -131,7 +131,13 @@ void World_AllocBlockArray(WORLD world) {
 
 void World_Free(WORLD world) {
 	if(world->data) Memory_Free(world->data);
-	if(world->info) Memory_Free(world->info);
+	WORLDINFO wi = world->info;
+	if(wi) {
+		Memory_Free(wi->spawnVec);
+		Memory_Free(wi->spawnAng);
+		Memory_Free(wi->dim);
+		Memory_Free(wi);
+	}
 	if(world->id != -1) Worlds_List[world->id] = NULL;
 	Memory_Free(world);
 }
