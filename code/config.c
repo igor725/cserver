@@ -240,3 +240,9 @@ void Config_EmptyStore(CFGSTORE store) {
 	store->firstCfgEntry = NULL;
 	store->lastCfgEntry = NULL;
 }
+
+void Config_DestroyStore(CFGSTORE store) {
+	Config_EmptyStore(store);
+	Memory_Free(store->path);
+	Memory_Free(store);
+}

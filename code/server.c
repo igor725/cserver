@@ -147,6 +147,7 @@ static void Stop(void) {
 	Socket_Close(Server_Socket);
 	Log_Info("Saving " MAINCFG);
 	Config_Save(Server_Config);
+	Config_DestroyStore(Server_Config);
 
 	Log_Info("Unloading plugins");
 	CPlugin_Stop();

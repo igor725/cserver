@@ -37,8 +37,7 @@ EXP bool Plugin_Unload(void) {
 	Http_CloseServer();
 	if(cplStore) {
 		if(loaded) Config_Save(cplStore);
-		Config_EmptyStore(cplStore);
-		Memory_Free(cplStore);
+		Config_DestroyStore(cplStore);
 	}
 	return true;
 }
