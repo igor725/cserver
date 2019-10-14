@@ -8,8 +8,8 @@ bool CPlugin_Load(const char* name) {
 	char path[256];
 	char error[512];
 	String_FormatBuf(path, 256, "plugins/%s", name);
+	if(CPlugin_Get(name)) return false;
 	void *lib, *verSym, *initSym;
-	int ver;
 
 	if(DLib_Load(path, &lib)) {
 		if(!(DLib_GetSym(lib, "Plugin_ApiVer", &verSym) &&
@@ -19,7 +19,7 @@ bool CPlugin_Load(const char* name) {
 			return false;
 		}
 
-		ver = *((int*)verSym);
+		int ver = *((int*)verSym);
 		if(ver != CPLUGIN_API_NUM) {
 			if(ver < CPLUGIN_API_NUM)
 				Log_Error(CPLUGIN_OLDMSG, name, CPLUGIN_API_NUM, ver);
@@ -82,12 +82,17 @@ bool CPlugin_Unload(CPLUGIN plugin) {
 if(!String_GetArgument(args, name, 64, 1)) { \
 	String_Copy(out, CMD_MAX_OUT, "Invalid plugin name"); \
 	return true; \
+} \
+const char* lc = String_LastChar(name, '.'); \
+if(!lc || !String_CaselessCompare(lc, "."DLIB_EXT)) { \
+	String_Append(name, 64, "."DLIB_EXT); \
 }
 
 static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
 	char command[64];
 	char name[64];
 	CPLUGIN plugin;
+	(void)caller;
 
 	if(String_GetArgument(args, command, 64, 0)) {
 		if(String_CaselessCompare(command, "load")) {

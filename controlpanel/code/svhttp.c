@@ -304,7 +304,7 @@ static char* TrimParams(char* str) {
 	return tmp;
 }
 
-static void HandleGetRequest(WEBCLIENT wcl, char* buffer) {
+static void HandleGetRequest(WEBCLIENT wcl) {
 	wcl->request = String_AllocCopy(TrimParams(ReadSockUntil(wcl, 512, ' ')));
 	char* httpver = ReadSockUntil(wcl, HTTP_BUFFER_LEN, '\n');
 
@@ -353,7 +353,7 @@ static TRET ClientThreadProc(TARG param) {
 
 	int ret = recv(wcl->sock, wcl->buffer, 4, 0);
 	if(ret && String_CaselessCompare(wcl->buffer, "GET "))
-		HandleGetRequest(wcl, wcl->buffer);
+		HandleGetRequest(wcl);
 
 	wclClose(wcl);
 	return 0;
@@ -361,6 +361,7 @@ static TRET ClientThreadProc(TARG param) {
 
 static TRET AcceptThreadProc(TARG param) {
 	struct sockaddr_in caddr;
+	(void)param;
 
 	while(1) {
 		SOCKET client = Socket_Accept(httpServer, &caddr);

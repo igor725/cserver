@@ -34,7 +34,8 @@ static void AcceptFunc(void) {
 	}
 }
 
-static TRET AcceptThreadProc(void* lpParam) {
+static TRET AcceptThreadProc(TARG param) {
+	(void)param;
 	while(Server_Active) AcceptFunc();
 	return 0;
 }

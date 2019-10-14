@@ -3,6 +3,7 @@
 #include <event.h>
 #include <command.h>
 #include <block.h>
+#include <server.h>
 
 #include "data.h"
 #include "damage.h"
@@ -15,8 +16,7 @@ static void Survival_OnHandshake(void* param) {
 }
 
 static void Survival_OnSpawn(void* param) {
-	CLIENT client = (CLIENT)param;
-	SURVDATA data = SurvData_Get(client);
+	SURVDATA data = SurvData_Get((CLIENT)param);
 	SurvGui_DrawAll(data);
 	SurvInv_Init(data);
 }
@@ -52,6 +52,7 @@ static void Survival_OnHeldChange(void* param) {
 }
 
 static void Survival_OnTick(void* param) {
+	(void)param;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		SURVDATA data = SurvData_GetByID(i);
 		if(data && data->breakStarted) SurvBrk_Tick(data);
@@ -118,7 +119,7 @@ static void Survival_OnClick(void* param) {
 			}
 		if(!data->breakStarted) {
 			BlockID bid = World_GetBlock(client->playerData->world, x, y, z);
-			if(bid > BLOCK_AIR) SurvBrk_Start(data, x, y, z, bid);
+			if(bid > BLOCK_AIR) SurvBrk_Start(data, bid);
 		}
 
 		data->lastclick[0] = x;
@@ -142,6 +143,7 @@ static void Survival_OnClick(void* param) {
 static bool CHandler_God(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForClient;
 	Command_OnlyForOP;
+	(void)args;
 
 	SURVDATA survData = SurvData_Get(caller);
 	bool mode = survData->godMode;
@@ -165,6 +167,7 @@ static bool CHandler_Hurt(const char* args, CLIENT caller, char* out) {
 
 static bool CHandler_PvP(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForClient;
+	(void)args;
 
 	SURVDATA survData = SurvData_Get(caller);
 	bool mode = survData->pvpMode;
@@ -176,6 +179,10 @@ static bool CHandler_PvP(const char* args, CLIENT caller, char* out) {
 
 EXP int Plugin_ApiVer = 100;
 EXP bool Plugin_Load(void) {
+	if(Server_Active) {
+		Log_Warn("Survival plugin can be loaded only at server startup.");
+		return false;
+	}
 	Event_RegisterVoid(EVT_ONTICK, Survival_OnTick);
 	Event_RegisterVoid(EVT_ONSPAWN, Survival_OnSpawn);
 	Event_RegisterVoid(EVT_ONHELDBLOCKCHNG, Survival_OnHeldChange);

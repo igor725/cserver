@@ -60,6 +60,7 @@ static bool CHandler_OP(const char* args, CLIENT caller, char* out) {
 
 static bool CHandler_Stop(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForOP;
+	(void)args;
 
 	Server_Active = false;
 	return false;

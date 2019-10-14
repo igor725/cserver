@@ -1,9 +1,9 @@
 #ifndef CORE_H
 #define CORE_H
 #if defined(_WIN32)
-#  pragma warning(disable:4100)
 #  define WINDOWS
 #  define PATH_DELIM '\\'
+#  define DLIB_EXT "dll"
 #  define WIN32_LEAN_AND_MEAN
 #  define _CRT_SECURE_NO_WARNINGS
 #  include <winsock2.h>
@@ -21,6 +21,7 @@
 #elif defined(__unix__)
 #  define POSIX
 #  define PATH_DELIM '/'
+#  define DLIB_EXT "so"
 #  define _GNU_SOURCE
 #  include <errno.h>
 #  include <sys/socket.h>

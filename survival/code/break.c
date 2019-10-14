@@ -18,7 +18,7 @@ static void UpdateBlock(WORLD world, short x, short y, short z, BlockID bid) {
 	}
 }
 
-void SurvBrk_Start(SURVDATA data, short x, short y, short z, BlockID block) {
+void SurvBrk_Start(SURVDATA data, BlockID block) {
 	data->breakStarted = true;
 	data->breakBlock = block;
 	data->breakTimer = 0;

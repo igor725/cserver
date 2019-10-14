@@ -28,6 +28,7 @@ void Console_HandleCommand(char* cmd) {
 
 TRET Console_ThreadProc(TARG lpParam) {
 	char buf[CON_STR_LEN] = {0};
+	(void)lpParam;
 
 	while(Server_Active) {
 		if(Console_ReadLine(buf, CON_STR_LEN) > 0 && Server_Active)

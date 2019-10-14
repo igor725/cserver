@@ -7,6 +7,7 @@
 
 void SurvDmg_Hurt(SURVDATA target, SURVDATA attacker, uint8_t damage) {
 	if(damage <= 0 || target->godMode) return;
+	(void)attacker;
 
 	target->health -= min(damage, target->health);
 	SurvGui_DrawHealth(target);

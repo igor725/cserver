@@ -36,6 +36,7 @@ static void onmesgfunc(void* param) {
 ** Также стоит заметить, что "args" тоже будет NULL при отсутствии аргументов.
 */
 static bool CHandler_Plugtest(const char* args, CLIENT caller, char* out) {
+	(void)args;(void)caller;
   String_Copy(out, CMD_MAX_OUT, "This command registred by testplugin." DLIB_EXT);
   return true;
 }
@@ -43,6 +44,7 @@ static bool CHandler_Plugtest(const char* args, CLIENT caller, char* out) {
 static bool CHandler_Atoggle(const char* args, CLIENT caller, char* out) {
 	// Макрос проверяет была ли запущена команда администратором
 	Command_OnlyForOP;
+	(void)args;
 
   enabled = !enabled;
 	String_Copy(out, CMD_MAX_OUT, "Announce chat: ");
@@ -59,6 +61,7 @@ static bool CHandler_Atoggle(const char* args, CLIENT caller, char* out) {
 ** вновь, вплоть до перезапуска сервера.
 */
 static bool CHandler_SelfDestroy(const char* args, CLIENT caller, char* out) {
+	(void)args;(void)caller;
 	Command_Unregister("selfdestroy");
 	String_Copy(out, CMD_MAX_OUT, "This command can't be called anymore");
 	return true;
@@ -75,6 +78,7 @@ static bool CHandler_SelfDestroy(const char* args, CLIENT caller, char* out) {
 */
 static bool CHandler_ClientOnly(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForClient;
+	(void)args;
 
 	String_FormatBuf(out, CMD_MAX_OUT, "Client-only command called by %s", caller->playerData->name);
 	return true;

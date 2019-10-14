@@ -64,7 +64,7 @@ int cfgMaxThreads = 2;
 // 	}
 // }
 
-void Generator_Default(WORLD world) {
-	RNGState rnd;
-	Random_Seed(&rnd, 1337);
-}
+// void Generator_Default(WORLD world) {
+// 	RNGState rnd;
+// 	Random_Seed(&rnd, 1337);
+// }
