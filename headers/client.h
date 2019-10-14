@@ -10,39 +10,39 @@ enum playerStates {
 };
 
 typedef struct cpeData {
-	BlockID     heldBlock;
-	short       _extCount;
-	EXT         headExtension;
-	char        model[16];
+	BlockID heldBlock;
+	short _extCount;
+	EXT headExtension;
+	char model[16];
 	const char* appName;
 } *CPEDATA;
 
 typedef struct playerData {
-	const char*   key;
-	const char*   name;
-	int     state;
-	ANGLE  angle;
+	const char* key;
+	const char* name;
+	int state;
+	ANGLE angle;
 	VECTOR position;
-	bool    isOP;
-	bool    spawned;
-	WORLD  world;
+	bool isOP;
+	bool spawned;
+	WORLD world;
 } *PLAYERDATA;
 
 typedef struct client {
-	ClientID    id;
-	uint32_t    pps;
-	uint32_t    ppstm;
-	SOCKET      sock;
-	uint32_t    addr;
-	bool        closed;
-	char*       rdbuf;
-	char*       wrbuf;
-	uint16_t    bufpos;
-	MUTEX*      mutex;
-	THREAD      thread;
-	THREAD      mapThread;
-	CPEDATA     cpeData;
-	PLAYERDATA  playerData;
+	ClientID id;
+	uint32_t pps;
+	uint32_t ppstm;
+	SOCKET sock;
+	uint32_t addr;
+	bool closed;
+	char* rdbuf;
+	char* wrbuf;
+	uint16_t bufpos;
+	MUTEX* mutex;
+	THREAD thread;
+	THREAD mapThread;
+	CPEDATA cpeData;
+	PLAYERDATA playerData;
 } *CLIENT;
 
 void Client_SetPos(CLIENT client, VECTOR vec, ANGLE ang);

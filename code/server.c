@@ -51,13 +51,15 @@ static bool Bind(const char* ip, uint16_t port) {
 
 static void onConnect(void* param) {
 	CLIENT cl = (CLIENT)param;
-	Log_Info("Player %s connected", cl->playerData->name);
+	const char* name = Client_GetName(cl);
+	const char* appname = Client_GetAppName(cl);
+	Log_Info("Player %s connected with %s", name, appname);
 }
 
 static void onDisconnect(void* param) {
 	if(!Server_Active) return;
-	CLIENT cl = (CLIENT)param;
-	Log_Info("Player %s disconnected", cl->playerData->name);
+	const char* name = Client_GetName((CLIENT)param);
+	Log_Info("Player %s disconnected", name);
 }
 
 static bool InitialWork(void) {

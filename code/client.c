@@ -18,8 +18,9 @@ bool Client_Add(CLIENT client) {
 CLIENT Client_GetByName(const char* name) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT client = Clients_List[i];
-		if(!client || !client->playerData) continue;
-		if(String_CaselessCompare(client->playerData->name, name))
+		if(!client) continue;
+		PLAYERDATA pd = client->playerData;
+		if(pd && String_CaselessCompare(pd->name, name))
 			return client;
 	}
 	return NULL;
@@ -30,10 +31,10 @@ CLIENT Client_GetByID(ClientID id) {
 }
 
 bool Client_Despawn(CLIENT client) {
-	if(!client->playerData) return false;
-	if(!client->playerData->spawned) return false;
+	PLAYERDATA pd = client->playerData;
+	if(!pd || !pd->spawned) return false;
+	pd->spawned = false;
 	Packet_WriteDespawn(Client_Broadcast, client);
-	client->playerData->spawned = false;
 	Event_Call(EVT_ONDESPAWN, (void*)client);
 	return true;
 }
@@ -132,7 +133,8 @@ TRET Client_ThreadProc(TARG lpParam) {
 
 TRET Client_MapThreadProc(TARG lpParam) {
 	CLIENT client = (CLIENT)lpParam;
-	WORLD world = client->playerData->world;
+	PLAYERDATA pd = client->playerData;
+	WORLD world = pd->world;
 	Mutex_Lock(client->mutex);
 
 	z_stream stream = {0};
@@ -146,7 +148,7 @@ TRET Client_MapThreadProc(TARG lpParam) {
 	int maplen = world->size;
 	int windowBits = 31;
 
-	if(client->cpeData && Client_IsSupportExt(client, EXT_FASTMAP, 1)) {
+	if(Client_IsSupportExt(client, EXT_FASTMAP, 1)) {
 		windowBits = -15;
 		maplen -= 4;
 		mapdata += 4;
@@ -159,7 +161,7 @@ TRET Client_MapThreadProc(TARG lpParam) {
 		windowBits,
 		8,
 		Z_DEFAULT_STRATEGY)) != Z_OK) {
-		client->playerData->state = STATE_WLOADERR;
+		pd->state = STATE_WLOADERR;
 		return 0;
 	}
 
@@ -171,14 +173,14 @@ TRET Client_MapThreadProc(TARG lpParam) {
 		stream.avail_out = 1024;
 
 		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
-			client->playerData->state = STATE_WLOADERR;
+			pd->state = STATE_WLOADERR;
 			deflateEnd(&stream);
 			return 0;
 		}
 
 		*len = htons(1024 - (uint16_t)stream.avail_out);
 		if(!Client_Send(client, 1028)) {
-			client->playerData->state = STATE_WLOADERR;
+			pd->state = STATE_WLOADERR;
 			deflateEnd(&stream);
 			return 0;
 		}
@@ -187,7 +189,7 @@ TRET Client_MapThreadProc(TARG lpParam) {
 	deflateEnd(&stream);
 	Mutex_Unlock(client->mutex);
 	Packet_WriteLvlFin(client);
-	client->playerData->state = STATE_WLOADDONE;
+	pd->state = STATE_WLOADDONE;
 	Client_Spawn(client);
 	return 0;
 }
@@ -199,21 +201,25 @@ void Client_Init(void) {
 }
 
 bool Client_IsInGame(CLIENT client) {
-	return client->playerData && client->playerData->state == STATE_INGAME;
+	if(!client->playerData) return false;
+	return client->playerData->state == STATE_INGAME;
 }
 
 bool Client_IsInSameWorld(CLIENT client, CLIENT other) {
+	if(!client->playerData || !other->playerData) return false;
 	return client->playerData->world == other->playerData->world;
 }
 
 bool Client_IsInWorld(CLIENT client, WORLD world) {
-	return client->playerData && client->playerData->world == world;
+	if(!client->playerData) return false;
+	return client->playerData->world == world;
 }
 
 bool Client_IsSupportExt(CLIENT client, uint32_t extCRC32, int extVer) {
-	if(!client->cpeData) return false;
+	CPEDATA cpd = client->cpeData;
+	if(!cpd) return false;
 
-	EXT ptr = client->cpeData->headExtension;
+	EXT ptr = cpd->headExtension;
 	while(ptr) {
 		if(ptr->crc32 == extCRC32) return ptr->version == extVer;
 		ptr = ptr->next;
@@ -238,13 +244,15 @@ bool Client_CheckAuth(CLIENT client) {
 }
 
 void Client_SetPos(CLIENT client, VECTOR pos, ANGLE ang) {
-	if(!client->playerData) return;
-	Memory_Copy(client->playerData->position, pos, sizeof(struct vector));
-	Memory_Copy(client->playerData->angle, ang, sizeof(struct angle));
+	PLAYERDATA pd = client->playerData;
+	if(!pd) return;
+	Memory_Copy(pd->position, pos, sizeof(struct vector));
+	Memory_Copy(pd->angle, ang, sizeof(struct angle));
 }
 
 bool Client_SetBlock(CLIENT client, short x, short y, short z, BlockID id) {
-	if(!client->playerData || client->playerData->state != STATE_INGAME) return false;
+	PLAYERDATA pd = client->playerData;
+	if(!pd || pd->state != STATE_INGAME) return false;
 	Packet_WriteSetBlock(client, x, y, z, id);
 	return true;
 }
@@ -274,8 +282,9 @@ bool Client_SetWeather(CLIENT client, Weather type) {
 }
 
 bool Client_SetType(CLIENT client, bool isOP) {
-	if(!client->playerData) return false;
-	client->playerData->isOP = isOP;
+	PLAYERDATA pd = client->playerData;
+	if(!pd) return false;
+	pd->isOP = isOP;
 	Packet_WriteUpdateType(client);
 	return true;
 }
@@ -332,7 +341,8 @@ bool Client_SetModel(CLIENT client, const char* model) {
 }
 
 bool Client_GetType(CLIENT client) {
-	return client->playerData ? client->playerData->isOP : false;
+	PLAYERDATA pd = client->playerData;
+	return pd ? pd->isOP : false;
 }
 
 void Client_Free(CLIENT client) {
@@ -344,16 +354,20 @@ void Client_Free(CLIENT client) {
 	if(client->mapThread) Thread_Close(client->mapThread);
 	if(client->mutex) Mutex_Free(client->mutex);
 
-	if(client->playerData) {
-		Memory_Free((void*)client->playerData->name);
-		Memory_Free((void*)client->playerData->key);
-		Memory_Free(client->playerData->position);
-		Memory_Free(client->playerData->angle);
-		Memory_Free(client->playerData);
+	PLAYERDATA pd = client->playerData;
+
+	if(pd) {
+		Memory_Free((void*)pd->name);
+		Memory_Free((void*)pd->key);
+		Memory_Free(pd->position);
+		Memory_Free(pd->angle);
+		Memory_Free(pd);
 	}
 
-	if(client->cpeData) {
-		EXT prev, ptr = client->cpeData->headExtension;
+	CPEDATA cpd = client->cpeData;
+
+	if(cpd) {
+		EXT prev, ptr = cpd->headExtension;
 
 		while(ptr) {
 			prev = ptr;
@@ -361,8 +375,9 @@ void Client_Free(CLIENT client) {
 			ptr = ptr->next;
 			Memory_Free(prev);
 		}
-		Memory_Free((void*)client->cpeData->appName);
-		Memory_Free(client->cpeData);
+
+		Memory_Free((void*)cpd->appName);
+		Memory_Free(cpd);
 	}
 
 	Memory_Free(client);
@@ -418,9 +433,9 @@ bool Client_Spawn(CLIENT client) {
 
 bool Client_SendMap(CLIENT client, WORLD world) {
 	if(client->mapThread) return false;
-
-	client->playerData->state = STATE_MOTD;
-	client->playerData->world = world;
+	PLAYERDATA pd = client->playerData;
+	pd->world = world;
+	pd->state = STATE_MOTD;
 	Packet_WriteLvlInit(client);
 	client->mapThread = Thread_Create(Client_MapThreadProc, client);
 	return true;
@@ -451,7 +466,8 @@ void Client_UpdatePositions(CLIENT client) {
 }
 
 void Client_Tick(CLIENT client) {
-	if(!client->playerData) return;
+	PLAYERDATA pd = client->playerData;
+	if(!pd) return;
 
 	if(client->ppstm < 1000) {
 		client->ppstm += Server_Delta;
@@ -464,9 +480,9 @@ void Client_Tick(CLIENT client) {
 		client->ppstm = 0;
 	}
 
-	switch (client->playerData->state) {
+	switch (pd->state) {
 		case STATE_WLOADDONE:
-			client->playerData->state = STATE_INGAME;
+			pd->state = STATE_INGAME;
 			Thread_Close(client->mapThread);
 			client->mapThread = NULL;
 			break;
