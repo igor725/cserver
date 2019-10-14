@@ -156,14 +156,29 @@ CFGENTRY Config_GetEntry2(CFGSTORE store, const char* key) {
 	return ent;
 }
 
-static void cfgTypeChecker(CFGSTORE store, CFGENTRY ent, int expectedType) {
-	if(ent->type != expectedType) {
-		Error_PrintF2(ET_SERVER, EC_CFGINVGET, true, ent->key, store->path, expectedType, ent->type);
+static const char* typeName(int type) {
+	switch (type) {
+		case CFG_STR:
+			return "string";
+		case CFG_INT:
+			return "integer";
+		case CFG_BOOL:
+			return "boolean";
+		default:
+			return "unknownType";
 	}
+}
+
+#define CFG_TYPE(expectedType) \
+if(ent->type != expectedType) { \
+	Error_PrintF2(ET_SERVER, EC_CFGINVGET, true, ent->key, store->path, typeName(expectedType), typeName(ent->type)); \
+	return 0; \
 }
 
 void Config_SetInt(CFGSTORE store, const char* key, int value) {
 	CFGENTRY ent = Config_GetEntry2(store, key);
+	if(ent->type == CFG_STR && ent->value.vchar)
+		Memory_Free((void*)ent->value.vchar);
 	ent->type = CFG_INT;
 	if(ent->value.vint != value) {
 		ent->value.vint = value;
@@ -173,13 +188,13 @@ void Config_SetInt(CFGSTORE store, const char* key, int value) {
 
 int Config_GetInt(CFGSTORE store, const char* key) {
 	CFGENTRY ent = Config_GetEntry2(store, key);
-	cfgTypeChecker(store, ent, CFG_INT);
+	CFG_TYPE(CFG_INT);
 	return ent->value.vint;
 }
 
 void Config_SetStr(CFGSTORE store, const char* key, const char* value) {
 	CFGENTRY ent = Config_GetEntry2(store, key);
-	if(ent->type == CFG_STR)
+	if(ent->type == CFG_STR && ent->value.vchar)
 		Memory_Free((void*)ent->value.vchar);
 	else
 		ent->type = CFG_STR;
@@ -189,12 +204,14 @@ void Config_SetStr(CFGSTORE store, const char* key, const char* value) {
 
 const char* Config_GetStr(CFGSTORE store, const char* key) {
 	CFGENTRY ent = Config_GetEntry2(store, key);
-	cfgTypeChecker(store, ent, CFG_STR);
+	CFG_TYPE(CFG_STR);
 	return ent->value.vchar;
 }
 
 void Config_SetBool(CFGSTORE store, const char* key, bool value) {
 	CFGENTRY ent = Config_GetEntry2(store, key);
+	if(ent->type == CFG_STR && ent->value.vchar)
+		Memory_Free((void*)ent->value.vchar);
 	ent->type = CFG_BOOL;
 	if(ent->value.vbool != value) {
 		ent->value.vbool = value;
@@ -204,7 +221,7 @@ void Config_SetBool(CFGSTORE store, const char* key, bool value) {
 
 bool Config_GetBool(CFGSTORE store, const char* key) {
 	CFGENTRY ent = Config_GetEntry2(store, key);
-	cfgTypeChecker(store, ent, CFG_BOOL);
+	CFG_TYPE(CFG_BOOL);
 	return ent->value.vbool;
 }
 

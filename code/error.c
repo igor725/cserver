@@ -8,7 +8,7 @@ const char* const Strings[] = {
 	"World \"%s\" corrupted.",
 	"Unknown cfg entry type in file \"%s\": \"%c\" - is not a valid variable type.",
 	"Unexpected end of cfg file \"%s\".",
-	"Trying to get cfg entry \"%s\" from file \"%s\" as \"%c\", but the variable has type \"%c\".",
+	"Trying to get cfg entry \"%s\" from file \"%s\" as \"%s\", but the variable has type \"%s\".",
 	"Iterator already inited.",
 	"Invalid C-plugin version."
 };
