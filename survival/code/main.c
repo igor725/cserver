@@ -11,6 +11,8 @@
 #include "break.h"
 #include "inventory.h"
 
+#define MODE(b) (b ? "&4disabled" : "&aenabled")
+
 static void Survival_OnHandshake(void* param) {
 	SurvData_Create((CLIENT)param);
 }
@@ -25,8 +27,10 @@ static bool Survival_OnBlockPlace(void* param) {
 	onBlockPlace_p a = param;
 	CLIENT client = a->client;
 	SURVDATA data = SurvData_Get(client);
-	BlockID id = *a->id;
+	if(data->godMode) return true;
+
 	uint8_t mode = a->mode;
+	BlockID id = *a->id;
 
 	if(mode == 0x00) {
 		Client_Kick(client, "Your client seems to be ignoring the setBlockPermission packet.");
@@ -42,13 +46,15 @@ static bool Survival_OnBlockPlace(void* param) {
 		SurvGui_DrawBlockInfo(data, id);
 		return true;
 	}
+
 	return false;
 }
 
 static void Survival_OnHeldChange(void* param) {
 	onHeldBlockChange_p a = param;
 	SURVDATA data = SurvData_Get(a->client);
-	SurvGui_DrawBlockInfo(data, a->curr);
+	if(!data->godMode)
+		SurvGui_DrawBlockInfo(data, a->curr);
 }
 
 static void Survival_OnTick(void* param) {
@@ -88,6 +94,7 @@ static void Survival_OnClick(void* param) {
 
 	CLIENT client = a->client;
 	SURVDATA data = SurvData_Get(client);
+	if(data->godMode) return;
 
 	if(a->action == 1) {
 		SurvBrk_Stop(data);
@@ -102,12 +109,13 @@ static void Survival_OnClick(void* param) {
 	float dist_entity = 32768.0f;
 	float dist_block = 32768.0f;
 
-	VECTOR pv = client->playerData->position;
+	PLAYERDATA pd = client->playerData;
+	VECTOR pv = pd->position;
 
 	if(x != -1 && y != -1 && z != -1) {
 		dist_block = distance(x + .5f, y + .5f, z + .5f, pv->x, pv->y, pv->z);
 	} else if(target) {
-		VECTOR pvt = target->playerData->position;
+		VECTOR pvt = pd->position;
 		dist_entity = distance(pvt->x, pvt->y, pvt->z, pv->x, pv->y, pv->z);
 	}
 
@@ -118,7 +126,7 @@ static void Survival_OnClick(void* param) {
 				return;
 			}
 		if(!data->breakStarted) {
-			BlockID bid = World_GetBlock(client->playerData->world, x, y, z);
+			BlockID bid = World_GetBlock(pd->world, x, y, z);
 			if(bid > BLOCK_AIR) SurvBrk_Start(data, bid);
 		}
 
@@ -145,10 +153,12 @@ static bool CHandler_God(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForOP;
 	(void)args;
 
-	SURVDATA survData = SurvData_Get(caller);
-	bool mode = survData->godMode;
-	survData->godMode = !mode;
-	String_FormatBuf(out, CMD_MAX_OUT, "God mode %s", mode ? "disabled" : "enabled");
+	SURVDATA data = SurvData_Get(caller);
+	bool mode = data->godMode;
+	data->godMode = !mode;
+	SurvGui_DrawAll(data);
+	SurvInv_UpdateInventory(data);
+	String_FormatBuf(out, CMD_MAX_OUT, "God mode %s", MODE(mode));
 
 	return true;
 }
@@ -167,12 +177,13 @@ static bool CHandler_Hurt(const char* args, CLIENT caller, char* out) {
 
 static bool CHandler_PvP(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForClient;
+	Command_OnlyForSurvival;
 	(void)args;
 
-	SURVDATA survData = SurvData_Get(caller);
-	bool mode = survData->pvpMode;
-	survData->pvpMode = !mode;
-	String_FormatBuf(out, CMD_MAX_OUT, "PvP mode %s", mode ? "disabled" : "enabled");
+	SURVDATA data = SurvData_Get(caller);
+	bool mode = data->pvpMode;
+	data->pvpMode = !mode;
+	String_FormatBuf(out, CMD_MAX_OUT, "PvP mode %s", MODE(mode));
 
 	return true;
 }
@@ -180,7 +191,7 @@ static bool CHandler_PvP(const char* args, CLIENT caller, char* out) {
 EXP int Plugin_ApiVer = 100;
 EXP bool Plugin_Load(void) {
 	if(Server_Active) {
-		Log_Warn("Survival plugin can be loaded only at server startup.");
+		Log_Error("Survival plugin can be loaded only at server startup.");
 		return false;
 	}
 	Event_RegisterVoid(EVT_ONTICK, Survival_OnTick);

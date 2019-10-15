@@ -31,13 +31,13 @@ API void Config_EmptyStore(CFGSTORE store);
 API void Config_DestroyStore(CFGSTORE store);
 
 API bool Config_Load(CFGSTORE store);
-API bool  Config_Save(CFGSTORE store);
+API bool Config_Save(CFGSTORE store);
 
-API int   Config_GetInt(CFGSTORE store, const char* key);
-API void  Config_SetInt(CFGSTORE store, const char* key, int value);
+API int Config_GetInt(CFGSTORE store, const char* key);
+API void Config_SetInt(CFGSTORE store, const char* key, int value);
 
 API const char* Config_GetStr(CFGSTORE store, const char* key);
-API void  Config_SetStr(CFGSTORE store, const char* key, const char* value);
+API void Config_SetStr(CFGSTORE store, const char* key, const char* value);
 
 API void Config_SetBool(CFGSTORE store, const char* key, bool value);
 API bool Config_GetBool(CFGSTORE store, const char* key);

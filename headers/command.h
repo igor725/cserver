@@ -37,8 +37,8 @@ if(caller && !caller->playerData->isOP) { \
 typedef bool (*cmdFunc)(const char* args, CLIENT caller, char* out);
 
 typedef struct command {
-	const char*     name;
-	cmdFunc         func;
+	const char* name;
+	cmdFunc func;
 	struct command* next;
 	struct command* prev;
 } *COMMAND;

@@ -1,5 +1,10 @@
 #ifndef SURV_DATA_H
 #define SURV_DATA_H
+#define Command_OnlyForSurvival \
+if(SurvData_Get(caller)->godMode) { \
+	Command_Print("This command can't be used from god mode."); \
+}
+
 enum survActions {
 	SURV_ACT_NONE,
 	SURV_ACT_BREAK
