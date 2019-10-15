@@ -9,10 +9,17 @@ enum playerStates {
 	STATE_INGAME
 };
 
+typedef struct cpeHacks {
+	bool flying, noclip, speeding;
+	bool spawnControl, tpv;
+	short jumpHeight;
+} *HACKS;
+
 typedef struct cpeData {
 	BlockID heldBlock;
 	short _extCount;
 	EXT headExtension;
+	HACKS hacks;
 	char model[16];
 	const char* appName;
 } *CPEDATA;
@@ -77,6 +84,7 @@ API bool Client_SetModel(CLIENT client, const char* model);
 API bool Client_SetBlockPerm(CLIENT client, BlockID block, bool allowPlace, bool allowDestroy);
 API bool Client_SetHeld(CLIENT client, BlockID block, bool canChange);
 API bool Client_SetHotbar(CLIENT client, Order pos, BlockID block);
+API bool Client_SetHacks(CLIENT client);
 
 API bool Client_GetType(CLIENT client);
 API const char* Client_GetName(CLIENT client);

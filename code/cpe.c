@@ -33,6 +33,7 @@ static const struct extReg serverExtensions[] = {
 	{"SetHotbar", 1},
 	{"HeldBlock", 1},
 	{"TwoWayPing", 1},
+	{"HackControl", 1},
 	{"PlayerClick", 1},
 	{"ChangeModel", 1},
 	{"MessageTypes", 1},
@@ -137,6 +138,20 @@ void CPEPacket_WriteHoldThis(CLIENT client, BlockID block, bool preventChange) {
 	*++data = (char)preventChange;
 
 	PacketWriter_End(client, 3);
+}
+
+void CPEPacket_WriteHackControl(CLIENT client, HACKS hacks) {
+	PacketWriter_Start(client);
+
+	*data = 0x20;
+	*++data = (char)hacks->flying;
+	*++data = (char)hacks->noclip;
+	*++data = (char)hacks->speeding;
+	*++data = (char)hacks->spawnControl;
+	*++data = (char)hacks->tpv;
+	*(short*)++data = hacks->jumpHeight;
+
+	PacketWriter_End(client, 8);
 }
 
 void CPEPacket_WriteSetHotBar(CLIENT client, Order order, BlockID block) {
@@ -244,16 +259,20 @@ bool CPEHandler_ExtEntry(CLIENT client, char* data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_MOTD, false);
 
+	CPEDATA cpd = client->cpeData;
 	EXT tmp = Memory_Alloc(1, sizeof(struct cpeExt));
 	ReadNetString(data, &tmp->name);data += 63;
 	tmp->version = ntohl(*(uint32_t*)++data);
 	tmp->crc32 = String_CRC32((uint8_t*)tmp->name);
 
-	tmp->next = client->cpeData->headExtension;
-	client->cpeData->headExtension = tmp;
+	if(tmp->crc32 == EXT_HACKCTRL && !cpd->hacks)
+		cpd->hacks = Memory_Alloc(1, sizeof(struct cpeHacks));
 
-	--client->cpeData->_extCount;
-	if(client->cpeData->_extCount == 0) {
+	tmp->next = cpd->headExtension;
+	cpd->headExtension = tmp;
+
+	--cpd->_extCount;
+	if(cpd->_extCount == 0) {
 		Event_Call(EVT_ONHANDSHAKEDONE, (void*)client);
 		Client_HandshakeStage2(client);
 	}

@@ -8,6 +8,7 @@
 #include "data.h"
 #include "damage.h"
 #include "gui.h"
+#include "hacks.h"
 #include "break.h"
 #include "inventory.h"
 
@@ -20,6 +21,7 @@ static void Survival_OnHandshake(void* param) {
 static void Survival_OnSpawn(void* param) {
 	SURVDATA data = SurvData_Get((CLIENT)param);
 	SurvGui_DrawAll(data);
+	SurvHacks_Update(data);
 	SurvInv_Init(data);
 }
 
@@ -69,10 +71,6 @@ static void Survival_OnDisconnect(void* param) {
 	SurvData_Free((CLIENT)param);
 }
 
-static float fsquare(float a) {
-	return a * a;
-}
-
 static double root(double n){
   double lo = 0, hi = n, mid;
   for(int i = 0; i < 1000; i++){
@@ -85,7 +83,7 @@ static double root(double n){
 }
 
 static float distance(float x1, float y1, float z1, float x2, float y2, float z2) {
-	return (float)root(fsquare(x2 - x1) + fsquare(y2 - y1) + fsquare(z2 - z1));
+	return (float)root((x2 * x2 - x1 * x1) + (y2 * y2 - y1 * y1) + (z2 * z2 - z1 * z1));
 }
 
 static void Survival_OnClick(void* param) {
@@ -157,7 +155,10 @@ static bool CHandler_God(const char* args, CLIENT caller, char* out) {
 	bool mode = data->godMode;
 	data->godMode = !mode;
 	SurvGui_DrawAll(data);
+	SurvHacks_Update(data);
 	SurvInv_UpdateInventory(data);
+	SurvGui_DrawBlockInfo(data, mode ? caller->cpeData->heldBlock : 0);
+
 	String_FormatBuf(out, CMD_MAX_OUT, "God mode %s", MODE(mode));
 
 	return true;

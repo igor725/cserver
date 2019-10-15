@@ -13,14 +13,14 @@ enum survActions {
 typedef struct survivalData {
 	CLIENT client;
 	uint16_t inventory[256];
+	short lastclick[3];
 	uint8_t health;
 	uint8_t oxygen;
 	bool showOxygen;
 	bool godMode;
 	bool pvpMode;
-	short lastclick[3];
 	bool breakStarted;
-	int breakTimer;
+	int16_t breakTimer;
 	uint8_t breakProgress;
 	BlockID breakBlock;
 } *SURVDATA;

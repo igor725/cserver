@@ -54,6 +54,7 @@ void CPEPacket_WriteExtEntry(CLIENT client, EXT ext);
 void CPEPacket_WriteClickDistance(CLIENT client, short dist);
 void CPEPacket_WriteInventoryOrder(CLIENT client, Order order, BlockID block);
 void CPEPacket_WriteHoldThis(CLIENT client, BlockID block, bool preventChange);
+void CPEPacket_WriteHackControl(CLIENT client, HACKS hacks);
 void CPEPacket_WriteSetHotBar(CLIENT client, Order order, BlockID block);
 void CPEPacket_WriteWeatherType(CLIENT client, Weather type);
 void CPEPacket_WriteTexturePack(CLIENT client, const char* url);

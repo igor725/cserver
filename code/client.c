@@ -336,8 +336,15 @@ bool Client_SetModel(CLIENT client, const char* model) {
 		if(!other || Client_IsSupportExt(other, EXT_CHANGEMODEL, 1)) continue;
 		CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, model);
 	}
-
 	return true;
+}
+
+bool Client_SetHacks(CLIENT client) {
+	if(Client_IsSupportExt(client, EXT_HACKCTRL, 1)) {
+		CPEPacket_WriteHackControl(client, client->cpeData->hacks);
+		return true;
+	}
+	return false;
 }
 
 bool Client_GetType(CLIENT client) {
@@ -376,6 +383,7 @@ void Client_Free(CLIENT client) {
 			Memory_Free(prev);
 		}
 
+		if(cpd->hacks) Memory_Free(cpd->hacks);
 		Memory_Free((void*)cpd->appName);
 		Memory_Free(cpd);
 	}
