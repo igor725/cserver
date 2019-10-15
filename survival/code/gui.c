@@ -27,10 +27,23 @@ void SurvGui_DrawHealth(SURVDATA data) {
 			for(int i = 0; i < empty; i++) {
 				String_Append(healthstr, 20, "\3");
 			}
-		}	
+		}
 	}
 
 	Client_Chat(data->client, CPE_STATUS1, healthstr);
+}
+
+void SurvGui_DrawOxygen(SURVDATA data) {
+	char oxystr[13] = {0};
+
+	if(!data->godMode && data->showOxygen) {
+		String_Copy(oxystr, 13, "&b");
+		for(uint8_t i = 0; i < 10; i++) {
+			String_Append(oxystr, 13, data->oxygen > i ? "\7" : " ");
+		}
+	}
+
+	Client_Chat(data->client, CPE_STATUS2, oxystr);
 }
 
 void SurvGui_DrawBreakProgress(SURVDATA data) {
@@ -63,4 +76,5 @@ void SurvGui_DrawBlockInfo(SURVDATA data, BlockID id) {
 
 void SurvGui_DrawAll(SURVDATA data) {
 	SurvGui_DrawHealth(data);
+	SurvGui_DrawOxygen(data);
 }
