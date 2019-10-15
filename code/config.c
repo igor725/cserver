@@ -1,6 +1,8 @@
 #include "core.h"
 #include "config.h"
 
+const char* commentSymbol = "#";
+
 CFGSTORE Config_Create(const char* filename) {
 	CFGSTORE store = Memory_Alloc(1, sizeof(struct cfgStore));
 	store->path = String_AllocCopy(filename);
@@ -22,14 +24,24 @@ bool Config_Load(CFGSTORE store) {
 	char value[MAX_CLIENT_PPS] = {0};
 
 	while(!feof(fp)) {
-		while(ch == '\n') {
+		while(ch == '\n' && !feof(fp)) {
 			ch = fgetc(fp);
+		}
+
+		if(ch == *commentSymbol) {
+			while(ch != '\n' && !feof(fp)) {
+				ch = fgetc(fp);
+				if(ch != '\n' && ch != '\r')
+					value[count++] = (char)ch;
+			}
+			value[count] = '\0';
+			Config_AddCommentary(store, value);
+			count = 0;
 		}
 
 		do {
 			if(ch != '\n' && ch != '\r' && ch != ' ') {
-				key[count] = (char)ch;
-				count++;
+				key[count++] = (char)ch;
 			}
 			ch = fgetc(fp);
 		} while(ch != '=' && !feof(fp) && count < MAX_CLIENT_PPS);
@@ -45,8 +57,7 @@ bool Config_Load(CFGSTORE store) {
 
 		while((ch = fgetc(fp)) != EOF && ch != '\n' && count < MAX_CLIENT_PPS) {
 			if(ch != '\r') {
-				value[count] = (char)ch;
-				count++;
+				value[count++] = (char)ch;
 			}
 		}
 		value[count] = '\0';
@@ -113,6 +124,10 @@ bool Config_Save(CFGSTORE store) {
 				if(!File_WriteFormat(fp, "=b%s\n", ptr->value.vbool ? "True" : "False"))
 					return false;
 				break;
+			case CFG_COMMENT:
+			if(!File_WriteFormat(fp, "%s\n", ptr->value.vchar))
+				return false;
+			break;
 			default:
 				if(!File_Write("=sUnknown value\n", 16, 1, fp))
 					return false;
@@ -175,6 +190,20 @@ if(ent->type != expectedType) { \
 	return 0; \
 }
 
+void Config_AddCommentary(CFGSTORE store, const char* commentary) {
+	CFGENTRY ent = Memory_Alloc(1, sizeof(struct cfgEntry));
+	ent->type = CFG_COMMENT;
+	ent->key = commentSymbol;
+	ent->value.vchar = String_AllocCopy(commentary);
+
+	if(store->firstCfgEntry)
+		store->lastCfgEntry->next = ent;
+	else
+		store->firstCfgEntry = ent;
+
+	store->lastCfgEntry = ent;
+}
+
 void Config_SetInt(CFGSTORE store, const char* key, int value) {
 	CFGENTRY ent = Config_GetEntry2(store, key);
 	if(ent->type == CFG_STR && ent->value.vchar)
@@ -230,7 +259,10 @@ void Config_EmptyStore(CFGSTORE store) {
 
 	while(ent) {
 		prev = ent;
-		if(ent->type == CFG_STR)
+
+		if(ent->type != CFG_COMMENT)
+			Memory_Free((void*)ent->key);
+		if(ent->type == CFG_STR || ent->type == CFG_COMMENT)
 			Memory_Free((void*)ent->value.vchar);
 		ent = ent->next;
 		Memory_Free(prev);

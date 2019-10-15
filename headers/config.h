@@ -3,7 +3,8 @@
 enum cfgTypes {
 	CFG_BOOL = 'b',
 	CFG_INT  = 'i',
-	CFG_STR  = 's'
+	CFG_STR  = 's',
+	CFG_COMMENT = 'c'
 };
 
 typedef struct cfgEntry {
@@ -25,6 +26,7 @@ typedef struct cfgStore {
 } *CFGSTORE;
 
 CFGENTRY Config_GetEntry(CFGSTORE store, const char* key);
+void Config_AddCommentary(CFGSTORE store, const char* commentary);
 
 API CFGSTORE Config_Create(const char* filename);
 API void Config_EmptyStore(CFGSTORE store);

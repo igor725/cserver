@@ -35,11 +35,6 @@
 #define ValidateCpeClient(client, ret) \
 if(!client->cpeData) return ret;
 
-struct extReg {
-	const char* name;
-	int version;
-};
-
 API bool CPE_CheckModel(const char* model);
 void CPE_StartHandshake(CLIENT client);
 
