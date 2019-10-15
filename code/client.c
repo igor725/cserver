@@ -60,10 +60,10 @@ static void HandlePacket(CLIENT client, PACKET packet, bool extended) {
 	bool ret = false;
 
 	if(extended)
-		if(!packet->cpeHandler)
-			ret = packet->handler(client, data);
-		else
+		if(packet->cpeHandler)
 			ret = packet->cpeHandler(client, data);
+		else
+			ret = packet->handler(client, data);
 	else
 		if(packet->handler)
 			ret = packet->handler(client, data);
@@ -243,7 +243,7 @@ bool Client_CheckAuth(CLIENT client) {
 	return true;
 }
 
-void Client_SetPos(CLIENT client, VECTOR pos, ANGLE ang) {
+void Client_SetPos(CLIENT client, VECTOR* pos, ANGLE* ang) {
 	PLAYERDATA pd = client->playerData;
 	if(!pd) return;
 	Memory_Copy(pd->position, pos, sizeof(struct vector));

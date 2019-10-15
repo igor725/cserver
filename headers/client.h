@@ -28,8 +28,8 @@ typedef struct playerData {
 	const char* key;
 	const char* name;
 	int state;
-	ANGLE angle;
-	VECTOR position;
+	ANGLE* angle;
+	VECTOR* position;
 	bool isOP;
 	bool spawned;
 	WORLD world;
@@ -52,7 +52,7 @@ typedef struct client {
 	PLAYERDATA playerData;
 } *CLIENT;
 
-void Client_SetPos(CLIENT client, VECTOR vec, ANGLE ang);
+void Client_SetPos(CLIENT client, VECTOR* vec, ANGLE* ang);
 void Client_UpdatePositions(CLIENT client);
 int  Client_Send(CLIENT client, int len);
 void Client_HandshakeStage2(CLIENT client);

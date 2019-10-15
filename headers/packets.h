@@ -50,8 +50,6 @@ void Packet_WriteSetBlock(CLIENT client, uint16_t x, uint16_t y, uint16_t z, Blo
 
 uint8_t ReadNetString(const char* data, const char** dst);
 void WriteNetString(char* data, const char* string);
-void ReadClPos(CLIENT client, char* data, bool extended);
-uint32_t WriteClPos(char* data, CLIENT client, bool stand, bool extended);
 
 bool Handler_Handshake(CLIENT client, char* data);
 bool Handler_SetBlock(CLIENT client, char* data);

@@ -28,28 +28,49 @@ void WriteNetString(char* data, const char* string) {
 	Memory_Copy(data, string, size);
 }
 
-void ReadClPos(CLIENT client, char* data, bool extended) {
-	VECTOR vec = client->playerData->position;
-	ANGLE ang = client->playerData->angle;
+static bool ReadClPos(CLIENT client, char* data) {
+	PLAYERDATA cpd = client->playerData;
+	VECTOR* vec = cpd->position;
+	ANGLE* ang = cpd->angle;
+	VECTOR newVec = {0};
+	ANGLE newAng = {0};
+	bool changed = false;
 
-	if(extended) {
-		vec->x = (float)ntohl(*(int*)data) / 32; data += 3;
-		vec->y = (float)ntohl(*(int*)++data) / 32; data += 3;
-		vec->z = (float)ntohl(*(int*)++data) / 32; data += 3;
-		ang->yaw = (((float)(uint8_t)*++data) / 256) * 360;
-		ang->pitch = (((float)(uint8_t)*++data) / 256) * 360;
+	if(Client_IsSupportExt(client, EXT_ENTPOS, 1)) {
+		newVec.x = (float)ntohl(*(int*)data) / 32; data += 3;
+		newVec.y = (float)ntohl(*(int*)++data) / 32; data += 3;
+		newVec.z = (float)ntohl(*(int*)++data) / 32; data += 3;
+		newAng.yaw = (((float)(uint8_t)*++data) / 256) * 360;
+		newAng.pitch = (((float)(uint8_t)*++data) / 256) * 360;
 	} else {
-		vec->x = (float)ntohs(*(short*)data) / 32; ++data;
-		vec->y = (float)ntohs(*(short*)++data) / 32; ++data;
-		vec->z = (float)ntohs(*(short*)++data) / 32; ++data;
-		ang->yaw = (((float)(uint8_t)*++data) / 256) * 360;
-		ang->pitch = (((float)(uint8_t)*++data) / 256) * 360;
+		newVec.x = (float)ntohs(*(short*)data) / 32; ++data;
+		newVec.y = (float)ntohs(*(short*)++data) / 32; ++data;
+		newVec.z = (float)ntohs(*(short*)++data) / 32; ++data;
+		newAng.yaw = (((float)(uint8_t)*++data) / 256) * 360;
+		newAng.pitch = (((float)(uint8_t)*++data) / 256) * 360;
 	}
+
+	if(newVec.x != vec->x || newVec.y != vec->y || newVec.z != vec->z) {
+		vec->x = newVec.x;
+		vec->y = newVec.y;
+		vec->z = newVec.z;
+		Event_Call(EVT_ONPLAYERMOVE, client);
+		changed = true;
+	}
+
+	if(newAng.yaw != ang->yaw || newAng.pitch != ang->pitch) {
+		ang->yaw = newAng.yaw;
+		ang->pitch = newAng.pitch;
+		Event_Call(EVT_ONPLAYERROTATE, client);
+		changed = true;
+	}
+
+	return changed;
 }
 
-uint32_t WriteClPos(char* data, CLIENT client, bool stand, bool extended) {
-	VECTOR vec = client->playerData->position;
-	ANGLE ang = client->playerData->angle;
+static uint32_t WriteClPos(char* data, CLIENT client, bool stand, bool extended) {
+	VECTOR* vec = client->playerData->position;
+	ANGLE* ang = client->playerData->angle;
 
 	uint32_t x = (uint32_t)(vec->x * 32), y = (uint32_t)(vec->y * 32 + (stand ? 51 : 0)), z = (uint32_t)(vec->z * 32);
 	uint8_t yaw = (uint8_t)((ang->yaw / 360) * 256), pitch = (uint8_t)((ang->pitch / 360) * 256);
@@ -169,7 +190,7 @@ void Packet_WriteSpawn(CLIENT client, CLIENT other) {
 	*++data = client == other ? 0xFF : other->id;
 	WriteNetString(++data, other->playerData->name); data += 63;
 	bool extended = Client_IsSupportExt(client, EXT_ENTPOS, 1);
-	uint32_t len = WriteClPos(++data, other, true, extended);
+	uint32_t len = WriteClPos(++data, other, client == other, extended);
 
 	PacketWriter_End(client, 68 + len);
 }
@@ -342,16 +363,17 @@ bool Handler_SetBlock(CLIENT client, char* data) {
 
 bool Handler_PosAndOrient(CLIENT client, char* data) {
 	ValidateClientState(client, STATE_INGAME, false);
+	CPEDATA cpd = client->cpeData;
 
-	if(client->cpeData && client->cpeData->heldBlock != *data) {
+	if(cpd && cpd->heldBlock != *data) {
 		BlockID new = *data;
-		BlockID curr = client->cpeData->heldBlock;
+		BlockID curr = cpd->heldBlock;
 		Event_OnHeldBlockChange(client, curr, new);
-		client->cpeData->heldBlock = new;
+		cpd->heldBlock = new;
 	}
 
-	ReadClPos(client, ++data, false);
-	Client_UpdatePositions(client);
+	if(ReadClPos(client, ++data))
+		Client_UpdatePositions(client);
 	return true;
 }
 

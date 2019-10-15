@@ -87,7 +87,7 @@ typedef uint8_t  MessageType;
 #define MAX_PACKETS 256
 #define MAX_CLIENT_PPS 128
 #define MAX_EVENTS 64
-#define EVENT_TYPES 12
+#define EVENT_TYPES 14
 
 #define DEFAULT_NAME "Server name"
 #define DEFAULT_MOTD "Server MOTD"
@@ -116,10 +116,10 @@ typedef struct vector {
 	float x;
 	float y;
 	float z;
-} *VECTOR;
+} VECTOR;
 
 typedef struct angle {
 	float yaw;
 	float pitch;
-} *ANGLE;
+} ANGLE;
 #endif

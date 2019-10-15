@@ -63,7 +63,10 @@ static void Survival_OnTick(void* param) {
 	(void)param;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		SURVDATA data = SurvData_GetByID(i);
-		if(data && data->breakStarted) SurvBrk_Tick(data);
+		if(data) {
+			if(data->breakStarted) SurvBrk_Tick(data);
+			SurvDmg_Tick(data);
+		}
 	}
 }
 
@@ -108,12 +111,12 @@ static void Survival_OnClick(void* param) {
 	float dist_block = 32768.0f;
 
 	PLAYERDATA pd = client->playerData;
-	VECTOR pv = pd->position;
+	VECTOR* pv = pd->position;
 
 	if(x != -1 && y != -1 && z != -1) {
 		dist_block = distance(x + .5f, y + .5f, z + .5f, pv->x, pv->y, pv->z);
 	} else if(target) {
-		VECTOR pvt = pd->position;
+		VECTOR* pvt = pd->position;
 		dist_entity = distance(pvt->x, pvt->y, pvt->z, pv->x, pv->y, pv->z);
 	}
 

@@ -47,7 +47,6 @@ bool CPEHandler_ExtInfo(CLIENT client, char* data);
 bool CPEHandler_ExtEntry(CLIENT client, char* data);
 bool CPEHandler_TwoWayPing(CLIENT client, char* data);
 bool CPEHandler_PlayerClick(CLIENT client, char* data);
-bool CPEHandler_PosAndOrient(CLIENT client, char* data);
 
 void CPEPacket_WriteInfo(CLIENT client);
 void CPEPacket_WriteExtEntry(CLIENT client, EXT ext);

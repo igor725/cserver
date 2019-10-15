@@ -13,6 +13,6 @@ void SurvDmg_Hurt(SURVDATA target, SURVDATA attacker, uint8_t damage) {
 	SurvGui_DrawHealth(target);
 }
 
-void SurvDmg_Tick(void) {
-
+void SurvDmg_Tick(SURVDATA data) {
+	(void)data;
 }

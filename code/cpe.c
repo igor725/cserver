@@ -88,7 +88,7 @@ void Packet_RegisterCPEDefault(void) {
 	Packet_Register(0x11, "ExtEntry", 69, CPEHandler_ExtEntry);
 	Packet_Register(0x2B, "TwoWayPing", 4, CPEHandler_TwoWayPing);
 	Packet_Register(0x22, "PlayerClick", 15, CPEHandler_PlayerClick);
-	Packet_RegisterCPE(0x08, EXT_ENTPOS, 1, 16, CPEHandler_PosAndOrient);
+	Packet_RegisterCPE(0x08, EXT_ENTPOS, 1, 16, NULL);
 }
 
 void CPEPacket_WriteInfo(CLIENT client) {
@@ -229,22 +229,6 @@ void CPEPacket_WriteBlockPerm(CLIENT client, BlockID id, bool allowPlace, bool a
 /*
 	CPE packet handlers
 */
-
-bool CPEHandler_PosAndOrient(CLIENT client, char* data) {
-	ValidateCpeClient(client, false);
-	ValidateClientState(client, STATE_INGAME, false);
-
-	if(client->cpeData && client->cpeData->heldBlock != *data) {
-		BlockID new = *data;
-		BlockID curr = client->cpeData->heldBlock;
-		Event_OnHeldBlockChange(client, curr, new);
-		client->cpeData->heldBlock = new;
-	}
-
-	ReadClPos(client, ++data, true);
-	Client_UpdatePositions(client);
-	return true;
-}
 
 bool CPEHandler_ExtInfo(CLIENT client, char* data) {
 	ValidateCpeClient(client, false);
