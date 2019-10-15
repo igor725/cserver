@@ -20,13 +20,12 @@ bool Config_Load(CFGSTORE store) {
 	int type;
 	int count = 0;
 	int ch = fgetc(fp);
-	char key[MAX_CLIENT_PPS] = {0};
-	char value[MAX_CLIENT_PPS] = {0};
+	char key[MAX_CFG_LEN] = {0};
+	char value[MAX_CFG_LEN] = {0};
 
 	while(!feof(fp)) {
-		while(ch == '\n' && !feof(fp)) {
+		while(ch == '\n' && !feof(fp))
 			ch = fgetc(fp);
-		}
 
 		if(ch == *commentSymbol) {
 			while(ch != '\n' && !feof(fp)) {
@@ -40,11 +39,10 @@ bool Config_Load(CFGSTORE store) {
 		}
 
 		do {
-			if(ch != '\n' && ch != '\r' && ch != ' ') {
+			if(ch != '\n' && ch != '\r' && ch != ' ')
 				key[count++] = (char)ch;
-			}
 			ch = fgetc(fp);
-		} while(ch != '=' && !feof(fp) && count < MAX_CLIENT_PPS);
+		} while(ch != '=' && !feof(fp) && count < MAX_CFG_LEN);
 		key[count] = '\0';
 
 		if(feof(fp)) {
@@ -55,10 +53,8 @@ bool Config_Load(CFGSTORE store) {
 		count = 0;
 		type = fgetc(fp);
 
-		while((ch = fgetc(fp)) != EOF && ch != '\n' && count < MAX_CLIENT_PPS) {
-			if(ch != '\r') {
-				value[count++] = (char)ch;
-			}
+		while((ch = fgetc(fp)) != EOF && ch != '\n' && count < MAX_CFG_LEN) {
+			if(ch != '\r') value[count++] = (char)ch;
 		}
 		value[count] = '\0';
 
