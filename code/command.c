@@ -130,13 +130,6 @@ static bool CHandler_Stop(const char* args, CLIENT caller, char* out) {
 	return false;
 }
 
-static bool CHandler_Test(const char* args, CLIENT caller, char* out) {
-	sprintf(out, "Command \"test\" called by %s with args: %s",
-		caller ? caller->playerData->name : "console", args
-	);
-	return true;
-}
-
 static bool CHandler_Announce(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForOP;
 
@@ -268,7 +261,6 @@ void Command_RegisterDefault(void) {
 	Command_Register("op", CHandler_OP);
 	Command_Register("cfg", CHandler_CFG);
 	Command_Register("stop", CHandler_Stop);
-	Command_Register("test", CHandler_Test);
 	Command_Register("announce", CHandler_Announce);
 	Command_Register("kick", CHandler_Kick);
 	Command_Register("setmodel", CHandler_SetModel);
