@@ -125,6 +125,10 @@ SOCKET Socket_Accept(SOCKET sock, struct sockaddr_in* addr) {
 	return accept(sock, (struct sockaddr*)addr, &len);
 }
 
+int Socket_Receive(SOCKET sock, char* buf, int len, int flags) {
+	return recv(sock, buf, len, flags);
+}
+
 int Socket_Send(SOCKET sock, char* buf, int len) {
 	return send(sock, buf, len, 0);
 }

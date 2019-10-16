@@ -18,7 +18,7 @@ bool WebSocket_ReceiveFrame(WSFRAME ws) {
 	}
 
 	if(ws->state == WS_ST_HDR) {
-		uint32_t len = recv(ws->sock, ws->hdr, ws->_dneed, 0);
+		uint32_t len = Socket_Receive(ws->sock, ws->hdr, ws->_dneed, 0);
 
 		if(len == ws->_dneed) {
 			char plen = *(ws->hdr + 1) & 0x7F;
@@ -43,7 +43,7 @@ bool WebSocket_ReceiveFrame(WSFRAME ws) {
 	}
 
 	if(ws->state == WS_ST_PLEN) {
-		uint32_t len = recv(ws->sock, (char*)&ws->payload_len, ws->_dneed, 0);
+		uint32_t len = Socket_Receive(ws->sock, (char*)&ws->payload_len, ws->_dneed, 0);
 
 		if(len == ws->_dneed) {
 			if(ws->_dneed == 2) {
@@ -57,7 +57,7 @@ bool WebSocket_ReceiveFrame(WSFRAME ws) {
 	}
 
 	if(ws->state == WS_ST_MASK) {
-		uint32_t len = recv(ws->sock, ws->mask, ws->_dneed, 0);
+		uint32_t len = Socket_Receive(ws->sock, ws->mask, ws->_dneed, 0);
 
 		if(len == ws->_dneed) {
 			ws->state = WS_ST_RECVPL;
@@ -73,7 +73,7 @@ bool WebSocket_ReceiveFrame(WSFRAME ws) {
 		} else
 			Memory_Fill(ws->payload, ws->_maxlen, 0);
 
-		uint32_t len = recv(ws->sock, ws->payload, ws->_dneed, 0);
+		uint32_t len = Socket_Receive(ws->sock, ws->payload, ws->_dneed, 0);
 
 		if(len == ws->_dneed) {
 			for(uint32_t i = 0; i < len; i++) {

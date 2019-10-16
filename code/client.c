@@ -80,7 +80,7 @@ TRET Client_ThreadProc(TARG lpParam) {
 
 	while(1) {
 		if(client->closed) {
-			int len = recv(client->sock, client->rdbuf, 131, 0);
+			int len = Socket_Receive(client->sock, client->rdbuf, 131, 0);
 			if(len <= 0) {
 				if(client->playerData && client->playerData->state > STATE_WLOADDONE)
 					Event_Call(EVT_ONDISCONNECT, (void*)client);
@@ -93,7 +93,7 @@ TRET Client_ThreadProc(TARG lpParam) {
 		}
 
 		if(wait > 0) {
-			int len = recv(client->sock, client->rdbuf + client->bufpos, wait, 0);
+			int len = Socket_Receive(client->sock, client->rdbuf + client->bufpos, wait, 0);
 
 			if(len > 0) {
 				client->bufpos += (uint16_t)len;

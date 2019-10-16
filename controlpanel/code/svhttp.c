@@ -234,7 +234,7 @@ static char* ReadSockUntil(WEBCLIENT wcl, size_t len, char sym) {
 	char* tmp = wcl->buffer;
 
 	do {
-		int ret = recv(wcl->sock, tmp, 1, 0);
+		int ret = Socket_Receive(wcl->sock, tmp, 1, 0);
 		if(ret > 0)
 			len -= ret;
 		else
@@ -351,7 +351,7 @@ static TRET ClientThreadProc(TARG param) {
 	wcl->sock = (SOCKET)param;
 	wcl->respCode = 200;
 
-	int ret = recv(wcl->sock, wcl->buffer, 4, 0);
+	int ret = Socket_Receive(wcl->sock, wcl->buffer, 4, 0);
 	if(ret && String_CaselessCompare(wcl->buffer, "GET "))
 		HandleGetRequest(wcl);
 
