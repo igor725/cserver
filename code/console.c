@@ -8,16 +8,11 @@ THREAD conThread;
 int Console_ReadLine(char* buf, int buflen) {
 	int len = 0, c = 0;
 
-	while((c = getc(stdin)) != EOF && c != '\n') {
-		if(c != '\r') {
-			buf[len++] = (char)c;
-			if(len > buflen) {
-				break;
-			}
-		}
-	}
+	while((c = File_GetChar(stdin)) != EOF && c != '\n' && len < buflen)
+		if(c != '\r') buf[len++] = (char)c;
+	while(c != '\n' && File_GetChar(stdin) != '\n') {}
+	buf[len] = '\0';
 
-	buf[len] = 0;
 	return len;
 }
 

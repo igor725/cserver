@@ -43,6 +43,10 @@ size_t File_Write(const void* ptr, size_t size, size_t count, FILE* fp) {
 	return fwrite(ptr, size, count, fp);
 }
 
+int File_GetChar(FILE* fp) {
+	return getc(fp);
+}
+
 bool File_Error(FILE* fp) {
 	return ferror(fp) > 0;
 }
@@ -54,6 +58,14 @@ bool File_WriteFormat(FILE* fp, const char* fmt, ...) {
 	va_end(args);
 
 	return !File_Error(fp);
+}
+
+bool File_Flush(FILE* fp) {
+	return fflush(fp) == 0;
+}
+
+int File_Seek(FILE* fp, long offset, int origin) {
+	return fseek(fp, offset, origin);
 }
 
 bool File_Close(FILE* fp) {
