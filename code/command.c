@@ -58,6 +58,70 @@ static bool CHandler_OP(const char* args, CLIENT caller, char* out) {
 	return true;
 }
 
+static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
+	const char* cmdUsage = "/cfg <set/get/print> [key] [type] [value]";
+	Command_OnlyForOP;
+
+	char subcommand[8], type[12], key[MAX_CFG_LEN], value[MAX_CFG_LEN];
+
+	if(String_GetArgument(args, subcommand, 8, 0)) {
+		if(String_CaselessCompare(subcommand, "set")) {
+			if(!String_GetArgument(args, key, MAX_CFG_LEN, 1)) {
+				Command_PrintUsage;
+			}
+			if(!String_GetArgument(args, type, 12, 2)) {
+				Command_PrintUsage;
+			}
+			int itype = Config_TypeNameToInt(type);
+			if(itype == -1) {
+				Command_Print("Invalid cfg entry type specified.");
+			}
+			if(!String_GetArgument(args, value, MAX_CFG_LEN, 3)) {
+				Command_PrintUsage;
+			}
+			switch (itype) {
+				case CFG_INT:
+					Config_SetInt(Server_Config, key, String_ToInt(value));
+					break;
+				case CFG_BOOL:
+					Config_SetBool(Server_Config, key, String_CaselessCompare(value, "True"));
+					break;
+				case CFG_STR:
+					Config_SetStr(Server_Config, key, value);
+					break;
+			}
+			Command_Print("Entry value changed successfully.");
+		} else if(String_CaselessCompare(subcommand, "get")) {
+			if(!String_GetArgument(args, key, MAX_CFG_LEN, 1)) {
+				Command_PrintUsage;
+			}
+
+			CFGENTRY ent = Config_GetEntry(Server_Config, key);
+			if(ent) {
+				switch (ent->type) {
+					case CFG_INT:
+						String_FormatBuf(value, MAX_CFG_LEN, "%d", ent->value.vint);
+						break;
+					case CFG_BOOL:
+						String_Copy(value, MAX_CFG_LEN, ent->value.vbool ? "True" : "False");
+						break;
+					case CFG_STR:
+						String_Copy(value, MAX_CFG_LEN, ent->value.vchar);
+						break;
+					default:
+						String_Copy(value, MAX_CFG_LEN, "Can't parse entry value.");
+						break;
+				}
+				String_FormatBuf(out, CMD_MAX_OUT, "server.cfg entry \"%s\" have type \"%s\" and value \"%s\"", key, Config_TypeName(ent->type), value);
+				return true;
+			}
+			Command_Print("This entry not found in \"server.cfg\" store.");
+		}
+	}
+
+	Command_PrintUsage;
+}
+
 static bool CHandler_Stop(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForOP;
 	(void)args;
@@ -202,6 +266,7 @@ static bool CHandler_SavWorld(const char* args, CLIENT caller, char* out) {
 
 void Command_RegisterDefault(void) {
 	Command_Register("op", CHandler_OP);
+	Command_Register("cfg", CHandler_CFG);
 	Command_Register("stop", CHandler_Stop);
 	Command_Register("test", CHandler_Test);
 	Command_Register("announce", CHandler_Announce);

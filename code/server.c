@@ -68,18 +68,17 @@ static bool InitialWork(void) {
 
 	Log_Info("Loading " MAINCFG);
 	Server_Config = Config_Create(MAINCFG);
-	Config_AddCommentary(Server_Config, "Bind server to specified IP address. \"0.0.0.0\" - means \"all adapters on PC\".");
 	Config_SetStr(Server_Config, "ip", "0.0.0.0");
-	Config_AddCommentary(Server_Config, "Use specified port to accept clients.");
+	Config_AddComment(Server_Config, "Bind server to specified IP address. \"0.0.0.0\" - means \"all network adapters on PC\".");
 	Config_SetInt(Server_Config, "port", 25565);
-	Config_AddCommentary(Server_Config, "Server name and MOTD will be shown to the player during map loading.");
+	Config_AddComment(Server_Config, "Use specified port to accept clients.");
 	Config_SetStr(Server_Config, "name", DEFAULT_NAME);
+	Config_AddComment(Server_Config, "Server name and MOTD will be shown to the player during map loading.");
 	Config_SetStr(Server_Config, "motd", DEFAULT_MOTD);
-	Config_AddCommentary(Server_Config, "Fully disable log messages - -1, E - 0, EI - 1, EIC - 2, EICW - 3, EICWD - 4.");
-	Config_AddCommentary(Server_Config, "E - Errors, I - Info, C - Chat, W - Warnings, D - Debug.");
 	Config_SetInt(Server_Config, "loglevel", 3);
-	Config_AddCommentary(Server_Config, "Any player with ip address \"127.0.0.1\" will automatically become an operator.");
+	Config_AddComment(Server_Config, "E - 0, EI - 1, EIC - 2, EICW - 3, EICWD - 4; E - Errors, I - Info, C - Chat, W - Warnings, D - Debug.");
 	Config_SetBool(Server_Config, "alwayslocalop", false);
+	Config_AddComment(Server_Config, "Any player with ip address \"127.0.0.1\" will automatically become an operator.");
 	if(!Config_Load(Server_Config)) Process_Exit(1);
 
 	Log_SetLevel(Config_GetInt(Server_Config, "loglevel"));

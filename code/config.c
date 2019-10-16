@@ -20,21 +20,23 @@ bool Config_Load(CFGSTORE store) {
 	int type;
 	int count = 0;
 	int ch = fgetc(fp);
+	bool haveCommentary = false;
 	char key[MAX_CFG_LEN] = {0};
 	char value[MAX_CFG_LEN] = {0};
+	char commentary[MAX_CFG_LEN] = {0};
 
 	while(!feof(fp)) {
 		while(ch == '\n' && !feof(fp))
 			ch = fgetc(fp);
 
 		if(ch == *commentSymbol) {
-			while(ch != '\n' && !feof(fp)) {
+			while(ch != '\n' && !feof(fp) && count < MAX_CFG_LEN) {
 				ch = fgetc(fp);
 				if(ch != '\n' && ch != '\r')
-					value[count++] = (char)ch;
+					commentary[count++] = (char)ch;
 			}
-			value[count] = '\0';
-			Config_AddCommentary(store, value);
+			commentary[count] = '\0';
+			haveCommentary = true;
 			count = 0;
 		}
 
@@ -80,13 +82,30 @@ bool Config_Load(CFGSTORE store) {
 				return false;
 		}
 
+		if(haveCommentary)
+			Config_AddComment(store, commentary);
+
 		count = 0;
 		ch = fgetc(fp);
+		haveCommentary = false;
 	}
 
 	store->modified = false;
 	File_Close(fp);
 	return true;
+}
+
+bool Config_AddComment(CFGSTORE store, const char* commentary) {
+	CFGENTRY ent = store->lastCfgEntry;
+
+	if(ent) {
+		if(ent->commentary)
+			Memory_Free((void*)ent->commentary);
+		ent->commentary = String_AllocCopy(commentary);
+		return true;
+	}
+
+	return false;
 }
 
 bool Config_Save(CFGSTORE store) {
@@ -105,8 +124,12 @@ bool Config_Save(CFGSTORE store) {
 	store->modified = false;
 
 	while(ptr) {
+		if(ptr->commentary)
+			if(!File_WriteFormat(fp, "#%s\n", ptr->commentary))
+				return false;
 		if(!File_Write(ptr->key, String_Length(ptr->key), 1, fp))
 			return false;
+
 		switch (ptr->type) {
 			case CFG_STR:
 				if(!File_WriteFormat(fp, "=s%s\n", (char*)ptr->value.vchar))
@@ -120,10 +143,6 @@ bool Config_Save(CFGSTORE store) {
 				if(!File_WriteFormat(fp, "=b%s\n", ptr->value.vbool ? "True" : "False"))
 					return false;
 				break;
-			case CFG_COMMENT:
-			if(!File_WriteFormat(fp, "%s\n", ptr->value.vchar))
-				return false;
-			break;
 			default:
 				if(!File_Write("=sUnknown value\n", 16, 1, fp))
 					return false;
@@ -167,7 +186,7 @@ CFGENTRY Config_GetEntry2(CFGSTORE store, const char* key) {
 	return ent;
 }
 
-static const char* typeName(int type) {
+const char* Config_TypeName(int type) {
 	switch (type) {
 		case CFG_STR:
 			return "string";
@@ -180,24 +199,21 @@ static const char* typeName(int type) {
 	}
 }
 
-#define CFG_TYPE(expectedType) \
-if(ent->type != expectedType) { \
-	Error_PrintF2(ET_SERVER, EC_CFGINVGET, true, ent->key, store->path, typeName(expectedType), typeName(ent->type)); \
-	return 0; \
+int Config_TypeNameToInt(const char* name) {
+	if(String_CaselessCompare(name, "string")) {
+		return CFG_STR;
+	} else if(String_CaselessCompare(name, "integer")) {
+		return CFG_INT;
+	} else if(String_CaselessCompare(name, "boolean")) {
+		return CFG_BOOL;
+	}
+	return -1;
 }
 
-void Config_AddCommentary(CFGSTORE store, const char* commentary) {
-	CFGENTRY ent = Memory_Alloc(1, sizeof(struct cfgEntry));
-	ent->type = CFG_COMMENT;
-	ent->key = commentSymbol;
-	ent->value.vchar = String_AllocCopy(commentary);
-
-	if(store->firstCfgEntry)
-		store->lastCfgEntry->next = ent;
-	else
-		store->firstCfgEntry = ent;
-
-	store->lastCfgEntry = ent;
+#define CFG_TYPE(expectedType) \
+if(ent->type != expectedType) { \
+	Error_PrintF2(ET_SERVER, EC_CFGINVGET, true, ent->key, store->path, Config_TypeName(expectedType), Config_TypeName(ent->type)); \
+	return 0; \
 }
 
 void Config_SetInt(CFGSTORE store, const char* key, int value) {
@@ -256,9 +272,9 @@ void Config_EmptyStore(CFGSTORE store) {
 	while(ent) {
 		prev = ent;
 
-		if(ent->type != CFG_COMMENT)
-			Memory_Free((void*)ent->key);
-		if(ent->type == CFG_STR || ent->type == CFG_COMMENT)
+		if(ent->commentary)
+			Memory_Free((void*)ent->commentary);
+		if(ent->type == CFG_STR)
 			Memory_Free((void*)ent->value.vchar);
 		ent = ent->next;
 		Memory_Free(prev);
