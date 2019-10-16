@@ -5,7 +5,7 @@
 
 THREAD conThread;
 
-int Console_ReadLine(char* buf, int buflen) {
+static int ReadLine(char* buf, int buflen) {
 	int len = 0, c = 0;
 
 	while((c = File_GetChar(stdin)) != EOF && c != '\n' && len < buflen)
@@ -16,25 +16,25 @@ int Console_ReadLine(char* buf, int buflen) {
 	return len;
 }
 
-void Console_HandleCommand(char* cmd) {
+static void HandleCommand(char* cmd) {
 	if(*cmd == '/') ++cmd;
 	if(!Command_Handle(cmd, NULL))
 		Log_Info("Unknown command");
 }
 
-TRET Console_ThreadProc(TARG lpParam) {
+static TRET ConsoleThreadProc(TARG lpParam) {
 	char buf[CON_STR_LEN] = {0};
 	(void)lpParam;
 
 	while(Server_Active) {
-		if(Console_ReadLine(buf, CON_STR_LEN) > 0 && Server_Active)
-			Console_HandleCommand(buf);
+		if(ReadLine(buf, CON_STR_LEN) > 0 && Server_Active)
+			HandleCommand(buf);
 	}
 	return 0;
 }
 
 void Console_StartListen(void) {
-	conThread = Thread_Create(Console_ThreadProc, NULL);
+	conThread = Thread_Create(ConsoleThreadProc, NULL);
 }
 
 void Console_Close(void) {
