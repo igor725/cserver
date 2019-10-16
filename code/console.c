@@ -22,6 +22,7 @@ int Console_ReadLine(char* buf, int buflen) {
 }
 
 void Console_HandleCommand(char* cmd) {
+	if(*cmd == '/') ++cmd;
 	if(!Command_Handle(cmd, NULL))
 		Log_Info("Unknown command");
 }
