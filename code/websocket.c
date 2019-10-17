@@ -5,7 +5,8 @@ bool WsClient_DoHandshake(WSCLIENT ws) {
 	(void)ws;
 	/*
 		TODO: Работа с HTTP запросом от клиента и
-		проверка совместимости протоколов.
+		проверка совместимости протоколов,
+		ну и собственно, генерация ответа HTTP.
 	*/
 
 	return false;
@@ -19,20 +20,25 @@ bool WsClient_ReceiveFrame(WSCLIENT ws) {
 		uint32_t len = Socket_Receive(ws->sock, ws->header, 2, 0);
 
 		if(len == 2) {
-			char plen = *(ws->header + 1) & 0x7F;
+			char plen = ws->header[1] & 0x7F;
 
-			if(plen == 126) {
-				ws->state = WS_ST_PLEN;
-			} else if(plen < 126) {
-				ws->state = WS_ST_MASK;
+			if((ws->header[1] >> 0x07) & 1) {
+				ws->opcode = ws->header[0] & 0x0F;
+				ws->done = (ws->header[0] >> 0x07) & 1;
+				ws->plen = plen;
+
+				if(plen == 126) {
+					ws->state = WS_ST_PLEN;
+				} else if(plen < 126) {
+					ws->state = WS_ST_MASK;
+				} else
+					return false;
+
+				return true;
 			} else {
+				ws->error = WS_ERR_MASK;
 				return false;
 			}
-
-			// bool fin = (*ws->hdr >> 0x07) & 1;
-			// bool masked = (*(ws->hdr + 1) >> 0x07) & 1;
-			ws->opcode = *ws->header & 0x0F;
-			ws->plen = plen;
 		}
 	}
 
@@ -64,11 +70,6 @@ bool WsClient_ReceiveFrame(WSCLIENT ws) {
 	}
 
 	return false;
-}
-
-void WsClient_Free(WSCLIENT ws) {
-	if(ws->recvbuf) Memory_Free(ws->recvbuf);
-	Memory_Free(ws);
 }
 
 bool WsClient_SendHeader(WSCLIENT ws, uint8_t opcode, uint16_t len) {

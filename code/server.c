@@ -25,15 +25,15 @@ static void AcceptFunc(void) {
 		tmp->sock = fd;
 		tmp->mutex = Mutex_Create();
 		tmp->addr = ntohl(caddr.sin_addr.s_addr);
-		tmp->rdbuf = Memory_Alloc(131, 1);
+		tmp->rdbuf = Memory_Alloc(134, 1);
 		tmp->wrbuf = Memory_Alloc(2048, 1);
 
 		if(Socket_Receive(fd, tmp->rdbuf, 3, MSG_PEEK)) {
 			if(String_CaselessCompare(tmp->rdbuf, "GET")) {
 				WSCLIENT wscl = Memory_Alloc(1, sizeof(struct wsClient));
-				wscl->recvbuf = Memory_Alloc(1, 192);
-				tmp->websock = wscl;
+				wscl->recvbuf = tmp->rdbuf;
 				wscl->sock = fd;
+				tmp->websock = wscl;
 				if(!WsClient_DoHandshake(wscl)) {
 					Client_Free(tmp);
 					Socket_Close(fd);

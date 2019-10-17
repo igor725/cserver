@@ -74,8 +74,29 @@ static void HandlePacket(CLIENT client, char* data, PACKET packet, bool extended
 }
 
 static void PacketReceiverWs(CLIENT client) {
-	(void)client;
-	//TODO: Получалка пакетов от вебсокет клиента
+	PACKET packet = NULL;
+	bool extended = false;
+	uint16_t packetSize = 0;
+	WSCLIENT ws = client->websock;
+
+	if(WsClient_ReceiveFrame(ws)) {
+		packet = Packet_Get(*client->rdbuf);
+		if(!packet) {
+			Client_Kick(client, "Invalid packet ID");
+			return;
+		}
+
+		packetSize = packet->size;
+		if(packet->haveCPEImp) {
+			extended = Client_IsSupportExt(client, packet->extCRC32, packet->extVersion);
+			if(extended) packetSize = packet->extSize;
+		}
+
+		if(packetSize == ws->plen - 1)
+			HandlePacket(client, client->rdbuf + 1, packet, extended);
+		else
+			Client_Disconnect(client);
+	}
 }
 
 static void PacketReceiverRaw(CLIENT client) {
@@ -108,8 +129,8 @@ static void PacketReceiverRaw(CLIENT client) {
 	}
 }
 
-TRET Client_ThreadProc(TARG lpParam) {
-	CLIENT client = (CLIENT)lpParam;
+TRET Client_ThreadProc(TARG param) {
+	CLIENT client = (CLIENT)param;
 
 	while(1) {
 		if(client->closed) {
@@ -364,7 +385,7 @@ void Client_Free(CLIENT client) {
 	if(client->thread) Thread_Close(client->thread);
 	if(client->mapThread) Thread_Close(client->mapThread);
 	if(client->mutex) Mutex_Free(client->mutex);
-	if(client->websock) WsClient_Free(client->websock);
+	if(client->websock) Memory_Free(client->websock);
 
 	PLAYERDATA pd = client->playerData;
 
