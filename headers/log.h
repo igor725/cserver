@@ -17,6 +17,5 @@ API void Log_Warn(const char* str, ...);
 API void Log_Debug(const char* str, ...);
 
 API void Log_SetLevelStr(const char* str);
-API void Log_SetLevel(uint8_t level);
-API uint8_t Log_GetLevel(void);
+VAR uint8_t Log_Level;
 #endif

@@ -43,15 +43,7 @@ void Log_SetLevelStr(const char* str) {
 		}
 	} while(*str++ != '\0');
 
-	Log_SetLevel(level);
-}
-
-void Log_SetLevel(uint8_t level) {
 	Log_Level = level;
-}
-
-uint8_t Log_GetLevel(void) {
-	return Log_Level;
 }
 
 void Log_Print(uint8_t flag, const char* str, va_list* args) {
