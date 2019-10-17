@@ -90,13 +90,13 @@ static bool InitialWork(void) {
 	Config_SetStr(Server_Config, "name", DEFAULT_NAME);
 	Config_AddComment(Server_Config, "Server name and MOTD will be shown to the player during map loading.");
 	Config_SetStr(Server_Config, "motd", DEFAULT_MOTD);
-	Config_SetInt(Server_Config, "loglevel", 3);
-	Config_AddComment(Server_Config, "E - 0, EI - 1, EIC - 2, EICW - 3, EICWD - 4; E - Errors, I - Info, C - Chat, W - Warnings, D - Debug.");
+	Config_SetStr(Server_Config, "loglevel", "EICW");
+	Config_AddComment(Server_Config, "E - Errors, I - Info, C - Chat, W - Warnings, D - Debug.");
 	Config_SetBool(Server_Config, "alwayslocalop", false);
 	Config_AddComment(Server_Config, "Any player with ip address \"127.0.0.1\" will automatically become an operator.");
 	if(!Config_Load(Server_Config)) Process_Exit(1);
-
-	Log_SetLevel(Config_GetInt(Server_Config, "loglevel"));
+	
+	Log_SetLevelStr(Config_GetStr(Server_Config, "loglevel"));
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
