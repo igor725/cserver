@@ -112,10 +112,10 @@ void Packet_RegisterCPE(int id, uint32_t extCRC32, int version, uint16_t size, p
 }
 
 void Packet_RegisterDefault(void) {
-	Packet_Register(0x00, "Handshake", 131, Handler_Handshake);
-	Packet_Register(0x05, "SetBlock", 9, Handler_SetBlock);
-	Packet_Register(0x08, "PosAndOrient", 10, Handler_PosAndOrient);
-	Packet_Register(0x0D, "Message", 66, Handler_Message);
+	Packet_Register(0x00, "Handshake", 130, Handler_Handshake);
+	Packet_Register(0x05, "SetBlock", 8, Handler_SetBlock);
+	Packet_Register(0x08, "PosAndOrient", 9, Handler_PosAndOrient);
+	Packet_Register(0x0D, "Message", 65, Handler_Message);
 }
 
 PACKET Packet_Get(int id) {

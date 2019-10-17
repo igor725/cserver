@@ -89,11 +89,11 @@ void Packet_RegisterCPEDefault(void) {
 	for(ext = serverExtensions; ext->name; ext++) {
 		CPE_RegisterExtension(ext->name, ext->version);
 	}
-	Packet_Register(0x10, "ExtInfo", 67, CPEHandler_ExtInfo);
-	Packet_Register(0x11, "ExtEntry", 69, CPEHandler_ExtEntry);
-	Packet_Register(0x2B, "TwoWayPing", 4, CPEHandler_TwoWayPing);
-	Packet_Register(0x22, "PlayerClick", 15, CPEHandler_PlayerClick);
-	Packet_RegisterCPE(0x08, EXT_ENTPOS, 1, 16, NULL);
+	Packet_Register(0x10, "ExtInfo", 66, CPEHandler_ExtInfo);
+	Packet_Register(0x11, "ExtEntry", 68, CPEHandler_ExtEntry);
+	Packet_Register(0x2B, "TwoWayPing", 3, CPEHandler_TwoWayPing);
+	Packet_Register(0x22, "PlayerClick", 14, CPEHandler_PlayerClick);
+	Packet_RegisterCPE(0x08, EXT_ENTPOS, 1, 15, NULL);
 }
 
 void CPEPacket_WriteInfo(CLIENT client) {

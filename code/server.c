@@ -5,6 +5,7 @@
 #include "config.h"
 #include "console.h"
 #include "command.h"
+#include "websocket.h"
 #include "generators.h"
 #include "event.h"
 #include "cplugin.h"
@@ -20,12 +21,26 @@ static void AcceptFunc(void) {
 		}
 	 	CLIENT tmp = Memory_Alloc(1, sizeof(struct client));
 
+		tmp->id = 0xFF;
 		tmp->sock = fd;
-		tmp->bufpos = 0;
 		tmp->mutex = Mutex_Create();
 		tmp->addr = ntohl(caddr.sin_addr.s_addr);
 		tmp->rdbuf = Memory_Alloc(131, 1);
 		tmp->wrbuf = Memory_Alloc(2048, 1);
+
+		if(Socket_Receive(fd, tmp->rdbuf, 3, MSG_PEEK)) {
+			if(String_CaselessCompare(tmp->rdbuf, "GET")) {
+				WSCLIENT wscl = Memory_Alloc(1, sizeof(struct wsClient));
+				wscl->recvbuf = Memory_Alloc(1, 192);
+				tmp->websock = wscl;
+				wscl->sock = fd;
+				if(!WsClient_DoHandshake(wscl)) {
+					Client_Free(tmp);
+					Socket_Close(fd);
+					return;
+				}
+			}
+		}
 
 		if(Client_Add(tmp))
 			tmp->thread = Thread_Create(Client_ThreadProc, tmp);

@@ -55,8 +55,7 @@ void Client_Chat(CLIENT client, MessageType type, const char* message) {
 	Packet_WriteChat(client, type, message);
 }
 
-static void HandlePacket(CLIENT client, PACKET packet, bool extended) {
-	char* data = client->rdbuf + 1;
+static void HandlePacket(CLIENT client, char* data, PACKET packet, bool extended) {
 	bool ret = false;
 
 	if(extended)
@@ -68,15 +67,49 @@ static void HandlePacket(CLIENT client, PACKET packet, bool extended) {
 		if(packet->handler)
 			ret = packet->handler(client, data);
 
-	if(!ret) Client_Kick(client, "Packet reading error");
+	if(!ret)
+		Client_Kick(client, "Packet reading error");
+	else
+		client->pps += 1;
+}
+
+static void PacketReceiverWs(CLIENT client) {
+	(void)client;
+	//TODO: Получалка пакетов от вебсокет клиента
+}
+
+static void PacketReceiverRaw(CLIENT client) {
+	PACKET packet = NULL;
+	bool extended = false;
+	uint16_t packetSize = 0;
+	uint8_t packetId;
+
+	if(Socket_Receive(client->sock, (char*)&packetId, 1, 0) == 1) {
+		packet = Packet_Get(packetId);
+		if(!packet) {
+			Client_Kick(client, "Invalid packet ID");
+			return;
+		}
+
+		packetSize = packet->size;
+		if(packet->haveCPEImp) {
+			extended = Client_IsSupportExt(client, packet->extCRC32, packet->extVersion);
+			if(extended) packetSize = packet->extSize;
+		}
+
+		if(packetSize > 0) {
+			int len = Socket_Receive(client->sock, client->rdbuf, packetSize, 0);
+
+			if(packetSize == len)
+				HandlePacket(client, client->rdbuf, packet, extended);
+			else
+				Client_Disconnect(client);
+		}
+	}
 }
 
 TRET Client_ThreadProc(TARG lpParam) {
 	CLIENT client = (CLIENT)lpParam;
-
-	short packetSize = 0, wait = 1;
-	bool extended = false;
-	PACKET packet = NULL;
 
 	while(1) {
 		if(client->closed) {
@@ -92,40 +125,10 @@ TRET Client_ThreadProc(TARG lpParam) {
 			continue;
 		}
 
-		if(wait > 0) {
-			int len = Socket_Receive(client->sock, client->rdbuf + client->bufpos, wait, 0);
-
-			if(len > 0) {
-				client->bufpos += (uint16_t)len;
-			} else {
-				Client_Disconnect(client);
-			}
-		}
-
-		if(client->bufpos == 1) {
-			packet = Packet_Get(*client->rdbuf);
-			if(!packet) {
-				Client_Kick(client, "Invalid packet ID");
-				continue;
-			}
-
-			packetSize = packet->size;
-			if(packet->haveCPEImp) {
-				extended = Client_IsSupportExt(client, packet->extCRC32, packet->extVersion);
-				if(extended) packetSize = packet->extSize;
-			}
-
-			wait = packetSize - client->bufpos;
-		}
-
-		if(client->bufpos == packetSize) {
-			HandlePacket(client, packet, extended);
-			client->pps += 1;
-			client->bufpos = 0;
-			extended = false;
-			wait = 1;
-			continue;
-		}
+		if(client->websock)
+			PacketReceiverWs(client);
+		else
+			PacketReceiverRaw(client);
 	}
 
 	return 0;
@@ -353,13 +356,15 @@ bool Client_GetType(CLIENT client) {
 }
 
 void Client_Free(CLIENT client) {
-	Clients_List[client->id] = NULL;
+	if(client->id != 0xFF)
+		Clients_List[client->id] = NULL;
 	Memory_Free(client->rdbuf);
 	Memory_Free(client->wrbuf);
 
 	if(client->thread) Thread_Close(client->thread);
 	if(client->mapThread) Thread_Close(client->mapThread);
 	if(client->mutex) Mutex_Free(client->mutex);
+	if(client->websock) WsClient_Free(client->websock);
 
 	PLAYERDATA pd = client->playerData;
 
@@ -398,14 +403,18 @@ int Client_Send(CLIENT client, int len) {
 
 			if(bClient) {
 				Mutex_Lock(bClient->mutex);
-				Socket_Send(bClient->sock, Client_Broadcast->wrbuf, len);
+				if(bClient->websock)
+					WsClient_SendHeader(bClient->websock, 0x02, (uint16_t)len);
+				Socket_Send(bClient->sock, client->wrbuf, len);
 				Mutex_Unlock(bClient->mutex);
 			}
 		}
 		return len;
 	}
 
-	return Socket_Send(client->sock, client->wrbuf, len) == len;
+	if(client->websock)
+		WsClient_SendHeader(client->websock, 0x02, (uint16_t)len);
+	return Socket_Send(client->sock, client->wrbuf, len);
 }
 
 bool Client_Spawn(CLIENT client) {
@@ -454,7 +463,6 @@ void Client_HandshakeStage2(CLIENT client) {
 }
 
 void Client_Disconnect(CLIENT client) {
-	Client_Despawn(client);
 	Socket_Shutdown(client->sock, SD_SEND);
 	client->closed = true;
 }

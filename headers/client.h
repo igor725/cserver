@@ -1,6 +1,7 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 #include "world.h"
+#include "websocket.h"
 
 enum playerStates {
 	STATE_MOTD,
@@ -44,12 +45,12 @@ typedef struct client {
 	bool closed;
 	char* rdbuf;
 	char* wrbuf;
-	uint16_t bufpos;
 	MUTEX* mutex;
 	THREAD thread;
 	THREAD mapThread;
 	CPEDATA cpeData;
 	PLAYERDATA playerData;
+	WSCLIENT websock;
 } *CLIENT;
 
 void Client_SetPos(CLIENT client, VECTOR* vec, ANGLE* ang);
