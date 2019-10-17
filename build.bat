@@ -6,7 +6,6 @@ set DEBUG=0
 set CODE_ROOT=.
 set COMPILER=cl
 set SVOUTDIR=.\out\%ARCH%
-set SVPLUGDIR=%SVOUTDIR%\plugins\
 set BINNAME=server.exe
 set STNAME=server.lib
 set ZLIB_DIR=.\zlib\%ARCH%
@@ -77,6 +76,7 @@ IF "%BUILD_PLUGIN%"=="1" (
   set CODE_ROOT=.\%PLUGNAME%
 ) else (set OUTDIR=%SVOUTDIR%)
 
+set SVPLUGDIR=%SVOUTDIR%\plugins
 set BINPATH=%OUTDIR%\%BINNAME%
 set ZLIB_STATIC=%ZLIB_DIR%\lib
 set ZLIB_DYNAMIC=%ZLIB_DIR%\bin
