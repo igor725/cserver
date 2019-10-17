@@ -81,6 +81,10 @@ static void PacketReceiverWs(CLIENT client) {
 	char* data = client->rdbuf;
 
 	if(WsClient_ReceiveFrame(ws)) {
+		if(ws->opcode == 0x08) {
+			Client_Disconnect(client);
+			return;
+		}
 		recvSize = ws->plen - 1;
 		handlePacket:
 		packet = Packet_Get(*data++);

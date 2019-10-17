@@ -80,7 +80,6 @@ bool WsClient_DoHandshake(WSCLIENT ws) {
 
 		String_FormatBuf(line, 4096, WS_RESP, b64);
 		Socket_Send(ws->sock, line, (int)String_Length(line));
-		// Log_Info(line);
 		return true;
 	} else {
 		//TODO: HTTP error 4xx
@@ -132,15 +131,19 @@ bool WsClient_ReceiveFrame(WSCLIENT ws) {
 	}
 
 	if(ws->state == WS_ST_RECVPL) {
-		uint32_t len = Socket_Receive(ws->sock, ws->recvbuf, ws->plen, 0);
+		if(ws->plen > 0) {
+			uint32_t len = Socket_Receive(ws->sock, ws->recvbuf, ws->plen, 0);
 
-		if(len == ws->plen) {
-			ws->state = WS_ST_DONE;
-			for(uint32_t i = 0; i < len; i++) {
-				ws->recvbuf[i] ^= ws->mask[i % 4];
-			}
-			return true;
+			if(len == ws->plen) {
+				for(uint32_t i = 0; i < len; i++) {
+					ws->recvbuf[i] ^= ws->mask[i % 4];
+				}
+			} else
+				return false;
 		}
+
+		ws->state = WS_ST_DONE;
+		return true;
 	}
 
 	return false;
