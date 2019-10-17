@@ -136,6 +136,7 @@ goto end
 
 :clean
 del %OBJDIR%\*.obj %OUTDIR%\*.exe %OUTDIR%\*.dll
+del %OUTDIR%\*.lib %OUTDIR%\*.pdb %OUTDIR%\*.exp
 goto end
 
 :vcerror

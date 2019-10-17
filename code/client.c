@@ -146,7 +146,8 @@ static void PacketReceiverRaw(CLIENT client) {
 			else
 				Client_Disconnect(client);
 		}
-	}
+	} else
+		Client_Disconnect(client);
 }
 
 TRET Client_ThreadProc(TARG param) {
