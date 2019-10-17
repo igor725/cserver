@@ -1,20 +1,96 @@
 #include "core.h"
+#include "sha1.h"
 #include "websocket.h"
 
+static bool sockReadLine(SOCKET sock, char* line, uint32_t len) {
+	uint32_t linepos = 0;
+	char sym;
+
+	while(linepos < len) {
+		if(Socket_Receive(sock, &sym, 1, 0) == 1) {
+			if(sym == '\n') {
+				line[linepos] = '\0';
+				break;
+			} else if(sym != '\r')
+				line[linepos++] = sym;
+		}
+	}
+
+	line[linepos] = '\0';
+	return true;
+}
+
+const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+static char* SHA1toB64(uint8_t* in, char* out) {
+	for (int i = 0, j = 0; i < 20; i += 3, j += 4) {
+		int v = in[i];
+		v = i + 1 < 20 ? v << 8 | in[i + 1] : v << 8;
+		v = i + 2 < 20 ? v << 8 | in[i + 2] : v << 8;
+
+		out[j] = b64chars[(v >> 18) & 0x3F];
+		out[j + 1] = b64chars[(v >> 12) & 0x3F];
+		if (i + 1 < 20) {
+			out[j + 2] = b64chars[(v >> 6) & 0x3F];
+		} else {
+			out[j + 2] = '=';
+		}
+		if (i + 2 < 20) {
+			out[j + 3] = b64chars[v & 0x3F];
+		} else {
+			out[j + 3] = '=';
+		}
+	}
+
+	out[28] = '\0';
+	return out;
+}
+
+#define WS_RESP "HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Protocol: ClassiCube\r\nSec-WebSocket-Accept: %s\r\n\r\n"
+
 bool WsClient_DoHandshake(WSCLIENT ws) {
-	(void)ws;
-	/*
-		TODO: Работа с HTTP запросом от клиента и
-		проверка совместимости протоколов,
-		ну и собственно, генерация ответа HTTP.
-	*/
+	char line[4096] = {0}, wskey[32] = {0}, b64[30] = {0};
+	uint8_t hash[20] = {0};
+	bool haveUpgrade = false;
+	int wskeylen = 0;
+
+	sockReadLine(ws->sock, line, 4095); // Skipping request line
+	while(sockReadLine(ws->sock, line, 4095)) {
+		if(*line == '\0') break;
+
+		char* value = (char*)String_FirstChar(line, ':');
+		*value = '\0';value += 2;
+
+		if(String_CaselessCompare(line, "Sec-WebSocket-Key")) {
+			wskeylen = (int)String_Copy(wskey, 32, value);
+		} else if(String_CaselessCompare(line, "Sec-WebSocket-Version")) {
+			if(String_ToInt(value) != 13) break;
+		} else if(String_CaselessCompare(line, "Upgrade")) {
+			haveUpgrade = String_CaselessCompare(value, "websocket");
+		}
+	}
+
+	if(haveUpgrade && String_Length(wskey) > 0) {
+		SHA1_CTX ctx;
+		SHA1_Init(&ctx);
+		SHA1_Update(&ctx, (uint8_t*)wskey, wskeylen);
+		SHA1_Update(&ctx, (uint8_t*)"258EAFA5-E914-47DA-95CA-C5AB0DC85B11", 36);
+		SHA1_Final((uint8_t*)hash, &ctx);
+		SHA1toB64(hash, b64);
+
+		String_FormatBuf(line, 4096, WS_RESP, b64);
+		Socket_Send(ws->sock, line, (int)String_Length(line));
+		// Log_Info(line);
+		return true;
+	} else {
+		//TODO: HTTP error 4xx
+	}
 
 	return false;
 }
 
 bool WsClient_ReceiveFrame(WSCLIENT ws) {
-	if(ws->state == WS_ST_DONE)
-		ws->state = WS_ST_HDR;
+	if(ws->state == WS_ST_DONE) ws->state = WS_ST_HDR;
 
 	if(ws->state == WS_ST_HDR) {
 		uint32_t len = Socket_Receive(ws->sock, ws->header, 2, 0);
@@ -33,8 +109,6 @@ bool WsClient_ReceiveFrame(WSCLIENT ws) {
 					ws->state = WS_ST_MASK;
 				} else
 					return false;
-
-				return true;
 			} else {
 				ws->error = WS_ERR_MASK;
 				return false;
@@ -63,7 +137,7 @@ bool WsClient_ReceiveFrame(WSCLIENT ws) {
 		if(len == ws->plen) {
 			ws->state = WS_ST_DONE;
 			for(uint32_t i = 0; i < len; i++) {
-				ws->recvbuf[i] = ws->recvbuf[i] ^ ws->mask[i % 4];
+				ws->recvbuf[i] ^= ws->mask[i % 4];
 			}
 			return true;
 		}

@@ -76,11 +76,15 @@ static void HandlePacket(CLIENT client, char* data, PACKET packet, bool extended
 static void PacketReceiverWs(CLIENT client) {
 	PACKET packet = NULL;
 	bool extended = false;
-	uint16_t packetSize = 0;
+	uint16_t packetSize = 0, recvSize = 0;
 	WSCLIENT ws = client->websock;
+	char* data = client->rdbuf;
 
 	if(WsClient_ReceiveFrame(ws)) {
-		packet = Packet_Get(*client->rdbuf);
+		recvSize = ws->plen - 1;
+		handlePacket:
+		packet = Packet_Get(*data++);
+
 		if(!packet) {
 			Client_Kick(client, "Invalid packet ID");
 			return;
@@ -92,10 +96,22 @@ static void PacketReceiverWs(CLIENT client) {
 			if(extended) packetSize = packet->extSize;
 		}
 
-		if(packetSize == ws->plen - 1)
-			HandlePacket(client, client->rdbuf + 1, packet, extended);
-		else
-			Client_Disconnect(client);
+		if(packetSize <= recvSize) {
+			HandlePacket(client, data, packet, extended);
+			/*
+				Каждую ~секунду к фрейму с пакетом 0x08 (Teleport)
+				приклеивается пакет 0x2B (TwoWayPing) и поскольку
+				не исключено, что таких приклеиваний может быть
+				много, пришлось использовать goto для обработки
+				всех пакетов, входящих в фрейм.
+			*/
+			if(recvSize > packetSize) {
+				data += packetSize;
+				recvSize -= packetSize + 1;
+				goto handlePacket;
+			}
+		} else
+			Client_Kick(client, "WebSocket error: payloadSize < packetSize");
 	}
 }
 

@@ -96,7 +96,7 @@ BYTE_ORDER != PDP_ENDIAN)
 
 /* Hash a single 512-bit block. This is the core of the algorithm. */
 
-void SHA1Transform(uint32_t state[5], const uint8_t buffer[64])
+void SHA1_Transform(uint32_t state[5], const uint8_t buffer[64])
 {
 	uint32_t a, b, c, d, e;
 	typedef union {
@@ -157,7 +157,7 @@ void SHA1Transform(uint32_t state[5], const uint8_t buffer[64])
 
 /* SHA1Init - Initialize new context */
 
-void SHA1Init(SHA1_CTX* context)
+void SHA1_Init(SHA1_CTX* context)
 {
 	/* SHA1 initialization constants */
 	context->state[0] = 0x67452301;
@@ -171,7 +171,7 @@ void SHA1Init(SHA1_CTX* context)
 
 /* Run your data through this. */
 
-void SHA1Update(SHA1_CTX* context, const uint8_t* data, uint32_t len)
+void SHA1_Update(SHA1_CTX* context, const uint8_t* data, uint32_t len)
 {
 	uint32_t i;
 	uint32_t j;
@@ -183,9 +183,9 @@ void SHA1Update(SHA1_CTX* context, const uint8_t* data, uint32_t len)
 	j = (j >> 3) & 63;
 	if ((j + len) > 63) {
 		Memory_Copy(&context->buffer[j], data, (i = 64-j));
-		SHA1Transform(context->state, context->buffer);
+		SHA1_Transform(context->state, context->buffer);
 		for ( ; i + 63 < len; i += 64) {
-			SHA1Transform(context->state, &data[i]);
+			SHA1_Transform(context->state, &data[i]);
 		}
 		j = 0;
 	}
@@ -196,7 +196,7 @@ void SHA1Update(SHA1_CTX* context, const uint8_t* data, uint32_t len)
 
 /* Add padding and return the message digest. */
 
-void SHA1Final(uint8_t digest[20], SHA1_CTX* context)
+void SHA1_Final(uint8_t digest[20], SHA1_CTX* context)
 {
 	unsigned i;
 	uint8_t finalcount[8];
@@ -207,12 +207,12 @@ void SHA1Final(uint8_t digest[20], SHA1_CTX* context)
 		>> ((3-(i & 3)) * 8) ) & 255);  /* Endian independent */
 	}
 	c = 0200;
-	SHA1Update(context, &c, 1);
+	SHA1_Update(context, &c, 1);
 	while ((context->count[0] & 504) != 448) {
 		c = 0000;
-		SHA1Update(context, &c, 1);
+		SHA1_Update(context, &c, 1);
 	}
-	SHA1Update(context, finalcount, 8);  /* Should cause a SHA1Transform() */
+	SHA1_Update(context, finalcount, 8);  /* Should cause a SHA1Transform() */
 	for (i = 0; i < 20; i++) {
 		digest[i] = (uint8_t)
 		((context->state[i>>2] >> ((3-(i & 3)) * 8) ) & 255);

@@ -14,6 +14,7 @@ API uint32_t String_FormatError(uint32_t code, char* buf, size_t buflen);
 API void String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* args);
 API void String_FormatBuf(char* buf, size_t len, const char* str, ...);
 API const char* String_LastChar(const char* str, char sym);
+API const char* String_FirstChar(const char* str, char sym);
 API const char* String_AllocCopy(const char* str);
 API size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index);
 API const char* String_FromArgument(const char* args, int index);
