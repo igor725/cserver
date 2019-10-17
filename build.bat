@@ -119,15 +119,6 @@ IF "%BUILD_PLUGIN%"=="1" (
   IF "%ERRORLEVEL%"=="0" (goto binstart) else (goto compileerror)
 )
 
-:zcopyerr
-echo Please download zlib binaries for Microsoft Visual Studio %VisualStudioVersion% from this site https://www.libs4win.com/libzlib/.
-echo After downloading, unzip the archive to the "%ZLIB_DIR%" folder in the project root.
-goto end
-
-:compileerror
-echo Something went wrong :(
-goto end
-
 :binstart
 IF "%RUNMODE%"=="0" start /D %OUTDIR% %BINNAME%
 IF "%RUNMODE%"=="1" goto onerun
@@ -143,13 +134,23 @@ goto end
 cloc --exclude-dir=zlib .
 goto end
 
+:clean
+del %OBJDIR%\*.obj %OUTDIR%\*.exe %OUTDIR%\*.dll
+goto end
+
 :vcerror
 echo Error: Script must be runned from VS Native Tools Command Prompt.
 echo Note: Also you can call "vcvars64" or "vcvars32" to configure VS env.
 goto end
 
-:clean
-del %OBJDIR%\*.obj %OUTDIR%\*.exe %OUTDIR%\*.dll
+:zcopyerr
+echo Please download zlib binaries for Microsoft Visual Studio %VisualStudioVersion% from this site https://www.libs4win.com/libzlib/.
+echo After downloading, unzip the archive to the "%ZLIB_DIR%" folder in the project root.
+goto end
+
+:compileerror
+echo Something went wrong :(
+goto end
 
 :end
 endlocal
