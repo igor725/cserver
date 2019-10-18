@@ -38,13 +38,10 @@ CFGENTRY Config_NewEntry(CFGSTORE store, const char* key) {
 static void EmptyEntry(CFGENTRY ent) {
 	if(ent->type == CFG_STR && ent->value.vchar)
 		Memory_Free((void*)ent->value.vchar);
-	if(ent->type == CFG_STR && ent->defvalue.vchar)
-		Memory_Free((void*)ent->defvalue.vchar);
 
 	ent->type = -1;
 	ent->changed = false;
 	ent->value.vchar = NULL;
-	ent->defvalue.vchar = NULL;
 }
 
 static bool AllCfgEntriesParsed(CFGSTORE store) {
@@ -335,6 +332,8 @@ void Config_EmptyStore(CFGSTORE store) {
 		ent = ent->next;
 		if(prev->commentary)
 			Memory_Free((void*)prev->commentary);
+		if(prev->type == CFG_STR)
+			Memory_Free((void*)prev->defvalue.vchar);
 		EmptyEntry(prev);
 		Memory_Free(prev);
 	}
