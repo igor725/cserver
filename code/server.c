@@ -19,8 +19,8 @@ static void AcceptFunc(void) {
 			Socket_Close(fd);
 			return;
 		}
-	 	CLIENT tmp = Memory_Alloc(1, sizeof(struct client));
 
+	 	CLIENT tmp = Memory_Alloc(1, sizeof(struct client));
 		tmp->id = 0xFF;
 		tmp->sock = fd;
 		tmp->mutex = Mutex_Create();

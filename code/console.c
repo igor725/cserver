@@ -22,9 +22,9 @@ static void HandleCommand(char* cmd) {
 		Log_Info("Unknown command");
 }
 
-static TRET ConsoleThreadProc(TARG lpParam) {
+static TRET ConsoleThreadProc(TARG param) {
 	char buf[CON_STR_LEN] = {0};
-	(void)lpParam;
+	(void)param;
 
 	while(Server_Active) {
 		if(ReadLine(buf, CON_STR_LEN) > 0 && Server_Active)

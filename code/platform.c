@@ -129,6 +129,24 @@ int Socket_Receive(SOCKET sock, char* buf, int len, int flags) {
 	return recv(sock, buf, len, flags);
 }
 
+bool Socket_ReceiveLine(SOCKET sock, char* line, uint32_t len) {
+	uint32_t linepos = 0;
+	char sym;
+
+	while(linepos < len) {
+		if(Socket_Receive(sock, &sym, 1, 0) == 1) {
+			if(sym == '\n') {
+				line[linepos] = '\0';
+				break;
+			} else if(sym != '\r')
+				line[linepos++] = sym;
+		}
+	}
+
+	line[linepos] = '\0';
+	return true;
+}
+
 int Socket_Send(SOCKET sock, char* buf, int len) {
 	return send(sock, buf, len, 0);
 }
@@ -228,12 +246,12 @@ bool DLib_GetSym(void* lib, const char* sname, void** sym) {
 	return (*sym = (void*)GetProcAddress(lib, sname)) != NULL;
 }
 
-THREAD Thread_Create(TFUNC func, TARG lpParam) {
+THREAD Thread_Create(TFUNC func, TARG param) {
 	THREAD th = CreateThread(
 		NULL,
 		0,
 		(LPTHREAD_START_ROUTINE)func,
-		lpParam,
+		param,
 		0,
 		NULL
 	);

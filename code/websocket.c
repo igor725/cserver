@@ -2,24 +2,6 @@
 #include "sha1.h"
 #include "websocket.h"
 
-static bool sockReadLine(SOCKET sock, char* line, uint32_t len) {
-	uint32_t linepos = 0;
-	char sym;
-
-	while(linepos < len) {
-		if(Socket_Receive(sock, &sym, 1, 0) == 1) {
-			if(sym == '\n') {
-				line[linepos] = '\0';
-				break;
-			} else if(sym != '\r')
-				line[linepos++] = sym;
-		}
-	}
-
-	line[linepos] = '\0';
-	return true;
-}
-
 const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 static char* SHA1toB64(uint8_t* in, char* out) {
@@ -47,6 +29,7 @@ static char* SHA1toB64(uint8_t* in, char* out) {
 }
 
 #define WS_RESP "HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Protocol: ClassiCube\r\nSec-WebSocket-Accept: %s\r\n\r\n"
+#define WS_ERRRESP "HTTP/1.1 %d %s\r\nConnection: Close\r\n\r\n%s"
 
 bool WsClient_DoHandshake(WSCLIENT ws) {
 	char line[4096] = {0}, wskey[32] = {0}, b64[30] = {0};
@@ -54,8 +37,8 @@ bool WsClient_DoHandshake(WSCLIENT ws) {
 	bool haveUpgrade = false;
 	int wskeylen = 0;
 
-	sockReadLine(ws->sock, line, 4095); // Skipping request line
-	while(sockReadLine(ws->sock, line, 4095)) {
+	Socket_ReceiveLine(ws->sock, line, 4095); // Skipping request line
+	while(Socket_ReceiveLine(ws->sock, line, 4095)) {
 		if(*line == '\0') break;
 
 		char* value = (char*)String_FirstChar(line, ':');
@@ -81,10 +64,10 @@ bool WsClient_DoHandshake(WSCLIENT ws) {
 		String_FormatBuf(line, 4096, WS_RESP, b64);
 		Socket_Send(ws->sock, line, (int)String_Length(line));
 		return true;
-	} else {
-		//TODO: HTTP error 4xx
 	}
 
+	String_FormatBuf(line, 4096, WS_ERRRESP, 400, "Bad request", "Not a websocket connection.");
+	Socket_Send(ws->sock, line, (int)String_Length(line));
 	return false;
 }
 

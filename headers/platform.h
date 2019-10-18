@@ -66,11 +66,12 @@ bool Socket_Init(void);
 API SOCKET Socket_Bind(const char* ip, uint16_t port);
 API SOCKET Socket_Accept(SOCKET sock, struct sockaddr_in* addr);
 API int Socket_Receive(SOCKET sock, char* buf, int len, int flags);
+API bool Socket_ReceiveLine(SOCKET sock, char* line, uint32_t len);
 API int Socket_Send(SOCKET sock, char* buf, int len);
 API void Socket_Shutdown(SOCKET sock, int how);
 API void Socket_Close(SOCKET sock);
 
-API THREAD Thread_Create(TFUNC func, const TARG lpParam);
+API THREAD Thread_Create(TFUNC func, const TARG param);
 API bool Thread_IsValid(THREAD th);
 API void Thread_Close(THREAD th);
 API void Thread_Join(THREAD th);

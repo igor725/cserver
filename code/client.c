@@ -176,8 +176,8 @@ TRET Client_ThreadProc(TARG param) {
 	return 0;
 }
 
-TRET Client_MapThreadProc(TARG lpParam) {
-	CLIENT client = (CLIENT)lpParam;
+TRET Client_MapThreadProc(TARG param) {
+	CLIENT client = (CLIENT)param;
 	PLAYERDATA pd = client->playerData;
 	WORLD world = pd->world;
 	Mutex_Lock(client->mutex);
