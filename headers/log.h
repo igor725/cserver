@@ -1,11 +1,11 @@
 #ifndef LOG_H
 #define LOG_H
 enum LogFlags {
-	LOG_ERROR = 2,
-	LOG_INFO = 4,
-	LOG_CHAT = 8,
-	LOG_WARN = 16,
-	LOG_DEBUG = 32
+	LOG_ERROR = 1,
+	LOG_INFO = 2,
+	LOG_CHAT = 4,
+	LOG_WARN = 8,
+	LOG_DEBUG = 16
 };
 
 void Log_Print(uint8_t flag, const char* str, va_list* args);

@@ -18,7 +18,6 @@ const char* const Strings[] = {
 #if defined(WINDOWS)
 #include <dbghelp.h>
 void Error_CallStack(void) {
-	if((Log_Level & LOG_ERROR) == 0) return;
 	void* stack[64];
 	uint16_t frames;
 	SYMBOL_INFO symbol = {0};

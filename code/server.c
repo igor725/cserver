@@ -84,7 +84,7 @@ static bool InitialWork(void) {
 	Log_Info("Loading " MAINCFG);
 	Server_Config = Config_Create(MAINCFG);
 	Config_SetStr(Server_Config, "ip", "0.0.0.0");
-	Config_AddComment(Server_Config, "Bind server to specified IP address. \"0.0.0.0\" - means \"all network adapters on PC\".");
+	Config_AddComment(Server_Config, "Bind server to specified IP address. \"0.0.0.0\" - means \"all available network adapters\".");
 	Config_SetInt(Server_Config, "port", 25565);
 	Config_AddComment(Server_Config, "Use specified port to accept clients.");
 	Config_SetStr(Server_Config, "name", DEFAULT_NAME);
@@ -95,7 +95,7 @@ static bool InitialWork(void) {
 	Config_SetBool(Server_Config, "alwayslocalop", false);
 	Config_AddComment(Server_Config, "Any player with ip address \"127.0.0.1\" will automatically become an operator.");
 	if(!Config_Load(Server_Config)) Process_Exit(1);
-	
+
 	Log_SetLevelStr(Config_GetStr(Server_Config, "loglevel"));
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
@@ -195,8 +195,10 @@ int main(int argc, char** argv) {
 		last = curr;
 		curr = Time_GetMSec();
 		Server_Delta = (uint16_t)(curr - last);
-		if(Server_Delta > 500)
+		if(Server_Delta > 500) {
 			Log_Warn("Last server tick took %dms!", Server_Delta);
+			Server_Delta = 500;
+		}
 		DoStep();
 		Sleep(10);
 	}

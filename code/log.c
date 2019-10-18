@@ -39,7 +39,9 @@ void Log_SetLevelStr(const char* str) {
 				case 'D':
 					level |= LOG_DEBUG;
 					break;
-
+				case 'Q':
+					Log_Level = 0;
+					return;
 		}
 	} while(*str++ != '\0');
 
