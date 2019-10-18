@@ -7,24 +7,47 @@
 
 PACKET Packets_List[MAX_PACKETS] = {0};
 
-uint8_t ReadNetString(const char* data, const char** dst) {
+uint8_t ReadNetString(const char** data, const char** dst) {
+	const char* instr = *data;
 	uint8_t end;
-	for(end = 63; end > 0; --end) {
+
+	for(end = 64; end > 0; end--) {
 		if(end == 0) break;
-		if(data[end - 1] != ' ') break;
+		if(instr[end - 1] != ' ') break;
 	}
 
-	char* str = Memory_Alloc(end + 1, 1);
-	Memory_Copy(str, data, end);
-	str[end] = '\0';
-	dst[0] = str;
+	if(end > 0) {
+		char* str = Memory_Alloc(end + 1, 1);
+		Memory_Copy(str, instr, end);
+		str[end] = '\0';
+		dst[0] = str;
+	};
 
+	*data += 64;
+	return end;
+}
+
+uint8_t ReadNetStringNoAlloc(const char** data, char* dst) {
+	const char* instr = *data;
+	uint8_t end;
+
+	for(end = 64; end > 0; end--) {
+		if(end == 0) break;
+		if(instr[end - 1] != ' ') break;
+	}
+
+	if(end > 0) {
+		Memory_Copy(dst, instr, end);
+		dst[end] = '\0';
+	}
+
+	*data += 64;
 	return end;
 }
 
 void WriteNetString(char* data, const char* string) {
 	size_t size = min(String_Length(string), 64);
-	Memory_Fill(data + size, 64, 0);
+	if(size < 64) Memory_Fill(data + size, 64 - size, 32);
 	Memory_Copy(data, string, size);
 }
 
@@ -258,7 +281,7 @@ void Packet_WriteUpdateType(CLIENT client) {
 */
 
 bool Handler_Handshake(CLIENT client, char* data) {
-	uint8_t protoVer =* data;
+	uint8_t protoVer = *data++;
 	if(protoVer != 0x07) {
 		Client_Kick(client, "Invalid protocol version");
 		return true;
@@ -271,8 +294,8 @@ bool Handler_Handshake(CLIENT client, char* data) {
 	if(client->addr == INADDR_LOOPBACK && Config_GetBool(Server_Config, "alwayslocalop"))
 		client->playerData->isOP = true;
 
-	ReadNetString(++data, &client->playerData->name); data += 63;
-	ReadNetString(++data, &client->playerData->key); data += 63;
+	if(!ReadNetString(&data, &client->playerData->name)) return false;
+	if(!ReadNetString(&data, &client->playerData->key)) return false;
 
 	for(int i = 0; i < 128; i++) {
 		CLIENT other = Clients_List[i];
@@ -282,8 +305,6 @@ bool Handler_Handshake(CLIENT client, char* data) {
 			return true;
 		}
 	}
-
-	bool cpeEnabled = *++data == 0x42;
 
 	if(Client_CheckAuth(client)) {
 		const char* name = Config_GetStr(Server_Config, "name");
@@ -300,7 +321,7 @@ bool Handler_Handshake(CLIENT client, char* data) {
 		return true;
 	}
 
-	if(cpeEnabled) {
+	if(*data == 0x42) {
 		client->cpeData = Memory_Alloc(1, sizeof(struct cpeData));
 		String_CopyUnsafe(client->cpeData->model, "humanoid");
 		CPE_StartHandshake(client);
@@ -380,27 +401,38 @@ bool Handler_PosAndOrient(CLIENT client, char* data) {
 bool Handler_Message(CLIENT client, char* data) {
 	ValidateClientState(client, STATE_INGAME, true);
 
-	char* message;
 	MessageType type = 0;
-	uint8_t len = ReadNetString(++data, (const char**)&message);
+	char message[65];
+	char* messptr = message;
+	uint8_t partial = *data++; //TODO: LongerMessages
+	uint8_t len = ReadNetStringNoAlloc(&data, message);
+	if(len == 0) return false;
 
 	for(int i = 0; i < len; i++) {
 		if(message[i] == '%' && ISHEX(message[i + 1]))
 			message[i] = '&';
 	}
 
-	if(Event_OnMessage(client, message, &type)) {
-		char formatted[128] = {0};
-		sprintf(formatted, CHATLINE, client->playerData->name, message);
+	CPEDATA cpd = client->cpeData;
+	if(cpd && Client_IsSupportExt(client, EXT_LONGMSG, 1)) {
+		if(String_Append(cpd->message, 193, message) && partial == 1) return true;
+		messptr = cpd->message;
+	}
 
-		if(*message == '/') {
-			if(!Command_Handle(message + 1, client))
+	if(Event_OnMessage(client, messptr, &type)) {
+		char formatted[320] = {0};
+		sprintf(formatted, CHATLINE, client->playerData->name, messptr);
+
+		if(*messptr == '/') {
+			if(!Command_Handle(messptr, client))
 				Packet_WriteChat(client, type, "Unknown command");
 		} else
-			Packet_WriteChat(Client_Broadcast, type, formatted);
+			Client_Chat(Client_Broadcast, type, formatted);
+
 		Log_Chat(formatted);
 	}
 
-	Memory_Free(message);
+	if(messptr != message) *messptr = '\0';
+
 	return true;
 }

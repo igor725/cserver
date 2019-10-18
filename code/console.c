@@ -17,7 +17,6 @@ static int ReadLine(char* buf, int buflen) {
 }
 
 static void HandleCommand(char* cmd) {
-	if(*cmd == '/') ++cmd;
 	if(!Command_Handle(cmd, NULL))
 		Log_Info("Unknown command");
 }

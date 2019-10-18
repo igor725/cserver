@@ -269,6 +269,8 @@ void Command_RegisterDefault(void) {
 }
 
 bool Command_Handle(char* cmd, CLIENT caller) {
+	if(*cmd == '/') ++cmd;
+
 	char ret[CMD_MAX_OUT] = {0};
 	char* args = cmd;
 

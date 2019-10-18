@@ -48,7 +48,7 @@ void Packet_WritePosAndOrient(CLIENT client, CLIENT other);
 void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg);
 void Packet_WriteSetBlock(CLIENT client, uint16_t x, uint16_t y, uint16_t z, BlockID block);
 
-uint8_t ReadNetString(const char* data, const char** dst);
+uint8_t ReadNetString(const char** data, const char** dst);
 void WriteNetString(char* data, const char* string);
 
 bool Handler_Handshake(CLIENT client, char* data);

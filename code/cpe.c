@@ -43,6 +43,7 @@ static const struct extReg serverExtensions[] = {
 	{"ChangeModel", 1},
 	{"MessageTypes", 1},
 	{"ClickDistance", 1},
+	{"LongerMessages", 1},
 	{"InventoryOrder", 1},
 	{"EnvWeatherType", 1},
 	{"BlockPermissions", 1},
@@ -182,7 +183,7 @@ void CPEPacket_WriteTexturePack(CLIENT client, const char* url) {
 	PacketWriter_Start(client);
 
 	*data = 0x28;
-	String_Copy(++data, 64, url);
+	WriteNetString(++data, url);
 
 	PacketWriter_End(client, 65);
 }
@@ -239,8 +240,8 @@ bool CPEHandler_ExtInfo(CLIENT client, char* data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_MOTD, false);
 
-	ReadNetString(data, &client->cpeData->appName); data += 63;
-	client->cpeData->_extCount = ntohs(*(uint16_t*)++data);
+	if(!ReadNetString(&data, &client->cpeData->appName)) return false;
+	client->cpeData->_extCount = ntohs(*(uint16_t*)data);
 	return true;
 }
 
@@ -250,12 +251,14 @@ bool CPEHandler_ExtEntry(CLIENT client, char* data) {
 
 	CPEDATA cpd = client->cpeData;
 	EXT tmp = Memory_Alloc(1, sizeof(struct cpeExt));
-	ReadNetString(data, &tmp->name);data += 63;
-	tmp->version = ntohl(*(uint32_t*)++data);
+	if(!ReadNetString(&data, &tmp->name)) return false;
+	tmp->version = ntohl(*(uint32_t*)data);
 	tmp->crc32 = String_CRC32((uint8_t*)tmp->name);
 
 	if(tmp->crc32 == EXT_HACKCTRL && !cpd->hacks)
 		cpd->hacks = Memory_Alloc(1, sizeof(struct cpeHacks));
+	if(tmp->crc32 == EXT_LONGMSG && !cpd->message)
+		cpd->message = Memory_Alloc(1, 193);
 
 	tmp->next = cpd->headExtension;
 	cpd->headExtension = tmp;

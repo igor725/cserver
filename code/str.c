@@ -38,8 +38,7 @@ size_t String_Append(char* dst, size_t len, const char* src) {
 size_t String_Copy(char* dst, size_t len, const char* src) {
 	size_t _len = len;
 
-	while(_len > 1 && (*dst++ = *src++) != '\0')
-		--_len;
+	while(_len > 1 && (*dst++ = *src++) != '\0') --_len;
 	*dst = 0;
 
 	return len - _len;

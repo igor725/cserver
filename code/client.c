@@ -51,7 +51,33 @@ bool Client_ChangeWorld(CLIENT client, WORLD world) {
 	return true;
 }
 
+static void copyMessagePart(const char* message, char* part, uint32_t i) {
+	if(i > 0) {
+		*part++ = '>';
+		*part++ = ' ';
+	}
+
+	message += i * 62;
+	for(uint32_t j = 0; j < 62; j++) {
+		*part++ = *message++;
+		if(*message == '\0') break;
+	}
+	*part = '\0';
+}
+
 void Client_Chat(CLIENT client, MessageType type, const char* message) {
+	uint32_t msgLen = (uint32_t)String_Length(message);
+
+	if(msgLen > 62 && type == CPE_CHAT) { //TODO: Color support
+		char part[65] = {0};
+		uint32_t parts = (msgLen / 62) + 1;
+		for(uint32_t i = 0; i < parts; i++) {
+			copyMessagePart(message, part, i);
+			Packet_WriteChat(client, type, part);
+		}
+		return;
+	}
+
 	Packet_WriteChat(client, type, message);
 }
 
@@ -67,7 +93,7 @@ static void HandlePacket(CLIENT client, char* data, PACKET packet, bool extended
 		if(packet->handler)
 			ret = packet->handler(client, data);
 
-	if(!ret)
+	if(!ret && !client->closed)
 		Client_Kick(client, "Packet reading error");
 	else
 		client->pps += 1;
@@ -157,10 +183,9 @@ TRET Client_ThreadProc(TARG param) {
 		if(client->closed) {
 			if(client->playerData && client->playerData->state > STATE_WLOADDONE)
 				Event_Call(EVT_ONDISCONNECT, (void*)client);
-			Socket_Close(client->sock);
 			Client_Despawn(client);
 			Client_Free(client);
-			continue;
+			return 0;
 		}
 
 		if(client->websock)
@@ -430,7 +455,8 @@ void Client_Free(CLIENT client) {
 		}
 
 		if(cpd->hacks) Memory_Free(cpd->hacks);
-		Memory_Free((void*)cpd->appName);
+		if(cpd->message) Memory_Free(cpd->message);
+		if(cpd->appName) Memory_Free((void*)cpd->appName);
 		Memory_Free(cpd);
 	}
 

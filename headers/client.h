@@ -22,6 +22,7 @@ typedef struct cpeData {
 	EXT headExtension;
 	HACKS hacks;
 	char model[16];
+	char* message;
 	const char* appName;
 } *CPEDATA;
 
