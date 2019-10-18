@@ -117,8 +117,8 @@ static bool InitialWork(void) {
 	Config_SetDefaultStr(ent, DEFAULT_MOTD);
 
 	ent = Config_NewEntry(cfg, "logLevel");
-	Config_SetComment(ent, "E - Errors, I - Info, C - Chat, W - Warnings, D - Debug.");
-	Config_SetDefaultStr(ent, "EICW");
+	Config_SetComment(ent, "I - Info, C - Chat, W - Warnings, D - Debug.");
+	Config_SetDefaultStr(ent, "ICW");
 
 	ent = Config_NewEntry(cfg, "alwaysLocalOP");
 	Config_SetComment(ent, "Any player with ip address \"127.0.0.1\" will automatically become an operator.");

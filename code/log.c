@@ -20,28 +20,25 @@ static const char* getName(uint8_t flag) {
 }
 
 void Log_SetLevelStr(const char* str) {
-	uint8_t level = 0;
+	uint8_t level = LOG_ERROR;
 
 	do {
 		switch (*str) {
-			case 'E':
-				level |= LOG_ERROR;
+			case 'I':
+				level |= LOG_INFO;
 				break;
-				case 'I':
-					level |= LOG_INFO;
-					break;
-				case 'C':
-					level |= LOG_ERROR;
-					break;
-				case 'W':
-					level |= LOG_WARN;
-					break;
-				case 'D':
-					level |= LOG_DEBUG;
-					break;
-				case 'Q':
-					Log_Level = 0;
-					return;
+			case 'C':
+				level |= LOG_CHAT;
+				break;
+			case 'W':
+				level |= LOG_WARN;
+				break;
+			case 'D':
+				level |= LOG_DEBUG;
+				break;
+			case 'Q':
+				Log_Level = 0;
+				return;
 		}
 	} while(*str++ != '\0');
 
