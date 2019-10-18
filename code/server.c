@@ -24,9 +24,24 @@ static void AcceptFunc(void) {
 		tmp->id = 0xFF;
 		tmp->sock = fd;
 		tmp->mutex = Mutex_Create();
-		tmp->addr = ntohl(caddr.sin_addr.s_addr);
+		tmp->addr = htonl(caddr.sin_addr.s_addr);
 		tmp->rdbuf = Memory_Alloc(134, 1);
 		tmp->wrbuf = Memory_Alloc(2048, 1);
+
+		uint32_t sameAddrCount = 1;
+		uint32_t maxConnPerIP = Config_GetInt(Server_Config, "maxConnPerIP");
+		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+			CLIENT client = Clients_List[i];
+			if(client && client->addr == tmp->addr)
+				++sameAddrCount;
+			else continue;
+
+			if(sameAddrCount > maxConnPerIP) {
+				Client_Kick(tmp, "Too many connections from one IP.");
+				Client_Free(tmp);
+				return;
+			}
+		}
 
 		if(Socket_Receive(fd, tmp->rdbuf, 3, MSG_PEEK)) {
 			if(String_CaselessCompare(tmp->rdbuf, "GET")) {
@@ -36,7 +51,6 @@ static void AcceptFunc(void) {
 				tmp->websock = wscl;
 				if(!WsClient_DoHandshake(wscl)) {
 					Client_Free(tmp);
-					Socket_Close(fd);
 					return;
 				}
 			}
@@ -44,8 +58,10 @@ static void AcceptFunc(void) {
 
 		if(Client_Add(tmp))
 			tmp->thread = Thread_Create(Client_ThreadProc, tmp);
-		else
+		else {
 			Client_Kick(tmp, "Server is full");
+			Client_Free(tmp);
+		}
 	}
 }
 
@@ -82,19 +98,39 @@ static bool InitialWork(void) {
 		return false;
 
 	Log_Info("Loading " MAINCFG);
-	Server_Config = Config_Create(MAINCFG);
-	Config_SetStr(Server_Config, "ip", "0.0.0.0");
-	Config_AddComment(Server_Config, "Bind server to specified IP address. \"0.0.0.0\" - means \"all available network adapters\".");
-	Config_SetInt(Server_Config, "port", 25565);
-	Config_AddComment(Server_Config, "Use specified port to accept clients.");
-	Config_SetStr(Server_Config, "name", DEFAULT_NAME);
-	Config_AddComment(Server_Config, "Server name and MOTD will be shown to the player during map loading.");
-	Config_SetStr(Server_Config, "motd", DEFAULT_MOTD);
-	Config_SetStr(Server_Config, "loglevel", "EICW");
-	Config_AddComment(Server_Config, "E - Errors, I - Info, C - Chat, W - Warnings, D - Debug.");
-	Config_SetBool(Server_Config, "alwayslocalop", false);
-	Config_AddComment(Server_Config, "Any player with ip address \"127.0.0.1\" will automatically become an operator.");
-	if(!Config_Load(Server_Config)) Process_Exit(1);
+	CFGSTORE cfg = Config_Create(MAINCFG);
+	CFGENTRY ent;
+
+	ent = Config_NewEntry(cfg, "ip");
+	Config_SetComment(ent, "Bind server to specified IP address. \"0.0.0.0\" - means \"all available network adapters\".");
+	Config_SetDefaultStr(ent, "0.0.0.0");
+
+	ent = Config_NewEntry(cfg, "port");
+	Config_SetComment(ent, "Use specified port to accept clients.");
+	Config_SetDefaultInt(ent, 25565);
+
+	ent = Config_NewEntry(cfg, "name");
+	Config_SetComment(ent, "Server name and MOTD will be shown to the player during map loading.");
+	Config_SetDefaultStr(ent, DEFAULT_NAME);
+
+	ent = Config_NewEntry(cfg, "motd");
+	Config_SetDefaultStr(ent, DEFAULT_MOTD);
+
+	ent = Config_NewEntry(cfg, "logLevel");
+	Config_SetComment(ent, "E - Errors, I - Info, C - Chat, W - Warnings, D - Debug.");
+	Config_SetDefaultStr(ent, "EICW");
+
+	ent = Config_NewEntry(cfg, "alwaysLocalOP");
+	Config_SetComment(ent, "Any player with ip address \"127.0.0.1\" will automatically become an operator.");
+	Config_SetDefaultBool(ent, false);
+
+	ent = Config_NewEntry(cfg, "maxConnPerIP");
+	Config_SetComment(ent, "Max connections per one IP.");
+	Config_SetDefaultInt(ent, 4);
+
+	cfg->modified = true;
+	if(!Config_Load(cfg)) Process_Exit(1);
+	Server_Config = cfg;
 
 	Log_SetLevelStr(Config_GetStr(Server_Config, "loglevel"));
 	Packet_RegisterDefault();

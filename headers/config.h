@@ -9,11 +9,17 @@ enum cfgTypes {
 typedef struct cfgEntry {
 	const char* key;
 	int type;
+	bool changed;
 	union {
 		int vint;
 		bool vbool;
 		const char* vchar;
 	} value;
+	union {
+		int vint;
+		bool vbool;
+		const char* vchar;
+	} defvalue;
 	const char* commentary;
 	struct cfgEntry* next;
 } *CFGENTRY;
@@ -28,7 +34,7 @@ typedef struct cfgStore {
 CFGENTRY Config_GetEntry(CFGSTORE store, const char* key);
 
 API CFGSTORE Config_Create(const char* filename);
-API bool Config_AddComment(CFGSTORE store, const char* commentary);
+API CFGENTRY Config_NewEntry(CFGSTORE store, const char* key);
 API void Config_EmptyStore(CFGSTORE store);
 API void Config_DestroyStore(CFGSTORE store);
 API const char* Config_TypeName(int type);
@@ -37,12 +43,20 @@ API int Config_TypeNameToInt(const char* name);
 API bool Config_Load(CFGSTORE store);
 API bool Config_Save(CFGSTORE store);
 
+API void Config_SetComment(CFGENTRY ent, const char* commentary);
+
 API int Config_GetInt(CFGSTORE store, const char* key);
-API void Config_SetInt(CFGSTORE store, const char* key, int value);
+API void Config_SetDefaultInt(CFGENTRY ent, int value);
+API void Config_SetInt(CFGENTRY ent, int value);
+API void Config_SetIntByKey(CFGSTORE store, const char* key, int value);
 
 API const char* Config_GetStr(CFGSTORE store, const char* key);
-API void Config_SetStr(CFGSTORE store, const char* key, const char* value);
+API void Config_SetDefaultStr(CFGENTRY ent, const char* value);
+API void Config_SetStr(CFGENTRY ent, const char* value);
+API void Config_SetStrByKey(CFGSTORE store, const char* key, const char* value);
 
-API void Config_SetBool(CFGSTORE store, const char* key, bool value);
 API bool Config_GetBool(CFGSTORE store, const char* key);
+API void Config_SetDefaultBool(CFGENTRY ent, bool value);
+API void Config_SetBool(CFGENTRY ent, bool value);
+API void Config_SetBoolByKey(CFGSTORE store, const char* key, bool value);
 #endif

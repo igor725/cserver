@@ -8,6 +8,7 @@ const char* const Strings[] = {
 	"World \"%s\" corrupted.",
 	"Unknown cfg entry type in file \"%s\": \"%c\" - is not a valid variable type.",
 	"Unexpected end of cfg file \"%s\".",
+	"Config entry \"%s\" is not registred for \"%s\".",
 	"Trying to get cfg entry \"%s\" from file \"%s\" as \"%s\", but the variable has type \"%s\".",
 	"Iterator already inited.",
 	"Invalid C-plugin version."

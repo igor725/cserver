@@ -155,15 +155,11 @@ TRET Client_ThreadProc(TARG param) {
 
 	while(1) {
 		if(client->closed) {
-			int len = Socket_Receive(client->sock, client->rdbuf, 131, 0);
-			if(len <= 0) {
-				if(client->playerData && client->playerData->state > STATE_WLOADDONE)
-					Event_Call(EVT_ONDISCONNECT, (void*)client);
-				Socket_Close(client->sock);
-				Client_Despawn(client);
-				Client_Free(client);
-				break;
-			}
+			if(client->playerData && client->playerData->state > STATE_WLOADDONE)
+				Event_Call(EVT_ONDISCONNECT, (void*)client);
+			Socket_Close(client->sock);
+			Client_Despawn(client);
+			Client_Free(client);
 			continue;
 		}
 
@@ -397,11 +393,14 @@ bool Client_GetType(CLIENT client) {
 	return pd ? pd->isOP : false;
 }
 
+static void SocketWaitClose(CLIENT client) {
+	while(Socket_Receive(client->sock, client->rdbuf, 131, 0)) {}
+	Socket_Close(client->sock);
+}
+
 void Client_Free(CLIENT client) {
 	if(client->id != 0xFF)
 		Clients_List[client->id] = NULL;
-	Memory_Free(client->rdbuf);
-	Memory_Free(client->wrbuf);
 
 	if(client->thread) Thread_Close(client->thread);
 	if(client->mapThread) Thread_Close(client->mapThread);
@@ -435,6 +434,10 @@ void Client_Free(CLIENT client) {
 		Memory_Free(cpd);
 	}
 
+	SocketWaitClose(client);
+	Memory_Free(client->rdbuf);
+	Memory_Free(client->wrbuf);
+	
 	Memory_Free(client);
 }
 

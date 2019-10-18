@@ -9,6 +9,90 @@ CFGSTORE Config_Create(const char* filename) {
 	return store;
 }
 
+CFGENTRY Config_GetEntry(CFGSTORE store, const char* key) {
+	CFGENTRY ent = store->firstCfgEntry;
+
+	while(ent) {
+		if(String_CaselessCompare(ent->key, key)) {
+			return ent;
+		}
+		ent = ent->next;
+	}
+
+	return ent;
+}
+
+CFGENTRY Config_NewEntry(CFGSTORE store, const char* key) {
+	CFGENTRY ent = Memory_Alloc(1, sizeof(struct cfgEntry));
+	ent->key = String_AllocCopy(key);
+
+	if(store->firstCfgEntry)
+		store->lastCfgEntry->next = ent;
+	else
+		store->firstCfgEntry = ent;
+
+	store->lastCfgEntry = ent;
+	return ent;
+}
+
+static void EmptyEntry(CFGENTRY ent) {
+	if(ent->type == CFG_STR && ent->value.vchar)
+		Memory_Free((void*)ent->value.vchar);
+	if(ent->type == CFG_STR && ent->defvalue.vchar)
+		Memory_Free((void*)ent->defvalue.vchar);
+
+	ent->type = -1;
+	ent->changed = false;
+	ent->value.vchar = NULL;
+	ent->defvalue.vchar = NULL;
+}
+
+static bool AllCfgEntriesParsed(CFGSTORE store) {
+	CFGENTRY ent = store->firstCfgEntry;
+	bool loaded = true;
+
+	while(ent && loaded) {
+		loaded = ent->changed;
+		ent = ent->next;
+	}
+
+	return loaded;
+}
+
+const char* Config_TypeName(int type) {
+	switch (type) {
+		case CFG_STR:
+			return "string";
+		case CFG_INT:
+			return "integer";
+		case CFG_BOOL:
+			return "boolean";
+		default:
+			return "unknownType";
+	}
+}
+
+#define CFG_TYPE(expectedType) \
+if(ent->type != expectedType) { \
+	Error_PrintF2(ET_SERVER, EC_CFGINVGET, true, ent->key, store->path, Config_TypeName(expectedType), Config_TypeName(ent->type)); \
+}
+
+#define CFG_CHECKENTRY(store, ent) \
+if(!ent) { \
+	Error_PrintF2(ET_SERVER, EC_CFGUNK, true, key, store->path); \
+} \
+
+int Config_TypeNameToInt(const char* name) {
+	if(String_CaselessCompare(name, "string")) {
+		return CFG_STR;
+	} else if(String_CaselessCompare(name, "integer")) {
+		return CFG_INT;
+	} else if(String_CaselessCompare(name, "boolean")) {
+		return CFG_BOOL;
+	}
+	return -1;
+}
+
 bool Config_Load(CFGSTORE store) {
 	FILE* fp = File_Open(store->path, "r");
 	if(!fp) {
@@ -66,15 +150,22 @@ bool Config_Load(CFGSTORE store) {
 			return false;
 		}
 
+		CFGENTRY ent = Config_GetEntry(store, key);
+		if(!ent) {
+			Error_PrintF2(ET_SERVER, EC_CFGUNK, false, key, store->path);
+			File_Close(fp);
+			return false;
+		}
+
 		switch (type) {
 			case CFG_STR:
-				Config_SetStr(store, key, value);
+				Config_SetStr(ent, value);
 				break;
 			case CFG_INT:
-				Config_SetInt(store, key, String_ToInt(value));
+				Config_SetInt(ent, String_ToInt(value));
 				break;
 			case CFG_BOOL:
-				Config_SetBool(store, key, String_Compare(value, "True"));
+				Config_SetBool(ent, String_Compare(value, "True"));
 				break;
 			default:
 				Error_PrintF2(ET_SERVER, EC_CFGTYPE, false, store->path, type);
@@ -83,29 +174,16 @@ bool Config_Load(CFGSTORE store) {
 		}
 
 		if(haveCommentary)
-			Config_AddComment(store, commentary);
+			Config_SetComment(ent, commentary);
 
 		count = 0;
 		ch = fgetc(fp);
 		haveCommentary = false;
 	}
 
-	store->modified = false;
+	store->modified = !AllCfgEntriesParsed(store);
 	File_Close(fp);
 	return true;
-}
-
-bool Config_AddComment(CFGSTORE store, const char* commentary) {
-	CFGENTRY ent = store->lastCfgEntry;
-
-	if(ent) {
-		if(ent->commentary)
-			Memory_Free((void*)ent->commentary);
-		ent->commentary = String_AllocCopy(commentary);
-		return true;
-	}
-
-	return false;
 }
 
 bool Config_Save(CFGSTORE store) {
@@ -130,17 +208,24 @@ bool Config_Save(CFGSTORE store) {
 		if(!File_Write(ptr->key, String_Length(ptr->key), 1, fp))
 			return false;
 
+		char* vchar;
+		int vint;
+		bool vbool;
+
 		switch (ptr->type) {
 			case CFG_STR:
-				if(!File_WriteFormat(fp, "=s%s\n", (char*)ptr->value.vchar))
+				vchar = (char*)(ptr->changed ? ptr->value.vchar : ptr->defvalue.vchar);
+				if(!File_WriteFormat(fp, "=s%s\n", vchar))
 					return false;
 				break;
 			case CFG_INT:
-				if(!File_WriteFormat(fp, "=i%d\n", (int)ptr->value.vint))
+				vint = ptr->changed ? ptr->value.vint : ptr->defvalue.vint;
+				if(!File_WriteFormat(fp, "=i%d\n", vint))
 					return false;
 				break;
 			case CFG_BOOL:
-				if(!File_WriteFormat(fp, "=b%s\n", ptr->value.vbool ? "True" : "False"))
+				vbool = ptr->changed ? ptr->value.vbool : ptr->defvalue.vbool;
+				if(!File_WriteFormat(fp, "=b%s\n", vbool ? "True" : "False"))
 					return false;
 				break;
 			default:
@@ -155,115 +240,91 @@ bool Config_Save(CFGSTORE store) {
 	return File_Rename(tmpname, store->path);
 }
 
-CFGENTRY Config_GetEntry(CFGSTORE store, const char* key) {
-	CFGENTRY ent = store->firstCfgEntry;
-
-	while(ent) {
-		if(String_CaselessCompare(ent->key, key)) {
-			return ent;
-		}
-		ent = ent->next;
-	}
-
-	return ent;
+void Config_SetComment(CFGENTRY ent, const char* commentary) {
+	if(ent->commentary)
+		Memory_Free((void*)ent->commentary);
+	ent->commentary = String_AllocCopy(commentary);
 }
 
-CFGENTRY Config_GetEntry2(CFGSTORE store, const char* key) {
-	CFGENTRY ent = Config_GetEntry(store, key);
-
-	if(!ent) {
-		ent = Memory_Alloc(1, sizeof(struct cfgEntry));
-		ent->key = String_AllocCopy(key);
-
-		if(store->firstCfgEntry)
-			store->lastCfgEntry->next = ent;
-		else
-			store->firstCfgEntry = ent;
-
-		store->lastCfgEntry = ent;
-	}
-
-	return ent;
-}
-
-const char* Config_TypeName(int type) {
-	switch (type) {
-		case CFG_STR:
-			return "string";
-		case CFG_INT:
-			return "integer";
-		case CFG_BOOL:
-			return "boolean";
-		default:
-			return "unknownType";
-	}
-}
-
-int Config_TypeNameToInt(const char* name) {
-	if(String_CaselessCompare(name, "string")) {
-		return CFG_STR;
-	} else if(String_CaselessCompare(name, "integer")) {
-		return CFG_INT;
-	} else if(String_CaselessCompare(name, "boolean")) {
-		return CFG_BOOL;
-	}
-	return -1;
-}
-
-#define CFG_TYPE(expectedType) \
-if(ent->type != expectedType) { \
-	Error_PrintF2(ET_SERVER, EC_CFGINVGET, true, ent->key, store->path, Config_TypeName(expectedType), Config_TypeName(ent->type)); \
-	return 0; \
-}
-
-void Config_SetInt(CFGSTORE store, const char* key, int value) {
-	CFGENTRY ent = Config_GetEntry2(store, key);
-	if(ent->type == CFG_STR && ent->value.vchar)
-		Memory_Free((void*)ent->value.vchar);
+void Config_SetDefaultInt(CFGENTRY ent, int value) {
+	EmptyEntry(ent);
 	ent->type = CFG_INT;
-	if(ent->value.vint != value) {
-		ent->value.vint = value;
-		store->modified = true;
-	}
+	ent->defvalue.vint = value;
+}
+
+void Config_SetInt(CFGENTRY ent, int value) {
+	EmptyEntry(ent);
+	ent->type = CFG_INT;
+	ent->changed = true;
+	ent->value.vint = value;
+}
+
+void Config_SetIntByKey(CFGSTORE store, const char* key, int value) {
+	CFGENTRY ent = Config_GetEntry(store, key);
+	CFG_CHECKENTRY(store, ent);
+	Config_SetInt(ent, value);
+	store->modified = true;
 }
 
 int Config_GetInt(CFGSTORE store, const char* key) {
-	CFGENTRY ent = Config_GetEntry2(store, key);
+	CFGENTRY ent = Config_GetEntry(store, key);
+	CFG_CHECKENTRY(store, ent);
 	CFG_TYPE(CFG_INT);
-	return ent->value.vint;
+	return ent->changed ? ent->value.vint : ent->defvalue.vint;
 }
 
-void Config_SetStr(CFGSTORE store, const char* key, const char* value) {
-	CFGENTRY ent = Config_GetEntry2(store, key);
-	if(ent->type == CFG_STR && ent->value.vchar)
-		Memory_Free((void*)ent->value.vchar);
-	else
-		ent->type = CFG_STR;
+void Config_SetDefaultStr(CFGENTRY ent, const char* value) {
+	EmptyEntry(ent);
+	ent->type = CFG_STR;
+	ent->defvalue.vchar = String_AllocCopy(value);
+}
+
+void Config_SetStr(CFGENTRY ent, const char* value) {
+	EmptyEntry(ent);
+	ent->type = CFG_STR;
+	ent->changed = true;
 	ent->value.vchar = String_AllocCopy(value);
+}
+
+void Config_SetStrByKey(CFGSTORE store, const char* key, const char* value) {
+	CFGENTRY ent = Config_GetEntry(store, key);
+	CFG_CHECKENTRY(store, ent);
+	Config_SetStr(ent, value);
 	store->modified = true;
 }
 
 const char* Config_GetStr(CFGSTORE store, const char* key) {
-	CFGENTRY ent = Config_GetEntry2(store, key);
+	CFGENTRY ent = Config_GetEntry(store, key);
+	CFG_CHECKENTRY(store, ent);
 	CFG_TYPE(CFG_STR);
-	return ent->value.vchar;
+	return ent->changed ? ent->value.vchar : ent->defvalue.vchar;
 }
 
-void Config_SetBool(CFGSTORE store, const char* key, bool value) {
-	CFGENTRY ent = Config_GetEntry2(store, key);
-	if(ent->type == CFG_STR && ent->value.vchar)
-		Memory_Free((void*)ent->value.vchar);
+void Config_SetDefaultBool(CFGENTRY ent, bool value) {
+	EmptyEntry(ent);
 	ent->type = CFG_BOOL;
-	if(ent->value.vbool != value) {
-		ent->value.vbool = value;
-		store->modified = true;
-	}
+	ent->defvalue.vbool = value;
+}
+
+void Config_SetBool(CFGENTRY ent, bool value) {
+	EmptyEntry(ent);
+	ent->type = CFG_BOOL;
+	ent->changed = true;
+	ent->value.vbool = value;
+}
+
+void Config_SetBoolByKey(CFGSTORE store, const char* key, bool value) {
+	CFGENTRY ent = Config_GetEntry(store, key);
+	CFG_CHECKENTRY(store, ent);
+	Config_SetBool(ent, value);
+	store->modified = true;
 }
 
 bool Config_GetBool(CFGSTORE store, const char* key) {
-	CFGENTRY ent = Config_GetEntry2(store, key);
+	CFGENTRY ent = Config_GetEntry(store, key);
+	CFG_CHECKENTRY(store, ent);
 	CFG_TYPE(CFG_BOOL);
-	return ent->value.vbool;
+	return ent->changed ? ent->value.vbool : ent->defvalue.vbool;
 }
 
 void Config_EmptyStore(CFGSTORE store) {
@@ -271,12 +332,10 @@ void Config_EmptyStore(CFGSTORE store) {
 
 	while(ent) {
 		prev = ent;
-
-		if(ent->commentary)
-			Memory_Free((void*)ent->commentary);
-		if(ent->type == CFG_STR)
-			Memory_Free((void*)ent->value.vchar);
 		ent = ent->next;
+		if(prev->commentary)
+			Memory_Free((void*)prev->commentary);
+		EmptyEntry(prev);
 		Memory_Free(prev);
 	}
 

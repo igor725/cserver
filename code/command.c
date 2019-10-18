@@ -59,35 +59,33 @@ static bool CHandler_OP(const char* args, CLIENT caller, char* out) {
 }
 
 static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
-	const char* cmdUsage = "/cfg <set/get/print> [key] [type] [value]";
+	const char* cmdUsage = "/cfg <set/get/print> [key] [value]";
 	Command_OnlyForOP;
 
-	char subcommand[8], type[12], key[MAX_CFG_LEN], value[MAX_CFG_LEN];
+	char subcommand[8], key[MAX_CFG_LEN], value[MAX_CFG_LEN];
 
 	if(String_GetArgument(args, subcommand, 8, 0)) {
 		if(String_CaselessCompare(subcommand, "set")) {
 			if(!String_GetArgument(args, key, MAX_CFG_LEN, 1)) {
 				Command_PrintUsage;
 			}
-			if(!String_GetArgument(args, type, 12, 2)) {
-				Command_PrintUsage;
-			}
-			int itype = Config_TypeNameToInt(type);
-			if(itype == -1) {
-				Command_Print("Invalid cfg entry type specified.");
+			CFGENTRY ent = Config_GetEntry(Server_Config, key);
+			if(!ent) {
+				Command_Print("Entry not found in Server_Config");
 			}
 			if(!String_GetArgument(args, value, MAX_CFG_LEN, 3)) {
 				Command_PrintUsage;
 			}
-			switch (itype) {
+
+			switch (ent->type) {
 				case CFG_INT:
-					Config_SetInt(Server_Config, key, String_ToInt(value));
+					Config_SetInt(ent, String_ToInt(value));
 					break;
 				case CFG_BOOL:
-					Config_SetBool(Server_Config, key, String_CaselessCompare(value, "True"));
+					Config_SetBool(ent, String_CaselessCompare(value, "True"));
 					break;
 				case CFG_STR:
-					Config_SetStr(Server_Config, key, value);
+					Config_SetStr(ent, value);
 					break;
 			}
 			Command_Print("Entry value changed successfully.");
