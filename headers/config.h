@@ -26,9 +26,9 @@ typedef struct cfgStore {
 } *CFGSTORE;
 
 CFGENTRY Config_GetEntry(CFGSTORE store, const char* key);
-bool Config_AddComment(CFGSTORE store, const char* commentary);
 
 API CFGSTORE Config_Create(const char* filename);
+API bool Config_AddComment(CFGSTORE store, const char* commentary);
 API void Config_EmptyStore(CFGSTORE store);
 API void Config_DestroyStore(CFGSTORE store);
 API const char* Config_TypeName(int type);
