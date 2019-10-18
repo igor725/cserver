@@ -394,7 +394,7 @@ bool Client_GetType(CLIENT client) {
 }
 
 static void SocketWaitClose(CLIENT client) {
-	while(Socket_Receive(client->sock, client->rdbuf, 131, 0)) {}
+	while(Socket_Receive(client->sock, client->rdbuf, 131, 0) > 0) {}
 	Socket_Close(client->sock);
 }
 
@@ -437,7 +437,6 @@ void Client_Free(CLIENT client) {
 	SocketWaitClose(client);
 	Memory_Free(client->rdbuf);
 	Memory_Free(client->wrbuf);
-	
 	Memory_Free(client);
 }
 
