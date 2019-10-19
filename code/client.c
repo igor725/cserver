@@ -51,29 +51,45 @@ bool Client_ChangeWorld(CLIENT client, WORLD world) {
 	return true;
 }
 
-static void copyMessagePart(const char* message, char* part, uint32_t i) {
+static uint32_t copyMessagePart(const char* message, char* part, uint32_t i, char* color) {
+	if(*message == '\0') return 0;
+
 	if(i > 0) {
 		*part++ = '>';
 		*part++ = ' ';
 	}
 
-	message += i * 62;
-	for(uint32_t j = 0; j < 62; j++) {
-		*part++ = *message++;
-		if(*message == '\0') break;
+	if(*color > 0) {
+		*part++ = '&';
+		*part++ = *color;
 	}
+
+	uint32_t len = min(60, (uint32_t)String_Length(message));
+	if(message[len - 1] == '&' && ISHEX(message[len])) --len;
+
+	for(uint32_t j = 0; j < len; j++) {
+		char prevsym = (*part++ = *message++);
+		char nextsym = *message;
+		if(nextsym == '\0') break;
+		if(prevsym == '&' && ISHEX(nextsym)) *color = nextsym;
+	}
+
 	*part = '\0';
+	return len;
 }
 
 void Client_Chat(CLIENT client, MessageType type, const char* message) {
 	uint32_t msgLen = (uint32_t)String_Length(message);
 
-	if(msgLen > 62 && type == CPE_CHAT) { //TODO: Color support
-		char part[65] = {0};
-		uint32_t parts = (msgLen / 62) + 1;
+	if(msgLen > 62 && type == CPE_CHAT) {
+		char color = 0, part[65] = {0};
+		uint32_t parts = (msgLen / 60) + 1;
 		for(uint32_t i = 0; i < parts; i++) {
-			copyMessagePart(message, part, i);
-			Packet_WriteChat(client, type, part);
+			uint32_t len = copyMessagePart(message, part, i, &color);
+			if(len > 0) {
+				Packet_WriteChat(client, type, part);
+				message += len;
+			}
 		}
 		return;
 	}
