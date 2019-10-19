@@ -116,16 +116,17 @@ static void Survival_OnClick(void* param) {
 	if(x != -1 && y != -1 && z != -1) {
 		dist_block = distance(x + .5f, y + .5f, z + .5f, pv->x, pv->y, pv->z);
 	} else if(target) {
-		VECTOR* pvt = pd->position;
+		VECTOR* pvt = target->playerData->position;
 		dist_entity = distance(pvt->x, pvt->y, pvt->z, pv->x, pv->y, pv->z);
 	}
 
+	if(data->breakStarted && (data->lastclick[0] != x ||
+	data->lastclick[1] != y || data->lastclick[2] != z)) {
+		SurvBrk_Stop(data);
+		return;
+	}
+
 	if(dist_block < dist_entity) {
-		if(data->breakStarted && (data->lastclick[0] != x ||
-			data->lastclick[1] != y || data->lastclick[2] != z)) {
-				SurvBrk_Stop(data);
-				return;
-			}
 		if(!data->breakStarted) {
 			BlockID bid = World_GetBlock(pd->world, x, y, z);
 			if(bid > BLOCK_AIR) SurvBrk_Start(data, bid);
