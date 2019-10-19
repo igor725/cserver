@@ -162,9 +162,7 @@ static bool CHandler_God(const char* args, CLIENT caller, char* out) {
 	SurvHacks_Update(data);
 	SurvInv_UpdateInventory(data);
 	SurvGui_DrawBlockInfo(data, mode ? caller->cpeData->heldBlock : 0);
-
 	String_FormatBuf(out, CMD_MAX_OUT, "God mode %s", MODE(mode));
-
 	return true;
 }
 
@@ -189,11 +187,11 @@ static bool CHandler_PvP(const char* args, CLIENT caller, char* out) {
 	bool mode = data->pvpMode;
 	data->pvpMode = !mode;
 	String_FormatBuf(out, CMD_MAX_OUT, "PvP mode %s", MODE(mode));
-
 	return true;
 }
 
 EXP int Plugin_ApiVer = 100;
+
 EXP bool Plugin_Load(void) {
 	if(Server_Active) {
 		Log_Error("Survival plugin can be loaded only at server startup.");
@@ -211,6 +209,7 @@ EXP bool Plugin_Load(void) {
 	Command_Register("pvp", CHandler_PvP);
 	return true;
 }
+
 EXP bool Plugin_Unload(void) {
 	return false;
 }
