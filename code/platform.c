@@ -72,17 +72,11 @@ bool File_Close(FILE* fp) {
 	return fclose(fp) != 0;
 }
 
-#if defined(WINDOWS)
-#  define SOCKERR Error_Print2(ET_SYS, WSAGetLastError(), false); return INVALID_SOCKET;
-#elif defined(POSIX)
-#  define SOCKERR Error_Print2(ET_SYS, errno, false); return INVALID_SOCKET;
-#endif
-
 bool Socket_Init(void) {
 #if defined(WINDOWS)
 	WSADATA ws;
 	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR) {
-		SOCKERR;
+		return false;
 	}
 #endif
 	return true;
@@ -94,31 +88,35 @@ bool Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, uint16_t port) {
 	return inet_pton(AF_INET, ip, &ssa->sin_addr.s_addr) > 0;
 }
 
-SOCKET Socket_Bind(const char* ip, uint16_t port) {
-	SOCKET fd;
-
-	if((fd = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
-		SOCKERR;
+SOCKET Socket_New() {
+	SOCKET sock;
+	if((sock = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
+		return INVALID_SOCKET;
 	}
+	return sock;
+}
 
-	struct sockaddr_in ssa;
-	Socket_SetAddr(&ssa, ip, port);
-
+bool Socket_Bind(SOCKET sock, struct sockaddr_in* addr) {
 #if defined(POSIX)
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0) {
-		SOCKERR;
+	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0) {
+		return false;
 	}
 #endif
 
-	if(bind(fd, (const struct sockaddr*)&ssa, sizeof(ssa)) == -1) {
-		SOCKERR;
+	if(bind(sock, (const struct sockaddr*)addr, sizeof(struct sockaddr_in)) == -1) {
+		return false;
 	}
 
-	if(listen(fd, SOMAXCONN) == -1) {
-		SOCKERR;
+	if(listen(sock, SOMAXCONN) == -1) {
+		return false;
 	}
 
-	return fd;
+	return true;
+}
+
+bool Socket_Connect(SOCKET sock, struct sockaddr_in* addr) {
+	socklen_t len = sizeof(struct sockaddr_in);
+	return connect(sock, (struct sockaddr*)addr, len) == 0;
 }
 
 SOCKET Socket_Accept(SOCKET sock, struct sockaddr_in* addr) {

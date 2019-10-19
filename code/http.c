@@ -55,8 +55,11 @@ void HttpRequest_SetHeaderInt(HTTPREQ req, const char* key, int value) {
 
 void HttpRequest_SetHost(HTTPREQ req, const char* host, uint16_t port) {
 	char hostfmt[22];
-	Socket_SetAddr(&req->addr, host, port);
-	String_FormatBuf(hostfmt, 22, "%s:%d", host, port);
+	// Socket_SetAddrHost(&req->addr, host, port);
+	if(port != 80)
+		String_FormatBuf(hostfmt, 22, "%s:%d", host, port);
+	else
+		String_Copy(hostfmt, 22, host);
 	HttpRequest_SetHeaderStr(req, "Host", hostfmt);
 }
 
@@ -65,14 +68,16 @@ void HttpRequest_SetPath(HTTPREQ req, const char* path) {
 	req->path = String_AllocCopy(path);
 }
 
-static void SendLine(SOCKET sock, char* line) {
+static int SendLine(SOCKET sock, char* line) {
 	uint32_t len = (uint32_t)String_Length(line);
-	Socket_Send(sock, line, len);
+	return Socket_Send(sock, line, len);
 }
 
 void HttpRequest_Perform(HTTPREQ req, HTTPRESP resp) {
 	char line[1024];
-	String_FormatBuf(line, 1024, "GET %s HTTP/1.1\r\n");
+	req->sock = Socket_New();
+	Socket_Connect(req->sock, &req->addr);
+	String_FormatBuf(line, 1024, "GET %s HTTP/1.1\r\n", req->path);
 	SendLine(req->sock, line);
 	HTTPHDR hdr = req->header;
 	while(hdr) {
@@ -98,7 +103,7 @@ void HttpRequest_Perform(HTTPREQ req, HTTPRESP resp) {
 			resp->error = HTTP_ERR_INVALID_VERSION;
 			return;
 		}
-		
+
 		const char* code_start = String_FirstChar(line, ' ');
 		char* code_end = (char*)code_start++;
 		while((*code_end >= '0') <= '9') ++code_end;

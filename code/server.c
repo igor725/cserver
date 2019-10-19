@@ -74,13 +74,18 @@ static TRET AcceptThreadProc(TARG param) {
 	return 0;
 }
 
-static bool Bind(const char* ip, uint16_t port) {
-	if((Server_Socket = Socket_Bind(ip, port)) == INVALID_SOCKET)
-		return false;
+static void Bind(const char* ip, uint16_t port) {
+	Server_Socket = Socket_New();
+	struct sockaddr_in ssa;
+	if(!Socket_SetAddr(&ssa, ip, port)) {
+		Error_PrintSys(true);
+	}
 
 	Client_Init();
 	Log_Info("%s %s started on %s:%d", SOFTWARE_NAME, SOFTWARE_VERSION, ip, port);
-	return true;
+	if(!Socket_Bind(Server_Socket, &ssa)) {
+		Error_PrintSys(true);
+	}
 }
 
 static void onConnect(void* param) {
@@ -178,12 +183,12 @@ void Server_InitialWork(void) {
 	Event_Call(EVT_POSTSTART, NULL);
 	const char* ip = Config_GetStr(cfg, CFG_SERVERIP_KEY);
 	uint16_t port = (uint16_t)Config_GetInt(cfg, CFG_SERVERPORT_KEY);
-	if(!Bind(ip, port)) return;
 	AcceptThread = Thread_Create(AcceptThreadProc, NULL);
 	Server_StartTime = Time_GetMSec();
 	Console_StartListen();
 	Server_Active = true;
 	Server_Config = cfg;
+	Bind(ip, port);
 }
 
 void Server_DoStep(void) {
