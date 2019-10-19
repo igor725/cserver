@@ -14,6 +14,14 @@ bool String_CaselessCompare(const char* str1, const char* str2) {
 #endif
 }
 
+bool String_CaselessCompare2(const char* str1, const char* str2, size_t count) {
+#if defined(WINDOWS)
+	return _memicmp((void*)str1, (void*)str2, count) == 0;
+#elif defined(POSIX)
+	return memicmp((void*)str1, (void*)str2, count) == 0;
+#endif
+}
+
 bool String_Compare(const char* str1, const char* str2) {
 	return strcmp(str1, str2) == 0;
 }

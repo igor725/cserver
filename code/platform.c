@@ -88,6 +88,12 @@ bool Socket_Init(void) {
 	return true;
 }
 
+bool Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, uint16_t port) {
+	ssa->sin_family = AF_INET;
+	ssa->sin_port = htons(port);
+	return inet_pton(AF_INET, ip, &ssa->sin_addr.s_addr) > 0;
+}
+
 SOCKET Socket_Bind(const char* ip, uint16_t port) {
 	SOCKET fd;
 
@@ -96,18 +102,13 @@ SOCKET Socket_Bind(const char* ip, uint16_t port) {
 	}
 
 	struct sockaddr_in ssa;
-	ssa.sin_family = AF_INET;
-	ssa.sin_port = htons(port);
+	Socket_SetAddr(&ssa, ip, port);
 
 #if defined(POSIX)
 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0) {
 		SOCKERR;
 	}
 #endif
-
-	if(!inet_pton(AF_INET, ip, &ssa.sin_addr.s_addr)) {
-		SOCKERR;
-	}
 
 	if(bind(fd, (const struct sockaddr*)&ssa, sizeof(ssa)) == -1) {
 		SOCKERR;

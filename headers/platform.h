@@ -63,6 +63,7 @@ char* DLib_GetError(char* buf, size_t len);
 bool DLib_GetSym(void* lib, const char* sname, void** sym);
 
 bool Socket_Init(void);
+API bool Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, uint16_t port);
 API SOCKET Socket_Bind(const char* ip, uint16_t port);
 API SOCKET Socket_Accept(SOCKET sock, struct sockaddr_in* addr);
 API int Socket_Receive(SOCKET sock, char* buf, int len, int flags);

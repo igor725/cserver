@@ -84,11 +84,11 @@ int World_GetProperty(WORLD world, uint8_t property) {
 }
 
 bool World_SetTexturePack(WORLD world, const char* url) {
-	if(!url) {
+	if(!url || String_Length(url) > 64) {
 		world->info->texturepack[0] = '\0';
 		return true;
 	}
-	if(String_Copy(world->info->texturepack, 64, url) == String_Length(url)) {
+	if(String_Copy(world->info->texturepack, 65, url)) {
 		world->info->texturepack[0] = '\0';
 		return true;
 	}

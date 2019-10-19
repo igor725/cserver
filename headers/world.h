@@ -36,23 +36,23 @@ typedef struct worldDims {
 } *WORLDDIMS;
 
 typedef struct worldInfo {
-	WORLDDIMS   dim;
-	int         props[WORLD_PROPS_COUNT];
-	char        texturepack[64];
-	VECTOR*      spawnVec;
-	ANGLE*       spawnAng;
-	Weather     wt;
+	WORLDDIMS dim;
+	int props[WORLD_PROPS_COUNT];
+	char texturepack[65];
+	VECTOR* spawnVec;
+	ANGLE* spawnAng;
+	Weather wt;
 } *WORLDINFO;
 
 typedef struct world {
-	int         id;
+	int id;
 	const char* name;
-	uint32_t    size;
-	BlockID*    data;
-	WORLDINFO   info;
-	THREAD      thread;
-	bool        saveUnload;
-	bool        saveDone;
+	uint32_t size;
+	WORLDINFO info;
+	THREAD thread;
+	bool saveUnload;
+	bool saveDone;
+	BlockID* data;
 } *WORLD;
 
 void World_Tick(WORLD world);
