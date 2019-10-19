@@ -10,6 +10,8 @@
 #include "event.h"
 #include "cplugin.h"
 
+THREAD AcceptThread;
+
 static void AcceptFunc(void) {
 	struct sockaddr_in caddr;
 	SOCKET fd = Socket_Accept(Server_Socket, &caddr);
@@ -93,9 +95,8 @@ static void onDisconnect(void* param) {
 	Log_Info("Player %s disconnected", name);
 }
 
-static bool InitialWork(void) {
-	if(!Socket_Init())
-		return false;
+void Server_InitialWork(void) {
+	if(!Socket_Init()) return;
 
 	Log_Info("Loading " MAINCFG);
 	CFGSTORE cfg = Config_Create(MAINCFG);
@@ -165,10 +166,16 @@ static bool InitialWork(void) {
 	CPlugin_Start();
 
 	Event_Call(EVT_POSTSTART, NULL);
-	return Bind(Config_GetStr(Server_Config, "ip"), (uint16_t)Config_GetInt(Server_Config, "port"));
+	const char* ip = Config_GetStr(Server_Config, "ip");
+	uint16_t port = (uint16_t)Config_GetInt(Server_Config, "port");
+	if(!Bind(ip, port)) return;
+	AcceptThread = Thread_Create(AcceptThreadProc, NULL);
+	Server_StartTime = Time_GetMSec();
+	Console_StartListen();
+	Server_Active = true;
 }
 
-static void DoStep(void) {
+void Server_DoStep(void) {
 	Event_Call(EVT_ONTICK, NULL);
 	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
 		CLIENT client = Client_GetByID((ClientID)i);
@@ -179,7 +186,23 @@ static void DoStep(void) {
 	}
 }
 
-static void Stop(void) {
+void Server_StartLoop(void) {
+	uint64_t curr = Time_GetMSec(), last = 0;
+	while(Server_Active) {
+		last = curr;
+		curr = Time_GetMSec();
+		Server_Delta = (uint16_t)(curr - last);
+		if(Server_Delta > 500) {
+			Log_Warn("Last server tick took %dms!", Server_Delta);
+			Server_Delta = 500;
+		}
+		Server_DoStep();
+		Sleep(10);
+	}
+	Log_Info("Main loop done");
+}
+
+void Server_Stop(void) {
 	Event_Call(EVT_ONSTOP, NULL);
 	Log_Info("Saving worlds");
 	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
@@ -197,8 +220,8 @@ static void Stop(void) {
 	}
 
 	Console_Close();
-	if(Server_AcceptThread)
-		Thread_Close(Server_AcceptThread);
+	if(AcceptThread)
+		Thread_Close(AcceptThread);
 
 	Socket_Close(Server_Socket);
 	Log_Info("Saving " MAINCFG);
@@ -207,39 +230,4 @@ static void Stop(void) {
 
 	Log_Info("Unloading plugins");
 	CPlugin_Stop();
-}
-
-int main(int argc, char** argv) {
-	if(argc < 2 || !String_CaselessCompare(argv[1], "nochdir")) {
-		const char* path = String_AllocCopy(argv[0]);
-		char* lastSlash = (char*)String_LastChar(path, PATH_DELIM);
-		if(lastSlash) {
-			*lastSlash = '\0';
-			Directory_SetCurrentDir(path);
-		}
-		Memory_Free((char*)path);
-	}
-
-	if((Server_Active = InitialWork()) == true) {
-		Console_StartListen();
-		Server_StartTime = Time_GetMSec();
-		Server_AcceptThread = Thread_Create(AcceptThreadProc, NULL);
-	}
-
-	uint64_t curr = Time_GetMSec(), last = 0;
-	while(Server_Active) {
-		last = curr;
-		curr = Time_GetMSec();
-		Server_Delta = (uint16_t)(curr - last);
-		if(Server_Delta > 500) {
-			Log_Warn("Last server tick took %dms!", Server_Delta);
-			Server_Delta = 500;
-		}
-		DoStep();
-		Sleep(10);
-	}
-
-	Log_Info("Main loop done");
-	Stop();
-	return 0;
 }
