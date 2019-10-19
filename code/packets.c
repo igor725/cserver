@@ -291,7 +291,7 @@ bool Handler_Handshake(CLIENT client, char* data) {
 	client->playerData->position = Memory_Alloc(1, sizeof(struct vector));
 	client->playerData->angle = Memory_Alloc(1, sizeof(struct angle));
 
-	if(client->addr == INADDR_LOOPBACK && Config_GetBool(Server_Config, "alwayslocalop"))
+	if(client->addr == INADDR_LOOPBACK && Config_GetBool(Server_Config, CFG_LOCALOP_KEY))
 		client->playerData->isOP = true;
 
 	if(!ReadNetString(&data, &client->playerData->name)) return false;
@@ -307,8 +307,8 @@ bool Handler_Handshake(CLIENT client, char* data) {
 	}
 
 	if(Client_CheckAuth(client)) {
-		const char* name = Config_GetStr(Server_Config, "name");
-		const char* motd = Config_GetStr(Server_Config, "motd");
+		const char* name = Config_GetStr(Server_Config, CFG_SERVERNAME_KEY);
+		const char* motd = Config_GetStr(Server_Config, CFG_SERVERMOTD_KEY);
 
 		if(!name)
 			name = DEFAULT_NAME;

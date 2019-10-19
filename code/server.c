@@ -7,6 +7,7 @@
 #include "command.h"
 #include "websocket.h"
 #include "generators.h"
+#include "heartbeat.h"
 #include "event.h"
 #include "cplugin.h"
 
@@ -31,7 +32,7 @@ static void AcceptFunc(void) {
 		tmp->wrbuf = Memory_Alloc(2048, 1);
 
 		uint32_t sameAddrCount = 1;
-		uint32_t maxConnPerIP = Config_GetInt(Server_Config, "maxConnPerIP");
+		uint32_t maxConnPerIP = Config_GetInt(Server_Config, CFG_CONN_KEY);
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			CLIENT client = Clients_List[i];
 			if(client && client->addr == tmp->addr)
@@ -102,38 +103,47 @@ void Server_InitialWork(void) {
 	CFGSTORE cfg = Config_Create(MAINCFG);
 	CFGENTRY ent;
 
-	ent = Config_NewEntry(cfg, "ip");
+	ent = Config_NewEntry(cfg, CFG_SERVERIP_KEY);
 	Config_SetComment(ent, "Bind server to specified IP address. \"0.0.0.0\" - means \"all available network adapters\".");
 	Config_SetDefaultStr(ent, "0.0.0.0");
 
-	ent = Config_NewEntry(cfg, "port");
+	ent = Config_NewEntry(cfg, CFG_SERVERPORT_KEY);
 	Config_SetComment(ent, "Use specified port to accept clients.");
 	Config_SetDefaultInt(ent, 25565);
 
-	ent = Config_NewEntry(cfg, "name");
+	ent = Config_NewEntry(cfg, CFG_SERVERNAME_KEY);
 	Config_SetComment(ent, "Server name and MOTD will be shown to the player during map loading.");
 	Config_SetDefaultStr(ent, DEFAULT_NAME);
 
-	ent = Config_NewEntry(cfg, "motd");
+	ent = Config_NewEntry(cfg, CFG_SERVERMOTD_KEY);
 	Config_SetDefaultStr(ent, DEFAULT_MOTD);
 
-	ent = Config_NewEntry(cfg, "logLevel");
+	ent = Config_NewEntry(cfg, CFG_LOGLEVEL_KEY);
 	Config_SetComment(ent, "I - Info, C - Chat, W - Warnings, D - Debug.");
 	Config_SetDefaultStr(ent, "ICW");
 
-	ent = Config_NewEntry(cfg, "alwaysLocalOP");
+	ent = Config_NewEntry(cfg, CFG_LOCALOP_KEY);
 	Config_SetComment(ent, "Any player with ip address \"127.0.0.1\" will automatically become an operator.");
 	Config_SetDefaultBool(ent, false);
 
-	ent = Config_NewEntry(cfg, "maxConnPerIP");
+	ent = Config_NewEntry(cfg, CFG_CONN_KEY);
 	Config_SetComment(ent, "Max connections per one IP.");
 	Config_SetDefaultInt(ent, 4);
 
+	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_KEY);
+	Config_SetComment(ent, "Enable ClassiCube heartbeat.");
+	Config_SetDefaultBool(ent, false);
+
+	ent = Config_NewEntry(cfg, CFG_HEARTBEATDELAY_KEY);
+	Config_SetComment(ent, "Heartbeat request delay.");
+	Config_SetDefaultInt(ent, 10);
+
 	cfg->modified = true;
 	if(!Config_Load(cfg)) Process_Exit(1);
-	Server_Config = cfg;
+	Log_SetLevelStr(Config_GetStr(cfg, CFG_LOGLEVEL_KEY));
+	Heartbeat_Enabled = Config_GetBool(cfg, CFG_HEARTBEAT_KEY);
+	Heartbeat_Delay = (uint16_t)Config_GetInt(cfg, CFG_HEARTBEATDELAY_KEY) * 1000;
 
-	Log_SetLevelStr(Config_GetStr(Server_Config, "loglevel"));
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
@@ -166,16 +176,18 @@ void Server_InitialWork(void) {
 	CPlugin_Start();
 
 	Event_Call(EVT_POSTSTART, NULL);
-	const char* ip = Config_GetStr(Server_Config, "ip");
-	uint16_t port = (uint16_t)Config_GetInt(Server_Config, "port");
+	const char* ip = Config_GetStr(cfg, CFG_SERVERIP_KEY);
+	uint16_t port = (uint16_t)Config_GetInt(cfg, CFG_SERVERPORT_KEY);
 	if(!Bind(ip, port)) return;
 	AcceptThread = Thread_Create(AcceptThreadProc, NULL);
 	Server_StartTime = Time_GetMSec();
 	Console_StartListen();
 	Server_Active = true;
+	Server_Config = cfg;
 }
 
 void Server_DoStep(void) {
+	Heartbeat_Tick();
 	Event_Call(EVT_ONTICK, NULL);
 	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
 		CLIENT client = Client_GetByID((ClientID)i);
