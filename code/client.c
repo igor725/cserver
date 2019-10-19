@@ -124,7 +124,7 @@ static void PacketReceiverWs(CLIENT client) {
 
 	if(WsClient_ReceiveFrame(ws)) {
 		if(ws->opcode == 0x08) {
-			Client_Disconnect(client);
+			client->closed = true;
 			return;
 		}
 		recvSize = ws->plen - 1;
@@ -186,10 +186,10 @@ static void PacketReceiverRaw(CLIENT client) {
 			if(packetSize == len)
 				HandlePacket(client, client->rdbuf, packet, extended);
 			else
-				Client_Disconnect(client);
+				client->closed = true;
 		}
 	} else
-		Client_Disconnect(client);
+		client->closed = true;
 }
 
 TRET Client_ThreadProc(TARG param) {
@@ -215,9 +215,10 @@ TRET Client_ThreadProc(TARG param) {
 
 TRET Client_MapThreadProc(TARG param) {
 	CLIENT client = (CLIENT)param;
+	if(client->closed) return 0;
+
 	PLAYERDATA pd = client->playerData;
 	WORLD world = pd->world;
-	Mutex_Lock(client->mutex);
 
 	z_stream stream = {0};
 	uint8_t* data = (uint8_t*)client->wrbuf;
@@ -230,6 +231,7 @@ TRET Client_MapThreadProc(TARG param) {
 	int maplen = world->size;
 	int windowBits = 31;
 
+	Mutex_Lock(client->mutex);
 	if(Client_IsSupportExt(client, EXT_FASTMAP, 1)) {
 		windowBits = -15;
 		maplen -= 4;
@@ -238,7 +240,7 @@ TRET Client_MapThreadProc(TARG param) {
 
 	if((ret = deflateInit2(
 		&stream,
-		Z_BEST_COMPRESSION,
+		Z_BEST_SPEED,
 		Z_DEFLATED,
 		windowBits,
 		8,
@@ -256,23 +258,24 @@ TRET Client_MapThreadProc(TARG param) {
 
 		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
 			pd->state = STATE_WLOADERR;
-			deflateEnd(&stream);
-			return 0;
+			goto end;
 		}
 
 		*len = htons(1024 - (uint16_t)stream.avail_out);
-		if(!Client_Send(client, 1028)) {
+		if(client->closed || !Client_Send(client, 1028)) {
 			pd->state = STATE_WLOADERR;
-			deflateEnd(&stream);
-			return 0;
+			goto end;
 		}
 	} while(stream.avail_out == 0);
 
+	pd->state = STATE_WLOADDONE;
+	end:
 	deflateEnd(&stream);
 	Mutex_Unlock(client->mutex);
-	Packet_WriteLvlFin(client);
-	pd->state = STATE_WLOADDONE;
-	Client_Spawn(client);
+	if(pd->state == STATE_WLOADDONE) {
+		Packet_WriteLvlFin(client);
+		Client_Spawn(client);
+	}
 	return 0;
 }
 
@@ -435,6 +438,7 @@ bool Client_GetType(CLIENT client) {
 }
 
 static void SocketWaitClose(CLIENT client) {
+	Socket_Shutdown(client->sock, SD_SEND);
 	while(Socket_Receive(client->sock, client->rdbuf, 131, 0) > 0) {}
 	Socket_Close(client->sock);
 }
@@ -548,15 +552,10 @@ void Client_HandshakeStage2(CLIENT client) {
 	Client_ChangeWorld(client, Worlds_List[0]);
 }
 
-void Client_Disconnect(CLIENT client) {
-	Socket_Shutdown(client->sock, SD_SEND);
-	client->closed = true;
-}
-
 void Client_Kick(CLIENT client, const char* reason) {
 	if(!reason) reason = "Kicked without reason";
 	Packet_WriteKick(client, reason);
-	Client_Disconnect(client);
+	client->closed = true;
 }
 
 void Client_UpdatePositions(CLIENT client) {

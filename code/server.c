@@ -46,8 +46,8 @@ static void AcceptFunc(void) {
 			}
 		}
 
-		if(Socket_Receive(fd, tmp->rdbuf, 3, MSG_PEEK)) {
-			if(String_CaselessCompare(tmp->rdbuf, "GET")) {
+		if(Socket_Receive(fd, tmp->rdbuf, 5, MSG_PEEK)) {
+			if(String_CaselessCompare(tmp->rdbuf, "GET /")) {
 				WSCLIENT wscl = Memory_Alloc(1, sizeof(struct wsClient));
 				wscl->recvbuf = tmp->rdbuf;
 				wscl->sock = fd;

@@ -59,7 +59,6 @@ void Client_UpdatePositions(CLIENT client);
 int  Client_Send(CLIENT client, int len);
 void Client_HandshakeStage2(CLIENT client);
 bool Client_CheckAuth(CLIENT client);
-void Client_Disconnect(CLIENT client);
 TRET Client_ThreadProc(TARG param);
 void Client_Free(CLIENT client);
 void Client_Tick(CLIENT client);

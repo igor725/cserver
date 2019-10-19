@@ -29,7 +29,7 @@ static char* SHA1toB64(uint8_t* in, char* out) {
 }
 
 #define WS_RESP "HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Protocol: ClassiCube\r\nSec-WebSocket-Accept: %s\r\n\r\n"
-#define WS_ERRRESP "HTTP/1.1 %d %s\r\nConnection: Close\r\n\r\n%s"
+#define WS_ERRRESP "HTTP/1.1 %d %s\r\nConnection: Close\r\nContent-Type: text/html\r\nContent-Length: %d\r\n\r\n%s"
 
 bool WsClient_DoHandshake(WSCLIENT ws) {
 	char line[4096] = {0}, wskey[32] = {0}, b64[30] = {0};
@@ -37,7 +37,15 @@ bool WsClient_DoHandshake(WSCLIENT ws) {
 	bool haveUpgrade = false;
 	int wskeylen = 0;
 
-	Socket_ReceiveLine(ws->sock, line, 4095); // Skipping request line
+	if(Socket_ReceiveLine(ws->sock, line, 4095)) {
+		const char* httpver = String_LastChar(line, 'H');
+		if(!httpver || !String_CaselessCompare(httpver, "HTTP/1.1")) {
+			String_FormatBuf(line, 4096, WS_ERRRESP, 505, "HTTP Version Not Supported", 27, "HTTP Version Not Supported.");
+			Socket_Send(ws->sock, line, (int)String_Length(line));
+			return false;
+		}
+	}
+
 	while(Socket_ReceiveLine(ws->sock, line, 4095)) {
 		if(*line == '\0') break;
 
@@ -66,7 +74,7 @@ bool WsClient_DoHandshake(WSCLIENT ws) {
 		return true;
 	}
 
-	String_FormatBuf(line, 4096, WS_ERRRESP, 400, "Bad request", "Not a websocket connection.");
+	String_FormatBuf(line, 4096, WS_ERRRESP, 400, "Bad request", 27, "Not a websocket connection.");
 	Socket_Send(ws->sock, line, (int)String_Length(line));
 	return false;
 }

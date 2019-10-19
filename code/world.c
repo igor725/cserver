@@ -5,11 +5,13 @@
 
 WORLD World_Create(const char* name) {
 	WORLD tmp = Memory_Alloc(1, sizeof(struct world));
+	WORLDINFO wi = Memory_Alloc(1, sizeof(struct worldInfo));
 	tmp->name = String_AllocCopy(name);
 	tmp->saveDone = true;
 	tmp->id = -1;
+	tmp->info = wi;
 
-	WORLDINFO wi = Memory_Alloc(1, sizeof(struct worldInfo));
+
 	wi->dim = Memory_Alloc(1, sizeof(struct worldDims));
 	wi->spawnVec = Memory_Alloc(1, sizeof(struct vector));
 	wi->spawnAng = Memory_Alloc(1, sizeof(struct angle));
@@ -22,7 +24,6 @@ WORLD World_Create(const char* name) {
 	wi->props[PROP_FADEWEATHER] = 128;
 	wi->props[PROP_EXPFOG] = 0;
 	wi->props[PROP_SIDEOFFSET] = -2;
-	tmp->info = wi;
 
 	return tmp;
 }
@@ -228,7 +229,7 @@ static TRET wSaveThread(TARG param) {
 	uint8_t out[1024];
 	int ret;
 
-	if((ret = deflateInit(&stream, 4)) != Z_OK) {
+	if((ret = deflateInit(&stream, Z_BEST_COMPRESSION)) != Z_OK) {
 		Error_Print2(ET_ZLIB, ret, false);
 		return false;
 	}
