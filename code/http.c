@@ -169,6 +169,17 @@ static void SendHeaders(SOCKET sock, HTTPHDR hdr, char* line) {
 	SendLine(sock, line);
 }
 
+bool HttpRequest_Read(HTTPREQ req, SOCKET sock) {
+	/*
+		TODO: Читалка GET запросов. Позже, когда она
+		будет готова, её можно будет использовать
+		для работы с WebSocket клиентами, которые идут
+		на порт сервера, обрабатывающий minecraft-клиентов.
+	*/
+	(void)req; (void)sock;
+	return false;
+}
+
 bool HttpRequest_Perform(HTTPREQ req, HTTPRESP resp) {
 	char line[1024];
 	SOCKET sock = Socket_New();
@@ -176,8 +187,11 @@ bool HttpRequest_Perform(HTTPREQ req, HTTPRESP resp) {
 	String_FormatBuf(line, 1024, "GET %s HTTP/1.1\r\n", req->path);
 	SendLine(sock, line);
 	SendHeaders(sock, req->header, line);
-
-	return HttpResponse_Read(resp, sock);
+	if(!HttpResponse_Read(resp, sock)) {
+		req->error = HTTP_ERR_RESPONSE_READ;
+		return false;
+	}
+	return true;
 }
 
 void HttpRequest_Cleanup(HTTPREQ req) {
@@ -186,6 +200,7 @@ void HttpRequest_Cleanup(HTTPREQ req) {
 		HTTPHDR ptr = req->header;
 
 		while(ptr) {
+			Memory_Free((void*)ptr->key);
 			EmptyHeader(ptr);
 			Memory_Free(ptr);
 			ptr = ptr->next;
@@ -276,53 +291,54 @@ bool HttpResponse_Read(HTTPRESP resp, SOCKET sock) {
 			resp->error = HTTP_ERR_INVALID_VERSION;
 			return false;
 		}
+	} else {
+		resp->error = HTTP_ERR_INVALID_VERSION;
+		return false;
+	}
 
-		const char* code_start = String_FirstChar(line, ' ');
-		if(!code_start) {
-			resp->error = HTTP_ERR_INVALID_REQUEST;
-			return false;
-		}
-		char* code_end = (char*)++code_start;
-		while(*code_end >= '0' && *code_end <= '9') ++code_end;
-		*code_end = '\0';
-		if(code_start == code_end) {
-			resp->error = HTTP_ERR_INVALID_REQUEST;
-			return false;
-		}
-		int code = String_ToInt(code_start);
+	const char* code_start = String_FirstChar(line, ' ');
+	if(!code_start) {
+		resp->error = HTTP_ERR_INVALID_REQUEST;
+		return false;
+	}
+	char* code_end = (char*)++code_start;
+	while(*code_end >= '0' && *code_end <= '9') ++code_end;
+	*code_end = '\0';
+	if(code_start == code_end) {
+		resp->error = HTTP_ERR_INVALID_REQUEST;
+		return false;
+	}
+	int code = String_ToInt(code_start);
 
-		if(code < 100 || code > 599) {
-			resp->error = HTTP_ERR_INVALID_CODE;
-			return false;
-		}
+	if(code < 100 || code > 599) {
+		resp->error = HTTP_ERR_INVALID_CODE;
+		return false;
+	}
 
-		resp->code = code;
-		while(Socket_ReceiveLine(sock, line, 1024)) {
-			char* value = (char*)String_FirstChar(line, ':');
-			if(value) {
-				*value++ = '\0';
-				HttpResponse_SetHeader(resp, line, ++value);
-			}
+	resp->code = code;
+	while(Socket_ReceiveLine(sock, line, 1024)) {
+		char* value = (char*)String_FirstChar(line, ':');
+		if(value) {
+			*value++ = '\0';
+			HttpResponse_SetHeader(resp, line, ++value);
 		}
+	}
 
-		int len = HttpResponse_GetHeaderInt(resp, "Content-Length");
-		if(len > 0) {
-			if(len <= 131072) {
-				resp->bodysize = len;
-				resp->body = Memory_Alloc(1, len + 1);
-				if(Socket_Receive(sock, resp->body, len, 0) != len) {
-					resp->error = HTTP_ERR_BODY_RECV_FAIL;
-					return false;
-				}
-			} else {
-				resp->error = HTTP_ERR_TOO_BIG_BODY;
+	int len = HttpResponse_GetHeaderInt(resp, "Content-Length");
+	if(len > 0) {
+		if(len <= 131072) {
+			resp->bodysize = len;
+			resp->body = Memory_Alloc(1, len + 1);
+			if(Socket_Receive(sock, resp->body, len, 0) != len) {
+				resp->error = HTTP_ERR_BODY_RECV_FAIL;
 				return false;
 			}
+		} else {
+			resp->error = HTTP_ERR_TOO_BIG_BODY;
+			return false;
 		}
-		return true;
 	}
-	resp->error = HTTP_ERR_INVALID_VERSION;
-	return false;
+	return true;
 }
 
 void HttpResponse_Cleanup(HTTPRESP resp) {

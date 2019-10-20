@@ -2,6 +2,9 @@
 #define HTTP_H
 enum httpErrors {
 	HTTP_ERR_OK,
+	
+	HTTP_ERR_RESPONSE_READ,
+
 	HTTP_ERR_INVALID_VERSION,
 	HTTP_ERR_INVALID_CODE,
 	HTTP_ERR_INVALID_REQUEST,
@@ -31,6 +34,7 @@ typedef struct httpResponse {
 } *HTTPRESP;
 
 typedef struct httpRequest {
+	int error;
 	struct sockaddr_in addr;
 	const char* path;
 	HTTPHDR header;
@@ -43,6 +47,7 @@ API void HttpRequest_SetHeaderStr(HTTPREQ req, const char* key, const char* valu
 API void HttpRequest_SetHeaderInt(HTTPREQ req, const char* key, int value);
 API void HttpRequest_SetHost(HTTPREQ req, const char* host, uint16_t port);
 API void HttpRequest_SetPath(HTTPREQ req, const char* path);
+API bool HttpRequest_Read(HTTPREQ req, SOCKET sock);
 API bool HttpRequest_Perform(HTTPREQ req, HTTPRESP resp);
 API void HttpRequest_Cleanup(HTTPREQ req);
 
