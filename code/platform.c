@@ -1,4 +1,6 @@
 #include "core.h"
+#include "platform.h"
+#include "str.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

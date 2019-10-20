@@ -1,36 +1,13 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
-typedef void* TARG;
-
-#if defined(WINDOWS)
-typedef void* THREAD;
-typedef uint32_t TRET;
-typedef TRET(*TFUNC)(TARG);
-typedef CRITICAL_SECTION MUTEX;
-typedef struct {
-  char fmt[256];
-  const char* cfile;
-  bool  isDir;
-  char  state;
-  void* dirHandle;
-  WIN32_FIND_DATA fileHandle;
-} dirIter;
-#elif defined(POSIX)
-typedef pthread_t* THREAD;
-typedef void*(*TFUNC)(TARG);
-typedef void* TRET;
-typedef pthread_mutex_t MUTEX;
-typedef int SOCKET;
-
 typedef struct {
   char fmt[256];
   const char* cfile;
   bool isDir;
   char state;
-  DIR* dirHandle;
-  struct dirent* fileHandle;
+  ITER_DIR dirHandle;
+  ITER_FILE fileHandle;
 } dirIter;
-#endif
 
 API void* Memory_Alloc(size_t num, size_t size);
 API void  Memory_Copy(void* dst, const void* src, size_t count);

@@ -1,4 +1,6 @@
 #include "core.h"
+#include "platform.h"
+#include "str.h"
 #include "log.h"
 
 uint8_t Log_Level = LOG_ERROR | LOG_INFO | LOG_CHAT | LOG_WARN;

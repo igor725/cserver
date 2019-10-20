@@ -1,4 +1,6 @@
 #include "core.h"
+#include "platform.h"
+#include "str.h"
 #include "command.h"
 #include "server.h"
 #include "generators.h"

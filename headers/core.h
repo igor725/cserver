@@ -8,6 +8,7 @@
 #  define _CRT_SECURE_NO_WARNINGS
 #  include <winsock2.h>
 #  include <ws2tcpip.h>
+#  include <stdint.h>
 
 #  define ZLIB_WINAPI
 #  ifndef CPLUGIN
@@ -18,12 +19,20 @@
 #    define VAR __declspec(dllimport)
 #    define EXP __declspec(dllexport)
 #  endif
+
+typedef void* ITER_DIR;
+typedef WIN32_FIND_DATA ITER_FILE;
+typedef void* THREAD;
+typedef uint32_t TRET;
+typedef TRET(*TFUNC)(TARG);
+typedef CRITICAL_SECTION MUTEX;
 #elif defined(__unix__)
 #  define POSIX
 #  define PATH_DELIM '/'
 #  define DLIB_EXT "so"
 #  define _GNU_SOURCE
 #  include <errno.h>
+#  include <stdint.h>
 #  include <sys/socket.h>
 #  include <sys/stat.h>
 #  include <sys/time.h>
@@ -49,18 +58,25 @@
 #  define INVALID_SOCKET -1
 #  define SD_SEND   SHUT_WR
 #  define MAX_PATH  PATH_MAX
+
+typedef DIR* ITER_DIR;
+typedef struct dirent* ITER_FILE;
+typedef pthread_t* THREAD;
+typedef void*(*TFUNC)(TARG);
+typedef void* TRET;
+typedef pthread_mutex_t MUTEX;
+typedef int SOCKET;
 #else
 #  error Unknown OS
 #endif
+
+#include <stdio.h>
+#include <zlib.h>
 
 #ifndef true
 #  define true  1
 #  define false 0
 #endif
-
-#include <stdint.h>
-#include <stdio.h>
-#include <zlib.h>
 
 typedef uint32_t bool;
 typedef uint8_t  Order;
@@ -68,11 +84,9 @@ typedef uint8_t  BlockID;
 typedef uint8_t  Weather;
 typedef uint8_t  ClientID;
 typedef uint8_t  MessageType;
+typedef void* TARG;
 
-#include "platform.h"
 #include "error.h"
-#include "block.h"
-#include "str.h"
 #include "log.h"
 
 #define DEFAULT_NAME "Server name"
@@ -104,21 +118,11 @@ enum messageTypes {
 	CPE_ANNOUNCE = 100
 };
 
-typedef struct cpeExt {
-	const char* name;
-	int version;
-	uint32_t crc32;
-	struct cpeExt*  next;
-} *EXT;
-
 typedef struct vector {
-	float x;
-	float y;
-	float z;
+	float x, y, z;
 } VECTOR;
 
 typedef struct angle {
-	float yaw;
-	float pitch;
+	float yaw, pitch;
 } ANGLE;
 #endif

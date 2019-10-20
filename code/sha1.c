@@ -14,11 +14,8 @@ A million repetitions of "a"
 */
 
 /* #define LITTLE_ENDIAN * This should be #define'd already, if true. */
-/* #define SHA1HANDSOFF * Copies data before messing with it. */
-
-#define SHA1HANDSOFF
-
-#include <core.h>
+#include "core.h"
+#include "platform.h"
 #include "sha1.h"
 
 #ifndef BYTE_ORDER
@@ -103,17 +100,8 @@ void SHA1_Transform(uint32_t state[5], const uint8_t buffer[64])
 		uint8_t c[64];
 		uint32_t l[16];
 	} CHAR64LONG16;
-	#ifdef SHA1HANDSOFF
 	CHAR64LONG16 block[1];  /* use array to appear as a pointer */
 	Memory_Copy(block, buffer, 64);
-	#else
-	/* The following had better never be used because it causes the
-	* pointer-to-const buffer to be cast into a pointer to non-const.
-	* And the result is written through.  I threw a "const" in, hoping
-	* this will cause a diagnostic.
-	*/
-	CHAR64LONG16* block = (const CHAR64LONG16*)buffer;
-	#endif
 	/* Copy context->state[] to working vars */
 	a = state[0];
 	b = state[1];
@@ -149,9 +137,7 @@ void SHA1_Transform(uint32_t state[5], const uint8_t buffer[64])
 	state[4] += e;
 	/* Wipe variables */
 	a = b = c = d = e = 0;
-	#ifdef SHA1HANDSOFF
 	Memory_Fill(block, sizeof(block), 0);
-	#endif
 }
 
 

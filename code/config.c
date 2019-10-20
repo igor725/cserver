@@ -1,4 +1,6 @@
 #include "core.h"
+#include "platform.h"
+#include "str.h"
 #include "config.h"
 
 const char* commentSymbol = "#";

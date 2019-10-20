@@ -1,4 +1,6 @@
 #include "core.h"
+#include "platform.h"
+#include "str.h"
 #include "sha1.h"
 #include "websocket.h"
 

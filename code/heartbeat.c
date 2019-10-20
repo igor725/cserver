@@ -1,4 +1,5 @@
 #include "core.h"
+#include "platform.h"
 #include "server.h"
 #include "svmath.h"
 #include "heartbeat.h"

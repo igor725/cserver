@@ -1,4 +1,7 @@
 #include "core.h"
+#include "platform.h"
+#include "str.h"
+#include "block.h"
 #include "client.h"
 #include "server.h"
 #include "packets.h"

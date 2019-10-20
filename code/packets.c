@@ -1,4 +1,7 @@
 #include "core.h"
+#include "platform.h"
+#include "str.h"
+#include "block.h"
 #include "client.h"
 #include "event.h"
 #include "server.h"
@@ -421,7 +424,7 @@ bool Handler_Message(CLIENT client, char* data) {
 
 	if(Event_OnMessage(client, messptr, &type)) {
 		char formatted[320] = {0};
-		sprintf(formatted, CHATLINE, client->playerData->name, messptr);
+		String_FormatBuf(formatted, 320, CHATLINE, client->playerData->name, messptr);
 
 		if(*messptr == '/') {
 			if(!Command_Handle(messptr, client))

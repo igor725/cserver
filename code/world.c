@@ -1,4 +1,6 @@
 #include "core.h"
+#include "platform.h"
+#include "str.h"
 #include "client.h"
 #include "world.h"
 #include "event.h"

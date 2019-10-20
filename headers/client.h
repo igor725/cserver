@@ -10,6 +10,13 @@ enum playerStates {
 	STATE_INGAME
 };
 
+typedef struct cpeExt {
+	const char* name;
+	int version;
+	uint32_t crc32;
+	struct cpeExt*  next;
+} *EXT;
+
 typedef struct cpeHacks {
 	bool flying, noclip, speeding;
 	bool spawnControl, tpv;

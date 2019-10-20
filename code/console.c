@@ -1,4 +1,5 @@
 #include "core.h"
+#include "platform.h"
 #include "console.h"
 #include "command.h"
 #include "server.h"

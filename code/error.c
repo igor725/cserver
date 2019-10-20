@@ -1,4 +1,5 @@
 #include "core.h"
+#include "str.h"
 #include "error.h"
 
 const char* const Strings[] = {
