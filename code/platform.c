@@ -88,6 +88,29 @@ bool Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, uint16_t port) {
 	return inet_pton(AF_INET, ip, &ssa->sin_addr.s_addr) > 0;
 }
 
+bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, uint16_t port) {
+	if(!Socket_SetAddr(ssa, host, port)) {
+		int ret;
+		struct addrinfo* addr;
+		struct addrinfo hints = {0};
+		hints.ai_family = AF_INET;
+		hints.ai_socktype = 0;
+		hints.ai_protocol = 0;
+
+		char strport[6];
+		String_FormatBuf(strport, 6, "%d", port);
+
+		if((ret = getaddrinfo(host, strport, &hints, &addr)) == 0) {
+			struct sockaddr_in* new_ssa = (struct sockaddr_in*)addr->ai_addr;
+			Memory_Copy(ssa, new_ssa, sizeof(struct sockaddr_in));
+			freeaddrinfo(addr);
+			return true;
+		}
+		return false;
+	}
+	return true;
+}
+
 SOCKET Socket_New() {
 	SOCKET sock;
 	if((sock = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
@@ -128,22 +151,22 @@ int Socket_Receive(SOCKET sock, char* buf, int len, int flags) {
 	return recv(sock, buf, len, flags);
 }
 
-bool Socket_ReceiveLine(SOCKET sock, char* line, uint32_t len) {
-	uint32_t linepos = 0;
+int Socket_ReceiveLine(SOCKET sock, char* line, int len) {
+	int linepos = 0;
 	char sym;
 
 	while(linepos < len) {
 		if(Socket_Receive(sock, &sym, 1, 0) == 1) {
 			if(sym == '\n') {
-				line[linepos] = '\0';
+				line[linepos++] = '\0';
 				break;
 			} else if(sym != '\r')
 				line[linepos++] = sym;
-		}
+		} else return 0;
 	}
 
 	line[linepos] = '\0';
-	return true;
+	return --linepos;
 }
 
 int Socket_Send(SOCKET sock, char* buf, int len) {
