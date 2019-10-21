@@ -302,7 +302,7 @@ bool Handler_Handshake(CLIENT client, char* data) {
 
 	for(int i = 0; i < 128; i++) {
 		CLIENT other = Clients_List[i];
-		if(!other || other == client) continue;
+		if(!other || other == client || !other->playerData) continue;
 		if(String_CaselessCompare(client->playerData->name, other->playerData->name)) {
 			Client_Kick(client, "This name already in use");
 			return true;

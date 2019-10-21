@@ -130,6 +130,7 @@ static void PacketReceiverWs(CLIENT client) {
 			client->closed = true;
 			return;
 		}
+		
 		recvSize = ws->plen - 1;
 		handlePacket:
 		packet = Packet_Get(*data++);
@@ -159,9 +160,12 @@ static void PacketReceiverWs(CLIENT client) {
 				recvSize -= packetSize + 1;
 				goto handlePacket;
 			}
+
+			return;
 		} else
 			Client_Kick(client, "WebSocket error: payloadSize < packetSize");
-	}
+	} else
+		client->closed = true;
 }
 
 static void PacketReceiverRaw(CLIENT client) {
@@ -450,9 +454,12 @@ void Client_Free(CLIENT client) {
 	if(client->id != 0xFF)
 		Clients_List[client->id] = NULL;
 
+	if(client->mutex) Mutex_Lock(client->mutex);
+
 	if(client->thread) Thread_Close(client->thread);
+
 	if(client->mapThread) Thread_Close(client->mapThread);
-	if(client->mutex) Mutex_Free(client->mutex);
+
 	if(client->websock) Memory_Free(client->websock);
 
 	PLAYERDATA pd = client->playerData;
