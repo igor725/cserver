@@ -1,6 +1,7 @@
 @echo off
 setlocal
 set ARCH=%VSCMD_ARG_TGT_ARCH%
+IF "%ARCH%"=="" goto vcerror
 set CLEAN=0
 set DEBUG=0
 set CODE_ROOT=.
@@ -74,6 +75,7 @@ IF "%BUILD_PLUGIN%"=="1" (
   set BINNAME=%PLUGNAME%
   set OBJDIR=%PLUGNAME%\objs
   set CODE_ROOT=.\%PLUGNAME%
+	echo Building plugin: %PLUGNAME%
 ) else (set OUTDIR=%SVOUTDIR%)
 
 set SVPLUGDIR=%SVOUTDIR%\plugins
@@ -89,7 +91,6 @@ IF NOT EXIST %ZLIB_INCLUDE% goto zcopyerr
 IF NOT EXIST %OBJDIR% MD %OBJDIR%
 IF NOT EXIST %OUTDIR% MD %OUTDIR%
 if "%CLEAN%"=="1" goto clean
-IF "%ARCH%"=="" goto vcerror
 
 IF "%BUILD_PLUGIN%"=="1" (
   set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DCPLUGIN /I.\headers\

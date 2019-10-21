@@ -2,6 +2,7 @@
 #include <client.h>
 #include <packets.h>
 #include <block.h>
+#include <str.h>
 
 #include "data.h"
 #include "gui.h"

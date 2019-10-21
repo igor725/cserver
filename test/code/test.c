@@ -12,6 +12,7 @@
 #include <core.h>
 #include <event.h>
 #include <command.h>
+#include <str.h>
 
 // Хедеры плагина
 #include "test.h"

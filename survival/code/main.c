@@ -4,6 +4,7 @@
 #include <command.h>
 #include <block.h>
 #include <server.h>
+#include <str.h>
 
 #include "data.h"
 #include "damage.h"
