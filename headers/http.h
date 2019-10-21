@@ -2,7 +2,7 @@
 #define HTTP_H
 enum httpErrors {
 	HTTP_ERR_OK,
-	
+
 	HTTP_ERR_RESPONSE_READ,
 
 	HTTP_ERR_INVALID_VERSION,
@@ -44,7 +44,9 @@ API const char* HttpCode_GetReason(int code);
 
 API HTTPHDR HttpRequest_GetHeader(HTTPREQ req, const char* key);
 API void HttpRequest_SetHeaderStr(HTTPREQ req, const char* key, const char* value);
+API const char* HttpRequest_GetHeaderStr(HTTPREQ req, const char* key);
 API void HttpRequest_SetHeaderInt(HTTPREQ req, const char* key, int value);
+int HttpRequest_GetHeaderInt(HTTPREQ req, const char* key);
 API void HttpRequest_SetHost(HTTPREQ req, const char* host, uint16_t port);
 API void HttpRequest_SetPath(HTTPREQ req, const char* path);
 API bool HttpRequest_Read(HTTPREQ req, SOCKET sock);

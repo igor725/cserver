@@ -130,11 +130,34 @@ void HttpRequest_SetHeaderStr(HTTPREQ req, const char* key, const char* value) {
 	hdr->value.vchar = String_AllocCopy(value);
 }
 
+const char* HttpRequest_GetHeaderStr(HTTPREQ req, const char* key) {
+	HTTPHDR hdr = FindHeader(req->header, key);
+	if(hdr && hdr->type == HDRT_STR) return hdr->value.vchar;
+	return NULL;
+}
+
 void HttpRequest_SetHeaderInt(HTTPREQ req, const char* key, int value) {
 	HTTPHDR hdr = HttpRequest_GetHeader(req, key);
 	EmptyHeader(hdr);
 	hdr->type = HDRT_INT;
 	hdr->value.vint = value;
+}
+
+int HttpRequest_GetHeaderInt(HTTPREQ req, const char* key) {
+	HTTPHDR hdr = FindHeader(req->header, key);
+	if(hdr && hdr->type == HDRT_INT) return hdr->value.vint;
+	return 0;
+}
+
+void HttpRequest_SetHeader(HTTPREQ resp, const char* key, const char* value) {
+	char first = *value;
+	if(first >= '0' && first <= '9') {
+		HttpRequest_SetHeaderInt(resp, key, String_ToInt(value));
+		return;
+	}
+	if(first >= ' ' && first <= '~') {
+		HttpRequest_SetHeaderStr(resp, key, value);
+	}
 }
 
 void HttpRequest_SetHost(HTTPREQ req, const char* host, uint16_t port) {
@@ -178,14 +201,36 @@ static void SendHeaders(SOCKET sock, HTTPHDR hdr, char* line) {
 }
 
 bool HttpRequest_Read(HTTPREQ req, SOCKET sock) {
-	/*
-		TODO: Читалка GET запросов. Позже, когда она
-		будет готова, её можно будет использовать
-		для работы с WebSocket клиентами, которые идут
-		на порт сервера, обрабатывающий minecraft-клиентов.
-	*/
-	(void)req; (void)sock;
-	return false;
+	char line[1024];
+	if(!Socket_ReceiveLine(sock, line, 1024)) {
+		req->error = HTTP_ERR_INVALID_REQUEST;
+		return false;
+	}
+	if(!String_CaselessCompare2(line, "GET ", 4)) {
+		req->error = HTTP_ERR_INVALID_REQUEST;
+		return false;
+	}
+	char* path_start = line + 4;
+	char* path_end = (char*)String_LastChar(path_start, ' ');
+	if(!path_end) {
+		req->error = HTTP_ERR_INVALID_REQUEST;
+		return false;
+	}
+	*path_end = '\0';
+	req->path = String_AllocCopy(path_start);
+	if(!String_CaselessCompare2(path_end++, "HTTP/1.1", 8)) {
+		req->error = HTTP_ERR_INVALID_VERSION;
+		return false;
+	}
+	while(Socket_ReceiveLine(sock, line, 1024)) {
+		char* value = (char*)String_FirstChar(line, ':');
+		if(value) {
+			*value++ = '\0';
+			HttpRequest_SetHeader(req, line, ++value);
+		}
+	}
+
+	return true;
 }
 
 bool HttpRequest_Perform(HTTPREQ req, HTTPRESP resp) {
