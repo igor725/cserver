@@ -11,7 +11,10 @@ enum wState {
 
 enum wErrors {
 	WS_ERR_SUCC,
+	WS_ERR_UNKNOWN,
 	WS_ERR_MASK,
+	WS_ERR_PAYLOAD_TOO_BIG,
+	WS_ERR_PAYLOAD_LEN_MISMATCH,
 };
 
 typedef struct wsClient {

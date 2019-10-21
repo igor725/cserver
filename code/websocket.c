@@ -100,8 +100,10 @@ bool WsClient_ReceiveFrame(WSCLIENT ws) {
 					ws->state = WS_ST_PLEN;
 				} else if(plen < 126) {
 					ws->state = WS_ST_MASK;
-				} else
+				} else {
+					ws->error = WS_ERR_PAYLOAD_TOO_BIG;
 					return false;
+				}
 			} else {
 				ws->error = WS_ERR_MASK;
 				return false;
@@ -114,7 +116,10 @@ bool WsClient_ReceiveFrame(WSCLIENT ws) {
 
 		if(len == 2) {
 			ws->plen = ntohs(ws->plen);
-			if(ws->plen > 131) return false;
+			if(ws->plen > 131) {
+				ws->error = WS_ERR_PAYLOAD_TOO_BIG;
+				return false;
+			}
 			ws->state = WS_ST_MASK;
 		}
 	}
@@ -132,14 +137,17 @@ bool WsClient_ReceiveFrame(WSCLIENT ws) {
 				for(uint32_t i = 0; i < len; i++) {
 					ws->recvbuf[i] ^= ws->mask[i % 4];
 				}
-			} else
+			} else {
+				ws->error = WS_ERR_PAYLOAD_LEN_MISMATCH;
 				return false;
+			}
 		}
 
 		ws->state = WS_ST_DONE;
 		return true;
 	}
 
+	ws->error = WS_ERR_UNKNOWN;
 	return false;
 }
 
