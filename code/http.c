@@ -202,7 +202,7 @@ static void SendHeaders(SOCKET sock, HTTPHDR hdr, char* line) {
 
 bool HttpRequest_Read(HTTPREQ req, SOCKET sock) {
 	char line[1024];
-	if(!Socket_ReceiveLine(sock, line, 1024)) {
+	if(!Socket_ReceiveLine(sock, line, 1023)) {
 		req->error = HTTP_ERR_INVALID_REQUEST;
 		return false;
 	}
@@ -222,7 +222,7 @@ bool HttpRequest_Read(HTTPREQ req, SOCKET sock) {
 		req->error = HTTP_ERR_INVALID_VERSION;
 		return false;
 	}
-	while(Socket_ReceiveLine(sock, line, 1024)) {
+	while(Socket_ReceiveLine(sock, line, 1023)) {
 		char* value = (char*)String_FirstChar(line, ':');
 		if(value) {
 			*value++ = '\0';
@@ -337,7 +337,7 @@ bool HttpResponse_SendTo(HTTPRESP resp, SOCKET sock) {
 
 bool HttpResponse_Read(HTTPRESP resp, SOCKET sock) {
 	char line[1024];
-	if(Socket_ReceiveLine(sock, line, 1024)) {
+	if(Socket_ReceiveLine(sock, line, 1023)) {
 		if(!String_CaselessCompare2(line, "HTTP/1.1 ", 9)) {
 			resp->error = HTTP_ERR_INVALID_VERSION;
 			return false;
@@ -367,7 +367,7 @@ bool HttpResponse_Read(HTTPRESP resp, SOCKET sock) {
 	}
 
 	resp->code = code;
-	while(Socket_ReceiveLine(sock, line, 1024)) {
+	while(Socket_ReceiveLine(sock, line, 1023)) {
 		char* value = (char*)String_FirstChar(line, ':');
 		if(value) {
 			*value++ = '\0';
