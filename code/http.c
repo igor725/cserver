@@ -206,10 +206,12 @@ bool HttpRequest_Read(HTTPREQ req, SOCKET sock) {
 		req->error = HTTP_ERR_INVALID_REQUEST;
 		return false;
 	}
+
 	if(!String_CaselessCompare2(line, "GET ", 4)) {
 		req->error = HTTP_ERR_INVALID_REQUEST;
 		return false;
 	}
+
 	char* path_start = line + 4;
 	char* path_end = (char*)String_LastChar(path_start, ' ');
 	if(!path_end) {
@@ -218,10 +220,12 @@ bool HttpRequest_Read(HTTPREQ req, SOCKET sock) {
 	}
 	*path_end = '\0';
 	req->path = String_AllocCopy(path_start);
-	if(!String_CaselessCompare2(path_end++, "HTTP/1.1", 8)) {
+
+	if(!String_CaselessCompare2(++path_end, "HTTP/1.1", 8)) {
 		req->error = HTTP_ERR_INVALID_VERSION;
 		return false;
 	}
+
 	while(Socket_ReceiveLine(sock, line, 1023)) {
 		char* value = (char*)String_FirstChar(line, ':');
 		if(value) {
@@ -393,7 +397,6 @@ bool HttpResponse_Read(HTTPRESP resp, SOCKET sock) {
 }
 
 void HttpResponse_Cleanup(HTTPRESP resp) {
-	if(resp->body) Memory_Free(resp->body);
 	if(resp->header) {
 		HTTPHDR ptr = resp->header;
 
