@@ -158,7 +158,7 @@ int Socket_ReceiveLine(SOCKET sock, char* line, int len) {
 	char sym;
 
 	while(len > 1) {
-		if((len -= Socket_Receive(sock, &sym, 1, 0)) == 1) {
+		if(Socket_Receive(sock, &sym, 1, 0) == 1 && --len) {
 			if(sym == '\n') {
 				*line++ = '\0';
 				break;
