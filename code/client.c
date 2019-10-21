@@ -446,7 +446,7 @@ void Client_Free(CLIENT client) {
 	if(client->id != 0xFF)
 		Clients_List[client->id] = NULL;
 
-	if(client->mutex) Mutex_Lock(client->mutex);
+	if(client->mutex) Mutex_Free(client->mutex);
 
 	if(client->thread) Thread_Close(client->thread);
 
