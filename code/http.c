@@ -100,6 +100,12 @@ static void EmptyHeader(HTTPHDR hdr) {
 	hdr->type = 0;
 }
 
+static void FreeHeader(HTTPHDR hdr) {
+	Memory_Free((void*)hdr->key);
+	EmptyHeader(hdr);
+	Memory_Free(hdr);
+}
+
 HTTPHDR HttpRequest_GetHeader(HTTPREQ req, const char* key) {
 	HTTPHDR hdr = FindHeader(req->header, key);
 	if(!hdr) {
@@ -202,9 +208,7 @@ void HttpRequest_Cleanup(HTTPREQ req) {
 		HTTPHDR ptr = req->header;
 
 		while(ptr) {
-			Memory_Free((void*)ptr->key);
-			EmptyHeader(ptr);
-			Memory_Free(ptr);
+			FreeHeader(ptr);
 			ptr = ptr->next;
 		}
 	}
@@ -349,8 +353,7 @@ void HttpResponse_Cleanup(HTTPRESP resp) {
 		HTTPHDR ptr = resp->header;
 
 		while(ptr) {
-			EmptyHeader(ptr);
-			Memory_Free(ptr);
+			FreeHeader(ptr);
 			ptr = ptr->next;
 		}
 	}
