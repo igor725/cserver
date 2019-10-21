@@ -130,7 +130,7 @@ static void PacketReceiverWs(CLIENT client) {
 			client->closed = true;
 			return;
 		}
-		
+
 		recvSize = ws->plen - 1;
 		handlePacket:
 		packet = Packet_Get(*data++);
@@ -202,15 +202,7 @@ static void PacketReceiverRaw(CLIENT client) {
 TRET Client_ThreadProc(TARG param) {
 	CLIENT client = (CLIENT)param;
 
-	while(1) {
-		if(client->closed) {
-			if(client->playerData && client->playerData->state > STATE_WLOADDONE)
-				Event_Call(EVT_ONDISCONNECT, (void*)client);
-			Client_Despawn(client);
-			Client_Free(client);
-			return 0;
-		}
-
+	while(!client->closed) {
 		if(client->websock)
 			PacketReceiverWs(client);
 		else
@@ -497,11 +489,12 @@ void Client_Free(CLIENT client) {
 }
 
 int Client_Send(CLIENT client, int len) {
+	if(client->closed) return 0;
 	if(client == Client_Broadcast) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			CLIENT bClient = Clients_List[i];
 
-			if(bClient) {
+			if(bClient && !bClient->closed) {
 				Mutex_Lock(bClient->mutex);
 				if(bClient->websock)
 					WsClient_SendHeader(bClient->websock, 0x02, (uint16_t)len);
@@ -578,6 +571,14 @@ void Client_UpdatePositions(CLIENT client) {
 
 void Client_Tick(CLIENT client) {
 	PLAYERDATA pd = client->playerData;
+	if(client->closed) {
+		if(pd && pd->state > STATE_WLOADDONE)
+			Event_Call(EVT_ONDISCONNECT, (void*)client);
+		Client_Despawn(client);
+		Client_Free(client);
+		return;
+	}
+
 	if(!pd) return;
 
 	if(client->ppstm < 1000) {
