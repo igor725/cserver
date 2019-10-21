@@ -149,6 +149,7 @@ static bool CHandler_Kick(const char* args, CLIENT caller, char* out) {
 			const char* reason = String_FromArgument(args, 1);
 			Client_Kick(tg, reason);
 			String_FormatBuf(out, CMD_MAX_OUT, "Player %s kicked", playername);
+			return true;
 		} else {
 			Command_Print("Player not found.");
 		}
