@@ -216,19 +216,19 @@ TRET Client_MapThreadProc(TARG param) {
 	CLIENT client = (CLIENT)param;
 	if(client->closed) return 0;
 
-	PLAYERDATA pd = client->playerData;
-	WORLD world = pd->world;
-
-	z_stream stream = {0};
 	uint8_t* data = (uint8_t*)client->wrbuf;
-	*data = 0x03;
-	uint16_t* len = (uint16_t*)++data;
-	uint8_t* out = data + 2;
-	int ret;
+	PLAYERDATA pd = client->playerData;
 
+	WORLD world = pd->world;
 	uint8_t* mapdata = world->data;
 	int maplen = world->size;
-	int windowBits = 31;
+
+	*data++ = 0x03;
+	uint16_t* len = (uint16_t*)data++;
+	uint8_t* out = ++data;
+	
+	int ret, windowBits = 31;
+	z_stream stream = {0};
 
 	Mutex_Lock(client->mutex);
 	if(Client_IsSupportExt(client, EXT_FASTMAP, 1)) {
@@ -266,8 +266,8 @@ TRET Client_MapThreadProc(TARG param) {
 			goto end;
 		}
 	} while(stream.avail_out == 0);
-
 	pd->state = STATE_WLOADDONE;
+
 	end:
 	deflateEnd(&stream);
 	Mutex_Unlock(client->mutex);
@@ -275,6 +275,7 @@ TRET Client_MapThreadProc(TARG param) {
 		Packet_WriteLvlFin(client);
 		Client_Spawn(client);
 	}
+
 	return 0;
 }
 
