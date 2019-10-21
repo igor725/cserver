@@ -34,24 +34,25 @@ static char* SHA1toB64(uint8_t* in, char* out) {
 #define WS_ERRRESP "HTTP/1.1 %d %s\r\nConnection: Close\r\nContent-Type: text/html\r\nContent-Length: %d\r\n\r\n%s"
 
 bool WsClient_DoHandshake(WSCLIENT ws) {
-	char line[4096] = {0}, wskey[32] = {0}, b64[30] = {0};
+	char line[1024] = {0}, wskey[32] = {0}, b64[30] = {0};
 	uint8_t hash[20] = {0};
 	bool haveUpgrade = false;
 	int wskeylen = 0;
 
-	if(Socket_ReceiveLine(ws->sock, line, 4095)) {
+	if(Socket_ReceiveLine(ws->sock, line, 1024)) {
 		const char* httpver = String_LastChar(line, 'H');
 		if(!httpver || !String_CaselessCompare(httpver, "HTTP/1.1")) {
-			String_FormatBuf(line, 4096, WS_ERRRESP, 505, "HTTP Version Not Supported", 27, "HTTP Version Not Supported.");
+			String_FormatBuf(line, 1024, WS_ERRRESP, 505, "HTTP Version Not Supported", 27, "HTTP Version Not Supported.");
 			Socket_Send(ws->sock, line, (int)String_Length(line));
 			return false;
 		}
 	}
 
-	while(Socket_ReceiveLine(ws->sock, line, 4095)) {
+	while(Socket_ReceiveLine(ws->sock, line, 1024)) {
 		if(*line == '\0') break;
 
 		char* value = (char*)String_FirstChar(line, ':');
+		if(!value) break;
 		*value = '\0';value += 2;
 
 		if(String_CaselessCompare(line, "Sec-WebSocket-Key")) {
@@ -63,7 +64,7 @@ bool WsClient_DoHandshake(WSCLIENT ws) {
 		}
 	}
 
-	if(haveUpgrade && String_Length(wskey) > 0) {
+	if(haveUpgrade && wskeylen > 0) {
 		SHA1_CTX ctx;
 		SHA1_Init(&ctx);
 		SHA1_Update(&ctx, (uint8_t*)wskey, wskeylen);
@@ -71,12 +72,12 @@ bool WsClient_DoHandshake(WSCLIENT ws) {
 		SHA1_Final((uint8_t*)hash, &ctx);
 		SHA1toB64(hash, b64);
 
-		String_FormatBuf(line, 4096, WS_RESP, b64);
+		String_FormatBuf(line, 1024, WS_RESP, b64);
 		Socket_Send(ws->sock, line, (int)String_Length(line));
 		return true;
 	}
 
-	String_FormatBuf(line, 4096, WS_ERRRESP, 400, "Bad request", 27, "Not a websocket connection.");
+	String_FormatBuf(line, 1024, WS_ERRRESP, 400, "Bad request", 27, "Not a websocket connection.");
 	Socket_Send(ws->sock, line, (int)String_Length(line));
 	return false;
 }

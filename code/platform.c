@@ -154,21 +154,21 @@ int Socket_Receive(SOCKET sock, char* buf, int len, int flags) {
 }
 
 int Socket_ReceiveLine(SOCKET sock, char* line, int len) {
-	int linepos = 0;
+	int start_len = len;
 	char sym;
 
-	while(linepos < len) {
-		if(Socket_Receive(sock, &sym, 1, 0) == 1) {
+	while(len > 1) {
+		if((len -= Socket_Receive(sock, &sym, 1, 0)) == 1) {
 			if(sym == '\n') {
-				line[linepos++] = '\0';
+				*line++ = '\0';
 				break;
 			} else if(sym != '\r')
-				line[linepos++] = sym;
+				*line++ = sym;
 		} else return 0;
 	}
 
-	line[linepos] = '\0';
-	return --linepos;
+	*line = '\0';
+	return start_len - len;
 }
 
 int Socket_Send(SOCKET sock, char* buf, int len) {
