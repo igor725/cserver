@@ -187,20 +187,13 @@ void Socket_Close(SOCKET sock) {
 #endif
 }
 
-bool Directory_Ensure(const char* path) {
-	if(Directory_Exists(path)) return true;
-	return Directory_Create(path);
-}
-
 #if defined(WINDOWS)
-#define isDir(iter) ((iter->fileHandle.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) > 0)
-
+#define isDir(h) (h.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
 	if(iter->state != 0) {
 		Error_Print2(ET_SERVER, EC_ITERINITED, false);
 		return false;
 	}
-
 	String_FormatBuf(iter->fmt, 256, "%s\\*.%s", dir, ext);
 	if((iter->dirHandle = FindFirstFile(iter->fmt, &iter->fileHandle)) == INVALID_HANDLE_VALUE) {
 		uint32_t err = GetLastError();
@@ -214,18 +207,17 @@ bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
 	}
 
 	iter->cfile = iter->fileHandle.cFileName;
-	iter->isDir = isDir(iter);
+	iter->isDir = isDir(iter->fileHandle);
 	iter->state = 1;
 	return true;
 }
 
 bool Iter_Next(dirIter* iter) {
-	if(iter->state != 1)
-		return false;
+	if(iter->state != 1) return false;
 
 	bool haveFile = FindNextFile(iter->dirHandle, &iter->fileHandle);
 	if(haveFile) {
-		iter->isDir = isDir(iter);
+		iter->isDir = isDir(iter->fileHandle);
 		iter->cfile = iter->fileHandle.cFileName;
 	} else
 		iter->state = 2;
@@ -234,12 +226,59 @@ bool Iter_Next(dirIter* iter) {
 }
 
 bool Iter_Close(dirIter* iter) {
-	if(iter->state == 0)
-		return false;
+	if(iter->state == 0) return false;
 	FindClose(iter->dirHandle);
 	return true;
 }
+#elif defined(POSIX)
+static bool checkExtension(const char* filename, const char* ext) {
+	const char* _ext = String_LastChar(filename, '.');
+	if(!_ext && !ext) return true;
+	if(!_ext || !ext) return false;
 
+	return String_Compare(++_ext, ext);
+}
+
+bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
+	iter->dirHandle = opendir(dir);
+	if(!iter->dirHandle) {
+		Error_Print2(ET_SYS, errno, false);
+		iter->state = -1;
+		return false;
+	}
+
+	String_Copy(iter->fmt, 256, ext);
+	iter->state = 1;
+	Iter_Next(iter);
+	return true;
+}
+
+bool Iter_Next(dirIter* iter) {
+	if(iter->state != 1) return false;
+
+	do {
+		if((iter->fileHandle = readdir(iter->dirHandle)) == NULL) {
+			iter->cfile = NULL;
+			iter->isDir = false;
+			iter->state = 2;
+			return false;
+		} else {
+			iter->cfile = iter->fileHandle->d_name;
+			iter->isDir = iter->fileHandle->d_type == DT_DIR;
+		}
+	} while(!iter->cfile || !checkExtension(iter->cfile, iter->fmt));
+
+	return true;
+}
+
+bool Iter_Close() {
+	if(iter->state == 0) return false;
+	closedir(iter->dirHandle);
+	return true;
+}
+#endif
+
+#if defined(WINDOWS)
 bool Directory_Exists(const char* path) {
 	uint32_t attr = GetFileAttributes(path);
 	return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
@@ -252,7 +291,27 @@ bool Directory_SetCurrentDir(const char* path) {
 bool Directory_Create(const char* path) {
 	return CreateDirectory(path, NULL);
 }
+#elif defined(POSIX)
+bool Directory_Exists(const char* path) {
+	struct stat ss;
+	return stat(path, &ss) == 0 && S_ISDIR(ss.st_mode);
+}
 
+bool Directory_SetCurrentDir(const char* path) {
+	return chdir(path) == 0;
+}
+
+bool Directory_Create(const char* path) {
+	return mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0;
+}
+#endif
+
+bool Directory_Ensure(const char* path) {
+	if(Directory_Exists(path)) return true;
+	return Directory_Create(path);
+}
+
+#if defined(WINDOWS)
 bool DLib_Load(const char* path, void** lib) {
 	return (*lib = LoadLibrary(path)) != NULL;
 }
@@ -269,7 +328,26 @@ char* DLib_GetError(char* buf, size_t len) {
 bool DLib_GetSym(void* lib, const char* sname, void** sym) {
 	return (*sym = (void*)GetProcAddress(lib, sname)) != NULL;
 }
+#elif defined(POSIX)
+bool DLib_Load(const char* path, void** lib) {
+	return (*lib = dlopen(path, RTLD_NOW)) != NULL;
+}
 
+bool DLib_Unload(void* lib) {
+	return dlclose(lib) == 0;
+}
+
+char* DLib_GetError(char* buf, size_t len) {
+	String_Copy(buf, len, dlerror());
+	return buf;
+}
+
+bool DLib_GetSym(void* lib, const char* sname, void** sym) {
+	return (*sym = dlsym(lib, sname)) != NULL;
+}
+#endif
+
+#if defined(WINDOWS)
 THREAD Thread_Create(TFUNC func, TARG param) {
 	THREAD th = CreateThread(
 		NULL,
@@ -300,134 +378,7 @@ void Thread_Join(THREAD th) {
 	WaitForSingleObject(th, INFINITE);
 	Thread_Close(th);
 }
-
-MUTEX* Mutex_Create(void) {
-	MUTEX* ptr = Memory_Alloc(1, sizeof(MUTEX));
-	if(!ptr) {
-		Error_Print2(ET_SYS, GetLastError(), true);
-	}
-	InitializeCriticalSection(ptr);
-	return ptr;
-}
-
-void Mutex_Free(MUTEX* handle) {
-	DeleteCriticalSection(handle);
-	Memory_Free(handle);
-}
-
-void Mutex_Lock(MUTEX* handle) {
-	EnterCriticalSection(handle);
-}
-
-void Mutex_Unlock(MUTEX* handle) {
-	LeaveCriticalSection(handle);
-}
-
-void Time_Format(char* buf, size_t buflen) {
-	SYSTEMTIME time;
-	GetSystemTime(&time);
-	sprintf_s(buf, buflen, "%02d:%02d:%02d.%03d",
-		time.wHour,
-		time.wMinute,
-		time.wSecond,
-		time.wMilliseconds
-	);
-}
-
-uint64_t Time_GetMSec() {
-	FILETIME ft; GetSystemTimeAsFileTime(&ft);
-	uint64_t time = ft.dwLowDateTime | ((uint64_t)ft.dwHighDateTime << 32);
-	return (time / 10000) + 50491123200000ULL;
-}
-
-void Process_Exit(uint32_t code) {
-	ExitProcess(code);
-}
 #elif defined(POSIX)
-bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
-	if(iter->state != 0) {
-		Error_Print2(ET_SERVER, EC_ITERINITED, false);
-		return false;
-	}
-
-	iter->dirHandle = opendir(dir);
-	if(!iter->dirHandle) {
-		Error_Print2(ET_SYS, errno, false);
-		iter->state = -1;
-		return false;
-	}
-
-	String_Copy(iter->fmt, 256, ext);
-	iter->state = 1;
-	Iter_Next(iter);
-	return true;
-}
-
-static bool checkExtension(const char* filename, const char* ext) {
-	const char* _ext = String_LastChar(filename, '.');
-	if(_ext == NULL && ext == NULL) {
-		return true;
-	} else {
-		if(!_ext || !ext) return false;
-		return String_Compare(++_ext, ext);
-	}
-}
-
-bool Iter_Next(dirIter* iter) {
-	if(iter->state != 1) return false;
-
-	do {
-		if((iter->fileHandle = readdir(iter->dirHandle)) == NULL) {
-			iter->cfile = NULL;
-			iter->isDir = false;
-			iter->state = 2;
-			return false;
-		} else {
-			iter->cfile = iter->fileHandle->d_name;
-			iter->isDir = iter->fileHandle->d_type == DT_DIR;
-		}
-	} while(!iter->cfile || !checkExtension(iter->cfile, iter->fmt));
-
-	return true;
-}
-
-bool Iter_Close(dirIter* iter) {
-	if(iter->state == 0)
-		return false;
-	closedir(iter->dirHandle);
-	return true;
-}
-
-bool Directory_Exists(const char* path) {
-	struct stat ss;
-	return stat(path, &ss) == 0 && S_ISDIR(ss.st_mode);
-}
-
-bool Directory_SetCurrentDir(const char* path) {
-	return chdir(path) == 0;
-}
-
-bool Directory_Create(const char* path) {
-	return mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0;
-}
-
-bool DLib_Load(const char* path, void** lib) {
-	return (*lib = dlopen(path, RTLD_NOW)) != NULL;
-}
-
-bool DLib_Unload(void* lib) {
-	return dlclose(lib) == 0;
-}
-
-char* DLib_GetError(char* buf, size_t len) {
-	String_Copy(buf, len, dlerror());
-	return buf;
-}
-
-bool DLib_GetSym(void* lib, const char* sname, void** sym) {
-	return (*sym = dlsym(lib, sname)) != NULL;
-}
-
 THREAD Thread_Create(TFUNC func, TARG arg) {
 	THREAD thread = Memory_Alloc(1, sizeof(THREAD));
 	if(pthread_create(thread, NULL, func, arg) != 0) {
@@ -452,7 +403,31 @@ void Thread_Join(THREAD th) {
 		Error_Print2(ET_SYS, ret, true);
 	}
 }
+#endif
 
+#if defined(WINDOWS)
+MUTEX* Mutex_Create(void) {
+	MUTEX* ptr = Memory_Alloc(1, sizeof(MUTEX));
+	if(!ptr) {
+		Error_Print2(ET_SYS, GetLastError(), true);
+	}
+	InitializeCriticalSection(ptr);
+	return ptr;
+}
+
+void Mutex_Free(MUTEX* handle) {
+	DeleteCriticalSection(handle);
+	Memory_Free(handle);
+}
+
+void Mutex_Lock(MUTEX* handle) {
+	EnterCriticalSection(handle);
+}
+
+void Mutex_Unlock(MUTEX* handle) {
+	LeaveCriticalSection(handle);
+}
+#elif defined(POSIX)
 MUTEX* Mutex_Create(void) {
 	MUTEX* ptr = Memory_Alloc(1, sizeof(MUTEX));
 	int ret = pthread_mutex_init(ptr, NULL);
@@ -484,7 +459,26 @@ void Mutex_Unlock(MUTEX* handle) {
 		Error_Print2(ET_SYS, ret, true);
 	}
 }
+#endif
 
+#if defined(WINDOWS)
+void Time_Format(char* buf, size_t buflen) {
+	SYSTEMTIME time;
+	GetSystemTime(&time);
+	sprintf_s(buf, buflen, "%02d:%02d:%02d.%03d",
+		time.wHour,
+		time.wMinute,
+		time.wSecond,
+		time.wMilliseconds
+	);
+}
+
+uint64_t Time_GetMSec() {
+	FILETIME ft; GetSystemTimeAsFileTime(&ft);
+	uint64_t time = ft.dwLowDateTime | ((uint64_t)ft.dwHighDateTime << 32);
+	return (time / 10000) + 50491123200000ULL;
+}
+#elif defined(POSIX)
 void Time_Format(char* buf, size_t buflen) {
 	struct timeval tv;
 	struct tm* tm;
@@ -505,8 +499,12 @@ uint64_t Time_GetMSec() {
 	struct timeval cur; gettimeofday(&cur, NULL);
 	return (uint64_t)cur.tv_sec * 1000 + 62135596800000ULL + (cur.tv_usec / 1000);
 }
+#endif
 
 void Process_Exit(uint32_t code) {
+#if defined(WINDOWS)
+	ExitProcess(code);
+#elif defined(POSIX)
 	exit(code);
-}
 #endif
+}
