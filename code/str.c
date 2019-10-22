@@ -1,6 +1,7 @@
 #include "core.h"
 #include "platform.h"
 #include "str.h"
+#include <string.h>
 #include <stdlib.h>
 
 char* String_FindSubstr(const char* str, const char* strsrch) {
