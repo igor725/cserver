@@ -83,11 +83,11 @@ static void getErrorStr(int type, uint32_t code, char* errbuf, size_t sz, va_lis
 }
 
 void Error_Print(int type, uint32_t code, const char* file, uint32_t line, const char* func) {
-	char strbuf[1024] = {0};
-	char errbuf[512] = {0};
+	char strbuf[384] = {0};
+	char errbuf[256] = {0};
 
-	getErrorStr(type, code, errbuf, 512, NULL);
-	String_FormatBuf(strbuf, 1024, ERR_FMT, file, line, func, errbuf);
+	getErrorStr(type, code, errbuf, 256, NULL);
+	String_FormatBuf(strbuf, 384, ERR_FMT, file, line, func, errbuf);
 	if(String_Length(strbuf)) {
 		/*
 			Избегаем краша, если в строке ошибки по какой-то
@@ -99,14 +99,14 @@ void Error_Print(int type, uint32_t code, const char* file, uint32_t line, const
 }
 
 void Error_PrintF(int type, uint32_t code, const char* file, uint32_t line, const char* func, ...) {
-	char strbuf[1024] = {0};
-	char errbuf[512] = {0};
+	char strbuf[384] = {0};
+	char errbuf[256] = {0};
 
 	va_list args;
 	va_start(args, func);
-	getErrorStr(type, code, errbuf, 512, &args);
+	getErrorStr(type, code, errbuf, 256, &args);
 	va_end(args);
-	String_FormatBuf(strbuf, 1024, ERR_FMT, file, line, func, errbuf);
+	String_FormatBuf(strbuf, 384, ERR_FMT, file, line, func, errbuf);
 	if(String_Length(strbuf)) {
 		Log_Error(strbuf);
 		Error_CallStack();
