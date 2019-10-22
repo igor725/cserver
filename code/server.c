@@ -158,20 +158,20 @@ void Server_InitialWork(void) {
 	Event_RegisterVoid(EVT_ONDISCONNECT, onDisconnect);
 
 	Directory_Ensure("worlds");
-	int wIndex = -1;
+	int wIndex = 0;
 	dirIter wIter = {0};
 	if(Iter_Init(&wIter, "worlds", "cws")) {
 		do {
 			if(wIter.isDir || !wIter.cfile) continue;
 			WORLD tmp = World_Create(wIter.cfile);
-			tmp->id = ++wIndex;
+			tmp->id = wIndex++;
 			if(!World_Load(tmp) || !World_Add(tmp))
 				World_Free(tmp);
 		} while(Iter_Next(&wIter) && wIndex < MAX_WORLDS);
 	}
 	Iter_Close(&wIter);
 
-	if(wIndex < 0) {
+	if(wIndex < 1) {
 		WORLD tmp = World_Create("world.cws");
 		World_SetDimensions(tmp, 256, 256, 256);
 		World_AllocBlockArray(tmp);
@@ -206,11 +206,15 @@ void Server_DoStep(void) {
 }
 
 void Server_StartLoop(void) {
-	uint64_t curr = Time_GetMSec(), last = 0;
+	uint64_t last, curr = Time_GetMSec();
 	while(Server_Active) {
 		last = curr;
 		curr = Time_GetMSec();
-		Server_Delta = (uint16_t)(curr - last);
+		Server_Delta = (int)(curr - last);
+		if(Server_Delta < 0) {
+			Log_Warn("Time ran backwards? Server_Delta < 0.");
+			Server_Delta = 0;
+		}
 		if(Server_Delta > 500) {
 			Log_Warn("Last server tick took %dms!", Server_Delta);
 			Server_Delta = 500;

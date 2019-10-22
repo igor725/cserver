@@ -113,8 +113,8 @@ const char* String_FromArgument(const char* args, int index) {
 }
 
 size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index) {
-	if(!args) return 0;
-	const char* tmp = arg;
+	if(!args || arrsz == 0) return 0;
+	size_t start_len = arrsz;
 
 	while(*args != '\0') {
 		if(index > 0) {
@@ -123,27 +123,27 @@ size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index) 
 		} else {
 			do {
 				*arg++ = *args++;
-			} while((size_t)(arg - tmp) < arrsz && *args != '\0' && *args != ' ');
+			} while(--arrsz > 1 && *args != '\0' && *args != ' ');
 			*arg = '\0';
 			break;
 		}
 	}
 
-	return (size_t)(arg - tmp);
+	return start_len - arrsz;
 }
 
 /*
 	Взято здеся:
 	https://stackoverflow.com/questions/21001659/crc32-algorithm-implementation-in-c-without-a-look-up-table-and-with-a-public-li
 */
-uint32_t String_CRC32(const uint8_t* message) {
+uint32_t String_CRC32(const uint8_t* str) {
 	int i, j;
 	uint32_t byte, crc, mask;
 
 	i = 0;
 	crc = 0xFFFFFFFF;
-	while (message[i] != 0) {
-		byte = message[i];
+	while (str[i] != 0) {
+		byte = str[i];
 		crc = crc ^ byte;
 		for (j = 7; j >= 0; j--) {
 			mask = ~((crc & 1) - 1);

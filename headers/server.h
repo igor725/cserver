@@ -14,7 +14,7 @@
 #define CFG_HEARTBEATDELAY_KEY "heartbeat-delay"
 
 VAR bool Server_Active;
-VAR uint16_t Server_Delta;
+VAR int Server_Delta;
 VAR CFGSTORE Server_Config;
 VAR uint64_t Server_StartTime;
 SOCKET Server_Socket;

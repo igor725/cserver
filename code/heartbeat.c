@@ -4,7 +4,7 @@
 #include "svmath.h"
 #include "heartbeat.h"
 
-uint16_t Heartbeat_Delay = 5000, Timer = 0;
+uint32_t Heartbeat_Delay = 5000, Timer = 0;
 const char* Heartbeat_URL = NULL;
 
 static void NewSecret(void) {

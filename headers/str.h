@@ -19,7 +19,7 @@ API const char* String_FirstChar(const char* str, char sym);
 API const char* String_AllocCopy(const char* str);
 API size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index);
 API const char* String_FromArgument(const char* args, int index);
-uint32_t String_CRC32(const uint8_t* message);
+uint32_t String_CRC32(const uint8_t* str);
 API int String_ToInt(const char* str);
 API float String_ToFloat(const char* str);
 #endif

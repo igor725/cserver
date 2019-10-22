@@ -118,10 +118,20 @@ static void HandlePacket(CLIENT client, char* data, PACKET packet, bool extended
 		client->pps += 1;
 }
 
+static uint16_t GetPacketSizeFor(PACKET packet, CLIENT client, bool* extended) {
+	uint16_t packetSize = packet->size;
+	bool _extended = *extended;
+	if(packet->haveCPEImp) {
+		_extended = Client_IsSupportExt(client, packet->extCRC32, packet->extVersion);
+		if(_extended) packetSize = packet->extSize;
+	}
+	return packetSize;
+}
+
 static void PacketReceiverWs(CLIENT client) {
-	PACKET packet = NULL;
-	bool extended = false;
-	uint16_t packetSize = 0, recvSize = 0;
+	PACKET packet;
+	bool extended;
+	uint16_t packetSize, recvSize;
 	WSCLIENT ws = client->websock;
 	char* data = client->rdbuf;
 
@@ -134,17 +144,12 @@ static void PacketReceiverWs(CLIENT client) {
 		recvSize = ws->plen - 1;
 		handlePacket:
 		packet = Packet_Get(*data++);
-
 		if(!packet) {
 			Client_Kick(client, "Invalid packet ID");
 			return;
 		}
 
-		packetSize = packet->size;
-		if(packet->haveCPEImp) {
-			extended = Client_IsSupportExt(client, packet->extCRC32, packet->extVersion);
-			if(extended) packetSize = packet->extSize;
-		}
+		packetSize = GetPacketSizeFor(packet, client, &extended);
 
 		if(packetSize <= recvSize) {
 			HandlePacket(client, data, packet, extended);
@@ -169,9 +174,9 @@ static void PacketReceiverWs(CLIENT client) {
 }
 
 static void PacketReceiverRaw(CLIENT client) {
-	PACKET packet = NULL;
-	bool extended = false;
-	uint16_t packetSize = 0;
+	PACKET packet;
+	bool extended;
+	uint16_t packetSize;
 	uint8_t packetId;
 
 	if(Socket_Receive(client->sock, (char*)&packetId, 1, 0) == 1) {
@@ -181,11 +186,7 @@ static void PacketReceiverRaw(CLIENT client) {
 			return;
 		}
 
-		packetSize = packet->size;
-		if(packet->haveCPEImp) {
-			extended = Client_IsSupportExt(client, packet->extCRC32, packet->extVersion);
-			if(extended) packetSize = packet->extSize;
-		}
+		packetSize = GetPacketSizeFor(packet, client, &extended);
 
 		if(packetSize > 0) {
 			int len = Socket_Receive(client->sock, client->rdbuf, packetSize, 0);
@@ -226,7 +227,7 @@ TRET Client_MapThreadProc(TARG param) {
 	*data++ = 0x03;
 	uint16_t* len = (uint16_t*)data++;
 	uint8_t* out = ++data;
-	
+
 	int ret, windowBits = 31;
 	z_stream stream = {0};
 
