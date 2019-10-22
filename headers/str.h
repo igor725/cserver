@@ -5,7 +5,7 @@
 API char* String_FindSubstr(const char* str, const char* strsrch);
 API bool String_Compare(const char* str1, const char* str2);
 API bool String_CaselessCompare(const char* str1, const char* str2);
-API bool String_CaselessCompare2(const char* str1, const char* str2, size_t count);
+API bool String_CaselessCompare2(const char* str1, const char* str2, size_t len);
 API size_t String_Length(const char* str);
 API size_t String_Append(char* dst, size_t len, const char* src);
 API size_t String_Copy(char* dst, size_t len, const char* src);

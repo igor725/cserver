@@ -16,12 +16,20 @@ bool String_CaselessCompare(const char* str1, const char* str2) {
 #endif
 }
 
-bool String_CaselessCompare2(const char* str1, const char* str2, size_t count) {
-#if defined(WINDOWS)
-	return _memicmp((void*)str1, (void*)str2, count) == 0;
-#elif defined(POSIX)
-	return memicmp((void*)str1, (void*)str2, count) == 0;
-#endif
+bool String_CaselessCompare2(const char* str1, const char* str2, size_t len) {
+	uint8_t c1, c2;
+
+	for(;;) {
+		if(len == 0) return 0;
+		c1 = *str1;
+		c2 = *str2;
+		if(c1 >= 'A' && c1 <= 'Z') c1 += 'a' - 'A';
+		if(c2 >= 'A' && c2 <= 'Z') c2 += 'a' - 'A';
+		if(c1 != c2) return *str1 - *str2;
+		++str1;
+		++str2;
+		--len;
+	}
 }
 
 bool String_Compare(const char* str1, const char* str2) {
