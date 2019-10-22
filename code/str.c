@@ -118,8 +118,8 @@ size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index) 
 
 	while(*args != '\0') {
 		if(index > 0) {
-			if(*args == ' ') --index;
-			++args;
+			if(*args++ == ' ') --index;
+			if(*args == '\0') return 0;
 		} else {
 			do {
 				*arg++ = *args++;
