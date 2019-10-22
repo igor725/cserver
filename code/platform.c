@@ -262,7 +262,7 @@ bool DLib_Unload(void* lib) {
 }
 
 char* DLib_GetError(char* buf, size_t len) {
-	String_FormatError(GetLastError(), buf, len);
+	String_FormatError(GetLastError(), buf, len, NULL);
 	return buf;
 }
 

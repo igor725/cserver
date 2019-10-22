@@ -1,7 +1,6 @@
 #include "core.h"
 #include "platform.h"
 #include "str.h"
-#include "http.h"
 #include "server.h"
 
 // #define HTTP_TEST
@@ -23,6 +22,8 @@ int main(int argc, char** argv) {
 	return 0;
 }
 #else
+#include "http.h"
+
 int main() {
 	Socket_Init();
 	struct httpRequest req = {0};

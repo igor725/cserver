@@ -75,7 +75,7 @@ static void getErrorStr(int type, uint32_t code, char* errbuf, size_t sz, va_lis
 			String_Copy(errbuf, sz, zError(code));
 			break;
 		case ET_SYS:
-			if(!String_FormatError(code, errbuf, sz)) {
+			if(!String_FormatError(code, errbuf, sz, args)) {
 				String_Copy(errbuf, sz, "Unexpected error");
 			}
 			break;
@@ -89,7 +89,11 @@ void Error_Print(int type, uint32_t code, const char* file, uint32_t line, const
 	getErrorStr(type, code, errbuf, 512, NULL);
 	String_FormatBuf(strbuf, 1024, ERR_FMT, file, line, func, errbuf);
 	if(String_Length(strbuf)) {
-		Log_Error(strbuf);
+		/*
+			Избегаем ошибки, если в строке ошибки по какой-то
+			причине остались форматируемые значения.
+		*/
+		Log_Error("%s", strbuf);
 		Error_CallStack();
 	}
 }

@@ -57,19 +57,21 @@ char* String_CopyUnsafe(char* dst, const char* src) {
 	return strcpy(dst, src);
 }
 
-uint32_t String_FormatError(uint32_t code, char* buf, size_t buflen) {
+uint32_t String_FormatError(uint32_t code, char* buf, size_t buflen, va_list* args) {
 #if defined(WINDOWS)
-	int len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, (uint32_t)buflen, NULL);
+	int len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, (uint32_t)buflen, args);
 	if(len > 0) {
-		for(int i = 0; i < len; i++) {
-			if(buf[i] == '\r' || buf[i] == '\n')
-				buf[i] = '\0';
+		while(*buf++ != '\0') {
+			if(*buf == '\r' || *buf == '\n') {
+				*buf = '\0';
+				break;
+			}
 		}
 	}
-#elif defined(POSIX)
-	int len = String_Copy(buf, buflen, strerror(code));
-#endif
 	return len;
+#elif defined(POSIX)
+	return String_Copy(buf, buflen, strerror(code));
+#endif
 }
 
 void String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* args) {

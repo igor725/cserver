@@ -11,7 +11,7 @@ API size_t String_Length(const char* str);
 API size_t String_Append(char* dst, size_t len, const char* src);
 API size_t String_Copy(char* dst, size_t len, const char* src);
 API char* String_CopyUnsafe(char* dst, const char* src);
-API uint32_t String_FormatError(uint32_t code, char* buf, size_t buflen);
+API uint32_t String_FormatError(uint32_t code, char* buf, size_t buflen, va_list* args);
 API void String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* args);
 API void String_FormatBuf(char* buf, size_t len, const char* str, ...);
 API const char* String_LastChar(const char* str, char sym);
