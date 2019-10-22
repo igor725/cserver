@@ -18,7 +18,7 @@ Mutex_Unlock(client->mutex); \
 Mutex_Unlock(client->mutex); \
 return; \
 
-typedef bool (*packetHandler)(CLIENT, char*);
+typedef bool (*packetHandler)(CLIENT, const char*);
 
 typedef struct packet {
 	const char* name;
@@ -51,8 +51,8 @@ void Packet_WriteSetBlock(CLIENT client, uint16_t x, uint16_t y, uint16_t z, Blo
 uint8_t ReadNetString(const char** data, const char** dst);
 void WriteNetString(char* data, const char* string);
 
-bool Handler_Handshake(CLIENT client, char* data);
-bool Handler_SetBlock(CLIENT client, char* data);
-bool Handler_PosAndOrient(CLIENT client, char* data);
-bool Handler_Message(CLIENT client, char* data);
+bool Handler_Handshake(CLIENT client, const char* data);
+bool Handler_SetBlock(CLIENT client, const char* data);
+bool Handler_PosAndOrient(CLIENT client, const char* data);
+bool Handler_Message(CLIENT client, const char* data);
 #endif

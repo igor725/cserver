@@ -239,7 +239,7 @@ void CPEPacket_WriteBlockPerm(CLIENT client, BlockID id, bool allowPlace, bool a
 	CPE packet handlers
 */
 
-bool CPEHandler_ExtInfo(CLIENT client, char* data) {
+bool CPEHandler_ExtInfo(CLIENT client, const char* data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_MOTD, false);
 
@@ -248,7 +248,7 @@ bool CPEHandler_ExtInfo(CLIENT client, char* data) {
 	return true;
 }
 
-bool CPEHandler_ExtEntry(CLIENT client, char* data) {
+bool CPEHandler_ExtEntry(CLIENT client, const char* data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_MOTD, false);
 
@@ -275,7 +275,7 @@ bool CPEHandler_ExtEntry(CLIENT client, char* data) {
 	return true;
 }
 
-bool CPEHandler_TwoWayPing(CLIENT client, char* data) {
+bool CPEHandler_TwoWayPing(CLIENT client, const char* data) {
 	ValidateCpeClient(client, false);
 
 	if(*data == 0) {
@@ -288,7 +288,7 @@ bool CPEHandler_TwoWayPing(CLIENT client, char* data) {
 	return false;
 }
 
-bool CPEHandler_PlayerClick(CLIENT client, char* data) {
+bool CPEHandler_PlayerClick(CLIENT client, const char* data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_INGAME, false);
 

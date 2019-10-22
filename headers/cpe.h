@@ -38,10 +38,10 @@ if(!client->cpeData) return ret;
 API bool CPE_CheckModel(const char* model);
 void CPE_StartHandshake(CLIENT client);
 
-bool CPEHandler_ExtInfo(CLIENT client, char* data);
-bool CPEHandler_ExtEntry(CLIENT client, char* data);
-bool CPEHandler_TwoWayPing(CLIENT client, char* data);
-bool CPEHandler_PlayerClick(CLIENT client, char* data);
+bool CPEHandler_ExtInfo(CLIENT client, const char* data);
+bool CPEHandler_ExtEntry(CLIENT client, const char* data);
+bool CPEHandler_TwoWayPing(CLIENT client, const char* data);
+bool CPEHandler_PlayerClick(CLIENT client, const char* data);
 
 void CPEPacket_WriteInfo(CLIENT client);
 void CPEPacket_WriteExtEntry(CLIENT client, EXT ext);

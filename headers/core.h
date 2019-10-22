@@ -24,7 +24,6 @@ typedef void* ITER_DIR;
 typedef WIN32_FIND_DATA ITER_FILE;
 typedef void* THREAD;
 typedef uint32_t TRET;
-typedef TRET(*TFUNC)(TARG);
 typedef CRITICAL_SECTION MUTEX;
 #elif defined(__unix__)
 #  define POSIX
@@ -42,6 +41,7 @@ typedef CRITICAL_SECTION MUTEX;
 #  include <dlfcn.h>
 #  include <pthread.h>
 #  include <dirent.h>
+#  include <netdb.h>
 
 #  ifndef CPLUGIN
 #    define API __attribute__((visibility("default"), noinline))
@@ -62,7 +62,6 @@ typedef CRITICAL_SECTION MUTEX;
 typedef DIR* ITER_DIR;
 typedef struct dirent* ITER_FILE;
 typedef pthread_t* THREAD;
-typedef void*(*TFUNC)(TARG);
 typedef void* TRET;
 typedef pthread_mutex_t MUTEX;
 typedef int SOCKET;
@@ -85,6 +84,7 @@ typedef uint8_t  Weather;
 typedef uint8_t  ClientID;
 typedef uint8_t  MessageType;
 typedef void* TARG;
+typedef TRET(*TFUNC)(TARG);
 
 #include "error.h"
 #include "log.h"

@@ -54,7 +54,7 @@ void WriteNetString(char* data, const char* string) {
 	Memory_Copy(data, string, size);
 }
 
-static bool ReadClPos(CLIENT client, char* data) {
+static bool ReadClPos(CLIENT client, const char* data) {
 	PLAYERDATA cpd = client->playerData;
 	VECTOR* vec = cpd->position;
 	ANGLE* ang = cpd->angle;
@@ -283,7 +283,7 @@ void Packet_WriteUpdateType(CLIENT client) {
 	Classic handlers
 */
 
-bool Handler_Handshake(CLIENT client, char* data) {
+bool Handler_Handshake(CLIENT client, const char* data) {
 	uint8_t protoVer = *data++;
 	if(protoVer != 0x07) {
 		Client_Kick(client, "Invalid protocol version");
@@ -347,7 +347,7 @@ static void UpdateBlock(CLIENT client, WORLD world, uint16_t x, uint16_t y, uint
 	}
 }
 
-bool Handler_SetBlock(CLIENT client, char* data) {
+bool Handler_SetBlock(CLIENT client, const char* data) {
 	ValidateClientState(client, STATE_INGAME, false);
 
 	WORLD world = client->playerData->world;
@@ -385,7 +385,7 @@ bool Handler_SetBlock(CLIENT client, char* data) {
 	return true;
 }
 
-bool Handler_PosAndOrient(CLIENT client, char* data) {
+bool Handler_PosAndOrient(CLIENT client, const char* data) {
 	ValidateClientState(client, STATE_INGAME, false);
 	CPEDATA cpd = client->cpeData;
 
@@ -401,7 +401,7 @@ bool Handler_PosAndOrient(CLIENT client, char* data) {
 	return true;
 }
 
-bool Handler_Message(CLIENT client, char* data) {
+bool Handler_Message(CLIENT client, const char* data) {
 	ValidateClientState(client, STATE_INGAME, true);
 
 	MessageType type = 0;
