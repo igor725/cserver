@@ -63,7 +63,7 @@ API void Mutex_Lock(MUTEX* handle);
 API void Mutex_Unlock(MUTEX* handle);
 
 API void Time_Format(char* buf, size_t len);
-API uint64_t Time_GetMSec();
+API uint64_t Time_GetMSec(void);
 
 API void Process_Exit(uint32_t ecode);
 #endif

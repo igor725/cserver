@@ -474,7 +474,7 @@ void Time_Format(char* buf, size_t buflen) {
 	);
 }
 
-uint64_t Time_GetMSec() {
+uint64_t Time_GetMSec(void) {
 	FILETIME ft; GetSystemTimeAsFileTime(&ft);
 	uint64_t time = ft.dwLowDateTime | ((uint64_t)ft.dwHighDateTime << 32);
 	return (time / 10000) + 50491123200000ULL;
