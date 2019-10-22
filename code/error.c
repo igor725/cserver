@@ -90,7 +90,7 @@ void Error_Print(int type, uint32_t code, const char* file, uint32_t line, const
 	String_FormatBuf(strbuf, 1024, ERR_FMT, file, line, func, errbuf);
 	if(String_Length(strbuf)) {
 		/*
-			Избегаем ошибки, если в строке ошибки по какой-то
+			Избегаем краша, если в строке ошибки по какой-то
 			причине остались форматируемые значения.
 		*/
 		Log_Error("%s", strbuf);
