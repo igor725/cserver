@@ -106,25 +106,24 @@ static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
 
 			CFGENTRY ent = Config_GetEntry(Server_Config, key);
 			if(ent) {
-				switch (ent->type) {
-					case CFG_INT:
-					case CFG_INT16:
-					case CFG_INT8:
-						String_FormatBuf(value, MAX_CFG_LEN, "%d", ent->value.vint);
-						break;
-					case CFG_BOOL:
-						String_Copy(value, MAX_CFG_LEN, ent->value.vbool ? "True" : "False");
-						break;
-					case CFG_STR:
-						String_Copy(value, MAX_CFG_LEN, ent->value.vchar);
-						break;
-					default:
-						Command_Print("Can't detect entry type.");
+				if(!Config_ToStr(ent, value, MAX_CFG_LEN)) {
+					Command_Print("Can't detect entry type.");
 				}
-				String_FormatBuf(out, CMD_MAX_OUT, "server.cfg: %s=%s (%s)", key, value, Config_TypeName(ent->type));
+				String_FormatBuf(out, CMD_MAX_OUT, "%s = %s (%s)", key, value, Config_TypeName(ent->type));
 				return true;
 			}
 			Command_Print("This entry not found in \"server.cfg\" store.");
+		} else if(String_CaselessCompare(subcommand, "print")) {
+			CFGENTRY ent = Server_Config->firstCfgEntry;
+
+			while(ent) {
+				if(Config_ToStr(ent, value, MAX_CFG_LEN)) {
+					Log_Info("%s = %s (%s)", ent->key, value, Config_TypeName(ent->type));
+				}
+				ent = ent->next;
+			}
+
+			return false;
 		}
 	}
 

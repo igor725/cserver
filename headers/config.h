@@ -49,6 +49,7 @@ API void Config_EmptyStore(CFGSTORE store);
 API void Config_DestroyStore(CFGSTORE store);
 API const char* Config_TypeName(int type);
 API int Config_TypeNameToInt(const char* name);
+API bool Config_ToStr(CFGENTRY ent, char* value, uint8_t len);
 
 API bool Config_Load(CFGSTORE store);
 API bool Config_Save(CFGSTORE store);

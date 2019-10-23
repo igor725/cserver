@@ -91,10 +91,33 @@ int Config_TypeNameToInt(const char* name) {
 		return CFG_STR;
 	} else if(String_CaselessCompare(name, "integer")) {
 		return CFG_INT;
+	} else if(String_CaselessCompare(name, "short")) {
+		return CFG_INT16;
+	} else if(String_CaselessCompare(name, "byte")) {
+		return CFG_INT8;
 	} else if(String_CaselessCompare(name, "boolean")) {
 		return CFG_BOOL;
 	}
 	return -1;
+}
+
+bool Config_ToStr(CFGENTRY ent, char* value, uint8_t len) {
+	switch (ent->type) {
+		case CFG_INT:
+		case CFG_INT16:
+		case CFG_INT8:
+			String_FormatBuf(value, len, "%d", ent->value.vint);
+			break;
+		case CFG_BOOL:
+			String_Copy(value, len, ent->value.vbool ? "True" : "False");
+			break;
+		case CFG_STR:
+			String_Copy(value, len, ent->value.vchar);
+			break;
+		default:
+			return false;
+	}
+	return true;
 }
 
 bool Config_Load(CFGSTORE store) {
