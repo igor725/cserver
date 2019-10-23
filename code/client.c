@@ -19,7 +19,8 @@ uint8_t Clients_GetCount(int state) {
 }
 
 bool Client_Add(CLIENT client) {
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+	int maxplayers = Config_GetInt(Server_Config, CFG_MAXPLAYERS_KEY);
+	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
 		if(!Clients_List[i]) {
 			client->id = i;
 			Clients_List[i] = client;

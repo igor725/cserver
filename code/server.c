@@ -115,8 +115,9 @@ void Server_InitialWork(void) {
 	Config_SetDefaultStr(ent, "0.0.0.0");
 
 	ent = Config_NewEntry(cfg, CFG_SERVERPORT_KEY);
-	Config_SetComment(ent, "Use specified port to accept clients.");
-	Config_SetDefaultInt(ent, 25565);
+	Config_SetComment(ent, "Use specified port to accept clients. [1-65535]");
+	Config_SetLimit(ent, 1, 65535);
+	Config_SetDefaultInt16(ent, 25565);
 
 	ent = Config_NewEntry(cfg, CFG_SERVERNAME_KEY);
 	Config_SetComment(ent, "Server name and MOTD will be shown to the player during map loading.");
@@ -132,6 +133,11 @@ void Server_InitialWork(void) {
 	ent = Config_NewEntry(cfg, CFG_LOCALOP_KEY);
 	Config_SetComment(ent, "Any player with ip address \"127.0.0.1\" will automatically become an operator.");
 	Config_SetDefaultBool(ent, false);
+
+	ent = Config_NewEntry(cfg, CFG_MAXPLAYERS_KEY);
+	Config_SetComment(ent, "Max players on server. [1-127]");
+	Config_SetLimit(ent, 1, 127);
+	Config_SetDefaultInt8(ent, 10);
 
 	ent = Config_NewEntry(cfg, CFG_CONN_KEY);
 	Config_SetComment(ent, "Max connections per one IP.");
@@ -189,7 +195,7 @@ void Server_InitialWork(void) {
 	}
 	Event_Call(EVT_POSTSTART, NULL);
 	const char* ip = Config_GetStr(cfg, CFG_SERVERIP_KEY);
-	uint16_t port = (uint16_t)Config_GetInt(cfg, CFG_SERVERPORT_KEY);
+	uint16_t port = Config_GetUInt16(cfg, CFG_SERVERPORT_KEY);
 	AcceptThread = Thread_Create(AcceptThreadProc, NULL);
 	Server_StartTime = Time_GetMSec();
 	Console_StartListen();
@@ -233,8 +239,8 @@ void Server_Stop(void) {
 	Event_Call(EVT_ONSTOP, NULL);
 	Log_Info("Saving worlds");
 	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
-		CLIENT client = Client_GetByID((ClientID)i);
-		WORLD world = World_GetByID(i);
+		CLIENT client = Clients_List[i];
+		WORLD world = Worlds_List[i];
 
 		if(i < MAX_CLIENTS && client)
 			Client_Kick(client, "Server stopped");

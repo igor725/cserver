@@ -3,8 +3,6 @@
 #include "str.h"
 #include "server.h"
 
-// #define HTTP_TEST
-#ifndef HTTP_TEST
 int main(int argc, char** argv) {
 	if(argc < 2 || !String_CaselessCompare(argv[1], "nochdir")) {
 		const char* path = String_AllocCopy(argv[0]);
@@ -21,26 +19,3 @@ int main(int argc, char** argv) {
 	Server_Stop();
 	return 0;
 }
-#else
-#include "http.h"
-
-int main() {
-	Socket_Init();
-	struct httpRequest req = {0};
-	struct httpResponse resp = {0};
-	HttpRequest_SetHost(&req, "example.com", 80);
-	HttpRequest_SetPath(&req, "/");
-
-	if(HttpRequest_Perform(&req, &resp)) {
-		Log_Info("Resp code: %d", resp.code);
-		if(resp.body) {
-			Log_Info("Received body size: %d", resp.bodysize);
-			Log_Info(resp.body);
-		}
-		return 0;
-	}
-
-	Log_Info("HttpRequest_Perform finished with error: %d", resp.error);
-	return 0;
-}
-#endif

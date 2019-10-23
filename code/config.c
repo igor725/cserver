@@ -245,16 +245,40 @@ void Config_SetComment(CFGENTRY ent, const char* commentary) {
 	ent->commentary = String_AllocCopy(commentary);
 }
 
+bool Config_SetLimit(CFGENTRY ent, int min, int max) {
+	if(ent->type == CFG_INT) {
+		ent->haveLimits = true;
+		ent->limits[0] = min;
+		ent->limits[1] = max;
+		return true;
+	}
+	return false;
+}
+
 void Config_SetDefaultInt(CFGENTRY ent, int value) {
 	EmptyEntry(ent);
 	ent->type = CFG_INT;
 	ent->defvalue.vint = value;
 }
 
+void Config_SetDefaultInt8(CFGENTRY ent, int8_t value) {
+	EmptyEntry(ent);
+	ent->type = CFG_INT;
+	ent->defvalue.vint8 = value;
+}
+
+void Config_SetDefaultInt16(CFGENTRY ent, int16_t value) {
+	EmptyEntry(ent);
+	ent->type = CFG_INT;
+	ent->defvalue.vint16 = value;
+}
+
 void Config_SetInt(CFGENTRY ent, int value) {
 	EmptyEntry(ent);
 	ent->type = CFG_INT;
 	ent->changed = true;
+	if(ent->haveLimits)
+		value = min(max(value, ent->limits[1]), ent->limits[0]);
 	ent->value.vint = value;
 }
 
@@ -265,11 +289,37 @@ void Config_SetIntByKey(CFGSTORE store, const char* key, int value) {
 	store->modified = true;
 }
 
-int Config_GetInt(CFGSTORE store, const char* key) {
+int32_t Config_GetInt(CFGSTORE store, const char* key) {
 	CFGENTRY ent = Config_GetEntry(store, key);
 	CFG_CHECKENTRY(store, ent);
 	CFG_TYPE(CFG_INT);
 	return ent->changed ? ent->value.vint : ent->defvalue.vint;
+}
+
+uint32_t Config_GetUInt(CFGSTORE store, const char* key) {
+	return (uint32_t)Config_GetInt(store, key);
+}
+
+int8_t Config_GetInt8(CFGSTORE store, const char* key) {
+	CFGENTRY ent = Config_GetEntry(store, key);
+	CFG_CHECKENTRY(store, ent);
+	CFG_TYPE(CFG_INT);
+	return ent->changed ? ent->value.vint8 : ent->defvalue.vint8;
+}
+
+uint8_t Config_GetUInt8(CFGSTORE store, const char* key) {
+	return (uint8_t)Config_GetInt8(store, key);
+}
+
+int16_t Config_GetInt16(CFGSTORE store, const char* key) {
+	CFGENTRY ent = Config_GetEntry(store, key);
+	CFG_CHECKENTRY(store, ent);
+	CFG_TYPE(CFG_INT);
+	return ent->changed ? ent->value.vint16 : ent->defvalue.vint16;
+}
+
+uint16_t Config_GetUInt16(CFGSTORE store, const char* key) {
+	return (uint16_t)Config_GetInt16(store, key);
 }
 
 void Config_SetDefaultStr(CFGENTRY ent, const char* value) {

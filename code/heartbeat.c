@@ -47,8 +47,9 @@ static void DoRequest() {
 	const char* serverName = Config_GetStr(Server_Config, CFG_SERVERNAME_KEY);
 	int serverPort = Config_GetInt(Server_Config, CFG_SERVERPORT_KEY);
 	bool serverPublic = Config_GetBool(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
+	uint8_t serverMax = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
 	uint8_t count = Clients_GetCount(STATE_INGAME);
-	String_FormatBuf(path, 128, HBEAT_URL, serverName, serverPort, count, 127, Secret, serverPublic ? "true" : "false", SoftwareName);
+	String_FormatBuf(path, 128, HBEAT_URL, serverName, serverPort, count, serverMax, Secret, serverPublic ? "true" : "false", SoftwareName);
 
 	SOCKET fd = Socket_New();
 	req.sock = fd;
