@@ -404,15 +404,31 @@ bool HttpResponse_Read(HTTPRESP resp, SOCKET sock) {
 		char hex[12];
 		while(Socket_ReceiveLine(sock, hex, 12)) {
 			if(*hex == '0') break;
-			// int len = String_HexToInt(hex);
-			/*
-				TODO: Чтение chunked ответа. Необходимо реализовать
-				функцию Memory_Realloc для корректного выделения
-				памяти под такие запросы, а также не стоит забывать
-				и про ограничения на размер тела.
-				P.S. Ненавижу HTTP/1.x, худший протокол, с которым
-				приходилось работать.
-			*/
+			int clen = String_HexToInt(hex);
+			if(clen == 0) {
+				resp->error = HTTP_ERR_BODY_RECV_FAIL;
+				return false;
+			}
+			int oldbodysize = resp->bodysize;
+			if(!resp->body) {
+				resp->body = Memory_Alloc(1, clen);
+				if(Socket_Receive(sock, resp->body, clen, 0) != clen) {
+					resp->error = HTTP_ERR_BODY_RECV_FAIL;
+					return false;
+				}
+			}
+			resp->bodysize += clen;
+			if(resp->bodysize > 134217728) {
+				resp->error = HTTP_ERR_TOO_BIG_BODY;
+				return false;
+			}
+			if(oldbodysize > 0) {
+				resp->body = Memory_Realloc(resp->body, oldbodysize, resp->bodysize);
+				if(Socket_Receive(sock, resp->body + oldbodysize, clen, 0) != clen) {
+					resp->error = HTTP_ERR_BODY_RECV_FAIL;
+					return false;
+				}
+			}
 		}
 	}
 	return true;

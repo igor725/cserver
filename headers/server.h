@@ -12,6 +12,7 @@
 #define CFG_CONN_KEY "max-connections-per-ip"
 #define CFG_HEARTBEAT_KEY "heartbeat-enabled"
 #define CFG_HEARTBEATDELAY_KEY "heartbeat-delay"
+#define CFG_HEARTBEAT_PUBLIC_KEY "heartbeat-public"
 
 VAR bool Server_Active;
 VAR int Server_Delta;

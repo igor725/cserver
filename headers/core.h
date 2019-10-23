@@ -93,6 +93,7 @@ typedef TRET(*TFUNC)(TARG);
 #define DEFAULT_MOTD "Server MOTD"
 #define SOFTWARE_NAME "C-Server"
 #define SOFTWARE_VERSION "0.1"
+#define SOFTWARE_FULLNAME SOFTWARE_NAME " " SOFTWARE_VERSION
 #define CHATLINE "<%s>: %s"
 #define MAINCFG "server.cfg"
 #define WORLD_MAGIC 0x54414457

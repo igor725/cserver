@@ -14,6 +14,16 @@ void* Memory_Alloc(size_t num, size_t size) {
 	return ptr;
 }
 
+void* Memory_Realloc(void* buf, size_t old, size_t new) {
+	void* pNew = realloc(buf, new);
+	if(new > old) {
+		size_t diff = new - old;
+		void* pStart = ((char*)pNew) + old;
+		Memory_Fill(pStart, diff, 0);
+	}
+	return pNew;
+}
+
 void Memory_Copy(void* dst, const void* src, size_t count) {
 	memcpy(dst, src, count);
 }

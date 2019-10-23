@@ -5,12 +5,16 @@
 #include "server.h"
 #include "svmath.h"
 #include "heartbeat.h"
+#include "client.h"
 
-#define HBEAT_URL "/server/heartbeat/?name=%s&port=%d&users=%d&max=%d&salt=%s&public=false&web=true"
+#define HBEAT_URL "/server/heartbeat/?name=%s&port=%d&users=%d&max=%d&salt=%s&public=%s&web=true&software=%s"
+#define PLAY_URL "http://www.classicube.net/server/play/"
+#define PLAY_URL_LEN 38
 
-uint32_t Heartbeat_Delay = 5000, Timer = 0;
-const char* Heartbeat_URL = NULL;
+const char* SoftwareName = SOFTWARE_FULLNAME;
+uint32_t Delay = 5000;
 char Secret[17] = {0};
+THREAD Thread;
 
 static void NewSecret(void) {
 	RNGState secrnd;
@@ -40,9 +44,11 @@ static void DoRequest() {
 	struct httpRequest req = {0};
 	struct httpResponse resp = {0};
 	char path[128] = {0};
-	const char* serverName = Config_GetStr(Server_Config, "server-name");
-	int serverPort = Config_GetInt(Server_Config, "server-port");
-	String_FormatBuf(path, 128, HBEAT_URL, serverName, serverPort, 0, 127, Secret);
+	const char* serverName = Config_GetStr(Server_Config, CFG_SERVERNAME_KEY);
+	int serverPort = Config_GetInt(Server_Config, CFG_SERVERPORT_KEY);
+	bool serverPublic = Config_GetBool(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
+	uint8_t count = Clients_GetCount(STATE_INGAME);
+	String_FormatBuf(path, 128, HBEAT_URL, serverName, serverPort, count, 127, Secret, serverPublic ? "true" : "false", SoftwareName);
 
 	SOCKET fd = Socket_New();
 	req.sock = fd;
@@ -51,13 +57,13 @@ static void DoRequest() {
 	HttpRequest_SetPath(&req, path);
 	HttpRequest_SetHeaderStr(&req, "Pragma", "no-cache");
 	HttpRequest_SetHeaderStr(&req, "Connection", "close");
+	HttpRequest_SetHeaderStr(&req, "User-Agent", SOFTWARE_FULLNAME);
 
 	if(HttpRequest_Perform(&req, &resp)) {
-		if(resp.bodysize > 0) {
-			Log_Info("Body: %d, %s", resp.bodysize, resp.body);
-		} else {
-			while(Socket_ReceiveLine(fd, path, 128)) {
-				Log_Info(path);
+		if(!Heartbeat_URL && resp.body) {
+			if(String_CaselessCompare2(resp.body, PLAY_URL, PLAY_URL_LEN)) {
+				Heartbeat_URL = String_AllocCopy(resp.body);
+				Log_Info("Server play URL: %s", resp.body);
 			}
 		}
 	}
@@ -67,13 +73,20 @@ static void DoRequest() {
 	HttpResponse_Cleanup(&resp);
 }
 
-void Heartbeat_Tick(void) {
-	if(!Heartbeat_Enabled) return;
-
-	if(Timer <= 0) {
-		// DoRequest();
-		Timer = Heartbeat_Delay;
+static TRET HeartbeatThreadProc(TARG param) {
+	(void)param;
+	while(Server_Active) {
+		DoRequest();
+		Sleep(Delay);
 	}
+	return 0;
+}
 
-	Timer -= Server_Delta;
+void Heartbeat_Start(uint32_t delay) {
+	Delay = delay * 1000;
+	Thread = Thread_Create(HeartbeatThreadProc, NULL);
+}
+
+void Heartbeat_Close(void) {
+	if(Thread_IsValid(Thread)) Thread_Close(Thread);
 }

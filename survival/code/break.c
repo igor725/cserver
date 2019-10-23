@@ -55,7 +55,7 @@ void SurvBrk_Tick(SURVDATA data) {
 		return;
 	}
 
-	data->breakTimer += Server_Delta;
+	data->breakTimer += (int16_t)Server_Delta;
 	float df = (data->breakTimer / (float)breakTime);
 	uint8_t newProgress = (uint8_t)(df * SURV_MAX_BRK);
 	if(newProgress > data->breakProgress) {

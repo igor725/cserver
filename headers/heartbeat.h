@@ -1,8 +1,7 @@
 #ifndef HEARTBEAT_H
 #define HEARTBEAT_H
-VAR uint32_t Heartbeat_Delay;
-VAR bool Heartbeat_Enabled;
 VAR const char* Heartbeat_URL;
 
-void Heartbeat_Tick(void);
+void Heartbeat_Start(uint32_t delay);
+void Heartbeat_Close(void);
 #endif

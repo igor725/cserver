@@ -7,6 +7,17 @@
 #include "packets.h"
 #include "event.h"
 
+uint8_t Clients_GetCount(int state) {
+	uint8_t count = 0;
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		CLIENT client = Clients_List[i];
+		if(!client) continue;
+		PLAYERDATA pd = client->playerData;
+		if(pd && pd->state == state) count++;
+	}
+	return count;
+}
+
 bool Client_Add(CLIENT client) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		if(!Clients_List[i]) {

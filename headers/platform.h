@@ -10,6 +10,7 @@ typedef struct {
 } dirIter;
 
 API void* Memory_Alloc(size_t num, size_t size);
+API void* Memory_Realloc(void* buf, size_t old, size_t new);
 API void  Memory_Copy(void* dst, const void* src, size_t count);
 API void  Memory_Fill(void* dst, size_t count, int val);
 API void  Memory_Free(void* ptr);

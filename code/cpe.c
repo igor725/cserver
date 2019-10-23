@@ -104,7 +104,7 @@ void CPEPacket_WriteInfo(CLIENT client) {
 	PacketWriter_Start(client);
 
 	*data = 0x10;
-	WriteNetString(++data, SOFTWARE_NAME " " SOFTWARE_VERSION); data += 63;
+	WriteNetString(++data, SOFTWARE_FULLNAME); data += 63;
 	*(uint16_t*)++data = htons(extensionsCount);
 
 	PacketWriter_End(client, 67);

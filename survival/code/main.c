@@ -42,7 +42,6 @@ static bool Survival_OnBlockPlace(void* param) {
 
 	if(mode == 0x01 && SurvInv_Take(data, id, 1)) {
 		if(SurvInv_Get(data, id) < 1) {
-			Client_SetHeld(client, 0, false);
 			SurvGui_DrawBlockInfo(data, 0);
 			return true;
 		}

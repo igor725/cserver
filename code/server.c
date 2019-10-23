@@ -145,11 +145,13 @@ void Server_InitialWork(void) {
 	Config_SetComment(ent, "Heartbeat request delay.");
 	Config_SetDefaultInt(ent, 10);
 
+	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_PUBLIC_KEY);
+	Config_SetComment(ent, "Show server in the ClassiCube server list.");
+	Config_SetDefaultBool(ent, false);
+
 	cfg->modified = true;
 	if(!Config_Load(cfg)) Process_Exit(1);
 	Log_SetLevelStr(Config_GetStr(cfg, CFG_LOGLEVEL_KEY));
-	Heartbeat_Enabled = Config_GetBool(cfg, CFG_HEARTBEAT_KEY);
-	Heartbeat_Delay = (uint16_t)Config_GetInt(cfg, CFG_HEARTBEATDELAY_KEY) * 1000;
 
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
@@ -181,7 +183,10 @@ void Server_InitialWork(void) {
 
 	Log_Info("Loading C plugins");
 	CPlugin_Start();
-
+	if(Config_GetBool(cfg, CFG_HEARTBEAT_KEY)) {
+		Log_Info("Creating heartbeat thread");
+		Heartbeat_Start(Config_GetInt(cfg, CFG_HEARTBEATDELAY_KEY));
+	}
 	Event_Call(EVT_POSTSTART, NULL);
 	const char* ip = Config_GetStr(cfg, CFG_SERVERIP_KEY);
 	uint16_t port = (uint16_t)Config_GetInt(cfg, CFG_SERVERPORT_KEY);
@@ -194,7 +199,6 @@ void Server_InitialWork(void) {
 }
 
 void Server_DoStep(void) {
-	Heartbeat_Tick();
 	Event_Call(EVT_ONTICK, NULL);
 	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
 		CLIENT client = Client_GetByID((ClientID)i);
@@ -243,6 +247,7 @@ void Server_Stop(void) {
 	}
 
 	Console_Close();
+	Heartbeat_Close();
 	if(AcceptThread)
 		Thread_Close(AcceptThread);
 
