@@ -13,7 +13,6 @@
 
 const char* SoftwareName = SOFTWARE_NAME "%%47" SOFTWARE_VERSION;
 uint32_t Delay = 5000;
-char Secret[17] = {0};
 THREAD Thread;
 
 static void NewSecret(void) {
@@ -35,7 +34,7 @@ static void NewSecret(void) {
 				max = 122;
 				break;
 		}
-		Secret[i] = (char)Random_Range(&secrnd, min, max);
+		Heartbeat_Secret[i] = (char)Random_Range(&secrnd, min, max);
 	}
 }
 
@@ -50,7 +49,7 @@ static void TrimReserved(char* name, int len) {
 }
 
 static void DoRequest() {
-	if(*Secret == '\0') NewSecret();
+	if(*Heartbeat_Secret == '\0') NewSecret();
 	struct httpRequest req = {0};
 	struct httpResponse resp = {0};
 	char path[512] = {0};
@@ -62,7 +61,7 @@ static void DoRequest() {
 	bool public = Config_GetBool(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
 	uint8_t max = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
 	uint8_t count = Clients_GetCount(STATE_INGAME);
-	String_FormatBuf(path, 512, HBEAT_URL, name, port, count, max, Secret, public ? "true" : "false", SoftwareName);
+	String_FormatBuf(path, 512, HBEAT_URL, name, port, count, max, Heartbeat_Secret, public ? "true" : "false", SoftwareName);
 
 	SOCKET fd = Socket_New();
 	req.sock = fd;
@@ -79,9 +78,8 @@ static void DoRequest() {
 				Log_Info("Server play URL: %s", resp.body);
 			}
 		}
-		if(resp.code != 200) {
+		if(resp.code != 200)
 			Log_Error("Heartbeat server responded with an error %d", resp.code);
-		}
 	} else {
 		if(req.error == HTTP_ERR_RESPONSE_READ)
 			Log_Error("Response reading error: %d", resp.error);

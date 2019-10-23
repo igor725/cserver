@@ -6,6 +6,7 @@
 #include "server.h"
 #include "packets.h"
 #include "event.h"
+#include "heartbeat.h"
 
 uint8_t Clients_GetCount(int state) {
 	uint8_t count = 0;
@@ -337,8 +338,10 @@ const char* Client_GetAppName(CLIENT client) {
 
 //TODO: ClassiCube auth
 bool Client_CheckAuth(CLIENT client) {
+	if(*Heartbeat_Secret == '\0') return true;
 	(void)client;
-	return true;
+
+	return false;
 }
 
 void Client_SetPos(CLIENT client, VECTOR* pos, ANGLE* ang) {
@@ -570,6 +573,7 @@ void Client_HandshakeStage2(CLIENT client) {
 }
 
 void Client_Kick(CLIENT client, const char* reason) {
+	if(client->closed) return;
 	if(!reason) reason = "Kicked without reason";
 	Packet_WriteKick(client, reason);
 	client->closed = true;
