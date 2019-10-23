@@ -2,12 +2,18 @@
 #define COMMAND_H
 #include "client.h"
 
-#define	CMD_MAX_OUT 512
+#define	CMD_MAX_OUT 1024
 #define Command_OnlyForClient \
 if(!caller) { \
 	String_Copy(out, CMD_MAX_OUT, "This command can't be used from console."); \
 	return true; \
-} \
+}
+
+#define Command_OnlyForConsole \
+if(caller) { \
+	String_Copy(out, CMD_MAX_OUT, "This command can be used only from console."); \
+	return true; \
+}
 
 #define Command_PrintUsage \
 String_Copy(out, CMD_MAX_OUT, "Usage: "); \

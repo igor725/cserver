@@ -114,16 +114,19 @@ static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
 			}
 			Command_Print("This entry not found in \"server.cfg\" store.");
 		} else if(String_CaselessCompare(subcommand, "print")) {
+			Command_OnlyForConsole;
 			CFGENTRY ent = Server_Config->firstCfgEntry;
+			String_Copy(out, CMD_MAX_OUT, "Server config entries:");
 
 			while(ent) {
 				if(Config_ToStr(ent, value, MAX_CFG_LEN)) {
-					Log_Info("%s = %s (%s)", ent->key, value, Config_TypeName(ent->type));
+					String_FormatBuf(key, MAX_CFG_LEN, "\r\n%s = %s (%s)", ent->key, value, Config_TypeName(ent->type));
+					String_Append(out, CMD_MAX_OUT, key);
 				}
 				ent = ent->next;
 			}
 
-			return false;
+			return true;
 		}
 	}
 
@@ -281,16 +284,16 @@ void Command_RegisterDefault(void) {
 
 bool Command_Handle(char* cmd, CLIENT caller) {
 	if(*cmd == '/') ++cmd;
-
+	
 	char ret[CMD_MAX_OUT] = {0};
 	char* args = cmd;
 
 	while(1) {
 		++args;
-		if(*args == 0) {
+		if(*args == '\0') {
 			args = NULL;
 			break;
-		} else if (*args == 32) {
+		} else if(*args == 32) {
 			*args++ = 0;
 			break;
 		}

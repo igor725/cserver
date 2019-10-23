@@ -34,7 +34,7 @@ static void AcceptFunc(void) {
 		tmp->wrbuf = Memory_Alloc(2048, 1);
 
 		uint32_t sameAddrCount = 1;
-		uint32_t maxConnPerIP = Config_GetInt(Server_Config, CFG_CONN_KEY);
+		uint8_t maxConnPerIP = Config_GetInt8(Server_Config, CFG_CONN_KEY);
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			CLIENT client = Clients_List[i];
 			if(client && client->addr == tmp->addr)
