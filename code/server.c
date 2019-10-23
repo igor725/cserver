@@ -141,7 +141,8 @@ void Server_InitialWork(void) {
 
 	ent = Config_NewEntry(cfg, CFG_CONN_KEY);
 	Config_SetComment(ent, "Max connections per one IP.");
-	Config_SetDefaultInt(ent, 4);
+	Config_SetLimit(ent, 1, 5);
+	Config_SetDefaultInt8(ent, 5);
 
 	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_KEY);
 	Config_SetComment(ent, "Enable ClassiCube heartbeat.");

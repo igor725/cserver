@@ -1,9 +1,12 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 enum cfgTypes {
-	CFG_BOOL = 'b',
-	CFG_INT  = 'i',
-	CFG_STR  = 's'
+	CFG_INVTYPE = -1,
+	CFG_BOOL  = 'b',
+	CFG_INT   = 'i',
+	CFG_INT16 = 'h',
+	CFG_INT8  = 'c',
+	CFG_STR   = 's'
 };
 
 typedef struct cfgEntry {
@@ -28,6 +31,7 @@ typedef struct cfgEntry {
 	} defvalue;
 	const char* commentary;
 	struct cfgEntry* next;
+	struct cfgStore* store;
 } *CFGENTRY;
 
 typedef struct cfgStore {
@@ -50,7 +54,7 @@ API bool Config_Load(CFGSTORE store);
 API bool Config_Save(CFGSTORE store);
 
 API void Config_SetComment(CFGENTRY ent, const char* commentary);
-API bool Config_SetLimit(CFGENTRY ent, int min, int max);
+API void Config_SetLimit(CFGENTRY ent, int min, int max);
 
 API int32_t Config_GetInt(CFGSTORE store, const char* key);
 API uint32_t Config_GetUInt(CFGSTORE store, const char* key);
@@ -61,7 +65,9 @@ API uint8_t Config_GetUInt8(CFGSTORE store, const char* key);
 API void Config_SetDefaultInt(CFGENTRY ent, int value);
 API void Config_SetDefaultInt8(CFGENTRY ent, int8_t value);
 API void Config_SetDefaultInt16(CFGENTRY ent, int16_t value);
-API void Config_SetInt(CFGENTRY ent, int value);
+API void Config_SetInt(CFGENTRY ent, int32_t value);
+API void Config_SetInt16(CFGENTRY ent, int16_t value);
+API void Config_SetInt8(CFGENTRY ent, int8_t value);
 API void Config_SetIntByKey(CFGSTORE store, const char* key, int value);
 
 API const char* Config_GetStr(CFGSTORE store, const char* key);

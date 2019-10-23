@@ -27,6 +27,8 @@ CFGENTRY Config_GetEntry(CFGSTORE store, const char* key) {
 CFGENTRY Config_NewEntry(CFGSTORE store, const char* key) {
 	CFGENTRY ent = Memory_Alloc(1, sizeof(struct cfgEntry));
 	ent->key = String_AllocCopy(key);
+	ent->store = store;
+	ent->type = -1;
 
 	if(store->firstCfgEntry)
 		store->lastCfgEntry->next = ent;
@@ -41,7 +43,6 @@ static void EmptyEntry(CFGENTRY ent) {
 	if(ent->type == CFG_STR && ent->value.vchar)
 		Memory_Free((void*)ent->value.vchar);
 
-	ent->type = -1;
 	ent->changed = false;
 	ent->value.vchar = NULL;
 }
@@ -64,6 +65,10 @@ const char* Config_TypeName(int type) {
 			return "string";
 		case CFG_INT:
 			return "integer";
+		case CFG_INT16:
+			return "short";
+		case CFG_INT8:
+			return "byte";
 		case CFG_BOOL:
 			return "boolean";
 		default:
@@ -73,7 +78,7 @@ const char* Config_TypeName(int type) {
 
 #define CFG_TYPE(expectedType) \
 if(ent->type != expectedType) { \
-	Error_PrintF2(ET_SERVER, EC_CFGINVGET, true, ent->key, store->path, Config_TypeName(expectedType), Config_TypeName(ent->type)); \
+	Error_PrintF2(ET_SERVER, EC_CFGINVGET, true, ent->key, ent->store->path, Config_TypeName(expectedType), Config_TypeName(ent->type)); \
 }
 
 #define CFG_CHECKENTRY(store, ent) \
@@ -100,7 +105,6 @@ bool Config_Load(CFGSTORE store) {
 		return false;
 	}
 
-	int type;
 	int count = 0;
 	int ch = fgetc(fp);
 	bool haveCommentary = false;
@@ -136,7 +140,6 @@ bool Config_Load(CFGSTORE store) {
 		}
 
 		count = 0;
-		type = fgetc(fp);
 
 		while((ch = fgetc(fp)) != EOF && ch != '\n' && count < MAX_CFG_LEN) {
 			if(ch != '\r') value[count++] = (char)ch;
@@ -156,18 +159,27 @@ bool Config_Load(CFGSTORE store) {
 			return false;
 		}
 
-		switch (type) {
+		switch (ent->type) {
 			case CFG_STR:
 				Config_SetStr(ent, value);
 				break;
 			case CFG_INT:
+				if(*value < '0' || *value > '9') break;
 				Config_SetInt(ent, String_ToInt(value));
+				break;
+			case CFG_INT8:
+				if(*value < '0' || *value > '9') break;
+				Config_SetInt8(ent, (int8_t)String_ToInt(value));
+				break;
+			case CFG_INT16:
+				if(*value < '0' || *value > '9') break;
+				Config_SetInt16(ent, (int16_t)String_ToInt(value));
 				break;
 			case CFG_BOOL:
 				Config_SetBool(ent, String_Compare(value, "True"));
 				break;
 			default:
-				Error_PrintF2(ET_SERVER, EC_CFGTYPE, false, store->path, type);
+				Error_PrintF2(ET_SERVER, EC_CFGTYPE, false, store->path, ent->type);
 				File_Close(fp);
 				return false;
 		}
@@ -208,27 +220,29 @@ bool Config_Save(CFGSTORE store) {
 			return false;
 
 		char* vchar;
-		int vint;
+		int32_t vint;
 		bool vbool;
 
 		switch (ptr->type) {
 			case CFG_STR:
 				vchar = (char*)(ptr->changed ? ptr->value.vchar : ptr->defvalue.vchar);
-				if(!File_WriteFormat(fp, "=s%s\n", vchar))
+				if(!File_WriteFormat(fp, "=%s\n", vchar))
 					return false;
 				break;
 			case CFG_INT:
+			case CFG_INT16:
+			case CFG_INT8:
 				vint = ptr->changed ? ptr->value.vint : ptr->defvalue.vint;
-				if(!File_WriteFormat(fp, "=i%d\n", vint))
+				if(!File_WriteFormat(fp, "=%d\n", vint))
 					return false;
 				break;
 			case CFG_BOOL:
 				vbool = ptr->changed ? ptr->value.vbool : ptr->defvalue.vbool;
-				if(!File_WriteFormat(fp, "=b%s\n", vbool ? "True" : "False"))
+				if(!File_WriteFormat(fp, "=%s\n", vbool ? "True" : "False"))
 					return false;
 				break;
 			default:
-				if(!File_Write("=sUnknown value\n", 16, 1, fp))
+				if(!File_Write("=Unknown value\n", 16, 1, fp))
 					return false;
 				break;
 		}
@@ -245,14 +259,10 @@ void Config_SetComment(CFGENTRY ent, const char* commentary) {
 	ent->commentary = String_AllocCopy(commentary);
 }
 
-bool Config_SetLimit(CFGENTRY ent, int min, int max) {
-	if(ent->type == CFG_INT) {
-		ent->haveLimits = true;
-		ent->limits[0] = min;
-		ent->limits[1] = max;
-		return true;
-	}
-	return false;
+void Config_SetLimit(CFGENTRY ent, int min, int max) {
+	ent->haveLimits = true;
+	ent->limits[1] = min;
+	ent->limits[0] = max;
 }
 
 void Config_SetDefaultInt(CFGENTRY ent, int value) {
@@ -263,30 +273,50 @@ void Config_SetDefaultInt(CFGENTRY ent, int value) {
 
 void Config_SetDefaultInt8(CFGENTRY ent, int8_t value) {
 	EmptyEntry(ent);
-	ent->type = CFG_INT;
+	ent->type = CFG_INT8;
 	ent->defvalue.vint8 = value;
 }
 
 void Config_SetDefaultInt16(CFGENTRY ent, int16_t value) {
 	EmptyEntry(ent);
-	ent->type = CFG_INT;
+	ent->type = CFG_INT16;
 	ent->defvalue.vint16 = value;
 }
 
-void Config_SetInt(CFGENTRY ent, int value) {
+void Config_SetInt(CFGENTRY ent, int32_t value) {
+	CFG_TYPE(CFG_INT);
 	EmptyEntry(ent);
-	ent->type = CFG_INT;
 	ent->changed = true;
 	if(ent->haveLimits)
 		value = min(max(value, ent->limits[1]), ent->limits[0]);
 	ent->value.vint = value;
+	ent->store->modified = true;
+}
+
+void Config_SetInt16(CFGENTRY ent, int16_t value) {
+	CFG_TYPE(CFG_INT16);
+	EmptyEntry(ent);
+	ent->changed = true;
+	if(ent->haveLimits)
+		value = (int16_t)min(max(value, ent->limits[1]), ent->limits[0]);
+	ent->value.vint16 = value;
+	ent->store->modified = true;
+}
+
+void Config_SetInt8(CFGENTRY ent, int8_t value) {
+	CFG_TYPE(CFG_INT8);
+	EmptyEntry(ent);
+	ent->changed = true;
+	if(ent->haveLimits)
+		value = (int8_t)min(max(value, ent->limits[1]), ent->limits[0]);
+	ent->value.vint8 = value;
+	ent->store->modified = true;
 }
 
 void Config_SetIntByKey(CFGSTORE store, const char* key, int value) {
 	CFGENTRY ent = Config_GetEntry(store, key);
 	CFG_CHECKENTRY(store, ent);
 	Config_SetInt(ent, value);
-	store->modified = true;
 }
 
 int32_t Config_GetInt(CFGSTORE store, const char* key) {
@@ -303,7 +333,7 @@ uint32_t Config_GetUInt(CFGSTORE store, const char* key) {
 int8_t Config_GetInt8(CFGSTORE store, const char* key) {
 	CFGENTRY ent = Config_GetEntry(store, key);
 	CFG_CHECKENTRY(store, ent);
-	CFG_TYPE(CFG_INT);
+	CFG_TYPE(CFG_INT8);
 	return ent->changed ? ent->value.vint8 : ent->defvalue.vint8;
 }
 
@@ -314,7 +344,7 @@ uint8_t Config_GetUInt8(CFGSTORE store, const char* key) {
 int16_t Config_GetInt16(CFGSTORE store, const char* key) {
 	CFGENTRY ent = Config_GetEntry(store, key);
 	CFG_CHECKENTRY(store, ent);
-	CFG_TYPE(CFG_INT);
+	CFG_TYPE(CFG_INT16);
 	return ent->changed ? ent->value.vint16 : ent->defvalue.vint16;
 }
 
@@ -329,9 +359,10 @@ void Config_SetDefaultStr(CFGENTRY ent, const char* value) {
 }
 
 void Config_SetStr(CFGENTRY ent, const char* value) {
+	CFG_TYPE(CFG_STR);
 	EmptyEntry(ent);
-	ent->type = CFG_STR;
 	ent->changed = true;
+	ent->store->modified = true;
 	ent->value.vchar = String_AllocCopy(value);
 }
 
@@ -339,7 +370,6 @@ void Config_SetStrByKey(CFGSTORE store, const char* key, const char* value) {
 	CFGENTRY ent = Config_GetEntry(store, key);
 	CFG_CHECKENTRY(store, ent);
 	Config_SetStr(ent, value);
-	store->modified = true;
 }
 
 const char* Config_GetStr(CFGSTORE store, const char* key) {
@@ -356,17 +386,17 @@ void Config_SetDefaultBool(CFGENTRY ent, bool value) {
 }
 
 void Config_SetBool(CFGENTRY ent, bool value) {
+	CFG_TYPE(CFG_BOOL);
 	EmptyEntry(ent);
-	ent->type = CFG_BOOL;
 	ent->changed = true;
 	ent->value.vbool = value;
+	ent->store->modified = true;
 }
 
 void Config_SetBoolByKey(CFGSTORE store, const char* key, bool value) {
 	CFGENTRY ent = Config_GetEntry(store, key);
 	CFG_CHECKENTRY(store, ent);
 	Config_SetBool(ent, value);
-	store->modified = true;
 }
 
 bool Config_GetBool(CFGSTORE store, const char* key) {

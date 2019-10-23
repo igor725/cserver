@@ -75,7 +75,7 @@ static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
 			if(!ent) {
 				Command_Print("Entry not found in Server_Config");
 			}
-			if(!String_GetArgument(args, value, MAX_CFG_LEN, 3)) {
+			if(!String_GetArgument(args, value, MAX_CFG_LEN, 2)) {
 				Command_PrintUsage;
 			}
 
@@ -83,12 +83,20 @@ static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
 				case CFG_INT:
 					Config_SetInt(ent, String_ToInt(value));
 					break;
+				case CFG_INT16:
+					Config_SetInt16(ent, (int16_t)String_ToInt(value));
+					break;
+				case CFG_INT8:
+					Config_SetInt8(ent, (int8_t)String_ToInt(value));
+					break;
 				case CFG_BOOL:
 					Config_SetBool(ent, String_CaselessCompare(value, "True"));
 					break;
 				case CFG_STR:
 					Config_SetStr(ent, value);
 					break;
+				default:
+					Command_Print("Can't detect entry type.");
 			}
 			Command_Print("Entry value changed successfully.");
 		} else if(String_CaselessCompare(subcommand, "get")) {
@@ -100,6 +108,8 @@ static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
 			if(ent) {
 				switch (ent->type) {
 					case CFG_INT:
+					case CFG_INT16:
+					case CFG_INT8:
 						String_FormatBuf(value, MAX_CFG_LEN, "%d", ent->value.vint);
 						break;
 					case CFG_BOOL:
@@ -109,10 +119,9 @@ static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
 						String_Copy(value, MAX_CFG_LEN, ent->value.vchar);
 						break;
 					default:
-						String_Copy(value, MAX_CFG_LEN, "Can't parse entry value.");
-						break;
+						Command_Print("Can't detect entry type.");
 				}
-				String_FormatBuf(out, CMD_MAX_OUT, "server.cfg entry \"%s\" have type \"%s\" and value \"%s\"", key, Config_TypeName(ent->type), value);
+				String_FormatBuf(out, CMD_MAX_OUT, "server.cfg: %s=%s (%s)", key, value, Config_TypeName(ent->type));
 				return true;
 			}
 			Command_Print("This entry not found in \"server.cfg\" store.");
