@@ -161,17 +161,22 @@ void HttpRequest_SetHeader(HTTPREQ resp, const char* key, const char* value) {
 }
 
 void HttpRequest_SetHost(HTTPREQ req, const char* host, uint16_t port) {
-	char hostfmt[22];
+	char hostfmt[26];
 	Socket_SetAddrGuess(&req->addr, host, port);
 	if(port != 80)
-		String_FormatBuf(hostfmt, 22, "%s:%d", host, port);
+		String_FormatBuf(hostfmt, 26, "www.%s:%d", host, port);
 	else
-		String_Copy(hostfmt, 22, host);
+		String_FormatBuf(hostfmt, 26, "www.%s", host);
 	HttpRequest_SetHeaderStr(req, "Host", hostfmt);
 }
 
 void HttpRequest_SetPath(HTTPREQ req, const char* path) {
 	if(req->path) Memory_Free((void*)req->path);
+	/*
+		TODO: Придумать как запилить здесь кодирование url,
+		по началу можно и не полное, а просто заменять пробелы
+		на плюсы, думаю этого будет достаточно какое-то время.
+	*/
 	req->path = String_AllocCopy(path);
 }
 
@@ -239,12 +244,11 @@ bool HttpRequest_Read(HTTPREQ req, SOCKET sock) {
 
 bool HttpRequest_Perform(HTTPREQ req, HTTPRESP resp) {
 	char line[1024];
-	SOCKET sock = Socket_New();
-	Socket_Connect(sock, &req->addr);
+	Socket_Connect(req->sock, &req->addr);
 	String_FormatBuf(line, 1024, "GET %s HTTP/1.1\r\n", req->path);
-	SendLine(sock, line);
-	SendHeaders(sock, req->header, line);
-	if(!HttpResponse_Read(resp, sock)) {
+	SendLine(req->sock, line);
+	SendHeaders(req->sock, req->header, line);
+	if(!HttpResponse_Read(resp, req->sock)) {
 		req->error = HTTP_ERR_RESPONSE_READ;
 		return false;
 	}
@@ -388,9 +392,27 @@ bool HttpResponse_Read(HTTPRESP resp, SOCKET sock) {
 				resp->error = HTTP_ERR_BODY_RECV_FAIL;
 				return false;
 			}
+			return true;
 		} else {
 			resp->error = HTTP_ERR_TOO_BIG_BODY;
 			return false;
+		}
+	}
+
+	const char* enc = HttpResponse_GetHeaderStr(resp, "Transfer-Encoding");
+	if(enc && String_CaselessCompare(enc, "chunked")) {
+		char hex[12];
+		while(Socket_ReceiveLine(sock, hex, 12)) {
+			if(*hex == '0') break;
+			// int len = String_HexToInt(hex);
+			/*
+				TODO: Чтение chunked ответа. Необходимо реализовать
+				функцию Memory_Realloc для корректного выделения
+				памяти под такие запросы, а также не стоит забывать
+				и про ограничения на размер тела.
+				P.S. Ненавижу HTTP/1.x, худший протокол, с которым
+				приходилось работать.
+			*/
 		}
 	}
 	return true;

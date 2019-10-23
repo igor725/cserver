@@ -40,6 +40,10 @@ int String_ToInt(const char* str) {
 	return atoi(str);
 }
 
+int String_HexToInt(const char* str) {
+	return strtol(str, NULL, 16);
+}
+
 float String_ToFloat(const char* str) {
 	return (float)atof(str);
 }

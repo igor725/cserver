@@ -34,6 +34,7 @@ typedef struct httpResponse {
 } *HTTPRESP;
 
 typedef struct httpRequest {
+	SOCKET sock;
 	int error;
 	struct sockaddr_in addr;
 	const char* path;
