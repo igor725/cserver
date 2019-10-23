@@ -11,7 +11,7 @@
 #define PLAY_URL "http://www.classicube.net/server/play/"
 #define PLAY_URL_LEN 38
 
-const char* SoftwareName = SOFTWARE_FULLNAME;
+const char* SoftwareName = SOFTWARE_NAME "/" SOFTWARE_VERSION;
 uint32_t Delay = 5000;
 char Secret[17] = {0};
 THREAD Thread;

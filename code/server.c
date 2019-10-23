@@ -84,7 +84,7 @@ static void Bind(const char* ip, uint16_t port) {
 	}
 
 	Client_Init();
-	Log_Info("%s %s started on %s:%d", SOFTWARE_NAME, SOFTWARE_VERSION, ip, port);
+	Log_Info("%s started on %s:%d", SOFTWARE_FULLNAME, ip, port);
 	if(!Socket_Bind(Server_Socket, &ssa)) {
 		Error_PrintSys(true);
 	}
