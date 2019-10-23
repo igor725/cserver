@@ -11,7 +11,7 @@
 #define PLAY_URL "http://www.classicube.net/server/play/"
 #define PLAY_URL_LEN 38
 
-const char* SoftwareName = SOFTWARE_NAME "/" SOFTWARE_VERSION;
+const char* SoftwareName = SOFTWARE_NAME "%%47" SOFTWARE_VERSION;
 uint32_t Delay = 5000;
 char Secret[17] = {0};
 THREAD Thread;
@@ -39,17 +39,30 @@ static void NewSecret(void) {
 	}
 }
 
+const char* reserved = "!*'();:@&=+$,/?#[]";
+static void TrimReserved(char* name, int len) {
+	for(int i = 0; i < len; i++) {
+		char sym = name[i];
+		if(sym == '\0') break;
+		if(sym == ' ') name[i] = '+';
+		if(String_LastChar(reserved, sym)) name[i] = '_';
+	}
+}
+
 static void DoRequest() {
 	if(*Secret == '\0') NewSecret();
 	struct httpRequest req = {0};
 	struct httpResponse resp = {0};
-	char path[128] = {0};
-	const char* serverName = Config_GetStr(Server_Config, CFG_SERVERNAME_KEY);
-	int serverPort = Config_GetInt(Server_Config, CFG_SERVERPORT_KEY);
-	bool serverPublic = Config_GetBool(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
-	uint8_t serverMax = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
+	char path[512] = {0};
+	char name[33] = {0};
+	String_Copy(name, 33, Config_GetStr(Server_Config, CFG_SERVERNAME_KEY));
+	TrimReserved(name, 33);
+
+	uint16_t port = Config_GetInt16(Server_Config, CFG_SERVERPORT_KEY);
+	bool public = Config_GetBool(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
+	uint8_t max = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
 	uint8_t count = Clients_GetCount(STATE_INGAME);
-	String_FormatBuf(path, 128, HBEAT_URL, serverName, serverPort, count, serverMax, Secret, serverPublic ? "true" : "false", SoftwareName);
+	String_FormatBuf(path, 512, HBEAT_URL, name, port, count, max, Secret, public ? "true" : "false", SoftwareName);
 
 	SOCKET fd = Socket_New();
 	req.sock = fd;
@@ -58,15 +71,22 @@ static void DoRequest() {
 	HttpRequest_SetPath(&req, path);
 	HttpRequest_SetHeaderStr(&req, "Pragma", "no-cache");
 	HttpRequest_SetHeaderStr(&req, "Connection", "close");
-	HttpRequest_SetHeaderStr(&req, "User-Agent", SOFTWARE_FULLNAME);
 
 	if(HttpRequest_Perform(&req, &resp)) {
-		if(!Heartbeat_URL && resp.body) {
+		if(!Heartbeat_URL && resp.body && resp.code == 200) {
 			if(String_CaselessCompare2(resp.body, PLAY_URL, PLAY_URL_LEN)) {
 				Heartbeat_URL = String_AllocCopy(resp.body);
 				Log_Info("Server play URL: %s", resp.body);
 			}
 		}
+		if(resp.code != 200) {
+			Log_Error("Heartbeat server responded with an error %d", resp.code);
+		}
+	} else {
+		if(req.error == HTTP_ERR_RESPONSE_READ)
+			Log_Error("Response reading error: %d", resp.error);
+		else
+			Log_Error("Request sending error: %d", req.error);
 	}
 
 	Socket_Close(fd);
@@ -76,9 +96,10 @@ static void DoRequest() {
 
 static TRET HeartbeatThreadProc(TARG param) {
 	(void)param;
-	while(Server_Active) {
+	while(true) {
 		DoRequest();
 		Sleep(Delay);
+		if(!Server_Active) break;
 	}
 	return 0;
 }

@@ -244,7 +244,10 @@ bool HttpRequest_Read(HTTPREQ req, SOCKET sock) {
 
 bool HttpRequest_Perform(HTTPREQ req, HTTPRESP resp) {
 	char line[1024];
-	Socket_Connect(req->sock, &req->addr);
+	if(!Socket_Connect(req->sock, &req->addr)) {
+		req->error = HTTP_ERROR_CONNECTION_FAILED;
+		return false;
+	}
 	String_FormatBuf(line, 1024, "GET %s HTTP/1.1\r\n", req->path);
 	SendLine(req->sock, line);
 	SendHeaders(req->sock, req->header, line);
