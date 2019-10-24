@@ -431,7 +431,7 @@ bool Client_SetModel(CLIENT client, const char* model) {
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT other = Clients_List[i];
-		if(!other || Client_IsSupportExt(other, EXT_CHANGEMODEL, 1)) continue;
+		if(!other || !Client_IsSupportExt(other, EXT_CHANGEMODEL, 1)) continue;
 		CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, model);
 	}
 	return true;
@@ -538,13 +538,13 @@ bool Client_Spawn(CLIENT client) {
 		if(other && Client_IsInSameWorld(client, other)) {
 			Packet_WriteSpawn(other, client);
 
-			if(other->cpeData && client->cpeData)
+			if(other->cpeData && client->cpeData && Client_IsSupportExt(other, EXT_CHANGEMODEL, 1))
 				CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, client->cpeData->model);
 
 			if(client != other) {
 				Packet_WriteSpawn(client, other);
 
-				if(other->cpeData && client->cpeData)
+				if(other->cpeData && client->cpeData && Client_IsSupportExt(client, EXT_CHANGEMODEL, 1))
 					CPEPacket_WriteSetModel(client, other->id, other->cpeData->model);
 			}
 		}
