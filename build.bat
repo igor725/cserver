@@ -158,7 +158,7 @@ popd
 goto end
 
 :cloc
-cloc --exclude-dir=zlib .
+cloc --exclude-dir=zlib,openssl .
 goto end
 
 :clean

@@ -238,13 +238,11 @@ void Server_StartLoop(void) {
 
 void Server_Stop(void) {
 	Event_Call(EVT_ONSTOP, NULL);
+	Log_Info("Kicking players");
+	Clients_KickAll("Server stopped");
 	Log_Info("Saving worlds");
-	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
-		CLIENT client = Clients_List[i];
+	for(int i = 0; i < MAX_WORLDS; i++) {
 		WORLD world = Worlds_List[i];
-
-		if(i < MAX_CLIENTS && client)
-			Client_Kick(client, "Server stopped");
 
 		if(i < MAX_WORLDS && world) {
 			if(World_Save(world))

@@ -19,6 +19,13 @@ uint8_t Clients_GetCount(int state) {
 	return count;
 }
 
+void Clients_KickAll(const char* reason) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		CLIENT client = Clients_List[i];
+		if(client) Client_Kick(client, reason);
+	}
+}
+
 bool Client_Add(CLIENT client) {
 	int8_t maxplayers = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
 	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
@@ -253,7 +260,7 @@ TRET Client_MapThreadProc(TARG param) {
 
 	if((ret = deflateInit2(
 		&stream,
-		Z_BEST_SPEED,
+		1,
 		Z_DEFLATED,
 		windowBits,
 		8,
@@ -288,7 +295,8 @@ TRET Client_MapThreadProc(TARG param) {
 	if(pd->state == STATE_WLOADDONE) {
 		Packet_WriteLvlFin(client);
 		Client_Spawn(client);
-	}
+	} else
+		Client_Kick(client, "World loading error");
 
 	return 0;
 }
@@ -574,6 +582,12 @@ void Client_Kick(CLIENT client, const char* reason) {
 	if(!reason) reason = "Kicked without reason";
 	Packet_WriteKick(client, reason);
 	client->closed = true;
+	/*
+		Этот вызов нужен, чтобы корректно завершить
+		сокет клиента после кика, если цикл сервера
+		в основом потоке уже не работает.
+	*/
+	if(!Server_Active) Client_Tick(client);
 }
 
 void Client_UpdatePositions(CLIENT client) {

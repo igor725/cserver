@@ -30,7 +30,19 @@ if(String_GetArgument(args, wn, 64, idx)) { \
 	if(!wndot || !String_CaselessCompare(wndot, ".cws")) \
 		String_Append(wn, 64, ".cws"); \
 } else { \
-	Command_PrintUsage; \
+	if(!caller) { \
+		Command_PrintUsage; \
+	} else { \
+		PLAYERDATA pd = caller->playerData; \
+		if(!pd) { \
+			Command_PrintUsage; \
+		} \
+		WORLD world = pd->world; \
+		if(!world) { \
+			Command_PrintUsage; \
+		} \
+		String_Copy(wn, 64, world->name); \
+	} \
 }
 
 

@@ -73,6 +73,7 @@ bool Client_Add(CLIENT client);
 void Client_Init(void);
 
 API uint8_t Clients_GetCount(int state);
+API void Clients_KickAll(const char* reason);
 
 API bool Client_ChangeWorld(CLIENT client, WORLD world);
 API void Client_Chat(CLIENT client, MessageType type, const char* message);

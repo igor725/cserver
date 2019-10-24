@@ -186,7 +186,7 @@ static bool CHandler_SetModel(const char* args, CLIENT caller, char* out) {
 }
 
 static bool CHandler_ChgWorld(const char* args, CLIENT caller, char* out) {
-	const char* cmdUsage = "/chworld <worldname>";
+	const char* cmdUsage = "/chgworld <worldname>";
 	Command_OnlyForClient;
 
 	char worldname[64];
@@ -257,7 +257,7 @@ static bool CHandler_UnlWorld(const char* args, CLIENT caller, char* out) {
 }
 
 static bool CHandler_SavWorld(const char* args, CLIENT caller, char* out) {
-	const char* cmdUsage = "/svworld <worldname>";
+	const char* cmdUsage = "/savworld <worldname>";
 	Command_OnlyForOP;
 
 	char worldname[64];
@@ -284,7 +284,7 @@ void Command_RegisterDefault(void) {
 
 bool Command_Handle(char* cmd, CLIENT caller) {
 	if(*cmd == '/') ++cmd;
-	
+
 	char ret[CMD_MAX_OUT] = {0};
 	char* args = cmd;
 

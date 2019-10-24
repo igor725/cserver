@@ -266,7 +266,7 @@ bool World_Save(WORLD world) {
 		world->thread = Thread_Create(wSaveThread, world);
 		return true;
 	}
-	return false;
+	return world->thread != NULL;
 }
 
 bool World_Load(WORLD world) {
