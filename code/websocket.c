@@ -1,8 +1,8 @@
 #include "core.h"
 #include "platform.h"
 #include "str.h"
-#include "sha1.h"
 #include "websocket.h"
+#include <openssl/sha.h>
 
 const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -65,7 +65,7 @@ bool WsClient_DoHandshake(WSCLIENT ws) {
 	}
 
 	if(haveUpgrade && wskeylen > 0) {
-		SHA1_CTX ctx;
+		SHA_CTX ctx;
 		SHA1_Init(&ctx);
 		SHA1_Update(&ctx, (uint8_t*)wskey, wskeylen);
 		SHA1_Update(&ctx, (uint8_t*)"258EAFA5-E914-47DA-95CA-C5AB0DC85B11", 36);

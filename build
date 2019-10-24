@@ -8,7 +8,7 @@ ROOT="."
 GCC="gcc -fdiagnostics-color=always"
 LNK="$GCC -rdynamic"
 CFLAGS="-pipe -fPIC -funwind-tables"
-LIBS="-lz -lpthread -ldl"
+LIBS="-lz -lpthread -ldl -lcrypto"
 OUTBIN="server"
 
 PLUGIN_BUILD=0

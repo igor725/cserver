@@ -338,10 +338,7 @@ const char* Client_GetAppName(CLIENT client) {
 
 //TODO: ClassiCube auth
 bool Client_CheckAuth(CLIENT client) {
-	if(*Heartbeat_Secret == '\0') return true;
-	(void)client;
-
-	return false;
+	return Heartbeat_CheckKey(client);
 }
 
 void Client_SetPos(CLIENT client, VECTOR* pos, ANGLE* ang) {

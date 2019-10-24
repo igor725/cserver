@@ -5,13 +5,14 @@
 #include "server.h"
 #include "svmath.h"
 #include "heartbeat.h"
-#include "client.h"
+#include <openssl/md5.h>
 
 #define HBEAT_URL "/server/heartbeat/?name=%s&port=%d&users=%d&max=%d&salt=%s&public=%s&web=true&software=%s"
 #define PLAY_URL "http://www.classicube.net/server/play/"
 #define PLAY_URL_LEN 38
 
 const char* SoftwareName = SOFTWARE_NAME "%%47" SOFTWARE_VERSION;
+char Secret[17] = {0};
 uint32_t Delay = 5000;
 THREAD Thread;
 
@@ -34,7 +35,7 @@ static void NewSecret(void) {
 				max = 122;
 				break;
 		}
-		Heartbeat_Secret[i] = (char)Random_Range(&secrnd, min, max);
+		Secret[i] = (char)Random_Range(&secrnd, min, max);
 	}
 }
 
@@ -49,7 +50,7 @@ static void TrimReserved(char* name, int len) {
 }
 
 static void DoRequest() {
-	if(*Heartbeat_Secret == '\0') NewSecret();
+	if(*Secret == '\0') NewSecret();
 	struct httpRequest req = {0};
 	struct httpResponse resp = {0};
 	char path[512] = {0};
@@ -61,7 +62,7 @@ static void DoRequest() {
 	bool public = Config_GetBool(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
 	uint8_t max = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
 	uint8_t count = Clients_GetCount(STATE_INGAME);
-	String_FormatBuf(path, 512, HBEAT_URL, name, port, count, max, Heartbeat_Secret, public ? "true" : "false", SoftwareName);
+	String_FormatBuf(path, 512, HBEAT_URL, name, port, count, max, Secret, public ? "true" : "false", SoftwareName);
 
 	SOCKET fd = Socket_New();
 	req.sock = fd;
@@ -100,6 +101,31 @@ static TRET HeartbeatThreadProc(TARG param) {
 		if(!Server_Active) break;
 	}
 	return 0;
+}
+
+static const char hexchars[] = "0123456789abcdef";
+
+bool Heartbeat_CheckKey(CLIENT client) {
+	if(*Secret == '\0') return true;
+	const char* key = client->playerData->key;
+	const char* name =  client->playerData->name;
+
+	MD5_CTX ctx = {0};
+	uint8_t hash[MD5_DIGEST_LENGTH] = {0};
+	char hash_hex[MD5_DIGEST_LENGTH * 2 + 1] = {0};
+
+	MD5_Init(&ctx);
+	MD5_Update(&ctx, Secret, String_Length(Secret));
+	MD5_Update(&ctx, name, String_Length(name));
+	MD5_Final(hash, &ctx);
+	
+	for(int i = 0; i < MD5_DIGEST_LENGTH; i++) {
+		uint8_t b = hash[i];
+		hash_hex[i * 2] = hexchars[b >> 4];
+		hash_hex[i * 2 + 1] = hexchars[b & 0xF];
+	}
+
+	return String_CaselessCompare(hash_hex, key);
 }
 
 void Heartbeat_Start(uint32_t delay) {
