@@ -69,6 +69,7 @@ bool Client_CheckAuth(CLIENT client);
 TRET Client_ThreadProc(TARG param);
 void Client_Free(CLIENT client);
 void Client_Tick(CLIENT client);
+CLIENT Client_New(SOCKET fd, uint32_t addr);
 bool Client_Add(CLIENT client);
 void Client_Init(void);
 

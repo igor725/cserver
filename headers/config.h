@@ -10,46 +10,50 @@ enum cfgTypes {
 };
 
 typedef struct cfgEntry {
-	const char* key;
-	int type;
-	bool changed;
-	bool haveLimits;
-	int limits[2];
+	const char* key; // Ключ, присваиваемый записи при создании
+	int type; // Тип cfg-записи
+	bool readed; // Была ли осуществленна попытка чтения значения из cfg файла
+	bool changed; // Отличается ли текущее значение записи от заданного стандартного
+	bool haveLimits; // Применимо только для integer типов
+	int limits[2]; // Минимальный и максимальный предел значений записи
 	union {
 		int vint;
 		int8_t vint8;
 		int16_t vint16;
 		bool vbool;
 		const char* vchar;
-	} value;
+	} value; // Значение записи, заданное пользователем
 	union {
 		int32_t vint;
 		int8_t vint8;
 		int16_t vint16;
 		bool vbool;
 		const char* vchar;
-	} defvalue;
-	const char* commentary;
-	struct cfgEntry* next;
-	struct cfgStore* store;
+	} defvalue; // Значение записи, заданное по умолчанию
+	const char* commentary; // Комментарий к записи
+	struct cfgEntry* next; // Следующая запись
+	struct cfgStore* store; // Cfg-хранилище, которому принадлежит запись
 } *CFGENTRY;
 
 typedef struct cfgStore {
-	const char* path;
-	bool modified;
-	CFGENTRY firstCfgEntry;
-	CFGENTRY lastCfgEntry;
+	const char* path; // Путь до cfg-файла
+	bool modified; // Было ли хранилище модифицировано во время работы сервера
+	CFGENTRY firstCfgEntry; // Первая запись в хранилище
+	CFGENTRY lastCfgEntry; // Последняя запись в хранилище
 } *CFGSTORE;
 
 
-API CFGSTORE Config_Create(const char* filename);
-API CFGENTRY Config_NewEntry(CFGSTORE store, const char* key, int type);
-API CFGENTRY Config_GetEntry(CFGSTORE store, const char* key);
-API void Config_EmptyStore(CFGSTORE store);
-API void Config_DestroyStore(CFGSTORE store);
 API const char* Config_TypeName(int type);
 API int Config_TypeNameToInt(const char* name);
 API bool Config_ToStr(CFGENTRY ent, char* value, uint8_t len);
+
+API CFGSTORE Config_NewStore(const char* path);
+API void Config_EmptyStore(CFGSTORE store);
+API void Config_DestroyStore(CFGSTORE store);
+
+API CFGENTRY Config_NewEntry(CFGSTORE store, const char* key, int type);
+API CFGENTRY Config_GetEntry(CFGSTORE store, const char* key);
+
 
 API bool Config_Load(CFGSTORE store);
 API bool Config_Save(CFGSTORE store);
@@ -69,15 +73,12 @@ API void Config_SetDefaultInt16(CFGENTRY ent, int16_t value);
 API void Config_SetInt(CFGENTRY ent, int32_t value);
 API void Config_SetInt16(CFGENTRY ent, int16_t value);
 API void Config_SetInt8(CFGENTRY ent, int8_t value);
-API void Config_SetIntByKey(CFGSTORE store, const char* key, int value);
 
 API const char* Config_GetStr(CFGSTORE store, const char* key);
 API void Config_SetDefaultStr(CFGENTRY ent, const char* value);
 API void Config_SetStr(CFGENTRY ent, const char* value);
-API void Config_SetStrByKey(CFGSTORE store, const char* key, const char* value);
 
 API bool Config_GetBool(CFGSTORE store, const char* key);
 API void Config_SetDefaultBool(CFGENTRY ent, bool value);
 API void Config_SetBool(CFGENTRY ent, bool value);
-API void Config_SetBoolByKey(CFGSTORE store, const char* key, bool value);
 #endif

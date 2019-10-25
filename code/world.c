@@ -5,6 +5,17 @@
 #include "world.h"
 #include "event.h"
 
+void Worlds_SaveAll(bool join) {
+	for(int i = 0; i < MAX_WORLDS; i++) {
+		WORLD world = Worlds_List[i];
+
+		if(i < MAX_WORLDS && world) {
+			if(World_Save(world) && join)
+				Thread_Join(world->thread);
+		}
+	}
+}
+
 WORLD World_Create(const char* name) {
 	WORLD tmp = Memory_Alloc(1, sizeof(struct world));
 	WORLDINFO wi = Memory_Alloc(1, sizeof(struct worldInfo));

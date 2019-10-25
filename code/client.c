@@ -27,11 +27,23 @@ void Clients_KickAll(const char* reason) {
 	}
 }
 
+CLIENT Client_New(SOCKET fd, uint32_t addr) {
+	CLIENT tmp = Memory_Alloc(1, sizeof(struct client));
+	tmp->id = 0xFF;
+	tmp->sock = fd;
+	tmp->mutex = Mutex_Create();
+	tmp->addr = addr;
+	tmp->rdbuf = Memory_Alloc(134, 1);
+	tmp->wrbuf = Memory_Alloc(2048, 1);
+	return tmp;
+}
+
 bool Client_Add(CLIENT client) {
 	int8_t maxplayers = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
 	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
 		if(!Clients_List[i]) {
 			client->id = i;
+			client->thread = Thread_Create(Client_ThreadProc, client);
 			Clients_List[i] = client;
 			return true;
 		}

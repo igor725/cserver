@@ -190,7 +190,7 @@ static bool CHandler_PvP(const char* args, CLIENT caller, char* out) {
 	return true;
 }
 
-EXP int Plugin_ApiVer = 100;
+EXP int Plugin_ApiVer = CPLUGIN_API_NUM;
 
 EXP bool Plugin_Load(void) {
 	if(Server_Active) {

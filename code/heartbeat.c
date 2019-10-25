@@ -13,6 +13,7 @@
 #define PLAY_URL_LEN 38
 
 const char* SoftwareName = SOFTWARE_NAME "%%47" SOFTWARE_VERSION;
+const char* PlayURL = NULL;
 char Secret[17] = {0};
 uint32_t Delay = 5000;
 THREAD Thread;
@@ -74,9 +75,9 @@ static void DoRequest() {
 	HttpRequest_SetHeaderStr(&req, "Connection", "close");
 
 	if(HttpRequest_Perform(&req, &resp)) {
-		if(!Heartbeat_URL && resp.body && resp.code == 200) {
+		if(!PlayURL && resp.body && resp.code == 200) {
 			if(String_CaselessCompare2(resp.body, PLAY_URL, PLAY_URL_LEN)) {
-				Heartbeat_URL = String_AllocCopy(resp.body);
+				PlayURL = String_AllocCopy(resp.body);
 				Log_Info(Lang_Get(LANG_HBPLAY), resp.body);
 			}
 		}

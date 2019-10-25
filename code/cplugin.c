@@ -25,9 +25,9 @@ bool CPlugin_Load(const char* name) {
 		int ver = *((int*)verSym);
 		if(ver != CPLUGIN_API_NUM) {
 			if(ver < CPLUGIN_API_NUM)
-				Log_Error(CPLUGIN_OLDMSG, name, CPLUGIN_API_NUM, ver);
+				Log_Error(Lang_Get(LANG_CPAPIOLD), name, CPLUGIN_API_NUM, ver);
 			else
-				Log_Error(CPLUGIN_UPGMSG, name, ver, CPLUGIN_API_NUM);
+				Log_Error(Lang_Get(LANG_CPAPIUPG), name, ver, CPLUGIN_API_NUM);
 
 			DLib_Unload(lib);
 			return false;

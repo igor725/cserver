@@ -57,6 +57,8 @@ typedef struct world {
 
 void World_Tick(WORLD world);
 
+API void Worlds_SaveAll(bool join);
+
 API WORLD World_Create(const char* name);
 API void World_AllocBlockArray(WORLD world);
 API void World_Free(WORLD world);

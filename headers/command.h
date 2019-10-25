@@ -1,6 +1,7 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 #include "client.h"
+#include "lang.h"
 
 #define	CMD_MAX_OUT 1024
 #define Command_OnlyForClient \

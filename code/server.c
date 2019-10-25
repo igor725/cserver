@@ -1,5 +1,4 @@
 #include "core.h"
-#include "platform.h"
 #include "str.h"
 #include "server.h"
 #include "client.h"
@@ -10,6 +9,7 @@
 #include "websocket.h"
 #include "generators.h"
 #include "heartbeat.h"
+#include "platform.h"
 #include "event.h"
 #include "cplugin.h"
 #include "lang.h"
@@ -26,19 +26,13 @@ static void AcceptFunc(void) {
 			return;
 		}
 
-	 	CLIENT tmp = Memory_Alloc(1, sizeof(struct client));
-		tmp->id = 0xFF;
-		tmp->sock = fd;
-		tmp->mutex = Mutex_Create();
-		tmp->addr = htonl(caddr.sin_addr.s_addr);
-		tmp->rdbuf = Memory_Alloc(134, 1);
-		tmp->wrbuf = Memory_Alloc(2048, 1);
-
+		uint32_t addr = htonl(caddr.sin_addr.s_addr);
+	 	CLIENT tmp = Client_New(fd, addr);
 		uint32_t sameAddrCount = 1;
 		uint8_t maxConnPerIP = Config_GetInt8(Server_Config, CFG_CONN_KEY);
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-			CLIENT client = Clients_List[i];
-			if(client && client->addr == tmp->addr)
+			CLIENT cc = Clients_List[i];
+			if(cc && cc->addr == addr)
 				++sameAddrCount;
 			else continue;
 
@@ -53,8 +47,9 @@ static void AcceptFunc(void) {
 			if(String_CaselessCompare(tmp->rdbuf, "GET /")) {
 				WSCLIENT wscl = Memory_Alloc(1, sizeof(struct wsClient));
 				wscl->recvbuf = tmp->rdbuf;
-				wscl->sock = fd;
+				wscl->sock = tmp->sock;
 				tmp->websock = wscl;
+
 				if(!WsClient_DoHandshake(wscl)) {
 					Client_Free(tmp);
 					return;
@@ -62,9 +57,7 @@ static void AcceptFunc(void) {
 			}
 		}
 
-		if(Client_Add(tmp))
-			tmp->thread = Thread_Create(Client_ThreadProc, tmp);
-		else {
+		if(!Client_Add(tmp)) {
 			Client_Kick(tmp, Lang_Get(LANG_SVFULL));
 			Client_Free(tmp);
 		}
@@ -108,7 +101,7 @@ void Server_InitialWork(void) {
 	if(!Socket_Init()) return;
 
 	Log_Info(Lang_Get(LANG_SVLOADING), MAINCFG);
-	CFGSTORE cfg = Config_Create(MAINCFG);
+	CFGSTORE cfg = Config_NewStore(MAINCFG);
 	CFGENTRY ent;
 
 	ent = Config_NewEntry(cfg, CFG_SERVERIP_KEY, CFG_STR);
@@ -122,10 +115,10 @@ void Server_InitialWork(void) {
 
 	ent = Config_NewEntry(cfg, CFG_SERVERNAME_KEY, CFG_STR);
 	Config_SetComment(ent, "Server name and MOTD will be shown to the player during map loading.");
-	Config_SetDefaultStr(ent, DEFAULT_NAME);
+	Config_SetDefaultStr(ent, "Server name");
 
 	ent = Config_NewEntry(cfg, CFG_SERVERMOTD_KEY, CFG_STR);
-	Config_SetDefaultStr(ent, DEFAULT_MOTD);
+	Config_SetDefaultStr(ent, "Server MOTD");
 
 	ent = Config_NewEntry(cfg, CFG_LOGLEVEL_KEY, CFG_STR);
 	Config_SetComment(ent, "I - Info, C - Chat, W - Warnings, D - Debug.");
@@ -242,15 +235,7 @@ void Server_Stop(void) {
 	Log_Info(Lang_Get(LANG_SVSTOP0));
 	Clients_KickAll(Lang_Get(LANG_KICKSVSTOP));
 	Log_Info(Lang_Get(LANG_SVSTOP1));
-	for(int i = 0; i < MAX_WORLDS; i++) {
-		WORLD world = Worlds_List[i];
-
-		if(i < MAX_WORLDS && world) {
-			if(World_Save(world))
-				Thread_Join(world->thread);
-			World_Free(world);
-		}
-	}
+	Worlds_SaveAll(true);
 
 	Console_Close();
 	Heartbeat_Close();

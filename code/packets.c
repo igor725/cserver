@@ -314,11 +314,6 @@ bool Handler_Handshake(CLIENT client, const char* data) {
 		const char* name = Config_GetStr(Server_Config, CFG_SERVERNAME_KEY);
 		const char* motd = Config_GetStr(Server_Config, CFG_SERVERMOTD_KEY);
 
-		if(!name)
-			name = DEFAULT_NAME;
-		if(!motd)
-			motd = DEFAULT_MOTD;
-
 		Packet_WriteHandshake(client, name, motd);
 	} else {
 		Client_Kick(client, Lang_Get(LANG_KICKAUTHFAIL));

@@ -1,6 +1,5 @@
 #ifndef WEBSOCKET_H
 #define WEBSOCKET_H
-
 enum wState {
 	WS_ST_HDR,
 	WS_ST_PLEN,

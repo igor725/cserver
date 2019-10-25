@@ -93,6 +93,10 @@ const char* Lang_Get(int langid) {
 			return "Loaded plugins list:";
 		case LANG_CPINVNAME:
 			return "Invalid plugin name";
+		case LANG_CPAPIOLD:
+			return "Plugin \"%s\" is too old. Server uses PluginAPI v%03d, but plugin compiled for v%03d.";
+		case LANG_CPAPIUPG:
+			return "Please upgrade your server software. Plugin \"%s\" compiled for PluginAPI v%03d, but server uses v%d.";
 
 		case LANG_DBGSYM0:
 			return "Symbol: %s - 0x%0X";

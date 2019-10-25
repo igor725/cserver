@@ -78,26 +78,26 @@ typedef int SOCKET;
 #endif
 
 typedef uint32_t bool;
-typedef uint8_t  Order;
-typedef uint8_t  BlockID;
-typedef uint8_t  Weather;
-typedef uint8_t  ClientID;
-typedef uint8_t  MessageType;
+typedef uint8_t Order;
+typedef uint8_t BlockID;
+typedef uint8_t Weather;
+typedef uint8_t ClientID;
+typedef uint8_t MessageType;
 typedef void* TARG;
 typedef TRET(*TFUNC)(TARG);
 
 #include "error.h"
 #include "log.h"
 
-#define DEFAULT_NAME "Server name"
-#define DEFAULT_MOTD "Server MOTD"
 #define SOFTWARE_NAME "C-Server"
 #define SOFTWARE_VERSION "0.1"
 #define SOFTWARE_FULLNAME SOFTWARE_NAME " " SOFTWARE_VERSION
 #define CHATLINE "<%s>: %s"
 #define MAINCFG "server.cfg"
 #define WORLD_MAGIC 0x54414457
+#define CPLUGIN_API_NUM 1
 
+#define MAX_PLUGINS 32
 #define MAX_CLIENT_PPS 128
 #define MAX_CFG_LEN 128
 #define MAX_CLIENTS 128
