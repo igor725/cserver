@@ -41,10 +41,10 @@ typedef struct cfgStore {
 	CFGENTRY lastCfgEntry;
 } *CFGSTORE;
 
-CFGENTRY Config_GetEntry(CFGSTORE store, const char* key);
 
 API CFGSTORE Config_Create(const char* filename);
-API CFGENTRY Config_NewEntry(CFGSTORE store, const char* key);
+API CFGENTRY Config_NewEntry(CFGSTORE store, const char* key, int type);
+API CFGENTRY Config_GetEntry(CFGSTORE store, const char* key);
 API void Config_EmptyStore(CFGSTORE store);
 API void Config_DestroyStore(CFGSTORE store);
 API const char* Config_TypeName(int type);

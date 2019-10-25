@@ -1,10 +1,11 @@
 #include "core.h"
 #include "str.h"
-#include "platform.h"
 #include "http.h"
 #include "server.h"
 #include "svmath.h"
 #include "heartbeat.h"
+#include "platform.h"
+#include "lang.h"
 #include <openssl/md5.h>
 
 #define HBEAT_URL "/server/heartbeat/?name=%s&port=%d&users=%d&max=%d&salt=%s&public=%s&web=true&software=%s"
@@ -76,16 +77,16 @@ static void DoRequest() {
 		if(!Heartbeat_URL && resp.body && resp.code == 200) {
 			if(String_CaselessCompare2(resp.body, PLAY_URL, PLAY_URL_LEN)) {
 				Heartbeat_URL = String_AllocCopy(resp.body);
-				Log_Info("Server play URL: %s", resp.body);
+				Log_Info(Lang_Get(LANG_HBPLAY), resp.body);
 			}
 		}
 		if(resp.code != 200)
-			Log_Error("Heartbeat server responded with an error %d", resp.code);
+			Log_Error(Lang_Get(LANG_HBRESPERR), resp.code);
 	} else {
 		if(req.error == HTTP_ERR_RESPONSE_READ)
-			Log_Error("Response reading error: %d", resp.error);
+			Log_Error(Lang_Get(LANG_HBERR), Lang_Get(LANG_HBRR), resp.error);
 		else
-			Log_Error("Request sending error: %d", req.error);
+			Log_Error(Lang_Get(LANG_HBERR), Lang_Get(LANG_HBRSP), resp.error);
 	}
 
 	Socket_Close(fd);
@@ -118,7 +119,7 @@ bool Heartbeat_CheckKey(CLIENT client) {
 	MD5_Update(&ctx, Secret, String_Length(Secret));
 	MD5_Update(&ctx, name, String_Length(name));
 	MD5_Final(hash, &ctx);
-	
+
 	for(int i = 0; i < MD5_DIGEST_LENGTH; i++) {
 		uint8_t b = hash[i];
 		hash_hex[i * 2] = hexchars[b >> 4];

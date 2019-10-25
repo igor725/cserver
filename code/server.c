@@ -12,6 +12,7 @@
 #include "heartbeat.h"
 #include "event.h"
 #include "cplugin.h"
+#include "lang.h"
 
 THREAD AcceptThread;
 
@@ -42,7 +43,7 @@ static void AcceptFunc(void) {
 			else continue;
 
 			if(sameAddrCount > maxConnPerIP) {
-				Client_Kick(tmp, "Too many connections from one IP.");
+				Client_Kick(tmp, Lang_Get(LANG_SVMANYCONN));
 				Client_Free(tmp);
 				return;
 			}
@@ -64,7 +65,7 @@ static void AcceptFunc(void) {
 		if(Client_Add(tmp))
 			tmp->thread = Thread_Create(Client_ThreadProc, tmp);
 		else {
-			Client_Kick(tmp, "Server is full");
+			Client_Kick(tmp, Lang_Get(LANG_SVFULL));
 			Client_Free(tmp);
 		}
 	}
@@ -84,7 +85,7 @@ static void Bind(const char* ip, uint16_t port) {
 	}
 
 	Client_Init();
-	Log_Info("%s started on %s:%d", SOFTWARE_FULLNAME, ip, port);
+	Log_Info(Lang_Get(LANG_SVSTART), SOFTWARE_FULLNAME, ip, port);
 	if(!Socket_Bind(Server_Socket, &ssa)) {
 		Error_PrintSys(true);
 	}
@@ -94,65 +95,65 @@ static void onConnect(void* param) {
 	CLIENT cl = (CLIENT)param;
 	const char* name = Client_GetName(cl);
 	const char* appname = Client_GetAppName(cl);
-	Log_Info("Player %s connected with %s", name, appname);
+	Log_Info(Lang_Get(LANG_SVPLCONN), name, appname);
 }
 
 static void onDisconnect(void* param) {
 	if(!Server_Active) return;
 	const char* name = Client_GetName((CLIENT)param);
-	Log_Info("Player %s disconnected", name);
+	Log_Info(Lang_Get(LANG_SVPLDISCONN), name);
 }
 
 void Server_InitialWork(void) {
 	if(!Socket_Init()) return;
 
-	Log_Info("Loading " MAINCFG);
+	Log_Info(Lang_Get(LANG_SVLOADING), MAINCFG);
 	CFGSTORE cfg = Config_Create(MAINCFG);
 	CFGENTRY ent;
 
-	ent = Config_NewEntry(cfg, CFG_SERVERIP_KEY);
+	ent = Config_NewEntry(cfg, CFG_SERVERIP_KEY, CFG_STR);
 	Config_SetComment(ent, "Bind server to specified IP address. \"0.0.0.0\" - means \"all available network adapters\".");
 	Config_SetDefaultStr(ent, "0.0.0.0");
 
-	ent = Config_NewEntry(cfg, CFG_SERVERPORT_KEY);
+	ent = Config_NewEntry(cfg, CFG_SERVERPORT_KEY, CFG_INT16);
 	Config_SetComment(ent, "Use specified port to accept clients. [1-65535]");
 	Config_SetLimit(ent, 1, 65535);
 	Config_SetDefaultInt16(ent, 25565);
 
-	ent = Config_NewEntry(cfg, CFG_SERVERNAME_KEY);
+	ent = Config_NewEntry(cfg, CFG_SERVERNAME_KEY, CFG_STR);
 	Config_SetComment(ent, "Server name and MOTD will be shown to the player during map loading.");
 	Config_SetDefaultStr(ent, DEFAULT_NAME);
 
-	ent = Config_NewEntry(cfg, CFG_SERVERMOTD_KEY);
+	ent = Config_NewEntry(cfg, CFG_SERVERMOTD_KEY, CFG_STR);
 	Config_SetDefaultStr(ent, DEFAULT_MOTD);
 
-	ent = Config_NewEntry(cfg, CFG_LOGLEVEL_KEY);
+	ent = Config_NewEntry(cfg, CFG_LOGLEVEL_KEY, CFG_STR);
 	Config_SetComment(ent, "I - Info, C - Chat, W - Warnings, D - Debug.");
 	Config_SetDefaultStr(ent, "ICW");
 
-	ent = Config_NewEntry(cfg, CFG_LOCALOP_KEY);
+	ent = Config_NewEntry(cfg, CFG_LOCALOP_KEY, CFG_BOOL);
 	Config_SetComment(ent, "Any player with ip address \"127.0.0.1\" will automatically become an operator.");
 	Config_SetDefaultBool(ent, false);
 
-	ent = Config_NewEntry(cfg, CFG_MAXPLAYERS_KEY);
+	ent = Config_NewEntry(cfg, CFG_MAXPLAYERS_KEY, CFG_INT8);
 	Config_SetComment(ent, "Max players on server. [1-127]");
 	Config_SetLimit(ent, 1, 127);
 	Config_SetDefaultInt8(ent, 10);
 
-	ent = Config_NewEntry(cfg, CFG_CONN_KEY);
+	ent = Config_NewEntry(cfg, CFG_CONN_KEY, CFG_INT8);
 	Config_SetComment(ent, "Max connections per one IP.");
 	Config_SetLimit(ent, 1, 5);
 	Config_SetDefaultInt8(ent, 5);
 
-	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_KEY);
+	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_KEY, CFG_BOOL);
 	Config_SetComment(ent, "Enable ClassiCube heartbeat.");
 	Config_SetDefaultBool(ent, false);
 
-	ent = Config_NewEntry(cfg, CFG_HEARTBEATDELAY_KEY);
+	ent = Config_NewEntry(cfg, CFG_HEARTBEATDELAY_KEY, CFG_INT);
 	Config_SetComment(ent, "Heartbeat request delay.");
 	Config_SetDefaultInt(ent, 10);
 
-	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_PUBLIC_KEY);
+	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_PUBLIC_KEY, CFG_BOOL);
 	Config_SetComment(ent, "Show server in the ClassiCube server list.");
 	Config_SetDefaultBool(ent, false);
 
@@ -188,10 +189,10 @@ void Server_InitialWork(void) {
 		Worlds_List[0] = tmp;
 	}
 
-	Log_Info("Loading C plugins");
+	Log_Info(Lang_Get(LANG_SVPLUGINLOAD));
 	CPlugin_Start();
 	if(Config_GetBool(cfg, CFG_HEARTBEAT_KEY)) {
-		Log_Info("Creating heartbeat thread");
+		Log_Info(Lang_Get(LANG_HBEAT));
 		Heartbeat_Start(Config_GetInt(cfg, CFG_HEARTBEATDELAY_KEY));
 	}
 	Event_Call(EVT_POSTSTART, NULL);
@@ -223,24 +224,24 @@ void Server_StartLoop(void) {
 		curr = Time_GetMSec();
 		Server_Delta = (int)(curr - last);
 		if(Server_Delta < 0) {
-			Log_Warn("Time ran backwards? Server_Delta < 0.");
+			Log_Warn(Lang_Get(LANG_SVDELTALT0));
 			Server_Delta = 0;
 		}
 		if(Server_Delta > 500) {
-			Log_Warn("Last server tick took %dms!", Server_Delta);
+			Log_Warn(Lang_Get(LANG_SVLONGTICK), Server_Delta);
 			Server_Delta = 500;
 		}
 		Server_DoStep();
 		Sleep(10);
 	}
-	Log_Info("Main loop done");
+	Log_Info(Lang_Get(LANG_SVLOOPDONE));
 }
 
 void Server_Stop(void) {
 	Event_Call(EVT_ONSTOP, NULL);
-	Log_Info("Kicking players");
-	Clients_KickAll("Server stopped");
-	Log_Info("Saving worlds");
+	Log_Info(Lang_Get(LANG_SVSTOP0));
+	Clients_KickAll(Lang_Get(LANG_KICKSVSTOP));
+	Log_Info(Lang_Get(LANG_SVSTOP1));
 	for(int i = 0; i < MAX_WORLDS; i++) {
 		WORLD world = Worlds_List[i];
 
@@ -257,10 +258,10 @@ void Server_Stop(void) {
 		Thread_Close(AcceptThread);
 
 	Socket_Close(Server_Socket);
-	Log_Info("Saving " MAINCFG);
+	Log_Info(Lang_Get(LANG_SVSAVING), MAINCFG);
 	Config_Save(Server_Config);
 	Config_DestroyStore(Server_Config);
 
-	Log_Info("Unloading plugins");
+	Log_Info(Lang_Get(LANG_SVSTOP2));
 	CPlugin_Stop();
 }

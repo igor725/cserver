@@ -3,6 +3,7 @@
 #include "console.h"
 #include "command.h"
 #include "server.h"
+#include "lang.h"
 
 THREAD conThread;
 
@@ -19,7 +20,7 @@ static int ReadLine(char* buf, int buflen) {
 
 static void HandleCommand(char* cmd) {
 	if(!Command_Handle(cmd, NULL))
-		Log_Info("Unknown command");
+		Log_Info(Lang_Get(LANG_CMDUNK));
 }
 
 static TRET ConsoleThreadProc(TARG param) {

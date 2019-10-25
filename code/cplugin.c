@@ -3,6 +3,7 @@
 #include "str.h"
 #include "cplugin.h"
 #include "command.h"
+#include "lang.h"
 
 CPLUGIN PList[MAX_PLUGINS] = {0};
 
@@ -82,7 +83,7 @@ bool CPlugin_Unload(CPLUGIN plugin) {
 
 #define GetPluginName \
 if(!String_GetArgument(args, name, 64, 1)) { \
-	String_Copy(out, CMD_MAX_OUT, "Invalid plugin name"); \
+	String_Copy(out, CMD_MAX_OUT, Lang_Get(LANG_CPINVNAME)); \
 	return true; \
 } \
 const char* lc = String_LastChar(name, '.'); \
@@ -91,6 +92,7 @@ if(!lc || !String_CaselessCompare(lc, "."DLIB_EXT)) { \
 }
 
 static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
+	const char* cmdUsage = "/plugin <command> [pluginName]";
 	char command[64];
 	char name[64];
 	CPLUGIN plugin;
@@ -99,34 +101,46 @@ static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
 	if(String_GetArgument(args, command, 64, 0)) {
 		if(String_CaselessCompare(command, "load")) {
 			GetPluginName;
-			if(!CPlugin_Get(name) && CPlugin_Load(name))
-				String_FormatBuf(out, CMD_MAX_OUT, "Plugin %s successfully loaded", name);
-			else
-				String_FormatBuf(out, CMD_MAX_OUT, "Plugin %s can't be loaded", name);
+			if(!CPlugin_Get(name) && CPlugin_Load(name)) {
+				String_FormatBuf(out, CMD_MAX_OUT,
+					Lang_Get(LANG_CPINF0),
+					name,
+					Lang_Get(LANG_CPLD)
+				);
+				return true;
+			}
 		} else if(String_CaselessCompare(command, "unload")) {
 			GetPluginName;
 			plugin = CPlugin_Get(name);
 			if(!plugin) {
-				String_Copy(out, CMD_MAX_OUT, "This plugin is not loaded");
+				String_FormatBuf(out, CMD_MAX_OUT,
+					Lang_Get(LANG_CPINF0),
+					name,
+					Lang_Get(LANG_CPNL)
+				);
 				return true;
 			}
 			if(CPlugin_Unload(plugin))
-				String_FormatBuf(out, CMD_MAX_OUT, "Plugin %s successfully unloaded", name);
+				String_FormatBuf(out, CMD_MAX_OUT,
+					Lang_Get(LANG_CPINF0),
+					name,
+					Lang_Get(LANG_CPUNLD)
+				);
 			else
-				String_FormatBuf(out, CMD_MAX_OUT, "Plugin %s can't be unloaded", name);
-		} else if(String_CaselessCompare(command, "list")) {
-			Log_Info("Loaded plugins list:");
-			for(int i = 0; i < MAX_PLUGINS; i++) {
-				plugin = PList[i];
-				if(plugin) Log_Info(plugin->name);
-			}
-			return false;
-		} else
-			String_Copy(out, CMD_MAX_OUT, "Unknown plugins command");
-	} else
-		String_Copy(out, CMD_MAX_OUT, "Usage: plugin <command> [pluginName]");
+				String_FormatBuf(out, CMD_MAX_OUT,
+					Lang_Get(LANG_CPINF1),
+					name,
+					Lang_Get(LANG_CPCB),
+					Lang_Get(LANG_CPUNLD)
+				);
 
-	return true;
+			return true;
+		} else {
+			Command_PrintUsage;
+		}
+	}
+
+	Command_PrintUsage;
 }
 
 void CPlugin_Start(void) {

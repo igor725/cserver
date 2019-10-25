@@ -1,12 +1,13 @@
 #include "core.h"
-#include "platform.h"
 #include "str.h"
 #include "block.h"
 #include "client.h"
 #include "event.h"
 #include "server.h"
 #include "packets.h"
+#include "platform.h"
 #include "command.h"
+#include "lang.h"
 
 PACKET Packets_List[MAX_PACKETS] = {0};
 
@@ -286,7 +287,7 @@ void Packet_WriteUpdateType(CLIENT client) {
 bool Handler_Handshake(CLIENT client, const char* data) {
 	uint8_t protoVer = *data++;
 	if(protoVer != 0x07) {
-		Client_Kick(client, "Invalid protocol version");
+		Client_Kick(client, Lang_Get(LANG_KICKPROTOVER));
 		return true;
 	}
 
@@ -304,7 +305,7 @@ bool Handler_Handshake(CLIENT client, const char* data) {
 		CLIENT other = Clients_List[i];
 		if(!other || other == client || !other->playerData) continue;
 		if(String_CaselessCompare(client->playerData->name, other->playerData->name)) {
-			Client_Kick(client, "This name already in use");
+			Client_Kick(client, Lang_Get(LANG_KICKNAMEUSED));
 			return true;
 		}
 	}
@@ -320,7 +321,7 @@ bool Handler_Handshake(CLIENT client, const char* data) {
 
 		Packet_WriteHandshake(client, name, motd);
 	} else {
-		Client_Kick(client, "Auth failed");
+		Client_Kick(client, Lang_Get(LANG_KICKAUTHFAIL));
 		return true;
 	}
 
@@ -363,7 +364,7 @@ bool Handler_SetBlock(CLIENT client, const char* data) {
 	switch(mode) {
 		case 0x01:
 			if(!Block_IsValid(block)) {
-				Client_Kick(client, "Invalid block ID");
+				Client_Kick(client, Lang_Get(LANG_KICKBLOCKID));
 				return false;
 			}
 			if(Event_OnBlockPlace(client, mode, x, y, z, &block)) {
@@ -407,7 +408,7 @@ bool Handler_Message(CLIENT client, const char* data) {
 	MessageType type = 0;
 	char message[65];
 	char* messptr = message;
-	uint8_t partial = *data++; //TODO: LongerMessages
+	uint8_t partial = *data++;
 	uint8_t len = ReadNetStringNoAlloc(&data, message);
 	if(len == 0) return false;
 
@@ -428,7 +429,7 @@ bool Handler_Message(CLIENT client, const char* data) {
 
 		if(*messptr == '/') {
 			if(!Command_Handle(messptr, client))
-				Packet_WriteChat(client, type, "Unknown command");
+				Packet_WriteChat(client, type, Lang_Get(LANG_CMDUNK));
 		} else
 			Client_Chat(Client_Broadcast, type, formatted);
 

@@ -1,6 +1,7 @@
 #include "core.h"
 #include "str.h"
 #include "error.h"
+#include "lang.h"
 
 const char* const Strings[] = {
 	"All ok.",
@@ -14,8 +15,6 @@ const char* const Strings[] = {
 	"Iterator already inited.",
 	"Invalid C-plugin version."
 };
-
-#define SYM_DBG "Symbol: %s - 0x%0X"
 
 #if defined(WINDOWS)
 #include <dbghelp.h>
@@ -35,12 +34,12 @@ void Error_CallStack(void) {
 	for(int i = 0; i < frames; i++) {
 		SymFromAddr(process, (uintptr_t)stack[i], 0, &symbol);
 		if(i > 2) {
-			Log_Debug(SYM_DBG, symbol.Name, symbol.Address);
+			Log_Debug(Lang_Get(LANG_DBGSYM0), symbol.Name, symbol.Address);
 #if _MSC_VER
 			IMAGEHLP_LINE line = {0};
 			line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
 			if(SymGetLineFromAddr(process, (uintptr_t)symbol.Address, NULL, &line)) {
-				Log_Debug("\tFile: %s: %d", line.FileName, line.LineNumber);
+				Log_Debug(Lang_Get(LANG_DBGSYM1), line.FileName, line.LineNumber);
 			}
 #endif
 		}
@@ -78,7 +77,7 @@ static void getErrorStr(int type, uint32_t code, char* errbuf, size_t sz, va_lis
 			break;
 		case ET_SYS:
 			if(!String_FormatError(code, errbuf, sz, args)) {
-				String_Copy(errbuf, sz, "Unexpected error");
+				String_Copy(errbuf, sz, Lang_Get(LANG_UNKERR));
 			}
 			break;
 	}
@@ -89,7 +88,7 @@ void Error_Print(int type, uint32_t code, const char* file, uint32_t line, const
 	char errbuf[256] = {0};
 
 	getErrorStr(type, code, errbuf, 256, NULL);
-	String_FormatBuf(strbuf, 384, ERR_FMT, file, line, func, errbuf);
+	String_FormatBuf(strbuf, 384, Lang_Get(LANG_ERRFMT), file, line, func, errbuf);
 	if(String_Length(strbuf)) {
 		/*
 			Избегаем краша, если в строке ошибки по какой-то
@@ -108,9 +107,10 @@ void Error_PrintF(int type, uint32_t code, const char* file, uint32_t line, cons
 	va_start(args, func);
 	getErrorStr(type, code, errbuf, 256, &args);
 	va_end(args);
-	String_FormatBuf(strbuf, 384, ERR_FMT, file, line, func, errbuf);
+	String_FormatBuf(strbuf, 384, Lang_Get(LANG_ERRFMT), file, line, func, errbuf);
 	if(String_Length(strbuf)) {
-		Log_Error(strbuf);
+		// См. комментарий в Error_Print
+		Log_Error("%s", strbuf);
 		Error_CallStack();
 	}
 }

@@ -1,9 +1,10 @@
 #include "core.h"
 #include "platform.h"
 #include "str.h"
-#include "command.h"
 #include "server.h"
 #include "generators.h"
+#include "command.h"
+#include "lang.h"
 
 COMMAND Command_Head;
 
@@ -43,6 +44,7 @@ void Command_Unregister(const char* cmd) {
 }
 
 static bool CHandler_OP(const char* args, CLIENT caller, char* out) {
+	const char* cmdUsage = "/op <playername>";
 	Command_OnlyForOP;
 
 	char clientname[64];
@@ -54,10 +56,10 @@ static bool CHandler_OP(const char* args, CLIENT caller, char* out) {
 			Client_SetType(tg, newtype);
 			String_FormatBuf(out, CMD_MAX_OUT, "Player %s %s", name, newtype ? "opped" : "deopped");
 		} else {
-			Command_Print("Player not found");
+			Command_Print(Lang_Get(LANG_CMDPLNF));
 		}
 	}
-	return true;
+	Command_PrintUsage;
 }
 
 static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
@@ -73,7 +75,7 @@ static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
 			}
 			CFGENTRY ent = Config_GetEntry(Server_Config, key);
 			if(!ent) {
-				Command_Print("Entry not found in Server_Config");
+				Command_Print("This entry not found in \"server.cfg\" store.");
 			}
 			if(!String_GetArgument(args, value, MAX_CFG_LEN, 2)) {
 				Command_PrintUsage;
@@ -162,7 +164,7 @@ static bool CHandler_Kick(const char* args, CLIENT caller, char* out) {
 			String_FormatBuf(out, CMD_MAX_OUT, "Player %s kicked", playername);
 			return true;
 		} else {
-			Command_Print("Player not found.");
+			Command_Print(Lang_Get(LANG_CMDPLNF));
 		}
 	}
 

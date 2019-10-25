@@ -1,7 +1,8 @@
 #include "core.h"
-#include "platform.h"
 #include "str.h"
+#include "platform.h"
 #include "websocket.h"
+#include "lang.h"
 #include <openssl/sha.h>
 
 const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -42,7 +43,7 @@ bool WsClient_DoHandshake(WSCLIENT ws) {
 	if(Socket_ReceiveLine(ws->sock, line, 1024)) {
 		const char* httpver = String_LastChar(line, 'H');
 		if(!httpver || !String_CaselessCompare(httpver, "HTTP/1.1")) {
-			String_FormatBuf(line, 1024, WS_ERRRESP, 505, "HTTP Version Not Supported", 27, "HTTP Version Not Supported.");
+			String_FormatBuf(line, 1024, WS_ERRRESP, 505, "HTTP Version Not Supported", 0, "");
 			Socket_Send(ws->sock, line, (int)String_Length(line));
 			return false;
 		}
@@ -77,7 +78,8 @@ bool WsClient_DoHandshake(WSCLIENT ws) {
 		return true;
 	}
 
-	String_FormatBuf(line, 1024, WS_ERRRESP, 400, "Bad request", 27, "Not a websocket connection.");
+	const char* str = Lang_Get(LANG_WSNOTVALID);
+	String_FormatBuf(line, 1024, WS_ERRRESP, 400, "Bad request", String_Length(str), str);
 	Socket_Send(ws->sock, line, (int)String_Length(line));
 	return false;
 }

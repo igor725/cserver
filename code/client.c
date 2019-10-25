@@ -7,6 +7,7 @@
 #include "packets.h"
 #include "event.h"
 #include "heartbeat.h"
+#include "lang.h"
 
 uint8_t Clients_GetCount(int state) {
 	uint8_t count = 0;
@@ -68,7 +69,7 @@ bool Client_ChangeWorld(CLIENT client, WORLD world) {
 	Client_Despawn(client);
 	Client_SetPos(client, world->info->spawnVec, world->info->spawnAng);
 	if(!Client_SendMap(client, world)) {
-		Client_Kick(client, "Map sending failed");
+		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
 		return false;
 	}
 	return true;
@@ -133,7 +134,7 @@ static void HandlePacket(CLIENT client, char* data, PACKET packet, bool extended
 			ret = packet->handler(client, data);
 
 	if(!ret && !client->closed)
-		Client_Kick(client, "Packet reading error");
+		Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
 	else
 		client->pps += 1;
 }
@@ -165,7 +166,7 @@ static void PacketReceiverWs(CLIENT client) {
 		handlePacket:
 		packet = Packet_Get(*data++);
 		if(!packet) {
-			Client_Kick(client, "Invalid packet ID");
+			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
 			return;
 		}
 
@@ -188,7 +189,7 @@ static void PacketReceiverWs(CLIENT client) {
 
 			return;
 		} else
-			Client_Kick(client, "WebSocket error: payloadSize < packetSize");
+			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
 	} else
 		client->closed = true;
 }
@@ -202,7 +203,7 @@ static void PacketReceiverRaw(CLIENT client) {
 	if(Socket_Receive(client->sock, (char*)&packetId, 1, 0) == 1) {
 		packet = Packet_Get(packetId);
 		if(!packet) {
-			Client_Kick(client, "Invalid packet ID");
+			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
 			return;
 		}
 
@@ -295,8 +296,7 @@ TRET Client_MapThreadProc(TARG param) {
 	if(pd->state == STATE_WLOADDONE) {
 		Packet_WriteLvlFin(client);
 		Client_Spawn(client);
-	} else
-		Client_Kick(client, "World loading error");
+	}
 
 	return 0;
 }
@@ -335,12 +335,12 @@ bool Client_IsSupportExt(CLIENT client, uint32_t extCRC32, int extVer) {
 }
 
 const char* Client_GetName(CLIENT client) {
-	if(!client->playerData) return "unconnected";
+	if(!client->playerData) return Lang_Get(LANG_PLNAMEUNK);
 	return client->playerData->name;
 }
 
 const char* Client_GetAppName(CLIENT client) {
-	if(!client->cpeData) return "vanilla";
+	if(!client->cpeData) return Lang_Get(LANG_CPEVANILLA);
 	return client->cpeData->appName;
 }
 
@@ -579,7 +579,7 @@ void Client_HandshakeStage2(CLIENT client) {
 
 void Client_Kick(CLIENT client, const char* reason) {
 	if(client->closed) return;
-	if(!reason) reason = "Kicked without reason";
+	if(!reason) reason = Lang_Get(LANG_KICKNOREASON);
 	Packet_WriteKick(client, reason);
 	client->closed = true;
 	/*
@@ -614,7 +614,7 @@ void Client_Tick(CLIENT client) {
 		client->ppstm += Server_Delta;
 	} else {
 		if(client->pps > MAX_CLIENT_PPS) {
-			Client_Kick(client, "Too many packets per second");
+			Client_Kick(client, Lang_Get(LANG_KICKPACKETSPAM));
 			return;
 		}
 		client->pps = 0;
@@ -628,7 +628,7 @@ void Client_Tick(CLIENT client) {
 			client->mapThread = NULL;
 			break;
 		case STATE_WLOADERR:
-			Client_Kick(client, "Map loading error");
+			Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
 			break;
 	}
 }

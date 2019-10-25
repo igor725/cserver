@@ -21,7 +21,6 @@ enum ErrorCodes {
 	EC_DLLPLUGVER
 };
 
-#define ERR_FMT "%s: %d in function %s: %s"
 #define Error_Print2(etype, ecode, abort) \
 Error_Print(etype, ecode, __FILE__, __LINE__, __func__); \
 if(abort) { \

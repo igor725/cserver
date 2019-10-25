@@ -5,19 +5,18 @@
 #define	CMD_MAX_OUT 1024
 #define Command_OnlyForClient \
 if(!caller) { \
-	String_Copy(out, CMD_MAX_OUT, "This command can't be used from console."); \
+	String_Copy(out, CMD_MAX_OUT, Lang_Get(LANG_CMDONLYCL)); \
 	return true; \
 }
 
 #define Command_OnlyForConsole \
 if(caller) { \
-	String_Copy(out, CMD_MAX_OUT, "This command can be used only from console."); \
+	String_Copy(out, CMD_MAX_OUT, Lang_Get(LANG_CMDONLYCON)); \
 	return true; \
 }
 
 #define Command_PrintUsage \
-String_Copy(out, CMD_MAX_OUT, "Usage: "); \
-String_Append(out, CMD_MAX_OUT, cmdUsage); \
+String_FormatBuf(out, CMD_MAX_OUT, Lang_Get(LANG_CMDUSAGE), cmdUsage); \
 return true;
 
 #define Command_Print(str) \
@@ -48,7 +47,7 @@ if(String_GetArgument(args, wn, 64, idx)) { \
 
 #define Command_OnlyForOP \
 if(caller && !caller->playerData->isOP) { \
-	String_Copy(out, CMD_MAX_OUT, "Access denied"); \
+	String_Copy(out, CMD_MAX_OUT, Lang_Get(LANG_CMDAD)); \
 	return true; \
 } \
 
