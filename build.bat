@@ -56,7 +56,7 @@ IF "%1"=="install" (
 	set PLUGINSTALL=1
 	SHIFT
 )
-IF NOT "%1"=="" goto libloop
+IF NOT "%1"=="" (goto libloop) else (goto continue)
 
 :libloop
 IF "%1"=="" goto continue
@@ -67,6 +67,7 @@ goto libloop
 :continue
 echo Build configuration:
 echo Architecture: %ARCH%
+echo Expected OpenSSL version: %OPENSSL_VER%
 IF "%DEBUG%"=="0" (echo Debug: disabled) else (
   set MSVC_OPTS=%MSVC_OPTS% /Z7
 	set ZLIB_DYNBINARY=zlibd.dll
