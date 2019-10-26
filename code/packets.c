@@ -271,11 +271,11 @@ void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg) {
 	PacketWriter_End(client, 66);
 }
 
-void Packet_WriteUpdateType(CLIENT client) {
+void Packet_WriteUserType(CLIENT client, uint8_t type) {
 	PacketWriter_Start(client);
 
 	*data = 0x0F;
-	*++data = client->playerData->isOP ? 0x64 : 0x00;
+	*++data = type;
 
 	PacketWriter_End(client, 2);
 }

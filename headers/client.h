@@ -24,41 +24,45 @@ typedef struct cpeHacks {
 } *HACKS;
 
 typedef struct cpeData {
-	BlockID heldBlock; // Выбранный игроком блок в данный момент
-	short _extCount; // Переменная используется при получении списка дополнений
+	const char* appName; // Название игрового клиента
 	EXT firstExtension; // Начало списка дополнений клиента
 	HACKS hacks; // Структура с значениями чит-параметров для клиента
 	char* message; // Используется для получения длинных сообщений
+	BlockID heldBlock; // Выбранный игроком блок в данный момент
+	short _extCount; // Переменная используется при получении списка дополнений
 	int16_t model; // Текущая модель игрока
-	const char* appName; // Название игрового клиента
+	bool pingStarted; // Начат ли процесс пингования
+	uint16_t pingData; // Данные, цепляемые к пинг-запросу
+	uint64_t pingStart; // Время начала пинг-запроса
+	uint32_t pingTime; // Сам пинг, в миллисекундах
 } *CPEDATA;
 
 typedef struct playerData {
+	int state; // Текущее состояние игрока
 	const char* key; // Ключ, полученный от игрока
 	const char* name; // Имя игрока
-	int state; // Текущее состояние игрока
+	WORLD world; // Мир, в котором игрок обитает
 	ANGLE* angle; // Угол вращения игрока
 	VECTOR* position; // Позиция игрока
 	bool isOP; // Является ли игрок оператором
 	bool spawned; // Заспавнен ли игрок
-	WORLD world; // Мир, в котором игрок обитает
 } *PLAYERDATA;
 
 typedef struct client {
 	ClientID id; // Используется в качестве entityid
-	uint32_t pps; // Количество пакетов, отправленных игроком за секунду
-	uint32_t ppstm; // Таймер для счётчика пакетов
-	SOCKET sock; // Файловый дескриптор сокета клиента
-	uint32_t addr; // ipv4 адрес клиента
-	bool closed; // В случае значения true сервер прекращает общение с клиентом и удаляет его
-	char* rdbuf; // Буфер для получения пакетов от клиента
-	char* wrbuf; // Буфер для отправки пакетов клиенту
-	MUTEX* mutex; // Мьютекс записи, на время отправки пакета клиенту он лочится.
-	THREAD thread; // Основной поток клиента, целью которого является чтение пакетов
-	THREAD mapThread; // Поток отправки карты игроку
 	CPEDATA cpeData; // В случае vanilla клиента эта структура не создаётся
 	PLAYERDATA playerData; // Создаётся при получении hanshake пакета
 	WSCLIENT websock; // Создаётся, если клиент был определён как браузерный
+	MUTEX* mutex; // Мьютекс записи, на время отправки пакета клиенту он лочится
+	THREAD thread; // Основной поток клиента, целью которого является чтение пакетов
+	THREAD mapThread; // Поток отправки карты игроку
+	bool closed; // В случае значения true сервер прекращает общение с клиентом и удаляет его
+	uint32_t addr; // ipv4 адрес клиента
+	SOCKET sock; // Файловый дескриптор сокета клиента
+	char* rdbuf; // Буфер для получения пакетов от клиента
+	char* wrbuf; // Буфер для отправки пакетов клиенту
+	uint32_t pps; // Количество пакетов, отправленных игроком за секунду
+	uint32_t ppstm; // Таймер для счётчика пакетов
 } *CLIENT;
 
 void Client_SetPos(CLIENT client, VECTOR* vec, ANGLE* ang);
@@ -85,12 +89,13 @@ API bool Client_IsSupportExt(CLIENT client, uint32_t extCRC32, int extVer);
 API bool Client_IsInSameWorld(CLIENT client, CLIENT other);
 API bool Client_IsInWorld(CLIENT client, WORLD world);
 API bool Client_IsInGame(CLIENT client);
+API bool Client_IsOP(CLIENT client);
 
 API bool Client_SetWeather(CLIENT client, Weather type);
 API bool Client_SetInvOrder(CLIENT client, Order order, BlockID block);
 API bool Client_SetProperty(CLIENT client, uint8_t property, int value);
 API bool Client_SetTexturePack(CLIENT client, const char* url);
-API bool Client_SetType(CLIENT client, bool isOP);
+API bool Client_SetOP(CLIENT client, bool isOP);
 API bool Client_SetBlock(CLIENT client, short x, short y, short z, BlockID id);
 API bool Client_SetModel(CLIENT client, int16_t model);
 API bool Client_SetModelStr(CLIENT client, const char* model);
@@ -99,7 +104,6 @@ API bool Client_SetHeld(CLIENT client, BlockID block, bool canChange);
 API bool Client_SetHotbar(CLIENT client, Order pos, BlockID block);
 API bool Client_SetHacks(CLIENT client);
 
-API bool Client_GetType(CLIENT client);
 API const char* Client_GetName(CLIENT client);
 API const char* Client_GetAppName(CLIENT client);
 API CLIENT Client_GetByID(ClientID id);

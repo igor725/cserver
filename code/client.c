@@ -346,6 +346,11 @@ bool Client_IsSupportExt(CLIENT client, uint32_t extCRC32, int extVer) {
 	return false;
 }
 
+bool Client_IsOP(CLIENT client) {
+	PLAYERDATA pd = client->playerData;
+	return pd ? pd->isOP : false;
+}
+
 const char* Client_GetName(CLIENT client) {
 	if(!client->playerData) return Lang_Get(LANG_PLNAMEUNK);
 	return client->playerData->name;
@@ -369,8 +374,7 @@ void Client_SetPos(CLIENT client, VECTOR* pos, ANGLE* ang) {
 }
 
 bool Client_SetBlock(CLIENT client, short x, short y, short z, BlockID id) {
-	PLAYERDATA pd = client->playerData;
-	if(!pd || pd->state != STATE_INGAME) return false;
+	if(!client->playerData->state != STATE_INGAME) return false;
 	Packet_WriteSetBlock(client, x, y, z, id);
 	return true;
 }
@@ -399,11 +403,9 @@ bool Client_SetWeather(CLIENT client, Weather type) {
 	return false;
 }
 
-bool Client_SetType(CLIENT client, bool isOP) {
-	PLAYERDATA pd = client->playerData;
-	if(!pd) return false;
-	pd->isOP = isOP;
-	Packet_WriteUpdateType(client);
+bool Client_SetOP(CLIENT client, bool isOP) {
+	client->playerData->isOP = isOP;
+	Packet_WriteUserType(client, isOP ? 0x64 : 0x00);
 	return true;
 }
 
@@ -471,11 +473,6 @@ bool Client_SetHacks(CLIENT client) {
 		return true;
 	}
 	return false;
-}
-
-bool Client_GetType(CLIENT client) {
-	PLAYERDATA pd = client->playerData;
-	return pd ? pd->isOP : false;
 }
 
 static void SocketWaitClose(CLIENT client) {

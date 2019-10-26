@@ -51,9 +51,9 @@ static bool CHandler_OP(const char* args, CLIENT caller, char* out) {
 	if(String_GetArgument(args, clientname, 64, 0)) {
 		CLIENT tg = Client_GetByName(clientname);
 		if(tg) {
-			bool newtype = !Client_GetType(tg);
+			bool newtype = !Client_IsOP(tg);
 			const char* name = tg->playerData->name;
-			Client_SetType(tg, newtype);
+			Client_SetOP(tg, newtype);
 			String_FormatBuf(out, CMD_MAX_OUT, "Player %s %s", name, newtype ? "opped" : "deopped");
 		} else {
 			Command_Print(Lang_Get(LANG_CMDPLNF));

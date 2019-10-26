@@ -297,13 +297,23 @@ bool CPEHandler_ExtEntry(CLIENT client, const char* data) {
 
 bool CPEHandler_TwoWayPing(CLIENT client, const char* data) {
 	ValidateCpeClient(client, false);
+	CPEDATA cpd = client->cpeData;
+	uint8_t pingDirection = *data;
+	uint16_t pingData = *(uint16_t*)++data;
 
-	if(*data == 0) {
-		CPEPacket_WriteTwoWayPing(client, 0, *(uint16_t*)++data);
+	if(pingDirection == 0) {
+		CPEPacket_WriteTwoWayPing(client, 0, pingData);
+		CPEPacket_WriteTwoWayPing(client, 1, ++cpd->pingData);
+		cpd->pingStarted = true;
+		cpd->pingStart = Time_GetMSec();
 		return true;
-	} else if(*data == 1) {
-		// TODO: Обрабатывать ответ от клиента на пинг пакет
-		return true;
+	} else if(pingDirection == 1) {
+		if(cpd->pingStarted) {
+			cpd->pingStarted = false;
+			if(cpd->pingData == pingData)
+				cpd->pingTime = (uint32_t)((Time_GetMSec() - cpd->pingStart) / 2);
+			return true;
+		}
 	}
 	return false;
 }
