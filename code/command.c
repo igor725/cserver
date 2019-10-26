@@ -178,7 +178,7 @@ static bool CHandler_SetModel(const char* args, CLIENT caller, char* out) {
 
 	char modelname[64];
 	if(String_GetArgument(args, modelname, 64, 0)) {
-		if(!Client_SetModel(caller, modelname)) {
+		if(!Client_SetModelStr(caller, modelname)) {
 			Command_Print("Invalid model name.");
 		}
 		Command_Print("Model changed successfully.");

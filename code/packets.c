@@ -322,7 +322,7 @@ bool Handler_Handshake(CLIENT client, const char* data) {
 
 	if(*data == 0x42) {
 		client->cpeData = Memory_Alloc(1, sizeof(struct cpeData));
-		String_CopyUnsafe(client->cpeData->model, "humanoid");
+		client->cpeData->model = 256; // Humanoid model id
 		CPE_StartHandshake(client);
 	} else {
 		Event_Call(EVT_ONHANDSHAKEDONE, (void*)client);

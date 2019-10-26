@@ -1,7 +1,6 @@
 @echo off
 setlocal
 set ARCH=%VSCMD_ARG_TGT_ARCH%
-IF "%ARCH%"=="" goto vcerror
 set CLEAN=0
 set DEBUG=0
 set CODE_ROOT=.
@@ -65,6 +64,7 @@ SHIFT
 goto libloop
 
 :continue
+IF "%ARCH%"=="" goto vcerror
 echo Build configuration:
 echo Architecture: %ARCH%
 echo Expected OpenSSL version: %OPENSSL_VER%

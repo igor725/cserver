@@ -338,7 +338,7 @@ bool Client_IsSupportExt(CLIENT client, uint32_t extCRC32, int extVer) {
 	CPEDATA cpd = client->cpeData;
 	if(!cpd) return false;
 
-	EXT ptr = cpd->headExtension;
+	EXT ptr = cpd->firstExtension;
 	while(ptr) {
 		if(ptr->crc32 == extCRC32) return ptr->version == extVer;
 		ptr = ptr->next;
@@ -444,10 +444,10 @@ bool Client_SetBlockPerm(CLIENT client, BlockID block, bool allowPlace, bool all
 	return false;
 }
 
-bool Client_SetModel(CLIENT client, const char* model) {
+bool Client_SetModel(CLIENT client, int16_t model) {
 	if(!client->cpeData) return false;
 	if(!CPE_CheckModel(model)) return false;
-	String_Copy(client->cpeData->model, 16, model);
+	client->cpeData->model = model;
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT other = Clients_List[i];
@@ -455,6 +455,14 @@ bool Client_SetModel(CLIENT client, const char* model) {
 		CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, model);
 	}
 	return true;
+}
+
+bool Client_SetModelStr(CLIENT client, const char* model) {
+	return Client_SetModel(client, CPE_GetModelNum(model));
+}
+
+int16_t Client_GetModel(CLIENT client) {
+	return client->cpeData->model;
 }
 
 bool Client_SetHacks(CLIENT client) {
@@ -501,7 +509,7 @@ void Client_Free(CLIENT client) {
 	CPEDATA cpd = client->cpeData;
 
 	if(cpd) {
-		EXT prev, ptr = cpd->headExtension;
+		EXT prev, ptr = cpd->firstExtension;
 
 		while(ptr) {
 			prev = ptr;
@@ -559,13 +567,13 @@ bool Client_Spawn(CLIENT client) {
 			Packet_WriteSpawn(other, client);
 
 			if(other->cpeData && client->cpeData && Client_IsSupportExt(other, EXT_CHANGEMODEL, 1))
-				CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, client->cpeData->model);
+				CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, Client_GetModel(client));
 
 			if(client != other) {
 				Packet_WriteSpawn(client, other);
 
 				if(other->cpeData && client->cpeData && Client_IsSupportExt(client, EXT_CHANGEMODEL, 1))
-					CPEPacket_WriteSetModel(client, other->id, other->cpeData->model);
+					CPEPacket_WriteSetModel(client, other->id, Client_GetModel(other));
 			}
 		}
 	}

@@ -4,17 +4,17 @@
 #include "websocket.h"
 
 enum playerStates {
-	STATE_MOTD,
-	STATE_WLOADDONE,
-	STATE_WLOADERR,
-	STATE_INGAME
+	STATE_MOTD, // Игрок получает карту
+	STATE_WLOADDONE, // Карта была успешно получена
+	STATE_WLOADERR, // Ошибка при получении карты
+	STATE_INGAME // Игрок находится в игре
 };
 
 typedef struct cpeExt {
-	const char* name;
-	int version;
-	uint32_t crc32;
-	struct cpeExt*  next;
+	const char* name; // Название дополнения
+	int version; // Его версия
+	uint32_t crc32; // crc32 хеш названия дополнения
+	struct cpeExt*  next; // Следующее по списку дополнение
 } *EXT;
 
 typedef struct cpeHacks {
@@ -24,41 +24,41 @@ typedef struct cpeHacks {
 } *HACKS;
 
 typedef struct cpeData {
-	BlockID heldBlock;
-	short _extCount;
-	EXT headExtension;
-	HACKS hacks;
-	char model[16];
-	char* message;
-	const char* appName;
+	BlockID heldBlock; // Выбранный игроком блок в данный момент
+	short _extCount; // Переменная используется при получении списка дополнений
+	EXT firstExtension; // Начало списка дополнений клиента
+	HACKS hacks; // Структура с значениями чит-параметров для клиента
+	char* message; // Используется для получения длинных сообщений
+	int16_t model; // Текущая модель игрока
+	const char* appName; // Название игрового клиента
 } *CPEDATA;
 
 typedef struct playerData {
-	const char* key;
-	const char* name;
-	int state;
-	ANGLE* angle;
-	VECTOR* position;
-	bool isOP;
-	bool spawned;
-	WORLD world;
+	const char* key; // Ключ, полученный от игрока
+	const char* name; // Имя игрока
+	int state; // Текущее состояние игрока
+	ANGLE* angle; // Угол вращения игрока
+	VECTOR* position; // Позиция игрока
+	bool isOP; // Является ли игрок оператором
+	bool spawned; // Заспавнен ли игрок
+	WORLD world; // Мир, в котором игрок обитает
 } *PLAYERDATA;
 
 typedef struct client {
-	ClientID id;
-	uint32_t pps;
-	uint32_t ppstm;
-	SOCKET sock;
-	uint32_t addr;
-	bool closed;
-	char* rdbuf;
-	char* wrbuf;
-	MUTEX* mutex;
-	THREAD thread;
-	THREAD mapThread;
-	CPEDATA cpeData;
-	PLAYERDATA playerData;
-	WSCLIENT websock;
+	ClientID id; // Используется в качестве entityid
+	uint32_t pps; // Количество пакетов, отправленных игроком за секунду
+	uint32_t ppstm; // Таймер для счётчика пакетов
+	SOCKET sock; // Файловый дескриптор сокета клиента
+	uint32_t addr; // ipv4 адрес клиента
+	bool closed; // В случае значения true сервер прекращает общение с клиентом и удаляет его
+	char* rdbuf; // Буфер для получения пакетов от клиента
+	char* wrbuf; // Буфер для отправки пакетов клиенту
+	MUTEX* mutex; // Мьютекс записи, на время отправки пакета клиенту он лочится.
+	THREAD thread; // Основной поток клиента, целью которого является чтение пакетов
+	THREAD mapThread; // Поток отправки карты игроку
+	CPEDATA cpeData; // В случае vanilla клиента эта структура не создаётся
+	PLAYERDATA playerData; // Создаётся при получении hanshake пакета
+	WSCLIENT websock; // Создаётся, если клиент был определён как браузерный
 } *CLIENT;
 
 void Client_SetPos(CLIENT client, VECTOR* vec, ANGLE* ang);
@@ -92,7 +92,8 @@ API bool Client_SetProperty(CLIENT client, uint8_t property, int value);
 API bool Client_SetTexturePack(CLIENT client, const char* url);
 API bool Client_SetType(CLIENT client, bool isOP);
 API bool Client_SetBlock(CLIENT client, short x, short y, short z, BlockID id);
-API bool Client_SetModel(CLIENT client, const char* model);
+API bool Client_SetModel(CLIENT client, int16_t model);
+API bool Client_SetModelStr(CLIENT client, const char* model);
 API bool Client_SetBlockPerm(CLIENT client, BlockID block, bool allowPlace, bool allowDestroy);
 API bool Client_SetHeld(CLIENT client, BlockID block, bool canChange);
 API bool Client_SetHotbar(CLIENT client, Order pos, BlockID block);
@@ -103,6 +104,7 @@ API const char* Client_GetName(CLIENT client);
 API const char* Client_GetAppName(CLIENT client);
 API CLIENT Client_GetByID(ClientID id);
 API CLIENT Client_GetByName(const char* name);
+API int16_t Client_GetModel(CLIENT client);
 
 API bool Client_Spawn(CLIENT client);
 API bool Client_Despawn(CLIENT client);

@@ -7,7 +7,7 @@
 #include "packets.h"
 #include "event.h"
 
-EXT headExtension;
+EXT firstExtension;
 uint16_t extensionsCount;
 
 void CPE_RegisterExtension(const char* name, int version) {
@@ -15,14 +15,14 @@ void CPE_RegisterExtension(const char* name, int version) {
 
 	tmp->name = name;
 	tmp->version = version;
-	tmp->next = headExtension;
-	headExtension = tmp;
+	tmp->next = firstExtension;
+	firstExtension = tmp;
 	++extensionsCount;
 }
 
 void CPE_StartHandshake(CLIENT client) {
 	CPEPacket_WriteInfo(client);
-	EXT ptr = headExtension;
+	EXT ptr = firstExtension;
 	while(ptr) {
 		CPEPacket_WriteExtEntry(client, ptr);
 		ptr = ptr->next;
@@ -54,10 +54,12 @@ static const struct extReg serverExtensions[] = {
 	{NULL, 0}
 };
 
-static const char* validModelNames[] = {
+#define MODELS_COUNT 15
+
+static const char* validModelNames[MODELS_COUNT] = {
+	"humanoid",
 	"chicken",
 	"creeper",
-	"humanoid",
 	"pig",
 	"sheep",
 	"skeleton",
@@ -72,20 +74,33 @@ static const char* validModelNames[] = {
 	NULL
 };
 
-bool CPE_CheckModel(const char* model) {
-	for(int i = 0; validModelNames[i]; i++) {
+bool CPE_CheckModel(int16_t model) {
+	if(model < 256) return Block_IsValid((BlockID)model);
+	model -= 256; return model < MODELS_COUNT;
+}
+
+int16_t CPE_GetModelNum(const char* model) {
+	int16_t modelnum = -1;
+	for(int16_t i = 0; validModelNames[i]; i++) {
 		const char* cmdl = validModelNames[i];
 		if(String_CaselessCompare(model, cmdl)) {
-			return true;
+			modelnum = i + 256;
+			break;
 		}
 	}
-
-	BlockID block;
-	if((block = (BlockID)String_ToInt(model)) > 0) {
-		return Block_IsValid(block);
+	if(modelnum == -1) {
+		int tmp = String_ToInt(model);
+		if(tmp < 0 || tmp > 255)
+			modelnum = 256;
+		else
+			modelnum = (int16_t)tmp;
 	}
 
-	return false;
+	return modelnum;
+}
+
+const char* CPE_GetModelStr(int16_t num) {
+	return num >= 0 && num < MODELS_COUNT ? validModelNames[num] : NULL;
 }
 
 void Packet_RegisterCPEDefault(void) {
@@ -214,12 +229,17 @@ void CPEPacket_WriteTwoWayPing(CLIENT client, uint8_t direction, short num) {
 	PacketWriter_End(client, 4);
 }
 
-void CPEPacket_WriteSetModel(CLIENT client, ClientID id, const char* model) {
+void CPEPacket_WriteSetModel(CLIENT client, ClientID id, int16_t model) {
 	PacketWriter_Start(client);
 
 	*data = 0x01D;
 	*++data = id;
-	WriteNetString(++data, model);
+	if(model < 256) {
+		char modelname[4];
+		String_FormatBuf(modelname, 4, "%d", model);
+		WriteNetString(++data, modelname);
+	} else
+		WriteNetString(++data, CPE_GetModelStr(model - 256));
 
 	PacketWriter_End(client, 66);
 }
@@ -263,8 +283,8 @@ bool CPEHandler_ExtEntry(CLIENT client, const char* data) {
 	if(tmp->crc32 == EXT_LONGMSG && !cpd->message)
 		cpd->message = Memory_Alloc(1, 193);
 
-	tmp->next = cpd->headExtension;
-	cpd->headExtension = tmp;
+	tmp->next = cpd->firstExtension;
+	cpd->firstExtension = tmp;
 
 	--cpd->_extCount;
 	if(cpd->_extCount == 0) {

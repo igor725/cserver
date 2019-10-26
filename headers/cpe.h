@@ -35,7 +35,9 @@
 #define ValidateCpeClient(client, ret) \
 if(!client->cpeData) return ret;
 
-API bool CPE_CheckModel(const char* model);
+API bool CPE_CheckModel(int16_t model);
+API int16_t CPE_GetModelNum(const char* model);
+API const char* CPE_GetModelStr(int16_t num);
 void CPE_StartHandshake(CLIENT client);
 
 bool CPEHandler_ExtInfo(CLIENT client, const char* data);
@@ -54,6 +56,6 @@ void CPEPacket_WriteWeatherType(CLIENT client, Weather type);
 void CPEPacket_WriteTexturePack(CLIENT client, const char* url);
 void CPEPacket_WriteMapProperty(CLIENT client, uint8_t property, int value);
 void CPEPacket_WriteTwoWayPing(CLIENT client, uint8_t direction, short num);
-void CPEPacket_WriteSetModel(CLIENT client, ClientID id, const char* model);
+void CPEPacket_WriteSetModel(CLIENT client, ClientID id, int16_t model);
 void CPEPacket_WriteBlockPerm(CLIENT client, BlockID id, bool allowPlace, bool allowDestroy);
 #endif

@@ -1,12 +1,12 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 enum cfgTypes {
-	CFG_INVTYPE = -1,
-	CFG_BOOL  = 'b',
-	CFG_INT   = 'i',
-	CFG_INT16 = 'h',
-	CFG_INT8  = 'c',
-	CFG_STR   = 's'
+	CFG_INVTYPE,
+	CFG_BOOL,
+	CFG_INT,
+	CFG_INT16,
+	CFG_INT8,
+	CFG_STR
 };
 
 typedef struct cfgEntry {
