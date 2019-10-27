@@ -56,6 +56,7 @@ static bool CHandler_OP(const char* args, CLIENT caller, char* out) {
 			const char* name = tg->playerData->name;
 			Client_SetOP(tg, newtype);
 			String_FormatBuf(out, CMD_MAX_OUT, "Player %s %s", name, newtype ? "opped" : "deopped");
+			return true;
 		} else {
 			Command_Print(Lang_Get(LANG_CMDPLNF));
 		}

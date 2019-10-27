@@ -48,8 +48,7 @@ if(String_GetArgument(args, wn, 64, idx)) { \
 
 #define Command_OnlyForOP \
 if(caller && !caller->playerData->isOP) { \
-	String_Copy(out, CMD_MAX_OUT, Lang_Get(LANG_CMDAD)); \
-	return true; \
+	Command_Print(Lang_Get(LANG_CMDAD)); \
 } \
 
 typedef bool (*cmdFunc)(const char* args, CLIENT caller, char* out);
