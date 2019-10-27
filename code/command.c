@@ -369,18 +369,17 @@ void Command_RegisterDefault(void) {
 	TODO: Разобраться, может ли здесь произойти краш.
 */
 static void SendOutputToClient(CLIENT client, char* ret) {
-	sendloop:
-	if(*ret == '\0') return;
-	char* nlptr = (char*)String_FirstChar(ret, '\r');
-	if(nlptr)
-		*nlptr++ = '\0';
-	else
-		nlptr = ret;
-	nlptr = (char*)String_FirstChar(nlptr, '\n');
-	if(nlptr) *nlptr++ = '\0';
-	Client_Chat(client, 0, ret);
-	if((ret = nlptr) != NULL)
-		goto sendloop;
+	while(ret && *ret != '\0') {
+		char* nlptr = (char*)String_FirstChar(ret, '\r');
+		if(nlptr)
+			*nlptr++ = '\0';
+		else
+			nlptr = ret;
+		nlptr = (char*)String_FirstChar(nlptr, '\n');
+		if(nlptr) *nlptr++ = '\0';
+		Client_Chat(client, 0, ret);
+		ret = nlptr;
+	}
 }
 
 bool Command_Handle(char* cmd, CLIENT caller) {
