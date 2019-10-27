@@ -3,7 +3,7 @@ setlocal
 set ARCH=%VSCMD_ARG_TGT_ARCH%
 set CLEAN=0
 set DEBUG=0
-set CODE_ROOT=.
+set PROJECT_ROOT=.
 set COMPILER=cl
 
 set SVOUTDIR=.\out\%ARCH%
@@ -83,7 +83,7 @@ IF "%BUILD_PLUGIN%"=="1" (
 	if "%DEBUG%"=="1" (set OUTDIR=%PLUGNAME%\out\%ARCH%dbg) else (set OUTDIR=%PLUGNAME%\out\%ARCH%)
   set BINNAME=%PLUGNAME%
   set OBJDIR=%PLUGNAME%\objs
-  set CODE_ROOT=.\%PLUGNAME%
+  set PROJECT_ROOT=.\%PLUGNAME%
 	echo Building plugin: %PLUGNAME%
 ) else (set OUTDIR=%SVOUTDIR%)
 
@@ -118,14 +118,19 @@ IF "%BUILD_PLUGIN%"=="1" (
   set MSVC_LIBS=%MSVC_LIBS% %STNAME%
 	set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%SVOUTDIR% /NOENTRY
 ) else (
-  set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH%
   copy /Y %ZLIB_DYNAMIC%\%ZLIB_DYNBINARY% %SERVER_ZDLL% 2> nul > nul
+	set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH%
 )
 
 set MSVC_OPTS=%MSVC_OPTS% /Fo%OBJDIR%\
 set MSVC_OPTS=%MSVC_OPTS% /link /LIBPATH:%ZLIB_STATIC% %MSVC_LINKER%
 
-%COMPILER% %CODE_ROOT%\code\*.c /I%CODE_ROOT%\headers /I%ZLIB_INCLUDE% %MSVC_OPTS% %MSVC_LIBS%
+IF EXIST %PROJECT_ROOT%\version.rc (
+	rc /nologo /fo%OBJDIR%\version.res %PROJECT_ROOT%\version.rc
+	set MSVC_OPTS=%OBJDIR%\version.res %MSVC_OPTS%
+)
+
+%COMPILER% %PROJECT_ROOT%\code\*.c /I%PROJECT_ROOT%\headers /I%ZLIB_INCLUDE% %MSVC_OPTS% %MSVC_LIBS%
 
 IF "%BUILD_PLUGIN%"=="1" (
 	IF "%PLUGINSTALL%"=="1" (

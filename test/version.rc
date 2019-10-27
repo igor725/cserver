@@ -1,0 +1,24 @@
+#include "winver.h"
+
+1 VERSIONINFO
+FILEVERSION 1,0,0,0
+FILEOS VOS_DOS_WINDOWS32
+FILETYPE VFT_APP
+{
+	BLOCK "StringFileInfo"
+	{
+		BLOCK "040904E4"
+		{
+			VALUE "FileDescription", "Test plugin for CServer\000"
+			VALUE "ProductName", "Test plugin\000"
+			VALUE "ProductVersion", "1.0\000"
+			VALUE "LegalCopyright", "\251 2019 Igor Gvaldov\000"
+			VALUE "OriginalFilename", "test.dll\000"
+		}
+	}
+
+	BLOCK "VarFileInfo"
+	{
+		VALUE "Translation", 1033, 1252
+	}
+}

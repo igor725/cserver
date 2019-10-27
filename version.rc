@@ -1,0 +1,24 @@
+#include "winver.h"
+
+1 VERSIONINFO
+FILEVERSION 1,0,0,0
+FILEOS VOS_DOS_WINDOWS32
+FILETYPE VFT_APP
+{
+	BLOCK "StringFileInfo"
+	{
+		BLOCK "040904E4"
+		{
+			VALUE "FileDescription", "Minecraft Classic server software\000"
+			VALUE "ProductName", "CServer\000"
+			VALUE "ProductVersion", "1.0\000"
+			VALUE "LegalCopyright", "\251 2019 Igor Gvaldov\000"
+			VALUE "OriginalFilename", "server.exe\000"
+		}
+	}
+
+	BLOCK "VarFileInfo"
+	{
+		VALUE "Translation", 1033, 1252
+	}
+}
