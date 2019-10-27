@@ -193,9 +193,9 @@ void Server_InitialWork(void) {
 	uint16_t port = Config_GetUInt16(cfg, CFG_SERVERPORT_KEY);
 	AcceptThread = Thread_Create(AcceptThreadProc, NULL);
 	Server_StartTime = Time_GetMSec();
-	Console_StartListen();
 	Server_Active = true;
 	Server_Config = cfg;
+	Console_StartListen();
 	Bind(ip, port);
 }
 

@@ -93,8 +93,11 @@ if [ $? -ne 0 ]; then
 	echo -ne "error\nLinker errors:\n$(cat /tmp/gcc_stderr)\n"
 	exit 1
 fi
-echo -ne "done\nStripping..."
-strip "$OUTDIR/$OUTBIN"
+
+if [ $DEBUG -eq 0 ]; then
+	echo -ne "done\nStripping..."
+	strip "$OUTDIR/$OUTBIN"
+fi
 if [ $PLUGIN_INSTALL -eq 1 ]; then
 	echo -ne "done\nCopying to plugins directory..."
 	if [ ! -d "$PLUGINS_DIR" ]; then mkdir $PLUGINS_DIR; fi
