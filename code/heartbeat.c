@@ -6,7 +6,7 @@
 #include "heartbeat.h"
 #include "platform.h"
 #include "lang.h"
-#include <openssl/md5.h>
+#include "hash.h"
 
 #define HBEAT_URL "/server/heartbeat/?name=%s&port=%d&users=%d&max=%d&salt=%s&public=%s&web=true&software=%s"
 #define PLAY_URL "http://www.classicube.net/server/play/"

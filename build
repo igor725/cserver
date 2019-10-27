@@ -69,7 +69,7 @@ if [ ! -d "$OBJDIR" ]; then mkdir $OBJDIR; fi
 echo -n "" > /tmp/gcc_stderr
 pids=()
 cnt=0
-for C in `find "$ROOT/code/" -type f -name *.c`; do
+for C in `find "$ROOT/code/" -type f -name *.c ! -name hash.c`; do
 	objpath="$OBJDIR/$(basename $C .c).o"
 	OBJS="$OBJS $objpath"
 	$GCC -c $COMMIT_SHA $C -o $objpath -I"$ROOT/headers" $WARN $OPT $CFLAGS 2>> /tmp/gcc_stderr &

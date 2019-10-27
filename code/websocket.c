@@ -3,24 +3,24 @@
 #include "platform.h"
 #include "websocket.h"
 #include "lang.h"
-#include <openssl/sha.h>
+#include "hash.h"
 
 const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 static char* SHA1toB64(uint8_t* in, char* out) {
-	for (int i = 0, j = 0; i < 20; i += 3, j += 4) {
+	for (int i = 0, j = 0; i < SHA1_DIGEST_LENGTH; i += 3, j += 4) {
 		int v = in[i];
-		v = i + 1 < 20 ? v << 8 | in[i + 1] : v << 8;
-		v = i + 2 < 20 ? v << 8 | in[i + 2] : v << 8;
+		v = i + 1 < SHA1_DIGEST_LENGTH ? v << 8 | in[i + 1] : v << 8;
+		v = i + 2 < SHA1_DIGEST_LENGTH ? v << 8 | in[i + 2] : v << 8;
 
 		out[j] = b64chars[(v >> 18) & 0x3F];
 		out[j + 1] = b64chars[(v >> 12) & 0x3F];
-		if (i + 1 < 20) {
+		if (i + 1 < SHA1_DIGEST_LENGTH) {
 			out[j + 2] = b64chars[(v >> 6) & 0x3F];
 		} else {
 			out[j + 2] = '=';
 		}
-		if (i + 2 < 20) {
+		if (i + 2 < SHA1_DIGEST_LENGTH) {
 			out[j + 3] = b64chars[v & 0x3F];
 		} else {
 			out[j + 3] = '=';
@@ -36,7 +36,7 @@ static char* SHA1toB64(uint8_t* in, char* out) {
 
 bool WsClient_DoHandshake(WSCLIENT ws) {
 	char line[1024] = {0}, wskey[32] = {0}, b64[30] = {0};
-	uint8_t hash[20] = {0};
+	uint8_t hash[SHA1_DIGEST_LENGTH] = {0};
 	bool haveUpgrade = false;
 	int wskeylen = 0;
 
@@ -68,9 +68,9 @@ bool WsClient_DoHandshake(WSCLIENT ws) {
 	if(haveUpgrade && wskeylen > 0) {
 		SHA_CTX ctx;
 		SHA1_Init(&ctx);
-		SHA1_Update(&ctx, (uint8_t*)wskey, wskeylen);
-		SHA1_Update(&ctx, (uint8_t*)"258EAFA5-E914-47DA-95CA-C5AB0DC85B11", 36);
-		SHA1_Final((uint8_t*)hash, &ctx);
+		SHA1_Update(&ctx, wskey, wskeylen);
+		SHA1_Update(&ctx, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", 36);
+		SHA1_Final(hash, &ctx);
 		SHA1toB64(hash, b64);
 
 		String_FormatBuf(line, 1024, WS_RESP, b64);
