@@ -2,7 +2,7 @@
 #include "str.h"
 #include "http.h"
 #include "server.h"
-#include "svmath.h"
+#include "random.h"
 #include "heartbeat.h"
 #include "platform.h"
 #include "lang.h"
