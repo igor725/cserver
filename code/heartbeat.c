@@ -41,13 +41,13 @@ static void NewSecret(void) {
 	}
 }
 
-const char* reserved = "!*'();:@&=+$,/?#[]";
+const char* reserved = "!*'();:@&=+$,/?#[]%";
 static void TrimReserved(char* name, int len) {
 	for(int i = 0; i < len; i++) {
 		char sym = name[i];
 		if(sym == '\0') break;
 		if(sym == ' ') name[i] = '+';
-		if(String_LastChar(reserved, sym)) name[i] = '_';
+		if(String_LastChar(reserved, sym)) name[i] = '.';
 	}
 }
 
@@ -56,9 +56,9 @@ static void DoRequest() {
 	struct httpRequest req = {0};
 	struct httpResponse resp = {0};
 	char path[512] = {0};
-	char name[33] = {0};
-	String_Copy(name, 33, Config_GetStr(Server_Config, CFG_SERVERNAME_KEY));
-	TrimReserved(name, 33);
+	char name[65] = {0};
+	String_Copy(name, 65, Config_GetStr(Server_Config, CFG_SERVERNAME_KEY));
+	TrimReserved(name, 65);
 
 	uint16_t port = Config_GetInt16(Server_Config, CFG_SERVERPORT_KEY);
 	bool public = Config_GetBool(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
