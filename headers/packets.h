@@ -18,7 +18,7 @@ Mutex_Unlock(client->mutex); \
 Mutex_Unlock(client->mutex); \
 return; \
 
-typedef bool (*packetHandler)(CLIENT, const char*);
+typedef bool(*packetHandler)(CLIENT, const char*);
 
 typedef struct packet {
 	const char* name;

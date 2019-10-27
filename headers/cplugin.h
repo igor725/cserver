@@ -1,6 +1,6 @@
 #ifndef CPLUGIN_H
 #define CPLUGIN_H
-typedef bool (*pluginFunc)(void);
+typedef bool(*pluginFunc)(void);
 typedef struct cPlugin {
 	const char* name;
 	int id;
