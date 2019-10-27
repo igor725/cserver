@@ -8,6 +8,10 @@ void Random_Seed(RNGState* seed, int seedInit) {
 	*seed = (seedInit ^ RND_VALUE) & RND_MASK;
 }
 
+void Random_SeedFromTime(void) {
+	Random_Seed(&secrnd, (int)Time_GetMSec());
+}
+
 int Random_Next(RNGState* seed, int n) {
 	int64_t raw;
 	int bits, val;

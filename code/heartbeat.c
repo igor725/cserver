@@ -20,7 +20,7 @@ THREAD Thread;
 
 static void NewSecret(void) {
 	RNGState secrnd;
-	Random_Seed(&secrnd, (int)Time_GetMSec());
+	Random_SeedFromTime();
 	for(int i = 0; i < 16; i++) {
 		int min, max;
 		switch(Random_Range(&secrnd, 0, 3)) {
