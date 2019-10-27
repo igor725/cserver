@@ -22,7 +22,7 @@ bool MD5_Update(MD5_CTX* ctx, const void* data, size_t len);
 bool MD5_Final(uint8_t* hash, MD5_CTX* ctx);
 #elif defined(POSIX)
 #  include <openssl/md5.h>
-#  include <openssl/sha1.h>
+#  include <openssl/sha.h>
 #endif
 
 #endif
