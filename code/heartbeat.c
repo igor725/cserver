@@ -120,15 +120,15 @@ bool Heartbeat_CheckKey(CLIENT client) {
 	const char* name =  client->playerData->name;
 
 	MD5_CTX ctx = {0};
-	uint8_t hash[MD5_DIGEST_LENGTH] = {0};
-	char hash_hex[MD5_DIGEST_LENGTH * 2 + 1] = {0};
+	uint8_t hash[16] = {0};
+	char hash_hex[16 * 2 + 1] = {0};
 
 	MD5_Init(&ctx);
 	MD5_Update(&ctx, Secret, String_Length(Secret));
 	MD5_Update(&ctx, name, String_Length(name));
 	MD5_Final(hash, &ctx);
 
-	for(int i = 0; i < MD5_DIGEST_LENGTH; i++) {
+	for(int i = 0; i < 16; i++) {
 		uint8_t b = hash[i];
 		hash_hex[i * 2] = hexchars[b >> 4];
 		hash_hex[i * 2 + 1] = hexchars[b & 0xF];

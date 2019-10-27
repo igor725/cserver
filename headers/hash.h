@@ -4,9 +4,6 @@
 #if defined(WINDOWS)
 #include <wincrypt.h>
 
-#define MD5_DIGEST_LENGTH  16
-#define SHA1_DIGEST_LENGTH 20
-
 typedef struct {
 	HCRYPTPROV provider;
 	HCRYPTHASH hash;

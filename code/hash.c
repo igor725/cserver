@@ -45,7 +45,7 @@ static bool HashFinal(void* hash, HASH_CTX* ctx) {
 }
 
 bool SHA1_Init(SHA_CTX* ctx) {
-	ctx->hashLen = SHA1_DIGEST_LENGTH;
+	ctx->hashLen = 20;
 	return HashInit(ctx, CALG_SHA1);
 }
 
@@ -58,7 +58,7 @@ bool SHA1_Final(uint8_t* hash, SHA_CTX* ctx) {
 }
 
 bool MD5_Init(MD5_CTX* ctx) {
-	ctx->hashLen = MD5_DIGEST_LENGTH;
+	ctx->hashLen = 16;
 	return HashInit(ctx, CALG_MD5);
 }
 
