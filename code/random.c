@@ -1,5 +1,6 @@
 #include "core.h"
 #include "random.h"
+#include "platform.h"
 
 #define RND_VALUE (0x5DEECE66DULL)
 #define RND_MASK ((1ULL << 48) - 1)
@@ -8,8 +9,8 @@ void Random_Seed(RNGState* seed, int seedInit) {
 	*seed = (seedInit ^ RND_VALUE) & RND_MASK;
 }
 
-void Random_SeedFromTime(void) {
-	Random_Seed(&secrnd, (int)Time_GetMSec());
+void Random_SeedFromTime(RNGState* secrnd) {
+	Random_Seed(secrnd, (int)Time_GetMSec());
 }
 
 int Random_Next(RNGState* seed, int n) {
