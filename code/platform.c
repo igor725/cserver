@@ -207,6 +207,7 @@ bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
 		Error_Print2(ET_SERVER, EC_ITERINITED, false);
 		return false;
 	}
+	
 	String_FormatBuf(iter->fmt, 256, "%s\\*.%s", dir, ext);
 	if((iter->dirHandle = FindFirstFile(iter->fmt, &iter->fileHandle)) == INVALID_HANDLE_VALUE) {
 		uint32_t err = GetLastError();
@@ -253,6 +254,11 @@ static bool checkExtension(const char* filename, const char* ext) {
 }
 
 bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
+	if(iter->state != 0) {
+		Error_Print2(ET_SERVER, EC_ITERINITED, false);
+		return false;
+	}
+
 	iter->dirHandle = opendir(dir);
 	if(!iter->dirHandle) {
 		Error_Print2(ET_SYS, errno, false);

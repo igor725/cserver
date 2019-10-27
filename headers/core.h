@@ -90,8 +90,7 @@ typedef TRET(*TFUNC)(TARG);
 #include "log.h"
 
 #define SOFTWARE_NAME "C-Server"
-#define SOFTWARE_VERSION "0.1"
-#define SOFTWARE_FULLNAME SOFTWARE_NAME " " SOFTWARE_VERSION
+#define SOFTWARE_FULLNAME SOFTWARE_NAME "/" GIT_COMMIT_SHA
 #define CHATLINE "<%s>: %s"
 #define MAINCFG "server.cfg"
 #define WORLD_MAGIC 0x54414457

@@ -10,15 +10,13 @@ enum ErrorTypes {
 
 enum ErrorCodes {
 	EC_OK,
-	EC_NULLPTR,
 	EC_MAGIC,
 	EC_WIUNKID,
-	EC_CFGTYPE,
 	EC_CFGEND,
 	EC_CFGUNK,
+	EC_CFGALEX,
 	EC_CFGINVGET,
-	EC_ITERINITED,
-	EC_DLLPLUGVER
+	EC_ITERINITED
 };
 
 #define Error_Print2(etype, ecode, abort) \

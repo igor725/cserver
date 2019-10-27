@@ -22,6 +22,9 @@ set CRYPTO_STBINARY=libcrypto.lib
 set MSVC_OPTS=/MP /Gm-
 set OBJDIR=objs
 set MSVC_LIBS=ws2_32.lib kernel32.lib dbghelp.lib
+FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --short HEAD`) DO (
+	set MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_SHA#"\"%%F\""
+)
 
 :argloop
 IF "%1"=="" goto continue
@@ -67,7 +70,9 @@ goto libloop
 IF "%ARCH%"=="" goto vcerror
 echo Build configuration:
 echo Architecture: %ARCH%
+echo Commit: %COMMIT_SHA%
 echo Expected OpenSSL version: %OPENSSL_VER%
+
 IF "%DEBUG%"=="0" (echo Debug: disabled) else (
   set MSVC_OPTS=%MSVC_OPTS% /Z7
 	set ZLIB_DYNBINARY=zlibd.dll
@@ -128,6 +133,7 @@ IF "%BUILD_PLUGIN%"=="1" (
   copy /Y %OPENSSL_DYNAMIC%\%CRYPTO_DYNBINARY% %SERVER_ODLL% 2> nul > nul
 
 )
+
 set MSVC_OPTS=%MSVC_OPTS% /Fo%OBJDIR%\
 set MSVC_OPTS=%MSVC_OPTS% /link /LIBPATH:%OPENSSL_STATIC% /LIBPATH:%ZLIB_STATIC% %MSVC_LINKER%
 

@@ -87,19 +87,21 @@ uint32_t String_FormatError(uint32_t code, char* buf, size_t buflen, va_list* ar
 #endif
 }
 
-void String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* args) {
+int String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* args) {
 #if defined(WINDOWS)
-	vsprintf_s(buf, len, str,* args);
+	return vsprintf_s(buf, len, str,* args);
 #elif defined(POSIX)
-	vsnprintf(buf, len, str,* args);
+	return vsnprintf(buf, len, str,* args);
 #endif
 }
 
-void String_FormatBuf(char* buf, size_t len, const char* str, ...) {
+int String_FormatBuf(char* buf, size_t len, const char* str, ...) {
+	int wrlen;
 	va_list args;
 	va_start(args, str);
-	String_FormatBufVararg(buf, len, str, &args);
+	wrlen = String_FormatBufVararg(buf, len, str, &args);
 	va_end(args);
+	return wrlen;
 }
 
 const char* String_LastChar(const char* str, char sym) {

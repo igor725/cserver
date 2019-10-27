@@ -85,7 +85,7 @@ static bool CHandler_ClientOnly(const char* args, CLIENT caller, char* out) {
 	return true;
 }
 
-EXP int Plugin_ApiVer = 100; // Текущая версия API плагинов 1.0.0.
+EXP int Plugin_ApiVer = CPLUGIN_API_NUM; // Текущая версия API плагинов 1.
 EXP bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
   Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.
   Command_Register("plugtest", CHandler_Plugtest);

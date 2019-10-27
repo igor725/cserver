@@ -5,7 +5,7 @@
 #include "command.h"
 #include "lang.h"
 
-CPLUGIN PList[MAX_PLUGINS] = {0};
+CPLUGIN CPLugins_List[MAX_PLUGINS] = {0};
 
 bool CPlugin_Load(const char* name) {
 	char path[256];
@@ -41,8 +41,8 @@ bool CPlugin_Load(const char* name) {
 		plugin->id = -1;
 
 		for(int i = 0; i < MAX_PLUGINS; i++) {
-			if(!PList[i]) {
-				PList[i] = plugin;
+			if(!CPLugins_List[i]) {
+				CPLugins_List[i] = plugin;
 				plugin->id = i;
 				break;
 			}
@@ -62,7 +62,7 @@ bool CPlugin_Load(const char* name) {
 
 CPLUGIN CPlugin_Get(const char* name) {
 	for(int i = 0; i < MAX_PLUGINS; i++) {
-		CPLUGIN ptr = PList[i];
+		CPLUGIN ptr = CPLugins_List[i];
 		if(ptr && String_Compare(ptr->name, name)) return ptr;
 	}
 	return NULL;
@@ -74,78 +74,15 @@ bool CPlugin_Unload(CPLUGIN plugin) {
 	if(plugin->name)
 		Memory_Free((void*)plugin->name);
 	if(plugin->id != -1)
-		PList[plugin->id] = NULL;
+		CPLugins_List[plugin->id] = NULL;
 
 	DLib_Unload(plugin->lib);
 	Memory_Free(plugin);
 	return true;
 }
 
-#define GetPluginName \
-if(!String_GetArgument(args, name, 64, 1)) { \
-	String_Copy(out, CMD_MAX_OUT, Lang_Get(LANG_CPINVNAME)); \
-	return true; \
-} \
-const char* lc = String_LastChar(name, '.'); \
-if(!lc || !String_CaselessCompare(lc, "."DLIB_EXT)) { \
-	String_Append(name, 64, "."DLIB_EXT); \
-}
-
-static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
-	const char* cmdUsage = "/plugin <command> [pluginName]";
-	char command[64];
-	char name[64];
-	CPLUGIN plugin;
-	(void)caller;
-
-	if(String_GetArgument(args, command, 64, 0)) {
-		if(String_CaselessCompare(command, "load")) {
-			GetPluginName;
-			if(!CPlugin_Get(name) && CPlugin_Load(name)) {
-				String_FormatBuf(out, CMD_MAX_OUT,
-					Lang_Get(LANG_CPINF0),
-					name,
-					Lang_Get(LANG_CPLD)
-				);
-				return true;
-			}
-		} else if(String_CaselessCompare(command, "unload")) {
-			GetPluginName;
-			plugin = CPlugin_Get(name);
-			if(!plugin) {
-				String_FormatBuf(out, CMD_MAX_OUT,
-					Lang_Get(LANG_CPINF0),
-					name,
-					Lang_Get(LANG_CPNL)
-				);
-				return true;
-			}
-			if(CPlugin_Unload(plugin))
-				String_FormatBuf(out, CMD_MAX_OUT,
-					Lang_Get(LANG_CPINF0),
-					name,
-					Lang_Get(LANG_CPUNLD)
-				);
-			else
-				String_FormatBuf(out, CMD_MAX_OUT,
-					Lang_Get(LANG_CPINF1),
-					name,
-					Lang_Get(LANG_CPCB),
-					Lang_Get(LANG_CPUNLD)
-				);
-
-			return true;
-		} else {
-			Command_PrintUsage;
-		}
-	}
-
-	Command_PrintUsage;
-}
-
 void CPlugin_Start(void) {
 	Directory_Ensure("plugins");
-	Command_Register("plugins", CHandler_Plugins);
 
 	dirIter pIter = {0};
 	if(Iter_Init(&pIter, "plugins", DLIB_EXT)) {
@@ -158,7 +95,7 @@ void CPlugin_Start(void) {
 
 void CPlugin_Stop(void) {
 	for(int i = 0; i < MAX_PLUGINS; i++) {
-		CPLUGIN plugin = PList[i];
+		CPLUGIN plugin = CPLugins_List[i];
 		if(plugin && plugin->unload)
 			(*(pluginFunc)plugin->unload)();
 	}

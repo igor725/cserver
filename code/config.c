@@ -21,7 +21,7 @@ CFGENTRY Config_GetEntry(CFGSTORE store, const char* key) {
 		ent = ent->next;
 	}
 
-	return ent;
+	return NULL;
 }
 
 CFGENTRY Config_CheckEntry(CFGSTORE store, const char* key) {
@@ -33,7 +33,12 @@ CFGENTRY Config_CheckEntry(CFGSTORE store, const char* key) {
 }
 
 CFGENTRY Config_NewEntry(CFGSTORE store, const char* key, int type) {
-	CFGENTRY ent = Memory_Alloc(1, sizeof(struct cfgEntry));
+	CFGENTRY ent = Config_GetEntry(store, key);
+	if(ent) {
+		Error_PrintF2(ET_SERVER, EC_CFGALEX, true, key, store->path);
+	}
+
+	ent = Memory_Alloc(1, sizeof(struct cfgEntry));
 	ent->key = String_AllocCopy(key);
 	ent->store = store;
 	ent->type = type;
@@ -109,13 +114,22 @@ bool Config_ToStr(CFGENTRY ent, char* value, uint8_t len) {
 		case CFG_INT:
 		case CFG_INT16:
 		case CFG_INT8:
-			String_FormatBuf(value, len, "%d", ent->value.vint);
+			if(ent->changed)
+				String_FormatBuf(value, len, "%d", ent->value.vint);
+			else
+				String_FormatBuf(value, len, "%d", ent->defvalue.vint);
 			break;
 		case CFG_BOOL:
-			String_Copy(value, len, ent->value.vbool ? "True" : "False");
+			if(ent->changed)
+				String_Copy(value, len, ent->value.vbool ? "True" : "False");
+			else
+				String_Copy(value, len, ent->defvalue.vbool ? "True" : "False");
 			break;
 		case CFG_STR:
-			String_Copy(value, len, ent->value.vchar);
+			if(ent->changed)
+				String_Copy(value, len, ent->value.vchar);
+			else
+				String_Copy(value, len, ent->defvalue.vchar);
 			break;
 		default:
 			return false;
@@ -205,10 +219,6 @@ bool Config_Load(CFGSTORE store) {
 			case CFG_BOOL:
 				Config_SetBool(ent, String_Compare(value, "True"));
 				break;
-			default:
-				Error_PrintF2(ET_SERVER, EC_CFGTYPE, false, store->path, ent->type);
-				File_Close(fp);
-				return false;
 		}
 
 		if(haveCommentary)

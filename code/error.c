@@ -5,28 +5,26 @@
 
 const char* const Strings[] = {
 	"All ok.",
-	"Pointer is NULL.",
 	"Invalid magic.",
 	"World \"%s\" corrupted.",
-	"Unknown cfg entry type in file \"%s\": \"%c\" - is not a valid variable type.",
 	"Unexpected end of cfg file \"%s\".",
-	"Config entry \"%s\" is not registred for \"%s\".",
-	"Trying to get cfg entry \"%s\" from file \"%s\" as \"%s\", but the variable has type \"%s\".",
-	"Iterator already inited.",
-	"Invalid C-plugin version."
+	"Entry \"%s\" is not registred for \"%s\".",
+	"Entry \"%s\" already exist in \"%s\"",
+	"Trying to get entry \"%s\" from file \"%s\" as \"%s\", but the variable has type \"%s\".",
+	"Iterator already inited."
 };
 
 #if defined(WINDOWS)
 #include <dbghelp.h>
 
 void Error_CallStack(void) {
-	void* stack[64];
+	void* stack[16];
 	uint16_t frames;
 	SYMBOL_INFO symbol = {0};
 	HANDLE process = GetCurrentProcess();
 	SymInitialize(process, NULL, true);
 
-	frames = CaptureStackBackTrace(0, 64, stack, NULL);
+	frames = CaptureStackBackTrace(0, 16, stack, NULL);
 
 	symbol.MaxNameLen = 255;
 	symbol.SizeOfStruct = sizeof(SYMBOL_INFO);
@@ -50,8 +48,8 @@ void Error_CallStack(void) {
 #include <execinfo.h>
 
 void Error_CallStack(void) {
-	void* stack[64];
-	int frames = backtrace(stack, 64);
+	void* stack[16];
+	int frames = backtrace(stack, 16);
 
 	for(int i = 0; i < frames; i++) {
 		Dl_info dli = {0};
@@ -88,8 +86,7 @@ void Error_Print(int type, uint32_t code, const char* file, uint32_t line, const
 	char errbuf[256] = {0};
 
 	getErrorStr(type, code, errbuf, 256, NULL);
-	String_FormatBuf(strbuf, 384, Lang_Get(LANG_ERRFMT), file, line, func, errbuf);
-	if(String_Length(strbuf)) {
+	if(String_FormatBuf(strbuf, 384, Lang_Get(LANG_ERRFMT), file, line, func, errbuf)) {
 		/*
 			Избегаем краша, если в строке ошибки по какой-то
 			причине остались форматируемые значения.
@@ -107,8 +104,7 @@ void Error_PrintF(int type, uint32_t code, const char* file, uint32_t line, cons
 	va_start(args, func);
 	getErrorStr(type, code, errbuf, 256, &args);
 	va_end(args);
-	String_FormatBuf(strbuf, 384, Lang_Get(LANG_ERRFMT), file, line, func, errbuf);
-	if(String_Length(strbuf)) {
+	if(String_FormatBuf(strbuf, 384, Lang_Get(LANG_ERRFMT), file, line, func, errbuf)) {
 		// См. комментарий в Error_Print
 		Log_Error("%s", strbuf);
 		Error_CallStack();

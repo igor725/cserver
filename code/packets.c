@@ -9,7 +9,7 @@
 #include "command.h"
 #include "lang.h"
 
-PACKET Packets_List[MAX_PACKETS] = {0};
+PACKET PackList[MAX_PACKETS] = {0};
 
 uint8_t ReadNetString(const char** data, const char** dst) {
 	const char* instr = *data;
@@ -125,11 +125,11 @@ void Packet_Register(int id, const char* name, uint16_t size, packetHandler hand
 	tmp->name = name;
 	tmp->size = size;
 	tmp->handler = handler;
-	Packets_List[id] = tmp;
+	PackList[id] = tmp;
 }
 
 void Packet_RegisterCPE(int id, uint32_t extCRC32, int version, uint16_t size, packetHandler handler) {
-	PACKET tmp = Packets_List[id];
+	PACKET tmp = PackList[id];
 
 	tmp->extCRC32 = extCRC32;
 	tmp->extVersion = version;
@@ -146,7 +146,7 @@ void Packet_RegisterDefault(void) {
 }
 
 PACKET Packet_Get(int id) {
-	return id < MAX_PACKETS ? Packets_List[id] : NULL;
+	return id < MAX_PACKETS ? PackList[id] : NULL;
 }
 
 /*

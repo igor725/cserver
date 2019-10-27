@@ -106,7 +106,7 @@ static uint32_t copyMessagePart(const char* message, char* part, uint32_t i, cha
 	for(uint32_t j = 0; j < len; j++) {
 		char prevsym = (*part++ = *message++);
 		char nextsym = *message;
-		if(nextsym == '\0') break;
+		if(nextsym == '\0' || nextsym == '\n') break;
 		if(prevsym == '&' && ISHEX(nextsym)) *color = nextsym;
 	}
 

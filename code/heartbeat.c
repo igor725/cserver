@@ -12,7 +12,7 @@
 #define PLAY_URL "http://www.classicube.net/server/play/"
 #define PLAY_URL_LEN 38
 
-const char* SoftwareName = SOFTWARE_NAME "%%47" SOFTWARE_VERSION;
+const char* SoftwareName = SOFTWARE_NAME "%%47" GIT_COMMIT_SHA;
 const char* PlayURL = NULL;
 char Secret[17] = {0};
 uint32_t Delay = 5000;

@@ -4,42 +4,43 @@
 #include "server.h"
 #include "generators.h"
 #include "command.h"
+#include "config.h"
+#include "cplugin.h"
 #include "lang.h"
 
-COMMAND Command_Head;
+COMMAND HeadCmd;
 
 void Command_Register(const char* cmd, cmdFunc func) {
 	COMMAND tmp = Memory_Alloc(1, sizeof(struct command));
 
 	tmp->name = String_AllocCopy(cmd);
 	tmp->func = func;
-	if(Command_Head)
-		Command_Head->prev = tmp;
-	tmp->next = Command_Head;
-	Command_Head = tmp;
-}
-
-static void Command_Free(COMMAND cmd) {
-	if(cmd->prev)
-		cmd->prev->next = cmd->prev;
-
-	if(cmd->next) {
-		cmd->next->prev = cmd->next;
-		Command_Head = cmd->next->prev;
-	} else
-		Command_Head = NULL;
-
-	Memory_Free((void*)cmd->name);
-	Memory_Free(cmd);
+	if(HeadCmd)
+		HeadCmd->prev = tmp;
+	tmp->next = HeadCmd;
+	HeadCmd = tmp;
 }
 
 void Command_Unregister(const char* cmd) {
-	COMMAND tmp = Command_Head;
+	COMMAND curr, tmp = HeadCmd;
 
 	while(tmp) {
-		if(String_CaselessCompare(tmp->name, cmd))
-			Command_Free(tmp);
-		tmp = tmp->next;
+		curr = tmp;
+		tmp = curr->next;
+
+		if(String_CaselessCompare(curr->name, cmd)) {
+			if(curr->prev)
+				curr->prev->next = curr->prev;
+
+			if(curr->next) {
+				curr->next->prev = curr->next;
+				HeadCmd = curr->next->prev;
+			} else
+				HeadCmd = NULL;
+
+			Memory_Free((void*)curr->name);
+			Memory_Free(curr);
+		}
 	}
 }
 
@@ -116,7 +117,6 @@ static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
 			}
 			Command_Print("This entry not found in \"server.cfg\" store.");
 		} else if(String_CaselessCompare(subcommand, "print")) {
-			Command_OnlyForConsole;
 			CFGENTRY ent = Server_Config->firstCfgEntry;
 			String_Copy(out, CMD_MAX_OUT, "Server config entries:");
 
@@ -129,6 +129,82 @@ static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
 			}
 
 			return true;
+		}
+	}
+
+	Command_PrintUsage;
+}
+
+#define GetPluginName \
+if(!String_GetArgument(args, name, 64, 1)) { \
+	String_Copy(out, CMD_MAX_OUT, Lang_Get(LANG_CPINVNAME)); \
+	return true; \
+} \
+const char* lc = String_LastChar(name, '.'); \
+if(!lc || !String_CaselessCompare(lc, "."DLIB_EXT)) { \
+	String_Append(name, 64, "."DLIB_EXT); \
+}
+
+static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
+	const char* cmdUsage = "/plugins <load/unload/print> [pluginName]";
+	char subcommand[64];
+	char name[64];
+	CPLUGIN plugin;
+	(void)caller;
+
+	if(String_GetArgument(args, subcommand, 64, 0)) {
+		if(String_CaselessCompare(subcommand, "load")) {
+			GetPluginName;
+			if(!CPlugin_Get(name) && CPlugin_Load(name)) {
+				String_FormatBuf(out, CMD_MAX_OUT,
+					Lang_Get(LANG_CPINF0),
+					name,
+					Lang_Get(LANG_CPLD)
+				);
+				return true;
+			}
+		} else if(String_CaselessCompare(subcommand, "unload")) {
+			GetPluginName;
+			plugin = CPlugin_Get(name);
+			if(!plugin) {
+				String_FormatBuf(out, CMD_MAX_OUT,
+					Lang_Get(LANG_CPINF0),
+					name,
+					Lang_Get(LANG_CPNL)
+				);
+				return true;
+			}
+			if(CPlugin_Unload(plugin))
+				String_FormatBuf(out, CMD_MAX_OUT,
+					Lang_Get(LANG_CPINF0),
+					name,
+					Lang_Get(LANG_CPUNLD)
+				);
+			else
+				String_FormatBuf(out, CMD_MAX_OUT,
+					Lang_Get(LANG_CPINF1),
+					name,
+					Lang_Get(LANG_CPCB),
+					Lang_Get(LANG_CPUNLD)
+				);
+
+			return true;
+		} else if(String_CaselessCompare(subcommand, "list")) {
+			int idx = 1;
+			char pluginfo[64];
+			String_Copy(out, CMD_MAX_OUT, "Plugins list:");
+
+			for(int i = 0; i < MAX_PLUGINS; i++) {
+				plugin = CPLugins_List[i];
+				if(plugin) {
+					String_FormatBuf(pluginfo, 64, "\r\n%d. %s", idx++, plugin->name);
+					String_Append(out, CMD_MAX_OUT, pluginfo);
+				}
+			}
+
+			return true;
+		} else {
+			Command_PrintUsage;
 		}
 	}
 
@@ -274,6 +350,7 @@ static bool CHandler_SavWorld(const char* args, CLIENT caller, char* out) {
 void Command_RegisterDefault(void) {
 	Command_Register("op", CHandler_OP);
 	Command_Register("cfg", CHandler_CFG);
+	Command_Register("plugins", CHandler_Plugins);
 	Command_Register("stop", CHandler_Stop);
 	Command_Register("announce", CHandler_Announce);
 	Command_Register("kick", CHandler_Kick);
@@ -282,6 +359,28 @@ void Command_RegisterDefault(void) {
 	Command_Register("genworld", CHandler_GenWorld);
 	Command_Register("unlworld", CHandler_UnlWorld);
 	Command_Register("savworld", CHandler_SavWorld);
+}
+
+/*
+	По задумке эта функция делит строку с ньлайнами
+	на несколько и по одной шлёт их клиенту, вроде
+	как оно так и работает, но у меня есть сомнения
+	на счёт надёжности данной функции.
+	TODO: Разобраться, может ли здесь произойти краш.
+*/
+static void SendOutputToClient(CLIENT client, char* ret) {
+	sendloop:
+	if(*ret == '\0') return;
+	char* nlptr = (char*)String_FirstChar(ret, '\r');
+	if(nlptr)
+		*nlptr++ = '\0';
+	else
+		nlptr = ret;
+	nlptr = (char*)String_FirstChar(nlptr, '\n');
+	if(nlptr) *nlptr++ = '\0';
+	Client_Chat(client, 0, ret);
+	if((ret = nlptr) != NULL)
+		goto sendloop;
 }
 
 bool Command_Handle(char* cmd, CLIENT caller) {
@@ -301,14 +400,14 @@ bool Command_Handle(char* cmd, CLIENT caller) {
 		}
 	}
 
-	COMMAND tmp = Command_Head;
+	COMMAND tmp = HeadCmd;
 
 	while(tmp) {
 		if(String_CaselessCompare(tmp->name, cmd)) {
 			if(tmp->func((const char*)args, caller, ret)) {
-				if(caller)
-					Client_Chat(caller, CPE_CHAT, ret);
-				else
+				if(caller) {
+					SendOutputToClient(caller, ret);
+				} else
 					Log_Info(ret);
 			}
 			return true;
