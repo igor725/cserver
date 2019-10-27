@@ -55,7 +55,7 @@ void Error_CallStack(void) {
 		Dl_info dli = {0};
 		dladdr(stack[i], &dli);
 		if(i > 2) {
-			Log_Debug(SYM_DBG, dli.dli_sname, dli.dli_saddr);
+			Log_Debug(Lang_Get(LANG_DBGSYM0), dli.dli_sname, dli.dli_saddr);
 		}
 		if(dli.dli_sname && String_Compare(dli.dli_sname, "main")) break;
 	}

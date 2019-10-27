@@ -374,7 +374,7 @@ void Client_SetPos(CLIENT client, VECTOR* pos, ANGLE* ang) {
 }
 
 bool Client_SetBlock(CLIENT client, short x, short y, short z, BlockID id) {
-	if(!client->playerData->state != STATE_INGAME) return false;
+	if(client->playerData->state != STATE_INGAME) return false;
 	Packet_WriteSetBlock(client, x, y, z, id);
 	return true;
 }

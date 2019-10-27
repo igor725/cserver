@@ -12,7 +12,6 @@
 #define PLAY_URL "http://www.classicube.net/server/play/"
 #define PLAY_URL_LEN 38
 
-const char* SoftwareName = SOFTWARE_NAME "%%47" GIT_COMMIT_SHA;
 const char* PlayURL = NULL;
 char Secret[17] = {0};
 uint32_t Delay = 5000;
@@ -64,7 +63,15 @@ static void DoRequest() {
 	bool public = Config_GetBool(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
 	uint8_t max = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
 	uint8_t count = Clients_GetCount(STATE_INGAME);
-	String_FormatBuf(path, 512, HBEAT_URL, name, port, count, max, Secret, public ? "true" : "false", SoftwareName);
+	String_FormatBuf(path, 512, HBEAT_URL,
+		name,
+		port,
+		count,
+		max,
+		Secret,
+		public ? "true" : "false",
+		SOFTWARE_NAME "%%47" GIT_COMMIT_SHA
+	);
 
 	SOCKET fd = Socket_New();
 	req.sock = fd;
