@@ -7,6 +7,7 @@
 	сервер и радоваться. Данный модуль повторяет
 	функции хеширования md5 и sha1 из libcrypto.
 */
+#ifdef WINDOWS
 #include "core.h"
 #include "hash.h"
 
@@ -68,3 +69,4 @@ bool MD5_Update(MD5_CTX* ctx, const void* data, size_t len) {
 bool MD5_Final(uint8_t* hash, MD5_CTX* ctx) {
 	return HashFinal(hash, ctx);
 }
+#endif
