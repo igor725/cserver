@@ -14,7 +14,8 @@ set ZLIB_DIR=.\zlib\%ARCH%
 set ZLIB_DYNBINARY=zlib.dll
 set ZLIB_STBINARY=zlib.lib
 
-set MSVC_OPTS=/MP /Gm-
+set MSVC_LINKER=/INCREMENTAL:NO /OPT:REF
+set MSVC_OPTS=/MP /GS- /GL /Oi /Gy /fp:fast
 set OBJDIR=objs
 set MSVC_LIBS=ws2_32.lib kernel32.lib dbghelp.lib advapi32.lib
 FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --short HEAD`) DO (
@@ -74,7 +75,7 @@ IF "%DEBUG%"=="0" (echo Debug: disabled) else (
 	set ZLIB_STBINARY=zlibd.lib
 	set SVOUTDIR=.\out\%ARCH%dbg
 	set OPENSSL_DIR=.\openssl\%ARCH%dbg
-  set MSVC_LINKER=%MSVC_LINKER% /INCREMENTAL:NO /DEBUG /OPT:REF
+  set MSVC_LINKER=%MSVC_LINKER% /DEBUG /OPT:REF
   echo Debug: enabled
 )
 
