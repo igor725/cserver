@@ -18,7 +18,7 @@ set WARN_LEVEL=/W3
 set OPT_LEVEL=/O2
 
 set MSVC_LINKER=/INCREMENTAL:NO /OPT:REF
-set MSVC_OPTS=/MP /GS- /GL /Oi /Gy /fp:fast
+set MSVC_OPTS=/MP /GL /Oi /Gy /fp:fast
 set OBJDIR=objs
 set MSVC_LIBS=ws2_32.lib kernel32.lib dbghelp.lib advapi32.lib
 FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --short HEAD`) DO (
