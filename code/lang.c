@@ -118,7 +118,7 @@ const char* Lang_Get(int langid) {
 			return "Not a websocket connection.";
 
 		case LANG_ERRFMT:
-			return "%s: %d in function %s: %s";
+			return "%s:%d in function %s: %s";
 	}
 
 	return "Invalid langid";

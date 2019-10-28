@@ -22,6 +22,7 @@ API bool Iter_Close(dirIter* iter);
 API bool File_Rename(const char* path, const char* newpath);
 API FILE* File_Open(const char* path, const char* mode);
 API size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp);
+API int File_ReadLine(FILE* fp, char* line, int len);
 API size_t File_Write(const void* ptr, size_t size, size_t count, FILE* fp);
 API int File_GetChar(FILE* fp);
 API bool File_Error(FILE* fp);

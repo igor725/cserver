@@ -11,8 +11,9 @@ enum ErrorTypes {
 enum ErrorCodes {
 	EC_OK,
 	EC_MAGIC,
-	EC_WIUNKID,
+	EC_FILECORR,
 	EC_CFGEND,
+	EC_LINEPARSE,
 	EC_CFGUNK,
 	EC_CFGALEX,
 	EC_CFGINVGET,

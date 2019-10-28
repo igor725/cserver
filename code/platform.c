@@ -52,6 +52,22 @@ size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp) {
 	return fread(ptr, size, count, fp);
 }
 
+int File_ReadLine(FILE* fp, char* line, int len) {
+	int bleft = len;
+
+	while(bleft > 1) {
+		int ch = File_GetChar(fp);
+		if(ch == '\n' || ch == EOF) break;
+		if(ch != '\r') {
+			*line++ = (char)ch;
+			bleft--;
+		}
+	}
+
+	*line = '\0';
+	return len - bleft;
+}
+
 size_t File_Write(const void* ptr, size_t size, size_t count, FILE* fp) {
 	return fwrite(ptr, size, count, fp);
 }

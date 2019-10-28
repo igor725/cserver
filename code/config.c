@@ -3,8 +3,6 @@
 #include "str.h"
 #include "config.h"
 
-const char* commentSymbol = "#";
-
 CFGSTORE Config_NewStore(const char* path) {
 	CFGSTORE store = Memory_Alloc(1, sizeof(struct cfgStore));
 	store->path = String_AllocCopy(path);
@@ -141,64 +139,32 @@ bool Config_Load(CFGSTORE store) {
 	FILE* fp = File_Open(store->path, "r");
 	if(!fp) {
 		if(errno == ENOENT) return true;
-		Error_PrintSys(false);
-		return false;
+		Error_Print2(ET_SYS, errno, true);
 	}
 
-	int count = 0;
-	int ch = File_GetChar(fp);
-	bool haveCommentary = false;
-	char key[MAX_CFG_LEN] = {0};
-	char value[MAX_CFG_LEN] = {0};
-	char commentary[MAX_CFG_LEN] = {0};
+	bool haveComment = false;
+	char line[MAX_CFG_LEN * 2 + 2];
+	char comment[MAX_CFG_LEN];
+	int lnret = 0, linenum = 0;
 
-	while(!feof(fp)) {
-		while(ch == '\n' && !feof(fp))
-			ch = File_GetChar(fp);
-
-		if(ch == *commentSymbol) {
-			while(ch != '\n' && !feof(fp) && count < MAX_CFG_LEN) {
-				ch = File_GetChar(fp);
-				if(ch != '\n' && ch != '\r')
-					commentary[count++] = (char)ch;
-			}
-			commentary[count] = '\0';
-			haveCommentary = true;
-			count = 0;
+	while((lnret = File_ReadLine(fp, line, 256)) > 0 && ++linenum) {
+		if(!haveComment && *line == '#') {
+			haveComment = true;
+			String_Copy(comment, MAX_CFG_LEN, line);
+			continue;
 		}
-
-		do {
-			if(ch != '\n' && ch != '\r' && ch != ' ')
-				key[count++] = (char)ch;
-			ch = File_GetChar(fp);
-		} while(ch != '=' && !feof(fp) && count < MAX_CFG_LEN);
-		key[count] = '\0';
-
-		if(feof(fp)) {
-			Error_PrintF2(ET_SERVER, EC_CFGEND, false, store->path);
-			return false;
+		char* value = (char*)String_FirstChar(line, '=');
+		if(!value) {
+			Error_PrintF2(ET_SERVER, EC_LINEPARSE, true, linenum, store->path);
 		}
-
-		count = 0;
-
-		while((ch = File_GetChar(fp)) != EOF && ch != '\n' && count < MAX_CFG_LEN) {
-			if(ch != '\r') value[count++] = (char)ch;
-		}
-		value[count] = '\0';
-
-		if(count < 1) {
-			Error_PrintF2(ET_SERVER, EC_CFGEND, false, store->path);
-			File_Close(fp);
-			return false;
-		}
-
-		CFGENTRY ent = Config_GetEntry(store, key);
-		if(!ent) {
-			Error_PrintF2(ET_SERVER, EC_CFGUNK, false, key, store->path);
-			File_Close(fp);
-			return false;
-		}
+		*value++ = '\0';
+		CFGENTRY ent = Config_CheckEntry(store, line);
 		ent->readed = true;
+
+		if(haveComment) {
+			Config_SetComment(ent, comment);
+			haveComment = false;
+		}
 
 		switch (ent->type) {
 			case CFG_STR:
@@ -220,13 +186,10 @@ bool Config_Load(CFGSTORE store) {
 				Config_SetBool(ent, String_Compare(value, "True"));
 				break;
 		}
+	}
 
-		if(haveCommentary)
-			Config_SetComment(ent, commentary);
-
-		count = 0;
-		ch = File_GetChar(fp);
-		haveCommentary = false;
+	if(lnret == -1) {
+		Error_PrintF2(ET_SERVER, EC_CFGEND, true, store->path);
 	}
 
 	store->modified = !AllCfgEntriesParsed(store);

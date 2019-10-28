@@ -214,7 +214,7 @@ bool World_ReadInfo(WORLD world, FILE* fp) {
 			case DT_END:
 				return true;
 			default:
-				Error_PrintF2(ET_SERVER, EC_WIUNKID, false, world->name);
+				Error_PrintF2(ET_SERVER, EC_FILECORR, false, world->name);
 				return false;
 		}
 	}

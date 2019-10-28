@@ -6,13 +6,14 @@
 const char* const Strings[] = {
 	"All ok.",
 	"Invalid magic.",
-	"World \"%s\" corrupted.",
-	"Unexpected end of cfg file \"%s\".",
+	"File \"%s\" corrupted.",
+	"Unexpected end of file \"%s\".",
+	"Can't parse line %d from file \"%s\".",
 	"Entry \"%s\" is not registred for \"%s\".",
-	"Entry \"%s\" already exist in \"%s\"",
+	"Entry \"%s\" already exist in \"%s\".",
 	"Trying to get entry \"%s\" from file \"%s\" as \"%s\", but the variable has type \"%s\".",
 	"Iterator already inited.",
-	"Invalid IPv4 address passed to Socket_SetAddr"
+	"Invalid IPv4 address passed to Socket_SetAddr."
 };
 
 #if defined(WINDOWS)
