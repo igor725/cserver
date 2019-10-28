@@ -36,6 +36,7 @@
 if(!client->cpeData) return ret;
 
 API bool CPE_CheckModel(int16_t model);
+API void CPE_RegisterExtension(const char* name, int version);
 API int16_t CPE_GetModelNum(const char* model);
 API const char* CPE_GetModelStr(int16_t num);
 void CPE_StartHandshake(CLIENT client);

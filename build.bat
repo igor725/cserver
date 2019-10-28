@@ -14,6 +14,9 @@ set ZLIB_DIR=.\zlib\%ARCH%
 set ZLIB_DYNBINARY=zlib.dll
 set ZLIB_STBINARY=zlib.lib
 
+set WARN_LEVEL=/W3
+set OPT_LEVEL=/O2
+
 set MSVC_LINKER=/INCREMENTAL:NO /OPT:REF
 set MSVC_OPTS=/MP /GS- /GL /Oi /Gy /fp:fast
 set OBJDIR=objs
@@ -31,15 +34,14 @@ IF "%1"=="dbg" set DEBUG=1
 IF "%1"=="run" set RUNMODE=0
 IF "%1"=="onerun" set RUNMODE=1
 IF "%1"=="clean" set CLEAN=1
-IF "%1"=="2" set MSVC_OPTS=%MSVC_OPTS% /O2
-IF "%1"=="1" set MSVC_OPTS=%MSVC_OPTS% /O1
-IF "%1"=="0" set MSVC_OPTS=%MSVC_OPTS% /Od
-IF "%1"=="wall" set MSVC_OPTS=%MSVC_OPTS% /Wall
-IF "%1"=="w4" set MSVC_OPTS=%MSVC_OPTS% /W4
-IF "%1"=="w0" set MSVC_OPTS=%MSVC_OPTS% /W0
+IF "%1"=="o2" set OPT_LEVEL=/O2
+IF "%1"=="o1" set OPT_LEVEL=/O1
+IF "%1"=="o0" set OPT_LEVEL=/Od
+IF "%1"=="wall" set WARN_LEVEL=/Wall
+IF "%1"=="w4" set WARN_LEVEL=/W4
+IF "%1"=="w0" set WARN_LEVEL=/W0
 IF "%1"=="wx" set MSVC_OPTS=%MSVC_OPTS% /WX
 IF "%1"=="pb" goto pluginbuild
-IF "%1"=="pluginbuild" goto pluginbuild
 SHIFT
 goto argloop
 
@@ -67,15 +69,14 @@ IF "%ARCH%"=="" goto vcerror
 echo Build configuration:
 echo Architecture: %ARCH%
 echo Commit: %COMMIT_SHA%
-echo Expected OpenSSL version: %OPENSSL_VER%
 
 IF "%DEBUG%"=="0" (echo Debug: disabled) else (
+	set OPT_LEVEL=/Od
   set MSVC_OPTS=%MSVC_OPTS% /Z7
 	set ZLIB_DYNBINARY=zlibd.dll
 	set ZLIB_STBINARY=zlibd.lib
 	set SVOUTDIR=.\out\%ARCH%dbg
-	set OPENSSL_DIR=.\openssl\%ARCH%dbg
-  set MSVC_LINKER=%MSVC_LINKER% /DEBUG /OPT:REF
+  set MSVC_LINKER=%MSVC_LINKER% /DEBUG
   echo Debug: enabled
 )
 
@@ -94,10 +95,6 @@ set BINPATH=%OUTDIR%\%BINNAME%
 set ZLIB_STATIC=%ZLIB_DIR%\lib
 set ZLIB_DYNAMIC=%ZLIB_DIR%\bin
 set ZLIB_INCLUDE=%ZLIB_DIR%\include
-
-set OPENSSL_STATIC=%OPENSSL_DIR%\lib
-set OPENSSL_DYNAMIC=%OPENSSL_DIR%\bin
-set OPENSSL_INCLUDE=%OPENSSL_DIR%\include
 
 set SERVER_ZDLL=%OUTDIR%\%ZLIB_DYNBINARY%
 set MSVC_LIBS=%MSVC_LIBS% %ZLIB_STBINARY%
@@ -123,7 +120,7 @@ IF "%BUILD_PLUGIN%"=="1" (
 	set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH%
 )
 
-set MSVC_OPTS=%MSVC_OPTS% /Fo%OBJDIR%\
+set MSVC_OPTS=%MSVC_OPTS% %WARN_LEVEL% %OPT_LEVEL% /Fo%OBJDIR%\
 set MSVC_OPTS=%MSVC_OPTS% /link /LIBPATH:%ZLIB_STATIC% %MSVC_LINKER%
 
 IF EXIST %PROJECT_ROOT%\version.rc (
@@ -159,7 +156,7 @@ popd
 goto end
 
 :cloc
-cloc --exclude-dir=zlib,openssl .
+cloc --exclude-dir=zlib .
 goto end
 
 :clean

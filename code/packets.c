@@ -271,15 +271,6 @@ void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg) {
 	PacketWriter_End(client, 66);
 }
 
-void Packet_WriteUserType(CLIENT client, uint8_t type) {
-	PacketWriter_Start(client);
-
-	*data = 0x0F;
-	*++data = type;
-
-	PacketWriter_End(client, 2);
-}
-
 /*
 	Classic handlers
 */

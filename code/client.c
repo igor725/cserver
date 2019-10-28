@@ -403,12 +403,6 @@ bool Client_SetWeather(CLIENT client, Weather type) {
 	return false;
 }
 
-bool Client_SetOP(CLIENT client, bool isOP) {
-	client->playerData->isOP = isOP;
-	Packet_WriteUserType(client, isOP ? 0x64 : 0x00);
-	return true;
-}
-
 bool Client_SetInvOrder(CLIENT client, Order order, BlockID block) {
 	if(!Block_IsValid(block)) return false;
 
