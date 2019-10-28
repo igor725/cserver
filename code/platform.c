@@ -57,7 +57,7 @@ size_t File_Write(const void* ptr, size_t size, size_t count, FILE* fp) {
 }
 
 int File_GetChar(FILE* fp) {
-	return getc(fp);
+	return fgetc(fp);
 }
 
 bool File_Error(FILE* fp) {

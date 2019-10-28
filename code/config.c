@@ -146,7 +146,7 @@ bool Config_Load(CFGSTORE store) {
 	}
 
 	int count = 0;
-	int ch = fgetc(fp);
+	int ch = File_GetChar(fp);
 	bool haveCommentary = false;
 	char key[MAX_CFG_LEN] = {0};
 	char value[MAX_CFG_LEN] = {0};
@@ -154,11 +154,11 @@ bool Config_Load(CFGSTORE store) {
 
 	while(!feof(fp)) {
 		while(ch == '\n' && !feof(fp))
-			ch = fgetc(fp);
+			ch = File_GetChar(fp);
 
 		if(ch == *commentSymbol) {
 			while(ch != '\n' && !feof(fp) && count < MAX_CFG_LEN) {
-				ch = fgetc(fp);
+				ch = File_GetChar(fp);
 				if(ch != '\n' && ch != '\r')
 					commentary[count++] = (char)ch;
 			}
@@ -170,7 +170,7 @@ bool Config_Load(CFGSTORE store) {
 		do {
 			if(ch != '\n' && ch != '\r' && ch != ' ')
 				key[count++] = (char)ch;
-			ch = fgetc(fp);
+			ch = File_GetChar(fp);
 		} while(ch != '=' && !feof(fp) && count < MAX_CFG_LEN);
 		key[count] = '\0';
 
@@ -181,7 +181,7 @@ bool Config_Load(CFGSTORE store) {
 
 		count = 0;
 
-		while((ch = fgetc(fp)) != EOF && ch != '\n' && count < MAX_CFG_LEN) {
+		while((ch = File_GetChar(fp)) != EOF && ch != '\n' && count < MAX_CFG_LEN) {
 			if(ch != '\r') value[count++] = (char)ch;
 		}
 		value[count] = '\0';
@@ -225,7 +225,7 @@ bool Config_Load(CFGSTORE store) {
 			Config_SetComment(ent, commentary);
 
 		count = 0;
-		ch = fgetc(fp);
+		ch = File_GetChar(fp);
 		haveCommentary = false;
 	}
 
