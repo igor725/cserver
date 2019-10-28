@@ -7,8 +7,8 @@
 	сервер и радоваться. Данный модуль повторяет
 	функции хеширования md5 и sha1 из libcrypto.
 */
-#ifdef WINDOWS
 #include "core.h"
+#ifdef WINDOWS
 #include "hash.h"
 
 static bool HashInit(HASH_CTX* ctx, int type) {
