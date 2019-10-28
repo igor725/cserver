@@ -42,7 +42,7 @@ bool DLib_GetSym(void* lib, const char* sname, void** sym);
 
 bool Socket_Init(void);
 API SOCKET Socket_New(void);
-API bool Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, uint16_t port);
+API int Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, uint16_t port);
 API bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, uint16_t port);
 API bool Socket_Bind(SOCKET sock, struct sockaddr_in* ssa);
 API bool Socket_Connect(SOCKET sock, struct sockaddr_in* ssa);

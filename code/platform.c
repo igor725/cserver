@@ -61,7 +61,7 @@ int File_GetChar(FILE* fp) {
 }
 
 bool File_Error(FILE* fp) {
-	return ferror(fp) > 0;
+	return ferror(fp) != 0;
 }
 
 bool File_WriteFormat(FILE* fp, const char* fmt, ...) {
@@ -95,15 +95,15 @@ bool Socket_Init(void) {
 	return true;
 }
 
-bool Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, uint16_t port) {
+int Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, uint16_t port) {
 	ssa->sin_family = AF_INET;
 	ssa->sin_port = htons(port);
-	return inet_pton(AF_INET, ip, &ssa->sin_addr.s_addr) > 0;
+	return inet_pton(AF_INET, ip, &ssa->sin_addr.s_addr);
 }
 
 bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, uint16_t port) {
-	if(!Socket_SetAddr(ssa, host, port)) {
-		int ret;
+	int ret;
+	if((ret = Socket_SetAddr(ssa, host, port)) == 0) {
 		struct addrinfo* addr;
 		struct addrinfo hints = {0};
 		hints.ai_family = AF_INET;
@@ -117,11 +117,10 @@ bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, uint16_t por
 			struct sockaddr_in* new_ssa = (struct sockaddr_in*)addr->ai_addr;
 			Memory_Copy(ssa, new_ssa, sizeof(struct sockaddr_in));
 			freeaddrinfo(addr);
-			return true;
 		}
-		return false;
+		return ret == 0;
 	}
-	return true;
+	return ret == 1;
 }
 
 SOCKET Socket_New() {
@@ -134,7 +133,7 @@ SOCKET Socket_New() {
 
 bool Socket_Bind(SOCKET sock, struct sockaddr_in* addr) {
 #if defined(POSIX)
-	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) < 0) {
+	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) == -1) {
 		return false;
 	}
 #endif
@@ -207,7 +206,7 @@ bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
 		Error_Print2(ET_SERVER, EC_ITERINITED, false);
 		return false;
 	}
-	
+
 	String_FormatBuf(iter->fmt, 256, "%s\\*.%s", dir, ext);
 	if((iter->dirHandle = FindFirstFile(iter->fmt, &iter->fileHandle)) == INVALID_HANDLE_VALUE) {
 		uint32_t err = GetLastError();

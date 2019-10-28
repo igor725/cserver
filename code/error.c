@@ -11,7 +11,8 @@ const char* const Strings[] = {
 	"Entry \"%s\" is not registred for \"%s\".",
 	"Entry \"%s\" already exist in \"%s\"",
 	"Trying to get entry \"%s\" from file \"%s\" as \"%s\", but the variable has type \"%s\".",
-	"Iterator already inited."
+	"Iterator already inited.",
+	"Invalid IPv4 address passed to Socket_SetAddr"
 };
 
 #if defined(WINDOWS)

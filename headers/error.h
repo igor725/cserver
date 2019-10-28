@@ -16,7 +16,8 @@ enum ErrorCodes {
 	EC_CFGUNK,
 	EC_CFGALEX,
 	EC_CFGINVGET,
-	EC_ITERINITED
+	EC_ITERINITED,
+	EC_INVALIDIP
 };
 
 #define Error_Print2(etype, ecode, abort) \

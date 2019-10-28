@@ -73,8 +73,13 @@ static TRET AcceptThreadProc(TARG param) {
 static void Bind(const char* ip, uint16_t port) {
 	Server_Socket = Socket_New();
 	struct sockaddr_in ssa;
-	if(!Socket_SetAddr(&ssa, ip, port)) {
-		Error_PrintSys(true);
+	switch (Socket_SetAddr(&ssa, ip, port)) {
+		case 0:
+			Error_Print2(ET_SERVER, EC_INVALIDIP, true);
+			break;
+		case -1:
+			Error_PrintSys(true);
+			break;
 	}
 
 	Client_Init();
