@@ -64,17 +64,17 @@ static bool ReadClPos(CLIENT client, const char* data) {
 	bool changed = false;
 
 	if(Client_GetExtVer(client, EXT_ENTPOS)) {
-		newVec.x = (float)ntohl(*(int*)data) / 32; data += 3;
-		newVec.y = (float)ntohl(*(int*)++data) / 32; data += 3;
-		newVec.z = (float)ntohl(*(int*)++data) / 32; data += 3;
-		newAng.yaw = (((float)(uint8_t)*++data) / 256) * 360;
-		newAng.pitch = (((float)(uint8_t)*++data) / 256) * 360;
+		newVec.x = (float)ntohl(*(int*)data) / 32; data += 4;
+		newVec.y = (float)ntohl(*(int*)data) / 32; data += 4;
+		newVec.z = (float)ntohl(*(int*)data) / 32; data += 4;
+		newAng.yaw = (((float)(uint8_t)*data++) / 256) * 360;
+		newAng.pitch = (((float)(uint8_t)*data) / 256) * 360;
 	} else {
-		newVec.x = (float)ntohs(*(short*)data) / 32; ++data;
-		newVec.y = (float)ntohs(*(short*)++data) / 32; ++data;
-		newVec.z = (float)ntohs(*(short*)++data) / 32; ++data;
-		newAng.yaw = (((float)(uint8_t)*++data) / 256) * 360;
-		newAng.pitch = (((float)(uint8_t)*++data) / 256) * 360;
+		newVec.x = (float)ntohs(*(short*)data) / 32; data += 2;
+		newVec.y = (float)ntohs(*(short*)data) / 32; data += 2;
+		newVec.z = (float)ntohs(*(short*)data) / 32; data += 2;
+		newAng.yaw = (((float)(uint8_t)*data++) / 256) * 360;
+		newAng.pitch = (((float)(uint8_t)*data) / 256) * 360;
 	}
 
 	if(newVec.x != vec->x || newVec.y != vec->y || newVec.z != vec->z) {
@@ -103,17 +103,17 @@ static uint32_t WriteClPos(char* data, CLIENT client, bool stand, bool extended)
 	uint8_t yaw = (uint8_t)((ang->yaw / 360) * 256), pitch = (uint8_t)((ang->pitch / 360) * 256);
 
 	if(extended) {
-		*(uint32_t*)data = htonl((uint32_t)x); data += 3;
-		*(uint32_t*)++data = htonl((uint32_t)y); data += 3;
-		*(uint32_t*)++data = htonl((uint32_t)z); data += 3;
-		*(uint8_t*)++data = (uint8_t)yaw;
-		*(uint8_t*)++data = (uint8_t)pitch;
+		*(uint32_t*)data = htonl((uint32_t)x); data += 4;
+		*(uint32_t*)data = htonl((uint32_t)y); data += 4;
+		*(uint32_t*)data = htonl((uint32_t)z); data += 4;
+		*(uint8_t*)data++ = (uint8_t)yaw;
+		*(uint8_t*)data = (uint8_t)pitch;
 	} else {
-		*(uint16_t*)data = htons((uint16_t)x); ++data;
-		*(uint16_t*)++data = htons((uint16_t)y); ++data;
-		*(uint16_t*)++data = htons((uint16_t)z); ++data;
-		*(uint8_t*)++data = (uint8_t)yaw;
-		*(uint8_t*)++data = (uint8_t)pitch;
+		*(uint16_t*)data = htons((uint16_t)x); data += 2;
+		*(uint16_t*)data = htons((uint16_t)y); data += 2;
+		*(uint16_t*)data = htons((uint16_t)z); data += 2;
+		*(uint8_t*)data++ = (uint8_t)yaw;
+		*(uint8_t*)data = (uint8_t)pitch;
 	}
 
 	return extended ? 12 : 6;
@@ -156,11 +156,11 @@ PACKET Packet_Get(int32_t id) {
 void Packet_WriteHandshake(CLIENT client, const char* name, const char* motd) {
 	PacketWriter_Start(client);
 
-	*data = 0x00;
-	*++data = 0x07;
-	WriteNetString(++data, name); data += 63;
-	WriteNetString(++data, motd); data += 63;
-	*++data = (char)client->playerData->isOP;
+	*data++ = 0x00;
+	*data++ = 0x07;
+	WriteNetString(data++, name); data += 64;
+	WriteNetString(data++, motd); data += 64;
+	*data = (char)client->playerData->isOP;
 
 	PacketWriter_End(client, 131);
 }
@@ -168,9 +168,9 @@ void Packet_WriteHandshake(CLIENT client, const char* name, const char* motd) {
 void Packet_WriteLvlInit(CLIENT client) {
 	PacketWriter_Start(client);
 
-	*data = 0x02;
+	*data++ = 0x02;
 	if(client->cpeData && Client_GetExtVer(client, EXT_FASTMAP)) {
-		*(uint32_t*)++data = htonl(client->playerData->world->size - 4);
+		*(uint32_t*)data = htonl(client->playerData->world->size - 4);
 		PacketWriter_End(client, 5);
 	} else {
 		PacketWriter_End(client, 1);
@@ -181,10 +181,10 @@ void Packet_WriteLvlFin(CLIENT client) {
 	PacketWriter_Start(client);
 
 	WORLDDIMS dims = client->playerData->world->info->dim;
-	*data = 0x04;
-	*(uint16_t*)++data = htons(dims->width); ++data;
-	*(uint16_t*)++data = htons(dims->height); ++data;
-	*(uint16_t*)++data = htons(dims->length); ++data;
+	*data++ = 0x04;
+	*(uint16_t*)data = htons(dims->width); data += 2;
+	*(uint16_t*)data = htons(dims->height); data += 2;
+	*(uint16_t*)data = htons(dims->length); data += 2;
 
 	PacketWriter_End(client, 7);
 }
@@ -192,11 +192,11 @@ void Packet_WriteLvlFin(CLIENT client) {
 void Packet_WriteSetBlock(CLIENT client, uint16_t x, uint16_t y, uint16_t z, BlockID block) {
 	PacketWriter_Start(client);
 
-	*data = 0x06;
-	*(uint16_t*)++data = htons(x); ++data;
-	*(uint16_t*)++data = htons(y); ++data;
-	*(uint16_t*)++data = htons(z); ++data;
-	*++data = block;
+	*data++ = 0x06;
+	*(uint16_t*)data = htons(x); data += 2;
+	*(uint16_t*)data = htons(y); data += 2;
+	*(uint16_t*)data = htons(z); data += 2;
+	*data = block;
 
 	PacketWriter_End(client, 8);
 }
@@ -204,11 +204,11 @@ void Packet_WriteSetBlock(CLIENT client, uint16_t x, uint16_t y, uint16_t z, Blo
 void Packet_WriteSpawn(CLIENT client, CLIENT other) {
 	PacketWriter_Start(client);
 
-	*data = 0x07;
-	*++data = client == other ? 0xFF : other->id;
-	WriteNetString(++data, other->playerData->name); data += 63;
+	*data++ = 0x07;
+	*data++ = client == other ? 0xFF : other->id;
+	WriteNetString(data, other->playerData->name); data += 64;
 	bool extended = Client_GetExtVer(client, EXT_ENTPOS);
-	uint32_t len = WriteClPos(++data, other, client == other, extended);
+	uint32_t len = WriteClPos(data, other, client == other, extended);
 
 	PacketWriter_End(client, 68 + len);
 }
@@ -216,10 +216,10 @@ void Packet_WriteSpawn(CLIENT client, CLIENT other) {
 void Packet_WritePosAndOrient(CLIENT client, CLIENT other) {
 	PacketWriter_Start(client);
 
-	*data = 0x08;
-	*++data = client == other ? 0xFF : other->id;
+	*data++ = 0x08;
+	*data++ = client == other ? 0xFF : other->id;
 	bool extended = Client_GetExtVer(client, EXT_ENTPOS);
-	uint32_t len = WriteClPos(++data, other, false, extended);
+	uint32_t len = WriteClPos(data, other, false, extended);
 
 	PacketWriter_End(client, 4 + len);
 }
@@ -227,8 +227,8 @@ void Packet_WritePosAndOrient(CLIENT client, CLIENT other) {
 void Packet_WriteDespawn(CLIENT client, CLIENT other) {
 	PacketWriter_Start(client);
 
-	*data = 0x0C;
-	*++data = client == other ? 0xFF : other->id;
+	*data++ = 0x0C;
+	*data = client == other ? 0xFF : other->id;
 
 	PacketWriter_End(client, 2);
 }
@@ -255,9 +255,9 @@ void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg) {
 		}
 	}
 
-	*data = 0x0D;
-	*++data = type;
-	WriteNetString(++data, mesg_out);
+	*data++ = 0x0D;
+	*data++ = type;
+	WriteNetString(data, mesg_out);
 
 	PacketWriter_End(client, 66);
 }
@@ -265,8 +265,8 @@ void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg) {
 void Packet_WriteKick(CLIENT client, const char* reason) {
 	PacketWriter_Start(client);
 
-	*data = 0x0E;
-	WriteNetString(++data, reason);
+	*data++ = 0x0E;
+	WriteNetString(data, reason);
 
 	PacketWriter_End(client, 65);
 }
@@ -323,14 +323,11 @@ bool Handler_Handshake(CLIENT client, const char* data) {
 	return true;
 }
 
-static void UpdateBlock(CLIENT client, WORLD world, uint16_t x, uint16_t y, uint16_t z) {
-	BlockID block = World_GetBlock(world, x, y, z);
-
+static void UpdateBlock(WORLD world, uint16_t x, uint16_t y, uint16_t z, BlockID block) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		CLIENT other = Clients_List[i];
-		if(!other || other == client) continue;
-		if(!Client_IsInGame(other) || !Client_IsInWorld(other, world)) continue;
-		Packet_WriteSetBlock(other, x, y, z, block);
+		CLIENT client = Clients_List[i];
+		if(client && Client_IsInGame(client) && Client_IsInWorld(client, world))
+			Packet_WriteSetBlock(client, x, y, z, block);
 	}
 }
 
@@ -343,9 +340,8 @@ bool Handler_SetBlock(CLIENT client, const char* data) {
 	uint16_t x = ntohs(*(uint16_t*)data); data += 2;
 	uint16_t y = ntohs(*(uint16_t*)data); data += 2;
 	uint16_t z = ntohs(*(uint16_t*)data); data += 2;
-	uint8_t mode = *(uint8_t*)data; ++data;
+	uint8_t mode = *(uint8_t*)data++;
 	BlockID block = *(BlockID*)data;
-	BlockID pblock = block;
 
 	switch(mode) {
 		case 0x01:
@@ -355,15 +351,15 @@ bool Handler_SetBlock(CLIENT client, const char* data) {
 			}
 			if(Event_OnBlockPlace(client, mode, x, y, z, &block)) {
 				World_SetBlock(world, x, y, z, block);
-				UpdateBlock(pblock != block ? NULL : client, world, x, y, z);
+				UpdateBlock(world, x, y, z, block);
 			} else
 				Packet_WriteSetBlock(client, x, y, z, World_GetBlock(world, x, y, z));
 			break;
 		case 0x00:
-			block = 0;
+			block = BLOCK_AIR;
 			if(Event_OnBlockPlace(client, mode, x, y, z, &block)) {
 				World_SetBlock(world, x, y, z, block);
-				UpdateBlock(pblock != block ? NULL : client, world, x, y, z);
+				UpdateBlock(world, x, y, z, block);
 			} else
 				Packet_WriteSetBlock(client, x, y, z, World_GetBlock(world, x, y, z));
 			break;
@@ -375,15 +371,16 @@ bool Handler_SetBlock(CLIENT client, const char* data) {
 bool Handler_PosAndOrient(CLIENT client, const char* data) {
 	ValidateClientState(client, STATE_INGAME, false);
 	CPEDATA cpd = client->cpeData;
+	BlockID cb = *data++;
 
-	if(cpd && cpd->heldBlock != *data) {
-		BlockID new = *data;
+	if(cpd && cpd->heldBlock != cb) {
+		BlockID new = cb;
 		BlockID curr = cpd->heldBlock;
 		Event_OnHeldBlockChange(client, curr, new);
 		cpd->heldBlock = new;
 	}
 
-	if(ReadClPos(client, ++data))
+	if(ReadClPos(client, data))
 		Client_UpdatePositions(client);
 	return true;
 }

@@ -81,7 +81,7 @@ static bool CHandler_ClientOnly(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForClient;
 	(void)args;
 
-	String_FormatBuf(out, CMD_MAX_OUT, "Client-only command called by %s", caller->playerData->name);
+	String_FormatBuf(out, CMD_MAX_OUT, "Client-only command called by %s", Client_GetName(caller));
 	return true;
 }
 
@@ -95,6 +95,15 @@ EXP bool Plugin_Load(void) { // Основная функция, вызывае�
   Log_Info("Test plugin loaded"); // Отправка в консоль INFO сообщения.
   Log_Debug("It's a debug message");
   Log_Warn("It's a warning message");
+
+	/*
+	** Если функция вернула true, значит
+	** плагин удалось успешно загрузить.
+	** Если функция вернёт false, сервер
+	** выгрузит динамическую библиотеку
+	** плагина из памяти и не будет
+	** больше на неё ссылаться.
+	*/
   return true;
 }
 EXP bool Plugin_Unload(void) {

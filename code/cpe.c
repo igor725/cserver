@@ -319,15 +319,15 @@ bool CPEHandler_PlayerClick(CLIENT client, const char* data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_INGAME, false);
 
-	char button = *data;
-	char action = *++data;
-	short yaw = ntohs(*(uint16_t*)++data); ++data;
-	short pitch = ntohs(*(uint16_t*)++data); ++data;
-	ClientID tgID = *++data;
-	short tgBlockX = ntohs(*(short*)++data); ++data;
-	short tgBlockY = ntohs(*(short*)++data); ++data;
-	short tgBlockZ = ntohs(*(short*)++data); ++data;
-	char tgBlockFace = *++data;
+	char button = *data++;
+	char action = *data++;
+	short yaw = ntohs(*(uint16_t*)data); data += 2;
+	short pitch = ntohs(*(uint16_t*)data); data += 2;
+	ClientID tgID = *data++;
+	short tgBlockX = ntohs(*(short*)data); data += 2;
+	short tgBlockY = ntohs(*(short*)data); data += 2;
+	short tgBlockZ = ntohs(*(short*)data); data += 2;
+	char tgBlockFace = *data;
 
 	Event_OnClick(
 		client, button,
@@ -344,12 +344,12 @@ bool CPEHandler_PlayerClick(CLIENT client, const char* data) {
 bool CPEHandler_TwoWayPing(CLIENT client, const char* data) {
 	ValidateCpeClient(client, false);
 	CPEDATA cpd = client->cpeData;
-	uint8_t pingDirection = *data;
-	uint16_t pingData = *(uint16_t*)++data;
+	uint8_t pingDirection = *data++;
+	uint16_t pingData = *(uint16_t*)data;
 
 	if(pingDirection == 0) {
 		CPEPacket_WriteTwoWayPing(client, 0, pingData);
-		CPEPacket_WriteTwoWayPing(client, 1, ++cpd->pingData);
+		CPEPacket_WriteTwoWayPing(client, 1, cpd->pingData++);
 		cpd->pingStarted = true;
 		cpd->pingStart = Time_GetMSec();
 		return true;
