@@ -10,7 +10,6 @@ const char* const Strings[] = {
 	"Unexpected end of file \"%s\".",
 	"Can't parse line %d from file \"%s\".",
 	"Entry \"%s\" is not registred for \"%s\".",
-	"Entry \"%s\" already exist in \"%s\".",
 	"Trying to get entry \"%s\" from file \"%s\" as \"%s\", but the variable has type \"%s\".",
 	"Iterator already inited.",
 	"Invalid IPv4 address passed to Socket_SetAddr."
@@ -81,6 +80,14 @@ static void getErrorStr(int type, uint32_t code, char* errbuf, size_t sz, va_lis
 			}
 			break;
 	}
+}
+
+int Error_GetSysCode(void) {
+#if defined(WINDOWS)
+	return GetLastError();
+#elif defined(POSIX)
+	return errno;
+#endif
 }
 
 void Error_Print(int type, uint32_t code, const char* file, uint32_t line, const char* func) {

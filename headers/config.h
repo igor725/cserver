@@ -38,6 +38,9 @@ typedef struct cfgEntry {
 typedef struct cfgStore {
 	const char* path; // Путь до cfg-файла
 	bool modified; // Было ли хранилище модифицировано во время работы сервера
+	int etype; // Тип произошедшей ошибки ET_SYS/ET_SERVER (см. объявления в error.h)
+	int ecode; // Код произошедшей ошибки (объявления также в error.h)
+	int eline; // Номер строки в файле, на которой произошла ошибка
 	CFGENTRY firstCfgEntry; // Первая запись в хранилище
 	CFGENTRY lastCfgEntry; // Последняя запись в хранилище
 } *CFGSTORE;
@@ -46,6 +49,7 @@ typedef struct cfgStore {
 API const char* Config_TypeName(int type);
 API int Config_TypeNameToInt(const char* name);
 API bool Config_ToStr(CFGENTRY ent, char* value, uint8_t len);
+API void Config_PrintError(CFGSTORE store);
 
 API CFGSTORE Config_NewStore(const char* path);
 API void Config_EmptyStore(CFGSTORE store);

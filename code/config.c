@@ -3,6 +3,16 @@
 #include "str.h"
 #include "config.h"
 
+#define CFG_SYSERROR \
+store->etype = ET_SYS; \
+store->ecode = Error_GetSysCode(); \
+store->eline = 0;
+
+#define CFG_TYPE(expectedType) \
+if(ent->type != expectedType) { \
+	Error_PrintF2(ET_SERVER, EC_CFGINVGET, true, ent->key, ent->store->path, Config_TypeName(expectedType), Config_TypeName(ent->type)); \
+}
+
 CFGSTORE Config_NewStore(const char* path) {
 	CFGSTORE store = Memory_Alloc(1, sizeof(struct cfgStore));
 	store->path = String_AllocCopy(path);
@@ -13,9 +23,8 @@ CFGENTRY Config_GetEntry(CFGSTORE store, const char* key) {
 	CFGENTRY ent = store->firstCfgEntry;
 
 	while(ent) {
-		if(String_CaselessCompare(ent->key, key)) {
+		if(String_CaselessCompare(ent->key, key))
 			return ent;
-		}
 		ent = ent->next;
 	}
 
@@ -32,9 +41,7 @@ CFGENTRY Config_CheckEntry(CFGSTORE store, const char* key) {
 
 CFGENTRY Config_NewEntry(CFGSTORE store, const char* key, int type) {
 	CFGENTRY ent = Config_GetEntry(store, key);
-	if(ent) {
-		Error_PrintF2(ET_SERVER, EC_CFGALEX, true, key, store->path);
-	}
+	if(ent) return ent;
 
 	ent = Memory_Alloc(1, sizeof(struct cfgEntry));
 	ent->key = String_AllocCopy(key);
@@ -87,11 +94,6 @@ const char* Config_TypeName(int type) {
 	}
 }
 
-#define CFG_TYPE(expectedType) \
-if(ent->type != expectedType) { \
-	Error_PrintF2(ET_SERVER, EC_CFGINVGET, true, ent->key, ent->store->path, Config_TypeName(expectedType), Config_TypeName(ent->type)); \
-}
-
 int Config_TypeNameToInt(const char* name) {
 	if(String_CaselessCompare(name, "string")) {
 		return CFG_STR;
@@ -135,11 +137,27 @@ bool Config_ToStr(CFGENTRY ent, char* value, uint8_t len) {
 	return true;
 }
 
+void Config_PrintError(CFGSTORE store) {
+	switch (store->etype) {
+		case ET_SERVER:
+			if(store->eline > 0) {
+				Error_PrintF2(store->etype, store->ecode, false, store->eline, store->path);
+			} else {
+				Error_PrintF2(store->etype, store->ecode, false, store->path);
+			}
+			break;
+		case ET_SYS:
+			Error_PrintSys(false);
+			break;
+	}
+}
+
 bool Config_Load(CFGSTORE store) {
 	FILE* fp = File_Open(store->path, "r");
 	if(!fp) {
 		if(errno == ENOENT) return true;
-		Error_Print2(ET_SYS, errno, true);
+		CFG_SYSERROR;
+		return false;
 	}
 
 	bool haveComment = false;
@@ -155,7 +173,10 @@ bool Config_Load(CFGSTORE store) {
 		}
 		char* value = (char*)String_FirstChar(line, '=');
 		if(!value) {
-			Error_PrintF2(ET_SERVER, EC_LINEPARSE, true, linenum, store->path);
+			store->etype = ET_SERVER;
+			store->ecode = EC_CFGLINEPARSE;
+			store->eline = linenum;
+			return false;
 		}
 		*value++ = '\0';
 		CFGENTRY ent = Config_CheckEntry(store, line);
@@ -189,11 +210,18 @@ bool Config_Load(CFGSTORE store) {
 	}
 
 	if(lnret == -1) {
-		Error_PrintF2(ET_SERVER, EC_CFGEND, true, store->path);
+		store->etype = ET_SERVER;
+		store->ecode = EC_CFGEND;
+		store->eline = 0;
+		return false;
 	}
 
 	store->modified = !AllCfgEntriesParsed(store);
 	File_Close(fp);
+
+	store->etype = ET_NOERR;
+	store->ecode = 0;
+	store->eline = 0;
 	return true;
 }
 
@@ -205,7 +233,7 @@ bool Config_Save(CFGSTORE store) {
 
 	FILE* fp = File_Open(tmpname, "w");
 	if(!fp) {
-		Error_PrintSys(false);
+		CFG_SYSERROR;
 		return false;
 	}
 
@@ -213,10 +241,14 @@ bool Config_Save(CFGSTORE store) {
 
 	while(ptr) {
 		if(ptr->commentary)
-			if(!File_WriteFormat(fp, "#%s\n", ptr->commentary))
+			if(!File_WriteFormat(fp, "#%s\n", ptr->commentary)) {
+				CFG_SYSERROR;
 				return false;
-		if(!File_Write(ptr->key, String_Length(ptr->key), 1, fp))
+			}
+		if(!File_Write(ptr->key, String_Length(ptr->key), 1, fp)) {
+			CFG_SYSERROR;
 			return false;
+		}
 
 		char* vchar;
 		int32_t vint;
@@ -225,24 +257,32 @@ bool Config_Save(CFGSTORE store) {
 		switch (ptr->type) {
 			case CFG_STR:
 				vchar = (char*)(ptr->changed ? ptr->value.vchar : ptr->defvalue.vchar);
-				if(!File_WriteFormat(fp, "=%s\n", vchar))
+				if(!File_WriteFormat(fp, "=%s\n", vchar)) {
+					CFG_SYSERROR;
 					return false;
+				}
 				break;
 			case CFG_INT:
 			case CFG_INT16:
 			case CFG_INT8:
 				vint = ptr->changed ? ptr->value.vint : ptr->defvalue.vint;
-				if(!File_WriteFormat(fp, "=%d\n", vint))
+				if(!File_WriteFormat(fp, "=%d\n", vint)) {
+					CFG_SYSERROR;
 					return false;
+				}
 				break;
 			case CFG_BOOL:
 				vbool = ptr->changed ? ptr->value.vbool : ptr->defvalue.vbool;
-				if(!File_WriteFormat(fp, "=%s\n", vbool ? "True" : "False"))
+				if(!File_WriteFormat(fp, "=%s\n", vbool ? "True" : "False")) {
+					CFG_SYSERROR;
 					return false;
+				}
 				break;
 			default:
-				if(!File_Write("=Unknown value\n", 16, 1, fp))
+				if(!File_Write("=Unknown value\n", 16, 1, fp)) {
+					CFG_SYSERROR;
 					return false;
+				}
 				break;
 		}
 		ptr = ptr->next;
@@ -250,7 +290,15 @@ bool Config_Save(CFGSTORE store) {
 
 	File_Close(fp);
 	store->modified = false;
-	return File_Rename(tmpname, store->path);
+	if(!File_Rename(tmpname, store->path)) {
+		CFG_SYSERROR;
+		return false;
+	}
+
+	store->etype = ET_NOERR;
+	store->ecode = 0;
+	store->eline = 0;
+	return true;
 }
 
 void Config_SetComment(CFGENTRY ent, const char* commentary) {

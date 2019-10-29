@@ -3,7 +3,7 @@
 #include "str.h"
 #include "log.h"
 
-uint8_t Log_Level = LOG_ERROR | LOG_INFO | LOG_CHAT | LOG_WARN;
+uint8_t Log_Level = LOG_ERROR | LOG_INFO | LOG_CHAT | LOG_WARN | LOG_DEBUG;
 
 static const char* getName(uint8_t flag) {
 	switch(flag) {

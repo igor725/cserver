@@ -127,7 +127,7 @@ void Server_InitialWork(void) {
 
 	ent = Config_NewEntry(cfg, CFG_LOGLEVEL_KEY, CFG_STR);
 	Config_SetComment(ent, "I - Info, C - Chat, W - Warnings, D - Debug.");
-	Config_SetDefaultStr(ent, "ICW");
+	Config_SetDefaultStr(ent, "ICWD");
 
 	ent = Config_NewEntry(cfg, CFG_LOCALOP_KEY, CFG_BOOL);
 	Config_SetComment(ent, "Any player with ip address \"127.0.0.1\" will automatically become an operator.");
@@ -156,7 +156,10 @@ void Server_InitialWork(void) {
 	Config_SetDefaultBool(ent, false);
 
 	cfg->modified = true;
-	if(!Config_Load(cfg)) Process_Exit(1);
+	if(!Config_Load(cfg)) {
+		Config_PrintError(cfg);
+		Process_Exit(1);
+	}
 	Log_SetLevelStr(Config_GetStr(cfg, CFG_LOGLEVEL_KEY));
 
 	Packet_RegisterDefault();

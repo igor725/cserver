@@ -13,9 +13,8 @@ enum ErrorCodes {
 	EC_MAGIC,
 	EC_FILECORR,
 	EC_CFGEND,
-	EC_LINEPARSE,
+	EC_CFGLINEPARSE,
 	EC_CFGUNK,
-	EC_CFGALEX,
 	EC_CFGINVGET,
 	EC_ITERINITED,
 	EC_INVALIDIP
@@ -37,6 +36,7 @@ if(abort) { \
 #  define Error_PrintSys(abort) Error_Print2(ET_SYS, errno, abort);
 #endif
 
+API int Error_GetSysCode(void);
 API void Error_Print(int type, uint32_t code, const char* file, uint32_t line, const char* func);
 API void Error_PrintF(int type, uint32_t code, const char* file, uint32_t line, const char* func, ...);
 #endif
