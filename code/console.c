@@ -7,8 +7,8 @@
 
 THREAD conThread;
 
-static int ReadLine(char* buf, int buflen) {
-	int len = 0, c = 0;
+static int32_t ReadLine(char* buf, int32_t buflen) {
+	int32_t len = 0, c = 0;
 
 	while((c = File_GetChar(stdin)) != EOF && c != '\n' && len < buflen)
 		if(c != '\r') buf[len++] = (char)c;

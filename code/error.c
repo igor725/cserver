@@ -30,7 +30,7 @@ void Error_CallStack(void) {
 	symbol.MaxNameLen = 255;
 	symbol.SizeOfStruct = sizeof(SYMBOL_INFO);
 
-	for(int i = 0; i < frames; i++) {
+	for(int32_t i = 0; i < frames; i++) {
 		SymFromAddr(process, (uintptr_t)stack[i], 0, &symbol);
 		if(i > 2) {
 			Log_Debug(Lang_Get(LANG_DBGSYM0), symbol.Name, symbol.Address);
@@ -50,9 +50,9 @@ void Error_CallStack(void) {
 
 void Error_CallStack(void) {
 	void* stack[16];
-	int frames = backtrace(stack, 16);
+	int32_t frames = backtrace(stack, 16);
 
-	for(int i = 0; i < frames; i++) {
+	for(int32_t i = 0; i < frames; i++) {
 		Dl_info dli = {0};
 		dladdr(stack[i], &dli);
 		if(i > 2) {
@@ -63,7 +63,7 @@ void Error_CallStack(void) {
 }
 #endif
 
-static void getErrorStr(int type, uint32_t code, char* errbuf, size_t sz, va_list* args) {
+static void getErrorStr(int32_t type, uint32_t code, char* errbuf, size_t sz, va_list* args) {
 	switch(type) {
 		case ET_SERVER:
 			if(!args)
@@ -82,7 +82,7 @@ static void getErrorStr(int type, uint32_t code, char* errbuf, size_t sz, va_lis
 	}
 }
 
-int Error_GetSysCode(void) {
+int32_t Error_GetSysCode(void) {
 #if defined(WINDOWS)
 	return GetLastError();
 #elif defined(POSIX)
@@ -90,7 +90,7 @@ int Error_GetSysCode(void) {
 #endif
 }
 
-void Error_Print(int type, uint32_t code, const char* file, uint32_t line, const char* func) {
+void Error_Print(int32_t type, uint32_t code, const char* file, uint32_t line, const char* func) {
 	char strbuf[384] = {0};
 	char errbuf[256] = {0};
 
@@ -105,7 +105,7 @@ void Error_Print(int type, uint32_t code, const char* file, uint32_t line, const
 	}
 }
 
-void Error_PrintF(int type, uint32_t code, const char* file, uint32_t line, const char* func, ...) {
+void Error_PrintF(int32_t type, uint32_t code, const char* file, uint32_t line, const char* func, ...) {
 	char strbuf[384] = {0};
 	char errbuf[256] = {0};
 

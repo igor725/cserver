@@ -28,7 +28,7 @@ void Memory_Copy(void* dst, const void* src, size_t count) {
 	memcpy(dst, src, count);
 }
 
-void Memory_Fill(void* dst, size_t count, int val) {
+void Memory_Fill(void* dst, size_t count, int32_t val) {
 	memset(dst, val, count);
 }
 
@@ -52,11 +52,11 @@ size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp) {
 	return fread(ptr, size, count, fp);
 }
 
-int File_ReadLine(FILE* fp, char* line, int len) {
-	int bleft = len;
+int32_t File_ReadLine(FILE* fp, char* line, int32_t len) {
+	int32_t bleft = len;
 
 	while(bleft > 1) {
-		int ch = File_GetChar(fp);
+		int32_t ch = File_GetChar(fp);
 		if(ch == '\n' || ch == EOF) break;
 		if(ch != '\r') {
 			*line++ = (char)ch;
@@ -72,7 +72,7 @@ size_t File_Write(const void* ptr, size_t size, size_t count, FILE* fp) {
 	return fwrite(ptr, size, count, fp);
 }
 
-int File_GetChar(FILE* fp) {
+int32_t File_GetChar(FILE* fp) {
 	return fgetc(fp);
 }
 
@@ -93,7 +93,7 @@ bool File_Flush(FILE* fp) {
 	return fflush(fp) == 0;
 }
 
-int File_Seek(FILE* fp, long offset, int origin) {
+int32_t File_Seek(FILE* fp, long offset, int32_t origin) {
 	return fseek(fp, offset, origin);
 }
 
@@ -111,14 +111,14 @@ bool Socket_Init(void) {
 	return true;
 }
 
-int Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, uint16_t port) {
+int32_t Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, uint16_t port) {
 	ssa->sin_family = AF_INET;
 	ssa->sin_port = htons(port);
 	return inet_pton(AF_INET, ip, &ssa->sin_addr.s_addr);
 }
 
 bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, uint16_t port) {
-	int ret;
+	int32_t ret;
 	if((ret = Socket_SetAddr(ssa, host, port)) == 0) {
 		struct addrinfo* addr;
 		struct addrinfo hints = {0};
@@ -149,7 +149,7 @@ SOCKET Socket_New() {
 
 bool Socket_Bind(SOCKET sock, struct sockaddr_in* addr) {
 #if defined(POSIX)
-	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) == -1) {
+	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(int32_t){1}, 4) == -1) {
 		return false;
 	}
 #endif
@@ -175,12 +175,12 @@ SOCKET Socket_Accept(SOCKET sock, struct sockaddr_in* addr) {
 	return accept(sock, (struct sockaddr*)addr, &len);
 }
 
-int Socket_Receive(SOCKET sock, char* buf, int len, int flags) {
+int32_t Socket_Receive(SOCKET sock, char* buf, int32_t len, int32_t flags) {
 	return recv(sock, buf, len, flags);
 }
 
-int Socket_ReceiveLine(SOCKET sock, char* line, int len) {
-	int start_len = len;
+int32_t Socket_ReceiveLine(SOCKET sock, char* line, int32_t len) {
+	int32_t start_len = len;
 	char sym;
 
 	while(len > 1) {
@@ -199,11 +199,11 @@ int Socket_ReceiveLine(SOCKET sock, char* line, int len) {
 	return start_len - len;
 }
 
-int Socket_Send(SOCKET sock, char* buf, int len) {
+int32_t Socket_Send(SOCKET sock, char* buf, int32_t len) {
 	return send(sock, buf, len, 0);
 }
 
-void Socket_Shutdown(SOCKET sock, int how) {
+void Socket_Shutdown(SOCKET sock, int32_t how) {
 	shutdown(sock, how);
 }
 
@@ -432,7 +432,7 @@ void Thread_Close(THREAD th) {
 }
 
 void Thread_Join(THREAD th) {
-	int ret = pthread_join(*th, NULL);
+	int32_t ret = pthread_join(*th, NULL);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
 	}
@@ -464,7 +464,7 @@ void Mutex_Unlock(MUTEX* handle) {
 #elif defined(POSIX)
 MUTEX* Mutex_Create(void) {
 	MUTEX* ptr = Memory_Alloc(1, sizeof(MUTEX));
-	int ret = pthread_mutex_init(ptr, NULL);
+	int32_t ret = pthread_mutex_init(ptr, NULL);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
 		return NULL;
@@ -473,7 +473,7 @@ MUTEX* Mutex_Create(void) {
 }
 
 void Mutex_Free(MUTEX* handle) {
-	int ret = pthread_mutex_destroy(handle);
+	int32_t ret = pthread_mutex_destroy(handle);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
 	}
@@ -481,14 +481,14 @@ void Mutex_Free(MUTEX* handle) {
 }
 
 void Mutex_Lock(MUTEX* handle) {
-	int ret = pthread_mutex_lock(handle);
+	int32_t ret = pthread_mutex_lock(handle);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
 	}
 }
 
 void Mutex_Unlock(MUTEX* handle) {
-	int ret = pthread_mutex_unlock(handle);
+	int32_t ret = pthread_mutex_unlock(handle);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
 	}
@@ -524,7 +524,7 @@ void Time_Format(char* buf, size_t buflen) {
 			tm->tm_hour,
 			tm->tm_min,
 			tm->tm_sec,
-			(int) (tv.tv_usec / 1000)
+			(int32_t) (tv.tv_usec / 1000)
 		);
 	}
 }

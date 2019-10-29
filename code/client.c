@@ -9,7 +9,7 @@
 #include "heartbeat.h"
 #include "lang.h"
 
-uint8_t Clients_GetCount(int state) {
+uint8_t Clients_GetCount(int32_t state) {
 	uint8_t count = 0;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT client = Clients_List[i];
@@ -51,6 +51,15 @@ bool Client_Add(CLIENT client) {
 	return false;
 }
 
+const char* Client_GetName(CLIENT client) {
+	return client->playerData->name;
+}
+
+const char* Client_GetAppName(CLIENT client) {
+	if(!client->cpeData) return Lang_Get(LANG_CPEVANILLA);
+	return client->cpeData->appName;
+}
+
 CLIENT Client_GetByName(const char* name) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT client = Clients_List[i];
@@ -64,6 +73,22 @@ CLIENT Client_GetByName(const char* name) {
 
 CLIENT Client_GetByID(ClientID id) {
 	return id < MAX_CLIENTS ? Clients_List[id] : NULL;
+}
+
+int16_t Client_GetModel(CLIENT client) {
+	return client->cpeData->model;
+}
+
+int32_t Client_GetExtVer(CLIENT client, uint32_t extCRC32) {
+	CPEDATA cpd = client->cpeData;
+	if(!cpd) return false;
+
+	EXT ptr = cpd->firstExtension;
+	while(ptr) {
+		if(ptr->crc32 == extCRC32) return ptr->version;
+		ptr = ptr->next;
+	}
+	return false;
 }
 
 bool Client_Despawn(CLIENT client) {
@@ -155,7 +180,7 @@ static uint16_t GetPacketSizeFor(PACKET packet, CLIENT client, bool* extended) {
 	uint16_t packetSize = packet->size;
 	bool _extended = *extended;
 	if(packet->haveCPEImp) {
-		_extended = Client_IsSupportExt(client, packet->extCRC32, packet->extVersion);
+		_extended = Client_GetExtVer(client, packet->extCRC32) == packet->extVersion;
 		if(_extended) packetSize = packet->extSize;
 	}
 	return packetSize;
@@ -222,7 +247,7 @@ static void PacketReceiverRaw(CLIENT client) {
 		packetSize = GetPacketSizeFor(packet, client, &extended);
 
 		if(packetSize > 0) {
-			int len = Socket_Receive(client->sock, client->rdbuf, packetSize, 0);
+			int32_t len = Socket_Receive(client->sock, client->rdbuf, packetSize, 0);
 
 			if(packetSize == len)
 				HandlePacket(client, client->rdbuf, packet, extended);
@@ -255,17 +280,17 @@ TRET Client_MapThreadProc(TARG param) {
 
 	WORLD world = pd->world;
 	uint8_t* mapdata = world->data;
-	int maplen = world->size;
+	int32_t maplen = world->size;
 
 	*data++ = 0x03;
 	uint16_t* len = (uint16_t*)data++;
 	uint8_t* out = ++data;
 
-	int ret, windowBits = 31;
+	int32_t ret, windowBits = 31;
 	z_stream stream = {0};
 
 	Mutex_Lock(client->mutex);
-	if(Client_IsSupportExt(client, EXT_FASTMAP, 1)) {
+	if(Client_GetExtVer(client, EXT_FASTMAP)) {
 		windowBits = -15;
 		maplen -= 4;
 		mapdata += 4;
@@ -334,31 +359,9 @@ bool Client_IsInWorld(CLIENT client, WORLD world) {
 	return client->playerData->world == world;
 }
 
-bool Client_IsSupportExt(CLIENT client, uint32_t extCRC32, int extVer) {
-	CPEDATA cpd = client->cpeData;
-	if(!cpd) return false;
-
-	EXT ptr = cpd->firstExtension;
-	while(ptr) {
-		if(ptr->crc32 == extCRC32) return ptr->version == extVer;
-		ptr = ptr->next;
-	}
-	return false;
-}
-
 bool Client_IsOP(CLIENT client) {
 	PLAYERDATA pd = client->playerData;
 	return pd ? pd->isOP : false;
-}
-
-const char* Client_GetName(CLIENT client) {
-	if(!client->playerData) return Lang_Get(LANG_PLNAMEUNK);
-	return client->playerData->name;
-}
-
-const char* Client_GetAppName(CLIENT client) {
-	if(!client->cpeData) return Lang_Get(LANG_CPEVANILLA);
-	return client->cpeData->appName;
 }
 
 //TODO: ClassiCube auth
@@ -379,8 +382,8 @@ bool Client_SetBlock(CLIENT client, short x, short y, short z, BlockID id) {
 	return true;
 }
 
-bool Client_SetProperty(CLIENT client, uint8_t property, int value) {
-	if(Client_IsSupportExt(client, EXT_MAPASPECT, 1)) {
+bool Client_SetProperty(CLIENT client, uint8_t property, int32_t value) {
+	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
 		CPEPacket_WriteMapProperty(client, property, value);
 		return true;
 	}
@@ -388,7 +391,7 @@ bool Client_SetProperty(CLIENT client, uint8_t property, int value) {
 }
 
 bool Client_SetTexturePack(CLIENT client, const char* url) {
-	if(Client_IsSupportExt(client, EXT_MAPASPECT, 1)) {
+	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
 		CPEPacket_WriteTexturePack(client, url);
 		return true;
 	}
@@ -396,7 +399,7 @@ bool Client_SetTexturePack(CLIENT client, const char* url) {
 }
 
 bool Client_SetWeather(CLIENT client, Weather type) {
-	if(Client_IsSupportExt(client, EXT_WEATHER, 1)) {
+	if(Client_GetExtVer(client, EXT_WEATHER)) {
 		CPEPacket_WriteWeatherType(client, type);
 		return true;
 	}
@@ -406,7 +409,7 @@ bool Client_SetWeather(CLIENT client, Weather type) {
 bool Client_SetInvOrder(CLIENT client, Order order, BlockID block) {
 	if(!Block_IsValid(block)) return false;
 
-	if(Client_IsSupportExt(client, EXT_INVORDER, 1)) {
+	if(Client_GetExtVer(client, EXT_INVORDER)) {
 		CPEPacket_WriteInventoryOrder(client, order, block);
 		return true;
 	}
@@ -415,7 +418,7 @@ bool Client_SetInvOrder(CLIENT client, Order order, BlockID block) {
 
 bool Client_SetHeld(CLIENT client, BlockID block, bool canChange) {
 	if(!Block_IsValid(block)) return false;
-	if(Client_IsSupportExt(client, EXT_HELDBLOCK, 1)) {
+	if(Client_GetExtVer(client, EXT_HELDBLOCK)) {
 		CPEPacket_WriteHoldThis(client, block, canChange);
 		return true;
 	}
@@ -424,7 +427,7 @@ bool Client_SetHeld(CLIENT client, BlockID block, bool canChange) {
 
 bool Client_SetHotbar(CLIENT client, Order pos, BlockID block) {
 	if(!Block_IsValid(block) || pos > 8) return false;
-	if(Client_IsSupportExt(client, EXT_SETHOTBAR, 1)) {
+	if(Client_GetExtVer(client, EXT_SETHOTBAR)) {
 		CPEPacket_WriteSetHotBar(client, pos, block);
 		return true;
 	}
@@ -433,7 +436,7 @@ bool Client_SetHotbar(CLIENT client, Order pos, BlockID block) {
 
 bool Client_SetBlockPerm(CLIENT client, BlockID block, bool allowPlace, bool allowDestroy) {
 	if(!Block_IsValid(block)) return false;
-	if(Client_IsSupportExt(client, EXT_BLOCKPERM, 1)) {
+	if(Client_GetExtVer(client, EXT_BLOCKPERM)) {
 		CPEPacket_WriteBlockPerm(client, block, allowPlace, allowDestroy);
 		return true;
 	}
@@ -447,7 +450,7 @@ bool Client_SetModel(CLIENT client, int16_t model) {
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT other = Clients_List[i];
-		if(!other || !Client_IsSupportExt(other, EXT_CHANGEMODEL, 1)) continue;
+		if(!other || !Client_GetExtVer(other, EXT_CHANGEMODEL)) continue;
 		CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, model);
 	}
 	return true;
@@ -457,12 +460,8 @@ bool Client_SetModelStr(CLIENT client, const char* model) {
 	return Client_SetModel(client, CPE_GetModelNum(model));
 }
 
-int16_t Client_GetModel(CLIENT client) {
-	return client->cpeData->model;
-}
-
 bool Client_SetHacks(CLIENT client) {
-	if(Client_IsSupportExt(client, EXT_HACKCTRL, 1)) {
+	if(Client_GetExtVer(client, EXT_HACKCTRL)) {
 		CPEPacket_WriteHackControl(client, client->cpeData->hacks);
 		return true;
 	}
@@ -521,7 +520,7 @@ void Client_Free(CLIENT client) {
 	Memory_Free(client);
 }
 
-int Client_Send(CLIENT client, int len) {
+int32_t Client_Send(CLIENT client, int32_t len) {
 	if(client->closed) return 0;
 	if(client == Client_Broadcast) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
@@ -557,13 +556,13 @@ bool Client_Spawn(CLIENT client) {
 		if(other && Client_IsInSameWorld(client, other)) {
 			Packet_WriteSpawn(other, client);
 
-			if(other->cpeData && client->cpeData && Client_IsSupportExt(other, EXT_CHANGEMODEL, 1))
+			if(other->cpeData && client->cpeData && Client_GetExtVer(other, EXT_CHANGEMODEL))
 				CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, Client_GetModel(client));
 
 			if(client != other) {
 				Packet_WriteSpawn(client, other);
 
-				if(other->cpeData && client->cpeData && Client_IsSupportExt(client, EXT_CHANGEMODEL, 1))
+				if(other->cpeData && client->cpeData && Client_GetExtVer(client, EXT_CHANGEMODEL))
 					CPEPacket_WriteSetModel(client, other->id, Client_GetModel(other));
 			}
 		}

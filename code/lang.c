@@ -1,7 +1,7 @@
 #include "core.h"
 #include "lang.h"
 
-const char* Lang_Get(int langid) {
+const char* Lang_Get(int32_t langid) {
 	switch (langid) {
 		case LANG_SUCC:
 			return "successfully";
@@ -57,9 +57,6 @@ const char* Lang_Get(int langid) {
 			return "Invalid block ID";
 		case LANG_KICKPACKETSPAM:
 			return "Too many packets per second";
-
-		case LANG_PLNAMEUNK:
-			return "unconnected";
 
 		case LANG_CPEVANILLA:
 			return "vanilla";

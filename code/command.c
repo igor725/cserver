@@ -190,11 +190,11 @@ static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
 
 			return true;
 		} else if(String_CaselessCompare(subcommand, "list")) {
-			int idx = 1;
+			int32_t idx = 1;
 			char pluginfo[64];
 			String_Copy(out, CMD_MAX_OUT, "Plugins list:");
 
-			for(int i = 0; i < MAX_PLUGINS; i++) {
+			for(int32_t i = 0; i < MAX_PLUGINS; i++) {
 				plugin = CPLugins_List[i];
 				if(plugin) {
 					String_FormatBuf(pluginfo, 64, "\r\n%d. %s", idx++, plugin->name);

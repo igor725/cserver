@@ -63,7 +63,7 @@ static bool ReadClPos(CLIENT client, const char* data) {
 	ANGLE newAng = {0};
 	bool changed = false;
 
-	if(Client_IsSupportExt(client, EXT_ENTPOS, 1)) {
+	if(Client_GetExtVer(client, EXT_ENTPOS)) {
 		newVec.x = (float)ntohl(*(int*)data) / 32; data += 3;
 		newVec.y = (float)ntohl(*(int*)++data) / 32; data += 3;
 		newVec.z = (float)ntohl(*(int*)++data) / 32; data += 3;
@@ -119,7 +119,7 @@ static uint32_t WriteClPos(char* data, CLIENT client, bool stand, bool extended)
 	return extended ? 12 : 6;
 }
 
-void Packet_Register(int id, const char* name, uint16_t size, packetHandler handler) {
+void Packet_Register(int32_t id, const char* name, uint16_t size, packetHandler handler) {
 	PACKET tmp = Memory_Alloc(1, sizeof(struct packet));
 
 	tmp->name = name;
@@ -128,7 +128,7 @@ void Packet_Register(int id, const char* name, uint16_t size, packetHandler hand
 	PackList[id] = tmp;
 }
 
-void Packet_RegisterCPE(int id, uint32_t extCRC32, int version, uint16_t size, packetHandler handler) {
+void Packet_RegisterCPE(int32_t id, uint32_t extCRC32, int32_t version, uint16_t size, packetHandler handler) {
 	PACKET tmp = PackList[id];
 
 	tmp->extCRC32 = extCRC32;
@@ -145,7 +145,7 @@ void Packet_RegisterDefault(void) {
 	Packet_Register(0x0D, "Message", 65, Handler_Message);
 }
 
-PACKET Packet_Get(int id) {
+PACKET Packet_Get(int32_t id) {
 	return id < MAX_PACKETS ? PackList[id] : NULL;
 }
 
@@ -153,20 +153,23 @@ PACKET Packet_Get(int id) {
 	VANILLA
 */
 
-void Packet_WriteKick(CLIENT client, const char* reason) {
+void Packet_WriteHandshake(CLIENT client, const char* name, const char* motd) {
 	PacketWriter_Start(client);
 
-	*data = 0x0E;
-	WriteNetString(++data, reason);
+	*data = 0x00;
+	*++data = 0x07;
+	WriteNetString(++data, name); data += 63;
+	WriteNetString(++data, motd); data += 63;
+	*++data = (char)client->playerData->isOP;
 
-	PacketWriter_End(client, 65);
+	PacketWriter_End(client, 131);
 }
 
 void Packet_WriteLvlInit(CLIENT client) {
 	PacketWriter_Start(client);
 
 	*data = 0x02;
-	if(client->cpeData && Client_IsSupportExt(client, EXT_FASTMAP, 1)) {
+	if(client->cpeData && Client_GetExtVer(client, EXT_FASTMAP)) {
 		*(uint32_t*)++data = htonl(client->playerData->world->size - 4);
 		PacketWriter_End(client, 5);
 	} else {
@@ -198,28 +201,27 @@ void Packet_WriteSetBlock(CLIENT client, uint16_t x, uint16_t y, uint16_t z, Blo
 	PacketWriter_End(client, 8);
 }
 
-void Packet_WriteHandshake(CLIENT client, const char* name, const char* motd) {
-	PacketWriter_Start(client);
-
-	*data = 0x00;
-	*++data = 0x07;
-	WriteNetString(++data, name); data += 63;
-	WriteNetString(++data, motd); data += 63;
-	*++data = (char)client->playerData->isOP;
-
-	PacketWriter_End(client, 131);
-}
-
 void Packet_WriteSpawn(CLIENT client, CLIENT other) {
 	PacketWriter_Start(client);
 
 	*data = 0x07;
 	*++data = client == other ? 0xFF : other->id;
 	WriteNetString(++data, other->playerData->name); data += 63;
-	bool extended = Client_IsSupportExt(client, EXT_ENTPOS, 1);
+	bool extended = Client_GetExtVer(client, EXT_ENTPOS);
 	uint32_t len = WriteClPos(++data, other, client == other, extended);
 
 	PacketWriter_End(client, 68 + len);
+}
+
+void Packet_WritePosAndOrient(CLIENT client, CLIENT other) {
+	PacketWriter_Start(client);
+
+	*data = 0x08;
+	*++data = client == other ? 0xFF : other->id;
+	bool extended = Client_GetExtVer(client, EXT_ENTPOS);
+	uint32_t len = WriteClPos(++data, other, false, extended);
+
+	PacketWriter_End(client, 4 + len);
 }
 
 void Packet_WriteDespawn(CLIENT client, CLIENT other) {
@@ -229,17 +231,6 @@ void Packet_WriteDespawn(CLIENT client, CLIENT other) {
 	*++data = client == other ? 0xFF : other->id;
 
 	PacketWriter_End(client, 2);
-}
-
-void Packet_WritePosAndOrient(CLIENT client, CLIENT other) {
-	PacketWriter_Start(client);
-
-	*data = 0x08;
-	*++data = client == other ? 0xFF : other->id;
-	bool extended = Client_IsSupportExt(client, EXT_ENTPOS, 1);
-	uint32_t len = WriteClPos(++data, other, false, extended);
-
-	PacketWriter_End(client, 4 + len);
 }
 
 void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg) {
@@ -256,8 +247,8 @@ void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg) {
 	char mesg_out[64] = {0};
 	String_Copy(mesg_out, 64, mesg);
 
-	if(!Client_IsSupportExt(client, EXT_CP437, 1)) {
-		for(int i = 0; i < 64; i++) {
+	if(!Client_GetExtVer(client, EXT_CP437)) {
+		for(int32_t i = 0; i < 64; i++) {
 			if(mesg_out[i] == '\0') break;
 			if(mesg_out[i] < ' ' || mesg_out[i] > '~')
 				mesg_out[i] = '?';
@@ -269,6 +260,15 @@ void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg) {
 	WriteNetString(++data, mesg_out);
 
 	PacketWriter_End(client, 66);
+}
+
+void Packet_WriteKick(CLIENT client, const char* reason) {
+	PacketWriter_Start(client);
+
+	*data = 0x0E;
+	WriteNetString(++data, reason);
+
+	PacketWriter_End(client, 65);
 }
 
 /*
@@ -292,7 +292,7 @@ bool Handler_Handshake(CLIENT client, const char* data) {
 	if(!ReadNetString(&data, &client->playerData->name)) return false;
 	if(!ReadNetString(&data, &client->playerData->key)) return false;
 
-	for(int i = 0; i < 128; i++) {
+	for(int32_t i = 0; i < 128; i++) {
 		CLIENT other = Clients_List[i];
 		if(!other || other == client || !other->playerData) continue;
 		if(String_CaselessCompare(client->playerData->name, other->playerData->name)) {
@@ -398,13 +398,13 @@ bool Handler_Message(CLIENT client, const char* data) {
 	uint8_t len = ReadNetStringNoAlloc(&data, message);
 	if(len == 0) return false;
 
-	for(int i = 0; i < len; i++) {
+	for(uint8_t i = 0; i < len; i++) {
 		if(message[i] == '%' && ISHEX(message[i + 1]))
 			message[i] = '&';
 	}
 
 	CPEDATA cpd = client->cpeData;
-	if(cpd && Client_IsSupportExt(client, EXT_LONGMSG, 1)) {
+	if(cpd && Client_GetExtVer(client, EXT_LONGMSG)) {
 		if(String_Append(cpd->message, 193, message) && partial == 1) return true;
 		messptr = cpd->message;
 	}

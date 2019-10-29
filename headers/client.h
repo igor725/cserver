@@ -12,7 +12,7 @@ enum playerStates {
 
 typedef struct cpeExt {
 	const char* name; // Название дополнения
-	int version; // Его версия
+	int32_t version; // Его версия
 	uint32_t crc32; // crc32 хеш названия дополнения
 	struct cpeExt*  next; // Следующее по списку дополнение
 } *EXT;
@@ -38,7 +38,7 @@ typedef struct cpeData {
 } *CPEDATA;
 
 typedef struct playerData {
-	int state; // Текущее состояние игрока
+	int32_t state; // Текущее состояние игрока
 	const char* key; // Ключ, полученный от игрока
 	const char* name; // Имя игрока
 	WORLD world; // Мир, в котором игрок обитает
@@ -67,7 +67,7 @@ typedef struct client {
 
 void Client_SetPos(CLIENT client, VECTOR* vec, ANGLE* ang);
 void Client_UpdatePositions(CLIENT client);
-int  Client_Send(CLIENT client, int len);
+int32_t  Client_Send(CLIENT client, int32_t len);
 void Client_HandshakeStage2(CLIENT client);
 bool Client_CheckAuth(CLIENT client);
 TRET Client_ThreadProc(TARG param);
@@ -77,7 +77,7 @@ CLIENT Client_New(SOCKET fd, uint32_t addr);
 bool Client_Add(CLIENT client);
 void Client_Init(void);
 
-API uint8_t Clients_GetCount(int state);
+API uint8_t Clients_GetCount(int32_t state);
 API void Clients_KickAll(const char* reason);
 
 API bool Client_ChangeWorld(CLIENT client, WORLD world);
@@ -85,7 +85,6 @@ API void Client_Chat(CLIENT client, MessageType type, const char* message);
 API void Client_Kick(CLIENT client, const char* reason);
 API bool Client_SendMap(CLIENT client, WORLD world);
 
-API bool Client_IsSupportExt(CLIENT client, uint32_t extCRC32, int extVer);
 API bool Client_IsInSameWorld(CLIENT client, CLIENT other);
 API bool Client_IsInWorld(CLIENT client, WORLD world);
 API bool Client_IsInGame(CLIENT client);
@@ -93,7 +92,7 @@ API bool Client_IsOP(CLIENT client);
 
 API bool Client_SetWeather(CLIENT client, Weather type);
 API bool Client_SetInvOrder(CLIENT client, Order order, BlockID block);
-API bool Client_SetProperty(CLIENT client, uint8_t property, int value);
+API bool Client_SetProperty(CLIENT client, uint8_t property, int32_t value);
 API bool Client_SetTexturePack(CLIENT client, const char* url);
 API bool Client_SetBlock(CLIENT client, short x, short y, short z, BlockID id);
 API bool Client_SetModel(CLIENT client, int16_t model);
@@ -108,6 +107,7 @@ API const char* Client_GetAppName(CLIENT client);
 API CLIENT Client_GetByID(ClientID id);
 API CLIENT Client_GetByName(const char* name);
 API int16_t Client_GetModel(CLIENT client);
+API int32_t Client_GetExtVer(CLIENT client, uint32_t extCRC32);
 
 API bool Client_Spawn(CLIENT client);
 API bool Client_Despawn(CLIENT client);

@@ -22,7 +22,7 @@ bool CPlugin_Load(const char* name) {
 			return false;
 		}
 
-		int ver = *((int*)verSym);
+		int32_t ver = *((int32_t*)verSym);
 		if(ver != CPLUGIN_API_NUM) {
 			if(ver < CPLUGIN_API_NUM)
 				Log_Error(Lang_Get(LANG_CPAPIOLD), name, CPLUGIN_API_NUM, ver);
@@ -40,7 +40,7 @@ bool CPlugin_Load(const char* name) {
 		plugin->lib = plugin;
 		plugin->id = -1;
 
-		for(int i = 0; i < MAX_PLUGINS; i++) {
+		for(int32_t i = 0; i < MAX_PLUGINS; i++) {
 			if(!CPLugins_List[i]) {
 				CPLugins_List[i] = plugin;
 				plugin->id = i;
@@ -61,7 +61,7 @@ bool CPlugin_Load(const char* name) {
 }
 
 CPLUGIN CPlugin_Get(const char* name) {
-	for(int i = 0; i < MAX_PLUGINS; i++) {
+	for(int32_t i = 0; i < MAX_PLUGINS; i++) {
 		CPLUGIN ptr = CPLugins_List[i];
 		if(ptr && String_Compare(ptr->name, name)) return ptr;
 	}
@@ -94,7 +94,7 @@ void CPlugin_Start(void) {
 }
 
 void CPlugin_Stop(void) {
-	for(int i = 0; i < MAX_PLUGINS; i++) {
+	for(int32_t i = 0; i < MAX_PLUGINS; i++) {
 		CPLUGIN plugin = CPLugins_List[i];
 		if(plugin && plugin->unload)
 			(*(pluginFunc)plugin->unload)();

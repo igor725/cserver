@@ -37,7 +37,7 @@ typedef struct worldDims {
 
 typedef struct worldInfo {
 	WORLDDIMS dim;
-	int props[WORLD_PROPS_COUNT];
+	int32_t props[WORLD_PROPS_COUNT];
 	char texturepack[65];
 	VECTOR* spawnVec;
 	ANGLE* spawnAng;
@@ -45,7 +45,7 @@ typedef struct worldInfo {
 } *WORLDINFO;
 
 typedef struct world {
-	int id;
+	int32_t id;
 	const char* name;
 	uint32_t size;
 	WORLDINFO info;
@@ -69,16 +69,16 @@ API bool World_Save(WORLD world);
 
 API void World_SetDimensions(WORLD world, uint16_t width, uint16_t height, uint16_t length);
 API bool World_SetBlock(WORLD world, uint16_t x, uint16_t y, uint16_t z, BlockID id);
-API bool World_SetProperty(WORLD world, uint8_t property, int value);
+API bool World_SetProperty(WORLD world, uint8_t property, int32_t value);
 API bool World_SetTexturePack(WORLD world, const char* url);
 API bool World_SetWeather(WORLD world, Weather type);
 
 API uint32_t World_GetOffset(WORLD world, uint16_t x, uint16_t y, uint16_t z);
 API BlockID World_GetBlock(WORLD world, uint16_t x, uint16_t y, uint16_t z);
-API int World_GetProperty(WORLD world, uint8_t property);
+API int32_t World_GetProperty(WORLD world, uint8_t property);
 API Weather World_GetWeather(WORLD world);
 API WORLD World_GetByName(const char* name);
-API WORLD World_GetByID(int id);
+API WORLD World_GetByID(int32_t id);
 
 VAR WORLD Worlds_List[MAX_WORLDS];
 #endif

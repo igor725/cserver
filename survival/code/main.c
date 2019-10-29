@@ -76,7 +76,7 @@ static void Survival_OnDisconnect(void* param) {
 
 static double root(double n){
   double lo = 0, hi = n, mid;
-  for(int i = 0; i < 1000; i++){
+  for(int32_t i = 0; i < 1000; i++){
       mid = (lo + hi) / 2;
       if(mid * mid == n) return mid;
       if(mid * mid > n) hi = mid;
@@ -190,7 +190,7 @@ static bool CHandler_PvP(const char* args, CLIENT caller, char* out) {
 	return true;
 }
 
-EXP int Plugin_ApiVer = CPLUGIN_API_NUM;
+EXP int32_t Plugin_ApiVer = CPLUGIN_API_NUM;
 
 EXP bool Plugin_Load(void) {
 	if(Server_Active) {

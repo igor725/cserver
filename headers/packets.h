@@ -25,27 +25,27 @@ typedef struct packet {
 	uint16_t size;
 	bool haveCPEImp;
 	uint32_t extCRC32;
-	int extVersion;
+	int32_t extVersion;
 	uint16_t extSize;
 	packetHandler handler;
 	packetHandler cpeHandler;
 } *PACKET;
 
-PACKET Packet_Get(int id);
-API void Packet_Register(int id, const char* name, uint16_t size, packetHandler handler);
-API void Packet_RegisterCPE(int id, uint32_t extCRC32, int extVersion, uint16_t extSize, packetHandler handler);
+PACKET Packet_Get(int32_t id);
+API void Packet_Register(int32_t id, const char* name, uint16_t size, packetHandler handler);
+API void Packet_RegisterCPE(int32_t id, uint32_t extCRC32, int32_t extVersion, uint16_t extSize, packetHandler handler);
 void Packet_RegisterDefault(void);
 void Packet_RegisterCPEDefault(void);
 
-void Packet_WriteKick(CLIENT cl, const char* reason);
-void Packet_WriteSpawn(CLIENT client, CLIENT other);
-void Packet_WriteDespawn(CLIENT client, CLIENT other);
-void Packet_WriteHandshake(CLIENT cl, const char* name, const char* motd);
+void Packet_WriteHandshake(CLIENT client, const char* name, const char* motd);
 void Packet_WriteLvlInit(CLIENT client);
 void Packet_WriteLvlFin(CLIENT client);
-void Packet_WritePosAndOrient(CLIENT client, CLIENT other);
-void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg);
 void Packet_WriteSetBlock(CLIENT client, uint16_t x, uint16_t y, uint16_t z, BlockID block);
+void Packet_WriteSpawn(CLIENT client, CLIENT other);
+void Packet_WritePosAndOrient(CLIENT client, CLIENT other);
+void Packet_WriteDespawn(CLIENT client, CLIENT other);
+void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg);
+void Packet_WriteKick(CLIENT client, const char* reason);
 
 uint8_t ReadNetString(const char** data, const char** dst);
 void WriteNetString(char* data, const char* string);

@@ -20,8 +20,8 @@ THREAD Thread;
 static void NewSecret(void) {
 	RNGState secrnd;
 	Random_SeedFromTime(&secrnd);
-	for(int i = 0; i < 16; i++) {
-		int min, max;
+	for(int32_t i = 0; i < 16; i++) {
+		int32_t min, max;
 		switch(Random_Range(&secrnd, 0, 3)) {
 			case 0:
 				min = 48;
@@ -41,8 +41,8 @@ static void NewSecret(void) {
 }
 
 const char* reserved = "!*'();:@&=+$,/?#[]%";
-static void TrimReserved(char* name, int len) {
-	for(int i = 0; i < len; i++) {
+static void TrimReserved(char* name, int32_t len) {
+	for(int32_t i = 0; i < len; i++) {
 		char sym = name[i];
 		if(sym == '\0') break;
 		if(sym == ' ') name[i] = '+';
@@ -128,7 +128,7 @@ bool Heartbeat_CheckKey(CLIENT client) {
 	MD5_Update(&ctx, name, String_Length(name));
 	MD5_Final(hash, &ctx);
 
-	for(int i = 0; i < 16; i++) {
+	for(int32_t i = 0; i < 16; i++) {
 		uint8_t b = hash[i];
 		hash_hex[i * 2] = hexchars[b >> 4];
 		hash_hex[i * 2 + 1] = hexchars[b & 0xF];

@@ -36,11 +36,11 @@ bool String_Compare(const char* str1, const char* str2) {
 	return strcmp(str1, str2) == 0;
 }
 
-int String_ToInt(const char* str) {
+int32_t String_ToInt(const char* str) {
 	return atoi(str);
 }
 
-int String_HexToInt(const char* str) {
+int32_t String_HexToInt(const char* str) {
 	return strtol(str, NULL, 16);
 }
 
@@ -72,7 +72,7 @@ char* String_CopyUnsafe(char* dst, const char* src) {
 
 uint32_t String_FormatError(uint32_t code, char* buf, size_t buflen, va_list* args) {
 #if defined(WINDOWS)
-	int len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, (uint32_t)buflen, args);
+	int32_t len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, (uint32_t)buflen, args);
 	if(len > 0) {
 		while(*buf++ != '\0') {
 			if(*buf == '\r' || *buf == '\n') {
@@ -87,7 +87,7 @@ uint32_t String_FormatError(uint32_t code, char* buf, size_t buflen, va_list* ar
 #endif
 }
 
-int String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* args) {
+int32_t String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* args) {
 #if defined(WINDOWS)
 	return vsprintf_s(buf, len, str,* args);
 #elif defined(POSIX)
@@ -95,8 +95,8 @@ int String_FormatBufVararg(char* buf, size_t len, const char* str, va_list* args
 #endif
 }
 
-int String_FormatBuf(char* buf, size_t len, const char* str, ...) {
-	int wrlen;
+int32_t String_FormatBuf(char* buf, size_t len, const char* str, ...) {
+	int32_t wrlen;
 	va_list args;
 	va_start(args, str);
 	wrlen = String_FormatBufVararg(buf, len, str, &args);
@@ -118,7 +118,7 @@ const char* String_AllocCopy(const char* str) {
 	return (const char*)ptr;
 }
 
-const char* String_FromArgument(const char* args, int index) {
+const char* String_FromArgument(const char* args, int32_t index) {
 	if(!args || *args == '\0') return NULL;
 
 	do {
@@ -129,7 +129,7 @@ const char* String_FromArgument(const char* args, int index) {
 	return NULL;
 }
 
-size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index) {
+size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int32_t index) {
 	if(!args || arrsz == 0) return 0;
 	size_t start_len = arrsz;
 
@@ -154,7 +154,7 @@ size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int index) 
 	https://stackoverflow.com/questions/21001659/crc32-algorithm-implementation-in-c-without-a-look-up-table-and-with-a-public-li
 */
 uint32_t String_CRC32(const uint8_t* str) {
-	int i, j;
+	int32_t i, j;
 	uint32_t byte, crc, mask;
 
 	i = 0;

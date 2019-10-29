@@ -169,7 +169,7 @@ void Server_InitialWork(void) {
 	Event_RegisterVoid(EVT_ONDISCONNECT, onDisconnect);
 
 	Directory_Ensure("worlds");
-	int wIndex = 0;
+	int32_t wIndex = 0;
 	dirIter wIter = {0};
 	if(Iter_Init(&wIter, "worlds", "cws")) {
 		do {
@@ -209,7 +209,7 @@ void Server_InitialWork(void) {
 
 void Server_DoStep(void) {
 	Event_Call(EVT_ONTICK, NULL);
-	for(int i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
+	for(int32_t i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
 		CLIENT client = Client_GetByID((ClientID)i);
 		WORLD world = World_GetByID(i);
 
@@ -223,7 +223,7 @@ void Server_StartLoop(void) {
 	while(Server_Active) {
 		last = curr;
 		curr = Time_GetMSec();
-		Server_Delta = (int)(curr - last);
+		Server_Delta = (int32_t)(curr - last);
 		if(Server_Delta < 0) {
 			Log_Warn(Lang_Get(LANG_SVDELTALT0));
 			Server_Delta = 0;

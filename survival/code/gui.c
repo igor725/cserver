@@ -16,7 +16,7 @@ void SurvGui_DrawHealth(SURVDATA data) {
 		uint8_t empty = 10 - hltf;
 
 		String_Append(healthstr, 20, "&c");
-		for(int i = 0; i < hltf; i++) {
+		for(int32_t i = 0; i < hltf; i++) {
 			String_Append(healthstr, 20, "\3");
 		}
 		if(data->health % 2) {
@@ -25,7 +25,7 @@ void SurvGui_DrawHealth(SURVDATA data) {
 		}
 		if(empty > 0) {
 			String_Append(healthstr, 20, "&8");
-			for(int i = 0; i < empty; i++) {
+			for(int32_t i = 0; i < empty; i++) {
 				String_Append(healthstr, 20, "\3");
 			}
 		}
@@ -52,7 +52,7 @@ void SurvGui_DrawBreakProgress(SURVDATA data) {
 
 	if(data->breakStarted) {
 		String_Append(breakstr, 19, "[&a");
-		for(int i = 0; i < 10; i++) {
+		for(int32_t i = 0; i < 10; i++) {
 			if(i == data->breakProgress)
 				String_Append(breakstr, 19, "&8");
 			String_Append(breakstr, 19, "|");

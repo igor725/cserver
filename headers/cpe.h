@@ -36,7 +36,7 @@
 if(!client->cpeData) return ret;
 
 API bool CPE_CheckModel(int16_t model);
-API void CPE_RegisterExtension(const char* name, int version);
+API void CPE_RegisterExtension(const char* name, int32_t version);
 API int16_t CPE_GetModelNum(const char* model);
 API const char* CPE_GetModelStr(int16_t num);
 void CPE_StartHandshake(CLIENT client);
@@ -55,7 +55,7 @@ void CPEPacket_WriteHackControl(CLIENT client, HACKS hacks);
 void CPEPacket_WriteSetHotBar(CLIENT client, Order order, BlockID block);
 void CPEPacket_WriteWeatherType(CLIENT client, Weather type);
 void CPEPacket_WriteTexturePack(CLIENT client, const char* url);
-void CPEPacket_WriteMapProperty(CLIENT client, uint8_t property, int value);
+void CPEPacket_WriteMapProperty(CLIENT client, uint8_t property, int32_t value);
 void CPEPacket_WriteTwoWayPing(CLIENT client, uint8_t direction, short num);
 void CPEPacket_WriteSetModel(CLIENT client, ClientID id, int16_t model);
 void CPEPacket_WriteBlockPerm(CLIENT client, BlockID id, bool allowPlace, bool allowDestroy);

@@ -64,7 +64,7 @@ typedef struct dirent* ITER_FILE;
 typedef pthread_t* THREAD;
 typedef void* TRET;
 typedef pthread_mutex_t MUTEX;
-typedef int SOCKET;
+typedef int32_t SOCKET;
 #else
 #  error Unknown OS
 #endif

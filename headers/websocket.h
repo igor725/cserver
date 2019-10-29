@@ -18,8 +18,8 @@ enum wErrors {
 
 typedef struct wsClient {
 	SOCKET sock;
-	int state;
-	int error;
+	int32_t state;
+	int32_t error;
 	char* recvbuf;
 	char header[2];
 	char mask[4];

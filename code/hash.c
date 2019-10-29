@@ -11,7 +11,7 @@
 #ifdef WINDOWS
 #include "hash.h"
 
-static bool HashInit(HASH_CTX* ctx, int type) {
+static bool HashInit(HASH_CTX* ctx, int32_t type) {
 	if(!CryptAcquireContext(
 		&ctx->provider,
 		NULL,

@@ -30,8 +30,6 @@ enum LangIDs {
 	LANG_KICKBLOCKID,
 	LANG_KICKPACKETSPAM,
 
-	LANG_PLNAMEUNK,
-
 	LANG_CPEVANILLA,
 
 	LANG_CMDUSAGE,
@@ -67,5 +65,5 @@ enum LangIDs {
 	LANG_ERRFMT
 };
 
-API const char* Lang_Get(int langid);
+API const char* Lang_Get(int32_t langid);
 #endif

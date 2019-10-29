@@ -14,8 +14,8 @@ void Generator_Flat(WORLD world) {
 	dz = wi->dim->length;
 
 	BlockID* data = world->data + 4;
-	int dirtEnd = dx * dz * (dy / 2 - 1);
-	for(int i = 0; i < dirtEnd + dx * dz; i++) {
+	int32_t dirtEnd = dx * dz * (dy / 2 - 1);
+	for(int32_t i = 0; i < dirtEnd + dx * dz; i++) {
 		if(i < dirtEnd)
 			data[i] = 3;
 		else
@@ -37,11 +37,11 @@ void Generator_Flat(WORLD world) {
 #define MAX_THREADS 16
 
 THREAD threads[MAX_THREADS] = {0};
-int cfgMaxThreads = 2;
+int32_t cfgMaxThreads = 2;
 
 // Функции закоменчены, чтобы избежать варнингов
-// static int AddThread(TFUNC func, TARG arg) {
-// 	for(int i = 0; i < MAX_THREADS; i++) {
+// static int32_t AddThread(TFUNC func, TARG arg) {
+// 	for(int32_t i = 0; i < MAX_THREADS; i++) {
 // 		if(i > cfgMaxThreads) {
 // 			i = 0;
 // 			if(Thread_IsValid(threads[i])) {
@@ -58,7 +58,7 @@ int cfgMaxThreads = 2;
 // }
 //
 // static void WaitAll(void) {
-// 	for(int i = 0; i < MAX_THREADS; i++) {
+// 	for(int32_t i = 0; i < MAX_THREADS; i++) {
 // 		if(Thread_IsValid(threads[i]))
 // 			Thread_Join(threads[i]);
 // 	}

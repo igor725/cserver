@@ -39,7 +39,7 @@ CFGENTRY Config_CheckEntry(CFGSTORE store, const char* key) {
 	return ent;
 }
 
-CFGENTRY Config_NewEntry(CFGSTORE store, const char* key, int type) {
+CFGENTRY Config_NewEntry(CFGSTORE store, const char* key, int32_t type) {
 	CFGENTRY ent = Config_GetEntry(store, key);
 	if(ent) return ent;
 
@@ -77,7 +77,7 @@ static bool AllCfgEntriesParsed(CFGSTORE store) {
 	return loaded;
 }
 
-const char* Config_TypeName(int type) {
+const char* Config_TypeName(int32_t type) {
 	switch (type) {
 		case CFG_STR:
 			return "string";
@@ -94,7 +94,7 @@ const char* Config_TypeName(int type) {
 	}
 }
 
-int Config_TypeNameToInt(const char* name) {
+int32_t Config_TypeNameToInt(const char* name) {
 	if(String_CaselessCompare(name, "string")) {
 		return CFG_STR;
 	} else if(String_CaselessCompare(name, "integer")) {
@@ -163,7 +163,7 @@ bool Config_Load(CFGSTORE store) {
 	bool haveComment = false;
 	char line[MAX_CFG_LEN * 2 + 2];
 	char comment[MAX_CFG_LEN];
-	int lnret = 0, linenum = 0;
+	int32_t lnret = 0, linenum = 0;
 
 	while((lnret = File_ReadLine(fp, line, 256)) > 0 && ++linenum) {
 		if(!haveComment && *line == '#') {
@@ -307,13 +307,13 @@ void Config_SetComment(CFGENTRY ent, const char* commentary) {
 	ent->commentary = String_AllocCopy(commentary);
 }
 
-void Config_SetLimit(CFGENTRY ent, int min, int max) {
+void Config_SetLimit(CFGENTRY ent, int32_t min, int32_t max) {
 	ent->haveLimits = true;
 	ent->limits[1] = min;
 	ent->limits[0] = max;
 }
 
-void Config_SetDefaultInt(CFGENTRY ent, int value) {
+void Config_SetDefaultInt(CFGENTRY ent, int32_t value) {
 	CFG_TYPE(CFG_INT);
 	ent->defvalue.vint = value;
 }

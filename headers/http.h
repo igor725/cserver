@@ -20,7 +20,7 @@ enum httpHeaderType {
 
 typedef struct httpHeader {
 	const char* key;
-	int type;
+	int32_t type;
 	union {
 		const char* vchar;
 		uint32_t vint;
@@ -29,26 +29,26 @@ typedef struct httpHeader {
 } *HTTPHDR;
 
 typedef struct httpResponse {
-	int error, code, bodysize;
+	int32_t error, code, bodysize;
 	char* body;
 	HTTPHDR header;
 } *HTTPRESP;
 
 typedef struct httpRequest {
 	SOCKET sock;
-	int error;
+	int32_t error;
 	struct sockaddr_in addr;
 	const char* path;
 	HTTPHDR header;
 } *HTTPREQ;
 
-API const char* HttpCode_GetReason(int code);
+API const char* HttpCode_GetReason(int32_t code);
 
 API HTTPHDR HttpRequest_GetHeader(HTTPREQ req, const char* key);
 API void HttpRequest_SetHeaderStr(HTTPREQ req, const char* key, const char* value);
 API const char* HttpRequest_GetHeaderStr(HTTPREQ req, const char* key);
-API void HttpRequest_SetHeaderInt(HTTPREQ req, const char* key, int value);
-int HttpRequest_GetHeaderInt(HTTPREQ req, const char* key);
+API void HttpRequest_SetHeaderInt(HTTPREQ req, const char* key, int32_t value);
+int32_t HttpRequest_GetHeaderInt(HTTPREQ req, const char* key);
 API void HttpRequest_SetHost(HTTPREQ req, const char* host, uint16_t port);
 API void HttpRequest_SetPath(HTTPREQ req, const char* path);
 API bool HttpRequest_Read(HTTPREQ req, SOCKET sock);
@@ -58,10 +58,10 @@ API void HttpRequest_Cleanup(HTTPREQ req);
 API HTTPHDR HttpResponse_GetHeader(HTTPRESP resp, const char* key);
 API void HttpResponse_SetHeaderStr(HTTPRESP resp, const char* key, const char* value);
 API const char* HttpResponse_GetHeaderStr(HTTPRESP resp, const char* key);
-API void HttpResponse_SetHeaderInt(HTTPRESP resp, const char* key, int value);
-API int HttpResponse_GetHeaderInt(HTTPRESP resp, const char* key);
+API void HttpResponse_SetHeaderInt(HTTPRESP resp, const char* key, int32_t value);
+API int32_t HttpResponse_GetHeaderInt(HTTPRESP resp, const char* key);
 API void HttpResponse_SetHeader(HTTPRESP resp, const char* key, const char* value);
-API void HttpResponse_SetBody(HTTPRESP resp, char* body, int size);
+API void HttpResponse_SetBody(HTTPRESP resp, char* body, int32_t size);
 API bool HttpResponse_SendTo(HTTPRESP resp, SOCKET sock);
 API bool HttpResponse_Read(HTTPRESP resp, SOCKET sock);
 API void HttpResponse_Cleanup(HTTPRESP resp);

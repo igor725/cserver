@@ -7,7 +7,7 @@
 #include "gui.h"
 #include "inventory.h"
 
-static const int BreakTimings[256] = {
+static const int32_t BreakTimings[256] = {
 	0,4000,500,500,4000,1100,0,-1
 };
 
@@ -46,7 +46,7 @@ void SurvBrk_Done(SURVDATA data) {
 }
 
 void SurvBrk_Tick(SURVDATA data) {
-	int breakTime = BreakTimings[data->breakBlock];
+	int32_t breakTime = BreakTimings[data->breakBlock];
 	if(breakTime == -1) {
 		SurvBrk_Stop(data);
 		return;

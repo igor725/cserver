@@ -6,7 +6,7 @@
 EVENT Event_List[EVENT_TYPES][MAX_EVENTS] = {0};
 
 #define rgPart1 \
-for(int pos = 0; pos < MAX_EVENTS; pos++) { \
+for(int32_t pos = 0; pos < MAX_EVENTS; pos++) { \
 	if(!Event_List[type][pos]) { \
 		EVENT evt = Memory_Alloc(1, sizeof(struct event));
 
@@ -32,7 +32,7 @@ bool Event_RegisterVoid(EventType type, evtVoidCallback func) {
 }
 
 bool Event_Unregister(EventType type, void* callbackPtr) {
-	for(int pos = 0; pos < MAX_EVENTS; pos++) {
+	for(int32_t pos = 0; pos < MAX_EVENTS; pos++) {
 		EVENT evt = Event_List[type][pos];
 		if(!evt) continue;
 
@@ -47,7 +47,7 @@ bool Event_Unregister(EventType type, void* callbackPtr) {
 bool Event_Call(EventType type, void* param) {
 	bool ret = true;
 
-	for(int pos = 0; pos < MAX_EVENTS; pos++) {
+	for(int32_t pos = 0; pos < MAX_EVENTS; pos++) {
 		EVENT evt = Event_List[type][pos];
 		if(!evt) continue;
 

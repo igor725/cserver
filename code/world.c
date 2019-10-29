@@ -6,7 +6,7 @@
 #include "event.h"
 
 void Worlds_SaveAll(bool join) {
-	for(int i = 0; i < MAX_WORLDS; i++) {
+	for(int32_t i = 0; i < MAX_WORLDS; i++) {
 		WORLD world = Worlds_List[i];
 
 		if(i < MAX_WORLDS && world) {
@@ -43,7 +43,7 @@ WORLD World_Create(const char* name) {
 
 bool World_Add(WORLD world) {
 	if(world->id == -1) {
-		for(int i = 0; i < MAX_WORLDS; i++) {
+		for(int32_t i = 0; i < MAX_WORLDS; i++) {
 			if(!Worlds_List[i]) {
 				world->id = i;
 				Worlds_List[i] = world;
@@ -59,7 +59,7 @@ bool World_Add(WORLD world) {
 }
 
 WORLD World_GetByName(const char* name) {
-	for(int i = 0; i < MAX_WORLDS; i++) {
+	for(int32_t i = 0; i < MAX_WORLDS; i++) {
 		WORLD world = Worlds_List[i];
 		if(world && String_CaselessCompare(world->name, name))
 			return world;
@@ -67,7 +67,7 @@ WORLD World_GetByName(const char* name) {
 	return NULL;
 }
 
-WORLD World_GetByID(int id) {
+WORLD World_GetByID(int32_t id) {
 	return id < MAX_WORLDS ? Worlds_List[id] : NULL;
 }
 
@@ -78,7 +78,7 @@ void World_SetDimensions(WORLD world, uint16_t width, uint16_t height, uint16_t 
 	wd->length = length;
 }
 
-bool World_SetProperty(WORLD world, uint8_t property, int value) {
+bool World_SetProperty(WORLD world, uint8_t property, int32_t value) {
 	if(property > WORLD_PROPS_COUNT) return false;
 
 	world->info->props[property] = value;
@@ -91,7 +91,7 @@ bool World_SetProperty(WORLD world, uint8_t property, int value) {
 	return true;
 }
 
-int World_GetProperty(WORLD world, uint8_t property) {
+int32_t World_GetProperty(WORLD world, uint8_t property) {
 	if(property > WORLD_PROPS_COUNT) return 0;
 	return world->info->props[property];
 }
@@ -156,7 +156,7 @@ void World_Free(WORLD world) {
 	Memory_Free(world);
 }
 
-bool _WriteData(FILE* fp, uint8_t dataType, void* ptr, int size) {
+bool _WriteData(FILE* fp, uint8_t dataType, void* ptr, int32_t size) {
 	if(!File_Write(&dataType, 1, 1, fp))
 		return false;
 	if(ptr && !File_Write(ptr, size, 1, fp))
@@ -165,7 +165,7 @@ bool _WriteData(FILE* fp, uint8_t dataType, void* ptr, int size) {
 }
 
 bool World_WriteInfo(WORLD world, FILE* fp) {
-	int magic = WORLD_MAGIC;
+	int32_t magic = WORLD_MAGIC;
 	if(!File_Write((char*)&magic, 4, 1, fp)) {
 		Error_PrintSys(false);
 		return false;
@@ -174,7 +174,7 @@ bool World_WriteInfo(WORLD world, FILE* fp) {
 	_WriteData(fp, DT_SV, world->info->spawnVec, sizeof(struct vector)) &&
 	_WriteData(fp, DT_SA, world->info->spawnAng, sizeof(struct angle)) &&
 	_WriteData(fp, DT_WT, &world->info->wt, sizeof(Weather)) &&
-	_WriteData(fp, DT_PROPS, world->info->props, sizeof(int) * WORLD_PROPS_COUNT) &&
+	_WriteData(fp, DT_PROPS, world->info->props, 4 * WORLD_PROPS_COUNT) &&
 	_WriteData(fp, DT_END, NULL, 0);
 }
 
@@ -208,7 +208,7 @@ bool World_ReadInfo(WORLD world, FILE* fp) {
 					return false;
 				break;
 			case DT_PROPS:
-				if(File_Read(world->info->props, sizeof(int) * WORLD_PROPS_COUNT, 1, fp) != 1)
+				if(File_Read(world->info->props, 4 * WORLD_PROPS_COUNT, 1, fp) != 1)
 					return false;
 				break;
 			case DT_END:
@@ -240,7 +240,7 @@ static TRET wSaveThread(TARG param) {
 
 	z_stream stream = {0};
 	uint8_t out[1024];
-	int ret;
+	int32_t ret;
 
 	if((ret = deflateInit(&stream, Z_BEST_COMPRESSION)) != Z_OK) {
 		Error_Print2(ET_ZLIB, ret, false);
@@ -296,7 +296,7 @@ bool World_Load(WORLD world) {
 
 	z_stream stream = {0};
 	uint8_t in[1024];
-	int ret;
+	int32_t ret;
 
 	if((ret = inflateInit(&stream)) != Z_OK) {
 		Error_Print2(ET_ZLIB, ret, false);
