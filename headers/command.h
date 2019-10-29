@@ -3,25 +3,24 @@
 #include "client.h"
 #include "lang.h"
 
-#define	CMD_MAX_OUT 1024
 #define Command_OnlyForClient \
 if(!caller) { \
-	String_Copy(out, CMD_MAX_OUT, Lang_Get(LANG_CMDONLYCL)); \
+	String_Copy(out, MAX_CMD_OUT, Lang_Get(LANG_CMDONLYCL)); \
 	return true; \
 }
 
 #define Command_OnlyForConsole \
 if(caller) { \
-	String_Copy(out, CMD_MAX_OUT, Lang_Get(LANG_CMDONLYCON)); \
+	String_Copy(out, MAX_CMD_OUT, Lang_Get(LANG_CMDONLYCON)); \
 	return true; \
 }
 
 #define Command_PrintUsage \
-String_FormatBuf(out, CMD_MAX_OUT, Lang_Get(LANG_CMDUSAGE), cmdUsage); \
+String_FormatBuf(out, MAX_CMD_OUT, Lang_Get(LANG_CMDUSAGE), cmdUsage); \
 return true;
 
 #define Command_Print(str) \
-String_Copy(out, CMD_MAX_OUT, str); \
+String_Copy(out, MAX_CMD_OUT, str); \
 return true;
 
 #define Command_ArgToWorldName(wn, idx) \

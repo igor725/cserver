@@ -55,7 +55,7 @@ static bool CHandler_OP(const char* args, CLIENT caller, char* out) {
 			PLAYERDATA pd = tg->playerData;
 			const char* name = pd->name;
 			pd->isOP ^= 1;
-			String_FormatBuf(out, CMD_MAX_OUT, "Player %s %s", name, pd->isOP ? "opped" : "deopped");
+			String_FormatBuf(out, MAX_CMD_OUT, "Player %s %s", name, pd->isOP ? "opped" : "deopped");
 			return true;
 		} else {
 			Command_Print(Lang_Get(LANG_CMDPLNF));
@@ -113,18 +113,18 @@ static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
 				if(!Config_ToStr(ent, value, MAX_CFG_LEN)) {
 					Command_Print("Can't detect entry type.");
 				}
-				String_FormatBuf(out, CMD_MAX_OUT, "%s = %s (%s)", key, value, Config_TypeName(ent->type));
+				String_FormatBuf(out, MAX_CMD_OUT, "%s = %s (%s)", key, value, Config_TypeName(ent->type));
 				return true;
 			}
 			Command_Print("This entry not found in \"server.cfg\" store.");
 		} else if(String_CaselessCompare(subcommand, "print")) {
 			CFGENTRY ent = Server_Config->firstCfgEntry;
-			String_Copy(out, CMD_MAX_OUT, "Server config entries:");
+			String_Copy(out, MAX_CMD_OUT, "Server config entries:");
 
 			while(ent) {
 				if(Config_ToStr(ent, value, MAX_CFG_LEN)) {
 					String_FormatBuf(key, MAX_CFG_LEN, "\r\n%s = %s (%s)", ent->key, value, Config_TypeName(ent->type));
-					String_Append(out, CMD_MAX_OUT, key);
+					String_Append(out, MAX_CMD_OUT, key);
 				}
 				ent = ent->next;
 			}
@@ -138,7 +138,7 @@ static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
 
 #define GetPluginName \
 if(!String_GetArgument(args, name, 64, 1)) { \
-	String_Copy(out, CMD_MAX_OUT, Lang_Get(LANG_CPINVNAME)); \
+	String_Copy(out, MAX_CMD_OUT, Lang_Get(LANG_CPINVNAME)); \
 	return true; \
 } \
 const char* lc = String_LastChar(name, '.'); \
@@ -156,7 +156,7 @@ static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
 		if(String_CaselessCompare(subcommand, "load")) {
 			GetPluginName;
 			if(!CPlugin_Get(name) && CPlugin_Load(name)) {
-				String_FormatBuf(out, CMD_MAX_OUT,
+				String_FormatBuf(out, MAX_CMD_OUT,
 					Lang_Get(LANG_CPINF0),
 					name,
 					Lang_Get(LANG_CPLD)
@@ -167,7 +167,7 @@ static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
 			GetPluginName;
 			plugin = CPlugin_Get(name);
 			if(!plugin) {
-				String_FormatBuf(out, CMD_MAX_OUT,
+				String_FormatBuf(out, MAX_CMD_OUT,
 					Lang_Get(LANG_CPINF0),
 					name,
 					Lang_Get(LANG_CPNL)
@@ -175,13 +175,13 @@ static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
 				return true;
 			}
 			if(CPlugin_Unload(plugin))
-				String_FormatBuf(out, CMD_MAX_OUT,
+				String_FormatBuf(out, MAX_CMD_OUT,
 					Lang_Get(LANG_CPINF0),
 					name,
 					Lang_Get(LANG_CPUNLD)
 				);
 			else
-				String_FormatBuf(out, CMD_MAX_OUT,
+				String_FormatBuf(out, MAX_CMD_OUT,
 					Lang_Get(LANG_CPINF1),
 					name,
 					Lang_Get(LANG_CPCB),
@@ -192,13 +192,13 @@ static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
 		} else if(String_CaselessCompare(subcommand, "list")) {
 			int32_t idx = 1;
 			char pluginfo[64];
-			String_Copy(out, CMD_MAX_OUT, "Plugins list:");
+			String_Copy(out, MAX_CMD_OUT, "Plugins list:");
 
 			for(int32_t i = 0; i < MAX_PLUGINS; i++) {
 				plugin = CPLugins_List[i];
 				if(plugin) {
 					String_FormatBuf(pluginfo, 64, "\r\n%d. %s", idx++, plugin->name);
-					String_Append(out, CMD_MAX_OUT, pluginfo);
+					String_Append(out, MAX_CMD_OUT, pluginfo);
 				}
 			}
 
@@ -237,7 +237,7 @@ static bool CHandler_Kick(const char* args, CLIENT caller, char* out) {
 		if(tg) {
 			const char* reason = String_FromArgument(args, 1);
 			Client_Kick(tg, reason);
-			String_FormatBuf(out, CMD_MAX_OUT, "Player %s kicked", playername);
+			String_FormatBuf(out, MAX_CMD_OUT, "Player %s kicked", playername);
 			return true;
 		} else {
 			Command_Print(Lang_Get(LANG_CMDPLNF));
@@ -299,7 +299,7 @@ static bool CHandler_GenWorld(const char* args, CLIENT caller, char* out) {
 			Generator_Flat(tmp);
 
 			if(World_Add(tmp)) {
-				String_FormatBuf(out, CMD_MAX_OUT, "World \"%s\" created.", worldname);
+				String_FormatBuf(out, MAX_CMD_OUT, "World \"%s\" created.", worldname);
 			} else {
 				World_Free(tmp);
 				Command_Print("Too many worlds already loaded.");
@@ -385,7 +385,7 @@ static void SendOutputToClient(CLIENT client, char* ret) {
 bool Command_Handle(char* cmd, CLIENT caller) {
 	if(*cmd == '/') ++cmd;
 
-	char ret[CMD_MAX_OUT] = {0};
+	char ret[MAX_CMD_OUT] = {0};
 	char* args = cmd;
 
 	while(1) {

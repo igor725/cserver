@@ -38,7 +38,7 @@ static void onmesgfunc(void* param) {
 */
 static bool CHandler_Plugtest(const char* args, CLIENT caller, char* out) {
 	(void)args;(void)caller;
-  String_Copy(out, CMD_MAX_OUT, "This command registred by testplugin." DLIB_EXT);
+  String_Copy(out, MAX_CMD_OUT, "This command registred by testplugin." DLIB_EXT);
   return true;
 }
 
@@ -48,8 +48,8 @@ static bool CHandler_Atoggle(const char* args, CLIENT caller, char* out) {
 	(void)args;
 
   enabled = !enabled;
-	String_Copy(out, CMD_MAX_OUT, "Announce chat: ");
-  String_Append(out, CMD_MAX_OUT, enabled ? "enabled" : "disabled");
+	String_Copy(out, MAX_CMD_OUT, "Announce chat: ");
+  String_Append(out, MAX_CMD_OUT, enabled ? "enabled" : "disabled");
   return true;
 }
 
@@ -64,7 +64,7 @@ static bool CHandler_Atoggle(const char* args, CLIENT caller, char* out) {
 static bool CHandler_SelfDestroy(const char* args, CLIENT caller, char* out) {
 	(void)args;(void)caller;
 	Command_Unregister("selfdestroy");
-	String_Copy(out, CMD_MAX_OUT, "This command can't be called anymore");
+	String_Copy(out, MAX_CMD_OUT, "This command can't be called anymore");
 	return true;
 }
 
@@ -81,7 +81,7 @@ static bool CHandler_ClientOnly(const char* args, CLIENT caller, char* out) {
 	Command_OnlyForClient;
 	(void)args;
 
-	String_FormatBuf(out, CMD_MAX_OUT, "Client-only command called by %s", Client_GetName(caller));
+	String_FormatBuf(out, MAX_CMD_OUT, "Client-only command called by %s", Client_GetName(caller));
 	return true;
 }
 

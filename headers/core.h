@@ -97,6 +97,7 @@ typedef TRET(*TFUNC)(TARG);
 #define CPLUGIN_API_NUM 1
 
 #define MAX_PLUGINS 32
+#define	MAX_CMD_OUT 1024
 #define MAX_CLIENT_PPS 128
 #define MAX_CFG_LEN 128
 #define MAX_CLIENTS 128
