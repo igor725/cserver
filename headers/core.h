@@ -104,7 +104,7 @@ typedef TRET(*TFUNC)(TARG);
 #define MAX_PACKETS 256
 #define MAX_WORLDS 64
 #define MAX_EVENTS 64
-#define EVENT_TYPES 14
+#define EVENT_TYPES 15
 
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
 

@@ -1,6 +1,22 @@
 #ifndef WORLD_H
 #define WORLD_H
-#define WORLD_PROPS_COUNT 9
+/*
+** Если какой-то из дефайнов ниже
+** вырос, удостовериться, что
+** int-типа в структуре worldInfo
+** хватает для представления всех
+** этих значений в степени двойки.
+*/
+#define WORLD_PROPS_COUNT 10
+#define WORLD_COLORS_COUNT 5 * 3 // 5 типов и 3 значения r,g,b
+
+enum ColorTypes {
+	COLOR_SKY,
+	COLOR_CLOUD,
+	COLOR_FOG,
+	COLOR_AMBIENT,
+	COLOR_DIFFUSE
+};
 
 enum MapEnvProps {
 	PROP_SIDEBLOCK,
@@ -27,21 +43,29 @@ enum WorldDataType {
 	DT_SA,
 	DT_WT,
 	DT_PROPS,
+	DT_COLORS,
 
 	DT_END = 0xFF
 };
 
-typedef struct worldDims {
-	uint16_t width, height, length;
-} *WORLDDIMS;
+enum ModifiedValues {
+	MV_COLORS = 1,
+	MV_PROPS = 2,
+	MV_TEXPACK = 4,
+	MV_WEATHER = 8
+};
 
 typedef struct worldInfo {
-	WORLDDIMS dim;
+	uint16_t width, height, length;
+	int16_t colors[WORLD_COLORS_COUNT];
 	int32_t props[WORLD_PROPS_COUNT];
 	char texturepack[65];
-	VECTOR* spawnVec;
-	ANGLE* spawnAng;
+	struct vector spawnVec;
+	struct angle spawnAng;
 	Weather wt;
+	uint8_t modval;
+	uint16_t modprop;
+	uint8_t modcol;
 } *WORLDINFO;
 
 typedef struct world {
@@ -49,6 +73,7 @@ typedef struct world {
 	const char* name;
 	uint32_t size;
 	WORLDINFO info;
+	bool modified;
 	THREAD thread;
 	bool saveUnload;
 	bool saveDone;
@@ -63,6 +88,7 @@ API WORLD World_Create(const char* name);
 API void World_AllocBlockArray(WORLD world);
 API void World_Free(WORLD world);
 API bool World_Add(WORLD world);
+API void World_UpdateClients(WORLD world);
 
 API bool World_Load(WORLD world);
 API bool World_Save(WORLD world);

@@ -268,9 +268,7 @@ void CPEPacket_WriteSetHotBar(CLIENT client, Order order, BlockID block) {
 	PacketWriter_End(client, 3);
 }
 
-/*
-	CPE packet handlers
-*/
+// Обработчики CPE пакетов
 
 bool CPEHandler_ExtInfo(CLIENT client, const char* data) {
 	ValidateCpeClient(client, false);

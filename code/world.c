@@ -19,16 +19,16 @@ void Worlds_SaveAll(bool join) {
 WORLD World_Create(const char* name) {
 	WORLD tmp = Memory_Alloc(1, sizeof(struct world));
 	WORLDINFO wi = Memory_Alloc(1, sizeof(struct worldInfo));
+
 	tmp->name = String_AllocCopy(name);
 	tmp->saveDone = true;
 	tmp->id = -1;
 	tmp->info = wi;
 
-
-	wi->dim = Memory_Alloc(1, sizeof(struct worldDims));
-	wi->spawnVec = Memory_Alloc(1, sizeof(struct vector));
-	wi->spawnAng = Memory_Alloc(1, sizeof(struct angle));
-
+	/*
+	** Устанавливаем дефолтные значения
+	** согласно документации по CPE.
+	*/
 	wi->props[PROP_SIDEBLOCK] = 7;
 	wi->props[PROP_EDGEBLOCK] = 8;
 	wi->props[PROP_FOGDIST] = 0;
@@ -37,6 +37,10 @@ WORLD World_Create(const char* name) {
 	wi->props[PROP_FADEWEATHER] = 128;
 	wi->props[PROP_EXPFOG] = 0;
 	wi->props[PROP_SIDEOFFSET] = -2;
+
+	for(int i = 0; i < WORLD_COLORS_COUNT; i++) {
+		wi->colors[i] = -1;
+	}
 
 	return tmp;
 }
@@ -72,22 +76,19 @@ WORLD World_GetByID(int32_t id) {
 }
 
 void World_SetDimensions(WORLD world, uint16_t width, uint16_t height, uint16_t length) {
-	WORLDDIMS wd = world->info->dim;
-	wd->width = width;
-	wd->height = height;
-	wd->length = length;
+	WORLDINFO wi = world->info;
+	wi->width = width;
+	wi->width = height;
+	wi->length = length;
 }
 
 bool World_SetProperty(WORLD world, uint8_t property, int32_t value) {
 	if(property > WORLD_PROPS_COUNT) return false;
 
+	world->modified = true;
 	world->info->props[property] = value;
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		CLIENT client = Clients_List[i];
-		if(client && Client_IsInWorld(client, world))
-			Client_SetProperty(client, property, value);
-	}
-
+	world->info->modval |= MV_PROPS;
+	world->info->modprop |= 2 ^ property;
 	return true;
 }
 
@@ -97,15 +98,20 @@ int32_t World_GetProperty(WORLD world, uint8_t property) {
 }
 
 bool World_SetTexturePack(WORLD world, const char* url) {
+	if(String_CaselessCompare(world->info->texturepack, url)) {
+		return true;
+	}
+	world->modified = true;
+	world->info->modval |= MV_TEXPACK;
 	if(!url || String_Length(url) > 64) {
 		world->info->texturepack[0] = '\0';
 		return true;
 	}
-	if(String_Copy(world->info->texturepack, 65, url)) {
+	if(!String_Copy(world->info->texturepack, 65, url)) {
 		world->info->texturepack[0] = '\0';
-		return true;
+		return false;
 	}
-	return false;
+	return true;
 }
 
 const char* World_GetTexturePack(WORLD world) {
@@ -116,13 +122,27 @@ bool World_SetWeather(WORLD world, Weather type) {
 	if(type > 2) return false;
 
 	world->info->wt = type;
+	world->modified = true;
+	world->info->modval |= MV_WEATHER;
 	Event_Call(EVT_ONWEATHER, world);
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		CLIENT client = Clients_List[i];
-		if(client && Client_IsInWorld(client, world))
-			Client_SetWeather(client, type);
-	}
 	return true;
+}
+
+bool World_SetColor(WORLD world, int type, int16_t r, int16_t g, int16_t b) {
+	if(type > WORLD_COLORS_COUNT) return false;
+	int16_t* colors = &world->info->colors[type * 3];
+	world->info->modval |= MV_COLORS;
+	world->modified = true;
+	colors[0] = r;
+	colors[1] = g;
+	colors[2] = b;
+	Event_Call(EVT_ONCOLOR, world);
+	return true;
+}
+
+void World_UpdateClients(WORLD world) {
+	Clients_UpdateWorldInfo(world);
+	world->info->modval = 0;
 }
 
 Weather World_GetWeather(WORLD world) {
@@ -133,9 +153,9 @@ void World_AllocBlockArray(WORLD world) {
 	if(world->data) Memory_Free(world->data);
 
 	WORLDINFO wi = world->info;
-	uint16_t dx = wi->dim->width,
-	dy = wi->dim->height,
-	dz = wi->dim->length;
+	uint16_t dx = wi->width,
+	dy = wi->height,
+	dz = wi->length;
 
 	world->size = 4 + dx * dy * dz;
 	BlockID* data = Memory_Alloc(world->size, sizeof(BlockID));
@@ -146,12 +166,7 @@ void World_AllocBlockArray(WORLD world) {
 void World_Free(WORLD world) {
 	if(world->data) Memory_Free(world->data);
 	WORLDINFO wi = world->info;
-	if(wi) {
-		Memory_Free(wi->spawnVec);
-		Memory_Free(wi->spawnAng);
-		Memory_Free(wi->dim);
-		Memory_Free(wi);
-	}
+	if(wi) Memory_Free(wi);
 	if(world->id != -1) Worlds_List[world->id] = NULL;
 	Memory_Free(world);
 }
@@ -170,11 +185,12 @@ bool World_WriteInfo(WORLD world, FILE* fp) {
 		Error_PrintSys(false);
 		return false;
 	}
-	return _WriteData(fp, DT_DIM, world->info->dim, sizeof(struct worldDims)) &&
-	_WriteData(fp, DT_SV, world->info->spawnVec, sizeof(struct vector)) &&
-	_WriteData(fp, DT_SA, world->info->spawnAng, sizeof(struct angle)) &&
+	return _WriteData(fp, DT_DIM, &world->info->width, 6) &&
+	_WriteData(fp, DT_SV, &world->info->spawnVec, sizeof(struct vector)) &&
+	_WriteData(fp, DT_SA, &world->info->spawnAng, sizeof(struct angle)) &&
 	_WriteData(fp, DT_WT, &world->info->wt, sizeof(Weather)) &&
 	_WriteData(fp, DT_PROPS, world->info->props, 4 * WORLD_PROPS_COUNT) &&
+	_WriteData(fp, DT_COLORS, world->info->colors, 2 * WORLD_COLORS_COUNT) &&
 	_WriteData(fp, DT_END, NULL, 0);
 }
 
@@ -192,15 +208,15 @@ bool World_ReadInfo(WORLD world, FILE* fp) {
 	while(File_Read(&id, 1, 1, fp) == 1) {
 		switch (id) {
 			case DT_DIM:
-				if(File_Read(world->info->dim, sizeof(struct worldDims), 1, fp) != 1)
+				if(File_Read(&world->info->width, 6, 1, fp) != 1)
 					return false;
 				break;
 			case DT_SV:
-				if(File_Read(world->info->spawnVec, sizeof(struct vector), 1, fp) != 1)
+				if(File_Read(&world->info->spawnVec, sizeof(struct vector), 1, fp) != 1)
 					return false;
 				break;
 			case DT_SA:
-				if(File_Read(world->info->spawnAng, sizeof(struct angle), 1, fp) != 1)
+				if(File_Read(&world->info->spawnAng, sizeof(struct angle), 1, fp) != 1)
 					return false;
 				break;
 			case DT_WT:
@@ -209,6 +225,10 @@ bool World_ReadInfo(WORLD world, FILE* fp) {
 				break;
 			case DT_PROPS:
 				if(File_Read(world->info->props, 4 * WORLD_PROPS_COUNT, 1, fp) != 1)
+					return false;
+				break;
+			case DT_COLORS:
+				if(File_Read(world->info->colors, 2 * WORLD_COLORS_COUNT, 1, fp) != 1)
 					return false;
 				break;
 			case DT_END:
@@ -272,6 +292,10 @@ static TRET wSaveThread(TARG param) {
 }
 
 bool World_Save(WORLD world) {
+	if(!world->modified) {
+		world->saveDone = true;
+		return true;
+	}
 	if(world->saveDone) {
 		world->saveDone = false;
 		world->thread = Thread_Create(wSaveThread, world);
@@ -330,8 +354,8 @@ bool World_Load(WORLD world) {
 }
 
 uint32_t World_GetOffset(WORLD world, uint16_t x, uint16_t y, uint16_t z) {
-	WORLDDIMS wd = world->info->dim;
-	uint16_t dx = wd->width, dy = wd->height, dz = wd->length;
+	WORLDINFO wi = world->info;
+	uint16_t dx = wi->width, dy = wi->height, dz = wi->length;
 
 	if(x > dx || y > dy || z > dz) return 0;
 	return z * dz + y * (dx * dy) + x + 4;
@@ -340,9 +364,10 @@ uint32_t World_GetOffset(WORLD world, uint16_t x, uint16_t y, uint16_t z) {
 bool World_SetBlock(WORLD world, uint16_t x, uint16_t y, uint16_t z, BlockID id) {
 	uint32_t offset = World_GetOffset(world, x, y, z);
 
-	if(offset > 3 && offset < world->size)
+	if(offset > 3 && offset < world->size) {
 		world->data[offset] = id;
-	else
+		world->modified = true;
+	} else
 		return false;
 
 	return true;

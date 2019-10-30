@@ -79,11 +79,13 @@ void Client_Init(void);
 
 API uint8_t Clients_GetCount(int32_t state);
 API void Clients_KickAll(const char* reason);
+API void Clients_UpdateWorldInfo(WORLD world);
 
 API bool Client_ChangeWorld(CLIENT client, WORLD world);
 API void Client_Chat(CLIENT client, MessageType type, const char* message);
 API void Client_Kick(CLIENT client, const char* reason);
 API bool Client_SendMap(CLIENT client, WORLD world);
+API void Client_UpdateWorldInfo(CLIENT client, WORLD world, bool updateAll);
 
 API bool Client_IsInSameWorld(CLIENT client, CLIENT other);
 API bool Client_IsInWorld(CLIENT client, WORLD world);

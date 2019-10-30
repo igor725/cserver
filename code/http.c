@@ -173,9 +173,9 @@ void HttpRequest_SetHost(HTTPREQ req, const char* host, uint16_t port) {
 void HttpRequest_SetPath(HTTPREQ req, const char* path) {
 	if(req->path) Memory_Free((void*)req->path);
 	/*
-		TODO: Придумать как запилить здесь кодирование url,
-		по началу можно и не полное, а просто заменять пробелы
-		на плюсы, думаю этого будет достаточно какое-то время.
+	** TODO: Придумать как запилить здесь кодирование url,
+	** по началу можно и не полное, а просто заменять пробелы
+	** на плюсы, думаю этого будет достаточно какое-то время.
 	*/
 	req->path = String_AllocCopy(path);
 }

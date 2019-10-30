@@ -149,9 +149,7 @@ PACKET Packet_Get(int32_t id) {
 	return id < MAX_PACKETS ? PackList[id] : NULL;
 }
 
-/*
-	VANILLA
-*/
+// Генераторы ванильных пакетов
 
 void Packet_WriteHandshake(CLIENT client, const char* name, const char* motd) {
 	PacketWriter_Start(client);
@@ -180,11 +178,11 @@ void Packet_WriteLvlInit(CLIENT client) {
 void Packet_WriteLvlFin(CLIENT client) {
 	PacketWriter_Start(client);
 
-	WORLDDIMS dims = client->playerData->world->info->dim;
+	WORLDINFO wi = client->playerData->world->info;
 	*data++ = 0x04;
-	*(uint16_t*)data = htons(dims->width); data += 2;
-	*(uint16_t*)data = htons(dims->height); data += 2;
-	*(uint16_t*)data = htons(dims->length); data += 2;
+	*(uint16_t*)data = htons(wi->width); data += 2;
+	*(uint16_t*)data = htons(wi->height); data += 2;
+	*(uint16_t*)data = htons(wi->length); data += 2;
 
 	PacketWriter_End(client, 7);
 }
@@ -271,9 +269,7 @@ void Packet_WriteKick(CLIENT client, const char* reason) {
 	PacketWriter_End(client, 65);
 }
 
-/*
-	Classic handlers
-*/
+// Обработчики ванильных пакетов
 
 bool Handler_Handshake(CLIENT client, const char* data) {
 	uint8_t protoVer = *data++;

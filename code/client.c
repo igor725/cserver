@@ -20,6 +20,14 @@ uint8_t Clients_GetCount(int32_t state) {
 	return count;
 }
 
+void Clients_UpdateWorldInfo(WORLD world) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		CLIENT cl = Clients_List[i];
+		if(cl && Client_IsInWorld(cl, world))
+			Client_UpdateWorldInfo(cl, world, false);
+	}
+}
+
 void Clients_KickAll(const char* reason) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT client = Clients_List[i];
@@ -31,8 +39,8 @@ CLIENT Client_New(SOCKET fd, uint32_t addr) {
 	CLIENT tmp = Memory_Alloc(1, sizeof(struct client));
 	tmp->id = 0xFF;
 	tmp->sock = fd;
-	tmp->mutex = Mutex_Create();
 	tmp->addr = addr;
+	tmp->mutex = Mutex_Create();
 	tmp->rdbuf = Memory_Alloc(134, 1);
 	tmp->wrbuf = Memory_Alloc(2048, 1);
 	return tmp;
@@ -104,12 +112,38 @@ bool Client_ChangeWorld(CLIENT client, WORLD world) {
 	if(Client_IsInWorld(client, world)) return false;
 
 	Client_Despawn(client);
-	Client_SetPos(client, world->info->spawnVec, world->info->spawnAng);
+	Client_SetPos(client, &world->info->spawnVec, &world->info->spawnAng);
 	if(!Client_SendMap(client, world)) {
 		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
 		return false;
 	}
 	return true;
+}
+
+void Client_UpdateWorldInfo(CLIENT client, WORLD world, bool updateAll) {
+	/*
+	** Нет смысла пыжиться в попытках
+	** поменять значения клиенту, если
+	** он не поддерживает CPE вообще.
+	*/
+	if(!client->cpeData) return;
+	WORLDINFO wi = world->info;
+	uint8_t modval = wi->modval;
+	uint16_t modprop = wi->modprop;
+
+	if(updateAll || modval & MV_COLORS) {
+		// TODO: Смена цветов мира у клиента
+	}
+	if(updateAll || modval & MV_TEXPACK)
+		Client_SetTexturePack(client, wi->texturepack);
+	if(updateAll || modval & MV_PROPS) {
+		for(uint8_t prop = 0; prop < WORLD_PROPS_COUNT; prop++) {
+			if(updateAll || modprop & (2 ^ prop))
+				Client_SetProperty(client, prop, World_GetProperty(world, prop));
+		}
+	}
+	if(updateAll || modval & MV_WEATHER)
+		Client_SetWeather(client, wi->wt);
 }
 
 static uint32_t copyMessagePart(const char* message, char* part, uint32_t i, char* color) {
@@ -212,11 +246,11 @@ static void PacketReceiverWs(CLIENT client) {
 		if(packetSize <= recvSize) {
 			HandlePacket(client, data, packet, extended);
 			/*
-				Каждую ~секунду к фрейму с пакетом 0x08 (Teleport)
-				приклеивается пакет 0x2B (TwoWayPing) и поскольку
-				не исключено, что таких приклеиваний может быть
-				много, пришлось использовать goto для обработки
-				всех пакетов, входящих в фрейм.
+			** Каждую ~секунду к фрейму с пакетом 0x08 (Teleport)
+			** приклеивается пакет 0x2B (TwoWayPing) и поскольку
+			** не исключено, что таких приклеиваний может быть
+			** много, пришлось использовать goto для обработки
+			** всех пакетов, входящих в фрейм.
 			*/
 			if(recvSize > packetSize) {
 				data += packetSize;
@@ -545,11 +579,7 @@ int32_t Client_Send(CLIENT client, int32_t len) {
 bool Client_Spawn(CLIENT client) {
 	if(client->playerData->spawned) return false;
 	WORLD world = client->playerData->world;
-
-	Client_SetWeather(client, world->info->wt);
-	for(uint8_t prop = 0; prop < WORLD_PROPS_COUNT; prop++) {
-		Client_SetProperty(client, prop, World_GetProperty(world, prop));
-	}
+	Client_UpdateWorldInfo(client, world, true);
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		CLIENT other = Clients_List[i];
@@ -593,9 +623,9 @@ void Client_Kick(CLIENT client, const char* reason) {
 	Packet_WriteKick(client, reason);
 	client->closed = true;
 	/*
-		Этот вызов нужен, чтобы корректно завершить
-		сокет клиента после кика, если цикл сервера
-		в основом потоке уже не работает.
+	** Этот вызов нужен, чтобы корректно завершить
+	** сокет клиента после кика, если цикл сервера
+	** в основом потоке уже не работает.
 	*/
 	if(!Server_Active) Client_Tick(client);
 }

@@ -97,8 +97,8 @@ void Error_Print(int32_t type, uint32_t code, const char* file, uint32_t line, c
 	getErrorStr(type, code, errbuf, 256, NULL);
 	if(String_FormatBuf(strbuf, 384, Lang_Get(LANG_ERRFMT), file, line, func, errbuf)) {
 		/*
-			Избегаем краша, если в строке ошибки по какой-то
-			причине остались форматируемые значения.
+		** Избегаем краша, если в строке ошибки по какой-то
+		** причине остались форматируемые значения.
 		*/
 		Log_Error("%s", strbuf);
 		Error_CallStack();

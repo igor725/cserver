@@ -150,8 +150,8 @@ size_t String_GetArgument(const char* args, char* arg, size_t arrsz, int32_t ind
 }
 
 /*
-	Взято здеся:
-	https://stackoverflow.com/questions/21001659/crc32-algorithm-implementation-in-c-without-a-look-up-table-and-with-a-public-li
+** Взято здеся:
+** https://stackoverflow.com/questions/21001659/crc32-algorithm-implementation-in-c-without-a-look-up-table-and-with-a-public-li
 */
 uint32_t String_CRC32(const uint8_t* str) {
 	int32_t i, j;
