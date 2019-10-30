@@ -7,7 +7,7 @@
 #include "gui.h"
 
 void SurvInv_Init(SURVDATA data) {
-	CLIENT client = data->client;
+	Client client = data->client;
 
 	SurvInv_UpdateInventory(data);
 	for(Order i = 0; i < 9; i++) {
@@ -17,7 +17,7 @@ void SurvInv_Init(SURVDATA data) {
 
 void SurvInv_UpdateInventory(SURVDATA data) {
 	Order invIdx = 0;
-	CLIENT client = data->client;
+	Client client = data->client;
 	uint16_t* inv = data->inventory;
 
 	for(BlockID i = 1; i < 255; i++) {

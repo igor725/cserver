@@ -5,7 +5,7 @@
 #include "server.h"
 #include "lang.h"
 
-THREAD conThread;
+Thread conThread;
 
 static int32_t ReadLine(char* buf, int32_t buflen) {
 	int32_t len = 0, c = 0;

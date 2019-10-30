@@ -16,11 +16,11 @@
 #define MODE(b) (b ? "&4disabled" : "&aenabled")
 
 static void Survival_OnHandshake(void* param) {
-	SurvData_Create((CLIENT)param);
+	SurvData_Create((Client)param);
 }
 
 static void Survival_OnSpawn(void* param) {
-	SURVDATA data = SurvData_Get((CLIENT)param);
+	SURVDATA data = SurvData_Get((Client)param);
 	SurvGui_DrawAll(data);
 	SurvHacks_Update(data);
 	SurvInv_Init(data);
@@ -28,7 +28,7 @@ static void Survival_OnSpawn(void* param) {
 
 static bool Survival_OnBlockPlace(void* param) {
 	onBlockPlace_p a = param;
-	CLIENT client = a->client;
+	Client client = a->client;
 	SURVDATA data = SurvData_Get(client);
 	if(data->godMode) return true;
 
@@ -71,7 +71,7 @@ static void Survival_OnTick(void* param) {
 }
 
 static void Survival_OnDisconnect(void* param) {
-	SurvData_Free((CLIENT)param);
+	SurvData_Free((Client)param);
 }
 
 static double root(double n){
@@ -93,7 +93,7 @@ static void Survival_OnClick(void* param) {
 	onPlayerClick_p a = param;
 	if(a->button != 0) return;
 
-	CLIENT client = a->client;
+	Client client = a->client;
 	SURVDATA data = SurvData_Get(client);
 	if(data->godMode) return;
 
@@ -102,39 +102,37 @@ static void Survival_OnClick(void* param) {
 		return;
 	}
 
-	short x = a->x, y = a->y, z = a->z;
-	CLIENT target = Client_GetByID(a->id);
+	SVec* pos = a->pos;
+	Client target = Client_GetByID(a->id);
 	SURVDATA dataTg = NULL;
 	if(target) dataTg = SurvData_Get(target);
 
 	float dist_entity = 32768.0f;
 	float dist_block = 32768.0f;
 
-	PLAYERDATA pd = client->playerData;
-	VECTOR* pv = pd->position;
+	PlayerData pd = client->playerData;
+	Vec* pv = &pd->position;
 
-	if(x != -1 && y != -1 && z != -1) {
-		dist_block = distance(x + .5f, y + .5f, z + .5f, pv->x, pv->y, pv->z);
-	} else if(target) {
-		VECTOR* pvt = target->playerData->position;
+	if(!Vec_IsInvalid(pos)) {
+		dist_block = distance(pos->x + .5f, pos->y + .5f, pos->z + .5f, pv->x, pv->y, pv->z);
+	}
+
+	if(target) {
+		Vec* pvt = &target->playerData->position;
 		dist_entity = distance(pvt->x, pvt->y, pvt->z, pv->x, pv->y, pv->z);
 	}
 
-	if(data->breakStarted && (data->lastclick[0] != x ||
-	data->lastclick[1] != y || data->lastclick[2] != z)) {
+	if(data->breakStarted && !SVec_Compare(&data->lastClick, pos)) {
 		SurvBrk_Stop(data);
 		return;
 	}
 
 	if(dist_block < dist_entity) {
 		if(!data->breakStarted) {
-			BlockID bid = World_GetBlock(pd->world, x, y, z);
+			BlockID bid = World_GetBlock(pd->world, pos);
 			if(bid > BLOCK_AIR) SurvBrk_Start(data, bid);
 		}
-
-		data->lastclick[0] = x;
-		data->lastclick[1] = y;
-		data->lastclick[2] = z;
+		Vec_Copy(&data->lastClick, pos);
 	} else if(dist_entity < dist_block && dist_entity < 3.5) {
 		if(data->breakStarted) {
 			SurvBrk_Stop(data);
@@ -150,7 +148,7 @@ static void Survival_OnClick(void* param) {
 	}
 }
 
-static bool CHandler_God(const char* args, CLIENT caller, char* out) {
+static bool CHandler_God(const char* args, Client caller, char* out) {
 	Command_OnlyForClient;
 	Command_OnlyForOP;
 	(void)args;
@@ -166,7 +164,7 @@ static bool CHandler_God(const char* args, CLIENT caller, char* out) {
 	return true;
 }
 
-static bool CHandler_Hurt(const char* args, CLIENT caller, char* out) {
+static bool CHandler_Hurt(const char* args, Client caller, char* out) {
 	Command_OnlyForClient;
 
 	char damage[32];
@@ -178,7 +176,7 @@ static bool CHandler_Hurt(const char* args, CLIENT caller, char* out) {
 	return false;
 }
 
-static bool CHandler_PvP(const char* args, CLIENT caller, char* out) {
+static bool CHandler_PvP(const char* args, Client caller, char* out) {
 	Command_OnlyForClient;
 	Command_OnlyForSurvival;
 	(void)args;

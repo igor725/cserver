@@ -11,10 +11,10 @@ static const int32_t BreakTimings[256] = {
 	0,4000,500,500,4000,1100,0,-1
 };
 
-static void UpdateBlock(WORLD world, short x, short y, short z, BlockID bid) {
+static void UpdateBlock(World world, SVec* pos, BlockID bid) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		CLIENT cl = Client_GetByID(i);
-		if(cl && Client_IsInWorld(cl, world)) Client_SetBlock(cl, x, y, z, bid);
+		Client cl = Client_GetByID(i);
+		if(cl && Client_IsInWorld(cl, world)) Client_SetBlock(cl, pos, bid);
 	}
 }
 
@@ -31,17 +31,16 @@ void SurvBrk_Stop(SURVDATA data) {
 }
 
 void SurvBrk_Done(SURVDATA data) {
-	short* pos = data->lastclick;
-	short x = pos[0], y = pos[1], z = pos[2];
-	CLIENT client = data->client;
-	WORLD world = client->playerData->world;
+	SVec* pos = &data->lastClick;
+	Client client = data->client;
+	World world = client->playerData->world;
 	BlockID id = data->breakBlock;
 
 	SurvInv_Add(data, id, 1);
 	Client_SetHeld(client, id, false);
 	SurvGui_DrawBlockInfo(data, id);
-	World_SetBlock(world, x, y, z, 0);
-	UpdateBlock(world, x, y, z, 0);
+	World_SetBlock(world, pos, 0);
+	UpdateBlock(world, pos, 0);
 	SurvBrk_Stop(data);
 }
 

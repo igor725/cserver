@@ -14,11 +14,11 @@
 #include "cplugin.h"
 #include "lang.h"
 
-THREAD AcceptThread;
+Thread AcceptThread;
 
 static void AcceptFunc(void) {
 	struct sockaddr_in caddr;
-	SOCKET fd = Socket_Accept(Server_Socket, &caddr);
+	Socket fd = Socket_Accept(Server_Socket, &caddr);
 
 	if(fd != INVALID_SOCKET) {
 		if(!Server_Active) {
@@ -27,11 +27,11 @@ static void AcceptFunc(void) {
 		}
 
 		uint32_t addr = htonl(caddr.sin_addr.s_addr);
-	 	CLIENT tmp = Client_New(fd, addr);
+	 	Client tmp = Client_New(fd, addr);
 		uint32_t sameAddrCount = 1;
 		uint8_t maxConnPerIP = Config_GetInt8(Server_Config, CFG_CONN_KEY);
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-			CLIENT cc = Clients_List[i];
+			Client cc = Clients_List[i];
 			if(cc && cc->addr == addr)
 				++sameAddrCount;
 			else continue;
@@ -45,7 +45,7 @@ static void AcceptFunc(void) {
 
 		if(Socket_Receive(fd, tmp->rdbuf, 5, MSG_PEEK)) {
 			if(String_CaselessCompare(tmp->rdbuf, "GET /")) {
-				WSCLIENT wscl = Memory_Alloc(1, sizeof(struct wsClient));
+				WsClient wscl = Memory_Alloc(1, sizeof(struct wsClient));
 				wscl->recvbuf = tmp->rdbuf;
 				wscl->sock = tmp->sock;
 				tmp->websock = wscl;
@@ -90,7 +90,7 @@ static void Bind(const char* ip, uint16_t port) {
 }
 
 static void onConnect(void* param) {
-	CLIENT cl = (CLIENT)param;
+	Client cl = param;
 	const char* name = Client_GetName(cl);
 	const char* appname = Client_GetAppName(cl);
 	Log_Info(Lang_Get(LANG_SVPLCONN), name, appname);
@@ -98,7 +98,7 @@ static void onConnect(void* param) {
 
 static void onDisconnect(void* param) {
 	if(!Server_Active) return;
-	const char* name = Client_GetName((CLIENT)param);
+	const char* name = Client_GetName((Client)param);
 	Log_Info(Lang_Get(LANG_SVPLDISCONN), name);
 }
 
@@ -106,8 +106,8 @@ void Server_InitialWork(void) {
 	if(!Socket_Init()) return;
 
 	Log_Info(Lang_Get(LANG_SVLOADING), MAINCFG);
-	CFGSTORE cfg = Config_NewStore(MAINCFG);
-	CFGENTRY ent;
+	CFGStore cfg = Config_NewStore(MAINCFG);
+	CFGEntry ent;
 
 	ent = Config_NewEntry(cfg, CFG_SERVERIP_KEY, CFG_STR);
 	Config_SetComment(ent, "Bind server to specified IP address. \"0.0.0.0\" - means \"all available network adapters\".");
@@ -174,7 +174,7 @@ void Server_InitialWork(void) {
 	if(Iter_Init(&wIter, "worlds", "cws")) {
 		do {
 			if(wIter.isDir || !wIter.cfile) continue;
-			WORLD tmp = World_Create(wIter.cfile);
+			World tmp = World_Create(wIter.cfile);
 			tmp->id = wIndex++;
 			if(!World_Load(tmp) || !World_Add(tmp))
 				World_Free(tmp);
@@ -183,7 +183,7 @@ void Server_InitialWork(void) {
 	Iter_Close(&wIter);
 
 	if(wIndex < 1) {
-		WORLD tmp = World_Create("world.cws");
+		World tmp = World_Create("world.cws");
 		World_SetDimensions(tmp, 256, 256, 256);
 		World_AllocBlockArray(tmp);
 		Generator_Flat(tmp);
@@ -210,8 +210,8 @@ void Server_InitialWork(void) {
 void Server_DoStep(void) {
 	Event_Call(EVT_ONTICK, NULL);
 	for(int32_t i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
-		CLIENT client = Client_GetByID((ClientID)i);
-		WORLD world = World_GetByID(i);
+		Client client = Client_GetByID((ClientID)i);
+		World world = World_GetByID(i);
 
 		if(i < MAX_CLIENTS && client) Client_Tick(client);
 		if(i < MAX_WORLDS && world) World_Tick(world);

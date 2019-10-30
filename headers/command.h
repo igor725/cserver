@@ -32,11 +32,11 @@ if(String_GetArgument(args, wn, 64, idx)) { \
 	if(!caller) { \
 		Command_PrintUsage; \
 	} else { \
-		PLAYERDATA pd = caller->playerData; \
+		PlayerData pd = caller->playerData; \
 		if(!pd) { \
 			Command_PrintUsage; \
 		} \
-		WORLD world = pd->world; \
+		World world = pd->world; \
 		if(!world) { \
 			Command_PrintUsage; \
 		} \
@@ -50,7 +50,7 @@ if(caller && !caller->playerData->isOP) { \
 	Command_Print(Lang_Get(LANG_CMDAD)); \
 } \
 
-typedef bool(*cmdFunc)(const char* args, CLIENT caller, char* out);
+typedef bool(*cmdFunc)(const char* args, Client caller, char* out);
 
 typedef struct command {
 	const char* name;
@@ -63,5 +63,5 @@ API void Command_Register(const char* cmd, cmdFunc func);
 API void Command_Unregister(const char* cmd);
 
 void Command_RegisterDefault(void);
-bool Command_Handle(char* cmd, CLIENT caller);
+bool Command_Handle(char* cmd, Client caller);
 #endif

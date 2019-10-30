@@ -15,7 +15,7 @@
 const char* PlayURL = NULL;
 char Secret[17] = {0};
 uint32_t Delay = 5000;
-THREAD Thread;
+Thread hbThread;
 
 static void NewSecret(void) {
 	RNGState secrnd;
@@ -73,7 +73,7 @@ static void DoRequest() {
 		SOFTWARE_NAME "%%47" GIT_COMMIT_SHA
 	);
 
-	SOCKET fd = Socket_New();
+	Socket fd = Socket_New();
 	req.sock = fd;
 
 	HttpRequest_SetHost(&req, "classicube.net", 80);
@@ -114,7 +114,7 @@ static TRET HeartbeatThreadProc(TARG param) {
 
 static const char hexchars[] = "0123456789abcdef";
 
-bool Heartbeat_CheckKey(CLIENT client) {
+bool Heartbeat_CheckKey(Client client) {
 	if(*Secret == '\0') return true;
 	const char* key = client->playerData->key;
 	const char* name =  client->playerData->name;
@@ -139,9 +139,9 @@ bool Heartbeat_CheckKey(CLIENT client) {
 
 void Heartbeat_Start(uint32_t delay) {
 	Delay = delay * 1000;
-	Thread = Thread_Create(HeartbeatThreadProc, NULL);
+	hbThread = Thread_Create(HeartbeatThreadProc, NULL);
 }
 
 void Heartbeat_Close(void) {
-	if(Thread_IsValid(Thread)) Thread_Close(Thread);
+	if(Thread_IsValid(hbThread)) Thread_Close(hbThread);
 }

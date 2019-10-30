@@ -180,12 +180,12 @@ void HttpRequest_SetPath(HTTPREQ req, const char* path) {
 	req->path = String_AllocCopy(path);
 }
 
-static int32_t SendLine(SOCKET sock, char* line) {
+static int32_t SendLine(Socket sock, char* line) {
 	uint32_t len = (uint32_t)String_Length(line);
 	return Socket_Send(sock, line, len);
 }
 
-static void SendHeaders(SOCKET sock, HTTPHDR hdr, char* line) {
+static void SendHeaders(Socket sock, HTTPHDR hdr, char* line) {
 	while(hdr) {
 		switch(hdr->type) {
 			case HDRT_INT:
@@ -205,7 +205,7 @@ static void SendHeaders(SOCKET sock, HTTPHDR hdr, char* line) {
 	SendLine(sock, line);
 }
 
-bool HttpRequest_Read(HTTPREQ req, SOCKET sock) {
+bool HttpRequest_Read(HTTPREQ req, Socket sock) {
 	char line[1024];
 	if(!Socket_ReceiveLine(sock, line, 1023)) {
 		req->error = HTTP_ERR_INVALID_REQUEST;
@@ -330,7 +330,7 @@ void HttpResponse_SetBody(HTTPRESP resp, char* body, int32_t size) {
 	resp->body = body;
 }
 
-bool HttpResponse_SendTo(HTTPRESP resp, SOCKET sock) {
+bool HttpResponse_SendTo(HTTPRESP resp, Socket sock) {
 	char line[1024];
 	const char* phrase = HttpCode_GetReason(resp->code);
 	if(!phrase) {
@@ -346,7 +346,7 @@ bool HttpResponse_SendTo(HTTPRESP resp, SOCKET sock) {
 	return true;
 }
 
-bool HttpResponse_Read(HTTPRESP resp, SOCKET sock) {
+bool HttpResponse_Read(HTTPRESP resp, Socket sock) {
 	char line[1024];
 	if(Socket_ReceiveLine(sock, line, 1023)) {
 		if(!String_CaselessCompare2(line, "HTTP/1.1 ", 9)) {

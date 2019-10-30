@@ -22,9 +22,10 @@
 
 typedef void* ITER_DIR;
 typedef WIN32_FIND_DATA ITER_FILE;
-typedef void* THREAD;
+typedef void* Thread;
 typedef uint32_t TRET;
-typedef CRITICAL_SECTION MUTEX;
+typedef CRITICAL_SECTION Mutex;
+typedef SOCKET Socket;
 #elif defined(__unix__)
 #  define POSIX
 #  define PATH_DELIM '/'
@@ -61,10 +62,10 @@ typedef CRITICAL_SECTION MUTEX;
 
 typedef DIR* ITER_DIR;
 typedef struct dirent* ITER_FILE;
-typedef pthread_t* THREAD;
+typedef pthread_t* Thread;
 typedef void* TRET;
-typedef pthread_mutex_t MUTEX;
-typedef int32_t SOCKET;
+typedef pthread_mutex_t Mutex;
+typedef int32_t Socket;
 #else
 #  error Unknown OS
 #endif
@@ -118,12 +119,4 @@ enum messageTypes {
 	CPE_BRIGHT3,
 	CPE_ANNOUNCE = 100
 };
-
-typedef struct vector {
-	float x, y, z;
-} VECTOR;
-
-typedef struct angle {
-	float yaw, pitch;
-} ANGLE;
 #endif

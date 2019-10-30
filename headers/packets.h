@@ -18,7 +18,7 @@ Mutex_Unlock(client->mutex); \
 Mutex_Unlock(client->mutex); \
 return; \
 
-typedef bool(*packetHandler)(CLIENT, const char*);
+typedef bool(*packetHandler)(Client, const char*);
 
 typedef struct packet {
 	const char* name;
@@ -29,29 +29,29 @@ typedef struct packet {
 	uint16_t extSize;
 	packetHandler handler;
 	packetHandler cpeHandler;
-} *PACKET;
+} *Packet;
 
-PACKET Packet_Get(int32_t id);
+Packet Packet_Get(int32_t id);
 API void Packet_Register(int32_t id, const char* name, uint16_t size, packetHandler handler);
 API void Packet_RegisterCPE(int32_t id, uint32_t extCRC32, int32_t extVersion, uint16_t extSize, packetHandler handler);
 void Packet_RegisterDefault(void);
 void Packet_RegisterCPEDefault(void);
 
-void Packet_WriteHandshake(CLIENT client, const char* name, const char* motd);
-void Packet_WriteLvlInit(CLIENT client);
-void Packet_WriteLvlFin(CLIENT client);
-void Packet_WriteSetBlock(CLIENT client, uint16_t x, uint16_t y, uint16_t z, BlockID block);
-void Packet_WriteSpawn(CLIENT client, CLIENT other);
-void Packet_WritePosAndOrient(CLIENT client, CLIENT other);
-void Packet_WriteDespawn(CLIENT client, CLIENT other);
-void Packet_WriteChat(CLIENT client, MessageType type, const char* mesg);
-void Packet_WriteKick(CLIENT client, const char* reason);
+void Packet_WriteHandshake(Client client, const char* name, const char* motd);
+void Packet_WriteLvlInit(Client client);
+void Packet_WriteLvlFin(Client client);
+void Packet_WriteSetBlock(Client client, SVec* pos, BlockID block);
+void Packet_WriteSpawn(Client client, Client other);
+void Packet_WritePosAndOrient(Client client, Client other);
+void Packet_WriteDespawn(Client client, Client other);
+void Packet_WriteChat(Client client, MessageType type, const char* mesg);
+void Packet_WriteKick(Client client, const char* reason);
 
 uint8_t ReadNetString(const char** data, const char** dst);
 void WriteNetString(char* data, const char* string);
 
-bool Handler_Handshake(CLIENT client, const char* data);
-bool Handler_SetBlock(CLIENT client, const char* data);
-bool Handler_PosAndOrient(CLIENT client, const char* data);
-bool Handler_Message(CLIENT client, const char* data);
+bool Handler_Handshake(Client client, const char* data);
+bool Handler_SetBlock(Client client, const char* data);
+bool Handler_PosAndOrient(Client client, const char* data);
+bool Handler_Message(Client client, const char* data);
 #endif

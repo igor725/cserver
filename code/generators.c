@@ -5,8 +5,8 @@
 
 // Генератор плоского мира
 
-void Generator_Flat(WORLD world) {
-	WORLDINFO wi = world->info;
+void Generator_Flat(World world) {
+	WorldInfo wi = world->info;
 	uint16_t dx = wi->width,
 	dy = wi->height,
 	dz = wi->length;
@@ -37,7 +37,7 @@ void Generator_Flat(WORLD world) {
 /*
 #define MAX_THREADS 16
 
-THREAD threads[MAX_THREADS] = {0};
+Thread threads[MAX_THREADS] = {0};
 int32_t cfgMaxThreads = 2;
 
 static int32_t AddThread(TFUNC func, TARG arg) {
@@ -64,7 +64,7 @@ static void WaitAll(void) {
 	}
 }
 
-void Generator_Default(WORLD world) {
+void Generator_Default(World world) {
 	RNGState rnd;
 	Random_Seed(&rnd, 1337);
 }

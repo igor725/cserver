@@ -7,7 +7,7 @@
 
 SURVDATA survDataList[MAX_CLIENTS] = {0};
 
-void SurvData_Create(CLIENT cl) {
+void SurvData_Create(Client cl) {
 	SURVDATA ptr = Memory_Alloc(1, sizeof(struct survivalData));
 	ptr->client = cl;
 	ptr->health = 20;
@@ -15,12 +15,12 @@ void SurvData_Create(CLIENT cl) {
 	survDataList[cl->id] = ptr;
 }
 
-void SurvData_Free(CLIENT cl) {
+void SurvData_Free(Client cl) {
 	Memory_Free(survDataList[cl->id]);
 	survDataList[cl->id] = NULL;
 }
 
-SURVDATA SurvData_Get(CLIENT cl) {
+SURVDATA SurvData_Get(Client cl) {
 	return survDataList[cl->id];
 }
 

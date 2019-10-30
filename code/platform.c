@@ -139,15 +139,15 @@ bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, uint16_t por
 	return ret == 1;
 }
 
-SOCKET Socket_New() {
-	SOCKET sock;
+Socket Socket_New() {
+	Socket sock;
 	if((sock = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
 		return INVALID_SOCKET;
 	}
 	return sock;
 }
 
-bool Socket_Bind(SOCKET sock, struct sockaddr_in* addr) {
+bool Socket_Bind(Socket sock, struct sockaddr_in* addr) {
 #if defined(POSIX)
 	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(int32_t){1}, 4) == -1) {
 		return false;
@@ -165,21 +165,21 @@ bool Socket_Bind(SOCKET sock, struct sockaddr_in* addr) {
 	return true;
 }
 
-bool Socket_Connect(SOCKET sock, struct sockaddr_in* addr) {
+bool Socket_Connect(Socket sock, struct sockaddr_in* addr) {
 	socklen_t len = sizeof(struct sockaddr_in);
 	return connect(sock, (struct sockaddr*)addr, len) == 0;
 }
 
-SOCKET Socket_Accept(SOCKET sock, struct sockaddr_in* addr) {
+Socket Socket_Accept(Socket sock, struct sockaddr_in* addr) {
 	socklen_t len = sizeof(struct sockaddr_in);
 	return accept(sock, (struct sockaddr*)addr, &len);
 }
 
-int32_t Socket_Receive(SOCKET sock, char* buf, int32_t len, int32_t flags) {
+int32_t Socket_Receive(Socket sock, char* buf, int32_t len, int32_t flags) {
 	return recv(sock, buf, len, flags);
 }
 
-int32_t Socket_ReceiveLine(SOCKET sock, char* line, int32_t len) {
+int32_t Socket_ReceiveLine(Socket sock, char* line, int32_t len) {
 	int32_t start_len = len;
 	char sym;
 
@@ -199,15 +199,15 @@ int32_t Socket_ReceiveLine(SOCKET sock, char* line, int32_t len) {
 	return start_len - len;
 }
 
-int32_t Socket_Send(SOCKET sock, char* buf, int32_t len) {
+int32_t Socket_Send(Socket sock, char* buf, int32_t len) {
 	return send(sock, buf, len, 0);
 }
 
-void Socket_Shutdown(SOCKET sock, int32_t how) {
+void Socket_Shutdown(Socket sock, int32_t how) {
 	shutdown(sock, how);
 }
 
-void Socket_Close(SOCKET sock) {
+void Socket_Close(Socket sock) {
 #if defined(WINDOWS)
 	closesocket(sock);
 #elif defined(POSIX)
@@ -382,8 +382,8 @@ bool DLib_GetSym(void* lib, const char* sname, void** sym) {
 #endif
 
 #if defined(WINDOWS)
-THREAD Thread_Create(TFUNC func, TARG param) {
-	THREAD th = CreateThread(
+Thread Thread_Create(TFUNC func, TARG param) {
+	Thread th = CreateThread(
 		NULL,
 		0,
 		(LPTHREAD_START_ROUTINE)func,
@@ -400,21 +400,21 @@ THREAD Thread_Create(TFUNC func, TARG param) {
 	return th;
 }
 
-bool Thread_IsValid(THREAD th) {
-	return th != (THREAD)NULL;
+bool Thread_IsValid(Thread th) {
+	return th != (Thread)NULL;
 }
 
-void Thread_Close(THREAD th) {
+void Thread_Close(Thread th) {
 	if(th) CloseHandle(th);
 }
 
-void Thread_Join(THREAD th) {
+void Thread_Join(Thread th) {
 	WaitForSingleObject(th, INFINITE);
 	Thread_Close(th);
 }
 #elif defined(POSIX)
-THREAD Thread_Create(TFUNC func, TARG arg) {
-	THREAD thread = Memory_Alloc(1, sizeof(THREAD));
+Thread Thread_Create(TFUNC func, TARG arg) {
+	Thread thread = Memory_Alloc(1, sizeof(Thread));
 	if(pthread_create(thread, NULL, func, arg) != 0) {
 		Error_Print2(ET_SYS, errno, true);
 		return NULL;
@@ -422,16 +422,16 @@ THREAD Thread_Create(TFUNC func, TARG arg) {
 	return thread;
 }
 
-bool Thread_IsValid(THREAD th) {
+bool Thread_IsValid(Thread th) {
 	return th != NULL;
 }
 
-void Thread_Close(THREAD th) {
+void Thread_Close(Thread th) {
 	pthread_detach(*th);
 	Memory_Free(th);
 }
 
-void Thread_Join(THREAD th) {
+void Thread_Join(Thread th) {
 	int32_t ret = pthread_join(*th, NULL);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
@@ -440,8 +440,8 @@ void Thread_Join(THREAD th) {
 #endif
 
 #if defined(WINDOWS)
-MUTEX* Mutex_Create(void) {
-	MUTEX* ptr = Memory_Alloc(1, sizeof(MUTEX));
+Mutex* Mutex_Create(void) {
+	Mutex* ptr = Memory_Alloc(1, sizeof(Mutex));
 	if(!ptr) {
 		Error_Print2(ET_SYS, GetLastError(), true);
 	}
@@ -449,21 +449,21 @@ MUTEX* Mutex_Create(void) {
 	return ptr;
 }
 
-void Mutex_Free(MUTEX* handle) {
+void Mutex_Free(Mutex* handle) {
 	DeleteCriticalSection(handle);
 	Memory_Free(handle);
 }
 
-void Mutex_Lock(MUTEX* handle) {
+void Mutex_Lock(Mutex* handle) {
 	EnterCriticalSection(handle);
 }
 
-void Mutex_Unlock(MUTEX* handle) {
+void Mutex_Unlock(Mutex* handle) {
 	LeaveCriticalSection(handle);
 }
 #elif defined(POSIX)
-MUTEX* Mutex_Create(void) {
-	MUTEX* ptr = Memory_Alloc(1, sizeof(MUTEX));
+Mutex* Mutex_Create(void) {
+	Mutex* ptr = Memory_Alloc(1, sizeof(Mutex));
 	int32_t ret = pthread_mutex_init(ptr, NULL);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
@@ -472,7 +472,7 @@ MUTEX* Mutex_Create(void) {
 	return ptr;
 }
 
-void Mutex_Free(MUTEX* handle) {
+void Mutex_Free(Mutex* handle) {
 	int32_t ret = pthread_mutex_destroy(handle);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
@@ -480,14 +480,14 @@ void Mutex_Free(MUTEX* handle) {
 	Memory_Free(handle);
 }
 
-void Mutex_Lock(MUTEX* handle) {
+void Mutex_Lock(Mutex* handle) {
 	int32_t ret = pthread_mutex_lock(handle);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
 	}
 }
 
-void Mutex_Unlock(MUTEX* handle) {
+void Mutex_Unlock(Mutex* handle) {
 	int32_t ret = pthread_mutex_unlock(handle);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);

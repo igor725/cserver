@@ -17,9 +17,9 @@
 
 VAR bool Server_Active;
 VAR int32_t Server_Delta;
-VAR CFGSTORE Server_Config;
+VAR CFGStore Server_Config;
 VAR uint64_t Server_StartTime;
-SOCKET Server_Socket;
+Socket Server_Socket;
 
 void Server_InitialWork(void);
 void Server_DoStep(void);

@@ -17,7 +17,7 @@ enum wErrors {
 };
 
 typedef struct wsClient {
-	SOCKET sock;
+	Socket sock;
 	int32_t state;
 	int32_t error;
 	char* recvbuf;
@@ -26,9 +26,9 @@ typedef struct wsClient {
 	uint16_t plen;
 	uint8_t opcode;
 	bool done;
-} *WSCLIENT;
+} *WsClient;
 
-bool WsClient_DoHandshake(WSCLIENT ws);
-bool WsClient_ReceiveFrame(WSCLIENT ws);
-bool WsClient_SendHeader(WSCLIENT ws, uint8_t opcode, uint16_t len);
+bool WsClient_DoHandshake(WsClient ws);
+bool WsClient_ReceiveFrame(WsClient ws);
+bool WsClient_SendHeader(WsClient ws, uint8_t opcode, uint16_t len);
 #endif

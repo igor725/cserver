@@ -5,8 +5,8 @@
 #include "hacks.h"
 
 void SurvHacks_Update(SURVDATA data) {
-	CLIENT client = data->client;
-	HACKS hacks = client->cpeData->hacks;
+	Client client = data->client;
+	Hacks hacks = client->cpeData->hacks;
 
 	hacks->tpv = true;
 	hacks->spawnControl = false;

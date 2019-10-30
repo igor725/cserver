@@ -42,27 +42,27 @@ char* DLib_GetError(char* buf, size_t len);
 bool DLib_GetSym(void* lib, const char* sname, void** sym);
 
 bool Socket_Init(void);
-API SOCKET Socket_New(void);
+API Socket Socket_New(void);
 API int32_t Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, uint16_t port);
 API bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, uint16_t port);
-API bool Socket_Bind(SOCKET sock, struct sockaddr_in* ssa);
-API bool Socket_Connect(SOCKET sock, struct sockaddr_in* ssa);
-API SOCKET Socket_Accept(SOCKET sock, struct sockaddr_in* addr);
-API int32_t Socket_Receive(SOCKET sock, char* buf, int32_t len, int32_t flags);
-API int32_t Socket_ReceiveLine(SOCKET sock, char* line, int32_t len);
-API int32_t Socket_Send(SOCKET sock, char* buf, int32_t len);
-API void Socket_Shutdown(SOCKET sock, int32_t how);
-API void Socket_Close(SOCKET sock);
+API bool Socket_Bind(Socket sock, struct sockaddr_in* ssa);
+API bool Socket_Connect(Socket sock, struct sockaddr_in* ssa);
+API Socket Socket_Accept(Socket sock, struct sockaddr_in* addr);
+API int32_t Socket_Receive(Socket sock, char* buf, int32_t len, int32_t flags);
+API int32_t Socket_ReceiveLine(Socket sock, char* line, int32_t len);
+API int32_t Socket_Send(Socket sock, char* buf, int32_t len);
+API void Socket_Shutdown(Socket sock, int32_t how);
+API void Socket_Close(Socket sock);
 
-API THREAD Thread_Create(TFUNC func, const TARG param);
-API bool Thread_IsValid(THREAD th);
-API void Thread_Close(THREAD th);
-API void Thread_Join(THREAD th);
+API Thread Thread_Create(TFUNC func, const TARG param);
+API bool Thread_IsValid(Thread th);
+API void Thread_Close(Thread th);
+API void Thread_Join(Thread th);
 
-API MUTEX* Mutex_Create(void);
-API void Mutex_Free(MUTEX* handle);
-API void Mutex_Lock(MUTEX* handle);
-API void Mutex_Unlock(MUTEX* handle);
+API Mutex* Mutex_Create(void);
+API void Mutex_Free(Mutex* handle);
+API void Mutex_Lock(Mutex* handle);
+API void Mutex_Unlock(Mutex* handle);
 
 API void Time_Format(char* buf, size_t len);
 API uint64_t Time_GetMSec(void);

@@ -7,11 +7,11 @@
 #include "packets.h"
 #include "event.h"
 
-EXT firstExtension;
+CPEExt firstExtension;
 uint16_t extensionsCount;
 
 void CPE_RegisterExtension(const char* name, int32_t version) {
-	EXT tmp = Memory_Alloc(1, sizeof(struct cpeExt));
+	CPEExt tmp = Memory_Alloc(1, sizeof(struct cpeExt));
 
 	tmp->name = name;
 	tmp->version = version;
@@ -20,9 +20,9 @@ void CPE_RegisterExtension(const char* name, int32_t version) {
 	++extensionsCount;
 }
 
-void CPE_StartHandshake(CLIENT client) {
+void CPE_StartHandshake(Client client) {
 	CPEPacket_WriteInfo(client);
-	EXT ptr = firstExtension;
+	CPEExt ptr = firstExtension;
 	while(ptr) {
 		CPEPacket_WriteExtEntry(client, ptr);
 		ptr = ptr->next;
@@ -128,7 +128,7 @@ void Packet_RegisterCPEDefault(void) {
 	Packet_RegisterCPE(0x08, EXT_ENTPOS, 1, 15, NULL);
 }
 
-void CPEPacket_WriteInfo(CLIENT client) {
+void CPEPacket_WriteInfo(Client client) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x10;
@@ -138,7 +138,7 @@ void CPEPacket_WriteInfo(CLIENT client) {
 	PacketWriter_End(client, 67);
 }
 
-void CPEPacket_WriteExtEntry(CLIENT client, EXT ext) {
+void CPEPacket_WriteExtEntry(Client client, CPEExt ext) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x11;
@@ -148,7 +148,7 @@ void CPEPacket_WriteExtEntry(CLIENT client, EXT ext) {
 	PacketWriter_End(client, 69);
 }
 
-void CPEPacket_WriteClickDistance(CLIENT client, short dist) {
+void CPEPacket_WriteClickDistance(Client client, short dist) {
 	PacketWriter_Start(client);
 
 	*data = 0x12;
@@ -159,7 +159,7 @@ void CPEPacket_WriteClickDistance(CLIENT client, short dist) {
 
 // 0x13 - CustomBlocksSupportLevel
 
-void CPEPacket_WriteHoldThis(CLIENT client, BlockID block, bool preventChange) {
+void CPEPacket_WriteHoldThis(Client client, BlockID block, bool preventChange) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x14;
@@ -170,7 +170,8 @@ void CPEPacket_WriteHoldThis(CLIENT client, BlockID block, bool preventChange) {
 }
 
 // 0x15 - SetTextHotKey
-void CPEPacket_WriteEnvColor(CLIENT client, uint8_t type, int16_t r, int16_t g, int16_t b) {
+
+void CPEPacket_WriteEnvColor(Client client, uint8_t type, int16_t r, int16_t g, int16_t b) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x19;
@@ -181,9 +182,10 @@ void CPEPacket_WriteEnvColor(CLIENT client, uint8_t type, int16_t r, int16_t g, 
 
 	PacketWriter_End(client, 8);
 }
+
 // 0x1A - SelectCuboid
 
-void CPEPacket_WriteBlockPerm(CLIENT client, BlockID id, bool allowPlace, bool allowDestroy) {
+void CPEPacket_WriteBlockPerm(Client client, BlockID id, bool allowPlace, bool allowDestroy) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1C;
@@ -194,7 +196,7 @@ void CPEPacket_WriteBlockPerm(CLIENT client, BlockID id, bool allowPlace, bool a
 	PacketWriter_End(client, 4);
 }
 
-void CPEPacket_WriteSetModel(CLIENT client, ClientID id, int16_t model) {
+void CPEPacket_WriteSetModel(Client client, ClientID id, int16_t model) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1D;
@@ -209,7 +211,7 @@ void CPEPacket_WriteSetModel(CLIENT client, ClientID id, int16_t model) {
 	PacketWriter_End(client, 66);
 }
 
-void CPEPacket_WriteWeatherType(CLIENT client, Weather type) {
+void CPEPacket_WriteWeatherType(Client client, Weather type) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1F;
@@ -218,7 +220,7 @@ void CPEPacket_WriteWeatherType(CLIENT client, Weather type) {
 	PacketWriter_End(client, 2);
 }
 
-void CPEPacket_WriteHackControl(CLIENT client, HACKS hacks) {
+void CPEPacket_WriteHackControl(Client client, Hacks hacks) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x20;
@@ -237,7 +239,7 @@ void CPEPacket_WriteHackControl(CLIENT client, HACKS hacks) {
 // 0x26 - BulkBlockUpdate
 // 0x27 - SetTextColor
 
-void CPEPacket_WriteTexturePack(CLIENT client, const char* url) {
+void CPEPacket_WriteTexturePack(Client client, const char* url) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x28;
@@ -246,7 +248,7 @@ void CPEPacket_WriteTexturePack(CLIENT client, const char* url) {
 	PacketWriter_End(client, 65);
 }
 
-void CPEPacket_WriteMapProperty(CLIENT client, uint8_t property, int32_t value) {
+void CPEPacket_WriteMapProperty(Client client, uint8_t property, int32_t value) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x29;
@@ -258,7 +260,7 @@ void CPEPacket_WriteMapProperty(CLIENT client, uint8_t property, int32_t value) 
 
 // 0x2A - SetEntityProperty
 
-void CPEPacket_WriteTwoWayPing(CLIENT client, uint8_t direction, short num) {
+void CPEPacket_WriteTwoWayPing(Client client, uint8_t direction, short num) {
 	PacketWriter_Start(client);
 	if(client->playerData->state != STATE_INGAME) {
 		PacketWriter_Stop(client);
@@ -271,7 +273,7 @@ void CPEPacket_WriteTwoWayPing(CLIENT client, uint8_t direction, short num) {
 	PacketWriter_End(client, 4);
 }
 
-void CPEPacket_WriteInventoryOrder(CLIENT client, Order order, BlockID block) {
+void CPEPacket_WriteInventoryOrder(Client client, Order order, BlockID block) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x2C;
@@ -281,7 +283,7 @@ void CPEPacket_WriteInventoryOrder(CLIENT client, Order order, BlockID block) {
 	PacketWriter_End(client, 3);
 }
 
-void CPEPacket_WriteSetHotBar(CLIENT client, Order order, BlockID block) {
+void CPEPacket_WriteSetHotBar(Client client, Order order, BlockID block) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x2D;
@@ -293,7 +295,7 @@ void CPEPacket_WriteSetHotBar(CLIENT client, Order order, BlockID block) {
 
 // Обработчики CPE пакетов
 
-bool CPEHandler_ExtInfo(CLIENT client, const char* data) {
+bool CPEHandler_ExtInfo(Client client, const char* data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_MOTD, false);
 
@@ -302,12 +304,12 @@ bool CPEHandler_ExtInfo(CLIENT client, const char* data) {
 	return true;
 }
 
-bool CPEHandler_ExtEntry(CLIENT client, const char* data) {
+bool CPEHandler_ExtEntry(Client client, const char* data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_MOTD, false);
 
-	CPEDATA cpd = client->cpeData;
-	EXT tmp = Memory_Alloc(1, sizeof(struct cpeExt));
+	CPEData cpd = client->cpeData;
+	CPEExt tmp = Memory_Alloc(1, sizeof(struct cpeExt));
 	if(!ReadNetString(&data, &tmp->name)) {
 		Memory_Free(tmp);
 		return false;
@@ -336,7 +338,7 @@ bool CPEHandler_ExtEntry(CLIENT client, const char* data) {
 	return true;
 }
 
-bool CPEHandler_PlayerClick(CLIENT client, const char* data) {
+bool CPEHandler_PlayerClick(Client client, const char* data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_INGAME, false);
 
@@ -345,26 +347,25 @@ bool CPEHandler_PlayerClick(CLIENT client, const char* data) {
 	short yaw = ntohs(*(uint16_t*)data); data += 2;
 	short pitch = ntohs(*(uint16_t*)data); data += 2;
 	ClientID tgID = *data++;
-	short tgBlockX = ntohs(*(short*)data); data += 2;
-	short tgBlockY = ntohs(*(short*)data); data += 2;
-	short tgBlockZ = ntohs(*(short*)data); data += 2;
+	SVec tgBlockPos = {0};
+	tgBlockPos.x = ntohs(*(short*)data); data += 2;
+	tgBlockPos.y = ntohs(*(short*)data); data += 2;
+	tgBlockPos.z = ntohs(*(short*)data); data += 2;
 	char tgBlockFace = *data;
 
 	Event_OnClick(
 		client, button,
 		action, yaw,
 		pitch, tgID,
-		tgBlockX,
-		tgBlockY,
-		tgBlockZ,
+		&tgBlockPos,
 		tgBlockFace
 	);
 	return true;
 }
 
-bool CPEHandler_TwoWayPing(CLIENT client, const char* data) {
+bool CPEHandler_TwoWayPing(Client client, const char* data) {
 	ValidateCpeClient(client, false);
-	CPEDATA cpd = client->cpeData;
+	CPEData cpd = client->cpeData;
 	uint8_t pingDirection = *data++;
 	uint16_t pingData = *(uint16_t*)data;
 

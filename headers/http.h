@@ -35,7 +35,7 @@ typedef struct httpResponse {
 } *HTTPRESP;
 
 typedef struct httpRequest {
-	SOCKET sock;
+	Socket sock;
 	int32_t error;
 	struct sockaddr_in addr;
 	const char* path;
@@ -51,7 +51,7 @@ API void HttpRequest_SetHeaderInt(HTTPREQ req, const char* key, int32_t value);
 int32_t HttpRequest_GetHeaderInt(HTTPREQ req, const char* key);
 API void HttpRequest_SetHost(HTTPREQ req, const char* host, uint16_t port);
 API void HttpRequest_SetPath(HTTPREQ req, const char* path);
-API bool HttpRequest_Read(HTTPREQ req, SOCKET sock);
+API bool HttpRequest_Read(HTTPREQ req, Socket sock);
 API bool HttpRequest_Perform(HTTPREQ req, HTTPRESP resp);
 API void HttpRequest_Cleanup(HTTPREQ req);
 
@@ -62,7 +62,7 @@ API void HttpResponse_SetHeaderInt(HTTPRESP resp, const char* key, int32_t value
 API int32_t HttpResponse_GetHeaderInt(HTTPRESP resp, const char* key);
 API void HttpResponse_SetHeader(HTTPRESP resp, const char* key, const char* value);
 API void HttpResponse_SetBody(HTTPRESP resp, char* body, int32_t size);
-API bool HttpResponse_SendTo(HTTPRESP resp, SOCKET sock);
-API bool HttpResponse_Read(HTTPRESP resp, SOCKET sock);
+API bool HttpResponse_SendTo(HTTPRESP resp, Socket sock);
+API bool HttpResponse_Read(HTTPRESP resp, Socket sock);
 API void HttpResponse_Cleanup(HTTPRESP resp);
 #endif

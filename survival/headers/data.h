@@ -11,9 +11,9 @@ enum survActions {
 };
 
 typedef struct survivalData {
-	CLIENT client;
+	Client client;
 	uint16_t inventory[256];
-	short lastclick[3];
+	SVec lastClick;
 	uint8_t health;
 	uint8_t oxygen;
 	bool showOxygen;
@@ -25,8 +25,8 @@ typedef struct survivalData {
 	BlockID breakBlock;
 } *SURVDATA;
 
-void SurvData_Create(CLIENT cl);
-void SurvData_Free(CLIENT cl);
-SURVDATA SurvData_Get(CLIENT cl);
+void SurvData_Create(Client cl);
+void SurvData_Free(Client cl);
+SURVDATA SurvData_Get(Client cl);
 SURVDATA SurvData_GetByID(ClientID id);
 #endif

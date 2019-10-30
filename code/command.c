@@ -44,15 +44,15 @@ void Command_Unregister(const char* cmd) {
 	}
 }
 
-static bool CHandler_OP(const char* args, CLIENT caller, char* out) {
+static bool CHandler_OP(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/op <playername>";
 	Command_OnlyForOP;
 
 	char clientname[64];
 	if(String_GetArgument(args, clientname, 64, 0)) {
-		CLIENT tg = Client_GetByName(clientname);
+		Client tg = Client_GetByName(clientname);
 		if(tg) {
-			PLAYERDATA pd = tg->playerData;
+			PlayerData pd = tg->playerData;
 			const char* name = pd->name;
 			pd->isOP ^= 1;
 			String_FormatBuf(out, MAX_CMD_OUT, "Player %s %s", name, pd->isOP ? "opped" : "deopped");
@@ -64,7 +64,7 @@ static bool CHandler_OP(const char* args, CLIENT caller, char* out) {
 	Command_PrintUsage;
 }
 
-static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
+static bool CHandler_CFG(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/cfg <set/get/print> [key] [value]";
 	Command_OnlyForOP;
 
@@ -75,7 +75,7 @@ static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
 			if(!String_GetArgument(args, key, MAX_CFG_LEN, 1)) {
 				Command_PrintUsage;
 			}
-			CFGENTRY ent = Config_GetEntry(Server_Config, key);
+			CFGEntry ent = Config_GetEntry(Server_Config, key);
 			if(!ent) {
 				Command_Print("This entry not found in \"server.cfg\" store.");
 			}
@@ -108,7 +108,7 @@ static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
 				Command_PrintUsage;
 			}
 
-			CFGENTRY ent = Config_GetEntry(Server_Config, key);
+			CFGEntry ent = Config_GetEntry(Server_Config, key);
 			if(ent) {
 				if(!Config_ToStr(ent, value, MAX_CFG_LEN)) {
 					Command_Print("Can't detect entry type.");
@@ -118,7 +118,7 @@ static bool CHandler_CFG(const char* args, CLIENT caller, char* out) {
 			}
 			Command_Print("This entry not found in \"server.cfg\" store.");
 		} else if(String_CaselessCompare(subcommand, "print")) {
-			CFGENTRY ent = Server_Config->firstCfgEntry;
+			CFGEntry ent = Server_Config->firstCfgEntry;
 			String_Copy(out, MAX_CMD_OUT, "Server config entries:");
 
 			while(ent) {
@@ -142,11 +142,11 @@ if(!String_GetArgument(args, name, 64, 1)) { \
 	return true; \
 } \
 const char* lc = String_LastChar(name, '.'); \
-if(!lc || !String_CaselessCompare(lc, "."DLIB_EXT)) { \
-	String_Append(name, 64, "."DLIB_EXT); \
+if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) { \
+	String_Append(name, 64, "." DLIB_EXT); \
 }
 
-static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
+static bool CHandler_Plugins(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/plugins <load/unload/print> [pluginName]";
 	char subcommand[64], name[64];
 	CPLUGIN plugin;
@@ -211,7 +211,7 @@ static bool CHandler_Plugins(const char* args, CLIENT caller, char* out) {
 	Command_PrintUsage;
 }
 
-static bool CHandler_Stop(const char* args, CLIENT caller, char* out) {
+static bool CHandler_Stop(const char* args, Client caller, char* out) {
 	Command_OnlyForOP;
 	(void)args;
 
@@ -219,7 +219,7 @@ static bool CHandler_Stop(const char* args, CLIENT caller, char* out) {
 	return false;
 }
 
-static bool CHandler_Announce(const char* args, CLIENT caller, char* out) {
+static bool CHandler_Announce(const char* args, Client caller, char* out) {
 	Command_OnlyForOP;
 
 	if(!caller) caller = Client_Broadcast;
@@ -227,13 +227,13 @@ static bool CHandler_Announce(const char* args, CLIENT caller, char* out) {
 	return false;
 }
 
-static bool CHandler_Kick(const char* args, CLIENT caller, char* out) {
+static bool CHandler_Kick(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/kick <player> [reason]";
 	Command_OnlyForOP;
 
 	char playername[64];
 	if(String_GetArgument(args, playername, 64, 0)) {
-		CLIENT tg = Client_GetByName(playername);
+		Client tg = Client_GetByName(playername);
 		if(tg) {
 			const char* reason = String_FromArgument(args, 1);
 			Client_Kick(tg, reason);
@@ -247,7 +247,7 @@ static bool CHandler_Kick(const char* args, CLIENT caller, char* out) {
 	Command_PrintUsage;
 }
 
-static bool CHandler_SetModel(const char* args, CLIENT caller, char* out) {
+static bool CHandler_SetModel(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/model <modelname/blockid>";
 	Command_OnlyForOP;
 	Command_OnlyForClient;
@@ -263,13 +263,13 @@ static bool CHandler_SetModel(const char* args, CLIENT caller, char* out) {
 	Command_PrintUsage;
 }
 
-static bool CHandler_ChgWorld(const char* args, CLIENT caller, char* out) {
+static bool CHandler_ChgWorld(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/chgworld <worldname>";
 	Command_OnlyForClient;
 
 	char worldname[64];
 	Command_ArgToWorldName(worldname, 0);
-	WORLD world = World_GetByName(worldname);
+	World world = World_GetByName(worldname);
 	if(world) {
 		if(Client_IsInWorld(caller, world)) {
 			Command_Print("You already in this world.");
@@ -279,7 +279,7 @@ static bool CHandler_ChgWorld(const char* args, CLIENT caller, char* out) {
 	Command_Print("World not found.");
 }
 
-static bool CHandler_GenWorld(const char* args, CLIENT caller, char* out) {
+static bool CHandler_GenWorld(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/genworld <name> <x> <y> <z>";
 	Command_OnlyForOP;
 
@@ -293,7 +293,7 @@ static bool CHandler_GenWorld(const char* args, CLIENT caller, char* out) {
 
 		if(_x > 0 && _y > 0 && _z > 0) {
 			Command_ArgToWorldName(worldname, 0);
-			WORLD tmp = World_Create(worldname);
+			World tmp = World_Create(worldname);
 			World_SetDimensions(tmp, _x, _y, _z);
 			World_AllocBlockArray(tmp);
 			Generator_Flat(tmp);
@@ -312,19 +312,19 @@ static bool CHandler_GenWorld(const char* args, CLIENT caller, char* out) {
 	Command_PrintUsage;
 }
 
-static bool CHandler_UnlWorld(const char* args, CLIENT caller, char* out) {
+static bool CHandler_UnlWorld(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/unlworld <worldname>";
 	Command_OnlyForOP;
 
 	char worldname[64];
 	Command_ArgToWorldName(worldname, 0);
-	WORLD tmp = World_GetByName(worldname);
+	World tmp = World_GetByName(worldname);
 	if(tmp) {
 		if(tmp->id == 0) {
 			Command_Print("Can't unload world with id 0.");
 		}
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-			CLIENT c = Clients_List[i];
+			Client c = Clients_List[i];
 			if(c && Client_IsInWorld(c, tmp)) Client_ChangeWorld(c, Worlds_List[0]);
 		}
 		tmp->saveUnload = true;
@@ -334,13 +334,13 @@ static bool CHandler_UnlWorld(const char* args, CLIENT caller, char* out) {
 	Command_Print("World not found.");
 }
 
-static bool CHandler_SavWorld(const char* args, CLIENT caller, char* out) {
+static bool CHandler_SavWorld(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/savworld <worldname>";
 	Command_OnlyForOP;
 
 	char worldname[64];
 	Command_ArgToWorldName(worldname, 0);
-	WORLD tmp = World_GetByName(worldname);
+	World tmp = World_GetByName(worldname);
 	if(tmp && World_Save(tmp)) {
 		Command_Print("World saving scheduled.");
 	}
@@ -368,7 +368,7 @@ void Command_RegisterDefault(void) {
 ** на счёт надёжности данной функции.
 ** TODO: Разобраться, может ли здесь произойти краш.
 */
-static void SendOutputToClient(CLIENT client, char* ret) {
+static void SendOutputToClient(Client client, char* ret) {
 	while(ret && *ret != '\0') {
 		char* nlptr = (char*)String_FirstChar(ret, '\r');
 		if(nlptr)
@@ -382,7 +382,7 @@ static void SendOutputToClient(CLIENT client, char* ret) {
 	}
 }
 
-bool Command_Handle(char* cmd, CLIENT caller) {
+bool Command_Handle(char* cmd, Client caller) {
 	if(*cmd == '/') ++cmd;
 
 	char ret[MAX_CMD_OUT] = {0};
