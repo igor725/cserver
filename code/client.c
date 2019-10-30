@@ -145,7 +145,7 @@ void Client_UpdateWorldInfo(Client client, World world, bool updateAll) {
 	if(updateAll || modval & MV_PROPS) {
 		for(uint8_t prop = 0; prop < WORLD_PROPS_COUNT; prop++) {
 			if(updateAll || modprop & (2 ^ prop))
-				Client_SetProperty(client, prop, World_GetProperty(world, prop));
+				Client_SetEnvProperty(client, prop, World_GetProperty(world, prop));
 		}
 	}
 	if(updateAll || modval & MV_WEATHER)
@@ -415,7 +415,7 @@ bool Client_SetBlock(Client client, SVec* pos, BlockID id) {
 	return true;
 }
 
-bool Client_SetProperty(Client client, uint8_t property, int32_t value) {
+bool Client_SetEnvProperty(Client client, uint8_t property, int32_t value) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
 		CPEPacket_WriteMapProperty(client, property, value);
 		return true;

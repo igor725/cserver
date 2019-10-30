@@ -67,7 +67,7 @@ typedef struct client {
 } *Client;
 
 void Client_UpdatePositions(Client client);
-int32_t  Client_Send(Client client, int32_t len);
+int32_t Client_Send(Client client, int32_t len);
 void Client_HandshakeStage2(Client client);
 bool Client_CheckAuth(Client client);
 TRET Client_ThreadProc(TARG param);
@@ -94,9 +94,9 @@ API bool Client_IsOP(Client client);
 
 API bool Client_SetWeather(Client client, Weather type);
 API bool Client_SetInvOrder(Client client, Order order, BlockID block);
-API bool Client_SetProperty(Client client, uint8_t property, int32_t value);
-API bool Client_SetTexturePack(Client client, const char* url);
+API bool Client_SetEnvProperty(Client client, uint8_t property, int32_t value);
 API bool Client_SetEnvColor(Client client, uint8_t type, Color3* color);
+API bool Client_SetTexturePack(Client client, const char* url);
 API bool Client_SetBlock(Client client, SVec* pos, BlockID id);
 API bool Client_SetModel(Client client, int16_t model);
 API bool Client_SetModelStr(Client client, const char* model);

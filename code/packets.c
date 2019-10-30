@@ -78,16 +78,13 @@ static bool ReadClPos(Client client, const char* data) {
 	}
 
 	if(newVec.x != vec->x || newVec.y != vec->y || newVec.z != vec->z) {
-		vec->x = newVec.x;
-		vec->y = newVec.y;
-		vec->z = newVec.z;
+		cpd->position = newVec;
 		Event_Call(EVT_ONPLAYERMOVE, client);
 		changed = true;
 	}
 
 	if(newAng.yaw != ang->yaw || newAng.pitch != ang->pitch) {
-		ang->yaw = newAng.yaw;
-		ang->pitch = newAng.pitch;
+		cpd->angle = newAng;
 		Event_Call(EVT_ONPLAYERROTATE, client);
 		changed = true;
 	}
