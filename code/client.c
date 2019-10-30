@@ -409,9 +409,9 @@ bool Client_CheckAuth(Client client) {
 
 void Client_SetPos(Client client, Vec* pos, Ang* ang) {
 	PlayerData pd = client->playerData;
-	if(!pd) return;
-	Memory_Copy(&pd->position, pos, sizeof(struct vector));
-	Memory_Copy(&pd->angle, ang, sizeof(struct angle));
+	Vec_Copy(&pd->position, pos);
+	pd->angle.yaw = ang->yaw;
+	pd->angle.pitch = ang->pitch;
 }
 
 bool Client_SetBlock(Client client, SVec* pos, BlockID id) {
@@ -548,8 +548,8 @@ void Client_Free(Client client) {
 
 		while(ptr) {
 			prev = ptr;
-			Memory_Free((void*)ptr->name);
 			ptr = ptr->next;
+			Memory_Free((void*)prev->name);
 			Memory_Free(prev);
 		}
 

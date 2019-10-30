@@ -119,7 +119,7 @@ static void Survival_OnClick(void* param) {
 
 	if(target) {
 		Vec* pvt = &target->playerData->position;
-		dist_entity = distance(pvt->x, pvt->y, pvt->z, pv->x, pv->y, pv->z);
+		dist_entity = distance(pvt->x, pvt->y + 1.51f, pvt->z, pv->x, pv->y, pv->z);
 	}
 
 	if(data->breakStarted && !SVec_Compare(&data->lastClick, pos)) {
