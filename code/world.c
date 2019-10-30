@@ -39,7 +39,9 @@ World World_Create(const char* name) {
 	wi->props[PROP_SIDEOFFSET] = -2;
 
 	for(int i = 0; i < WORLD_COLORS_COUNT; i++) {
-		wi->colors[i] = -1;
+		wi->colors[i].r = -1;
+		wi->colors[i].g = -1;
+		wi->colors[i].b = -1;
 	}
 
 	return tmp;
@@ -82,7 +84,7 @@ void World_SetDimensions(World world, uint16_t width, uint16_t height, uint16_t 
 	wi->length = length;
 }
 
-bool World_SetProperty(World world, uint8_t property, int32_t value) {
+bool World_SetEnvProperty(World world, uint8_t property, int32_t value) {
 	if(property > WORLD_PROPS_COUNT) return false;
 
 	world->modified = true;
@@ -128,21 +130,18 @@ bool World_SetWeather(World world, Weather type) {
 	return true;
 }
 
-bool World_SetColor(World world, uint8_t type, int16_t r, int16_t g, int16_t b) {
+bool World_SetEnvColor(World world, uint8_t type, Color3* color) {
 	if(type > WORLD_COLORS_COUNT) return false;
-	int16_t* colors = &world->info->colors[type * 3];
 	world->info->modval |= MV_COLORS;
 	world->modified = true;
-	colors[0] = r;
-	colors[1] = g;
-	colors[2] = b;
+	world->info->colors[type * 3] = *color;
 	Event_Call(EVT_ONCOLOR, world);
 	return true;
 }
 
-int16_t* World_GetColor(World world, uint8_t type) {
+Color3* World_GetEnvColor(World world, uint8_t type) {
 	if(type > WORLD_COLORS_COUNT) return false;
-	return &world->info->colors[type * 3];
+	return &world->info->colors[type];
 }
 
 void World_UpdateClients(World world) {
@@ -191,11 +190,11 @@ bool World_WriteInfo(World world, FILE* fp) {
 		return false;
 	}
 	return _WriteData(fp, DT_DIM, &world->info->width, 6) &&
-	_WriteData(fp, DT_SV, &world->info->spawnVec, sizeof(struct vector)) &&
-	_WriteData(fp, DT_SA, &world->info->spawnAng, sizeof(struct angle)) &&
+	_WriteData(fp, DT_SV, &world->info->spawnVec, sizeof(struct _Vec)) &&
+	_WriteData(fp, DT_SA, &world->info->spawnAng, sizeof(struct _Ang)) &&
 	_WriteData(fp, DT_WT, &world->info->wt, sizeof(Weather)) &&
 	_WriteData(fp, DT_PROPS, world->info->props, 4 * WORLD_PROPS_COUNT) &&
-	_WriteData(fp, DT_COLORS, world->info->colors, 2 * WORLD_COLORS_COUNT) &&
+	_WriteData(fp, DT_COLORS, world->info->colors, sizeof(Color3) * WORLD_COLORS_COUNT) &&
 	_WriteData(fp, DT_END, NULL, 0);
 }
 
@@ -217,11 +216,11 @@ bool World_ReadInfo(World world, FILE* fp) {
 					return false;
 				break;
 			case DT_SV:
-				if(File_Read(&world->info->spawnVec, sizeof(struct vector), 1, fp) != 1)
+				if(File_Read(&world->info->spawnVec, sizeof(struct _Vec), 1, fp) != 1)
 					return false;
 				break;
 			case DT_SA:
-				if(File_Read(&world->info->spawnAng, sizeof(struct angle), 1, fp) != 1)
+				if(File_Read(&world->info->spawnAng, sizeof(struct _Ang), 1, fp) != 1)
 					return false;
 				break;
 			case DT_WT:
@@ -233,7 +232,7 @@ bool World_ReadInfo(World world, FILE* fp) {
 					return false;
 				break;
 			case DT_COLORS:
-				if(File_Read(world->info->colors, 2 * WORLD_COLORS_COUNT, 1, fp) != 1)
+				if(File_Read(world->info->colors, sizeof(struct _Color3) * WORLD_COLORS_COUNT, 1, fp) != 1)
 					return false;
 				break;
 			case DT_END:

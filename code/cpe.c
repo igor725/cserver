@@ -42,7 +42,7 @@ static const struct extReg serverExtensions[] = {
 	// TextHotKey
 	// ExtPlayerList
 	{"EnvColors", 1},
-	// SelectionCuboid
+	{"SelectionCuboid", 1},
 	{"BlockPermissions", 1},
 	{"ChangeModel", 1},
 	// EnvMapAppearance
@@ -171,19 +171,46 @@ void CPEPacket_WriteHoldThis(Client client, BlockID block, bool preventChange) {
 
 // 0x15 - SetTextHotKey
 
-void CPEPacket_WriteEnvColor(Client client, uint8_t type, int16_t r, int16_t g, int16_t b) {
+void CPEPacket_WriteEnvColor(Client client, uint8_t type, Color3* col) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x19;
 	*data++ = type;
-	*(int16_t*)data = htons(r); data += 2;
-	*(int16_t*)data = htons(g); data += 2;
-	*(int16_t*)data = htons(b); data += 2;
+	*(int16_t*)data = htons(col->r); data += 2;
+	*(int16_t*)data = htons(col->g); data += 2;
+	*(int16_t*)data = htons(col->b); data += 2;
 
 	PacketWriter_End(client, 8);
 }
 
-// 0x1A - SelectCuboid
+void CPEPacket_WriteMakeSelection(Client client, uint8_t id, SVec* start, SVec* end, Color4* color) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x1A;
+	*data++ = id;
+	data += 64; // Label
+	*(int16_t*)data = htons(start->x); data += 2;
+	*(int16_t*)data = htons(start->y); data += 2;
+	*(int16_t*)data = htons(start->z); data += 2;
+	*(int16_t*)data = htons(end->x); data += 2;
+	*(int16_t*)data = htons(end->y); data += 2;
+	*(int16_t*)data = htons(end->z); data += 2;
+	*(int16_t*)data = htons(color->r); data += 2;
+	*(int16_t*)data = htons(color->g); data += 2;
+	*(int16_t*)data = htons(color->b); data += 2;
+	*(int16_t*)data = htons(color->a);
+
+	PacketWriter_End(client, 86);
+}
+
+void CPEPacket_WriteRemoveSelection(Client client, uint8_t id) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x1B;
+	*data = id;
+
+	PacketWriter_End(client, 2);
+}
 
 void CPEPacket_WriteBlockPerm(Client client, BlockID id, bool allowPlace, bool allowDestroy) {
 	PacketWriter_Start(client);

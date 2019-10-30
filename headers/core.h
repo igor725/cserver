@@ -120,4 +120,12 @@ enum messageTypes {
 	CPE_BRIGHT3,
 	CPE_ANNOUNCE = 100
 };
+
+typedef struct _Color4 {
+	int16_t r, g, b, a;
+} Color4;
+
+typedef struct _Color3 {
+	int16_t r, g, b;
+} Color3;
 #endif

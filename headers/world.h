@@ -9,7 +9,7 @@
 ** этих значений в степени двойки.
 */
 #define WORLD_PROPS_COUNT 10
-#define WORLD_COLORS_COUNT 5 * 3 // 5 типов и 3 значения r,g,b
+#define WORLD_COLORS_COUNT 5
 
 enum ColorTypes {
 	COLOR_SKY,
@@ -58,7 +58,7 @@ enum ModifiedValues {
 
 typedef struct worldInfo {
 	uint16_t width, height, length;
-	int16_t colors[WORLD_COLORS_COUNT];
+	Color3 colors[WORLD_COLORS_COUNT];
 	int32_t props[WORLD_PROPS_COUNT];
 	char texturepack[65];
 	Vec spawnVec;
@@ -96,14 +96,15 @@ API bool World_Save(World world);
 
 API void World_SetDimensions(World world, uint16_t width, uint16_t height, uint16_t length);
 API bool World_SetBlock(World world, SVec* pos, BlockID id);
-API bool World_SetProperty(World world, uint8_t property, int32_t value);
+API bool World_SetEnvColor(World world, uint8_t type, Color3* color);
+API bool World_SetEnvProperty(World world, uint8_t property, int32_t value);
 API bool World_SetTexturePack(World world, const char* url);
 API bool World_SetWeather(World world, Weather type);
 
 API uint32_t World_GetOffset(World world, SVec* pos);
 API BlockID World_GetBlock(World world, SVec* pos);
 API int32_t World_GetProperty(World world, uint8_t property);
-API int16_t* World_GetColor(World world, uint8_t type);
+API Color3* World_GetEnvColor(World world, uint8_t type);
 API Weather World_GetWeather(World world);
 API World World_GetByName(const char* name);
 API World World_GetByID(int32_t id);

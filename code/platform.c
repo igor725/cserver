@@ -131,7 +131,7 @@ bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, uint16_t por
 
 		if((ret = getaddrinfo(host, strport, &hints, &addr)) == 0) {
 			struct sockaddr_in* new_ssa = (struct sockaddr_in*)addr->ai_addr;
-			Memory_Copy(ssa, new_ssa, sizeof(struct sockaddr_in));
+			*ssa = *new_ssa;
 			freeaddrinfo(addr);
 		}
 		return ret == 0;

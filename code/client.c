@@ -135,7 +135,7 @@ void Client_UpdateWorldInfo(Client client, World world, bool updateAll) {
 	if(updateAll || modval & MV_COLORS) {
 		for(uint8_t color = 0; color < WORLD_COLORS_COUNT; color++) {
 			if(updateAll || modclr & (2 ^ color))
-				Client_SetEnvColor(client, color, World_GetColor(world, color));
+				Client_SetEnvColor(client, color, World_GetEnvColor(world, color));
 		}
 	}
 	if(updateAll || modval & MV_TEXPACK)
@@ -409,9 +409,8 @@ bool Client_CheckAuth(Client client) {
 
 void Client_SetPos(Client client, Vec* pos, Ang* ang) {
 	PlayerData pd = client->playerData;
-	Vec_Copy(&pd->position, pos);
-	pd->angle.yaw = ang->yaw;
-	pd->angle.pitch = ang->pitch;
+	pd->position = *pos;
+	pd->angle = *ang;
 }
 
 bool Client_SetBlock(Client client, SVec* pos, BlockID id) {
@@ -428,10 +427,9 @@ bool Client_SetProperty(Client client, uint8_t property, int32_t value) {
 	return false;
 }
 
-bool Client_SetEnvColor(Client client, uint8_t type, int16_t* color) {
+bool Client_SetEnvColor(Client client, uint8_t type, Color3* color) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
-		int16_t r = color[0], g = color[1], b = color[2];
-		CPEPacket_WriteEnvColor(client, type, r, g, b);
+		CPEPacket_WriteEnvColor(client, type, color);
 		return true;
 	}
 	return false;

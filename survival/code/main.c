@@ -130,7 +130,7 @@ static void Survival_OnClick(void* param) {
 			BlockID bid = World_GetBlock(pd->world, pos);
 			if(bid > BLOCK_AIR) SurvBrk_Start(data, bid);
 		}
-		Vec_Copy(&data->lastClick, pos);
+		data->lastClick = *pos;
 	} else if(dist_entity < dist_block && dist_entity < 3.5) {
 		if(data->breakStarted) {
 			SurvBrk_Stop(data);
