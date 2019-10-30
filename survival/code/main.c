@@ -13,8 +13,6 @@
 #include "break.h"
 #include "inventory.h"
 
-#define MODE(b) (b ? "&4disabled" : "&aenabled")
-
 static void Survival_OnHandshake(void* param) {
 	SurvData_Create((Client)param);
 }
@@ -154,13 +152,12 @@ static bool CHandler_God(const char* args, Client caller, char* out) {
 	(void)args;
 
 	SURVDATA data = SurvData_Get(caller);
-	bool mode = data->godMode;
-	data->godMode = !mode;
+	data->godMode ^= 1;
 	SurvGui_DrawAll(data);
 	SurvHacks_Update(data);
 	SurvInv_UpdateInventory(data);
-	SurvGui_DrawBlockInfo(data, mode ? caller->cpeData->heldBlock : 0);
-	String_FormatBuf(out, MAX_CMD_OUT, "God mode %s", MODE(mode));
+	SurvGui_DrawBlockInfo(data, data->godMode ? 0 : caller->cpeData->heldBlock);
+	String_FormatBuf(out, MAX_CMD_OUT, "God mode %s", MODE(data->godMode));
 	return true;
 }
 
@@ -182,9 +179,8 @@ static bool CHandler_PvP(const char* args, Client caller, char* out) {
 	(void)args;
 
 	SURVDATA data = SurvData_Get(caller);
-	bool mode = data->pvpMode;
-	data->pvpMode = !mode;
-	String_FormatBuf(out, MAX_CMD_OUT, "PvP mode %s", MODE(mode));
+	data->pvpMode ^= 1;
+	String_FormatBuf(out, MAX_CMD_OUT, "PvP mode %s", MODE(data->pvpMode));
 	return true;
 }
 

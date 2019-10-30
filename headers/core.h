@@ -108,6 +108,7 @@ typedef TRET(*TFUNC)(TARG);
 #define EVENT_TYPES 15
 
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
+#define MODE(b) (b ? Lang_Get(LANG_ENABLED) : Lang_Get(LANG_DISABLED))
 
 enum messageTypes {
 	CPE_CHAT,

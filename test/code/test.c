@@ -27,9 +27,8 @@
 ** более удобного способа я не придумал.
 */
 static void onmesgfunc(void* param) {
-  if(enabled) {
+  if(enabled)
     *((onMessage_p)param)->type = CPE_ANNOUNCE;
-  }
 }
 
 /*
@@ -37,7 +36,7 @@ static void onmesgfunc(void* param) {
 ** Также стоит заметить, что "args" тоже будет NULL при отсутствии аргументов.
 */
 static bool CHandler_Plugtest(const char* args, Client caller, char* out) {
-	(void)args;(void)caller;
+	(void)args; (void)caller;
   String_Copy(out, MAX_CMD_OUT, "This command registred by testplugin." DLIB_EXT);
   return true;
 }
@@ -47,9 +46,8 @@ static bool CHandler_Atoggle(const char* args, Client caller, char* out) {
 	Command_OnlyForOP;
 	(void)args;
 
-  enabled = !enabled;
-	String_Copy(out, MAX_CMD_OUT, "Announce chat: ");
-  String_Append(out, MAX_CMD_OUT, enabled ? "enabled" : "disabled");
+  enabled ^= 1;
+	String_FormatBuf(out, MAX_CMD_OUT, "Announce chat %s", MODE(enabled));
   return true;
 }
 
@@ -62,7 +60,7 @@ static bool CHandler_Atoggle(const char* args, Client caller, char* out) {
 ** вновь, вплоть до перезапуска сервера.
 */
 static bool CHandler_SelfDestroy(const char* args, Client caller, char* out) {
-	(void)args;(void)caller;
+	(void)args; (void)caller;
 	Command_Unregister("selfdestroy");
 	String_Copy(out, MAX_CMD_OUT, "This command can't be called anymore");
 	return true;

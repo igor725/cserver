@@ -7,6 +7,10 @@ const char* Lang_Get(int32_t langid) {
 			return "successfully";
 		case LANG_UNKERR:
 			return "Unexpected error.";
+		case LANG_DISABLED:
+			return "&4disabled";
+		case LANG_ENABLED:
+			return "&aenabled";
 
 		case LANG_SVSTART:
 			return "%s started on %s:%d";
