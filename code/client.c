@@ -112,7 +112,9 @@ bool Client_ChangeWorld(Client client, World world) {
 	if(Client_IsInWorld(client, world)) return false;
 
 	Client_Despawn(client);
-	Client_SetPos(client, &world->info->spawnVec, &world->info->spawnAng);
+	PlayerData pd = client->playerData;
+	pd->position = world->info->spawnVec;
+	pd->angle = world->info->spawnAng;
 	if(!Client_SendMap(client, world)) {
 		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
 		return false;
@@ -317,8 +319,8 @@ TRET Client_MapThreadProc(TARG param) {
 	PlayerData pd = client->playerData;
 
 	World world = pd->world;
-	uint8_t* mapdata = world->data;
-	int32_t maplen = world->size;
+	uint8_t* mapData = world->data;
+	int32_t mapSize = world->size;
 
 	*data++ = 0x03;
 	uint16_t* len = (uint16_t*)data++;
@@ -330,8 +332,8 @@ TRET Client_MapThreadProc(TARG param) {
 	Mutex_Lock(client->mutex);
 	if(Client_GetExtVer(client, EXT_FASTMAP)) {
 		windowBits = -15;
-		maplen -= 4;
-		mapdata += 4;
+		mapData += 4;
+		mapSize -= 4;
 	}
 
 	if((ret = deflateInit2(
@@ -345,8 +347,8 @@ TRET Client_MapThreadProc(TARG param) {
 		return 0;
 	}
 
-	stream.avail_in = maplen;
-	stream.next_in = mapdata;
+	stream.avail_in = mapSize;
+	stream.next_in = mapData;
 
 	do {
 		stream.next_out = out;
@@ -405,12 +407,6 @@ bool Client_IsOP(Client client) {
 //TODO: ClassiCube auth
 bool Client_CheckAuth(Client client) {
 	return Heartbeat_CheckKey(client);
-}
-
-void Client_SetPos(Client client, Vec* pos, Ang* ang) {
-	PlayerData pd = client->playerData;
-	pd->position = *pos;
-	pd->angle = *ang;
 }
 
 bool Client_SetBlock(Client client, SVec* pos, BlockID id) {

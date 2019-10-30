@@ -66,7 +66,6 @@ typedef struct client {
 	uint32_t ppstm; // Таймер для счётчика пакетов
 } *Client;
 
-void Client_SetPos(Client client, Vec* vec, Ang* ang);
 void Client_UpdatePositions(Client client);
 int32_t  Client_Send(Client client, int32_t len);
 void Client_HandshakeStage2(Client client);
