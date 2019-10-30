@@ -51,6 +51,7 @@ void CPEPacket_WriteExtEntry(CLIENT client, EXT ext);
 void CPEPacket_WriteClickDistance(CLIENT client, short dist);
 void CPEPacket_WriteInventoryOrder(CLIENT client, Order order, BlockID block);
 void CPEPacket_WriteHoldThis(CLIENT client, BlockID block, bool preventChange);
+void CPEPacket_WriteEnvColor(CLIENT client, uint8_t type, int16_t r, int16_t g, int16_t b);
 void CPEPacket_WriteHackControl(CLIENT client, HACKS hacks);
 void CPEPacket_WriteSetHotBar(CLIENT client, Order order, BlockID block);
 void CPEPacket_WriteWeatherType(CLIENT client, Weather type);

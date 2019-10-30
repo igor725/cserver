@@ -35,22 +35,35 @@ struct extReg {
 };
 
 static const struct extReg serverExtensions[] = {
-	{"FastMap", 1},
-	{"EmoteFix", 1},
-	{"FullCP437", 1},
-	{"SetHotbar", 1},
-	{"HeldBlock", 1},
-	{"TwoWayPing", 1},
-	{"HackControl", 1},
-	{"PlayerClick", 1},
-	{"ChangeModel", 1},
-	{"MessageTypes", 1},
 	{"ClickDistance", 1},
-	{"LongerMessages", 1},
-	{"InventoryOrder", 1},
-	{"EnvWeatherType", 1},
+	// CustomBlocks
+	{"HeldBlock", 1},
+	{"EmoteFix", 1},
+	// TextHotKey
+	// ExtPlayerList
+	{"EnvColors", 1},
+	// SelectionCuboid
 	{"BlockPermissions", 1},
+	{"ChangeModel", 1},
+	// EnvMapAppearance
+	{"EnvWeatherType", 1},
+	{"HackControl", 1},
+	{"MessageTypes", 1},
+	{"PlayerClick", 1},
+	{"LongerMessages", 1},
+	{"FullCP437", 1},
+	// BlockDefinitions
+	// BlockDefinitionsExt
+	// BulkBlockUpdate
+	// TextColors
+	{"EnvMapAspect", 1},
+	// EntityProperty
 	{"ExtEntityPositions", 1},
+	{"TwoWayPing", 1},
+	{"InventoryOrder", 1},
+	// InstantMOTD
+	{"FastMap", 1},
+	{"SetHotbar", 1},
 	{NULL, 0}
 };
 
@@ -118,9 +131,9 @@ void Packet_RegisterCPEDefault(void) {
 void CPEPacket_WriteInfo(CLIENT client) {
 	PacketWriter_Start(client);
 
-	*data = 0x10;
-	WriteNetString(++data, SOFTWARE_FULLNAME); data += 63;
-	*(uint16_t*)++data = htons(extensionsCount);
+	*data++ = 0x10;
+	WriteNetString(data, SOFTWARE_FULLNAME); data += 64;
+	*(uint16_t*)data = htons(extensionsCount);
 
 	PacketWriter_End(client, 67);
 }
@@ -128,9 +141,9 @@ void CPEPacket_WriteInfo(CLIENT client) {
 void CPEPacket_WriteExtEntry(CLIENT client, EXT ext) {
 	PacketWriter_Start(client);
 
-	*data = 0x11;
-	WriteNetString(++data, ext->name); data += 63;
-	*(uint32_t*)++data = htonl(ext->version);
+	*data++ = 0x11;
+	WriteNetString(data, ext->name); data += 64;
+	*(uint32_t*)data = htonl(ext->version);
 
 	PacketWriter_End(client, 69);
 }
@@ -149,24 +162,34 @@ void CPEPacket_WriteClickDistance(CLIENT client, short dist) {
 void CPEPacket_WriteHoldThis(CLIENT client, BlockID block, bool preventChange) {
 	PacketWriter_Start(client);
 
-	*data = 0x14;
-	*++data = block;
-	*++data = (char)preventChange;
+	*data++ = 0x14;
+	*data++ = block;
+	*data = (char)preventChange;
 
 	PacketWriter_End(client, 3);
 }
 
 // 0x15 - SetTextHotKey
-// 0x19 - EnvColors
+void CPEPacket_WriteEnvColor(CLIENT client, uint8_t type, int16_t r, int16_t g, int16_t b) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x19;
+	*data++ = type;
+	*(int16_t*)data = htons(r); data += 2;
+	*(int16_t*)data = htons(g); data += 2;
+	*(int16_t*)data = htons(b); data += 2;
+
+	PacketWriter_End(client, 8);
+}
 // 0x1A - SelectCuboid
 
 void CPEPacket_WriteBlockPerm(CLIENT client, BlockID id, bool allowPlace, bool allowDestroy) {
 	PacketWriter_Start(client);
 
-	*data = 0x1C;
-	*++data = id;
-	*++data = (char)allowPlace;
-	*++data = (char)allowDestroy;
+	*data++ = 0x1C;
+	*data++ = id;
+	*data++ = (char)allowPlace;
+	*data = (char)allowDestroy;
 
 	PacketWriter_End(client, 4);
 }
@@ -174,14 +197,14 @@ void CPEPacket_WriteBlockPerm(CLIENT client, BlockID id, bool allowPlace, bool a
 void CPEPacket_WriteSetModel(CLIENT client, ClientID id, int16_t model) {
 	PacketWriter_Start(client);
 
-	*data = 0x1D;
-	*++data = id;
+	*data++ = 0x1D;
+	*data++ = id;
 	if(model < 256) {
 		char modelname[4];
 		String_FormatBuf(modelname, 4, "%d", model);
-		WriteNetString(++data, modelname);
+		WriteNetString(data, modelname);
 	} else
-		WriteNetString(++data, CPE_GetModelStr(model - 256));
+		WriteNetString(data, CPE_GetModelStr(model - 256));
 
 	PacketWriter_End(client, 66);
 }
@@ -189,8 +212,8 @@ void CPEPacket_WriteSetModel(CLIENT client, ClientID id, int16_t model) {
 void CPEPacket_WriteWeatherType(CLIENT client, Weather type) {
 	PacketWriter_Start(client);
 
-	*data = 0x1F;
-	*++data = type;
+	*data++ = 0x1F;
+	*data = type;
 
 	PacketWriter_End(client, 2);
 }
@@ -198,13 +221,13 @@ void CPEPacket_WriteWeatherType(CLIENT client, Weather type) {
 void CPEPacket_WriteHackControl(CLIENT client, HACKS hacks) {
 	PacketWriter_Start(client);
 
-	*data = 0x20;
-	*++data = (char)hacks->flying;
-	*++data = (char)hacks->noclip;
-	*++data = (char)hacks->speeding;
-	*++data = (char)hacks->spawnControl;
-	*++data = (char)hacks->tpv;
-	*(short*)++data = hacks->jumpHeight;
+	*data++ = 0x20;
+	*data++ = (char)hacks->flying;
+	*data++ = (char)hacks->noclip;
+	*data++ = (char)hacks->speeding;
+	*data++ = (char)hacks->spawnControl;
+	*data++ = (char)hacks->tpv;
+	*(short*)data = hacks->jumpHeight;
 
 	PacketWriter_End(client, 8);
 }
@@ -212,13 +235,13 @@ void CPEPacket_WriteHackControl(CLIENT client, HACKS hacks) {
 // 0x23 - BlockDefinition, 0x24 - RemoveBlockDefinition
 // 0x25 - ExtBlockDefinition
 // 0x26 - BulkBlockUpdate
-// 0x27 - TextColors
+// 0x27 - SetTextColor
 
 void CPEPacket_WriteTexturePack(CLIENT client, const char* url) {
 	PacketWriter_Start(client);
 
-	*data = 0x28;
-	WriteNetString(++data, url);
+	*data++ = 0x28;
+	WriteNetString(data, url);
 
 	PacketWriter_End(client, 65);
 }
@@ -226,9 +249,9 @@ void CPEPacket_WriteTexturePack(CLIENT client, const char* url) {
 void CPEPacket_WriteMapProperty(CLIENT client, uint8_t property, int32_t value) {
 	PacketWriter_Start(client);
 
-	*data = 0x29;
-	*++data = property;
-	*(int*)++data = htonl(value);
+	*data++ = 0x29;
+	*data++ = property;
+	*(int*)data = htonl(value);
 
 	PacketWriter_End(client, 6);
 }
@@ -241,9 +264,9 @@ void CPEPacket_WriteTwoWayPing(CLIENT client, uint8_t direction, short num) {
 		PacketWriter_Stop(client);
 	}
 
-	*data = 0x2B;
-	*++data = direction;
-	*(uint16_t*)++data = num;
+	*data++ = 0x2B;
+	*data++ = direction;
+	*(uint16_t*)data = num;
 
 	PacketWriter_End(client, 4);
 }
@@ -251,9 +274,9 @@ void CPEPacket_WriteTwoWayPing(CLIENT client, uint8_t direction, short num) {
 void CPEPacket_WriteInventoryOrder(CLIENT client, Order order, BlockID block) {
 	PacketWriter_Start(client);
 
-	*data = 0x2C;
-	*++data = block;
-	*++data = order;
+	*data++ = 0x2C;
+	*data++ = block;
+	*data = order;
 
 	PacketWriter_End(client, 3);
 }
@@ -261,9 +284,9 @@ void CPEPacket_WriteInventoryOrder(CLIENT client, Order order, BlockID block) {
 void CPEPacket_WriteSetHotBar(CLIENT client, Order order, BlockID block) {
 	PacketWriter_Start(client);
 
-	*data = 0x2D;
-	*++data = block;
-	*++data = order;
+	*data++ = 0x2D;
+	*data++ = block;
+	*data = order;
 
 	PacketWriter_End(client, 3);
 }

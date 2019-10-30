@@ -130,9 +130,13 @@ void Client_UpdateWorldInfo(CLIENT client, WORLD world, bool updateAll) {
 	WORLDINFO wi = world->info;
 	uint8_t modval = wi->modval;
 	uint16_t modprop = wi->modprop;
+	uint8_t modclr = wi->modclr;
 
 	if(updateAll || modval & MV_COLORS) {
-		// TODO: Смена цветов мира у клиента
+		for(uint8_t color = 0; color < WORLD_COLORS_COUNT; color++) {
+			if(updateAll || modclr & (2 ^ color))
+				Client_SetEnvColor(client, color, World_GetColor(world, color));
+		}
 	}
 	if(updateAll || modval & MV_TEXPACK)
 		Client_SetTexturePack(client, wi->texturepack);
@@ -419,6 +423,15 @@ bool Client_SetBlock(CLIENT client, short x, short y, short z, BlockID id) {
 bool Client_SetProperty(CLIENT client, uint8_t property, int32_t value) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
 		CPEPacket_WriteMapProperty(client, property, value);
+		return true;
+	}
+	return false;
+}
+
+bool Client_SetEnvColor(CLIENT client, uint8_t type, int16_t* color) {
+	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
+		int16_t r = color[0], g = color[1], b = color[2];
+		CPEPacket_WriteEnvColor(client, type, r, g, b);
 		return true;
 	}
 	return false;

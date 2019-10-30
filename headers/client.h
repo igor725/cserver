@@ -96,6 +96,7 @@ API bool Client_SetWeather(CLIENT client, Weather type);
 API bool Client_SetInvOrder(CLIENT client, Order order, BlockID block);
 API bool Client_SetProperty(CLIENT client, uint8_t property, int32_t value);
 API bool Client_SetTexturePack(CLIENT client, const char* url);
+API bool Client_SetEnvColor(CLIENT client, uint8_t type, int16_t* color);
 API bool Client_SetBlock(CLIENT client, short x, short y, short z, BlockID id);
 API bool Client_SetModel(CLIENT client, int16_t model);
 API bool Client_SetModelStr(CLIENT client, const char* model);

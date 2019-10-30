@@ -156,8 +156,8 @@ void Packet_WriteHandshake(CLIENT client, const char* name, const char* motd) {
 
 	*data++ = 0x00;
 	*data++ = 0x07;
-	WriteNetString(data++, name); data += 64;
-	WriteNetString(data++, motd); data += 64;
+	WriteNetString(data, name); data += 64;
+	WriteNetString(data, motd); data += 64;
 	*data = (char)client->playerData->isOP;
 
 	PacketWriter_End(client, 131);
@@ -272,8 +272,7 @@ void Packet_WriteKick(CLIENT client, const char* reason) {
 // Обработчики ванильных пакетов
 
 bool Handler_Handshake(CLIENT client, const char* data) {
-	uint8_t protoVer = *data++;
-	if(protoVer != 0x07) {
+	if(*data++ != 0x07) {
 		Client_Kick(client, Lang_Get(LANG_KICKPROTOVER));
 		return true;
 	}

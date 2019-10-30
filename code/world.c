@@ -128,7 +128,7 @@ bool World_SetWeather(WORLD world, Weather type) {
 	return true;
 }
 
-bool World_SetColor(WORLD world, int type, int16_t r, int16_t g, int16_t b) {
+bool World_SetColor(WORLD world, uint8_t type, int16_t r, int16_t g, int16_t b) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	int16_t* colors = &world->info->colors[type * 3];
 	world->info->modval |= MV_COLORS;
@@ -138,6 +138,11 @@ bool World_SetColor(WORLD world, int type, int16_t r, int16_t g, int16_t b) {
 	colors[2] = b;
 	Event_Call(EVT_ONCOLOR, world);
 	return true;
+}
+
+int16_t* World_GetColor(WORLD world, uint8_t type) {
+	if(type > WORLD_COLORS_COUNT) return false;
+	return &world->info->colors[type * 3];
 }
 
 void World_UpdateClients(WORLD world) {

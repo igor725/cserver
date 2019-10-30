@@ -65,7 +65,7 @@ typedef struct worldInfo {
 	Weather wt;
 	uint8_t modval;
 	uint16_t modprop;
-	uint8_t modcol;
+	uint8_t modclr;
 } *WORLDINFO;
 
 typedef struct world {
@@ -102,6 +102,7 @@ API bool World_SetWeather(WORLD world, Weather type);
 API uint32_t World_GetOffset(WORLD world, uint16_t x, uint16_t y, uint16_t z);
 API BlockID World_GetBlock(WORLD world, uint16_t x, uint16_t y, uint16_t z);
 API int32_t World_GetProperty(WORLD world, uint8_t property);
+API int16_t* World_GetColor(WORLD world, uint8_t type);
 API Weather World_GetWeather(WORLD world);
 API WORLD World_GetByName(const char* name);
 API WORLD World_GetByID(int32_t id);
