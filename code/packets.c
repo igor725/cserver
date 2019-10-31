@@ -67,41 +67,42 @@ void Proto_WriteColor4(char** dataptr, const Color4* color) {
 	*dataptr = data;
 }
 
-uint8_t Proto_ReadString(const char** data, const char** dst) {
-	const char* instr = *data;
+uint8_t Proto_ReadString(const char** dataptr, const char** dst) {
+	const char* data = *dataptr;
+	*dataptr += 64;
 	uint8_t end;
 
 	for(end = 64; end > 0; end--) {
-		if(end == 0) break;
-		if(instr[end - 1] != ' ') break;
+		if(data[end - 1] != ' ')
+			break;
 	}
 
 	if(end > 0) {
 		char* str = Memory_Alloc(end + 1, 1);
-		Memory_Copy(str, instr, end);
+		Memory_Copy(str, data, end);
 		str[end] = '\0';
 		dst[0] = str;
 	};
 
-	*data += 64;
+
 	return end;
 }
 
-uint8_t Proto_ReadStringNoAlloc(const char** data, char* dst) {
-	const char* instr = *data;
+uint8_t Proto_ReadStringNoAlloc(const char** dataptr, char* dst) {
+	const char* data = *dataptr;
+	*dataptr += 64;
 	uint8_t end;
 
 	for(end = 64; end > 0; end--) {
-		if(end == 0) break;
-		if(instr[end - 1] != ' ') break;
+		if(data[end - 1] != ' ')
+			break;
 	}
 
 	if(end > 0) {
-		Memory_Copy(dst, instr, end);
+		Memory_Copy(dst, data, end);
 		dst[end] = '\0';
 	}
 
-	*data += 64;
 	return end;
 }
 
