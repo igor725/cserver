@@ -182,10 +182,8 @@ static uint32_t WriteClPos(char* data, Client client, bool stand, bool extended)
 	return extended ? 12 : 6;
 }
 
-void Packet_Register(int32_t id, const char* name, uint16_t size, packetHandler handler) {
+void Packet_Register(int32_t id, uint16_t size, packetHandler handler) {
 	Packet tmp = Memory_Alloc(1, sizeof(struct packet));
-
-	tmp->name = name;
 	tmp->size = size;
 	tmp->handler = handler;
 	PackList[id] = tmp;
@@ -193,7 +191,6 @@ void Packet_Register(int32_t id, const char* name, uint16_t size, packetHandler 
 
 void Packet_RegisterCPE(int32_t id, uint32_t extCRC32, int32_t version, uint16_t size, packetHandler handler) {
 	Packet tmp = PackList[id];
-
 	tmp->extCRC32 = extCRC32;
 	tmp->extVersion = version;
 	tmp->cpeHandler = handler;
@@ -202,10 +199,10 @@ void Packet_RegisterCPE(int32_t id, uint32_t extCRC32, int32_t version, uint16_t
 }
 
 void Packet_RegisterDefault(void) {
-	Packet_Register(0x00, "Handshake", 130, Handler_Handshake);
-	Packet_Register(0x05, "SetBlock", 8, Handler_SetBlock);
-	Packet_Register(0x08, "PosAndOrient", 9, Handler_PosAndOrient);
-	Packet_Register(0x0D, "Message", 65, Handler_Message);
+	Packet_Register(0x00, 130, Handler_Handshake);
+	Packet_Register(0x05,   8, Handler_SetBlock);
+	Packet_Register(0x08,   9, Handler_PosAndOrient);
+	Packet_Register(0x0D,  65, Handler_Message);
 }
 
 Packet Packet_Get(int32_t id) {
