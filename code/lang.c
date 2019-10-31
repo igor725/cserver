@@ -13,38 +13,38 @@ const char* Lang_Get(int32_t langid) {
 			return "&aenabled";
 
 		case LANG_SVSTART:
-			return "%s started on %s:%d";
-		case LANG_SVFULL:
-			return "Server is full";
+			return "%s started on %s:%d.";
 		case LANG_SVMANYCONN:
 			return "Too many connections from one IP.";
 		case LANG_SVPLCONN:
-			return "Player %s connected with %s";
+			return "Player %s connected with %s.";
 		case LANG_SVPLDISCONN:
-			return "Player %s disconnected";
+			return "Player %s disconnected.";
 		case LANG_SVPLUGINLOAD:
-			return "Loading C plugins";
+			return "Loading C plugins...";
 		case LANG_HBEAT:
-			return "Creating heartbeat thread";
+			return "Spawning heartbeat thread...";
 		case LANG_SVDELTALT0:
 			return "Time ran backwards? Server_Delta < 0.";
 		case LANG_SVLONGTICK:
 			return "Last server tick took %dms!";
 		case LANG_SVLOOPDONE:
-			return "Main loop done";
+			return "Main loop done.";
 		case LANG_SVSTOP0:
-			return "Kicking players";
+			return "Kicking players...";
 		case LANG_SVSTOP1:
-			return "Saving worlds";
+			return "Saving worlds...";
 		case LANG_SVSTOP2:
-			return "Unloading plugins";
+			return "Unloading plugins...";
 		case LANG_SVLOADING:
-			return "Loading %s";
+			return "Loading %s...";
 		case LANG_SVSAVING:
-			return "Saving %s";
+			return "Saving %s...";
 
 		case LANG_KICKNOREASON:
 			return "Kicked without reason";
+		case LANG_KICKSVFULL:
+			return "Server is full";
 		case LANG_KICKPROTOVER:
 			return "Invalid protocol version";
 		case LANG_KICKNAMEUSED:
@@ -63,16 +63,16 @@ const char* Lang_Get(int32_t langid) {
 			return "Too many packets per second";
 
 		case LANG_CPEVANILLA:
-			return "vanilla";
+			return "vanilla client";
 
 		case LANG_CMDUSAGE:
-			return "Usage: %s";
+			return "Usage: %s.";
 		case LANG_CMDAD:
-			return "Access denied";
+			return "Access denied.";
 		case LANG_CMDPLNF:
-			return "Player not found";
+			return "Player not found.";
 		case LANG_CMDUNK:
-			return "Unknown command";
+			return "Unknown command.";
 		case LANG_CMDONLYCL:
 			return "This command can't be used from console.";
 		case LANG_CMDONLYCON:

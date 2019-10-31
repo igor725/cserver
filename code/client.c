@@ -84,6 +84,7 @@ Client Client_GetByID(ClientID id) {
 }
 
 int16_t Client_GetModel(Client client) {
+	if(!client->cpeData) return 0;
 	return client->cpeData->model;
 }
 
@@ -582,8 +583,9 @@ int32_t Client_Send(Client client, int32_t len) {
 }
 
 bool Client_Spawn(Client client) {
-	if(client->playerData->spawned) return false;
-	World world = client->playerData->world;
+	PlayerData pd = client->playerData;
+	if(pd->spawned) return false;
+	World world = pd->world;
 	Client_UpdateWorldInfo(client, world, true);
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
@@ -591,20 +593,26 @@ bool Client_Spawn(Client client) {
 		if(other && Client_IsInSameWorld(client, other)) {
 			Packet_WriteSpawn(other, client);
 
-			if(other->cpeData && client->cpeData && Client_GetExtVer(other, EXT_CHANGEMODEL))
+			if(other->cpeData && Client_GetExtVer(other, EXT_CHANGEMODEL))
 				CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, Client_GetModel(client));
 
 			if(client != other) {
 				Packet_WriteSpawn(client, other);
 
-				if(other->cpeData && client->cpeData && Client_GetExtVer(client, EXT_CHANGEMODEL))
+				if(other->cpeData && Client_GetExtVer(client, EXT_CHANGEMODEL))
 					CPEPacket_WriteSetModel(client, other->id, Client_GetModel(other));
 			}
 		}
 	}
 
-	client->playerData->spawned = true;
+	pd->spawned = true;
 	Event_Call(EVT_ONSPAWN, (void*)client);
+	if(pd->firstSpawn) { // TODO: Перенести это куда-нибудь
+		const char* name = Client_GetName(client);
+		const char* appname = Client_GetAppName(client);
+		Log_Info(Lang_Get(LANG_SVPLCONN), name, appname);
+		pd->firstSpawn = false;
+	}
 	return true;
 }
 
@@ -646,14 +654,14 @@ void Client_UpdatePositions(Client client) {
 void Client_Tick(Client client) {
 	PlayerData pd = client->playerData;
 	if(client->closed) {
-		if(pd && pd->state > STATE_WLOADDONE)
+		if(pd && pd->state > STATE_WLOADDONE) {
 			Event_Call(EVT_ONDISCONNECT, (void*)client);
+			Log_Info(Lang_Get(LANG_SVPLDISCONN), Client_GetName(client));
+		}
 		Client_Despawn(client);
 		Client_Free(client);
 		return;
 	}
-
-	if(!pd) return;
 
 	if(client->ppstm < 1000) {
 		client->ppstm += Server_Delta;
@@ -666,6 +674,7 @@ void Client_Tick(Client client) {
 		client->ppstm = 0;
 	}
 
+	if(!pd) return;
 	switch (pd->state) {
 		case STATE_WLOADDONE:
 			pd->state = STATE_INGAME;

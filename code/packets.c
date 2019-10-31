@@ -11,7 +11,7 @@
 
 Packet PackList[MAX_PACKETS] = {0};
 
-uint8_t ReadNetString(const char** data, const char** dst) {
+uint8_t Proto_ReadString(const char** data, const char** dst) {
 	const char* instr = *data;
 	uint8_t end;
 
@@ -31,7 +31,7 @@ uint8_t ReadNetString(const char** data, const char** dst) {
 	return end;
 }
 
-uint8_t ReadNetStringNoAlloc(const char** data, char* dst) {
+uint8_t Proto_ReadStringNoAlloc(const char** data, char* dst) {
 	const char* instr = *data;
 	uint8_t end;
 
@@ -49,10 +49,83 @@ uint8_t ReadNetStringNoAlloc(const char** data, char* dst) {
 	return end;
 }
 
-void WriteNetString(char* data, const char* string) {
+void Proto_WriteString(char** dataptr, const char* string) {
+	char* data = *dataptr;
 	size_t size = min(String_Length(string), 64);
 	if(size < 64) Memory_Fill(data + size, 64 - size, 32);
 	Memory_Copy(data, string, size);
+	*dataptr += 64;
+}
+
+void Proto_WriteSVec(char** dataptr, const SVec* vec) {
+	char* data = *dataptr;
+	*(uint16_t*)data = htons(vec->x); data += 2;
+	*(uint16_t*)data = htons(vec->y); data += 2;
+	*(uint16_t*)data = htons(vec->z); data += 2;
+	*dataptr = data;
+}
+
+void Proto_ReadFlSVec(const char** dataptr, Vec* vec) {
+	const char* data = *dataptr;
+	vec->x = (float)ntohs(*(short*)data) / 32; data += 2;
+	vec->y = (float)ntohs(*(short*)data) / 32; data += 2;
+	vec->z = (float)ntohs(*(short*)data) / 32; data += 2;
+	*dataptr = data;
+}
+
+void Proto_ReadFlVec(const char** dataptr, Vec* vec) {
+	const char* data = *dataptr;
+	vec->x = (float)ntohl(*(int*)data) / 32; data += 4;
+	vec->y = (float)ntohl(*(int*)data) / 32; data += 4;
+	vec->z = (float)ntohl(*(int*)data) / 32; data += 4;
+	*dataptr = data;
+}
+
+void Proto_ReadAng(const char** dataptr, Ang* ang) {
+	const char* data = *dataptr;
+	ang->yaw = (((float)(uint8_t)*data++) / 256) * 360;
+	ang->pitch = (((float)(uint8_t)*data++) / 256) * 360;
+	*dataptr = data;
+}
+
+void Proto_WriteAng(char** dataptr, const Ang* ang) {
+	char* data = *dataptr;
+	*(uint8_t*)data++ = (uint8_t)((ang->yaw / 360) * 256);
+	*(uint8_t*)data++ = (uint8_t)((ang->pitch / 360) * 256);
+	*dataptr = data;
+}
+
+void Proto_WriteColor3(char** dataptr, const Color3* color) {
+	char* data = *dataptr;
+	*(int16_t*)data = htons(color->r); data += 2;
+	*(int16_t*)data = htons(color->g); data += 2;
+	*(int16_t*)data = htons(color->b); data += 2;
+	*dataptr = data;
+}
+
+void Proto_WriteColor4(char** dataptr, const Color4* color) {
+	char* data = *dataptr;
+	*(int16_t*)data = htons(color->r); data += 2;
+	*(int16_t*)data = htons(color->g); data += 2;
+	*(int16_t*)data = htons(color->b); data += 2;
+	*(int16_t*)data = htons(color->a); data += 2;
+	*dataptr = data;
+}
+
+void Proto_WriteFlVec(char** dataptr, const Vec* vec, bool stand) {
+	char* data = *dataptr;
+	*(int32_t*)data = htonl((int32_t)(vec->x * 32)); data += 4;
+	*(int32_t*)data = htonl((int32_t)(vec->y * 32 + (stand ? 51 : 0))); data += 4;
+	*(int32_t*)data = htonl((int32_t)(vec->z * 32)); data += 4;
+	*dataptr = data;
+}
+
+void Proto_WriteFlSVec(char** dataptr, const Vec* vec, bool stand) {
+	char* data = *dataptr;
+	*(int16_t*)data = htons((int16_t)(vec->x * 32)); data += 2;
+	*(int16_t*)data = htons((int16_t)(vec->y * 32 + (stand ? 51 : 0))); data += 2;
+	*(int16_t*)data = htons((int16_t)(vec->z * 32)); data += 2;
+	*dataptr = data;
 }
 
 static bool ReadClPos(Client client, const char* data) {
@@ -63,19 +136,12 @@ static bool ReadClPos(Client client, const char* data) {
 	Ang newAng = {0};
 	bool changed = false;
 
-	if(Client_GetExtVer(client, EXT_ENTPOS)) {
-		newVec.x = (float)ntohl(*(int*)data) / 32; data += 4;
-		newVec.y = (float)ntohl(*(int*)data) / 32; data += 4;
-		newVec.z = (float)ntohl(*(int*)data) / 32; data += 4;
-		newAng.yaw = (((float)(uint8_t)*data++) / 256) * 360;
-		newAng.pitch = (((float)(uint8_t)*data) / 256) * 360;
-	} else {
-		newVec.x = (float)ntohs(*(short*)data) / 32; data += 2;
-		newVec.y = (float)ntohs(*(short*)data) / 32; data += 2;
-		newVec.z = (float)ntohs(*(short*)data) / 32; data += 2;
-		newAng.yaw = (((float)(uint8_t)*data++) / 256) * 360;
-		newAng.pitch = (((float)(uint8_t)*data) / 256) * 360;
-	}
+	if(Client_GetExtVer(client, EXT_ENTPOS))
+		Proto_ReadFlVec(&data, &newVec);
+	else
+		Proto_ReadFlSVec(&data, &newVec);
+
+	Proto_ReadAng(&data, &newAng);
 
 	if(newVec.x != vec->x || newVec.y != vec->y || newVec.z != vec->z) {
 		cpd->position = newVec;
@@ -95,24 +161,13 @@ static bool ReadClPos(Client client, const char* data) {
 static uint32_t WriteClPos(char* data, Client client, bool stand, bool extended) {
 	PlayerData pd = client->playerData;
 	Vec* vec = &pd->position;
-	Ang* ang = &pd->angle;
 
-	uint32_t x = (uint32_t)(vec->x * 32), y = (uint32_t)(vec->y * 32 + (stand ? 51 : 0)), z = (uint32_t)(vec->z * 32);
-	uint8_t yaw = (uint8_t)((ang->yaw / 360) * 256), pitch = (uint8_t)((ang->pitch / 360) * 256);
+	if(extended)
+		Proto_WriteFlVec(&data, vec, stand);
+	else
+		Proto_WriteFlSVec(&data, vec, stand);
 
-	if(extended) {
-		*(uint32_t*)data = htonl((uint32_t)x); data += 4;
-		*(uint32_t*)data = htonl((uint32_t)y); data += 4;
-		*(uint32_t*)data = htonl((uint32_t)z); data += 4;
-		*(uint8_t*)data++ = (uint8_t)yaw;
-		*(uint8_t*)data = (uint8_t)pitch;
-	} else {
-		*(uint16_t*)data = htons((uint16_t)x); data += 2;
-		*(uint16_t*)data = htons((uint16_t)y); data += 2;
-		*(uint16_t*)data = htons((uint16_t)z); data += 2;
-		*(uint8_t*)data++ = (uint8_t)yaw;
-		*(uint8_t*)data = (uint8_t)pitch;
-	}
+	Proto_WriteAng(&data, &pd->angle);
 
 	return extended ? 12 : 6;
 }
@@ -147,15 +202,13 @@ Packet Packet_Get(int32_t id) {
 	return id < MAX_PACKETS ? PackList[id] : NULL;
 }
 
-// Генераторы ванильных пакетов
-
 void Packet_WriteHandshake(Client client, const char* name, const char* motd) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x00;
 	*data++ = 0x07;
-	WriteNetString(data, name); data += 64;
-	WriteNetString(data, motd); data += 64;
+	Proto_WriteString(&data, name);
+	Proto_WriteString(&data, motd);
 	*data = (char)client->playerData->isOP;
 
 	PacketWriter_End(client, 131);
@@ -202,7 +255,7 @@ void Packet_WriteSpawn(Client client, Client other) {
 
 	*data++ = 0x07;
 	*data++ = client == other ? 0xFF : other->id;
-	WriteNetString(data, other->playerData->name); data += 64;
+	Proto_WriteString(&data, other->playerData->name);
 	bool extended = Client_GetExtVer(client, EXT_ENTPOS);
 	uint32_t len = WriteClPos(data, other, client == other, extended);
 
@@ -253,7 +306,7 @@ void Packet_WriteChat(Client client, MessageType type, const char* mesg) {
 
 	*data++ = 0x0D;
 	*data++ = type;
-	WriteNetString(data, mesg_out);
+	Proto_WriteString(&data, mesg_out);
 
 	PacketWriter_End(client, 66);
 }
@@ -262,12 +315,10 @@ void Packet_WriteKick(Client client, const char* reason) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x0E;
-	WriteNetString(data, reason);
+	Proto_WriteString(&data, reason);
 
 	PacketWriter_End(client, 65);
 }
-
-// Обработчики ванильных пакетов
 
 bool Handler_Handshake(Client client, const char* data) {
 	if(*data++ != 0x07) {
@@ -276,11 +327,12 @@ bool Handler_Handshake(Client client, const char* data) {
 	}
 
 	client->playerData = Memory_Alloc(1, sizeof(struct playerData));
+	client->playerData->firstSpawn = true;
 	if(client->addr == INADDR_LOOPBACK && Config_GetBool(Server_Config, CFG_LOCALOP_KEY))
 		client->playerData->isOP = true;
 
-	if(!ReadNetString(&data, &client->playerData->name)) return false;
-	if(!ReadNetString(&data, &client->playerData->key)) return false;
+	if(!Proto_ReadString(&data, &client->playerData->name)) return false;
+	if(!Proto_ReadString(&data, &client->playerData->key)) return false;
 
 	for(int32_t i = 0; i < 128; i++) {
 		Client other = Clients_List[i];
@@ -383,7 +435,7 @@ bool Handler_Message(Client client, const char* data) {
 	char message[65];
 	char* messptr = message;
 	uint8_t partial = *data++;
-	uint8_t len = ReadNetStringNoAlloc(&data, message);
+	uint8_t len = Proto_ReadStringNoAlloc(&data, message);
 	if(len == 0) return false;
 
 	for(uint8_t i = 0; i < len; i++) {

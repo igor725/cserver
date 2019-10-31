@@ -14,7 +14,15 @@
 #include "inventory.h"
 
 static void Survival_OnHandshake(void* param) {
-	SurvData_Create((Client)param);
+	Client client = param;
+	if(!Client_GetExtVer(client, EXT_HACKCTRL) ||
+	!Client_GetExtVer(client, EXT_MESSAGETYPE) ||
+	!Client_GetExtVer(client, EXT_PLAYERCLICK) ||
+	!Client_GetExtVer(client, EXT_HELDBLOCK)) {
+		Client_Kick(client, "Your client doesn't support necessary CPE extensions.");
+		return;
+	}
+	SurvData_Create(client);
 }
 
 static void Survival_OnSpawn(void* param) {

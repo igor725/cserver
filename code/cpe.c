@@ -132,7 +132,7 @@ void CPEPacket_WriteInfo(Client client) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x10;
-	WriteNetString(data, SOFTWARE_FULLNAME); data += 64;
+	Proto_WriteString(&data, SOFTWARE_FULLNAME);
 	*(uint16_t*)data = htons(extensionsCount);
 
 	PacketWriter_End(client, 67);
@@ -142,7 +142,7 @@ void CPEPacket_WriteExtEntry(Client client, CPEExt ext) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x11;
-	WriteNetString(data, ext->name); data += 64;
+	Proto_WriteString(&data, ext->name);
 	*(uint32_t*)data = htonl(ext->version);
 
 	PacketWriter_End(client, 69);
@@ -176,9 +176,7 @@ void CPEPacket_WriteEnvColor(Client client, uint8_t type, Color3* col) {
 
 	*data++ = 0x19;
 	*data++ = type;
-	*(int16_t*)data = htons(col->r); data += 2;
-	*(int16_t*)data = htons(col->g); data += 2;
-	*(int16_t*)data = htons(col->b); data += 2;
+	Proto_WriteColor3(&data, col);
 
 	PacketWriter_End(client, 8);
 }
@@ -189,16 +187,9 @@ void CPEPacket_WriteMakeSelection(Client client, uint8_t id, SVec* start, SVec* 
 	*data++ = 0x1A;
 	*data++ = id;
 	data += 64; // Label
-	*(int16_t*)data = htons(start->x); data += 2;
-	*(int16_t*)data = htons(start->y); data += 2;
-	*(int16_t*)data = htons(start->z); data += 2;
-	*(int16_t*)data = htons(end->x); data += 2;
-	*(int16_t*)data = htons(end->y); data += 2;
-	*(int16_t*)data = htons(end->z); data += 2;
-	*(int16_t*)data = htons(color->r); data += 2;
-	*(int16_t*)data = htons(color->g); data += 2;
-	*(int16_t*)data = htons(color->b); data += 2;
-	*(int16_t*)data = htons(color->a);
+	Proto_WriteSVec(&data, start);
+	Proto_WriteSVec(&data, end);
+	Proto_WriteColor4(&data, color);
 
 	PacketWriter_End(client, 86);
 }
@@ -231,9 +222,9 @@ void CPEPacket_WriteSetModel(Client client, ClientID id, int16_t model) {
 	if(model < 256) {
 		char modelname[4];
 		String_FormatBuf(modelname, 4, "%d", model);
-		WriteNetString(data, modelname);
+		Proto_WriteString(&data, modelname);
 	} else
-		WriteNetString(data, CPE_GetModelStr(model - 256));
+		Proto_WriteString(&data, CPE_GetModelStr(model - 256));
 
 	PacketWriter_End(client, 66);
 }
@@ -270,7 +261,7 @@ void CPEPacket_WriteTexturePack(Client client, const char* url) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x28;
-	WriteNetString(data, url);
+	Proto_WriteString(&data, url);
 
 	PacketWriter_End(client, 65);
 }
@@ -320,13 +311,11 @@ void CPEPacket_WriteSetHotBar(Client client, Order order, BlockID block) {
 	PacketWriter_End(client, 3);
 }
 
-// Обработчики CPE пакетов
-
 bool CPEHandler_ExtInfo(Client client, const char* data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_MOTD, false);
 
-	if(!ReadNetString(&data, &client->cpeData->appName)) return false;
+	if(!Proto_ReadString(&data, &client->cpeData->appName)) return false;
 	client->cpeData->_extCount = ntohs(*(uint16_t*)data);
 	return true;
 }
@@ -337,7 +326,7 @@ bool CPEHandler_ExtEntry(Client client, const char* data) {
 
 	CPEData cpd = client->cpeData;
 	CPEExt tmp = Memory_Alloc(1, sizeof(struct cpeExt));
-	if(!ReadNetString(&data, &tmp->name)) {
+	if(!Proto_ReadString(&data, &tmp->name)) {
 		Memory_Free(tmp);
 		return false;
 	}

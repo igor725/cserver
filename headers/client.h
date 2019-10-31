@@ -47,6 +47,7 @@ typedef struct playerData {
 	Ang angle; // Угол вращения игрока
 	bool isOP; // Является ли игрок оператором
 	bool spawned; // Заспавнен ли игрок
+	bool firstSpawn; // Был лы этот спавн первым с момента захода на сервер
 } *PlayerData;
 
 typedef struct client {

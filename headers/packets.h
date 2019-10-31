@@ -34,6 +34,18 @@ typedef struct packet {
 Packet Packet_Get(int32_t id);
 API void Packet_Register(int32_t id, const char* name, uint16_t size, packetHandler handler);
 API void Packet_RegisterCPE(int32_t id, uint32_t extCRC32, int32_t extVersion, uint16_t extSize, packetHandler handler);
+
+API uint8_t Proto_ReadString(const char** data, const char** dst);
+API void Proto_ReadFlSVec(const char** dataptr, Vec* vec);
+API void Proto_ReadFlVec(const char** dataptr, Vec* vec);
+API void Proto_ReadAng(const char** dataptr, Ang* ang);
+
+API void Proto_WriteString(char** dataptr, const char* string);
+API void Proto_WriteSVec(char** dataptr, const SVec* vec);
+API void Proto_WriteAng(char** dataptr, const Ang* ang);
+API void Proto_WriteColor3(char** dataptr, const Color3* color);
+API void Proto_WriteColor4(char** dataptr, const Color4* color);
+
 void Packet_RegisterDefault(void);
 void Packet_RegisterCPEDefault(void);
 
@@ -46,9 +58,6 @@ void Packet_WritePosAndOrient(Client client, Client other);
 void Packet_WriteDespawn(Client client, Client other);
 void Packet_WriteChat(Client client, MessageType type, const char* mesg);
 void Packet_WriteKick(Client client, const char* reason);
-
-uint8_t ReadNetString(const char** data, const char** dst);
-void WriteNetString(char* data, const char* string);
 
 bool Handler_Handshake(Client client, const char* data);
 bool Handler_SetBlock(Client client, const char* data);

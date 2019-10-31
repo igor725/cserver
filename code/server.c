@@ -58,7 +58,7 @@ static void AcceptFunc(void) {
 		}
 
 		if(!Client_Add(tmp)) {
-			Client_Kick(tmp, Lang_Get(LANG_SVFULL));
+			Client_Kick(tmp, Lang_Get(LANG_KICKSVFULL));
 			Client_Free(tmp);
 		}
 	}
@@ -87,19 +87,6 @@ static void Bind(const char* ip, uint16_t port) {
 	if(!Socket_Bind(Server_Socket, &ssa)) {
 		Error_PrintSys(true);
 	}
-}
-
-static void onConnect(void* param) {
-	Client cl = param;
-	const char* name = Client_GetName(cl);
-	const char* appname = Client_GetAppName(cl);
-	Log_Info(Lang_Get(LANG_SVPLCONN), name, appname);
-}
-
-static void onDisconnect(void* param) {
-	if(!Server_Active) return;
-	const char* name = Client_GetName((Client)param);
-	Log_Info(Lang_Get(LANG_SVPLDISCONN), name);
 }
 
 void Server_InitialWork(void) {
@@ -165,8 +152,6 @@ void Server_InitialWork(void) {
 	Packet_RegisterDefault();
 	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
-	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, onConnect);
-	Event_RegisterVoid(EVT_ONDISCONNECT, onDisconnect);
 
 	Directory_Ensure("worlds");
 	int32_t wIndex = 0;
