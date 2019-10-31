@@ -36,11 +36,15 @@ API void Packet_Register(int32_t id, const char* name, uint16_t size, packetHand
 API void Packet_RegisterCPE(int32_t id, uint32_t extCRC32, int32_t extVersion, uint16_t extSize, packetHandler handler);
 
 API uint8_t Proto_ReadString(const char** data, const char** dst);
+API uint8_t Proto_ReadStringNoAlloc(const char** data, char* dst);
+API void Proto_ReadSVec(const char** dataptr, SVec* vec);
+API void Proto_ReadAng(const char** dataptr, Ang* ang);
 API void Proto_ReadFlSVec(const char** dataptr, Vec* vec);
 API void Proto_ReadFlVec(const char** dataptr, Vec* vec);
-API void Proto_ReadAng(const char** dataptr, Ang* ang);
 
 API void Proto_WriteString(char** dataptr, const char* string);
+API void Proto_WriteFlVec(char** dataptr, const Vec* vec);
+API void Proto_WriteFlSVec(char** dataptr, const Vec* vec);
 API void Proto_WriteSVec(char** dataptr, const SVec* vec);
 API void Proto_WriteAng(char** dataptr, const Ang* ang);
 API void Proto_WriteColor3(char** dataptr, const Color3* color);

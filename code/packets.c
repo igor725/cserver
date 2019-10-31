@@ -11,6 +11,62 @@
 
 Packet PackList[MAX_PACKETS] = {0};
 
+void Proto_WriteString(char** dataptr, const char* string) {
+	char* data = *dataptr;
+	size_t size = min(String_Length(string), 64);
+	if(size < 64) Memory_Fill(data + size, 64 - size, 32);
+	Memory_Copy(data, string, size);
+	*dataptr += 64;
+}
+
+void Proto_WriteFlVec(char** dataptr, const Vec* vec) {
+	char* data = *dataptr;
+	*(int32_t*)data = htonl((int32_t)(vec->x * 32)); data += 4;
+	*(int32_t*)data = htonl((int32_t)(vec->y * 32)); data += 4;
+	*(int32_t*)data = htonl((int32_t)(vec->z * 32)); data += 4;
+	*dataptr = data;
+}
+
+void Proto_WriteFlSVec(char** dataptr, const Vec* vec) {
+	char* data = *dataptr;
+	*(int16_t*)data = htons((int16_t)(vec->x * 32)); data += 2;
+	*(int16_t*)data = htons((int16_t)(vec->y * 32)); data += 2;
+	*(int16_t*)data = htons((int16_t)(vec->z * 32)); data += 2;
+	*dataptr = data;
+}
+
+void Proto_WriteSVec(char** dataptr, const SVec* vec) {
+	char* data = *dataptr;
+	*(int16_t*)data = htons(vec->x); data += 2;
+	*(int16_t*)data = htons(vec->y); data += 2;
+	*(int16_t*)data = htons(vec->z); data += 2;
+	*dataptr = data;
+}
+
+void Proto_WriteAng(char** dataptr, const Ang* ang) {
+	char* data = *dataptr;
+	*(uint8_t*)data++ = (uint8_t)((ang->yaw / 360) * 256);
+	*(uint8_t*)data++ = (uint8_t)((ang->pitch / 360) * 256);
+	*dataptr = data;
+}
+
+void Proto_WriteColor3(char** dataptr, const Color3* color) {
+	char* data = *dataptr;
+	*(int16_t*)data = htons(color->r); data += 2;
+	*(int16_t*)data = htons(color->g); data += 2;
+	*(int16_t*)data = htons(color->b); data += 2;
+	*dataptr = data;
+}
+
+void Proto_WriteColor4(char** dataptr, const Color4* color) {
+	char* data = *dataptr;
+	*(int16_t*)data = htons(color->r); data += 2;
+	*(int16_t*)data = htons(color->g); data += 2;
+	*(int16_t*)data = htons(color->b); data += 2;
+	*(int16_t*)data = htons(color->a); data += 2;
+	*dataptr = data;
+}
+
 uint8_t Proto_ReadString(const char** data, const char** dst) {
 	const char* instr = *data;
 	uint8_t end;
@@ -49,19 +105,18 @@ uint8_t Proto_ReadStringNoAlloc(const char** data, char* dst) {
 	return end;
 }
 
-void Proto_WriteString(char** dataptr, const char* string) {
-	char* data = *dataptr;
-	size_t size = min(String_Length(string), 64);
-	if(size < 64) Memory_Fill(data + size, 64 - size, 32);
-	Memory_Copy(data, string, size);
-	*dataptr += 64;
+void Proto_ReadSVec(const char** dataptr, SVec* vec) {
+	const char* data = *dataptr;
+	vec->x = ntohs(*(uint16_t*)data); data += 2;
+	vec->y = ntohs(*(uint16_t*)data); data += 2;
+	vec->z = ntohs(*(uint16_t*)data); data += 2;
+	*dataptr = data;
 }
 
-void Proto_WriteSVec(char** dataptr, const SVec* vec) {
-	char* data = *dataptr;
-	*(uint16_t*)data = htons(vec->x); data += 2;
-	*(uint16_t*)data = htons(vec->y); data += 2;
-	*(uint16_t*)data = htons(vec->z); data += 2;
+void Proto_ReadAng(const char** dataptr, Ang* ang) {
+	const char* data = *dataptr;
+	ang->yaw = (((float)(uint8_t)*data++) / 256) * 360;
+	ang->pitch = (((float)(uint8_t)*data++) / 256) * 360;
 	*dataptr = data;
 }
 
@@ -78,53 +133,6 @@ void Proto_ReadFlVec(const char** dataptr, Vec* vec) {
 	vec->x = (float)ntohl(*(int*)data) / 32; data += 4;
 	vec->y = (float)ntohl(*(int*)data) / 32; data += 4;
 	vec->z = (float)ntohl(*(int*)data) / 32; data += 4;
-	*dataptr = data;
-}
-
-void Proto_ReadAng(const char** dataptr, Ang* ang) {
-	const char* data = *dataptr;
-	ang->yaw = (((float)(uint8_t)*data++) / 256) * 360;
-	ang->pitch = (((float)(uint8_t)*data++) / 256) * 360;
-	*dataptr = data;
-}
-
-void Proto_WriteAng(char** dataptr, const Ang* ang) {
-	char* data = *dataptr;
-	*(uint8_t*)data++ = (uint8_t)((ang->yaw / 360) * 256);
-	*(uint8_t*)data++ = (uint8_t)((ang->pitch / 360) * 256);
-	*dataptr = data;
-}
-
-void Proto_WriteColor3(char** dataptr, const Color3* color) {
-	char* data = *dataptr;
-	*(int16_t*)data = htons(color->r); data += 2;
-	*(int16_t*)data = htons(color->g); data += 2;
-	*(int16_t*)data = htons(color->b); data += 2;
-	*dataptr = data;
-}
-
-void Proto_WriteColor4(char** dataptr, const Color4* color) {
-	char* data = *dataptr;
-	*(int16_t*)data = htons(color->r); data += 2;
-	*(int16_t*)data = htons(color->g); data += 2;
-	*(int16_t*)data = htons(color->b); data += 2;
-	*(int16_t*)data = htons(color->a); data += 2;
-	*dataptr = data;
-}
-
-void Proto_WriteFlVec(char** dataptr, const Vec* vec, bool stand) {
-	char* data = *dataptr;
-	*(int32_t*)data = htonl((int32_t)(vec->x * 32)); data += 4;
-	*(int32_t*)data = htonl((int32_t)(vec->y * 32 + (stand ? 51 : 0))); data += 4;
-	*(int32_t*)data = htonl((int32_t)(vec->z * 32)); data += 4;
-	*dataptr = data;
-}
-
-void Proto_WriteFlSVec(char** dataptr, const Vec* vec, bool stand) {
-	char* data = *dataptr;
-	*(int16_t*)data = htons((int16_t)(vec->x * 32)); data += 2;
-	*(int16_t*)data = htons((int16_t)(vec->y * 32 + (stand ? 51 : 0))); data += 2;
-	*(int16_t*)data = htons((int16_t)(vec->z * 32)); data += 2;
 	*dataptr = data;
 }
 
@@ -160,12 +168,13 @@ static bool ReadClPos(Client client, const char* data) {
 
 static uint32_t WriteClPos(char* data, Client client, bool stand, bool extended) {
 	PlayerData pd = client->playerData;
-	Vec* vec = &pd->position;
+	Vec vec = pd->position;
+	if(stand) vec.y += 1.59375;
 
 	if(extended)
-		Proto_WriteFlVec(&data, vec, stand);
+		Proto_WriteFlVec(&data, &vec);
 	else
-		Proto_WriteFlSVec(&data, vec, stand);
+		Proto_WriteFlSVec(&data, &vec);
 
 	Proto_WriteAng(&data, &pd->angle);
 
@@ -380,11 +389,9 @@ bool Handler_SetBlock(Client client, const char* data) {
 	if(!world) return false;
 	SVec pos = {0};
 
-	pos.x = ntohs(*(uint16_t*)data); data += 2;
-	pos.y = ntohs(*(uint16_t*)data); data += 2;
-	pos.z = ntohs(*(uint16_t*)data); data += 2;
-	uint8_t mode = *(uint8_t*)data++;
-	BlockID block = *(BlockID*)data;
+	Proto_ReadSVec(&data, &pos);
+	uint8_t mode = *data++;
+	BlockID block = *data;
 
 	switch(mode) {
 		case 0x01:
