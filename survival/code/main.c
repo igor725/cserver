@@ -164,7 +164,7 @@ static bool CHandler_God(const char* args, Client caller, char* out) {
 	SurvGui_DrawAll(data);
 	SurvHacks_Update(data);
 	SurvInv_UpdateInventory(data);
-	SurvGui_DrawBlockInfo(data, data->godMode ? 0 : caller->cpeData->heldBlock);
+	SurvGui_DrawBlockInfo(data, data->godMode ? 0 : Client_GetHeldBlock(caller));
 	String_FormatBuf(out, MAX_CMD_OUT, "God mode %s", MODE(data->godMode));
 	return true;
 }

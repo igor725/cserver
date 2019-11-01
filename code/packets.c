@@ -422,10 +422,8 @@ bool Handler_PosAndOrient(Client client, const char* data) {
 	BlockID cb = *data++;
 
 	if(cpd && cpd->heldBlock != cb) {
-		BlockID new = cb;
-		BlockID curr = cpd->heldBlock;
-		Event_OnHeldBlockChange(client, curr, new);
-		cpd->heldBlock = new;
+		Event_OnHeldBlockChange(client, cpd->heldBlock, cb);
+		cpd->heldBlock = cb;
 	}
 
 	if(ReadClPos(client, data))

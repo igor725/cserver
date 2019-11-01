@@ -113,6 +113,7 @@ API const char* Client_GetAppName(Client client);
 API Client Client_GetByID(ClientID id);
 API Client Client_GetByName(const char* name);
 API int16_t Client_GetModel(Client client);
+API BlockID Client_GetHeldBlock(Client client);
 API int32_t Client_GetExtVer(Client client, uint32_t extCRC32);
 
 API bool Client_Spawn(Client client);

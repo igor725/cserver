@@ -88,6 +88,11 @@ int16_t Client_GetModel(Client client) {
 	return client->cpeData->model;
 }
 
+BlockID Client_GetHeldBlock(Client client) {
+	if(!client->cpeData) return BLOCK_AIR;
+	return client->cpeData->heldBlock;
+}
+
 int32_t Client_GetExtVer(Client client, uint32_t extCRC32) {
 	CPEData cpd = client->cpeData;
 	if(!cpd) return false;
