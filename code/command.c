@@ -163,6 +163,7 @@ static bool CHandler_Plugins(const char* args, Client caller, char* out) {
 				);
 				return true;
 			}
+			Command_Print("This plugin already loaded.");
 		} else if(String_CaselessCompare(subcommand, "unload")) {
 			GetPluginName;
 			plugin = CPlugin_Get(name);
