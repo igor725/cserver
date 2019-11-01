@@ -180,6 +180,22 @@ static uint32_t copyMessagePart(const char* message, char* part, uint32_t i, cha
 	return len;
 }
 
+bool Client_MakeSelection(Client client, uint8_t id, SVec* start, SVec* end, Color4* color) {
+	if(Client_GetExtVer(client, EXT_CUBOID)) {
+		CPEPacket_WriteMakeSelection(client, id, start, end, color);
+		return true;
+	}
+	return false;
+}
+
+bool Client_RemoveSelection(Client client, uint8_t id) {
+	if(Client_GetExtVer(client, EXT_CUBOID)) {
+		CPEPacket_WriteRemoveSelection(client, id);
+		return true;
+	}
+	return false;
+}
+
 void Client_Chat(Client client, MessageType type, const char* message) {
 	uint32_t msgLen = (uint32_t)String_Length(message);
 

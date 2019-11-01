@@ -37,7 +37,7 @@ bool CPlugin_Load(const char* name) {
 		DLib_GetSym(lib, "Plugin_Unload", (void*)&plugin->unload);
 
 		plugin->name = String_AllocCopy(name);
-		plugin->lib = plugin;
+		plugin->lib = lib;
 		plugin->id = -1;
 
 		for(int32_t i = 0; i < MAX_PLUGINS; i++) {

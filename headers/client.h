@@ -87,6 +87,8 @@ API void Client_Chat(Client client, MessageType type, const char* message);
 API void Client_Kick(Client client, const char* reason);
 API bool Client_SendMap(Client client, World world);
 API void Client_UpdateWorldInfo(Client client, World world, bool updateAll);
+API bool Client_MakeSelection(Client client, uint8_t id, SVec* start, SVec* end, Color4* color);
+API bool Client_RemoveSelection(Client client, uint8_t id);
 
 API bool Client_IsInSameWorld(Client client, Client other);
 API bool Client_IsInWorld(Client client, World world);
