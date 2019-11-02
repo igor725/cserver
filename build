@@ -21,7 +21,7 @@ clean () {
 }
 
 dowait () {
-	wait $1;
+	wait $1
 	if [ $? -ne 0 ]; then
 		echo -ne "error\nCompiler errors:\n$(cat /tmp/gcc_stderr)\n"
 		exit 1
@@ -106,5 +106,10 @@ if [ $PLUGIN_INSTALL -eq 1 ]; then
 	echo "done"
 else
 	echo "done"
+fi
+
+stderrlen=$(wc -c < "/tmp/gcc_stderr")
+if [ $stderrlen -gt 0 ]; then
+	echo -e "Compiler warnings:\n$(cat /tmp/gcc_stderr)"
 fi
 exit 0
