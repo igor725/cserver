@@ -160,6 +160,13 @@ const char* Client_GetAppName(Client client) {
 	return client->cpeData->appName;
 }
 
+const char* Client_GetSkin(Client client) {
+	CPEData cpd = client->cpeData;
+	if(!cpd || !cpd->skinURL)
+		return Client_GetName(client);
+	return cpd->skinURL;
+}
+
 Client Client_GetByName(const char* name) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client client = Clients_List[i];
@@ -695,6 +702,25 @@ int32_t Client_Send(Client client, int32_t len) {
 	return Socket_Send(client->sock, client->wrbuf, len);
 }
 
+/*
+** Эта функция понадобилась ибо я не смог
+** придумать как это всё уместить внутри
+** Client_Spawn. Как-нибудь придумать,
+** что с этим можно сделать.
+*/
+
+static void SendSpawnPacket(Client client, Client other) {
+	int32_t extlist_ver = Client_GetExtVer(client, EXT_PLAYERLIST);
+
+	if(extlist_ver == 2) {
+		if(client->playerData->firstSpawn || other->playerData->firstSpawn)
+			CPEPacket_WriteAddName(client, other);
+		CPEPacket_WriteAddEntity2(client, other);
+	} else { // TODO: ExtPlayerList ver. 1 support
+		Packet_WriteSpawn(client, other);
+	}
+}
+
 bool Client_Spawn(Client client) {
 	PlayerData pd = client->playerData;
 	if(pd->spawned) return false;
@@ -704,13 +730,13 @@ bool Client_Spawn(Client client) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client other = Clients_List[i];
 		if(other && Client_IsInSameWorld(client, other)) {
-			Packet_WriteSpawn(other, client);
+			SendSpawnPacket(other, client);
 
 			if(other->cpeData && Client_GetExtVer(other, EXT_CHANGEMODEL))
 				CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, Client_GetModel(client));
 
 			if(client != other) {
-				Packet_WriteSpawn(client, other);
+				SendSpawnPacket(client, other);
 
 				if(other->cpeData && Client_GetExtVer(client, EXT_CHANGEMODEL))
 					CPEPacket_WriteSetModel(client, other->id, Client_GetModel(other));
@@ -768,6 +794,11 @@ void Client_Tick(Client client) {
 	PlayerData pd = client->playerData;
 	if(client->closed) {
 		if(pd && pd->state > STATE_WLOADDONE) {
+			for(int i = 0; i < MAX_CLIENTS; i++) {
+				Client other = Clients_List[i];
+				if(other && Client_GetExtVer(other, EXT_PLAYERLIST))
+					CPEPacket_WriteRemoveName(other, client);
+			}
 			Event_Call(EVT_ONDISCONNECT, (void*)client);
 			Log_Info(Lang_Get(LANG_SVPLDISCONN), Client_GetName(client));
 		}

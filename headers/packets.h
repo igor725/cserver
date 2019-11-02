@@ -7,6 +7,7 @@ if(!client->playerData || client->playerData->state != st) \
 	return ret; \
 
 #define PacketWriter_Start(client) \
+if(client->closed) return; \
 char* data = client->wrbuf; \
 Mutex_Lock(client->mutex); \
 
@@ -40,6 +41,7 @@ API void Proto_ReadSVec(const char** dataptr, SVec* vec);
 API void Proto_ReadAng(const char** dataptr, Ang* ang);
 API void Proto_ReadFlSVec(const char** dataptr, Vec* vec);
 API void Proto_ReadFlVec(const char** dataptr, Vec* vec);
+API bool Proto_ReadClientPos(Client client, const char* data);
 
 API void Proto_WriteString(char** dataptr, const char* string);
 API void Proto_WriteFlVec(char** dataptr, const Vec* vec);
@@ -48,6 +50,7 @@ API void Proto_WriteSVec(char** dataptr, const SVec* vec);
 API void Proto_WriteAng(char** dataptr, const Ang* ang);
 API void Proto_WriteColor3(char** dataptr, const Color3* color);
 API void Proto_WriteColor4(char** dataptr, const Color4* color);
+API uint32_t Proto_WriteClientPos(char* data, Client client, bool stand, bool extended);
 
 void Packet_RegisterDefault(void);
 void Packet_RegisterCPEDefault(void);

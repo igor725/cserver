@@ -40,7 +40,7 @@ static const struct extReg serverExtensions[] = {
 	{"HeldBlock", 1},
 	{"EmoteFix", 1},
 	// TextHotKey
-	// ExtPlayerList
+	{"ExtPlayerList", 2},
 	{"EnvColors", 1},
 	{"SelectionCuboid", 1},
 	{"BlockPermissions", 1},
@@ -170,6 +170,43 @@ void CPEPacket_WriteHoldThis(Client client, BlockID block, bool preventChange) {
 }
 
 // 0x15 - SetTextHotKey
+
+void CPEPacket_WriteAddName(Client client, Client other) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x16;
+	data++; // 16 bit id? For what?
+	*data++ = other->id;
+	Proto_WriteString(&data, Client_GetName(other));
+	Proto_WriteString(&data, Client_GetName(other));
+	Proto_WriteString(&data, NULL);
+	*data = 0;
+
+	PacketWriter_End(client, 196);
+}
+
+void CPEPacket_WriteAddEntity2(Client client, Client other) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x21;
+	*data++ = client == other ? 0xFF : other->id;
+	Proto_WriteString(&data, Client_GetName(other));
+	Proto_WriteString(&data, Client_GetSkin(other));
+	bool extended = Client_GetExtVer(client, EXT_ENTPOS);
+	uint32_t len = Proto_WriteClientPos(data, other, client == other, extended);
+
+	PacketWriter_End(client, 132 + len);
+}
+
+void CPEPacket_WriteRemoveName(Client client, Client other) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x18;
+	*data++; // Short value... again.
+	*data++ = other->id;
+
+	PacketWriter_End(client, 3);
+}
 
 void CPEPacket_WriteEnvColor(Client client, uint8_t type, Color3* col) {
 	PacketWriter_Start(client);

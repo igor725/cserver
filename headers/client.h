@@ -39,6 +39,7 @@ typedef struct cpeHacks {
 
 typedef struct cpeData {
 	const char* appName; // Название игрового клиента
+	const char* skinURL; // URL скина игрока, может быть NULL
 	CPEExt firstExtension; // Начало списка дополнений клиента
 	Hacks hacks; // Структура с значениями чит-параметров для клиента
 	char* message; // Используется для получения длинных сообщений
@@ -130,6 +131,7 @@ API bool Client_SetHacks(Client client);
 
 API const char* Client_GetName(Client client);
 API const char* Client_GetAppName(Client client);
+API const char* Client_GetSkin(Client client);
 API Client Client_GetByID(ClientID id);
 API Client Client_GetByName(const char* name);
 API int16_t Client_GetModel(Client client);

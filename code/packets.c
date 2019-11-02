@@ -13,9 +13,13 @@ Packet PackList[MAX_PACKETS] = {0};
 
 void Proto_WriteString(char** dataptr, const char* string) {
 	char* data = *dataptr;
-	size_t size = min(String_Length(string), 64);
-	if(size < 64) Memory_Fill(data + size, 64 - size, 32);
-	Memory_Copy(data, string, size);
+	size_t size = 0;
+	if(string) {
+		size = min(String_Length(string), 64);
+		Memory_Copy(data, string, size);
+	}
+	if(size < 64)
+		Memory_Fill(data + size, 64 - size, 32);
 	*dataptr += 64;
 }
 
@@ -65,6 +69,21 @@ void Proto_WriteColor4(char** dataptr, const Color4* color) {
 	*(int16_t*)data = htons(color->b); data += 2;
 	*(int16_t*)data = htons(color->a); data += 2;
 	*dataptr = data;
+}
+
+uint32_t Proto_WriteClientPos(char* data, Client client, bool stand, bool extended) {
+	PlayerData pd = client->playerData;
+	Vec vec = pd->position;
+	if(stand) vec.y += 1.59375;
+
+	if(extended)
+		Proto_WriteFlVec(&data, &vec);
+	else
+		Proto_WriteFlSVec(&data, &vec);
+
+	Proto_WriteAng(&data, &pd->angle);
+
+	return extended ? 12 : 6;
 }
 
 uint8_t Proto_ReadString(const char** dataptr, const char** dst) {
@@ -137,7 +156,7 @@ void Proto_ReadFlVec(const char** dataptr, Vec* vec) {
 	*dataptr = data;
 }
 
-static bool ReadClPos(Client client, const char* data) {
+bool Proto_ReadClientPos(Client client, const char* data) {
 	PlayerData cpd = client->playerData;
 	Vec* vec = &cpd->position;
 	Ang* ang = &cpd->angle;
@@ -165,21 +184,6 @@ static bool ReadClPos(Client client, const char* data) {
 	}
 
 	return changed;
-}
-
-static uint32_t WriteClPos(char* data, Client client, bool stand, bool extended) {
-	PlayerData pd = client->playerData;
-	Vec vec = pd->position;
-	if(stand) vec.y += 1.59375;
-
-	if(extended)
-		Proto_WriteFlVec(&data, &vec);
-	else
-		Proto_WriteFlSVec(&data, &vec);
-
-	Proto_WriteAng(&data, &pd->angle);
-
-	return extended ? 12 : 6;
 }
 
 void Packet_Register(int32_t id, uint16_t size, packetHandler handler) {
@@ -264,7 +268,7 @@ void Packet_WriteSpawn(Client client, Client other) {
 	*data++ = client == other ? 0xFF : other->id;
 	Proto_WriteString(&data, other->playerData->name);
 	bool extended = Client_GetExtVer(client, EXT_ENTPOS);
-	uint32_t len = WriteClPos(data, other, client == other, extended);
+	uint32_t len = Proto_WriteClientPos(data, other, client == other, extended);
 
 	PacketWriter_End(client, 68 + len);
 }
@@ -275,7 +279,7 @@ void Packet_WritePosAndOrient(Client client, Client other) {
 	*data++ = 0x08;
 	*data++ = client == other ? 0xFF : other->id;
 	bool extended = Client_GetExtVer(client, EXT_ENTPOS);
-	uint32_t len = WriteClPos(data, other, false, extended);
+	uint32_t len = Proto_WriteClientPos(data, other, false, extended);
 
 	PacketWriter_End(client, 4 + len);
 }
@@ -426,7 +430,7 @@ bool Handler_PosAndOrient(Client client, const char* data) {
 		cpd->heldBlock = cb;
 	}
 
-	if(ReadClPos(client, data))
+	if(Proto_ReadClientPos(client, data))
 		Client_UpdatePositions(client);
 	return true;
 }
