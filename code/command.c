@@ -149,7 +149,7 @@ if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) { \
 static bool CHandler_Plugins(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/plugins <load/unload/print> [pluginName]";
 	char subcommand[64], name[64];
-	CPLUGIN plugin;
+	CPlugin plugin;
 	(void)caller;
 
 	if(String_GetArgument(args, subcommand, 64, 0)) {

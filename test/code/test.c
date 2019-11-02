@@ -83,8 +83,9 @@ static bool CHandler_ClientOnly(const char* args, Client caller, char* out) {
 	return true;
 }
 
-EXP int32_t Plugin_ApiVer = CPLUGIN_API_NUM; // Текущая версия API плагинов 1.
-EXP bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
+int32_t Plugin_ApiVer = CPLUGIN_API_NUM; // Текущая версия API плагинов.
+
+bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
   Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.
   Command_Register("plugtest", CHandler_Plugtest);
   Command_Register("atoggle", CHandler_Atoggle);
@@ -104,7 +105,8 @@ EXP bool Plugin_Load(void) { // Основная функция, вызывае�
 	*/
   return true;
 }
-EXP bool Plugin_Unload(void) {
+
+bool Plugin_Unload(void) {
 	Event_Unregister(EVT_ONMESSAGE, (void*)onmesgfunc);
 	Command_Unregister("plugtest");
 	Command_Unregister("atoggle");

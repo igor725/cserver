@@ -87,6 +87,12 @@ typedef uint8_t MessageType;
 typedef void* TARG;
 typedef TRET(*TFUNC)(TARG);
 
+#ifdef CPLUGIN
+EXP bool Plugin_Load();
+EXP bool Plugin_Unload();
+EXP int32_t Plugin_ApiVer;
+#endif
+
 #include "error.h"
 #include "log.h"
 

@@ -6,12 +6,12 @@ typedef struct cPlugin {
 	int32_t id;
 	void* lib;
 	pluginFunc unload;
-} *CPLUGIN;
+} *CPlugin;
 
 void CPlugin_Start(void);
 void CPlugin_Stop(void);
 bool CPlugin_Load(const char* name);
-bool CPlugin_Unload(CPLUGIN plugin);
-CPLUGIN CPlugin_Get(const char* name);
-CPLUGIN CPLugins_List[MAX_PLUGINS];
+bool CPlugin_Unload(CPlugin plugin);
+CPlugin CPlugin_Get(const char* name);
+CPlugin CPLugins_List[MAX_PLUGINS];
 #endif

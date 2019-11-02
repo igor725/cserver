@@ -193,9 +193,9 @@ static bool CHandler_PvP(const char* args, Client caller, char* out) {
 	return true;
 }
 
-EXP int32_t Plugin_ApiVer = CPLUGIN_API_NUM;
+int32_t Plugin_ApiVer = CPLUGIN_API_NUM;
 
-EXP bool Plugin_Load(void) {
+bool Plugin_Load(void) {
 	if(Server_Active) {
 		Log_Error("Survival plugin can be loaded only at server startup.");
 		return false;
@@ -214,6 +214,6 @@ EXP bool Plugin_Load(void) {
 	return true;
 }
 
-EXP bool Plugin_Unload(void) {
+bool Plugin_Unload(void) {
 	return false;
 }
