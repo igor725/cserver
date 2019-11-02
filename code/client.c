@@ -9,6 +9,98 @@
 #include "heartbeat.h"
 #include "lang.h"
 
+static AssocType headAssocType = NULL;
+
+static AssocType AGetType(uint16_t type) {
+	AssocType ptr = headAssocType;
+
+	while(ptr) {
+		if(ptr->type == type) break;
+		ptr = ptr->next;
+	}
+
+	return ptr;
+}
+
+static AssocNode AGetNode(Client client, uint16_t type) {
+	AssocNode ptr = client->headNode;
+
+	while(ptr) {
+		if(ptr->type == type) break;
+		ptr = ptr->next;
+	}
+
+	return ptr;
+}
+
+uint16_t Assoc_NewType() {
+	AssocType tptr = Memory_Alloc(1, sizeof(struct _AssocType));
+	if(headAssocType) {
+		uint16_t type = 0;
+		AssocType tptr2 = headAssocType;
+
+		while(tptr2) {
+			type = min(type, tptr2->type);
+			tptr2 = tptr2->next;
+		}
+
+		tptr->type = type++;
+		headAssocType->next = tptr;
+	}
+	tptr->prev = headAssocType;
+	headAssocType = tptr;
+	return tptr->type;
+}
+
+bool Assoc_DelType(uint16_t type, bool freeData) {
+	AssocType tptr = AGetType(type);
+	if(!tptr) return false;
+
+	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
+		if(Clients_List[id])
+			Assoc_Remove(Clients_List[id], type, freeData);
+	}
+
+	if(tptr->next)
+		tptr->next->prev = tptr->prev;
+	if(tptr->prev)
+		tptr->prev->next = tptr->next;
+	Memory_Free((void*)tptr);
+	return true;
+}
+
+bool Assoc_Set(Client client, uint16_t type, void* ptr) {
+	if(AGetNode(client, type)) return false;
+	AssocNode nptr = AGetNode(client, type);
+	if(!nptr) {
+		nptr = Memory_Alloc(1, sizeof(struct _AssocNode));
+		nptr->type = type;
+	}
+	nptr->dataptr = ptr;
+	nptr->prev = client->headNode;
+	if(client->headNode) client->headNode->next = nptr;
+	client->headNode = nptr;
+	return true;
+}
+
+void* Assoc_GetPtr(Client client, uint16_t type) {
+	AssocNode nptr = AGetNode(client, type);
+	if(nptr) return nptr->dataptr;
+	return NULL;
+}
+
+bool Assoc_Remove(Client client, uint16_t type, bool freeData) {
+	AssocNode nptr = AGetNode(client, type);
+	if(!nptr) return false;
+	if(nptr->next)
+		nptr->next->prev = nptr->prev;
+	if(nptr->prev)
+	nptr->prev->next = nptr->next;
+	if(freeData) Memory_Free(nptr->dataptr);
+	Memory_Free((void*)nptr);
+	return true;
+}
+
 uint8_t Clients_GetCount(int32_t state) {
 	uint8_t count = 0;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {

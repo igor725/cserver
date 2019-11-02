@@ -1,6 +1,5 @@
 #include <core.h>
 #include <client.h>
-#include <server.h>
 
 #include "data.h"
 #include "break.h"
@@ -44,7 +43,7 @@ void SurvBrk_Done(SURVDATA data) {
 	SurvBrk_Stop(data);
 }
 
-void SurvBrk_Tick(SURVDATA data) {
+void SurvBrk_Tick(SURVDATA data, uint32_t delta) {
 	int32_t breakTime = BreakTimings[data->breakBlock];
 	if(breakTime == -1) {
 		SurvBrk_Stop(data);
@@ -54,7 +53,7 @@ void SurvBrk_Tick(SURVDATA data) {
 		return;
 	}
 
-	data->breakTimer += (int16_t)Server_Delta;
+	data->breakTimer += (int16_t)delta;
 	float df = (data->breakTimer / (float)breakTime);
 	uint8_t newProgress = (uint8_t)(df * SURV_MAX_BRK);
 	if(newProgress > data->breakProgress) {

@@ -70,8 +70,9 @@ static void Survival_OnTick(void* param) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		SURVDATA data = SurvData_GetByID(i);
 		if(data) {
-			if(data->breakStarted) SurvBrk_Tick(data);
-			SurvDmg_Tick(data);
+			if(data->breakStarted)
+				SurvBrk_Tick(data, Server_Delta);
+			SurvDmg_Tick(data, Server_Delta);
 		}
 	}
 }
@@ -199,6 +200,7 @@ EXP bool Plugin_Load(void) {
 		Log_Error("Survival plugin can be loaded only at server startup.");
 		return false;
 	}
+	SurvData_AssocType = Assoc_NewType();
 	Event_RegisterVoid(EVT_ONTICK, Survival_OnTick);
 	Event_RegisterVoid(EVT_ONSPAWN, Survival_OnSpawn);
 	Event_RegisterVoid(EVT_ONHELDBLOCKCHNG, Survival_OnHeldChange);

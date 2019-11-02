@@ -5,25 +5,23 @@
 
 #include "data.h"
 
-SURVDATA survDataList[MAX_CLIENTS] = {0};
-
 void SurvData_Create(Client cl) {
 	SURVDATA ptr = Memory_Alloc(1, sizeof(struct survivalData));
+	Assoc_Set(cl, SurvData_AssocType, (void*)ptr);
 	ptr->client = cl;
 	ptr->health = 20;
 	ptr->oxygen = 10;
-	survDataList[cl->id] = ptr;
 }
 
 void SurvData_Free(Client cl) {
-	Memory_Free(survDataList[cl->id]);
-	survDataList[cl->id] = NULL;
+	Assoc_Remove(cl, SurvData_AssocType, true);
 }
 
 SURVDATA SurvData_Get(Client cl) {
-	return survDataList[cl->id];
+	return Assoc_GetPtr(cl, SurvData_AssocType);
 }
 
 SURVDATA SurvData_GetByID(ClientID id) {
-	return survDataList[id];
+	Client cl = Client_GetByID(id);
+	return cl ? Assoc_GetPtr(cl, SurvData_AssocType) : NULL;
 }

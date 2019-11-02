@@ -13,6 +13,7 @@ void SurvDmg_Hurt(SURVDATA target, SURVDATA attacker, uint8_t damage) {
 	SurvGui_DrawHealth(target);
 }
 
-void SurvDmg_Tick(SURVDATA data) {
-	(void)data;
+void SurvDmg_Tick(SURVDATA data, uint32_t delta) {
+	(void)data; (void)delta;
+	// TODO: Восстановление 1 сердца каждые 5 секунд
 }

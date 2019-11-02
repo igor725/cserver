@@ -11,11 +11,24 @@ enum playerStates {
 	STATE_INGAME // Игрок находится в игре
 };
 
+typedef struct _AssocType {
+	uint16_t type; // Сам тип, регистрируемый структурой
+	struct _AssocType* prev; // Предыдущий тип
+	struct _AssocType* next; // Следующий тип
+} *AssocType;
+
+typedef struct _AssocNode {
+	uint16_t type; // Тип ноды
+	void* dataptr; // Поинтер, который ей присвоен
+	struct _AssocNode* prev; // Предыдущая нода
+	struct _AssocNode* next; // Следующая нода
+} *AssocNode;
+
 typedef struct cpeExt {
 	const char* name; // Название дополнения
 	int32_t version; // Его версия
 	uint32_t crc32; // crc32 хеш названия дополнения
-	struct cpeExt*  next; // Следующее по списку дополнение
+	struct cpeExt* next; // Следующее дополнение
 } *CPEExt;
 
 typedef struct cpeHacks {
@@ -54,6 +67,7 @@ typedef struct client {
 	ClientID id; // Используется в качестве entityid
 	CPEData cpeData; // В случае vanilla клиента эта структура не создаётся
 	PlayerData playerData; // Создаётся при получении hanshake пакета
+	AssocNode headNode;
 	WsClient websock; // Создаётся, если клиент был определён как браузерный
 	Mutex* mutex; // Мьютекс записи, на время отправки пакета клиенту он лочится
 	Thread thread; // Основной поток клиента, целью которого является чтение пакетов
@@ -77,6 +91,12 @@ void Client_Tick(Client client);
 Client Client_New(Socket fd, uint32_t addr);
 bool Client_Add(Client client);
 void Client_Init(void);
+
+API uint16_t Assoc_NewType();
+API bool Assoc_DelType(uint16_t type, bool freeData);
+API bool Assoc_Set(Client client, uint16_t type, void* ptr);
+API void* Assoc_GetPtr(Client client, uint16_t type);
+API bool Assoc_Remove(Client client, uint16_t type, bool freeData);
 
 API uint8_t Clients_GetCount(int32_t state);
 API void Clients_KickAll(const char* reason);

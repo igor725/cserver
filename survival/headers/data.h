@@ -5,6 +5,8 @@ if(SurvData_Get(caller)->godMode) { \
 	Command_Print("This command can't be used from god mode."); \
 }
 
+uint16_t SurvData_AssocType;
+
 enum survActions {
 	SURV_ACT_NONE,
 	SURV_ACT_BREAK
