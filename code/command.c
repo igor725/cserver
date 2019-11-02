@@ -342,8 +342,12 @@ static bool CHandler_SavWorld(const char* args, Client caller, char* out) {
 	char worldname[64];
 	Command_ArgToWorldName(worldname, 0);
 	World tmp = World_GetByName(worldname);
-	if(tmp && World_Save(tmp)) {
-		Command_Print("World saving scheduled.");
+	if(tmp) {
+		if(World_Save(tmp)) {
+			Command_Print("World saving scheduled.");
+		} else {
+			Command_Print("This world did not changed since the last save.");
+		}
 	}
 	Command_Print("World not found.");
 }

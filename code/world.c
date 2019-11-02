@@ -298,7 +298,7 @@ static TRET wSaveThread(TARG param) {
 bool World_Save(World world) {
 	if(!world->modified) {
 		world->saveDone = true;
-		return true;
+		return false;
 	}
 	if(world->saveDone) {
 		world->saveDone = false;
