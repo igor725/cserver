@@ -67,7 +67,7 @@ typedef struct client {
 	ClientID id; // Используется в качестве entityid
 	CPEData cpeData; // В случае vanilla клиента эта структура не создаётся
 	PlayerData playerData; // Создаётся при получении hanshake пакета
-	AssocNode headNode;
+	AssocNode headNode; // Последняя созданная ассоциативная нода у клиента
 	WsClient websock; // Создаётся, если клиент был определён как браузерный
 	Mutex* mutex; // Мьютекс записи, на время отправки пакета клиенту он лочится
 	Thread thread; // Основной поток клиента, целью которого является чтение пакетов
