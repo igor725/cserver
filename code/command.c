@@ -157,13 +157,17 @@ static bool CHandler_Plugins(const char* args, Client caller, char* out) {
 	if(String_GetArgument(args, subcommand, 64, 0)) {
 		if(String_CaselessCompare(subcommand, "load")) {
 			GetPluginName;
-			if(!Plugin_Get(name) && Plugin_Load(name)) {
-				String_FormatBuf(out, MAX_CMD_OUT,
-					Lang_Get(LANG_CPINF0),
-					name,
-					Lang_Get(LANG_CPLD)
-				);
-				return true;
+			if(!Plugin_Get(name)) {
+				if(Plugin_Load(name)) {
+					String_FormatBuf(out, MAX_CMD_OUT,
+						Lang_Get(LANG_CPINF0),
+						name,
+						Lang_Get(LANG_CPLD)
+					);
+					return true;
+				} else {
+					Command_Print("Plugin_Init() = false, plugin unloaded.");
+				}
 			}
 			Command_Print("This plugin already loaded.");
 		} else if(String_CaselessCompare(subcommand, "unload")) {
