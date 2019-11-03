@@ -31,34 +31,32 @@ enum eventReturn {
 	EVT_RTBOOL
 };
 
-typedef struct onMessage {
+typedef struct _onMessage {
 	Client client;
 	char* message;
 	MessageType* type;
-} *onMessage_p;
+} *onMessage;
 
-typedef struct onHeldBlockChange {
+typedef struct _onHeldBlockChange {
 	Client client;
 	BlockID prev, curr;
-} *onHeldBlockChange_p;
+} *onHeldBlockChange;
 
-typedef struct onBlockPlace {
+typedef struct _onBlockPlace {
 	Client client;
 	uint8_t mode;
 	SVec* pos;
 	BlockID* id;
-} *onBlockPlace_p;
+} *onBlockPlace;
 
-typedef struct onPlayerClick {
+typedef struct _onPlayerClick {
 	Client client;
-	char button;
-	char action;
-	short yaw;
-	short pitch;
+	int8_t button, action;
+	int16_t yaw, pitch;
 	ClientID id;
 	SVec* pos;
 	char face;
-} *onPlayerClick_p;
+} *onPlayerClick;
 
 typedef struct event {
 	ReturnType rtype;
@@ -76,5 +74,5 @@ bool Event_Call(EventType type, void* param);
 bool Event_OnMessage(Client client, char* message, MessageType* type);
 void Event_OnHeldBlockChange(Client client, BlockID prev, BlockID curr);
 bool Event_OnBlockPlace(Client client, uint8_t mode, SVec* pos, BlockID* id);
-void Event_OnClick(Client client, char button, char action, short yaw, short pitch, ClientID tgID, SVec* tgBlockPos, char tgBlockFace);
+void Event_OnClick(Client client, char button, char action, int16_t yaw, int16_t pitch, ClientID tgID, SVec* tgBlockPos, char tgBlockFace);
 #endif

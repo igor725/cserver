@@ -29,7 +29,7 @@
 */
 static void onmesgfunc(void* param) {
   if(enabled)
-    *((onMessage_p)param)->type = MT_ANNOUNCE;
+    *((onMessage)param)->type = MT_ANNOUNCE;
 }
 
 /*

@@ -48,7 +48,7 @@ bool CPEHandler_PlayerClick(Client client, const char* data);
 
 void CPEPacket_WriteInfo(Client client);
 void CPEPacket_WriteExtEntry(Client client, CPEExt ext);
-void CPEPacket_WriteClickDistance(Client client, short dist);
+void CPEPacket_WriteClickDistance(Client client, int16_t dist);
 void CPEPacket_WriteInventoryOrder(Client client, Order order, BlockID block);
 void CPEPacket_WriteHoldThis(Client client, BlockID block, bool preventChange);
 void CPEPacket_WriteAddName(Client client, Client other);
@@ -62,7 +62,7 @@ void CPEPacket_WriteSetHotBar(Client client, Order order, BlockID block);
 void CPEPacket_WriteWeatherType(Client client, Weather type);
 void CPEPacket_WriteTexturePack(Client client, const char* url);
 void CPEPacket_WriteMapProperty(Client client, uint8_t property, int32_t value);
-void CPEPacket_WriteTwoWayPing(Client client, uint8_t direction, short num);
+void CPEPacket_WriteTwoWayPing(Client client, uint8_t direction, int16_t num);
 void CPEPacket_WriteSetModel(Client client, ClientID id, int16_t model);
 void CPEPacket_WriteBlockPerm(Client client, BlockID id, bool allowPlace, bool allowDestroy);
 #endif

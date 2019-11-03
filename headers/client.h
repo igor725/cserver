@@ -46,7 +46,7 @@ typedef struct cpeExt {
 typedef struct cpeHacks {
 	bool flying, noclip, speeding;
 	bool spawnControl, tpv;
-	short jumpHeight;
+	int16_t jumpHeight;
 } *Hacks;
 
 typedef struct cpeData {
@@ -56,7 +56,7 @@ typedef struct cpeData {
 	Hacks hacks; // Структура с значениями чит-параметров для клиента
 	char* message; // Используется для получения длинных сообщений
 	BlockID heldBlock; // Выбранный игроком блок в данный момент
-	short _extCount; // Переменная используется при получении списка дополнений
+	int16_t _extCount; // Переменная используется при получении списка дополнений
 	int16_t model; // Текущая модель игрока
 	bool pingStarted; // Начат ли процесс пингования
 	uint16_t pingData; // Данные, цепляемые к пинг-запросу

@@ -148,11 +148,11 @@ void CPEPacket_WriteExtEntry(Client client, CPEExt ext) {
 	PacketWriter_End(client, 69);
 }
 
-void CPEPacket_WriteClickDistance(Client client, short dist) {
+void CPEPacket_WriteClickDistance(Client client, int16_t dist) {
 	PacketWriter_Start(client);
 
 	*data = 0x12;
-	*(short*)++data = dist;
+	*(int16_t*)++data = dist;
 
 	PacketWriter_End(client, 3);
 }
@@ -284,7 +284,7 @@ void CPEPacket_WriteHackControl(Client client, Hacks hacks) {
 	*data++ = (char)hacks->speeding;
 	*data++ = (char)hacks->spawnControl;
 	*data++ = (char)hacks->tpv;
-	*(short*)data = hacks->jumpHeight;
+	*(int16_t*)data = hacks->jumpHeight;
 
 	PacketWriter_End(client, 8);
 }
@@ -315,7 +315,7 @@ void CPEPacket_WriteMapProperty(Client client, uint8_t property, int32_t value) 
 
 // 0x2A - SetEntityProperty
 
-void CPEPacket_WriteTwoWayPing(Client client, uint8_t direction, short num) {
+void CPEPacket_WriteTwoWayPing(Client client, uint8_t direction, int16_t num) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x2B;
@@ -394,13 +394,11 @@ bool CPEHandler_PlayerClick(Client client, const char* data) {
 
 	char button = *data++;
 	char action = *data++;
-	short yaw = ntohs(*(uint16_t*)data); data += 2;
-	short pitch = ntohs(*(uint16_t*)data); data += 2;
+	int16_t yaw = ntohs(*(int16_t*)data); data += 2;
+	int16_t pitch = ntohs(*(int16_t*)data); data += 2;
 	ClientID tgID = *data++;
 	SVec tgBlockPos = {0};
-	tgBlockPos.x = ntohs(*(short*)data); data += 2;
-	tgBlockPos.y = ntohs(*(short*)data); data += 2;
-	tgBlockPos.z = ntohs(*(short*)data); data += 2;
+	Proto_ReadSVec(&data, &tgBlockPos);
 	char tgBlockFace = *data;
 
 	Event_OnClick(

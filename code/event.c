@@ -63,7 +63,7 @@ bool Event_Call(EventType type, void* param) {
 }
 
 bool Event_OnMessage(Client client, char* message, MessageType* type) {
-	struct onMessage params = {0};
+	struct _onMessage params = {0};
 	params.client = client;
 	params.message = message;
 	params.type = type;
@@ -71,7 +71,7 @@ bool Event_OnMessage(Client client, char* message, MessageType* type) {
 }
 
 bool Event_OnBlockPlace(Client client, uint8_t mode, SVec* pos, BlockID* id) {
-	struct onBlockPlace params = {0};
+	struct _onBlockPlace params = {0};
 	params.client = client;
 	params.mode = mode;
 	params.pos = pos;
@@ -80,15 +80,15 @@ bool Event_OnBlockPlace(Client client, uint8_t mode, SVec* pos, BlockID* id) {
 }
 
 void Event_OnHeldBlockChange(Client client, BlockID prev, BlockID curr) {
-	struct onHeldBlockChange params = {0};
+	struct _onHeldBlockChange params = {0};
 	params.client = client;
 	params.prev = prev;
 	params.curr = curr;
 	Event_Call(EVT_ONHELDBLOCKCHNG, &params);
 }
 
-void Event_OnClick(Client client, char btn, char act, short yaw, short pitch, ClientID id, SVec* pos, char face) {
-	struct onPlayerClick params = {0};
+void Event_OnClick(Client client, char btn, char act, int16_t yaw, int16_t pitch, ClientID id, SVec* pos, char face) {
+	struct _onPlayerClick params = {0};
 	params.client = client;
 	params.button = btn;
 	params.action = act;

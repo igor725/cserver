@@ -128,9 +128,9 @@ uint8_t Proto_ReadStringNoAlloc(const char** dataptr, char* dst) {
 
 void Proto_ReadSVec(const char** dataptr, SVec* vec) {
 	const char* data = *dataptr;
-	vec->x = ntohs(*(uint16_t*)data); data += 2;
-	vec->y = ntohs(*(uint16_t*)data); data += 2;
-	vec->z = ntohs(*(uint16_t*)data); data += 2;
+	vec->x = ntohs(*(int16_t*)data); data += 2;
+	vec->y = ntohs(*(int16_t*)data); data += 2;
+	vec->z = ntohs(*(int16_t*)data); data += 2;
 	*dataptr = data;
 }
 
@@ -143,17 +143,17 @@ void Proto_ReadAng(const char** dataptr, Ang* ang) {
 
 void Proto_ReadFlSVec(const char** dataptr, Vec* vec) {
 	const char* data = *dataptr;
-	vec->x = (float)ntohs(*(short*)data) / 32; data += 2;
-	vec->y = (float)ntohs(*(short*)data) / 32; data += 2;
-	vec->z = (float)ntohs(*(short*)data) / 32; data += 2;
+	vec->x = (float)ntohs(*(int16_t*)data) / 32; data += 2;
+	vec->y = (float)ntohs(*(int16_t*)data) / 32; data += 2;
+	vec->z = (float)ntohs(*(int16_t*)data) / 32; data += 2;
 	*dataptr = data;
 }
 
 void Proto_ReadFlVec(const char** dataptr, Vec* vec) {
 	const char* data = *dataptr;
-	vec->x = (float)ntohl(*(int*)data) / 32; data += 4;
-	vec->y = (float)ntohl(*(int*)data) / 32; data += 4;
-	vec->z = (float)ntohl(*(int*)data) / 32; data += 4;
+	vec->x = (float)ntohl(*(int32_t*)data) / 32; data += 4;
+	vec->y = (float)ntohl(*(int32_t*)data) / 32; data += 4;
+	vec->z = (float)ntohl(*(int32_t*)data) / 32; data += 4;
 	*dataptr = data;
 }
 
