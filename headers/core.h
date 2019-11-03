@@ -2,6 +2,7 @@
 #define CORE_H
 #if defined(_WIN32)
 #  define WINDOWS
+#  define ZLIB_WINAPI
 #  define PATH_DELIM '\\'
 #  define DLIB_EXT "dll"
 #  define WIN32_LEAN_AND_MEAN
@@ -10,7 +11,6 @@
 #  include <ws2tcpip.h>
 #  include <stdint.h>
 
-#  define ZLIB_WINAPI
 #  ifndef PLUGIN_BUILD
 #    define API __declspec(dllexport, noinline)
 #    define VAR __declspec(dllexport)

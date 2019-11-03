@@ -141,11 +141,7 @@ bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, uint16_t por
 }
 
 Socket Socket_New() {
-	Socket sock;
-	if((sock = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
-		return INVALID_SOCKET;
-	}
-	return sock;
+	return socket(AF_INET, SOCK_STREAM, 0);
 }
 
 bool Socket_Bind(Socket sock, struct sockaddr_in* addr) {
