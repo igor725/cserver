@@ -15,7 +15,6 @@
 const char* PlayURL = NULL;
 char Secret[17] = {0};
 uint32_t Delay = 5000;
-Thread hbThread;
 
 static void NewSecret(void) {
 	RNGState secrnd;
@@ -139,9 +138,5 @@ bool Heartbeat_CheckKey(Client client) {
 
 void Heartbeat_Start(uint32_t delay) {
 	Delay = delay * 1000;
-	hbThread = Thread_Create(HeartbeatThreadProc, NULL);
-}
-
-void Heartbeat_Close(void) {
-	if(Thread_IsValid(hbThread)) Thread_Close(hbThread);
+	Thread_Create(HeartbeatThreadProc, NULL, true);
 }

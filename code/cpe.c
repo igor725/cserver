@@ -317,9 +317,6 @@ void CPEPacket_WriteMapProperty(Client client, uint8_t property, int32_t value) 
 
 void CPEPacket_WriteTwoWayPing(Client client, uint8_t direction, short num) {
 	PacketWriter_Start(client);
-	if(client->playerData->state != STATE_INGAME) {
-		PacketWriter_Stop(client);
-	}
 
 	*data++ = 0x2B;
 	*data++ = direction;
@@ -350,7 +347,7 @@ void CPEPacket_WriteSetHotBar(Client client, Order order, BlockID block) {
 
 bool CPEHandler_ExtInfo(Client client, const char* data) {
 	ValidateCpeClient(client, false);
-	ValidateClientState(client, STATE_MOTD, false);
+	ValidateClientState(client, STATE_INITIAL, false);
 
 	if(!Proto_ReadString(&data, &client->cpeData->appName)) return false;
 	client->cpeData->_extCount = ntohs(*(uint16_t*)data);
@@ -359,7 +356,7 @@ bool CPEHandler_ExtInfo(Client client, const char* data) {
 
 bool CPEHandler_ExtEntry(Client client, const char* data) {
 	ValidateCpeClient(client, false);
-	ValidateClientState(client, STATE_MOTD, false);
+	ValidateClientState(client, STATE_INITIAL, false);
 
 	CPEData cpd = client->cpeData;
 	CPEExt tmp = Memory_Alloc(1, sizeof(struct cpeExt));

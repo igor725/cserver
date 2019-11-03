@@ -24,6 +24,7 @@ typedef void* ITER_DIR;
 typedef WIN32_FIND_DATA ITER_FILE;
 typedef void* Thread;
 typedef uint32_t TRET;
+typedef void* Waitable;
 typedef CRITICAL_SECTION Mutex;
 typedef SOCKET Socket;
 #elif defined(__unix__)
@@ -62,9 +63,13 @@ typedef SOCKET Socket;
 
 typedef DIR* ITER_DIR;
 typedef struct dirent* ITER_FILE;
-typedef pthread_t* Thread;
 typedef void* TRET;
+typedef pthread_t* Thread;
 typedef pthread_mutex_t Mutex;
+typedef struct _Waitable {
+	Mutex mutex;
+	pthread_cond_t cond;
+} Waitable;
 typedef int32_t Socket;
 #else
 #  error Unknown OS
@@ -115,17 +120,6 @@ EXP int32_t Plugin_ApiVer;
 
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
 #define MODE(b) (b ? Lang_Get(LANG_ENABLED) : Lang_Get(LANG_DISABLED))
-
-enum messageTypes {
-	CPE_CHAT,
-	CPE_STATUS1,
-	CPE_STATUS2,
-	CPE_STATUS3,
-	CPE_BRIGHT1 = 11,
-	CPE_BRIGHT2,
-	CPE_BRIGHT3,
-	CPE_ANNOUNCE = 100
-};
 
 typedef struct _Color4 {
 	int16_t r, g, b, a;

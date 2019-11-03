@@ -4,7 +4,19 @@
 #include "world.h"
 #include "websocket.h"
 
+enum messageTypes {
+	MT_CHAT, // Сообщение в чате
+	MT_STATUS1, // Правый верхний угол
+	MT_STATUS2,
+	MT_STATUS3,
+	MT_BRIGHT1 = 11, // Правый нижний угол
+	MT_BRIGHT2,
+	MT_BRIGHT3,
+	MT_ANNOUNCE = 100 // Сообщение в середине экрана
+};
+
 enum playerStates {
+	STATE_INITIAL, // Игрок только подключился
 	STATE_MOTD, // Игрок получает карту
 	STATE_WLOADDONE, // Карта была успешно получена
 	STATE_WLOADERR, // Ошибка при получении карты
@@ -71,8 +83,6 @@ typedef struct client {
 	AssocNode headNode; // Последняя созданная ассоциативная нода у клиента
 	WsClient websock; // Создаётся, если клиент был определён как браузерный
 	Mutex* mutex; // Мьютекс записи, на время отправки пакета клиенту он лочится
-	Thread thread; // Основной поток клиента, целью которого является чтение пакетов
-	Thread mapThread; // Поток отправки карты игроку
 	bool closed; // В случае значения true сервер прекращает общение с клиентом и удаляет его
 	uint32_t addr; // ipv4 адрес клиента
 	Socket sock; // Файловый дескриптор сокета клиента

@@ -143,7 +143,7 @@ bool Client_Add(Client client) {
 	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
 		if(!Clients_List[i]) {
 			client->id = i;
-			client->thread = Thread_Create(Client_ThreadProc, client);
+			Thread_Create(Client_ThreadProc, client, true);
 			Clients_List[i] = client;
 			return true;
 		}
@@ -217,9 +217,6 @@ bool Client_ChangeWorld(Client client, World world) {
 	if(Client_IsInWorld(client, world)) return false;
 
 	Client_Despawn(client);
-	PlayerData pd = client->playerData;
-	pd->position = world->info->spawnVec;
-	pd->angle = world->info->spawnAng;
 	if(!Client_SendMap(client, world)) {
 		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
 		return false;
@@ -303,7 +300,7 @@ bool Client_RemoveSelection(Client client, uint8_t id) {
 void Client_Chat(Client client, MessageType type, const char* message) {
 	uint32_t msgLen = (uint32_t)String_Length(message);
 
-	if(msgLen > 62 && type == CPE_CHAT) {
+	if(msgLen > 62 && type == MT_CHAT) {
 		char color = 0, part[65] = {0};
 		uint32_t parts = (msgLen / 60) + 1;
 		for(uint32_t i = 0; i < parts; i++) {
@@ -432,14 +429,25 @@ TRET Client_ThreadProc(TARG param) {
 	return 0;
 }
 
-TRET Client_MapThreadProc(TARG param) {
+static TRET MapThreadProc(TARG param) {
 	Client client = param;
 	if(client->closed) return 0;
-
-	uint8_t* data = (uint8_t*)client->wrbuf;
 	PlayerData pd = client->playerData;
-
 	World world = pd->world;
+
+	if(world->process == WP_LOADING) {
+		Client_Chat(client, MT_CHAT, Lang_Get(LANG_INFWWAIT));
+		Waitable_Wait(world->wait);
+	}
+
+	if(!world->loaded) {
+		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
+		return 0;
+	}
+
+	Packet_WriteLvlInit(client);
+	Mutex_Lock(client->mutex);
+	uint8_t* data = (uint8_t*)client->wrbuf;
 	uint8_t* mapData = world->data;
 	int32_t mapSize = world->size;
 
@@ -450,7 +458,6 @@ TRET Client_MapThreadProc(TARG param) {
 	int32_t ret, windowBits = 31;
 	z_stream stream = {0};
 
-	Mutex_Lock(client->mutex);
 	if(Client_GetExtVer(client, EXT_FASTMAP)) {
 		windowBits = -15;
 		mapData += 4;
@@ -492,7 +499,10 @@ TRET Client_MapThreadProc(TARG param) {
 	deflateEnd(&stream);
 	Mutex_Unlock(client->mutex);
 	if(pd->state == STATE_WLOADDONE) {
-		Packet_WriteLvlFin(client);
+		pd->state = STATE_INGAME;
+		pd->position = world->info->spawnVec;
+		pd->angle = world->info->spawnAng;
+		Packet_WriteLvlFin(client, &world->info->dimensions);
 		Client_Spawn(client);
 	}
 
@@ -642,10 +652,6 @@ void Client_Free(Client client) {
 
 	if(client->mutex) Mutex_Free(client->mutex);
 
-	if(client->thread) Thread_Close(client->thread);
-
-	if(client->mapThread) Thread_Close(client->mapThread);
-
 	if(client->websock) Memory_Free(client->websock);
 
 	PlayerData pd = client->playerData;
@@ -724,8 +730,8 @@ static void SendSpawnPacket(Client client, Client other) {
 bool Client_Spawn(Client client) {
 	PlayerData pd = client->playerData;
 	if(pd->spawned) return false;
-	World world = pd->world;
-	Client_UpdateWorldInfo(client, world, true);
+
+	Client_UpdateWorldInfo(client, pd->world, true);
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client other = Clients_List[i];
@@ -756,12 +762,12 @@ bool Client_Spawn(Client client) {
 }
 
 bool Client_SendMap(Client client, World world) {
-	if(client->mapThread) return false;
 	PlayerData pd = client->playerData;
+	if(pd->state != STATE_INITIAL && pd->state != STATE_INGAME)
+		return false;
 	pd->world = world;
 	pd->state = STATE_MOTD;
-	Packet_WriteLvlInit(client);
-	client->mapThread = Thread_Create(Client_MapThreadProc, client);
+	Thread_Create(MapThreadProc, client, true);
 	return true;
 }
 
@@ -807,9 +813,8 @@ void Client_Tick(Client client) {
 		return;
 	}
 
-	if(client->ppstm < 1000) {
-		client->ppstm += Server_Delta;
-	} else {
+	client->ppstm += Server_Delta;
+	if(client->ppstm > 1000) {
 		if(client->pps > MAX_CLIENT_PPS) {
 			Client_Kick(client, Lang_Get(LANG_KICKPACKETSPAM));
 			return;
@@ -818,15 +823,6 @@ void Client_Tick(Client client) {
 		client->ppstm = 0;
 	}
 
-	if(!pd) return;
-	switch (pd->state) {
-		case STATE_WLOADDONE:
-			pd->state = STATE_INGAME;
-			Thread_Close(client->mapThread);
-			client->mapThread = NULL;
-			break;
-		case STATE_WLOADERR:
-			Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
-			break;
-	}
+	if(pd && pd->state == STATE_WLOADERR)
+		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
 }

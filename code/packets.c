@@ -237,14 +237,11 @@ void Packet_WriteLvlInit(Client client) {
 	}
 }
 
-void Packet_WriteLvlFin(Client client) {
+void Packet_WriteLvlFin(Client client, SVec* dims) {
 	PacketWriter_Start(client);
 
-	WorldInfo wi = client->playerData->world->info;
 	*data++ = 0x04;
-	*(uint16_t*)data = htons(wi->width); data += 2;
-	*(uint16_t*)data = htons(wi->height); data += 2;
-	*(uint16_t*)data = htons(wi->length); data += 2;
+	Proto_WriteSVec(&data, dims);
 
 	PacketWriter_End(client, 7);
 }
@@ -253,9 +250,7 @@ void Packet_WriteSetBlock(Client client, SVec* pos, BlockID block) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x06;
-	*(uint16_t*)data = htons(pos->x); data += 2;
-	*(uint16_t*)data = htons(pos->y); data += 2;
-	*(uint16_t*)data = htons(pos->z); data += 2;
+	Proto_WriteSVec(&data, pos);
 	*data = block;
 
 	PacketWriter_End(client, 8);
@@ -421,7 +416,7 @@ bool Handler_SetBlock(Client client, const char* data) {
 }
 
 bool Handler_PosAndOrient(Client client, const char* data) {
-	ValidateClientState(client, STATE_INGAME, false);
+	ValidateClientState(client, STATE_INGAME, true);
 	CPEData cpd = client->cpeData;
 	BlockID cb = *data++;
 

@@ -11,7 +11,7 @@ void Worlds_SaveAll(bool join) {
 
 		if(i < MAX_WORLDS && world) {
 			if(World_Save(world) && join)
-				Thread_Join(world->thread);
+				Waitable_Wait(world->wait);
 		}
 	}
 }
@@ -21,7 +21,8 @@ World World_Create(const char* name) {
 	WorldInfo wi = Memory_Alloc(1, sizeof(struct worldInfo));
 
 	tmp->name = String_AllocCopy(name);
-	tmp->saveDone = true;
+	tmp->wait = Waitable_Create();
+	tmp->process = WP_NOPROC;
 	tmp->id = -1;
 	tmp->info = wi;
 
@@ -77,11 +78,8 @@ World World_GetByID(int32_t id) {
 	return id < MAX_WORLDS ? Worlds_List[id] : NULL;
 }
 
-void World_SetDimensions(World world, uint16_t width, uint16_t height, uint16_t length) {
-	WorldInfo wi = world->info;
-	wi->width = width;
-	wi->width = height;
-	wi->length = length;
+void World_SetDimensions(World world, const SVec* dims) {
+	world->info->dimensions = *dims;
 }
 
 bool World_SetEnvProperty(World world, uint8_t property, int32_t value) {
@@ -157,11 +155,9 @@ void World_AllocBlockArray(World world) {
 	if(world->data) Memory_Free(world->data);
 
 	WorldInfo wi = world->info;
-	uint16_t dx = wi->width,
-	dy = wi->height,
-	dz = wi->length;
+	SVec* dim = &wi->dimensions;
 
-	world->size = 4 + dx * dy * dz;
+	world->size = 4 + dim->x * dim->y * dim->z;
 	BlockID* data = Memory_Alloc(world->size, sizeof(BlockID));
 	*(uint32_t*)data = htonl(world->size - 4);
 	world->data = data;
@@ -189,7 +185,7 @@ bool World_WriteInfo(World world, FILE* fp) {
 		Error_PrintSys(false);
 		return false;
 	}
-	return _WriteData(fp, DT_DIM, &world->info->width, 6) &&
+	return _WriteData(fp, DT_DIM, &world->info->dimensions, sizeof(struct _SVec)) &&
 	_WriteData(fp, DT_SV, &world->info->spawnVec, sizeof(struct _Vec)) &&
 	_WriteData(fp, DT_SA, &world->info->spawnAng, sizeof(struct _Ang)) &&
 	_WriteData(fp, DT_WT, &world->info->wt, sizeof(Weather)) &&
@@ -212,7 +208,7 @@ bool World_ReadInfo(World world, FILE* fp) {
 	while(File_Read(&id, 1, 1, fp) == 1) {
 		switch (id) {
 			case DT_DIM:
-				if(File_Read(&world->info->width, 6, 1, fp) != 1)
+				if(File_Read(&world->info->dimensions, sizeof(struct _SVec), 1, fp) != 1)
 					return false;
 				break;
 			case DT_SV:
@@ -255,11 +251,13 @@ static TRET wSaveThread(TARG param) {
 	String_FormatBuf(tmpname, 256, "worlds/%s.tmp", world->name);
 
 	FILE* fp = File_Open(tmpname, "wb");
-	if(!fp) return false;
+	if(!fp) {
+		Error_PrintSys(false);
+		goto wsdone;
+	}
 
 	if(!World_WriteInfo(world, fp)) {
-		File_Close(fp);
-		return false;
+		goto wsdone;
 	}
 
 	z_stream stream = {0};
@@ -268,7 +266,7 @@ static TRET wSaveThread(TARG param) {
 
 	if((ret = deflateInit(&stream, Z_BEST_COMPRESSION)) != Z_OK) {
 		Error_Print2(ET_ZLIB, ret, false);
-		return false;
+		goto wsdone;
 	}
 
 	stream.avail_in = world->size;
@@ -280,45 +278,50 @@ static TRET wSaveThread(TARG param) {
 
 		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
 			Error_Print2(ET_ZLIB, ret, false);
-			return false;
+			goto wsdone;
 		}
 
 		if(!File_Write(out, 1, 1024 - stream.avail_out, fp)){
-			deflateEnd(&stream);
-			return false;
+			goto wsdone;
 		}
 	} while(stream.avail_out == 0);
 
-	File_Close(fp);
 	File_Rename(tmpname, path);
-	world->saveDone = true;
+	if(world->saveUnload)
+		World_Free(world);
+
+	wsdone:
+	File_Close(fp);
+	deflateEnd(&stream);
+	Waitable_Signal(world->wait);
+	world->process = WP_NOPROC;
+
 	return 0;
 }
 
 bool World_Save(World world) {
-	if(!world->modified) {
-		world->saveDone = true;
-		return false;
-	}
-	if(world->saveDone) {
-		world->saveDone = false;
-		world->thread = Thread_Create(wSaveThread, world);
-		return true;
-	}
-	return world->thread != NULL;
+	if(world->process != WP_NOPROC || !world->modified || !world->loaded)
+		return world->process == WP_SAVING;
+
+	world->process = WP_SAVING;
+	Thread_Create(wSaveThread, world, true);
+	return true;
 }
 
-bool World_Load(World world) {
+static TRET wLoadThread(TARG param) {
+	World world = param;
+
 	char path[256];
 	String_FormatBuf(path, 256, "worlds/%s", world->name);
 
 	FILE* fp = File_Open(path, "rb");
-	if(!fp) return false;
-
-	if(!World_ReadInfo(world, fp)) {
-		File_Close(fp);
-		return false;
+	if(!fp) {
+		Error_PrintSys(false);
+		goto wldone;
 	}
+
+	if(!World_ReadInfo(world, fp))
+		goto wldone;
 
 	World_AllocBlockArray(world);
 
@@ -328,7 +331,7 @@ bool World_Load(World world) {
 
 	if((ret = inflateInit(&stream)) != Z_OK) {
 		Error_Print2(ET_ZLIB, ret, false);
-		return false;
+		goto wldone;
 	}
 
 	stream.next_out = (uint8_t*)world->data;
@@ -336,8 +339,8 @@ bool World_Load(World world) {
 	do {
 		stream.avail_in = (uint32_t)File_Read(in, 1, 1024, fp);
 		if(File_Error(fp)) {
-			inflateEnd(&stream);
-			return false;
+			Error_PrintSys(false);
+			goto wldone;
 		}
 
 		if(stream.avail_in == 0) break;
@@ -347,19 +350,35 @@ bool World_Load(World world) {
 			stream.avail_out = 1024;
 			if((ret = inflate(&stream, Z_NO_FLUSH)) == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
 				Error_Print2(ET_ZLIB, ret, false);
-				inflateEnd(&stream);
-				return false;
+				goto wldone;
 			}
 		} while(stream.avail_out == 0);
 	} while(ret != Z_STREAM_END);
 
+	world->loaded = true;
+
+	wldone:
 	File_Close(fp);
+	inflateEnd(&stream);
+	Waitable_Signal(world->wait);
+	world->process = WP_NOPROC;
+	return 0;
+}
+
+bool World_Load(World world) {
+	if(world->process != WP_NOPROC)
+		return world->process == WP_LOADING;
+
+	world->loaded = false;
+	world->process = WP_LOADING;
+	Thread_Create(wLoadThread, world, true);
 	return true;
 }
 
 uint32_t World_GetOffset(World world, SVec* pos) {
 	WorldInfo wi = world->info;
-	uint16_t dx = wi->width, dy = wi->height, dz = wi->length;
+	SVec* dims = &wi->dimensions;
+	uint16_t dx = dims->x, dy = dims->y, dz = dims->z;
 
 	if(pos->x > dx || pos->y > dy || pos->z > dz) return 0;
 	return pos->z * dz + pos->y * (dx * dy) + pos->x + 4;
@@ -384,12 +403,4 @@ BlockID World_GetBlock(World world, SVec* pos) {
 		return world->data[offset];
 	else
 		return 0;
-}
-
-void World_Tick(World world) {
-	if(world->thread && world->saveDone) {
-		Thread_Close(world->thread);
-		world->thread = NULL;
-		if(world->saveUnload) World_Free(world);
-	}
 }

@@ -14,8 +14,6 @@
 #include "cplugin.h"
 #include "lang.h"
 
-Thread AcceptThread;
-
 static void AcceptFunc(void) {
 	struct sockaddr_in caddr;
 	Socket fd = Socket_Accept(Server_Socket, &caddr);
@@ -169,7 +167,8 @@ void Server_InitialWork(void) {
 
 	if(wIndex < 1) {
 		World tmp = World_Create("world.cws");
-		World_SetDimensions(tmp, 256, 256, 256);
+		SVec defdims = {256, 256, 256};
+		World_SetDimensions(tmp, &defdims);
 		World_AllocBlockArray(tmp);
 		Generator_Flat(tmp);
 		Worlds_List[0] = tmp;
@@ -184,22 +183,19 @@ void Server_InitialWork(void) {
 	Event_Call(EVT_POSTSTART, NULL);
 	const char* ip = Config_GetStr(cfg, CFG_SERVERIP_KEY);
 	uint16_t port = Config_GetUInt16(cfg, CFG_SERVERPORT_KEY);
-	AcceptThread = Thread_Create(AcceptThreadProc, NULL);
+	Thread_Create(AcceptThreadProc, NULL, true);
 	Server_StartTime = Time_GetMSec();
 	Server_Active = true;
 	Server_Config = cfg;
-	Console_StartListen();
+	Console_Start();
 	Bind(ip, port);
 }
 
 void Server_DoStep(void) {
 	Event_Call(EVT_ONTICK, NULL);
-	for(int32_t i = 0; i < max(MAX_WORLDS, MAX_CLIENTS); i++) {
-		Client client = Client_GetByID((ClientID)i);
-		World world = World_GetByID(i);
-
-		if(i < MAX_CLIENTS && client) Client_Tick(client);
-		if(i < MAX_WORLDS && world) World_Tick(world);
+	for(int32_t i = 0; i < MAX_CLIENTS; i++) {
+		Client client = Clients_List[i];
+		if(client) Client_Tick(client);
 	}
 }
 
@@ -229,11 +225,6 @@ void Server_Stop(void) {
 	Clients_KickAll(Lang_Get(LANG_KICKSVSTOP));
 	Log_Info(Lang_Get(LANG_SVSTOP1));
 	Worlds_SaveAll(true);
-
-	Console_Close();
-	Heartbeat_Close();
-	if(AcceptThread)
-		Thread_Close(AcceptThread);
 
 	Socket_Close(Server_Socket);
 	Log_Info(Lang_Get(LANG_SVSAVING), MAINCFG);

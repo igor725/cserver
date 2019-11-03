@@ -57,7 +57,7 @@ void Packet_RegisterCPEDefault(void);
 
 void Packet_WriteHandshake(Client client, const char* name, const char* motd);
 void Packet_WriteLvlInit(Client client);
-void Packet_WriteLvlFin(Client client);
+void Packet_WriteLvlFin(Client client, SVec* dims);
 void Packet_WriteSetBlock(Client client, SVec* pos, BlockID block);
 void Packet_WriteSpawn(Client client, Client other);
 void Packet_WritePosAndOrient(Client client, Client other);

@@ -224,7 +224,7 @@ static bool CHandler_Announce(const char* args, Client caller, char* out) {
 	Command_OnlyForOP;
 
 	if(!caller) caller = Client_Broadcast;
-	Client_Chat(caller, CPE_ANNOUNCE, !args ? "Test announcement" : args);
+	Client_Chat(caller, MT_ANNOUNCE, !args ? "Test announcement" : args);
 	return false;
 }
 
@@ -295,7 +295,9 @@ static bool CHandler_GenWorld(const char* args, Client caller, char* out) {
 		if(_x > 0 && _y > 0 && _z > 0) {
 			Command_ArgToWorldName(worldname, 0);
 			World tmp = World_Create(worldname);
-			World_SetDimensions(tmp, _x, _y, _z);
+			SVec vec;
+			Vec_Set(vec, _x, _y, _z);
+			World_SetDimensions(tmp, &vec);
 			World_AllocBlockArray(tmp);
 			Generator_Flat(tmp);
 
@@ -328,9 +330,12 @@ static bool CHandler_UnlWorld(const char* args, Client caller, char* out) {
 			Client c = Clients_List[i];
 			if(c && Client_IsInWorld(c, tmp)) Client_ChangeWorld(c, Worlds_List[0]);
 		}
-		tmp->saveUnload = true;
-		World_Save(tmp);
-		Command_Print("World unloading scheduled.");
+		if(World_Save(tmp)) {
+			tmp->saveUnload = true;
+			Command_Print("World unloading scheduled.");
+		} else {
+			Command_Print("Can't start world saving process, try again later.");
+		}
 	}
 	Command_Print("World not found.");
 }
@@ -346,7 +351,7 @@ static bool CHandler_SavWorld(const char* args, Client caller, char* out) {
 		if(World_Save(tmp)) {
 			Command_Print("World saving scheduled.");
 		} else {
-			Command_Print("This world did not changed since the last save.");
+			Command_Print("Can't start world saving process, try again later.");
 		}
 	}
 	Command_Print("World not found.");

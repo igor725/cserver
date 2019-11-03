@@ -7,25 +7,23 @@
 
 void Generator_Flat(World world) {
 	WorldInfo wi = world->info;
-	uint16_t dx = wi->width,
-	dy = wi->height,
-	dz = wi->length;
+	SVec* dims = &wi->dimensions;
 
 	BlockID* data = world->data + 4;
-	int32_t dirtEnd = dx * dz * (dy / 2 - 1);
-	for(int32_t i = 0; i < dirtEnd + dx * dz; i++) {
+	int32_t dirtEnd = dims->x * dims->z * (dims->y / 2 - 1);
+	for(int32_t i = 0; i < dirtEnd + dims->x * dims->z; i++) {
 		if(i < dirtEnd)
 			data[i] = 3;
 		else
 			data[i] = 2;
 	}
 
-	World_SetEnvProperty(world, PROP_CLOUDSLEVEL, dy + 2);
-	World_SetEnvProperty(world, PROP_EDGELEVEL, dy / 2);
+	World_SetEnvProperty(world, PROP_CLOUDSLEVEL, dims->y + 2);
+	World_SetEnvProperty(world, PROP_EDGELEVEL, dims->y / 2);
 
-	wi->spawnVec.x = (float)dx / 2;
-	wi->spawnVec.y = (float)dy / 2;
-	wi->spawnVec.z = (float)dz / 2;
+	wi->spawnVec.x = (float)dims->x / 2;
+	wi->spawnVec.y = (float)dims->y / 2;
+	wi->spawnVec.z = (float)dims->z / 2;
 }
 
 /*

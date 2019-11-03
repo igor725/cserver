@@ -34,10 +34,6 @@ static TRET ConsoleThreadProc(TARG param) {
 	return 0;
 }
 
-void Console_StartListen(void) {
-	conThread = Thread_Create(ConsoleThreadProc, NULL);
-}
-
-void Console_Close(void) {
-	if(conThread) Thread_Close(conThread);
+void Console_Start(void) {
+	Thread_Create(ConsoleThreadProc, NULL, true);
 }

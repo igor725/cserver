@@ -31,7 +31,7 @@ void SurvGui_DrawHealth(SURVDATA data) {
 		}
 	}
 
-	Client_Chat(data->client, CPE_STATUS1, healthstr);
+	Client_Chat(data->client, MT_STATUS1, healthstr);
 }
 
 void SurvGui_DrawOxygen(SURVDATA data) {
@@ -44,7 +44,7 @@ void SurvGui_DrawOxygen(SURVDATA data) {
 		}
 	}
 
-	Client_Chat(data->client, CPE_STATUS2, oxystr);
+	Client_Chat(data->client, MT_STATUS2, oxystr);
 }
 
 void SurvGui_DrawBreakProgress(SURVDATA data) {
@@ -60,7 +60,7 @@ void SurvGui_DrawBreakProgress(SURVDATA data) {
 		String_Append(breakstr, 19, "&f]");
 	}
 
-	Client_Chat(data->client, CPE_ANNOUNCE, breakstr);
+	Client_Chat(data->client, MT_ANNOUNCE, breakstr);
 }
 
 void SurvGui_DrawBlockInfo(SURVDATA data, BlockID id) {
@@ -72,7 +72,7 @@ void SurvGui_DrawBlockInfo(SURVDATA data, BlockID id) {
 		String_FormatBuf(blockinfo, 64, "%s (%d)", bn, bc);
 	}
 
-	Client_Chat(data->client, CPE_BRIGHT1, blockinfo);
+	Client_Chat(data->client, MT_BRIGHT1, blockinfo);
 }
 
 void SurvGui_DrawAll(SURVDATA data) {

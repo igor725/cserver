@@ -54,15 +54,20 @@ API int32_t Socket_Send(Socket sock, char* buf, int32_t len);
 API void Socket_Shutdown(Socket sock, int32_t how);
 API void Socket_Close(Socket sock);
 
-API Thread Thread_Create(TFUNC func, const TARG param);
+API Thread Thread_Create(TFUNC func, const TARG param, bool detach);
 API bool Thread_IsValid(Thread th);
-API void Thread_Close(Thread th);
+API void Thread_Detach(Thread th);
 API void Thread_Join(Thread th);
 
 API Mutex* Mutex_Create(void);
 API void Mutex_Free(Mutex* handle);
 API void Mutex_Lock(Mutex* handle);
 API void Mutex_Unlock(Mutex* handle);
+
+API Waitable Waitable_Create(void);
+API void Waitable_Free(Waitable handle);
+API void Waitable_Signal(Waitable handle);
+API void Waitable_Wait(Waitable handle);
 
 API void Time_Format(char* buf, size_t len);
 API uint64_t Time_GetMSec(void);

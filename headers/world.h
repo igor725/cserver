@@ -56,8 +56,14 @@ enum ModifiedValues {
 	MV_WEATHER = 8
 };
 
+enum WorldProcesses {
+	WP_NOPROC,
+	WP_SAVING,
+	WP_LOADING,
+};
+
 typedef struct worldInfo {
-	uint16_t width, height, length;
+	SVec dimensions;
 	Color3 colors[WORLD_COLORS_COUNT];
 	int32_t props[WORLD_PROPS_COUNT];
 	char texturepack[65];
@@ -75,13 +81,12 @@ typedef struct world {
 	uint32_t size;
 	WorldInfo info;
 	bool modified;
-	Thread thread;
+	Waitable wait;
+	bool loaded;
 	bool saveUnload;
-	bool saveDone;
+	int32_t process;
 	BlockID* data;
 } *World;
-
-void World_Tick(World world);
 
 API void Worlds_SaveAll(bool join);
 
@@ -94,7 +99,7 @@ API void World_UpdateClients(World world);
 API bool World_Load(World world);
 API bool World_Save(World world);
 
-API void World_SetDimensions(World world, uint16_t width, uint16_t height, uint16_t length);
+API void World_SetDimensions(World world, const SVec* dims);
 API bool World_SetBlock(World world, SVec* pos, BlockID id);
 API bool World_SetEnvColor(World world, uint8_t type, Color3* color);
 API bool World_SetEnvProperty(World world, uint8_t property, int32_t value);

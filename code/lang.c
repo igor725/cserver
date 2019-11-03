@@ -120,6 +120,9 @@ const char* Lang_Get(int32_t langid) {
 
 		case LANG_ERRFMT:
 			return "%s:%d in function %s: %s";
+
+		case LANG_INFWWAIT:
+			return "Server is loading the world, please wait...";
 	}
 
 	return "Invalid langid";

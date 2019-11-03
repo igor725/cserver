@@ -64,7 +64,9 @@ enum LangIDs {
 
 	LANG_WSNOTVALID,
 
-	LANG_ERRFMT
+	LANG_ERRFMT,
+
+	LANG_INFWWAIT
 };
 
 API const char* Lang_Get(int32_t langid);

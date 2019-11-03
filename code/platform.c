@@ -382,7 +382,7 @@ bool DLib_GetSym(void* lib, const char* sname, void** sym) {
 #endif
 
 #if defined(WINDOWS)
-Thread Thread_Create(TFUNC func, TARG param) {
+Thread Thread_Create(TFUNC func, TARG param, bool detach) {
 	Thread th = CreateThread(
 		NULL,
 		0,
@@ -394,9 +394,9 @@ Thread Thread_Create(TFUNC func, TARG param) {
 
 	if(!th) {
 		Error_Print2(ET_SYS, GetLastError(), true);
-		return NULL;
 	}
 
+	if(detach) Thread_Detach(th);
 	return th;
 }
 
@@ -404,21 +404,25 @@ bool Thread_IsValid(Thread th) {
 	return th != (Thread)NULL;
 }
 
-void Thread_Close(Thread th) {
-	if(th) CloseHandle(th);
+void Thread_Detach(Thread th) {
+	if(!CloseHandle(th)) {
+		Error_PrintSys(true);
+	}
 }
 
 void Thread_Join(Thread th) {
 	WaitForSingleObject(th, INFINITE);
-	Thread_Close(th);
+	Thread_Detach(th);
 }
 #elif defined(POSIX)
-Thread Thread_Create(TFUNC func, TARG arg) {
+Thread Thread_Create(TFUNC func, TARG arg, bool detach) {
 	Thread thread = Memory_Alloc(1, sizeof(Thread));
 	if(pthread_create(thread, NULL, func, arg) != 0) {
 		Error_Print2(ET_SYS, errno, true);
 		return NULL;
 	}
+
+	if(detach) Thread_Detach(th);
 	return thread;
 }
 
@@ -426,7 +430,7 @@ bool Thread_IsValid(Thread th) {
 	return th != NULL;
 }
 
-void Thread_Close(Thread th) {
+void Thread_Detach(Thread th) {
 	pthread_detach(*th);
 	Memory_Free(th);
 }
@@ -436,6 +440,7 @@ void Thread_Join(Thread th) {
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
 	}
+	Thread_Detach(th);
 }
 #endif
 
@@ -460,6 +465,28 @@ void Mutex_Lock(Mutex* handle) {
 
 void Mutex_Unlock(Mutex* handle) {
 	LeaveCriticalSection(handle);
+}
+
+Waitable Waitable_Create(void) {
+	Waitable* handle = CreateEvent(NULL, false, false, NULL);
+	if(!handle) {
+		Error_PrintSys(true);
+	}
+	return handle;
+}
+
+void Waitable_Free(Waitable handle) {
+	if(!CloseHandle(handle)) {
+		Error_PrintSys(true);
+	}
+}
+
+void Waitable_Signal(Waitable handle) {
+	SetEvent(handle);
+}
+
+void Waitable_Wait(Waitable handle) {
+	WaitForSingleObject(handle, INFINITE);
 }
 #elif defined(POSIX)
 Mutex* Mutex_Create(void) {
@@ -492,6 +519,44 @@ void Mutex_Unlock(Mutex* handle) {
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
 	}
+}
+
+Waitable Waitable_Create(void) {
+	Waitable* handle = Memory_Alloc(1, sizeof(struct _Waitable));
+	int32_t ret;
+
+	ret = pthread_cond_init(&handle->cond, NULL);
+	if(ret) {
+		Error_Print2(ET_SYS, ret, true);
+	}
+	ret = pthread_mutex_init(&ptr->mutex, NULL);
+	if(ret) {
+		Error_Print2(ET_SYS, ret, true);
+	}
+	return handle;
+}
+
+void Waitable_Free(Waitable handle) {
+	int32_t ret;
+
+	ret = pthread_cond_destroy(&handle->cond);
+	if(ret) {
+		Error_Print2(ET_SYS, ret, true);
+	}
+	ret = pthread_mutex_destroy(&handle->cond);
+	if(ret) {
+		Error_Print2(ET_SYS, ret, true);
+	}
+	Memory_Free(handle);
+	return handle;
+}
+
+void Waitable_Signal(Waitable handle) {
+	SetEvent(handle);
+}
+
+void Waitable_Wait(Waitable handle) {
+	WaitForSingleObject(handle, INFINITE);
 }
 #endif
 
