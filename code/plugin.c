@@ -2,7 +2,7 @@
 #include "str.h"
 #include "log.h"
 #include "platform.h"
-#include "cplugin.h"
+#include "plugin.h"
 #include "command.h"
 #include "lang.h"
 
