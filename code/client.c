@@ -634,7 +634,7 @@ bool Client_SetModelStr(Client client, const char* model) {
 	return Client_SetModel(client, CPE_GetModelNum(model));
 }
 
-bool Client_SetHacks(Client client) {
+bool Client_UpdateHacks(Client client) {
 	if(Client_GetExtVer(client, EXT_HACKCTRL)) {
 		CPEPacket_WriteHackControl(client, client->cpeData->hacks);
 		return true;

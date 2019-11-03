@@ -118,6 +118,7 @@ API void Client_Chat(Client client, MessageType type, const char* message);
 API void Client_Kick(Client client, const char* reason);
 API bool Client_SendMap(Client client, World world);
 API void Client_UpdateWorldInfo(Client client, World world, bool updateAll);
+API bool Client_UpdateHacks(Client client);
 API bool Client_MakeSelection(Client client, uint8_t id, SVec* start, SVec* end, Color4* color);
 API bool Client_RemoveSelection(Client client, uint8_t id);
 
@@ -137,7 +138,6 @@ API bool Client_SetModelStr(Client client, const char* model);
 API bool Client_SetBlockPerm(Client client, BlockID block, bool allowPlace, bool allowDestroy);
 API bool Client_SetHeld(Client client, BlockID block, bool canChange);
 API bool Client_SetHotbar(Client client, Order pos, BlockID block);
-API bool Client_SetHacks(Client client);
 
 API const char* Client_GetName(Client client);
 API const char* Client_GetAppName(Client client);

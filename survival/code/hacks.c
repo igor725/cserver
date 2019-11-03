@@ -22,5 +22,5 @@ void SurvHacks_Update(SURVDATA data) {
 		hacks->speeding = false;
 	}
 
-	Client_SetHacks(client);
+	Client_UpdateHacks(client);
 }
