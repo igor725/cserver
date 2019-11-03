@@ -162,6 +162,7 @@ void World_AllocBlockArray(World world) {
 }
 
 void World_Free(World world) {
+	if(world->wait) Waitable_Free(world->wait);
 	if(world->data) Memory_Free(world->data);
 	if(world->info) Memory_Free(world->info);
 	if(world->id != -1) Worlds_List[world->id] = NULL;
