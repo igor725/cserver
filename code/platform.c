@@ -1,6 +1,7 @@
 #include "core.h"
 #include "platform.h"
 #include "str.h"
+#include "error.h"
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>

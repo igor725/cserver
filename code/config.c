@@ -2,6 +2,7 @@
 #include "platform.h"
 #include "str.h"
 #include "config.h"
+#include "error.h"
 
 #define CFG_SYSERROR \
 store->etype = ET_SYS; \

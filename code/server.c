@@ -1,5 +1,7 @@
 #include "core.h"
 #include "str.h"
+#include "log.h"
+#include "error.h"
 #include "server.h"
 #include "client.h"
 #include "packets.h"
@@ -11,7 +13,7 @@
 #include "heartbeat.h"
 #include "platform.h"
 #include "event.h"
-#include "cplugin.h"
+#include "plugin.h"
 #include "lang.h"
 
 static void AcceptFunc(void) {
@@ -175,7 +177,7 @@ void Server_InitialWork(void) {
 	}
 
 	Log_Info(Lang_Get(LANG_SVPLUGINLOAD));
-	CPlugin_Start();
+	Plugin_Start();
 	if(Config_GetBool(cfg, CFG_HEARTBEAT_KEY)) {
 		Log_Info(Lang_Get(LANG_HBEAT));
 		Heartbeat_Start(Config_GetInt(cfg, CFG_HEARTBEATDELAY_KEY));
@@ -232,5 +234,5 @@ void Server_Stop(void) {
 	Config_DestroyStore(Server_Config);
 
 	Log_Info(Lang_Get(LANG_SVSTOP2));
-	CPlugin_Stop();
+	Plugin_Stop();
 }

@@ -112,7 +112,7 @@ IF "%CLEAN%"=="0" (
 ) else ( goto clean )
 
 IF "%BUILD_PLUGIN%"=="1" (
-  set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DCPLUGIN /I.\headers\
+  set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DPLUGIN_BUILD /I.\headers\
   set MSVC_LIBS=%MSVC_LIBS% %STNAME%
 	set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%SVOUTDIR% /NOENTRY
 ) else (

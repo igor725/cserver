@@ -1,11 +1,13 @@
 #include "core.h"
+#include "log.h"
 #include "platform.h"
+#include "error.h"
 #include "str.h"
 #include "server.h"
 #include "generators.h"
 #include "command.h"
 #include "config.h"
-#include "cplugin.h"
+#include "plugin.h"
 #include "lang.h"
 
 COMMAND HeadCmd;
@@ -149,13 +151,13 @@ if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) { \
 static bool CHandler_Plugins(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/plugins <load/unload/print> [pluginName]";
 	char subcommand[64], name[64];
-	CPlugin plugin;
+	Plugin plugin;
 	(void)caller;
 
 	if(String_GetArgument(args, subcommand, 64, 0)) {
 		if(String_CaselessCompare(subcommand, "load")) {
 			GetPluginName;
-			if(!CPlugin_Get(name) && CPlugin_Load(name)) {
+			if(!Plugin_Get(name) && Plugin_Load(name)) {
 				String_FormatBuf(out, MAX_CMD_OUT,
 					Lang_Get(LANG_CPINF0),
 					name,
@@ -166,7 +168,7 @@ static bool CHandler_Plugins(const char* args, Client caller, char* out) {
 			Command_Print("This plugin already loaded.");
 		} else if(String_CaselessCompare(subcommand, "unload")) {
 			GetPluginName;
-			plugin = CPlugin_Get(name);
+			plugin = Plugin_Get(name);
 			if(!plugin) {
 				String_FormatBuf(out, MAX_CMD_OUT,
 					Lang_Get(LANG_CPINF0),
@@ -175,7 +177,7 @@ static bool CHandler_Plugins(const char* args, Client caller, char* out) {
 				);
 				return true;
 			}
-			if(CPlugin_Unload(plugin))
+			if(Plugin_Unload(plugin))
 				String_FormatBuf(out, MAX_CMD_OUT,
 					Lang_Get(LANG_CPINF0),
 					name,
@@ -196,7 +198,7 @@ static bool CHandler_Plugins(const char* args, Client caller, char* out) {
 			String_Copy(out, MAX_CMD_OUT, "Plugins list:");
 
 			for(int32_t i = 0; i < MAX_PLUGINS; i++) {
-				plugin = CPLugins_List[i];
+				plugin = Plugins_List[i];
 				if(plugin) {
 					String_FormatBuf(pluginfo, 64, "\r\n%d. %s", idx++, plugin->name);
 					String_Append(out, MAX_CMD_OUT, pluginfo);

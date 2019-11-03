@@ -1,5 +1,6 @@
 #include "core.h"
 #include "platform.h"
+#include "error.h"
 #include "str.h"
 #include "client.h"
 #include "world.h"

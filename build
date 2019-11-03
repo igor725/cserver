@@ -35,7 +35,7 @@ for a in "$@"
 do
 	if [ $PLUGIN_BUILD -eq 1 ]; then
 		if [ ! -n "$PLUGIN_NAME" ]; then
-			CFLAGS="$CFLAGS -DCPLUGIN -Iheaders"
+			CFLAGS="$CFLAGS -DPLUGIN_BUILD -Iheaders"
 			LNK="$CC -shared"
 			PLUGIN_NAME="$a"
 			OUTBIN="$a.so"

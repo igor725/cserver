@@ -11,7 +11,7 @@
 #  include <stdint.h>
 
 #  define ZLIB_WINAPI
-#  ifndef CPLUGIN
+#  ifndef PLUGIN_BUILD
 #    define API __declspec(dllexport, noinline)
 #    define VAR __declspec(dllexport)
 #  else
@@ -45,7 +45,7 @@ typedef SOCKET Socket;
 #  include <dirent.h>
 #  include <netdb.h>
 
-#  ifndef CPLUGIN
+#  ifndef PLUGIN_BUILD
 #    define API __attribute__((visibility("default"), noinline))
 #    define VAR __attribute__((visibility("default")))
 #  else
@@ -92,21 +92,18 @@ typedef uint8_t MessageType;
 typedef void* TARG;
 typedef TRET(*TFUNC)(TARG);
 
-#ifdef CPLUGIN
+#ifdef PLUGIN_BUILD
 EXP bool Plugin_Load();
 EXP bool Plugin_Unload();
 EXP int32_t Plugin_ApiVer;
 #endif
-
-#include "error.h"
-#include "log.h"
 
 #define SOFTWARE_NAME "C-Server"
 #define SOFTWARE_FULLNAME SOFTWARE_NAME "/" GIT_COMMIT_SHA
 #define CHATLINE "<%s>: %s"
 #define MAINCFG "server.cfg"
 #define WORLD_MAGIC 0x54414457
-#define CPLUGIN_API_NUM 1
+#define PLUGIN_API_NUM 1
 
 #define MAX_PLUGINS 32
 #define	MAX_CMD_OUT 1024

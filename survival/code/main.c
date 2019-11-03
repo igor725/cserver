@@ -1,10 +1,11 @@
 #include <core.h>
+#include <str.h>
+#include <log.h>
 #include <client.h>
 #include <event.h>
 #include <command.h>
 #include <block.h>
 #include <server.h>
-#include <str.h>
 
 #include "data.h"
 #include "damage.h"
@@ -193,7 +194,7 @@ static bool CHandler_PvP(const char* args, Client caller, char* out) {
 	return true;
 }
 
-int32_t Plugin_ApiVer = CPLUGIN_API_NUM;
+int32_t Plugin_ApiVer = PLUGIN_API_NUM;
 
 bool Plugin_Load(void) {
 	if(Server_Active) {

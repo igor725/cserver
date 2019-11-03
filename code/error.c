@@ -1,7 +1,8 @@
 #include "core.h"
 #include "str.h"
-#include "error.h"
+#include "log.h"
 #include "lang.h"
+#include "error.h"
 
 const char* const Strings[] = {
 	"All ok.",

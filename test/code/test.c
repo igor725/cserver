@@ -10,9 +10,10 @@
 ** всегда подключен в главном файле кода плагина.
 */
 #include <core.h>
+#include <str.h>
+#include <log.h>
 #include <event.h>
 #include <command.h>
-#include <str.h>
 
 // Хедеры плагина
 #include "test.h"
@@ -83,7 +84,7 @@ static bool CHandler_ClientOnly(const char* args, Client caller, char* out) {
 	return true;
 }
 
-int32_t Plugin_ApiVer = CPLUGIN_API_NUM; // Текущая версия API плагинов.
+int32_t Plugin_ApiVer = PLUGIN_API_NUM; // Текущая версия API плагинов.
 
 bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
   Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.

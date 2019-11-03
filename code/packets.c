@@ -1,5 +1,6 @@
 #include "core.h"
 #include "str.h"
+#include "log.h"
 #include "block.h"
 #include "client.h"
 #include "event.h"
