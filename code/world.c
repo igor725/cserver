@@ -161,6 +161,7 @@ void World_AllocBlockArray(World world) {
 	BlockID* data = Memory_Alloc(world->size, sizeof(BlockID));
 	*(uint32_t*)data = htonl(world->size - 4);
 	world->data = data;
+	world->loaded = true;
 }
 
 void World_Free(World world) {
@@ -354,8 +355,6 @@ static TRET wLoadThread(TARG param) {
 			}
 		} while(stream.avail_out == 0);
 	} while(ret != Z_STREAM_END);
-
-	world->loaded = true;
 
 	wldone:
 	File_Close(fp);

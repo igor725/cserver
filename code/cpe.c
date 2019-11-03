@@ -202,7 +202,7 @@ void CPEPacket_WriteRemoveName(Client client, Client other) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x18;
-	*data++; // Short value... again.
+	data++; // Short value... again.
 	*data++ = other->id;
 
 	PacketWriter_End(client, 3);

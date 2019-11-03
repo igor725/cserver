@@ -69,7 +69,7 @@ typedef pthread_mutex_t Mutex;
 typedef struct _Waitable {
 	Mutex mutex;
 	pthread_cond_t cond;
-} Waitable;
+} *Waitable;
 typedef int32_t Socket;
 #else
 #  error Unknown OS
