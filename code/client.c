@@ -331,7 +331,7 @@ static void HandlePacket(Client client, char* data, Packet packet, bool extended
 		if(packet->handler)
 			ret = packet->handler(client, data);
 
-	if(!ret && !client->closed)
+	if(!ret)
 		Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
 	else
 		client->pps += 1;

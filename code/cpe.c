@@ -424,9 +424,11 @@ bool CPEHandler_TwoWayPing(Client client, const char* data) {
 
 	if(pingDirection == 0) {
 		CPEPacket_WriteTwoWayPing(client, 0, pingData);
-		CPEPacket_WriteTwoWayPing(client, 1, cpd->pingData++);
-		cpd->pingStarted = true;
-		cpd->pingStart = Time_GetMSec();
+		if(!cpd->pingStarted) {
+			CPEPacket_WriteTwoWayPing(client, 1, cpd->pingData++);
+			cpd->pingStarted = true;
+			cpd->pingStart = Time_GetMSec();
+		}
 		return true;
 	} else if(pingDirection == 1) {
 		if(cpd->pingStarted) {
