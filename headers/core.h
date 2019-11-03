@@ -75,9 +75,6 @@ typedef int32_t Socket;
 #  error Unknown OS
 #endif
 
-#include <stdio.h>
-#include <zlib.h>
-
 #ifndef true
 #  define true  1
 #  define false 0

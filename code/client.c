@@ -9,6 +9,7 @@
 #include "event.h"
 #include "heartbeat.h"
 #include "lang.h"
+#include <zlib.h>
 
 static AssocType headAssocType = NULL;
 

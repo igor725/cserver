@@ -3,6 +3,7 @@
 #include "log.h"
 #include "lang.h"
 #include "error.h"
+#include <zlib.h>
 
 const char* const Strings[] = {
 	"All ok.",

@@ -1,5 +1,7 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
+#include <stdio.h>
+
 typedef struct {
   char fmt[256];
   const char* cfile;
