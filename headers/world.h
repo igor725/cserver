@@ -97,6 +97,7 @@ API bool World_Add(World world);
 API void World_UpdateClients(World world);
 
 API bool World_Load(World world);
+API void World_Unload(World world);
 API bool World_Save(World world);
 
 API void World_SetDimensions(World world, const SVec* dims);

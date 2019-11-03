@@ -765,6 +765,8 @@ bool Client_SendMap(Client client, World world) {
 	PlayerData pd = client->playerData;
 	if(pd->state != STATE_INITIAL && pd->state != STATE_INGAME)
 		return false;
+	if(!world->loaded)
+		World_Load(world);
 	pd->world = world;
 	pd->state = STATE_MOTD;
 	Thread_Create(MapThreadProc, client, true);

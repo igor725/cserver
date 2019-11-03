@@ -80,6 +80,7 @@ World World_GetByID(int32_t id) {
 
 void World_SetDimensions(World world, const SVec* dims) {
 	world->info->dimensions = *dims;
+	world->size = 4 + dims->x * dims->y * dims->z;
 }
 
 bool World_SetEnvProperty(World world, uint8_t property, int32_t value) {
@@ -152,12 +153,6 @@ Weather World_GetWeather(World world) {
 }
 
 void World_AllocBlockArray(World world) {
-	if(world->data) Memory_Free(world->data);
-
-	WorldInfo wi = world->info;
-	SVec* dim = &wi->dimensions;
-
-	world->size = 4 + dim->x * dim->y * dim->z;
 	BlockID* data = Memory_Alloc(world->size, sizeof(BlockID));
 	*(uint32_t*)data = htonl(world->size - 4);
 	world->data = data;
@@ -166,8 +161,7 @@ void World_AllocBlockArray(World world) {
 
 void World_Free(World world) {
 	if(world->data) Memory_Free(world->data);
-	WorldInfo wi = world->info;
-	if(wi) Memory_Free(wi);
+	if(world->info) Memory_Free(world->info);
 	if(world->id != -1) Worlds_List[world->id] = NULL;
 	Memory_Free(world);
 }
@@ -206,11 +200,14 @@ bool World_ReadInfo(World world, FILE* fp) {
 		return false;
 	}
 
+	SVec dims = {0};
+
 	while(File_Read(&id, 1, 1, fp) == 1) {
 		switch (id) {
 			case DT_DIM:
-				if(File_Read(&world->info->dimensions, sizeof(struct _SVec), 1, fp) != 1)
+				if(File_Read(&dims, sizeof(struct _SVec), 1, fp) != 1)
 					return false;
+				World_SetDimensions(world, &dims);
 				break;
 			case DT_SV:
 				if(File_Read(&world->info->spawnVec, sizeof(struct _Vec), 1, fp) != 1)
@@ -251,7 +248,7 @@ static TRET wSaveThread(TARG param) {
 	String_FormatBuf(path, 256, "worlds/%s", world->name);
 	String_FormatBuf(tmpname, 256, "worlds/%s.tmp", world->name);
 
-	FILE* fp = File_Open(tmpname, "wb");
+	FILE* fp = File_Open(tmpname, "w");
 	if(!fp) {
 		Error_PrintSys(false);
 		goto wsdone;
@@ -312,10 +309,11 @@ bool World_Save(World world) {
 static TRET wLoadThread(TARG param) {
 	World world = param;
 
+	int32_t ret = 0;
 	char path[256];
 	String_FormatBuf(path, 256, "worlds/%s", world->name);
 
-	FILE* fp = File_Open(path, "rb");
+	FILE* fp = File_Open(path, "r");
 	if(!fp) {
 		Error_PrintSys(false);
 		goto wldone;
@@ -328,7 +326,6 @@ static TRET wLoadThread(TARG param) {
 
 	z_stream stream = {0};
 	uint8_t in[1024];
-	int32_t ret;
 
 	if((ret = inflateInit(&stream)) != Z_OK) {
 		Error_Print2(ET_ZLIB, ret, false);
@@ -356,22 +353,31 @@ static TRET wLoadThread(TARG param) {
 		} while(stream.avail_out == 0);
 	} while(ret != Z_STREAM_END);
 
+	ret = 0;
 	wldone:
 	File_Close(fp);
 	inflateEnd(&stream);
+	if(ret != 0)
+		World_Unload(world);
 	Waitable_Signal(world->wait);
 	world->process = WP_NOPROC;
 	return 0;
 }
 
 bool World_Load(World world) {
+	if(world->loaded) return false;
 	if(world->process != WP_NOPROC)
 		return world->process == WP_LOADING;
 
-	world->loaded = false;
 	world->process = WP_LOADING;
 	Thread_Create(wLoadThread, world, true);
 	return true;
+}
+
+void World_Unload(World world) {
+	if(world->data) Memory_Free(world->data);
+	world->loaded = false;
+	world->data = NULL;
 }
 
 uint32_t World_GetOffset(World world, SVec* pos) {
