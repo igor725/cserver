@@ -12,22 +12,22 @@ enum cfgTypes {
 typedef struct cfgEntry {
 	const char* key; // Ключ, присваиваемый записи при создании
 	cs_int32 type; // Тип cfg-записи
-	bool readed; // Была ли осуществленна попытка чтения значения из cfg файла
-	bool changed; // Отличается ли текущее значение записи от заданного стандартного
-	bool haveLimits; // Применимо только для integer типов
+	cs_bool readed; // Была ли осуществленна попытка чтения значения из cfg файла
+	cs_bool changed; // Отличается ли текущее значение записи от заданного стандартного
+	cs_bool haveLimits; // Применимо только для integer типов
 	cs_int32 limits[2]; // Минимальный и максимальный предел значений записи
 	union {
 		cs_int32 vint;
 		cs_int8 vint8;
 		cs_int16 vint16;
-		bool vbool;
+		cs_bool vbool;
 		const char* vchar;
 	} value; // Значение записи, заданное пользователем
 	union {
 		cs_int32 vint;
 		cs_int8 vint8;
 		cs_int16 vint16;
-		bool vbool;
+		cs_bool vbool;
 		const char* vchar;
 	} defvalue; // Значение записи, заданное по умолчанию
 	const char* commentary; // Комментарий к записи
@@ -37,7 +37,7 @@ typedef struct cfgEntry {
 
 typedef struct cfgStore {
 	const char* path; // Путь до cfg-файла
-	bool modified; // Было ли хранилище модифицировано во время работы сервера
+	cs_bool modified; // Было ли хранилище модифицировано во время работы сервера
 	cs_int32 etype; // Тип произошедшей ошибки ET_SYS/ET_SERVER (см. объявления в error.h)
 	cs_int32 ecode; // Код произошедшей ошибки (объявления также в error.h)
 	cs_int32 eline; // Номер строки в файле, на которой произошла ошибка
@@ -48,7 +48,7 @@ typedef struct cfgStore {
 
 API const char* Config_TypeName(cs_int32 type);
 API cs_int32 Config_TypeNameToInt(const char* name);
-API bool Config_ToStr(CFGEntry ent, char* value, cs_uint8 len);
+API cs_bool Config_ToStr(CFGEntry ent, char* value, cs_uint8 len);
 API void Config_PrintError(CFGStore store);
 
 API CFGStore Config_NewStore(const char* path);
@@ -59,8 +59,8 @@ API CFGEntry Config_NewEntry(CFGStore store, const char* key, cs_int32 type);
 API CFGEntry Config_GetEntry(CFGStore store, const char* key);
 
 
-API bool Config_Load(CFGStore store);
-API bool Config_Save(CFGStore store);
+API cs_bool Config_Load(CFGStore store);
+API cs_bool Config_Save(CFGStore store);
 
 API void Config_SetComment(CFGEntry ent, const char* commentary);
 API void Config_SetLimit(CFGEntry ent, cs_int32 min, cs_int32 max);
@@ -82,7 +82,7 @@ API const char* Config_GetStr(CFGStore store, const char* key);
 API void Config_SetDefaultStr(CFGEntry ent, const char* value);
 API void Config_SetStr(CFGEntry ent, const char* value);
 
-API bool Config_GetBool(CFGStore store, const char* key);
-API void Config_SetDefaultBool(CFGEntry ent, bool value);
-API void Config_SetBool(CFGEntry ent, bool value);
+API cs_bool Config_GetBool(CFGStore store, const char* key);
+API void Config_SetDefaultBool(CFGEntry ent, cs_bool value);
+API void Config_SetBool(CFGEntry ent, cs_bool value);
 #endif

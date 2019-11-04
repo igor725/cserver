@@ -18,10 +18,10 @@ typedef struct survivalData {
 	SVec lastClick;
 	cs_uint8 health;
 	cs_uint8 oxygen;
-	bool showOxygen;
-	bool godMode;
-	bool pvpMode;
-	bool breakStarted;
+	cs_bool showOxygen;
+	cs_bool godMode;
+	cs_bool pvpMode;
+	cs_bool breakStarted;
 	cs_int16 breakTimer;
 	cs_uint8 breakProgress;
 	BlockID breakBlock;

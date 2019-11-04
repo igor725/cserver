@@ -35,22 +35,22 @@
 #define ValidateCpeClient(client, ret) \
 if(!client->cpeData) return ret;
 
-API bool CPE_CheckModel(cs_int16 model);
+API cs_bool CPE_CheckModel(cs_int16 model);
 API void CPE_RegisterExtension(const char* name, cs_int32 version);
 API cs_int16 CPE_GetModelNum(const char* model);
 API const char* CPE_GetModelStr(cs_int16 num);
 void CPE_StartHandshake(Client client);
 
-bool CPEHandler_ExtInfo(Client client, const char* data);
-bool CPEHandler_ExtEntry(Client client, const char* data);
-bool CPEHandler_TwoWayPing(Client client, const char* data);
-bool CPEHandler_PlayerClick(Client client, const char* data);
+cs_bool CPEHandler_ExtInfo(Client client, const char* data);
+cs_bool CPEHandler_ExtEntry(Client client, const char* data);
+cs_bool CPEHandler_TwoWayPing(Client client, const char* data);
+cs_bool CPEHandler_PlayerClick(Client client, const char* data);
 
 void CPEPacket_WriteInfo(Client client);
 void CPEPacket_WriteExtEntry(Client client, CPEExt ext);
 void CPEPacket_WriteClickDistance(Client client, cs_int16 dist);
 void CPEPacket_WriteInventoryOrder(Client client, Order order, BlockID block);
-void CPEPacket_WriteHoldThis(Client client, BlockID block, bool preventChange);
+void CPEPacket_WriteHoldThis(Client client, BlockID block, cs_bool preventChange);
 void CPEPacket_WriteAddName(Client client, Client other);
 void CPEPacket_WriteAddEntity2(Client client, Client other);
 void CPEPacket_WriteRemoveName(Client client, Client other);
@@ -64,5 +64,5 @@ void CPEPacket_WriteTexturePack(Client client, const char* url);
 void CPEPacket_WriteMapProperty(Client client, cs_uint8 property, cs_int32 value);
 void CPEPacket_WriteTwoWayPing(Client client, cs_uint8 direction, cs_int16 num);
 void CPEPacket_WriteSetModel(Client client, ClientID id, cs_int16 model);
-void CPEPacket_WriteBlockPerm(Client client, BlockID id, bool allowPlace, bool allowDestroy);
+void CPEPacket_WriteBlockPerm(Client client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy);
 #endif

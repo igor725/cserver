@@ -15,7 +15,7 @@
 #define CFG_HEARTBEATDELAY_KEY "heartbeat-delay"
 #define CFG_HEARTBEAT_PUBLIC_KEY "heartbeat-public"
 
-VAR bool Server_Active;
+VAR cs_bool Server_Active;
 VAR cs_int32 Server_Delta;
 VAR CFGStore Server_Config;
 VAR cs_uint64 Server_StartTime;

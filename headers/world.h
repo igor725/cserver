@@ -81,32 +81,32 @@ typedef struct world {
 	const char* name;
 	cs_uint32 size;
 	WorldInfo info;
-	bool modified;
+	cs_bool modified;
 	Waitable wait;
-	bool loaded;
-	bool saveUnload;
+	cs_bool loaded;
+	cs_bool saveUnload;
 	cs_int32 process;
 	BlockID* data;
 } *World;
 
-API void Worlds_SaveAll(bool join);
+API void Worlds_SaveAll(cs_bool join);
 
 API World World_Create(const char* name);
 API void World_AllocBlockArray(World world);
 API void World_Free(World world);
-API bool World_Add(World world);
+API cs_bool World_Add(World world);
 API void World_UpdateClients(World world);
 
-API bool World_Load(World world);
+API cs_bool World_Load(World world);
 API void World_Unload(World world);
-API bool World_Save(World world);
+API cs_bool World_Save(World world);
 
 API void World_SetDimensions(World world, const SVec* dims);
-API bool World_SetBlock(World world, SVec* pos, BlockID id);
-API bool World_SetEnvColor(World world, cs_uint8 type, Color3* color);
-API bool World_SetEnvProperty(World world, cs_uint8 property, cs_int32 value);
-API bool World_SetTexturePack(World world, const char* url);
-API bool World_SetWeather(World world, Weather type);
+API cs_bool World_SetBlock(World world, SVec* pos, BlockID id);
+API cs_bool World_SetEnvColor(World world, cs_uint8 type, Color3* color);
+API cs_bool World_SetEnvProperty(World world, cs_uint8 property, cs_int32 value);
+API cs_bool World_SetTexturePack(World world, const char* url);
+API cs_bool World_SetWeather(World world, Weather type);
 
 API cs_uint32 World_GetOffset(World world, SVec* pos);
 API BlockID World_GetBlock(World world, SVec* pos);

@@ -46,7 +46,7 @@ void Command_Unregister(const char* cmd) {
 	}
 }
 
-static bool CHandler_OP(const char* args, Client caller, char* out) {
+static cs_bool CHandler_OP(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/op <playername>";
 	Command_OnlyForOP;
 
@@ -66,7 +66,7 @@ static bool CHandler_OP(const char* args, Client caller, char* out) {
 	Command_PrintUsage;
 }
 
-static bool CHandler_CFG(const char* args, Client caller, char* out) {
+static cs_bool CHandler_CFG(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/cfg <set/get/print> [key] [value]";
 	Command_OnlyForOP;
 
@@ -148,7 +148,7 @@ if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) { \
 	String_Append(name, 64, "." DLIB_EXT); \
 }
 
-static bool CHandler_Plugins(const char* args, Client caller, char* out) {
+static cs_bool CHandler_Plugins(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/plugins <load/unload/print> [pluginName]";
 	char subcommand[64], name[64];
 	Plugin plugin;
@@ -218,7 +218,7 @@ static bool CHandler_Plugins(const char* args, Client caller, char* out) {
 	Command_PrintUsage;
 }
 
-static bool CHandler_Stop(const char* args, Client caller, char* out) {
+static cs_bool CHandler_Stop(const char* args, Client caller, char* out) {
 	Command_OnlyForOP;
 	(void)args;
 
@@ -226,7 +226,7 @@ static bool CHandler_Stop(const char* args, Client caller, char* out) {
 	return false;
 }
 
-static bool CHandler_Announce(const char* args, Client caller, char* out) {
+static cs_bool CHandler_Announce(const char* args, Client caller, char* out) {
 	Command_OnlyForOP;
 
 	if(!caller) caller = Client_Broadcast;
@@ -234,7 +234,7 @@ static bool CHandler_Announce(const char* args, Client caller, char* out) {
 	return false;
 }
 
-static bool CHandler_Kick(const char* args, Client caller, char* out) {
+static cs_bool CHandler_Kick(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/kick <player> [reason]";
 	Command_OnlyForOP;
 
@@ -254,7 +254,7 @@ static bool CHandler_Kick(const char* args, Client caller, char* out) {
 	Command_PrintUsage;
 }
 
-static bool CHandler_SetModel(const char* args, Client caller, char* out) {
+static cs_bool CHandler_SetModel(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/model <modelname/blockid>";
 	Command_OnlyForOP;
 	Command_OnlyForClient;
@@ -270,7 +270,7 @@ static bool CHandler_SetModel(const char* args, Client caller, char* out) {
 	Command_PrintUsage;
 }
 
-static bool CHandler_ChgWorld(const char* args, Client caller, char* out) {
+static cs_bool CHandler_ChgWorld(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/chgworld <worldname>";
 	Command_OnlyForClient;
 
@@ -286,7 +286,7 @@ static bool CHandler_ChgWorld(const char* args, Client caller, char* out) {
 	Command_Print("World not found.");
 }
 
-static bool CHandler_GenWorld(const char* args, Client caller, char* out) {
+static cs_bool CHandler_GenWorld(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/genworld <name> <x> <y> <z>";
 	Command_OnlyForOP;
 
@@ -321,7 +321,7 @@ static bool CHandler_GenWorld(const char* args, Client caller, char* out) {
 	Command_PrintUsage;
 }
 
-static bool CHandler_UnlWorld(const char* args, Client caller, char* out) {
+static cs_bool CHandler_UnlWorld(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/unlworld <worldname>";
 	Command_OnlyForOP;
 
@@ -346,7 +346,7 @@ static bool CHandler_UnlWorld(const char* args, Client caller, char* out) {
 	Command_Print("World not found.");
 }
 
-static bool CHandler_SavWorld(const char* args, Client caller, char* out) {
+static cs_bool CHandler_SavWorld(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/savworld <worldname>";
 	Command_OnlyForOP;
 
@@ -398,7 +398,7 @@ static void SendOutputToClient(Client client, char* ret) {
 	}
 }
 
-bool Command_Handle(char* cmd, Client caller) {
+cs_bool Command_Handle(char* cmd, Client caller) {
 	if(*cmd == '/') ++cmd;
 
 	char ret[MAX_CMD_OUT] = {0};

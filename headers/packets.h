@@ -19,11 +19,11 @@ Mutex_Unlock(client->mutex); \
 Mutex_Unlock(client->mutex); \
 return; \
 
-typedef bool(*packetHandler)(Client, const char*);
+typedef cs_bool(*packetHandler)(Client, const char*);
 
 typedef struct packet {
 	cs_uint16 size;
-	bool haveCPEImp;
+	cs_bool haveCPEImp;
 	cs_uint32 extCRC32;
 	cs_int32 extVersion;
 	cs_uint16 extSize;
@@ -41,7 +41,7 @@ API void Proto_ReadSVec(const char** dataptr, SVec* vec);
 API void Proto_ReadAng(const char** dataptr, Ang* ang);
 API void Proto_ReadFlSVec(const char** dataptr, Vec* vec);
 API void Proto_ReadFlVec(const char** dataptr, Vec* vec);
-API bool Proto_ReadClientPos(Client client, const char* data);
+API cs_bool Proto_ReadClientPos(Client client, const char* data);
 
 API void Proto_WriteString(char** dataptr, const char* string);
 API void Proto_WriteFlVec(char** dataptr, const Vec* vec);
@@ -50,7 +50,7 @@ API void Proto_WriteSVec(char** dataptr, const SVec* vec);
 API void Proto_WriteAng(char** dataptr, const Ang* ang);
 API void Proto_WriteColor3(char** dataptr, const Color3* color);
 API void Proto_WriteColor4(char** dataptr, const Color4* color);
-API cs_uint32 Proto_WriteClientPos(char* data, Client client, bool extended);
+API cs_uint32 Proto_WriteClientPos(char* data, Client client, cs_bool extended);
 
 void Packet_RegisterDefault(void);
 void Packet_RegisterCPEDefault(void);
@@ -65,8 +65,8 @@ void Packet_WriteDespawn(Client client, Client other);
 void Packet_WriteChat(Client client, MessageType type, const char* mesg);
 void Packet_WriteKick(Client client, const char* reason);
 
-bool Handler_Handshake(Client client, const char* data);
-bool Handler_SetBlock(Client client, const char* data);
-bool Handler_PosAndOrient(Client client, const char* data);
-bool Handler_Message(Client client, const char* data);
+cs_bool Handler_Handshake(Client client, const char* data);
+cs_bool Handler_SetBlock(Client client, const char* data);
+cs_bool Handler_PosAndOrient(Client client, const char* data);
+cs_bool Handler_Message(Client client, const char* data);
 #endif

@@ -30,7 +30,7 @@ const char* Block_Names[256] = {
 	"Stone Brick"
 };
 
-bool Block_IsValid(BlockID id) {
+cs_bool Block_IsValid(BlockID id) {
 	return Block_Names[id] != NULL;
 }
 

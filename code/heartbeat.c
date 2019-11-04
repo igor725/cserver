@@ -60,7 +60,7 @@ static void DoRequest() {
 	TrimReserved(name, 65);
 
 	cs_uint16 port = Config_GetInt16(Server_Config, CFG_SERVERPORT_KEY);
-	bool public = Config_GetBool(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
+	cs_bool public = Config_GetBool(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
 	cs_uint8 max = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
 	cs_uint8 count = Clients_GetCount(STATE_INGAME);
 	String_FormatBuf(path, 512, HBEAT_URL,
@@ -114,7 +114,7 @@ static TRET HeartbeatThreadProc(TARG param) {
 
 static const char hexchars[] = "0123456789abcdef";
 
-bool Heartbeat_CheckKey(Client client) {
+cs_bool Heartbeat_CheckKey(Client client) {
 	if(*Secret == '\0') return true;
 	const char* key = client->playerData->key;
 	const char* name =  client->playerData->name;

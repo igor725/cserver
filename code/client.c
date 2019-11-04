@@ -55,7 +55,7 @@ cs_uint16 Assoc_NewType() {
 	return tptr->type;
 }
 
-bool Assoc_DelType(cs_uint16 type, bool freeData) {
+cs_bool Assoc_DelType(cs_uint16 type, cs_bool freeData) {
 	AssocType tptr = AGetType(type);
 	if(!tptr) return false;
 
@@ -72,7 +72,7 @@ bool Assoc_DelType(cs_uint16 type, bool freeData) {
 	return true;
 }
 
-bool Assoc_Set(Client client, cs_uint16 type, void* ptr) {
+cs_bool Assoc_Set(Client client, cs_uint16 type, void* ptr) {
 	if(AGetNode(client, type)) return false;
 	AssocNode nptr = AGetNode(client, type);
 	if(!nptr) {
@@ -92,7 +92,7 @@ void* Assoc_GetPtr(Client client, cs_uint16 type) {
 	return NULL;
 }
 
-bool Assoc_Remove(Client client, cs_uint16 type, bool freeData) {
+cs_bool Assoc_Remove(Client client, cs_uint16 type, cs_bool freeData) {
 	AssocNode nptr = AGetNode(client, type);
 	if(!nptr) return false;
 	if(nptr->next)
@@ -131,7 +131,7 @@ CGroup Group_GetByID(cs_int16 id) {
 	return gptr;
 }
 
-bool Group_Remove(cs_int16 gid) {
+cs_bool Group_Remove(cs_int16 gid) {
 	CGroup cg = Group_GetByID(gid);
 	if(!cg) return false;
 
@@ -188,7 +188,7 @@ Client Client_New(Socket fd, cs_uint32 addr) {
 	return tmp;
 }
 
-bool Client_Add(Client client) {
+cs_bool Client_Add(Client client) {
 	cs_int8 maxplayers = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
 	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
 		if(!Clients_List[i]) {
@@ -267,7 +267,7 @@ cs_int32 Client_GetExtVer(Client client, cs_uint32 extCRC32) {
 	return false;
 }
 
-bool Client_Despawn(Client client) {
+cs_bool Client_Despawn(Client client) {
 	PlayerData pd = client->playerData;
 	if(!pd || !pd->spawned) return false;
 	pd->spawned = false;
@@ -276,7 +276,7 @@ bool Client_Despawn(Client client) {
 	return true;
 }
 
-bool Client_ChangeWorld(Client client, World world) {
+cs_bool Client_ChangeWorld(Client client, World world) {
 	if(Client_IsInWorld(client, world)) return false;
 
 	Client_Despawn(client);
@@ -287,7 +287,7 @@ bool Client_ChangeWorld(Client client, World world) {
 	return true;
 }
 
-void Client_UpdateWorldInfo(Client client, World world, bool updateAll) {
+void Client_UpdateWorldInfo(Client client, World world, cs_bool updateAll) {
 	/*
 	** Нет смысла пыжиться в попытках
 	** поменять значения клиенту, если
@@ -344,7 +344,7 @@ static cs_uint32 copyMessagePart(const char* message, char* part, cs_uint32 i, c
 	return len;
 }
 
-bool Client_MakeSelection(Client client, cs_uint8 id, SVec* start, SVec* end, Color4* color) {
+cs_bool Client_MakeSelection(Client client, cs_uint8 id, SVec* start, SVec* end, Color4* color) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
 		CPEPacket_WriteMakeSelection(client, id, start, end, color);
 		return true;
@@ -352,7 +352,7 @@ bool Client_MakeSelection(Client client, cs_uint8 id, SVec* start, SVec* end, Co
 	return false;
 }
 
-bool Client_RemoveSelection(Client client, cs_uint8 id) {
+cs_bool Client_RemoveSelection(Client client, cs_uint8 id) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
 		CPEPacket_WriteRemoveSelection(client, id);
 		return true;
@@ -379,8 +379,8 @@ void Client_Chat(Client client, MessageType type, const char* message) {
 	Packet_WriteChat(client, type, message);
 }
 
-static void HandlePacket(Client client, char* data, Packet packet, bool extended) {
-	bool ret = false;
+static void HandlePacket(Client client, char* data, Packet packet, cs_bool extended) {
+	cs_bool ret = false;
 
 	if(extended)
 		if(packet->cpeHandler)
@@ -397,9 +397,9 @@ static void HandlePacket(Client client, char* data, Packet packet, bool extended
 		client->pps += 1;
 }
 
-static cs_uint16 GetPacketSizeFor(Packet packet, Client client, bool* extended) {
+static cs_uint16 GetPacketSizeFor(Packet packet, Client client, cs_bool* extended) {
 	cs_uint16 packetSize = packet->size;
-	bool _extended = *extended;
+	cs_bool _extended = *extended;
 	if(packet->haveCPEImp) {
 		_extended = Client_GetExtVer(client, packet->extCRC32) == packet->extVersion;
 		if(_extended) packetSize = packet->extSize;
@@ -409,7 +409,7 @@ static cs_uint16 GetPacketSizeFor(Packet packet, Client client, bool* extended) 
 
 static void PacketReceiverWs(Client client) {
 	Packet packet;
-	bool extended;
+	cs_bool extended;
 	cs_uint16 packetSize, recvSize;
 	WsClient ws = client->websock;
 	char* data = client->rdbuf;
@@ -454,7 +454,7 @@ static void PacketReceiverWs(Client client) {
 
 static void PacketReceiverRaw(Client client) {
 	Packet packet;
-	bool extended;
+	cs_bool extended;
 	cs_uint16 packetSize;
 	cs_uint8 packetId;
 
@@ -578,37 +578,37 @@ void Client_Init(void) {
 	Client_Broadcast->mutex = Mutex_Create();
 }
 
-bool Client_IsInGame(Client client) {
+cs_bool Client_IsInGame(Client client) {
 	if(!client->playerData) return false;
 	return client->playerData->state == STATE_INGAME;
 }
 
-bool Client_IsInSameWorld(Client client, Client other) {
+cs_bool Client_IsInSameWorld(Client client, Client other) {
 	if(!client->playerData || !other->playerData) return false;
 	return client->playerData->world == other->playerData->world;
 }
 
-bool Client_IsInWorld(Client client, World world) {
+cs_bool Client_IsInWorld(Client client, World world) {
 	if(!client->playerData) return false;
 	return client->playerData->world == world;
 }
 
-bool Client_IsOP(Client client) {
+cs_bool Client_IsOP(Client client) {
 	PlayerData pd = client->playerData;
 	return pd ? pd->isOP : false;
 }
 
-bool Client_CheckAuth(Client client) {
+cs_bool Client_CheckAuth(Client client) {
 	return Heartbeat_CheckKey(client);
 }
 
-bool Client_SetBlock(Client client, SVec* pos, BlockID id) {
+cs_bool Client_SetBlock(Client client, SVec* pos, BlockID id) {
 	if(client->playerData->state != STATE_INGAME) return false;
 	Packet_WriteSetBlock(client, pos, id);
 	return true;
 }
 
-bool Client_SetEnvProperty(Client client, cs_uint8 property, cs_int32 value) {
+cs_bool Client_SetEnvProperty(Client client, cs_uint8 property, cs_int32 value) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
 		CPEPacket_WriteMapProperty(client, property, value);
 		return true;
@@ -616,7 +616,7 @@ bool Client_SetEnvProperty(Client client, cs_uint8 property, cs_int32 value) {
 	return false;
 }
 
-bool Client_SetEnvColor(Client client, cs_uint8 type, Color3* color) {
+cs_bool Client_SetEnvColor(Client client, cs_uint8 type, Color3* color) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
 		CPEPacket_WriteEnvColor(client, type, color);
 		return true;
@@ -624,7 +624,7 @@ bool Client_SetEnvColor(Client client, cs_uint8 type, Color3* color) {
 	return false;
 }
 
-bool Client_SetTexturePack(Client client, const char* url) {
+cs_bool Client_SetTexturePack(Client client, const char* url) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
 		CPEPacket_WriteTexturePack(client, url);
 		return true;
@@ -632,7 +632,7 @@ bool Client_SetTexturePack(Client client, const char* url) {
 	return false;
 }
 
-bool Client_SetWeather(Client client, Weather type) {
+cs_bool Client_SetWeather(Client client, Weather type) {
 	if(Client_GetExtVer(client, EXT_WEATHER)) {
 		CPEPacket_WriteWeatherType(client, type);
 		return true;
@@ -640,7 +640,7 @@ bool Client_SetWeather(Client client, Weather type) {
 	return false;
 }
 
-bool Client_SetInvOrder(Client client, Order order, BlockID block) {
+cs_bool Client_SetInvOrder(Client client, Order order, BlockID block) {
 	if(!Block_IsValid(block)) return false;
 
 	if(Client_GetExtVer(client, EXT_INVORDER)) {
@@ -650,7 +650,7 @@ bool Client_SetInvOrder(Client client, Order order, BlockID block) {
 	return false;
 }
 
-bool Client_SetHeld(Client client, BlockID block, bool canChange) {
+cs_bool Client_SetHeld(Client client, BlockID block, cs_bool canChange) {
 	if(!Block_IsValid(block)) return false;
 	if(Client_GetExtVer(client, EXT_HELDBLOCK)) {
 		CPEPacket_WriteHoldThis(client, block, canChange);
@@ -659,7 +659,7 @@ bool Client_SetHeld(Client client, BlockID block, bool canChange) {
 	return false;
 }
 
-bool Client_SetHotbar(Client client, Order pos, BlockID block) {
+cs_bool Client_SetHotbar(Client client, Order pos, BlockID block) {
 	if(!Block_IsValid(block) || pos > 8) return false;
 	if(Client_GetExtVer(client, EXT_SETHOTBAR)) {
 		CPEPacket_WriteSetHotBar(client, pos, block);
@@ -668,7 +668,7 @@ bool Client_SetHotbar(Client client, Order pos, BlockID block) {
 	return false;
 }
 
-bool Client_SetBlockPerm(Client client, BlockID block, bool allowPlace, bool allowDestroy) {
+cs_bool Client_SetBlockPerm(Client client, BlockID block, cs_bool allowPlace, cs_bool allowDestroy) {
 	if(!Block_IsValid(block)) return false;
 	if(Client_GetExtVer(client, EXT_BLOCKPERM)) {
 		CPEPacket_WriteBlockPerm(client, block, allowPlace, allowDestroy);
@@ -677,7 +677,7 @@ bool Client_SetBlockPerm(Client client, BlockID block, bool allowPlace, bool all
 	return false;
 }
 
-bool Client_SetModel(Client client, cs_int16 model) {
+cs_bool Client_SetModel(Client client, cs_int16 model) {
 	if(!client->cpeData) return false;
 	if(!CPE_CheckModel(model)) return false;
 	client->cpeData->model = model;
@@ -690,7 +690,7 @@ bool Client_SetModel(Client client, cs_int16 model) {
 	return true;
 }
 
-bool Client_SetSkin(Client client, const char* skin) {
+cs_bool Client_SetSkin(Client client, const char* skin) {
 	CPEData cpd = client->cpeData;
 	if(!cpd) return false;
 	if(cpd->skin)
@@ -705,11 +705,11 @@ bool Client_SetSkin(Client client, const char* skin) {
 	return true;
 }
 
-bool Client_SetModelStr(Client client, const char* model) {
+cs_bool Client_SetModelStr(Client client, const char* model) {
 	return Client_SetModel(client, CPE_GetModelNum(model));
 }
 
-bool Client_SetGroup(Client client, cs_int16 gid) {
+cs_bool Client_SetGroup(Client client, cs_int16 gid) {
 	if(!client->playerData || !client->cpeData)
 		return false;
 	client->cpeData->group = gid;
@@ -718,7 +718,7 @@ bool Client_SetGroup(Client client, cs_int16 gid) {
 	return true;
 }
 
-bool Client_UpdateHacks(Client client) {
+cs_bool Client_UpdateHacks(Client client) {
 	if(Client_GetExtVer(client, EXT_HACKCTRL)) {
 		CPEPacket_WriteHackControl(client, client->cpeData->hacks);
 		return true;
@@ -819,7 +819,7 @@ static void SendSpawnPacket(Client client, Client other) {
 	}
 }
 
-bool Client_Spawn(Client client) {
+cs_bool Client_Spawn(Client client) {
 	PlayerData pd = client->playerData;
 	if(pd->spawned) return false;
 
@@ -860,7 +860,7 @@ bool Client_Spawn(Client client) {
 	return true;
 }
 
-bool Client_SendMap(Client client, World world) {
+cs_bool Client_SendMap(Client client, World world) {
 	PlayerData pd = client->playerData;
 	if(pd->state != STATE_INITIAL && pd->state != STATE_INGAME)
 		return false;

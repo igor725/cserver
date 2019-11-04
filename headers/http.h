@@ -51,8 +51,8 @@ API void HttpRequest_SetHeaderInt(HTTPREQ req, const char* key, cs_int32 value);
 cs_int32 HttpRequest_GetHeaderInt(HTTPREQ req, const char* key);
 API void HttpRequest_SetHost(HTTPREQ req, const char* host, cs_uint16 port);
 API void HttpRequest_SetPath(HTTPREQ req, const char* path);
-API bool HttpRequest_Read(HTTPREQ req, Socket sock);
-API bool HttpRequest_Perform(HTTPREQ req, HTTPRESP resp);
+API cs_bool HttpRequest_Read(HTTPREQ req, Socket sock);
+API cs_bool HttpRequest_Perform(HTTPREQ req, HTTPRESP resp);
 API void HttpRequest_Cleanup(HTTPREQ req);
 
 API HTTPHDR HttpResponse_GetHeader(HTTPRESP resp, const char* key);
@@ -62,7 +62,7 @@ API void HttpResponse_SetHeaderInt(HTTPRESP resp, const char* key, cs_int32 valu
 API cs_int32 HttpResponse_GetHeaderInt(HTTPRESP resp, const char* key);
 API void HttpResponse_SetHeader(HTTPRESP resp, const char* key, const char* value);
 API void HttpResponse_SetBody(HTTPRESP resp, char* body, cs_int32 size);
-API bool HttpResponse_SendTo(HTTPRESP resp, Socket sock);
-API bool HttpResponse_Read(HTTPRESP resp, Socket sock);
+API cs_bool HttpResponse_SendTo(HTTPRESP resp, Socket sock);
+API cs_bool HttpResponse_Read(HTTPRESP resp, Socket sock);
 API void HttpResponse_Cleanup(HTTPRESP resp);
 #endif

@@ -36,13 +36,13 @@ static void onmesgfunc(void* param) {
 ** При вызове команды из консоли сервера аргумент "caller" будет NULL.
 ** Также стоит заметить, что "args" тоже будет NULL при отсутствии аргументов.
 */
-static bool CHandler_Plugtest(const char* args, Client caller, char* out) {
+static cs_bool CHandler_Plugtest(const char* args, Client caller, char* out) {
 	(void)args; (void)caller;
   String_Copy(out, MAX_CMD_OUT, "This command registred by testplugin." DLIB_EXT);
   return true;
 }
 
-static bool CHandler_Atoggle(const char* args, Client caller, char* out) {
+static cs_bool CHandler_Atoggle(const char* args, Client caller, char* out) {
 	// Макрос проверяет была ли запущена команда администратором
 	Command_OnlyForOP;
 	(void)args;
@@ -60,7 +60,7 @@ static bool CHandler_Atoggle(const char* args, Client caller, char* out) {
 ** вызвана однажды - её нельзя будет вызвать
 ** вновь, вплоть до перезапуска сервера.
 */
-static bool CHandler_SelfDestroy(const char* args, Client caller, char* out) {
+static cs_bool CHandler_SelfDestroy(const char* args, Client caller, char* out) {
 	(void)args; (void)caller;
 	Command_Unregister("selfdestroy");
 	String_Copy(out, MAX_CMD_OUT, "This command can't be called anymore");
@@ -76,7 +76,7 @@ static bool CHandler_SelfDestroy(const char* args, Client caller, char* out) {
 ** сообщение о том, что команду может вызвать
 ** только игрок.
 */
-static bool CHandler_ClientOnly(const char* args, Client caller, char* out) {
+static cs_bool CHandler_ClientOnly(const char* args, Client caller, char* out) {
 	Command_OnlyForClient;
 	(void)args;
 
@@ -86,7 +86,7 @@ static bool CHandler_ClientOnly(const char* args, Client caller, char* out) {
 
 cs_int32 Plugin_ApiVer = PLUGIN_API_NUM; // Текущая версия API плагинов.
 
-bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
+cs_bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
   Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.
   Command_Register("plugtest", CHandler_Plugtest);
   Command_Register("atoggle", CHandler_Atoggle);
@@ -107,7 +107,7 @@ bool Plugin_Load(void) { // Основная функция, вызываетс�
   return true;
 }
 
-bool Plugin_Unload(void) {
+cs_bool Plugin_Unload(void) {
 	Event_Unregister(EVT_ONMESSAGE, (void*)onmesgfunc);
 	Command_Unregister("plugtest");
 	Command_Unregister("atoggle");

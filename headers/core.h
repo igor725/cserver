@@ -74,7 +74,7 @@ typedef __SIZE_TYPE__ cs_size;
 #define NULL ((void*)0)
 #endif
 
-typedef cs_uint32 bool;
+typedef cs_uint8 cs_bool;
 typedef cs_uint8 Order;
 typedef cs_uint8 BlockID;
 typedef cs_uint8 Weather;
@@ -82,8 +82,8 @@ typedef cs_uint8 ClientID;
 typedef cs_uint8 MessageType;
 
 #ifdef PLUGIN_BUILD
-EXP bool Plugin_Load();
-EXP bool Plugin_Unload();
+EXP cs_bool Plugin_Load();
+EXP cs_bool Plugin_Unload();
 EXP cs_int32 Plugin_ApiVer;
 #endif
 

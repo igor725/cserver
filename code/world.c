@@ -7,7 +7,7 @@
 #include "event.h"
 #include <zlib.h>
 
-void Worlds_SaveAll(bool join) {
+void Worlds_SaveAll(cs_bool join) {
 	for(cs_int32 i = 0; i < MAX_WORLDS; i++) {
 		World world = Worlds_List[i];
 
@@ -50,7 +50,7 @@ World World_Create(const char* name) {
 	return tmp;
 }
 
-bool World_Add(World world) {
+cs_bool World_Add(World world) {
 	if(world->id == -1) {
 		for(cs_int32 i = 0; i < MAX_WORLDS; i++) {
 			if(!Worlds_List[i]) {
@@ -85,7 +85,7 @@ void World_SetDimensions(World world, const SVec* dims) {
 	world->size = 4 + dims->x * dims->y * dims->z;
 }
 
-bool World_SetEnvProperty(World world, cs_uint8 property, cs_int32 value) {
+cs_bool World_SetEnvProperty(World world, cs_uint8 property, cs_int32 value) {
 	if(property > WORLD_PROPS_COUNT) return false;
 
 	world->modified = true;
@@ -100,7 +100,7 @@ cs_int32 World_GetProperty(World world, cs_uint8 property) {
 	return world->info->props[property];
 }
 
-bool World_SetTexturePack(World world, const char* url) {
+cs_bool World_SetTexturePack(World world, const char* url) {
 	if(String_CaselessCompare(world->info->texturepack, url)) {
 		return true;
 	}
@@ -121,7 +121,7 @@ const char* World_GetTexturePack(World world) {
 	return world->info->texturepack;
 }
 
-bool World_SetWeather(World world, Weather type) {
+cs_bool World_SetWeather(World world, Weather type) {
 	if(type > 2) return false;
 
 	world->info->wt = type;
@@ -131,7 +131,7 @@ bool World_SetWeather(World world, Weather type) {
 	return true;
 }
 
-bool World_SetEnvColor(World world, cs_uint8 type, Color3* color) {
+cs_bool World_SetEnvColor(World world, cs_uint8 type, Color3* color) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	world->info->modval |= MV_COLORS;
 	world->modified = true;
@@ -169,7 +169,7 @@ void World_Free(World world) {
 	Memory_Free(world);
 }
 
-bool _WriteData(FILE* fp, cs_uint8 dataType, void* ptr, cs_int32 size) {
+cs_bool _WriteData(FILE* fp, cs_uint8 dataType, void* ptr, cs_int32 size) {
 	if(!File_Write(&dataType, 1, 1, fp))
 		return false;
 	if(ptr && !File_Write(ptr, size, 1, fp))
@@ -177,7 +177,7 @@ bool _WriteData(FILE* fp, cs_uint8 dataType, void* ptr, cs_int32 size) {
 	return true;
 }
 
-bool World_WriteInfo(World world, FILE* fp) {
+cs_bool World_WriteInfo(World world, FILE* fp) {
 	cs_int32 magic = WORLD_MAGIC;
 	if(!File_Write((char*)&magic, 4, 1, fp)) {
 		Error_PrintSys(false);
@@ -192,7 +192,7 @@ bool World_WriteInfo(World world, FILE* fp) {
 	_WriteData(fp, DT_END, NULL, 0);
 }
 
-bool World_ReadInfo(World world, FILE* fp) {
+cs_bool World_ReadInfo(World world, FILE* fp) {
 	cs_uint8 id = 0;
 	cs_uint32 magic = 0;
 	if(!File_Read(&magic, 4, 1, fp))
@@ -246,7 +246,7 @@ bool World_ReadInfo(World world, FILE* fp) {
 static TRET wSaveThread(TARG param) {
 	World world = param;
 
-	bool succ = false;
+	cs_bool succ = false;
 	char path[256];
 	char tmpname[256];
 	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
@@ -302,7 +302,7 @@ static TRET wSaveThread(TARG param) {
 	return 0;
 }
 
-bool World_Save(World world) {
+cs_bool World_Save(World world) {
 	if(world->process != WP_NOPROC || !world->modified || !world->loaded)
 		return world->process == WP_SAVING;
 
@@ -370,7 +370,7 @@ static TRET wLoadThread(TARG param) {
 	return 0;
 }
 
-bool World_Load(World world) {
+cs_bool World_Load(World world) {
 	if(world->loaded) return false;
 	if(world->process != WP_NOPROC)
 		return world->process == WP_LOADING;
@@ -396,7 +396,7 @@ cs_uint32 World_GetOffset(World world, SVec* pos) {
 	return pos->z * dz + pos->y * (dx * dy) + pos->x + 4;
 }
 
-bool World_SetBlock(World world, SVec* pos, BlockID id) {
+cs_bool World_SetBlock(World world, SVec* pos, BlockID id) {
 	cs_uint32 offset = World_GetOffset(world, pos);
 
 	if(offset > 3 && offset < world->size) {

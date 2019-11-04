@@ -17,21 +17,21 @@ for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) { \
 } \
 return false;
 
-bool Event_RegisterBool(EventType type, evtBoolCallback func) {
+cs_bool Event_RegisterBool(cs_uint32 type, evtBoolCallback func) {
 	rgPart1;
 	evt->rtype = EVT_RTBOOL;
 	evt->func.fbool = func;
 	rgPart2;
 }
 
-bool Event_RegisterVoid(EventType type, evtVoidCallback func) {
+cs_bool Event_RegisterVoid(cs_uint32 type, evtVoidCallback func) {
 	rgPart1;
 	evt->rtype = EVT_RTVOID;
 	evt->func.fvoid = func;
 	rgPart2;
 }
 
-bool Event_Unregister(EventType type, void* callbackPtr) {
+cs_bool Event_Unregister(cs_uint32 type, void* callbackPtr) {
 	for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) {
 		EVENT evt = Event_List[type][pos];
 		if(!evt) continue;
@@ -44,8 +44,8 @@ bool Event_Unregister(EventType type, void* callbackPtr) {
 	return false;
 }
 
-bool Event_Call(EventType type, void* param) {
-	bool ret = true;
+cs_bool Event_Call(cs_uint32 type, void* param) {
+	cs_bool ret = true;
 
 	for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) {
 		EVENT evt = Event_List[type][pos];
@@ -62,7 +62,7 @@ bool Event_Call(EventType type, void* param) {
 	return ret;
 }
 
-bool Event_OnMessage(Client client, char* message, MessageType* type) {
+cs_bool Event_OnMessage(Client client, char* message, MessageType* type) {
 	struct _onMessage params = {0};
 	params.client = client;
 	params.message = message;
@@ -70,7 +70,7 @@ bool Event_OnMessage(Client client, char* message, MessageType* type) {
 	return Event_Call(EVT_ONMESSAGE, &params);
 }
 
-bool Event_OnBlockPlace(Client client, cs_uint8 mode, SVec* pos, BlockID* id) {
+cs_bool Event_OnBlockPlace(Client client, cs_uint8 mode, SVec* pos, BlockID* id) {
 	struct _onBlockPlace params = {0};
 	params.client = client;
 	params.mode = mode;

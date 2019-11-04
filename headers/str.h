@@ -3,9 +3,9 @@
 #include <stdarg.h>
 
 API char* String_FindSubstr(const char* str, const char* strsrch);
-API bool String_Compare(const char* str1, const char* str2);
-API bool String_CaselessCompare(const char* str1, const char* str2);
-API bool String_CaselessCompare2(const char* str1, const char* str2, cs_size len);
+API cs_bool String_Compare(const char* str1, const char* str2);
+API cs_bool String_CaselessCompare(const char* str1, const char* str2);
+API cs_bool String_CaselessCompare2(const char* str1, const char* str2, cs_size len);
 API cs_size String_Length(const char* str);
 API cs_size String_Append(char* dst, cs_size len, const char* src);
 API cs_size String_Copy(char* dst, cs_size len, const char* src);

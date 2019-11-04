@@ -25,10 +25,10 @@ typedef struct wsClient {
 	char mask[4];
 	cs_uint16 plen;
 	cs_uint8 opcode;
-	bool done;
+	cs_bool done;
 } *WsClient;
 
-bool WsClient_DoHandshake(WsClient ws);
-bool WsClient_ReceiveFrame(WsClient ws);
-bool WsClient_SendHeader(WsClient ws, cs_uint8 opcode, cs_uint16 len);
+cs_bool WsClient_DoHandshake(WsClient ws);
+cs_bool WsClient_ReceiveFrame(WsClient ws);
+cs_bool WsClient_SendHeader(WsClient ws, cs_uint8 opcode, cs_uint16 len);
 #endif

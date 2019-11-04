@@ -205,7 +205,7 @@ static void SendHeaders(Socket sock, HTTPHDR hdr, char* line) {
 	SendLine(sock, line);
 }
 
-bool HttpRequest_Read(HTTPREQ req, Socket sock) {
+cs_bool HttpRequest_Read(HTTPREQ req, Socket sock) {
 	char line[1024];
 	if(!Socket_ReceiveLine(sock, line, 1023)) {
 		req->error = HTTP_ERR_INVALID_REQUEST;
@@ -242,7 +242,7 @@ bool HttpRequest_Read(HTTPREQ req, Socket sock) {
 	return true;
 }
 
-bool HttpRequest_Perform(HTTPREQ req, HTTPRESP resp) {
+cs_bool HttpRequest_Perform(HTTPREQ req, HTTPRESP resp) {
 	char line[1024];
 	if(!Socket_Connect(req->sock, &req->addr)) {
 		req->error = HTTP_ERROR_CONNECTION_FAILED;
@@ -330,7 +330,7 @@ void HttpResponse_SetBody(HTTPRESP resp, char* body, cs_int32 size) {
 	resp->body = body;
 }
 
-bool HttpResponse_SendTo(HTTPRESP resp, Socket sock) {
+cs_bool HttpResponse_SendTo(HTTPRESP resp, Socket sock) {
 	char line[1024];
 	const char* phrase = HttpCode_GetReason(resp->code);
 	if(!phrase) {
@@ -346,7 +346,7 @@ bool HttpResponse_SendTo(HTTPRESP resp, Socket sock) {
 	return true;
 }
 
-bool HttpResponse_Read(HTTPRESP resp, Socket sock) {
+cs_bool HttpResponse_Read(HTTPRESP resp, Socket sock) {
 	char line[1024];
 	if(Socket_ReceiveLine(sock, line, 1023)) {
 		if(!String_CaselessCompare2(line, "HTTP/1.1 ", 9)) {

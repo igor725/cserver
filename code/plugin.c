@@ -8,7 +8,7 @@
 
 Plugin Plugins_List[MAX_PLUGINS] = {0};
 
-bool Plugin_Load(const char* name) {
+cs_bool Plugin_Load(const char* name) {
 	char path[256];
 	char error[512];
 	String_FormatBuf(path, 256, "plugins" PATH_DELIM "%s", name);
@@ -69,7 +69,7 @@ Plugin Plugin_Get(const char* name) {
 	return NULL;
 }
 
-bool Plugin_Unload(Plugin plugin) {
+cs_bool Plugin_Unload(Plugin plugin) {
 	if(plugin->unload && !(*(pluginFunc)plugin->unload)())
 		return false;
 	if(plugin->name)

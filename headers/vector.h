@@ -12,7 +12,7 @@ typedef struct _Ang {
 	float yaw, pitch;
 } Ang;
 
-static inline bool SVec_Compare(const SVec* a, const SVec* b) {
+static inline cs_bool SVec_Compare(const SVec* a, const SVec* b) {
 	return a->x == b->x && a->y == b->y && a->z == b->z;
 }
 

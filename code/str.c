@@ -8,7 +8,7 @@ char* String_FindSubstr(const char* str, const char* strsrch) {
 	return strstr(str, strsrch);
 }
 
-bool String_CaselessCompare(const char* str1, const char* str2) {
+cs_bool String_CaselessCompare(const char* str1, const char* str2) {
 #if defined(WINDOWS)
 	return _stricmp(str1, str2) == 0;
 #elif defined(POSIX)
@@ -16,7 +16,7 @@ bool String_CaselessCompare(const char* str1, const char* str2) {
 #endif
 }
 
-bool String_CaselessCompare2(const char* str1, const char* str2, cs_size len) {
+cs_bool String_CaselessCompare2(const char* str1, const char* str2, cs_size len) {
 	cs_uint8 c1, c2;
 
 	for(;;) {
@@ -32,7 +32,7 @@ bool String_CaselessCompare2(const char* str1, const char* str2, cs_size len) {
 	}
 }
 
-bool String_Compare(const char* str1, const char* str2) {
+cs_bool String_Compare(const char* str1, const char* str2) {
 	return strcmp(str1, str2) == 0;
 }
 

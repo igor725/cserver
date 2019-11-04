@@ -72,7 +72,7 @@ void Proto_WriteColor4(char** dataptr, const Color4* color) {
 	*dataptr = data;
 }
 
-cs_uint32 Proto_WriteClientPos(char* data, Client client, bool extended) {
+cs_uint32 Proto_WriteClientPos(char* data, Client client, cs_bool extended) {
 	PlayerData pd = client->playerData;
 
 	if(extended)
@@ -155,13 +155,13 @@ void Proto_ReadFlVec(const char** dataptr, Vec* vec) {
 	*dataptr = data;
 }
 
-bool Proto_ReadClientPos(Client client, const char* data) {
+cs_bool Proto_ReadClientPos(Client client, const char* data) {
 	PlayerData cpd = client->playerData;
 	Vec* vec = &cpd->position;
 	Ang* ang = &cpd->angle;
 	Vec newVec = {0};
 	Ang newAng = {0};
-	bool changed = false;
+	cs_bool changed = false;
 
 	if(Client_GetExtVer(client, EXT_ENTPOS))
 		Proto_ReadFlVec(&data, &newVec);
@@ -261,7 +261,7 @@ void Packet_WriteSpawn(Client client, Client other) {
 	*data++ = 0x07;
 	*data++ = client == other ? 0xFF : other->id;
 	Proto_WriteString(&data, other->playerData->name);
-	bool extended = Client_GetExtVer(client, EXT_ENTPOS);
+	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
 	cs_uint32 len = Proto_WriteClientPos(data, other, extended);
 
 	PacketWriter_End(client, 68 + len);
@@ -272,7 +272,7 @@ void Packet_WritePosAndOrient(Client client, Client other) {
 
 	*data++ = 0x08;
 	*data++ = client == other ? 0xFF : other->id;
-	bool extended = Client_GetExtVer(client, EXT_ENTPOS);
+	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
 	cs_uint32 len = Proto_WriteClientPos(data, other, extended);
 
 	PacketWriter_End(client, 4 + len);
@@ -325,7 +325,7 @@ void Packet_WriteKick(Client client, const char* reason) {
 	PacketWriter_End(client, 65);
 }
 
-bool Handler_Handshake(Client client, const char* data) {
+cs_bool Handler_Handshake(Client client, const char* data) {
 	if(*data++ != 0x07) {
 		Client_Kick(client, Lang_Get(LANG_KICKPROTOVER));
 		return true;
@@ -378,7 +378,7 @@ static void UpdateBlock(World world, SVec* pos, BlockID block) {
 	}
 }
 
-bool Handler_SetBlock(Client client, const char* data) {
+cs_bool Handler_SetBlock(Client client, const char* data) {
 	ValidateClientState(client, STATE_INGAME, false);
 
 	World world = client->playerData->world;
@@ -414,7 +414,7 @@ bool Handler_SetBlock(Client client, const char* data) {
 	return true;
 }
 
-bool Handler_PosAndOrient(Client client, const char* data) {
+cs_bool Handler_PosAndOrient(Client client, const char* data) {
 	ValidateClientState(client, STATE_INGAME, true);
 	CPEData cpd = client->cpeData;
 	BlockID cb = *data++;
@@ -429,7 +429,7 @@ bool Handler_PosAndOrient(Client client, const char* data) {
 	return true;
 }
 
-bool Handler_Message(Client client, const char* data) {
+cs_bool Handler_Message(Client client, const char* data) {
 	ValidateClientState(client, STATE_INGAME, true);
 
 	MessageType type = 0;

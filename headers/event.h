@@ -3,10 +3,8 @@
 #include "client.h"
 #include "cpe.h"
 
-typedef cs_uint32 ReturnType;
-typedef cs_uint32 EventType;
 typedef void(*evtVoidCallback)(void* param);
-typedef bool(*evtBoolCallback)(void* param);
+typedef cs_bool(*evtBoolCallback)(void* param);
 
 enum eventType {
 	EVT_POSTSTART,
@@ -59,20 +57,20 @@ typedef struct _onPlayerClick {
 } *onPlayerClick;
 
 typedef struct event {
-	ReturnType rtype;
+	cs_uint32 rtype;
 	union {
 		evtBoolCallback fbool;
 		evtVoidCallback fvoid;
 	} func;
 } *EVENT;
 
-API bool Event_RegisterBool(EventType type, evtBoolCallback func);
-API bool Event_RegisterVoid(EventType type, evtVoidCallback func);
-API bool Event_Unregister(EventType type, void* callbackPtr);
+API cs_bool Event_RegisterBool(cs_uint32 type, evtBoolCallback func);
+API cs_bool Event_RegisterVoid(cs_uint32 type, evtVoidCallback func);
+API cs_bool Event_Unregister(cs_uint32 type, void* callbackPtr);
 
-bool Event_Call(EventType type, void* param);
-bool Event_OnMessage(Client client, char* message, MessageType* type);
+cs_bool Event_Call(cs_uint32 type, void* param);
+cs_bool Event_OnMessage(Client client, char* message, MessageType* type);
 void Event_OnHeldBlockChange(Client client, BlockID prev, BlockID curr);
-bool Event_OnBlockPlace(Client client, cs_uint8 mode, SVec* pos, BlockID* id);
+cs_bool Event_OnBlockPlace(Client client, cs_uint8 mode, SVec* pos, BlockID* id);
 void Event_OnClick(Client client, char button, char action, cs_int16 yaw, cs_int16 pitch, ClientID tgID, SVec* tgBlockPos, char tgBlockFace);
 #endif

@@ -39,7 +39,7 @@ typedef cs_int32 Socket;
 typedef struct {
   char fmt[256];
   const char* cfile;
-  bool isDir;
+  cs_bool isDir;
   char state;
   ITER_DIR dirHandle;
   ITER_FILE fileHandle;
@@ -54,38 +54,38 @@ API void  Memory_Copy(void* dst, const void* src, cs_size count);
 API void  Memory_Fill(void* dst, cs_size count, cs_int32 val);
 API void  Memory_Free(void* ptr);
 
-API bool Iter_Init(dirIter* iter, const char* path, const char* ext);
-API bool Iter_Next(dirIter* iter);
-API bool Iter_Close(dirIter* iter);
+API cs_bool Iter_Init(dirIter* iter, const char* path, const char* ext);
+API cs_bool Iter_Next(dirIter* iter);
+API cs_bool Iter_Close(dirIter* iter);
 
-API bool File_Rename(const char* path, const char* newpath);
+API cs_bool File_Rename(const char* path, const char* newpath);
 API FILE* File_Open(const char* path, const char* mode);
 API cs_size File_Read(void* ptr, cs_size size, cs_size count, FILE* fp);
 API cs_int32 File_ReadLine(FILE* fp, char* line, cs_int32 len);
 API cs_size File_Write(const void* ptr, cs_size size, cs_size count, FILE* fp);
 API cs_int32 File_GetChar(FILE* fp);
-API bool File_Error(FILE* fp);
-API bool File_WriteFormat(FILE* fp, const char* fmt, ...);
-API bool File_Flush(FILE* fp);
+API cs_bool File_Error(FILE* fp);
+API cs_bool File_WriteFormat(FILE* fp, const char* fmt, ...);
+API cs_bool File_Flush(FILE* fp);
 API cs_int32 File_Seek(FILE* fp, long offset, cs_int32 origin);
-API bool File_Close(FILE* fp);
+API cs_bool File_Close(FILE* fp);
 
-API bool Directory_Exists(const char* dir);
-API bool Directory_Create(const char* dir);
-API bool Directory_Ensure(const char* dir);
-API bool Directory_SetCurrentDir(const char* path);
+API cs_bool Directory_Exists(const char* dir);
+API cs_bool Directory_Create(const char* dir);
+API cs_bool Directory_Ensure(const char* dir);
+API cs_bool Directory_SetCurrentDir(const char* path);
 
-bool DLib_Load(const char* path, void** lib);
-bool DLib_Unload(void* lib);
+cs_bool DLib_Load(const char* path, void** lib);
+cs_bool DLib_Unload(void* lib);
 char* DLib_GetError(char* buf, cs_size len);
-bool DLib_GetSym(void* lib, const char* sname, void** sym);
+cs_bool DLib_GetSym(void* lib, const char* sname, void** sym);
 
-bool Socket_Init(void);
+cs_bool Socket_Init(void);
 API Socket Socket_New(void);
 API cs_int32 Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, cs_uint16 port);
-API bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, cs_uint16 port);
-API bool Socket_Bind(Socket sock, struct sockaddr_in* ssa);
-API bool Socket_Connect(Socket sock, struct sockaddr_in* ssa);
+API cs_bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, cs_uint16 port);
+API cs_bool Socket_Bind(Socket sock, struct sockaddr_in* ssa);
+API cs_bool Socket_Connect(Socket sock, struct sockaddr_in* ssa);
 API Socket Socket_Accept(Socket sock, struct sockaddr_in* addr);
 API cs_int32 Socket_Receive(Socket sock, char* buf, cs_int32 len, cs_int32 flags);
 API cs_int32 Socket_ReceiveLine(Socket sock, char* line, cs_int32 len);
@@ -93,8 +93,8 @@ API cs_int32 Socket_Send(Socket sock, char* buf, cs_int32 len);
 API void Socket_Shutdown(Socket sock, cs_int32 how);
 API void Socket_Close(Socket sock);
 
-API Thread Thread_Create(TFUNC func, const TARG param, bool detach);
-API bool Thread_IsValid(Thread th);
+API Thread Thread_Create(TFUNC func, const TARG param, cs_bool detach);
+API cs_bool Thread_IsValid(Thread th);
 API void Thread_Detach(Thread th);
 API void Thread_Join(Thread th);
 

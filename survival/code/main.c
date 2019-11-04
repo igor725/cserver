@@ -33,7 +33,7 @@ static void Survival_OnSpawn(void* param) {
 	SurvInv_Init(data);
 }
 
-static bool Survival_OnBlockPlace(void* param) {
+static cs_bool Survival_OnBlockPlace(void* param) {
 	onBlockPlace a = param;
 	Client client = a->client;
 	SURVDATA data = SurvData_Get(client);
@@ -156,7 +156,7 @@ static void Survival_OnClick(void* param) {
 	}
 }
 
-static bool CHandler_God(const char* args, Client caller, char* out) {
+static cs_bool CHandler_God(const char* args, Client caller, char* out) {
 	Command_OnlyForClient;
 	Command_OnlyForOP;
 	(void)args;
@@ -171,7 +171,7 @@ static bool CHandler_God(const char* args, Client caller, char* out) {
 	return true;
 }
 
-static bool CHandler_Hurt(const char* args, Client caller, char* out) {
+static cs_bool CHandler_Hurt(const char* args, Client caller, char* out) {
 	Command_OnlyForClient;
 
 	char damage[32];
@@ -183,7 +183,7 @@ static bool CHandler_Hurt(const char* args, Client caller, char* out) {
 	return false;
 }
 
-static bool CHandler_PvP(const char* args, Client caller, char* out) {
+static cs_bool CHandler_PvP(const char* args, Client caller, char* out) {
 	Command_OnlyForClient;
 	Command_OnlyForSurvival;
 	(void)args;
@@ -196,7 +196,7 @@ static bool CHandler_PvP(const char* args, Client caller, char* out) {
 
 cs_int32 Plugin_ApiVer = PLUGIN_API_NUM;
 
-bool Plugin_Load(void) {
+cs_bool Plugin_Load(void) {
 	if(Server_Active) {
 		Log_Error("Survival plugin can be loaded only at server startup.");
 		return false;
@@ -215,6 +215,6 @@ bool Plugin_Load(void) {
 	return true;
 }
 
-bool Plugin_Unload(void) {
+cs_bool Plugin_Unload(void) {
 	return false;
 }

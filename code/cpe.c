@@ -87,7 +87,7 @@ static const char* validModelNames[MODELS_COUNT] = {
 	NULL
 };
 
-bool CPE_CheckModel(cs_int16 model) {
+cs_bool CPE_CheckModel(cs_int16 model) {
 	if(model < 256) return Block_IsValid((BlockID)model);
 	return model - 256 < MODELS_COUNT;
 }
@@ -159,7 +159,7 @@ void CPEPacket_WriteClickDistance(Client client, cs_int16 dist) {
 
 // 0x13 - CustomBlocksSupportLevel
 
-void CPEPacket_WriteHoldThis(Client client, BlockID block, bool preventChange) {
+void CPEPacket_WriteHoldThis(Client client, BlockID block, cs_bool preventChange) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x14;
@@ -193,7 +193,7 @@ void CPEPacket_WriteAddEntity2(Client client, Client other) {
 	*data++ = client == other ? 0xFF : other->id;
 	Proto_WriteString(&data, Client_GetName(other));
 	Proto_WriteString(&data, Client_GetSkin(other));
-	bool extended = Client_GetExtVer(client, EXT_ENTPOS);
+	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
 	cs_uint32 len = Proto_WriteClientPos(data, other, extended);
 
 	PacketWriter_End(client, 132 + len);
@@ -241,7 +241,7 @@ void CPEPacket_WriteRemoveSelection(Client client, cs_uint8 id) {
 	PacketWriter_End(client, 2);
 }
 
-void CPEPacket_WriteBlockPerm(Client client, BlockID id, bool allowPlace, bool allowDestroy) {
+void CPEPacket_WriteBlockPerm(Client client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1C;
@@ -346,7 +346,7 @@ void CPEPacket_WriteSetHotBar(Client client, Order order, BlockID block) {
 	PacketWriter_End(client, 3);
 }
 
-bool CPEHandler_ExtInfo(Client client, const char* data) {
+cs_bool CPEHandler_ExtInfo(Client client, const char* data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_INITIAL, false);
 
@@ -355,7 +355,7 @@ bool CPEHandler_ExtInfo(Client client, const char* data) {
 	return true;
 }
 
-bool CPEHandler_ExtEntry(Client client, const char* data) {
+cs_bool CPEHandler_ExtEntry(Client client, const char* data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_INITIAL, false);
 
@@ -389,7 +389,7 @@ bool CPEHandler_ExtEntry(Client client, const char* data) {
 	return true;
 }
 
-bool CPEHandler_PlayerClick(Client client, const char* data) {
+cs_bool CPEHandler_PlayerClick(Client client, const char* data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_INGAME, false);
 
@@ -412,7 +412,7 @@ bool CPEHandler_PlayerClick(Client client, const char* data) {
 	return true;
 }
 
-bool CPEHandler_TwoWayPing(Client client, const char* data) {
+cs_bool CPEHandler_TwoWayPing(Client client, const char* data) {
 	ValidateCpeClient(client, false);
 	CPEData cpd = client->cpeData;
 	cs_uint8 pingDirection = *data++;

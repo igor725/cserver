@@ -21,7 +21,7 @@ void SurvInv_UpdateInventory(SURVDATA data) {
 	cs_uint16* inv = data->inventory;
 
 	for(BlockID i = 1; i < 255; i++) {
-		bool mz = inv[i] > 0 || data->godMode;
+		cs_bool mz = inv[i] > 0 || data->godMode;
 		Client_SetBlockPerm(client, i, mz, data->godMode);
 		if(mz)
 			Client_SetInvOrder(client, ++invIdx, i);

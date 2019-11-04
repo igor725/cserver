@@ -50,7 +50,7 @@ if(caller && !caller->playerData->isOP) { \
 	Command_Print(Lang_Get(LANG_CMDAD)); \
 } \
 
-typedef bool(*cmdFunc)(const char* args, Client caller, char* out);
+typedef cs_bool(*cmdFunc)(const char* args, Client caller, char* out);
 
 typedef struct command {
 	const char* name;
@@ -63,5 +63,5 @@ API void Command_Register(const char* cmd, cmdFunc func);
 API void Command_Unregister(const char* cmd);
 
 void Command_RegisterDefault(void);
-bool Command_Handle(char* cmd, Client caller);
+cs_bool Command_Handle(char* cmd, Client caller);
 #endif

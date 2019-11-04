@@ -66,9 +66,9 @@ static void EmptyEntry(CFGEntry ent) {
 	ent->value.vchar = NULL;
 }
 
-static bool AllCfgEntriesParsed(CFGStore store) {
+static cs_bool AllCfgEntriesParsed(CFGStore store) {
 	CFGEntry ent = store->firstCfgEntry;
-	bool loaded = true;
+	cs_bool loaded = true;
 
 	while(ent && loaded) {
 		loaded = ent->readed;
@@ -110,7 +110,7 @@ cs_int32 Config_TypeNameToInt(const char* name) {
 	return CFG_INVTYPE;
 }
 
-bool Config_ToStr(CFGEntry ent, char* value, cs_uint8 len) {
+cs_bool Config_ToStr(CFGEntry ent, char* value, cs_uint8 len) {
 	switch (ent->type) {
 		case CFG_INT:
 		case CFG_INT16:
@@ -153,7 +153,7 @@ void Config_PrintError(CFGStore store) {
 	}
 }
 
-bool Config_Load(CFGStore store) {
+cs_bool Config_Load(CFGStore store) {
 	FILE* fp = File_Open(store->path, "r");
 	if(!fp) {
 		if(errno == ENOENT) return true;
@@ -161,7 +161,7 @@ bool Config_Load(CFGStore store) {
 		return false;
 	}
 
-	bool haveComment = false;
+	cs_bool haveComment = false;
 	char line[MAX_CFG_LEN * 2 + 2];
 	char comment[MAX_CFG_LEN];
 	cs_int32 lnret = 0, linenum = 0;
@@ -226,7 +226,7 @@ bool Config_Load(CFGStore store) {
 	return true;
 }
 
-bool Config_Save(CFGStore store) {
+cs_bool Config_Save(CFGStore store) {
 	if(!store->modified) return true;
 
 	char tmpname[256];
@@ -253,7 +253,7 @@ bool Config_Save(CFGStore store) {
 
 		char* vchar;
 		cs_int32 vint;
-		bool vbool;
+		cs_bool vbool;
 
 		switch (ptr->type) {
 			case CFG_STR:
@@ -415,12 +415,12 @@ const char* Config_GetStr(CFGStore store, const char* key) {
 	return ent->changed ? ent->value.vchar : ent->defvalue.vchar;
 }
 
-void Config_SetDefaultBool(CFGEntry ent, bool value) {
+void Config_SetDefaultBool(CFGEntry ent, cs_bool value) {
 	CFG_TYPE(CFG_BOOL);
 	ent->defvalue.vbool = value;
 }
 
-void Config_SetBool(CFGEntry ent, bool value) {
+void Config_SetBool(CFGEntry ent, cs_bool value) {
 	CFG_TYPE(CFG_BOOL);
 	if(ent->defvalue.vbool != value) {
 		ent->changed = true;
@@ -429,7 +429,7 @@ void Config_SetBool(CFGEntry ent, bool value) {
 	}
 }
 
-bool Config_GetBool(CFGStore store, const char* key) {
+cs_bool Config_GetBool(CFGStore store, const char* key) {
 	CFGEntry ent = Config_CheckEntry(store, key);
 	CFG_TYPE(CFG_BOOL);
 	return ent->changed ? ent->value.vbool : ent->defvalue.vbool;
