@@ -1,11 +1,11 @@
 #include "core.h"
 #include "str.h"
 #include "log.h"
-#include "http.h"
 #include "server.h"
 #include "random.h"
 #include "heartbeat.h"
 #include "platform.h"
+#include "http.h"
 #include "lang.h"
 #include "hash.h"
 

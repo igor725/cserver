@@ -5,7 +5,6 @@
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
 void* Memory_Alloc(size_t num, size_t size) {
 	void* ptr;

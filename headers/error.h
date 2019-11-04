@@ -1,5 +1,6 @@
 #ifndef ERROR_H
 #define ERROR_H
+#include "platform.h"
 enum ErrorTypes {
 	ET_NOERR = -1,
 	ET_SERVER,

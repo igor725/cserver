@@ -5,10 +5,9 @@
 #  define ZLIB_WINAPI
 #  define PATH_DELIM "\\"
 #  define DLIB_EXT "dll"
-#  define WIN32_LEAN_AND_MEAN
 #  define _CRT_SECURE_NO_WARNINGS
-#  include <winsock2.h>
-#  include <ws2tcpip.h>
+#  define WIN32_LEAN_AND_MEAN
+#  include <windows.h>
 #  include <stdint.h>
 
 #  ifndef PLUGIN_BUILD
@@ -19,31 +18,13 @@
 #    define VAR __declspec(dllimport)
 #    define EXP __declspec(dllexport)
 #  endif
-
-typedef void* ITER_DIR;
-typedef WIN32_FIND_DATA ITER_FILE;
-typedef void* Thread;
-typedef uint32_t TRET;
-typedef void* Waitable;
-typedef CRITICAL_SECTION Mutex;
-typedef SOCKET Socket;
 #elif defined(__unix__)
 #  define POSIX
 #  define PATH_DELIM "/"
 #  define DLIB_EXT "so"
 #  define _GNU_SOURCE
-#  include <errno.h>
 #  include <stdint.h>
-#  include <sys/socket.h>
-#  include <sys/stat.h>
-#  include <sys/time.h>
-#  include <sys/types.h>
-#  include <arpa/inet.h>
 #  include <unistd.h>
-#  include <dlfcn.h>
-#  include <pthread.h>
-#  include <dirent.h>
-#  include <netdb.h>
 
 #  ifndef PLUGIN_BUILD
 #    define API __attribute__((visibility("default"), noinline))
@@ -60,17 +41,6 @@ typedef SOCKET Socket;
 #  define INVALID_SOCKET -1
 #  define SD_SEND   SHUT_WR
 #  define MAX_PATH  PATH_MAX
-
-typedef DIR* ITER_DIR;
-typedef struct dirent* ITER_FILE;
-typedef void* TRET;
-typedef pthread_t* Thread;
-typedef pthread_mutex_t Mutex;
-typedef struct _Waitable {
-	int32_t pipefd[2];
-	char buf[2];
-} *Waitable;
-typedef int32_t Socket;
 #else
 #  error Unknown OS
 #endif
@@ -86,8 +56,6 @@ typedef uint8_t BlockID;
 typedef uint8_t Weather;
 typedef uint8_t ClientID;
 typedef uint8_t MessageType;
-typedef void* TARG;
-typedef TRET(*TFUNC)(TARG);
 
 #ifdef PLUGIN_BUILD
 EXP bool Plugin_Load();

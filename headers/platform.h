@@ -2,6 +2,40 @@
 #define PLATFORM_H
 #include <stdio.h>
 
+#if defined(WINDOWS)
+#include <ws2tcpip.h>
+
+typedef void* ITER_DIR;
+typedef WIN32_FIND_DATA ITER_FILE;
+typedef void* Thread;
+typedef uint32_t TRET;
+typedef void* Waitable;
+typedef CRITICAL_SECTION Mutex;
+typedef SOCKET Socket;
+#elif defined(POSIX)
+#include <pthread.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/socket.h>
+#include <errno.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <dirent.h>
+#include <dlfcn.h>
+
+typedef DIR* ITER_DIR;
+typedef struct dirent* ITER_FILE;
+typedef void* TRET;
+typedef pthread_t* Thread;
+typedef pthread_mutex_t Mutex;
+typedef struct _Waitable {
+	int32_t pipefd[2];
+	char buf[2];
+} *Waitable;
+typedef int32_t Socket;
+#endif
+
 typedef struct {
   char fmt[256];
   const char* cfile;
@@ -10,6 +44,9 @@ typedef struct {
   ITER_DIR dirHandle;
   ITER_FILE fileHandle;
 } dirIter;
+
+typedef void* TARG;
+typedef TRET(*TFUNC)(TARG);
 
 API void* Memory_Alloc(size_t num, size_t size);
 API void* Memory_Realloc(void* buf, size_t old, size_t new);
