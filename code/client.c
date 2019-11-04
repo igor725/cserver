@@ -5,7 +5,7 @@
 #include "block.h"
 #include "client.h"
 #include "server.h"
-#include "packets.h"
+#include "protocol.h"
 #include "event.h"
 #include "heartbeat.h"
 #include "lang.h"
@@ -246,7 +246,7 @@ cs_int16 Client_GetGroupID(Client client) {
 }
 
 cs_int16 Client_GetModel(Client client) {
-	if(!client->cpeData) return 0;
+	if(!client->cpeData) return 256;
 	return client->cpeData->model;
 }
 
@@ -685,7 +685,7 @@ cs_bool Client_SetModel(Client client, cs_int16 model) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client other = Clients_List[i];
 		if(!other || !Client_GetExtVer(other, EXT_CHANGEMODEL)) continue;
-		CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, model);
+		CPEPacket_WriteSetModel(other, client);
 	}
 	return true;
 }
@@ -838,13 +838,13 @@ cs_bool Client_Spawn(Client client) {
 			SendSpawnPacket(other, client);
 
 			if(other->cpeData && Client_GetExtVer(other, EXT_CHANGEMODEL))
-				CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, Client_GetModel(client));
+				CPEPacket_WriteSetModel(other, client);
 
 			if(client != other) {
 				SendSpawnPacket(client, other);
 
 				if(other->cpeData && Client_GetExtVer(client, EXT_CHANGEMODEL))
-					CPEPacket_WriteSetModel(client, other->id, Client_GetModel(other));
+					CPEPacket_WriteSetModel(client, other);
 			}
 		}
 	}

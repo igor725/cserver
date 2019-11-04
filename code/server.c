@@ -4,7 +4,7 @@
 #include "error.h"
 #include "server.h"
 #include "client.h"
-#include "packets.h"
+#include "protocol.h"
 #include "config.h"
 #include "console.h"
 #include "command.h"
@@ -150,7 +150,6 @@ void Server_InitialWork(void) {
 	Log_SetLevelStr(Config_GetStr(cfg, CFG_LOGLEVEL_KEY));
 
 	Packet_RegisterDefault();
-	Packet_RegisterCPEDefault();
 	Command_RegisterDefault();
 
 	Directory_Ensure("worlds");

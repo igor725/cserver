@@ -1,6 +1,6 @@
 #include <core.h>
 #include <client.h>
-#include <packets.h>
+#include <protocol.h>
 #include <block.h>
 #include <str.h>
 
