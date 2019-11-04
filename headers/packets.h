@@ -50,7 +50,7 @@ API void Proto_WriteSVec(char** dataptr, const SVec* vec);
 API void Proto_WriteAng(char** dataptr, const Ang* ang);
 API void Proto_WriteColor3(char** dataptr, const Color3* color);
 API void Proto_WriteColor4(char** dataptr, const Color4* color);
-API uint32_t Proto_WriteClientPos(char* data, Client client, bool stand, bool extended);
+API uint32_t Proto_WriteClientPos(char* data, Client client, bool extended);
 
 void Packet_RegisterDefault(void);
 void Packet_RegisterCPEDefault(void);

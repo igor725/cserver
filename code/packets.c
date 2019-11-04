@@ -72,15 +72,13 @@ void Proto_WriteColor4(char** dataptr, const Color4* color) {
 	*dataptr = data;
 }
 
-uint32_t Proto_WriteClientPos(char* data, Client client, bool stand, bool extended) {
+uint32_t Proto_WriteClientPos(char* data, Client client, bool extended) {
 	PlayerData pd = client->playerData;
-	Vec vec = pd->position;
-	if(stand) vec.y += 1.59375;
 
 	if(extended)
-		Proto_WriteFlVec(&data, &vec);
+		Proto_WriteFlVec(&data, &pd->position);
 	else
-		Proto_WriteFlSVec(&data, &vec);
+		Proto_WriteFlSVec(&data, &pd->position);
 
 	Proto_WriteAng(&data, &pd->angle);
 
@@ -264,7 +262,7 @@ void Packet_WriteSpawn(Client client, Client other) {
 	*data++ = client == other ? 0xFF : other->id;
 	Proto_WriteString(&data, other->playerData->name);
 	bool extended = Client_GetExtVer(client, EXT_ENTPOS);
-	uint32_t len = Proto_WriteClientPos(data, other, client == other, extended);
+	uint32_t len = Proto_WriteClientPos(data, other, extended);
 
 	PacketWriter_End(client, 68 + len);
 }
@@ -275,7 +273,7 @@ void Packet_WritePosAndOrient(Client client, Client other) {
 	*data++ = 0x08;
 	*data++ = client == other ? 0xFF : other->id;
 	bool extended = Client_GetExtVer(client, EXT_ENTPOS);
-	uint32_t len = Proto_WriteClientPos(data, other, false, extended);
+	uint32_t len = Proto_WriteClientPos(data, other, extended);
 
 	PacketWriter_End(client, 4 + len);
 }

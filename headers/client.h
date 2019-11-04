@@ -60,7 +60,7 @@ typedef struct cpeHacks {
 typedef struct cpeData {
 	CPEExt firstExtension; // Начало списка дополнений клиента
 	const char* appName; // Название игрового клиента
-	const char* skinURL; // URL скина игрока, может быть NULL [ExtPlayerList]
+	const char* skin; // скин игрока, может быть NULL [ExtPlayerList]
 	Hacks hacks; // Структура с значениями чит-параметров для клиента [HacksControl]
 	char* message; // Используется для получения длинных сообщений [LongerMessages]
 	BlockID heldBlock; // Выбранный игроком блок в данный момент [HeldBlock]
@@ -152,6 +152,7 @@ API bool Client_SetModelStr(Client client, const char* model);
 API bool Client_SetBlockPerm(Client client, BlockID block, bool allowPlace, bool allowDestroy);
 API bool Client_SetHeld(Client client, BlockID block, bool canChange);
 API bool Client_SetHotbar(Client client, Order pos, BlockID block);
+API bool Client_SetSkin(Client client, const char* skin);
 API bool Client_SetGroup(Client client, int16_t gid);
 
 API const char* Client_GetName(Client client);

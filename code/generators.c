@@ -22,7 +22,7 @@ void Generator_Flat(World world) {
 	World_SetEnvProperty(world, PROP_EDGELEVEL, dims->y / 2);
 
 	wi->spawnVec.x = (float)dims->x / 2;
-	wi->spawnVec.y = (float)dims->y / 2;
+	wi->spawnVec.y = (float)dims->y / 2 + 1.59375f;
 	wi->spawnVec.z = (float)dims->z / 2;
 }
 

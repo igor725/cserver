@@ -212,9 +212,9 @@ const char* Client_GetAppName(Client client) {
 
 const char* Client_GetSkin(Client client) {
 	CPEData cpd = client->cpeData;
-	if(!cpd || !cpd->skinURL)
+	if(!cpd || !cpd->skin)
 		return Client_GetName(client);
-	return cpd->skinURL;
+	return cpd->skin;
 }
 
 Client Client_GetByName(const char* name) {
@@ -686,6 +686,21 @@ bool Client_SetModel(Client client, int16_t model) {
 		Client other = Clients_List[i];
 		if(!other || !Client_GetExtVer(other, EXT_CHANGEMODEL)) continue;
 		CPEPacket_WriteSetModel(other, other == client ? 0xFF : client->id, model);
+	}
+	return true;
+}
+
+bool Client_SetSkin(Client client, const char* skin) {
+	CPEData cpd = client->cpeData;
+	if(!cpd) return false;
+	if(cpd->skin)
+		Memory_Free((void*)cpd->skin);
+	cpd->skin = String_AllocCopy(skin);
+
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		Client other = Clients_List[i];
+		if(!other || Client_GetExtVer(other, EXT_PLAYERLIST) != 2) continue;
+		CPEPacket_WriteAddEntity2(other, client);
 	}
 	return true;
 }

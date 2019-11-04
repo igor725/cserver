@@ -194,7 +194,7 @@ void CPEPacket_WriteAddEntity2(Client client, Client other) {
 	Proto_WriteString(&data, Client_GetName(other));
 	Proto_WriteString(&data, Client_GetSkin(other));
 	bool extended = Client_GetExtVer(client, EXT_ENTPOS);
-	uint32_t len = Proto_WriteClientPos(data, other, client == other, extended);
+	uint32_t len = Proto_WriteClientPos(data, other, extended);
 
 	PacketWriter_End(client, 132 + len);
 }
