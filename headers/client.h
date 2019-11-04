@@ -36,6 +36,14 @@ typedef struct _AssocNode {
 	struct _AssocNode* next; // Следующая нода
 } *AssocNode;
 
+typedef struct _CGroup {
+	int16_t id;
+	const char* name;
+	uint8_t rank;
+	struct _CGroup* prev; // Предыдущая группа
+	struct _CGroup* next; // Следующая группа
+} *CGroup;
+
 typedef struct cpeExt {
 	const char* name; // Название дополнения
 	int32_t version; // Его версия
@@ -50,15 +58,16 @@ typedef struct cpeHacks {
 } *Hacks;
 
 typedef struct cpeData {
-	const char* appName; // Название игрового клиента
-	const char* skinURL; // URL скина игрока, может быть NULL
 	CPEExt firstExtension; // Начало списка дополнений клиента
-	Hacks hacks; // Структура с значениями чит-параметров для клиента
-	char* message; // Используется для получения длинных сообщений
-	BlockID heldBlock; // Выбранный игроком блок в данный момент
+	const char* appName; // Название игрового клиента
+	const char* skinURL; // URL скина игрока, может быть NULL [ExtPlayerList]
+	Hacks hacks; // Структура с значениями чит-параметров для клиента [HacksControl]
+	char* message; // Используется для получения длинных сообщений [LongerMessages]
+	BlockID heldBlock; // Выбранный игроком блок в данный момент [HeldBlock]
 	int16_t _extCount; // Переменная используется при получении списка дополнений
-	int16_t model; // Текущая модель игрока
-	bool pingStarted; // Начат ли процесс пингования
+	int16_t model; // Текущая модель игрока [ChangeModel]
+	int16_t group; // Текущая группа игрока [ExtPlayerList]
+	bool pingStarted; // Начат ли процесс пингования [TwoWayPing]
 	uint16_t pingData; // Данные, цепляемые к пинг-запросу
 	uint64_t pingStart; // Время начала пинг-запроса
 	uint32_t pingTime; // Сам пинг, в миллисекундах
@@ -109,6 +118,10 @@ API bool Assoc_Set(Client client, uint16_t type, void* ptr);
 API void* Assoc_GetPtr(Client client, uint16_t type);
 API bool Assoc_Remove(Client client, uint16_t type, bool freeData);
 
+API CGroup Group_Add(int16_t gid, const char* gname, uint8_t grank);
+API CGroup Group_GetByID(int16_t id);
+API bool Group_Remove(int16_t gid);
+
 API uint8_t Clients_GetCount(int32_t state);
 API void Clients_KickAll(const char* reason);
 API void Clients_UpdateWorldInfo(World world);
@@ -119,6 +132,7 @@ API void Client_Kick(Client client, const char* reason);
 API bool Client_SendMap(Client client, World world);
 API void Client_UpdateWorldInfo(Client client, World world, bool updateAll);
 API bool Client_UpdateHacks(Client client);
+API void Client_UpdateGroup(Client client);
 API bool Client_MakeSelection(Client client, uint8_t id, SVec* start, SVec* end, Color4* color);
 API bool Client_RemoveSelection(Client client, uint8_t id);
 
@@ -138,6 +152,7 @@ API bool Client_SetModelStr(Client client, const char* model);
 API bool Client_SetBlockPerm(Client client, BlockID block, bool allowPlace, bool allowDestroy);
 API bool Client_SetHeld(Client client, BlockID block, bool canChange);
 API bool Client_SetHotbar(Client client, Order pos, BlockID block);
+API bool Client_SetGroup(Client client, int16_t gid);
 
 API const char* Client_GetName(Client client);
 API const char* Client_GetAppName(Client client);
@@ -147,6 +162,8 @@ API Client Client_GetByName(const char* name);
 API int16_t Client_GetModel(Client client);
 API BlockID Client_GetHeldBlock(Client client);
 API int32_t Client_GetExtVer(Client client, uint32_t extCRC32);
+API CGroup Client_GetGroup(Client client);
+API int16_t Client_GetGroupID(Client client);
 
 API bool Client_Spawn(Client client);
 API bool Client_Despawn(Client client);

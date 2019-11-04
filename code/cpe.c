@@ -176,11 +176,12 @@ void CPEPacket_WriteAddName(Client client, Client other) {
 
 	*data++ = 0x16;
 	data++; // 16 bit id? For what?
-	*data++ = other->id;
+	*data++ = client == other ? 0xFF : other->id;
 	Proto_WriteString(&data, Client_GetName(other));
 	Proto_WriteString(&data, Client_GetName(other));
-	Proto_WriteString(&data, NULL);
-	*data = 0;
+	CGroup group = Client_GetGroup(other);
+	Proto_WriteString(&data, group->name);
+	*data = group->rank;
 
 	PacketWriter_End(client, 196);
 }
@@ -203,7 +204,7 @@ void CPEPacket_WriteRemoveName(Client client, Client other) {
 
 	*data++ = 0x18;
 	data++; // Short value... again.
-	*data++ = other->id;
+	*data++ = client == other ? 0xFF : other->id;
 
 	PacketWriter_End(client, 3);
 }

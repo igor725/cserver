@@ -12,6 +12,7 @@
 #include <zlib.h>
 
 static AssocType headAssocType = NULL;
+static CGroup headCGroup = NULL;
 
 static AssocType AGetType(uint16_t type) {
 	AssocType ptr = headAssocType;
@@ -47,9 +48,9 @@ uint16_t Assoc_NewType() {
 		}
 
 		tptr->type = type++;
-		headAssocType->next = tptr;
+		headAssocType->prev = tptr;
 	}
-	tptr->prev = headAssocType;
+	tptr->next = headAssocType;
 	headAssocType = tptr;
 	return tptr->type;
 }
@@ -64,9 +65,9 @@ bool Assoc_DelType(uint16_t type, bool freeData) {
 	}
 
 	if(tptr->next)
-		tptr->next->prev = tptr->prev;
+		tptr->next->prev = tptr->next;
 	if(tptr->prev)
-		tptr->prev->next = tptr->next;
+		tptr->prev->next = tptr->prev;
 	Memory_Free((void*)tptr);
 	return true;
 }
@@ -79,8 +80,8 @@ bool Assoc_Set(Client client, uint16_t type, void* ptr) {
 		nptr->type = type;
 	}
 	nptr->dataptr = ptr;
-	nptr->prev = client->headNode;
-	if(client->headNode) client->headNode->next = nptr;
+	nptr->next = client->headNode;
+	if(client->headNode) client->headNode->prev = nptr;
 	client->headNode = nptr;
 	return true;
 }
@@ -95,11 +96,58 @@ bool Assoc_Remove(Client client, uint16_t type, bool freeData) {
 	AssocNode nptr = AGetNode(client, type);
 	if(!nptr) return false;
 	if(nptr->next)
-		nptr->next->prev = nptr->prev;
+		nptr->next->prev = nptr->next;
 	if(nptr->prev)
-	nptr->prev->next = nptr->next;
+		nptr->prev->next = nptr->prev;
 	if(freeData) Memory_Free(nptr->dataptr);
 	Memory_Free((void*)nptr);
+	return true;
+}
+
+CGroup Group_Add(int16_t gid, const char* gname, uint8_t grank) {
+	CGroup gptr = Group_GetByID(gid);
+	if(!gptr) {
+		gptr = Memory_Alloc(1, sizeof(struct _CGroup));
+		gptr->id = gid;
+		gptr->next = headCGroup;
+		if(headCGroup) headCGroup->prev = gptr;
+		headCGroup = gptr;
+	}
+
+	if(gptr->name) Memory_Free((void*)gptr->name);
+	gptr->name = String_AllocCopy(gname);
+	gptr->rank = grank;
+	return gptr;
+}
+
+CGroup Group_GetByID(int16_t id) {
+	CGroup gptr = headCGroup;
+
+	while(gptr) {
+		if(gptr->id == id) break;
+		gptr = gptr->next;
+	}
+
+	return gptr;
+}
+
+bool Group_Remove(int16_t gid) {
+	CGroup cg = Group_GetByID(gid);
+	if(!cg) return false;
+
+	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
+		Client client = Clients_List[id];
+		if(client && Client_GetGroupID(client) == gid)
+			Client_SetGroup(client, -1);
+	}
+
+	if(cg->next)
+		cg->next->prev = cg->prev;
+	if(cg->prev)
+		cg->prev->next = cg->next;
+
+	Memory_Free((void*)cg->name);
+	Memory_Free(cg);
 	return true;
 }
 
@@ -182,6 +230,19 @@ Client Client_GetByName(const char* name) {
 
 Client Client_GetByID(ClientID id) {
 	return id < MAX_CLIENTS ? Clients_List[id] : NULL;
+}
+
+static struct _CGroup dgroup = {-1, "", 0, NULL, NULL};
+
+CGroup Client_GetGroup(Client client) {
+	if(!client->cpeData) return &dgroup;
+	CGroup gptr = Group_GetByID(client->cpeData->group);
+	return !gptr ? &dgroup : gptr;
+}
+
+int16_t Client_GetGroupID(Client client) {
+	if(!client->cpeData) return -1;
+	return client->cpeData->group;
 }
 
 int16_t Client_GetModel(Client client) {
@@ -537,7 +598,6 @@ bool Client_IsOP(Client client) {
 	return pd ? pd->isOP : false;
 }
 
-//TODO: ClassiCube auth
 bool Client_CheckAuth(Client client) {
 	return Heartbeat_CheckKey(client);
 }
@@ -634,12 +694,29 @@ bool Client_SetModelStr(Client client, const char* model) {
 	return Client_SetModel(client, CPE_GetModelNum(model));
 }
 
+bool Client_SetGroup(Client client, int16_t gid) {
+	if(!client->playerData || !client->cpeData)
+		return false;
+	client->cpeData->group = gid;
+	if(!client->playerData->firstSpawn)
+		Client_UpdateGroup(client);
+	return true;
+}
+
 bool Client_UpdateHacks(Client client) {
 	if(Client_GetExtVer(client, EXT_HACKCTRL)) {
 		CPEPacket_WriteHackControl(client, client->cpeData->hacks);
 		return true;
 	}
 	return false;
+}
+
+void Client_UpdateGroup(Client client) {
+	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
+		Client other = Clients_List[id];
+		if(other)
+			CPEPacket_WriteAddName(other, client);
+	}
 }
 
 static void SocketWaitClose(Client client) {
@@ -721,8 +798,6 @@ static void SendSpawnPacket(Client client, Client other) {
 	int32_t extlist_ver = Client_GetExtVer(client, EXT_PLAYERLIST);
 
 	if(extlist_ver == 2) {
-		if(client->playerData->firstSpawn || other->playerData->firstSpawn)
-			CPEPacket_WriteAddName(client, other);
 		CPEPacket_WriteAddEntity2(client, other);
 	} else { // TODO: ExtPlayerList ver. 1 support
 		Packet_WriteSpawn(client, other);
@@ -737,7 +812,14 @@ bool Client_Spawn(Client client) {
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client other = Clients_List[i];
-		if(other && Client_IsInSameWorld(client, other)) {
+		if(!other) continue;
+
+		if(pd->firstSpawn) {
+			CPEPacket_WriteAddName(other, client);
+			CPEPacket_WriteAddName(client, other);
+		}
+
+		if(Client_IsInSameWorld(client, other)) {
 			SendSpawnPacket(other, client);
 
 			if(other->cpeData && Client_GetExtVer(other, EXT_CHANGEMODEL))
