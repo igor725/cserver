@@ -830,20 +830,22 @@ cs_bool Client_Spawn(Client client) {
 		if(!other) continue;
 
 		if(pd->firstSpawn) {
-			CPEPacket_WriteAddName(other, client);
-			CPEPacket_WriteAddName(client, other);
+			if(Client_GetExtVer(other, EXT_PLAYERLIST))
+				CPEPacket_WriteAddName(other, client);
+			if(Client_GetExtVer(client, EXT_PLAYERLIST) && client != other)
+				CPEPacket_WriteAddName(client, other);
 		}
 
 		if(Client_IsInSameWorld(client, other)) {
 			SendSpawnPacket(other, client);
 
-			if(other->cpeData && Client_GetExtVer(other, EXT_CHANGEMODEL))
+			if(Client_GetExtVer(other, EXT_CHANGEMODEL))
 				CPEPacket_WriteSetModel(other, client);
 
 			if(client != other) {
 				SendSpawnPacket(client, other);
 
-				if(other->cpeData && Client_GetExtVer(client, EXT_CHANGEMODEL))
+				if(Client_GetExtVer(client, EXT_CHANGEMODEL))
 					CPEPacket_WriteSetModel(client, other);
 			}
 		}

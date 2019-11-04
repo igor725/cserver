@@ -294,7 +294,7 @@ void Packet_WriteLvlInit(Client client) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x02;
-	if(client->cpeData && Client_GetExtVer(client, EXT_FASTMAP)) {
+	if(Client_GetExtVer(client, EXT_FASTMAP)) {
 		*(cs_uint32*)data = htonl(client->playerData->world->size - 4);
 		PacketWriter_End(client, 5);
 	} else {
@@ -427,7 +427,7 @@ cs_bool Handler_Handshake(Client client, const char* data) {
 	if(*data == 0x42) {
 		client->cpeData = Memory_Alloc(1, sizeof(struct cpeData));
 		client->cpeData->model = 256; // Humanoid model id
-		
+
 		CPEPacket_WriteInfo(client);
 		CPEExt ptr = firstExtension;
 		while(ptr) {
