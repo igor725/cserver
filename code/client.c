@@ -303,7 +303,10 @@ static TRET wSendThread(TARG param) {
 	cs_uint8* out = ++data;
 
 	cs_int32 ret, windBits = 31;
-	z_stream stream = {0};
+	z_stream stream;
+	stream.zalloc = Z_NULL;
+	stream.zfree = Z_NULL;
+	stream.opaque = Z_NULL;
 
 	if(Client_GetExtVer(client, EXT_FASTMAP)) {
 		windBits = -15;
@@ -317,7 +320,7 @@ static TRET wSendThread(TARG param) {
 		Z_DEFLATED,
 		windBits,
 		8,
-		Z_DEFAULT_STRATEGY)) != Z_OK) {
+		Z_RLE)) != Z_OK) {
 		pd->state = STATE_WLOADERR;
 		return 0;
 	}

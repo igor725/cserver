@@ -262,9 +262,12 @@ static TRET wSaveThread(TARG param) {
 		goto wsdone;
 	}
 
-	z_stream stream = {0};
 	cs_uint8 out[1024];
 	cs_int32 ret;
+	z_stream stream;
+	stream.zalloc = Z_NULL;
+	stream.zfree = Z_NULL;
+	stream.opaque = Z_NULL;
 
 	if((ret = deflateInit(&stream, Z_BEST_COMPRESSION)) != Z_OK) {
 		Error_Print2(ET_ZLIB, ret, false);
@@ -330,8 +333,11 @@ static TRET wLoadThread(TARG param) {
 
 	World_AllocBlockArray(world);
 
-	z_stream stream = {0};
 	cs_uint8 in[1024];
+	z_stream stream;
+	stream.zalloc = Z_NULL;
+	stream.zfree = Z_NULL;
+	stream.opaque = Z_NULL;
 
 	if((ret = inflateInit(&stream)) != Z_OK) {
 		Error_Print2(ET_ZLIB, ret, false);
