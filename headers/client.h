@@ -129,7 +129,6 @@ API void Clients_UpdateWorldInfo(World world);
 API cs_bool Client_ChangeWorld(Client client, World world);
 API void Client_Chat(Client client, MessageType type, const char* message);
 API void Client_Kick(Client client, const char* reason);
-API cs_bool Client_SendMap(Client client, World world);
 API void Client_UpdateWorldInfo(Client client, World world, cs_bool updateAll);
 API cs_bool Client_UpdateHacks(Client client);
 API void Client_UpdateGroup(Client client);

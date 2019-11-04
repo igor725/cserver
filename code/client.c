@@ -276,14 +276,100 @@ cs_bool Client_Despawn(Client client) {
 	return true;
 }
 
+static TRET wSendThread(TARG param) {
+	Client client = param;
+	if(client->closed) return 0;
+	PlayerData pd = client->playerData;
+	World world = pd->world;
+
+	if(world->process == WP_LOADING) {
+		Client_Chat(client, MT_CHAT, Lang_Get(LANG_INFWWAIT));
+		Waitable_Wait(world->wait);
+	}
+
+	if(!world->loaded) {
+		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
+		return 0;
+	}
+
+	Packet_WriteLvlInit(client);
+	Mutex_Lock(client->mutex);
+	cs_uint8* data = (cs_uint8*)client->wrbuf;
+	cs_uint8* worldData = world->data;
+	cs_int32 worldSize = world->size;
+
+	*data++ = 0x03;
+	cs_uint16* len = (cs_uint16*)data++;
+	cs_uint8* out = ++data;
+
+	cs_int32 ret, windBits = 31;
+	z_stream stream = {0};
+
+	if(Client_GetExtVer(client, EXT_FASTMAP)) {
+		windBits = -15;
+		worldData += 4;
+		worldSize -= 4;
+	}
+
+	if((ret = deflateInit2(
+		&stream,
+		1,
+		Z_DEFLATED,
+		windBits,
+		8,
+		Z_DEFAULT_STRATEGY)) != Z_OK) {
+		pd->state = STATE_WLOADERR;
+		return 0;
+	}
+
+	stream.avail_in = worldSize;
+	stream.next_in = worldData;
+
+	do {
+		stream.next_out = out;
+		stream.avail_out = 1024;
+
+		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
+			pd->state = STATE_WLOADERR;
+			goto end;
+		}
+
+		*len = htons(1024 - (cs_uint16)stream.avail_out);
+		if(client->closed || !Client_Send(client, 1028)) {
+			pd->state = STATE_WLOADERR;
+			goto end;
+		}
+	} while(stream.avail_out == 0);
+	pd->state = STATE_WLOADDONE;
+
+	end:
+	deflateEnd(&stream);
+	Mutex_Unlock(client->mutex);
+	if(pd->state == STATE_WLOADDONE) {
+		pd->state = STATE_INGAME;
+		pd->position = world->info->spawnVec;
+		pd->angle = world->info->spawnAng;
+		Packet_WriteLvlFin(client, &world->info->dimensions);
+		Client_Spawn(client);
+	}
+
+	return 0;
+}
+
 cs_bool Client_ChangeWorld(Client client, World world) {
 	if(Client_IsInWorld(client, world)) return false;
+	PlayerData pd = client->playerData;
 
-	Client_Despawn(client);
-	if(!Client_SendMap(client, world)) {
+	if(pd->state != STATE_INITIAL && pd->state != STATE_INGAME) {
 		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
 		return false;
 	}
+
+	Client_Despawn(client);
+	pd->world = world;
+	pd->state = STATE_MOTD;
+	if(!world->loaded) World_Load(world);
+	Thread_Create(wSendThread, client, true);
 	return true;
 }
 
@@ -487,86 +573,6 @@ TRET Client_ThreadProc(TARG param) {
 			PacketReceiverWs(client);
 		else
 			PacketReceiverRaw(client);
-	}
-
-	return 0;
-}
-
-static TRET MapThreadProc(TARG param) {
-	Client client = param;
-	if(client->closed) return 0;
-	PlayerData pd = client->playerData;
-	World world = pd->world;
-
-	if(world->process == WP_LOADING) {
-		Client_Chat(client, MT_CHAT, Lang_Get(LANG_INFWWAIT));
-		Waitable_Wait(world->wait);
-	}
-
-	if(!world->loaded) {
-		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
-		return 0;
-	}
-
-	Packet_WriteLvlInit(client);
-	Mutex_Lock(client->mutex);
-	cs_uint8* data = (cs_uint8*)client->wrbuf;
-	cs_uint8* mapData = world->data;
-	cs_int32 mapSize = world->size;
-
-	*data++ = 0x03;
-	cs_uint16* len = (cs_uint16*)data++;
-	cs_uint8* out = ++data;
-
-	cs_int32 ret, windowBits = 31;
-	z_stream stream = {0};
-
-	if(Client_GetExtVer(client, EXT_FASTMAP)) {
-		windowBits = -15;
-		mapData += 4;
-		mapSize -= 4;
-	}
-
-	if((ret = deflateInit2(
-		&stream,
-		1,
-		Z_DEFLATED,
-		windowBits,
-		8,
-		Z_DEFAULT_STRATEGY)) != Z_OK) {
-		pd->state = STATE_WLOADERR;
-		return 0;
-	}
-
-	stream.avail_in = mapSize;
-	stream.next_in = mapData;
-
-	do {
-		stream.next_out = out;
-		stream.avail_out = 1024;
-
-		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
-			pd->state = STATE_WLOADERR;
-			goto end;
-		}
-
-		*len = htons(1024 - (cs_uint16)stream.avail_out);
-		if(client->closed || !Client_Send(client, 1028)) {
-			pd->state = STATE_WLOADERR;
-			goto end;
-		}
-	} while(stream.avail_out == 0);
-	pd->state = STATE_WLOADDONE;
-
-	end:
-	deflateEnd(&stream);
-	Mutex_Unlock(client->mutex);
-	if(pd->state == STATE_WLOADDONE) {
-		pd->state = STATE_INGAME;
-		pd->position = world->info->spawnVec;
-		pd->angle = world->info->spawnAng;
-		Packet_WriteLvlFin(client, &world->info->dimensions);
-		Client_Spawn(client);
 	}
 
 	return 0;
@@ -859,18 +865,6 @@ cs_bool Client_Spawn(Client client) {
 		Log_Info(Lang_Get(LANG_SVPLCONN), name, appname);
 		pd->firstSpawn = false;
 	}
-	return true;
-}
-
-cs_bool Client_SendMap(Client client, World world) {
-	PlayerData pd = client->playerData;
-	if(pd->state != STATE_INITIAL && pd->state != STATE_INGAME)
-		return false;
-	if(!world->loaded)
-		World_Load(world);
-	pd->world = world;
-	pd->state = STATE_MOTD;
-	Thread_Create(MapThreadProc, client, true);
 	return true;
 }
 
