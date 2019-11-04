@@ -70,6 +70,7 @@ API Waitable Waitable_Create(void);
 API void Waitable_Free(Waitable handle);
 API void Waitable_Signal(Waitable handle);
 API void Waitable_Wait(Waitable handle);
+API void Waitable_Reset(Waitable handle);
 
 API void Time_Format(char* buf, size_t len);
 API uint64_t Time_GetMSec(void);

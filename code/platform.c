@@ -246,7 +246,7 @@ bool Iter_Next(dirIter* iter) {
 		iter->cfile = iter->fileHandle.cFileName;
 		return true;
 	}
-	
+
 	iter->state = 2;
 	return false;
 }
@@ -465,7 +465,7 @@ void Mutex_Unlock(Mutex* handle) {
 }
 
 Waitable Waitable_Create(void) {
-	Waitable handle = CreateEvent(NULL, false, false, NULL);
+	Waitable handle = CreateEvent(NULL, true, false, NULL);
 	if(!handle) {
 		Error_PrintSys(true);
 	}
@@ -478,6 +478,10 @@ void Waitable_Free(Waitable handle) {
 	}
 }
 
+void Waitable_Reset(Waitable handle) {
+	ResetEvent(handle);
+}
+
 void Waitable_Signal(Waitable handle) {
 	SetEvent(handle);
 }
@@ -486,6 +490,9 @@ void Waitable_Wait(Waitable handle) {
 	WaitForSingleObject(handle, INFINITE);
 }
 #elif defined(POSIX)
+#include <fcntl.h>
+#include <poll.h>
+
 Mutex* Mutex_Create(void) {
 	Mutex* ptr = Memory_Alloc(1, sizeof(Mutex));
 	int32_t ret = pthread_mutex_init(ptr, NULL);
@@ -520,49 +527,29 @@ void Mutex_Unlock(Mutex* handle) {
 
 Waitable Waitable_Create(void) {
 	Waitable handle = Memory_Alloc(1, sizeof(struct _Waitable));
-	int32_t ret;
-
-	ret = pthread_cond_init(&handle->cond, NULL);
-	if(ret) {
-		Error_Print2(ET_SYS, ret, true);
-	}
-	ret = pthread_mutex_init(&handle->mutex, NULL);
-	if(ret) {
-		Error_Print2(ET_SYS, ret, true);
-	}
+	pipe2(handle->pipefd, O_NONBLOCK);
 	return handle;
 }
 
 void Waitable_Free(Waitable handle) {
-	int32_t ret;
-
-	ret = pthread_cond_destroy(&handle->cond);
-	if(ret) {
-		Error_Print2(ET_SYS, ret, true);
-	}
-	ret = pthread_mutex_destroy(&handle->mutex);
-	if(ret) {
-		Error_Print2(ET_SYS, ret, true);
-	}
+	close(handle->pipefd[0]);
+	close(handle->pipefd[1]);
 	Memory_Free(handle);
 }
 
 void Waitable_Signal(Waitable handle) {
-	int32_t ret = pthread_cond_signal(&handle->cond);
-	if(ret) {
-		Error_Print2(ET_SYS, ret, true);
-	}
+	write(handle->pipefd[1], &handle->buf, 1);
+}
+
+void Waitable_Reset(Waitable handle) {
+	read(handle->pipefd[0], &handle->buf, 1);
 }
 
 void Waitable_Wait(Waitable handle) {
-	int32_t ret;
-
-	Mutex_Lock(&handle->mutex);
-	ret = pthread_cond_wait(&handle->cond, &handle->mutex);
-	if(ret) {
-		Error_Print2(ET_SYS, ret, true);
-	}
-	Mutex_Unlock(&handle->mutex);
+	struct pollfd pfd;
+	pfd.fd = handle->pipefd[0];
+	pfd.events = POLLRDNORM;
+	poll(&pfd, 1, -1);
 }
 #endif
 

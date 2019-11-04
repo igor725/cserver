@@ -306,12 +306,14 @@ bool World_Save(World world) {
 	if(world->process != WP_NOPROC || !world->modified || !world->loaded)
 		return world->process == WP_SAVING;
 
+	Waitable_Reset(world->wait);
 	world->process = WP_SAVING;
 	Thread_Create(wSaveThread, world, true);
 	return true;
 }
 
 static TRET wLoadThread(TARG param) {
+	Sleep(5000);
 	World world = param;
 
 	int32_t ret = 0;
@@ -374,6 +376,7 @@ bool World_Load(World world) {
 	if(world->process != WP_NOPROC)
 		return world->process == WP_LOADING;
 
+	Waitable_Reset(world->wait);
 	world->process = WP_LOADING;
 	Thread_Create(wLoadThread, world, true);
 	return true;

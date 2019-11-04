@@ -67,8 +67,8 @@ typedef void* TRET;
 typedef pthread_t* Thread;
 typedef pthread_mutex_t Mutex;
 typedef struct _Waitable {
-	Mutex mutex;
-	pthread_cond_t cond;
+	int32_t pipefd[2];
+	char buf[2];
 } *Waitable;
 typedef int32_t Socket;
 #else
