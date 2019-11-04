@@ -313,7 +313,6 @@ bool World_Save(World world) {
 }
 
 static TRET wLoadThread(TARG param) {
-	Sleep(5000);
 	World world = param;
 
 	int32_t ret = 0;
