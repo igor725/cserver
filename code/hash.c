@@ -9,9 +9,10 @@
 */
 #include "core.h"
 #ifdef WINDOWS
+#include <windows.h>
 #include "hash.h"
 
-static bool HashInit(HASH_CTX* ctx, int32_t type) {
+static bool HashInit(HASH_CTX* ctx, cs_int32 type) {
 	if(!CryptAcquireContext(
 		&ctx->provider,
 		NULL,
@@ -28,8 +29,8 @@ static bool HashInit(HASH_CTX* ctx, int32_t type) {
 	return true;
 }
 
-static bool HashUpdate(HASH_CTX* ctx, const void* data, size_t len) {
-	if(!CryptHashData(ctx->hash, data, (uint32_t)len, 0)) {
+static bool HashUpdate(HASH_CTX* ctx, const void* data, cs_size len) {
+	if(!CryptHashData(ctx->hash, data, (cs_uint32)len, 0)) {
 		CryptReleaseContext(ctx->provider, 0);
 		CryptDestroyHash(ctx->hash);
 		return false;
@@ -49,11 +50,11 @@ bool SHA1_Init(SHA_CTX* ctx) {
 	return HashInit(ctx, CALG_SHA1);
 }
 
-bool SHA1_Update(SHA_CTX* ctx, const void* data, size_t len) {
+bool SHA1_Update(SHA_CTX* ctx, const void* data, cs_size len) {
 	return HashUpdate(ctx, data, len);
 }
 
-bool SHA1_Final(uint8_t* hash, SHA_CTX* ctx) {
+bool SHA1_Final(cs_uint8* hash, SHA_CTX* ctx) {
 	return HashFinal(hash, ctx);
 }
 
@@ -62,11 +63,11 @@ bool MD5_Init(MD5_CTX* ctx) {
 	return HashInit(ctx, CALG_MD5);
 }
 
-bool MD5_Update(MD5_CTX* ctx, const void* data, size_t len) {
+bool MD5_Update(MD5_CTX* ctx, const void* data, cs_size len) {
 	return HashUpdate(ctx, data, len);
 }
 
-bool MD5_Final(uint8_t* hash, MD5_CTX* ctx) {
+bool MD5_Final(cs_uint8* hash, MD5_CTX* ctx) {
 	return HashFinal(hash, ctx);
 }
 #endif

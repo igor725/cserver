@@ -39,7 +39,7 @@ static bool Survival_OnBlockPlace(void* param) {
 	SURVDATA data = SurvData_Get(client);
 	if(data->godMode) return true;
 
-	uint8_t mode = a->mode;
+	cs_uint8 mode = a->mode;
 	BlockID id = *a->id;
 
 	if(mode == 0x00) {
@@ -84,7 +84,7 @@ static void Survival_OnDisconnect(void* param) {
 
 static double root(double n){
   double lo = 0, hi = n, mid;
-  for(int32_t i = 0; i < 1000; i++){
+  for(cs_int32 i = 0; i < 1000; i++){
       mid = (lo + hi) / 2;
       if(mid * mid == n) return mid;
       if(mid * mid > n) hi = mid;
@@ -176,7 +176,7 @@ static bool CHandler_Hurt(const char* args, Client caller, char* out) {
 
 	char damage[32];
 	if(String_GetArgument(args, damage, 32, 0)) {
-		uint8_t dmg = (uint8_t)(String_ToFloat(damage) * 2);
+		cs_uint8 dmg = (cs_uint8)(String_ToFloat(damage) * 2);
 		SurvDmg_Hurt(SurvData_Get(caller), NULL, dmg);
 	}
 
@@ -194,7 +194,7 @@ static bool CHandler_PvP(const char* args, Client caller, char* out) {
 	return true;
 }
 
-int32_t Plugin_ApiVer = PLUGIN_API_NUM;
+cs_int32 Plugin_ApiVer = PLUGIN_API_NUM;
 
 bool Plugin_Load(void) {
 	if(Server_Active) {

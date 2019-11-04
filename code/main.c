@@ -3,7 +3,7 @@
 #include "str.h"
 #include "server.h"
 
-int32_t main(int32_t argc, char** argv) {
+cs_int32 main(cs_int32 argc, char** argv) {
 	if(argc < 2 || !String_CaselessCompare(argv[1], "nochdir")) {
 		const char* path = String_AllocCopy(argv[0]);
 		char* lastSlash = (char*)String_LastChar(path, *PATH_DELIM);

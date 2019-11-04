@@ -66,26 +66,26 @@ enum WorldProcesses {
 typedef struct worldInfo {
 	SVec dimensions;
 	Color3 colors[WORLD_COLORS_COUNT];
-	int32_t props[WORLD_PROPS_COUNT];
+	cs_int32 props[WORLD_PROPS_COUNT];
 	char texturepack[65];
 	Vec spawnVec;
 	Ang spawnAng;
 	Weather wt;
-	uint8_t modval;
-	uint16_t modprop;
-	uint8_t modclr;
+	cs_uint8 modval;
+	cs_uint16 modprop;
+	cs_uint8 modclr;
 } *WorldInfo;
 
 typedef struct world {
-	int32_t id;
+	cs_int32 id;
 	const char* name;
-	uint32_t size;
+	cs_uint32 size;
 	WorldInfo info;
 	bool modified;
 	Waitable wait;
 	bool loaded;
 	bool saveUnload;
-	int32_t process;
+	cs_int32 process;
 	BlockID* data;
 } *World;
 
@@ -103,18 +103,18 @@ API bool World_Save(World world);
 
 API void World_SetDimensions(World world, const SVec* dims);
 API bool World_SetBlock(World world, SVec* pos, BlockID id);
-API bool World_SetEnvColor(World world, uint8_t type, Color3* color);
-API bool World_SetEnvProperty(World world, uint8_t property, int32_t value);
+API bool World_SetEnvColor(World world, cs_uint8 type, Color3* color);
+API bool World_SetEnvProperty(World world, cs_uint8 property, cs_int32 value);
 API bool World_SetTexturePack(World world, const char* url);
 API bool World_SetWeather(World world, Weather type);
 
-API uint32_t World_GetOffset(World world, SVec* pos);
+API cs_uint32 World_GetOffset(World world, SVec* pos);
 API BlockID World_GetBlock(World world, SVec* pos);
-API int32_t World_GetProperty(World world, uint8_t property);
-API Color3* World_GetEnvColor(World world, uint8_t type);
+API cs_int32 World_GetProperty(World world, cs_uint8 property);
+API Color3* World_GetEnvColor(World world, cs_uint8 type);
 API Weather World_GetWeather(World world);
 API World World_GetByName(const char* name);
-API World World_GetByID(int32_t id);
+API World World_GetByID(cs_int32 id);
 
 VAR World Worlds_List[MAX_WORLDS];
 #endif

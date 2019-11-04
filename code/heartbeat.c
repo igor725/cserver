@@ -15,13 +15,13 @@
 
 const char* PlayURL = NULL;
 char Secret[17] = {0};
-uint32_t Delay = 5000;
+cs_uint32 Delay = 5000;
 
 static void NewSecret(void) {
 	RNGState secrnd;
 	Random_SeedFromTime(&secrnd);
-	for(int32_t i = 0; i < 16; i++) {
-		int32_t min, max;
+	for(cs_int32 i = 0; i < 16; i++) {
+		cs_int32 min, max;
 		switch(Random_Range(&secrnd, 0, 3)) {
 			case 0:
 				min = 48;
@@ -41,8 +41,8 @@ static void NewSecret(void) {
 }
 
 const char* reserved = "!*'();:@&=+$,/?#[]%";
-static void TrimReserved(char* name, int32_t len) {
-	for(int32_t i = 0; i < len; i++) {
+static void TrimReserved(char* name, cs_int32 len) {
+	for(cs_int32 i = 0; i < len; i++) {
 		char sym = name[i];
 		if(sym == '\0') break;
 		if(sym == ' ') name[i] = '+';
@@ -59,10 +59,10 @@ static void DoRequest() {
 	String_Copy(name, 65, Config_GetStr(Server_Config, CFG_SERVERNAME_KEY));
 	TrimReserved(name, 65);
 
-	uint16_t port = Config_GetInt16(Server_Config, CFG_SERVERPORT_KEY);
+	cs_uint16 port = Config_GetInt16(Server_Config, CFG_SERVERPORT_KEY);
 	bool public = Config_GetBool(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
-	uint8_t max = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
-	uint8_t count = Clients_GetCount(STATE_INGAME);
+	cs_uint8 max = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
+	cs_uint8 count = Clients_GetCount(STATE_INGAME);
 	String_FormatBuf(path, 512, HBEAT_URL,
 		name,
 		port,
@@ -120,7 +120,7 @@ bool Heartbeat_CheckKey(Client client) {
 	const char* name =  client->playerData->name;
 
 	MD5_CTX ctx = {0};
-	uint8_t hash[16] = {0};
+	cs_uint8 hash[16] = {0};
 	char hash_hex[16 * 2 + 1] = {0};
 
 	MD5_Init(&ctx);
@@ -128,8 +128,8 @@ bool Heartbeat_CheckKey(Client client) {
 	MD5_Update(&ctx, name, String_Length(name));
 	MD5_Final(hash, &ctx);
 
-	for(int32_t i = 0; i < 16; i++) {
-		uint8_t b = hash[i];
+	for(cs_int32 i = 0; i < 16; i++) {
+		cs_uint8 b = hash[i];
 		hash_hex[i * 2] = hexchars[b >> 4];
 		hash_hex[i * 2 + 1] = hexchars[b & 0xF];
 	}
@@ -137,7 +137,7 @@ bool Heartbeat_CheckKey(Client client) {
 	return String_CaselessCompare(hash_hex, key);
 }
 
-void Heartbeat_Start(uint32_t delay) {
+void Heartbeat_Start(cs_uint32 delay) {
 	Delay = delay * 1000;
 	Thread_Create(HeartbeatThreadProc, NULL, true);
 }

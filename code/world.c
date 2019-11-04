@@ -8,7 +8,7 @@
 #include <zlib.h>
 
 void Worlds_SaveAll(bool join) {
-	for(int32_t i = 0; i < MAX_WORLDS; i++) {
+	for(cs_int32 i = 0; i < MAX_WORLDS; i++) {
 		World world = Worlds_List[i];
 
 		if(i < MAX_WORLDS && world) {
@@ -52,7 +52,7 @@ World World_Create(const char* name) {
 
 bool World_Add(World world) {
 	if(world->id == -1) {
-		for(int32_t i = 0; i < MAX_WORLDS; i++) {
+		for(cs_int32 i = 0; i < MAX_WORLDS; i++) {
 			if(!Worlds_List[i]) {
 				world->id = i;
 				Worlds_List[i] = world;
@@ -68,7 +68,7 @@ bool World_Add(World world) {
 }
 
 World World_GetByName(const char* name) {
-	for(int32_t i = 0; i < MAX_WORLDS; i++) {
+	for(cs_int32 i = 0; i < MAX_WORLDS; i++) {
 		World world = Worlds_List[i];
 		if(world && String_CaselessCompare(world->name, name))
 			return world;
@@ -76,7 +76,7 @@ World World_GetByName(const char* name) {
 	return NULL;
 }
 
-World World_GetByID(int32_t id) {
+World World_GetByID(cs_int32 id) {
 	return id < MAX_WORLDS ? Worlds_List[id] : NULL;
 }
 
@@ -85,7 +85,7 @@ void World_SetDimensions(World world, const SVec* dims) {
 	world->size = 4 + dims->x * dims->y * dims->z;
 }
 
-bool World_SetEnvProperty(World world, uint8_t property, int32_t value) {
+bool World_SetEnvProperty(World world, cs_uint8 property, cs_int32 value) {
 	if(property > WORLD_PROPS_COUNT) return false;
 
 	world->modified = true;
@@ -95,7 +95,7 @@ bool World_SetEnvProperty(World world, uint8_t property, int32_t value) {
 	return true;
 }
 
-int32_t World_GetProperty(World world, uint8_t property) {
+cs_int32 World_GetProperty(World world, cs_uint8 property) {
 	if(property > WORLD_PROPS_COUNT) return 0;
 	return world->info->props[property];
 }
@@ -131,7 +131,7 @@ bool World_SetWeather(World world, Weather type) {
 	return true;
 }
 
-bool World_SetEnvColor(World world, uint8_t type, Color3* color) {
+bool World_SetEnvColor(World world, cs_uint8 type, Color3* color) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	world->info->modval |= MV_COLORS;
 	world->modified = true;
@@ -140,7 +140,7 @@ bool World_SetEnvColor(World world, uint8_t type, Color3* color) {
 	return true;
 }
 
-Color3* World_GetEnvColor(World world, uint8_t type) {
+Color3* World_GetEnvColor(World world, cs_uint8 type) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	return &world->info->colors[type];
 }
@@ -156,7 +156,7 @@ Weather World_GetWeather(World world) {
 
 void World_AllocBlockArray(World world) {
 	BlockID* data = Memory_Alloc(world->size, sizeof(BlockID));
-	*(uint32_t*)data = htonl(world->size - 4);
+	*(cs_uint32*)data = htonl(world->size - 4);
 	world->data = data;
 	world->loaded = true;
 }
@@ -169,7 +169,7 @@ void World_Free(World world) {
 	Memory_Free(world);
 }
 
-bool _WriteData(FILE* fp, uint8_t dataType, void* ptr, int32_t size) {
+bool _WriteData(FILE* fp, cs_uint8 dataType, void* ptr, cs_int32 size) {
 	if(!File_Write(&dataType, 1, 1, fp))
 		return false;
 	if(ptr && !File_Write(ptr, size, 1, fp))
@@ -178,7 +178,7 @@ bool _WriteData(FILE* fp, uint8_t dataType, void* ptr, int32_t size) {
 }
 
 bool World_WriteInfo(World world, FILE* fp) {
-	int32_t magic = WORLD_MAGIC;
+	cs_int32 magic = WORLD_MAGIC;
 	if(!File_Write((char*)&magic, 4, 1, fp)) {
 		Error_PrintSys(false);
 		return false;
@@ -193,8 +193,8 @@ bool World_WriteInfo(World world, FILE* fp) {
 }
 
 bool World_ReadInfo(World world, FILE* fp) {
-	uint8_t id = 0;
-	uint32_t magic = 0;
+	cs_uint8 id = 0;
+	cs_uint32 magic = 0;
 	if(!File_Read(&magic, 4, 1, fp))
 		return false;
 
@@ -263,8 +263,8 @@ static TRET wSaveThread(TARG param) {
 	}
 
 	z_stream stream = {0};
-	uint8_t out[1024];
-	int32_t ret;
+	cs_uint8 out[1024];
+	cs_int32 ret;
 
 	if((ret = deflateInit(&stream, Z_BEST_COMPRESSION)) != Z_OK) {
 		Error_Print2(ET_ZLIB, ret, false);
@@ -272,7 +272,7 @@ static TRET wSaveThread(TARG param) {
 	}
 
 	stream.avail_in = world->size;
-	stream.next_in = (uint8_t*)world->data;
+	stream.next_in = (cs_uint8*)world->data;
 
 	do {
 		stream.next_out = out;
@@ -315,7 +315,7 @@ bool World_Save(World world) {
 static TRET wLoadThread(TARG param) {
 	World world = param;
 
-	int32_t ret = 0;
+	cs_int32 ret = 0;
 	char path[256];
 	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
 
@@ -331,17 +331,17 @@ static TRET wLoadThread(TARG param) {
 	World_AllocBlockArray(world);
 
 	z_stream stream = {0};
-	uint8_t in[1024];
+	cs_uint8 in[1024];
 
 	if((ret = inflateInit(&stream)) != Z_OK) {
 		Error_Print2(ET_ZLIB, ret, false);
 		goto wldone;
 	}
 
-	stream.next_out = (uint8_t*)world->data;
+	stream.next_out = (cs_uint8*)world->data;
 
 	do {
-		stream.avail_in = (uint32_t)File_Read(in, 1, 1024, fp);
+		stream.avail_in = (cs_uint32)File_Read(in, 1, 1024, fp);
 		if(File_Error(fp)) {
 			Error_PrintSys(false);
 			goto wldone;
@@ -387,17 +387,17 @@ void World_Unload(World world) {
 	world->data = NULL;
 }
 
-uint32_t World_GetOffset(World world, SVec* pos) {
+cs_uint32 World_GetOffset(World world, SVec* pos) {
 	WorldInfo wi = world->info;
 	SVec* dims = &wi->dimensions;
-	uint16_t dx = dims->x, dy = dims->y, dz = dims->z;
+	cs_uint16 dx = dims->x, dy = dims->y, dz = dims->z;
 
 	if(pos->x > dx || pos->y > dy || pos->z > dz) return 0;
 	return pos->z * dz + pos->y * (dx * dy) + pos->x + 4;
 }
 
 bool World_SetBlock(World world, SVec* pos, BlockID id) {
-	uint32_t offset = World_GetOffset(world, pos);
+	cs_uint32 offset = World_GetOffset(world, pos);
 
 	if(offset > 3 && offset < world->size) {
 		world->data[offset] = id;
@@ -409,7 +409,7 @@ bool World_SetBlock(World world, SVec* pos, BlockID id) {
 }
 
 BlockID World_GetBlock(World world, SVec* pos) {
-	uint32_t offset = World_GetOffset(world, pos);
+	cs_uint32 offset = World_GetOffset(world, pos);
 
 	if(offset > 3 && offset < world->size)
 		return world->data[offset];

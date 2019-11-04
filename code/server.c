@@ -26,10 +26,10 @@ static void AcceptFunc(void) {
 			return;
 		}
 
-		uint32_t addr = htonl(caddr.sin_addr.s_addr);
+		cs_uint32 addr = htonl(caddr.sin_addr.s_addr);
 	 	Client tmp = Client_New(fd, addr);
-		uint32_t sameAddrCount = 1;
-		uint8_t maxConnPerIP = Config_GetInt8(Server_Config, CFG_CONN_KEY);
+		cs_uint32 sameAddrCount = 1;
+		cs_uint8 maxConnPerIP = Config_GetInt8(Server_Config, CFG_CONN_KEY);
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			Client cc = Clients_List[i];
 			if(cc && cc->addr == addr)
@@ -70,7 +70,7 @@ static TRET AcceptThreadProc(TARG param) {
 	return 0;
 }
 
-static void Bind(const char* ip, uint16_t port) {
+static void Bind(const char* ip, cs_uint16 port) {
 	Server_Socket = Socket_New();
 	struct sockaddr_in ssa;
 	switch (Socket_SetAddr(&ssa, ip, port)) {
@@ -154,7 +154,7 @@ void Server_InitialWork(void) {
 	Command_RegisterDefault();
 
 	Directory_Ensure("worlds");
-	int32_t wIndex = 0;
+	cs_int32 wIndex = 0;
 	dirIter wIter = {0};
 	if(Iter_Init(&wIter, "worlds", "cws")) {
 		do {
@@ -184,7 +184,7 @@ void Server_InitialWork(void) {
 	}
 	Event_Call(EVT_POSTSTART, NULL);
 	const char* ip = Config_GetStr(cfg, CFG_SERVERIP_KEY);
-	uint16_t port = Config_GetUInt16(cfg, CFG_SERVERPORT_KEY);
+	cs_uint16 port = Config_GetUInt16(cfg, CFG_SERVERPORT_KEY);
 	Thread_Create(AcceptThreadProc, NULL, true);
 	Server_StartTime = Time_GetMSec();
 	Server_Active = true;
@@ -195,18 +195,18 @@ void Server_InitialWork(void) {
 
 void Server_DoStep(void) {
 	Event_Call(EVT_ONTICK, NULL);
-	for(int32_t i = 0; i < MAX_CLIENTS; i++) {
+	for(cs_int32 i = 0; i < MAX_CLIENTS; i++) {
 		Client client = Clients_List[i];
 		if(client) Client_Tick(client);
 	}
 }
 
 void Server_StartLoop(void) {
-	uint64_t last, curr = Time_GetMSec();
+	cs_uint64 last, curr = Time_GetMSec();
 	while(Server_Active) {
 		last = curr;
 		curr = Time_GetMSec();
-		Server_Delta = (int32_t)(curr - last);
+		Server_Delta = (cs_int32)(curr - last);
 		if(Server_Delta < 0) {
 			Log_Warn(Lang_Get(LANG_SVDELTALT0));
 			Server_Delta = 0;

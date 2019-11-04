@@ -3,7 +3,7 @@
 typedef bool(*pluginFunc)(void);
 typedef struct cPlugin {
 	const char* name;
-	int32_t id;
+	cs_int32 id;
 	void* lib;
 	pluginFunc unload;
 } *Plugin;

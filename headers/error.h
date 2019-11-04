@@ -37,7 +37,7 @@ if(abort) { \
 #  define Error_PrintSys(abort) Error_Print2(ET_SYS, errno, abort);
 #endif
 
-API int32_t Error_GetSysCode(void);
-API void Error_Print(int32_t type, uint32_t code, const char* file, uint32_t line, const char* func);
-API void Error_PrintF(int32_t type, uint32_t code, const char* file, uint32_t line, const char* func, ...);
+API cs_int32 Error_GetSysCode(void);
+API void Error_Print(cs_int32 type, cs_uint32 code, const char* file, cs_uint32 line, const char* func);
+API void Error_PrintF(cs_int32 type, cs_uint32 code, const char* file, cs_uint32 line, const char* func, ...);
 #endif

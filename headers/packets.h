@@ -22,21 +22,21 @@ return; \
 typedef bool(*packetHandler)(Client, const char*);
 
 typedef struct packet {
-	uint16_t size;
+	cs_uint16 size;
 	bool haveCPEImp;
-	uint32_t extCRC32;
-	int32_t extVersion;
-	uint16_t extSize;
+	cs_uint32 extCRC32;
+	cs_int32 extVersion;
+	cs_uint16 extSize;
 	packetHandler handler;
 	packetHandler cpeHandler;
 } *Packet;
 
-Packet Packet_Get(int32_t id);
-API void Packet_Register(int32_t id, uint16_t size, packetHandler handler);
-API void Packet_RegisterCPE(int32_t id, uint32_t extCRC32, int32_t extVersion, uint16_t extSize, packetHandler handler);
+Packet Packet_Get(cs_int32 id);
+API void Packet_Register(cs_int32 id, cs_uint16 size, packetHandler handler);
+API void Packet_RegisterCPE(cs_int32 id, cs_uint32 extCRC32, cs_int32 extVersion, cs_uint16 extSize, packetHandler handler);
 
-API uint8_t Proto_ReadString(const char** data, const char** dst);
-API uint8_t Proto_ReadStringNoAlloc(const char** data, char* dst);
+API cs_uint8 Proto_ReadString(const char** data, const char** dst);
+API cs_uint8 Proto_ReadStringNoAlloc(const char** data, char* dst);
 API void Proto_ReadSVec(const char** dataptr, SVec* vec);
 API void Proto_ReadAng(const char** dataptr, Ang* ang);
 API void Proto_ReadFlSVec(const char** dataptr, Vec* vec);
@@ -50,7 +50,7 @@ API void Proto_WriteSVec(char** dataptr, const SVec* vec);
 API void Proto_WriteAng(char** dataptr, const Ang* ang);
 API void Proto_WriteColor3(char** dataptr, const Color3* color);
 API void Proto_WriteColor4(char** dataptr, const Color4* color);
-API uint32_t Proto_WriteClientPos(char* data, Client client, bool extended);
+API cs_uint32 Proto_WriteClientPos(char* data, Client client, bool extended);
 
 void Packet_RegisterDefault(void);
 void Packet_RegisterCPEDefault(void);

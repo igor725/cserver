@@ -6,7 +6,7 @@
 #include "gui.h"
 #include "inventory.h"
 
-static const int32_t BreakTimings[256] = {
+static const cs_int32 BreakTimings[256] = {
 	0,4000,500,500,4000,1100,0,-1
 };
 
@@ -43,8 +43,8 @@ void SurvBrk_Done(SURVDATA data) {
 	SurvBrk_Stop(data);
 }
 
-void SurvBrk_Tick(SURVDATA data, uint32_t delta) {
-	int32_t breakTime = BreakTimings[data->breakBlock];
+void SurvBrk_Tick(SURVDATA data, cs_uint32 delta) {
+	cs_int32 breakTime = BreakTimings[data->breakBlock];
 	if(breakTime == -1) {
 		SurvBrk_Stop(data);
 		return;
@@ -53,9 +53,9 @@ void SurvBrk_Tick(SURVDATA data, uint32_t delta) {
 		return;
 	}
 
-	data->breakTimer += (int16_t)delta;
+	data->breakTimer += (cs_int16)delta;
 	float df = (data->breakTimer / (float)breakTime);
-	uint8_t newProgress = (uint8_t)(df * SURV_MAX_BRK);
+	cs_uint8 newProgress = (cs_uint8)(df * SURV_MAX_BRK);
 	if(newProgress > data->breakProgress) {
 		data->breakProgress = newProgress;
 		SurvGui_DrawBreakProgress(data);

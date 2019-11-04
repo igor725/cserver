@@ -69,5 +69,5 @@ enum LangIDs {
 	LANG_INFWWAIT
 };
 
-API const char* Lang_Get(int32_t langid);
+API const char* Lang_Get(cs_int32 langid);
 #endif

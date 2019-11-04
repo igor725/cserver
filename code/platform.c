@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void* Memory_Alloc(size_t num, size_t size) {
+void* Memory_Alloc(cs_size num, cs_size size) {
 	void* ptr;
 	if((ptr = calloc(num, size)) == NULL) {
 		Error_PrintSys(true);
@@ -14,21 +14,21 @@ void* Memory_Alloc(size_t num, size_t size) {
 	return ptr;
 }
 
-void* Memory_Realloc(void* buf, size_t old, size_t new) {
+void* Memory_Realloc(void* buf, cs_size old, cs_size new) {
 	void* pNew = realloc(buf, new);
 	if(new > old) {
-		size_t diff = new - old;
+		cs_size diff = new - old;
 		void* pStart = ((char*)pNew) + old;
 		Memory_Fill(pStart, diff, 0);
 	}
 	return pNew;
 }
 
-void Memory_Copy(void* dst, const void* src, size_t count) {
+void Memory_Copy(void* dst, const void* src, cs_size count) {
 	memcpy(dst, src, count);
 }
 
-void Memory_Fill(void* dst, size_t count, int32_t val) {
+void Memory_Fill(void* dst, cs_size count, cs_int32 val) {
 	memset(dst, val, count);
 }
 
@@ -48,15 +48,15 @@ FILE* File_Open(const char* path, const char* mode) {
 	return fopen(path, mode);
 }
 
-size_t File_Read(void* ptr, size_t size, size_t count, FILE* fp) {
+cs_size File_Read(void* ptr, cs_size size, cs_size count, FILE* fp) {
 	return fread(ptr, size, count, fp);
 }
 
-int32_t File_ReadLine(FILE* fp, char* line, int32_t len) {
-	int32_t bleft = len;
+cs_int32 File_ReadLine(FILE* fp, char* line, cs_int32 len) {
+	cs_int32 bleft = len;
 
 	while(bleft > 1) {
-		int32_t ch = File_GetChar(fp);
+		cs_int32 ch = File_GetChar(fp);
 		if(ch == '\n' || ch == EOF) break;
 		if(ch != '\r') {
 			*line++ = (char)ch;
@@ -68,11 +68,11 @@ int32_t File_ReadLine(FILE* fp, char* line, int32_t len) {
 	return len - bleft;
 }
 
-size_t File_Write(const void* ptr, size_t size, size_t count, FILE* fp) {
+cs_size File_Write(const void* ptr, cs_size size, cs_size count, FILE* fp) {
 	return fwrite(ptr, size, count, fp);
 }
 
-int32_t File_GetChar(FILE* fp) {
+cs_int32 File_GetChar(FILE* fp) {
 	return fgetc(fp);
 }
 
@@ -93,7 +93,7 @@ bool File_Flush(FILE* fp) {
 	return fflush(fp) == 0;
 }
 
-int32_t File_Seek(FILE* fp, long offset, int32_t origin) {
+cs_int32 File_Seek(FILE* fp, long offset, cs_int32 origin) {
 	return fseek(fp, offset, origin);
 }
 
@@ -111,14 +111,14 @@ bool Socket_Init(void) {
 	return true;
 }
 
-int32_t Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, uint16_t port) {
+cs_int32 Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, cs_uint16 port) {
 	ssa->sin_family = AF_INET;
 	ssa->sin_port = htons(port);
 	return inet_pton(AF_INET, ip, &ssa->sin_addr.s_addr);
 }
 
-bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, uint16_t port) {
-	int32_t ret;
+bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, cs_uint16 port) {
+	cs_int32 ret;
 	if((ret = Socket_SetAddr(ssa, host, port)) == 0) {
 		struct addrinfo* addr;
 		struct addrinfo hints = {0};
@@ -145,7 +145,7 @@ Socket Socket_New() {
 
 bool Socket_Bind(Socket sock, struct sockaddr_in* addr) {
 #if defined(POSIX)
-	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(int32_t){1}, 4) == -1) {
+	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(cs_int32){1}, 4) == -1) {
 		return false;
 	}
 #endif
@@ -171,12 +171,12 @@ Socket Socket_Accept(Socket sock, struct sockaddr_in* addr) {
 	return accept(sock, (struct sockaddr*)addr, &len);
 }
 
-int32_t Socket_Receive(Socket sock, char* buf, int32_t len, int32_t flags) {
+cs_int32 Socket_Receive(Socket sock, char* buf, cs_int32 len, cs_int32 flags) {
 	return recv(sock, buf, len, flags);
 }
 
-int32_t Socket_ReceiveLine(Socket sock, char* line, int32_t len) {
-	int32_t start_len = len;
+cs_int32 Socket_ReceiveLine(Socket sock, char* line, cs_int32 len) {
+	cs_int32 start_len = len;
 	char sym;
 
 	while(len > 1) {
@@ -195,11 +195,11 @@ int32_t Socket_ReceiveLine(Socket sock, char* line, int32_t len) {
 	return start_len - len;
 }
 
-int32_t Socket_Send(Socket sock, char* buf, int32_t len) {
+cs_int32 Socket_Send(Socket sock, char* buf, cs_int32 len) {
 	return send(sock, buf, len, 0);
 }
 
-void Socket_Shutdown(Socket sock, int32_t how) {
+void Socket_Shutdown(Socket sock, cs_int32 how) {
 	shutdown(sock, how);
 }
 
@@ -221,7 +221,7 @@ bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
 
 	String_FormatBuf(iter->fmt, 256, "%s\\*.%s", dir, ext);
 	if((iter->dirHandle = FindFirstFile(iter->fmt, &iter->fileHandle)) == INVALID_HANDLE_VALUE) {
-		uint32_t err = GetLastError();
+		cs_uint32 err = GetLastError();
 		if(err != ERROR_FILE_NOT_FOUND) {
 			Error_Print2(ET_SYS, err, false);
 			iter->state = -1;
@@ -310,7 +310,7 @@ bool Iter_Close(dirIter* iter) {
 
 #if defined(WINDOWS)
 bool Directory_Exists(const char* path) {
-	uint32_t attr = GetFileAttributes(path);
+	cs_uint32 attr = GetFileAttributes(path);
 	return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
@@ -350,7 +350,7 @@ bool DLib_Unload(void* lib) {
 	return FreeLibrary(lib);
 }
 
-char* DLib_GetError(char* buf, size_t len) {
+char* DLib_GetError(char* buf, cs_size len) {
 	String_FormatError(GetLastError(), buf, len, NULL);
 	return buf;
 }
@@ -367,7 +367,7 @@ bool DLib_Unload(void* lib) {
 	return dlclose(lib) == 0;
 }
 
-char* DLib_GetError(char* buf, size_t len) {
+char* DLib_GetError(char* buf, cs_size len) {
 	String_Copy(buf, len, dlerror());
 	return buf;
 }
@@ -432,7 +432,7 @@ void Thread_Detach(Thread th) {
 }
 
 void Thread_Join(Thread th) {
-	int32_t ret = pthread_join(*th, NULL);
+	cs_int32 ret = pthread_join(*th, NULL);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
 	}
@@ -494,7 +494,7 @@ void Waitable_Wait(Waitable handle) {
 
 Mutex* Mutex_Create(void) {
 	Mutex* ptr = Memory_Alloc(1, sizeof(Mutex));
-	int32_t ret = pthread_mutex_init(ptr, NULL);
+	cs_int32 ret = pthread_mutex_init(ptr, NULL);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
 		return NULL;
@@ -503,7 +503,7 @@ Mutex* Mutex_Create(void) {
 }
 
 void Mutex_Free(Mutex* handle) {
-	int32_t ret = pthread_mutex_destroy(handle);
+	cs_int32 ret = pthread_mutex_destroy(handle);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
 	}
@@ -511,14 +511,14 @@ void Mutex_Free(Mutex* handle) {
 }
 
 void Mutex_Lock(Mutex* handle) {
-	int32_t ret = pthread_mutex_lock(handle);
+	cs_int32 ret = pthread_mutex_lock(handle);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
 	}
 }
 
 void Mutex_Unlock(Mutex* handle) {
-	int32_t ret = pthread_mutex_unlock(handle);
+	cs_int32 ret = pthread_mutex_unlock(handle);
 	if(ret) {
 		Error_Print2(ET_SYS, ret, true);
 	}
@@ -553,7 +553,7 @@ void Waitable_Wait(Waitable handle) {
 #endif
 
 #if defined(WINDOWS)
-void Time_Format(char* buf, size_t buflen) {
+void Time_Format(char* buf, cs_size buflen) {
 	SYSTEMTIME time;
 	GetSystemTime(&time);
 	sprintf_s(buf, buflen, "%02d:%02d:%02d.%03d",
@@ -564,13 +564,13 @@ void Time_Format(char* buf, size_t buflen) {
 	);
 }
 
-uint64_t Time_GetMSec(void) {
+cs_uint64 Time_GetMSec(void) {
 	FILETIME ft; GetSystemTimeAsFileTime(&ft);
-	uint64_t time = ft.dwLowDateTime | ((uint64_t)ft.dwHighDateTime << 32);
+	cs_uint64 time = ft.dwLowDateTime | ((cs_uint64)ft.dwHighDateTime << 32);
 	return (time / 10000) + 50491123200000ULL;
 }
 #elif defined(POSIX)
-void Time_Format(char* buf, size_t buflen) {
+void Time_Format(char* buf, cs_size buflen) {
 	struct timeval tv;
 	struct tm* tm;
 	gettimeofday(&tv, NULL);
@@ -581,18 +581,18 @@ void Time_Format(char* buf, size_t buflen) {
 			tm->tm_hour,
 			tm->tm_min,
 			tm->tm_sec,
-			(int32_t) (tv.tv_usec / 1000)
+			(cs_int32) (tv.tv_usec / 1000)
 		);
 	}
 }
 
-uint64_t Time_GetMSec() {
+cs_uint64 Time_GetMSec() {
 	struct timeval cur; gettimeofday(&cur, NULL);
-	return (uint64_t)cur.tv_sec * 1000 + 62135596800000ULL + (cur.tv_usec / 1000);
+	return (cs_uint64)cur.tv_sec * 1000 + 62135596800000ULL + (cur.tv_usec / 1000);
 }
 #endif
 
-void Process_Exit(uint32_t code) {
+void Process_Exit(cs_uint32 code) {
 #if defined(WINDOWS)
 	ExitProcess(code);
 #elif defined(POSIX)

@@ -6,7 +6,7 @@
 EVENT Event_List[EVENT_TYPES][MAX_EVENTS] = {0};
 
 #define rgPart1 \
-for(int32_t pos = 0; pos < MAX_EVENTS; pos++) { \
+for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) { \
 	if(!Event_List[type][pos]) { \
 		EVENT evt = Memory_Alloc(1, sizeof(struct event));
 
@@ -32,7 +32,7 @@ bool Event_RegisterVoid(EventType type, evtVoidCallback func) {
 }
 
 bool Event_Unregister(EventType type, void* callbackPtr) {
-	for(int32_t pos = 0; pos < MAX_EVENTS; pos++) {
+	for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) {
 		EVENT evt = Event_List[type][pos];
 		if(!evt) continue;
 
@@ -47,7 +47,7 @@ bool Event_Unregister(EventType type, void* callbackPtr) {
 bool Event_Call(EventType type, void* param) {
 	bool ret = true;
 
-	for(int32_t pos = 0; pos < MAX_EVENTS; pos++) {
+	for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) {
 		EVENT evt = Event_List[type][pos];
 		if(!evt) continue;
 
@@ -70,7 +70,7 @@ bool Event_OnMessage(Client client, char* message, MessageType* type) {
 	return Event_Call(EVT_ONMESSAGE, &params);
 }
 
-bool Event_OnBlockPlace(Client client, uint8_t mode, SVec* pos, BlockID* id) {
+bool Event_OnBlockPlace(Client client, cs_uint8 mode, SVec* pos, BlockID* id) {
 	struct _onBlockPlace params = {0};
 	params.client = client;
 	params.mode = mode;
@@ -87,7 +87,7 @@ void Event_OnHeldBlockChange(Client client, BlockID prev, BlockID curr) {
 	Event_Call(EVT_ONHELDBLOCKCHNG, &params);
 }
 
-void Event_OnClick(Client client, char btn, char act, int16_t yaw, int16_t pitch, ClientID id, SVec* pos, char face) {
+void Event_OnClick(Client client, char btn, char act, cs_int16 yaw, cs_int16 pitch, ClientID id, SVec* pos, char face) {
 	struct _onPlayerClick params = {0};
 	params.client = client;
 	params.button = btn;

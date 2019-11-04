@@ -14,7 +14,7 @@
 static AssocType headAssocType = NULL;
 static CGroup headCGroup = NULL;
 
-static AssocType AGetType(uint16_t type) {
+static AssocType AGetType(cs_uint16 type) {
 	AssocType ptr = headAssocType;
 
 	while(ptr) {
@@ -25,7 +25,7 @@ static AssocType AGetType(uint16_t type) {
 	return ptr;
 }
 
-static AssocNode AGetNode(Client client, uint16_t type) {
+static AssocNode AGetNode(Client client, cs_uint16 type) {
 	AssocNode ptr = client->headNode;
 
 	while(ptr) {
@@ -36,10 +36,10 @@ static AssocNode AGetNode(Client client, uint16_t type) {
 	return ptr;
 }
 
-uint16_t Assoc_NewType() {
+cs_uint16 Assoc_NewType() {
 	AssocType tptr = Memory_Alloc(1, sizeof(struct _AssocType));
 	if(headAssocType) {
-		uint16_t type = 0;
+		cs_uint16 type = 0;
 		AssocType tptr2 = headAssocType;
 
 		while(tptr2) {
@@ -55,7 +55,7 @@ uint16_t Assoc_NewType() {
 	return tptr->type;
 }
 
-bool Assoc_DelType(uint16_t type, bool freeData) {
+bool Assoc_DelType(cs_uint16 type, bool freeData) {
 	AssocType tptr = AGetType(type);
 	if(!tptr) return false;
 
@@ -72,7 +72,7 @@ bool Assoc_DelType(uint16_t type, bool freeData) {
 	return true;
 }
 
-bool Assoc_Set(Client client, uint16_t type, void* ptr) {
+bool Assoc_Set(Client client, cs_uint16 type, void* ptr) {
 	if(AGetNode(client, type)) return false;
 	AssocNode nptr = AGetNode(client, type);
 	if(!nptr) {
@@ -86,13 +86,13 @@ bool Assoc_Set(Client client, uint16_t type, void* ptr) {
 	return true;
 }
 
-void* Assoc_GetPtr(Client client, uint16_t type) {
+void* Assoc_GetPtr(Client client, cs_uint16 type) {
 	AssocNode nptr = AGetNode(client, type);
 	if(nptr) return nptr->dataptr;
 	return NULL;
 }
 
-bool Assoc_Remove(Client client, uint16_t type, bool freeData) {
+bool Assoc_Remove(Client client, cs_uint16 type, bool freeData) {
 	AssocNode nptr = AGetNode(client, type);
 	if(!nptr) return false;
 	if(nptr->next)
@@ -104,7 +104,7 @@ bool Assoc_Remove(Client client, uint16_t type, bool freeData) {
 	return true;
 }
 
-CGroup Group_Add(int16_t gid, const char* gname, uint8_t grank) {
+CGroup Group_Add(cs_int16 gid, const char* gname, cs_uint8 grank) {
 	CGroup gptr = Group_GetByID(gid);
 	if(!gptr) {
 		gptr = Memory_Alloc(1, sizeof(struct _CGroup));
@@ -120,7 +120,7 @@ CGroup Group_Add(int16_t gid, const char* gname, uint8_t grank) {
 	return gptr;
 }
 
-CGroup Group_GetByID(int16_t id) {
+CGroup Group_GetByID(cs_int16 id) {
 	CGroup gptr = headCGroup;
 
 	while(gptr) {
@@ -131,7 +131,7 @@ CGroup Group_GetByID(int16_t id) {
 	return gptr;
 }
 
-bool Group_Remove(int16_t gid) {
+bool Group_Remove(cs_int16 gid) {
 	CGroup cg = Group_GetByID(gid);
 	if(!cg) return false;
 
@@ -151,8 +151,8 @@ bool Group_Remove(int16_t gid) {
 	return true;
 }
 
-uint8_t Clients_GetCount(int32_t state) {
-	uint8_t count = 0;
+cs_uint8 Clients_GetCount(cs_int32 state) {
+	cs_uint8 count = 0;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client client = Clients_List[i];
 		if(!client) continue;
@@ -177,7 +177,7 @@ void Clients_KickAll(const char* reason) {
 	}
 }
 
-Client Client_New(Socket fd, uint32_t addr) {
+Client Client_New(Socket fd, cs_uint32 addr) {
 	Client tmp = Memory_Alloc(1, sizeof(struct client));
 	tmp->id = 0xFF;
 	tmp->sock = fd;
@@ -189,7 +189,7 @@ Client Client_New(Socket fd, uint32_t addr) {
 }
 
 bool Client_Add(Client client) {
-	int8_t maxplayers = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
+	cs_int8 maxplayers = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
 	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
 		if(!Clients_List[i]) {
 			client->id = i;
@@ -240,12 +240,12 @@ CGroup Client_GetGroup(Client client) {
 	return !gptr ? &dgroup : gptr;
 }
 
-int16_t Client_GetGroupID(Client client) {
+cs_int16 Client_GetGroupID(Client client) {
 	if(!client->cpeData) return -1;
 	return client->cpeData->group;
 }
 
-int16_t Client_GetModel(Client client) {
+cs_int16 Client_GetModel(Client client) {
 	if(!client->cpeData) return 0;
 	return client->cpeData->model;
 }
@@ -255,7 +255,7 @@ BlockID Client_GetHeldBlock(Client client) {
 	return client->cpeData->heldBlock;
 }
 
-int32_t Client_GetExtVer(Client client, uint32_t extCRC32) {
+cs_int32 Client_GetExtVer(Client client, cs_uint32 extCRC32) {
 	CPEData cpd = client->cpeData;
 	if(!cpd) return false;
 
@@ -295,12 +295,12 @@ void Client_UpdateWorldInfo(Client client, World world, bool updateAll) {
 	*/
 	if(!client->cpeData) return;
 	WorldInfo wi = world->info;
-	uint8_t modval = wi->modval;
-	uint16_t modprop = wi->modprop;
-	uint8_t modclr = wi->modclr;
+	cs_uint8 modval = wi->modval;
+	cs_uint16 modprop = wi->modprop;
+	cs_uint8 modclr = wi->modclr;
 
 	if(updateAll || modval & MV_COLORS) {
-		for(uint8_t color = 0; color < WORLD_COLORS_COUNT; color++) {
+		for(cs_uint8 color = 0; color < WORLD_COLORS_COUNT; color++) {
 			if(updateAll || modclr & (2 ^ color))
 				Client_SetEnvColor(client, color, World_GetEnvColor(world, color));
 		}
@@ -308,7 +308,7 @@ void Client_UpdateWorldInfo(Client client, World world, bool updateAll) {
 	if(updateAll || modval & MV_TEXPACK)
 		Client_SetTexturePack(client, wi->texturepack);
 	if(updateAll || modval & MV_PROPS) {
-		for(uint8_t prop = 0; prop < WORLD_PROPS_COUNT; prop++) {
+		for(cs_uint8 prop = 0; prop < WORLD_PROPS_COUNT; prop++) {
 			if(updateAll || modprop & (2 ^ prop))
 				Client_SetEnvProperty(client, prop, World_GetProperty(world, prop));
 		}
@@ -317,7 +317,7 @@ void Client_UpdateWorldInfo(Client client, World world, bool updateAll) {
 		Client_SetWeather(client, wi->wt);
 }
 
-static uint32_t copyMessagePart(const char* message, char* part, uint32_t i, char* color) {
+static cs_uint32 copyMessagePart(const char* message, char* part, cs_uint32 i, char* color) {
 	if(*message == '\0') return 0;
 
 	if(i > 0) {
@@ -330,10 +330,10 @@ static uint32_t copyMessagePart(const char* message, char* part, uint32_t i, cha
 		*part++ = *color;
 	}
 
-	uint32_t len = min(60, (uint32_t)String_Length(message));
+	cs_uint32 len = min(60, (cs_uint32)String_Length(message));
 	if(message[len - 1] == '&' && ISHEX(message[len])) --len;
 
-	for(uint32_t j = 0; j < len; j++) {
+	for(cs_uint32 j = 0; j < len; j++) {
 		char prevsym = (*part++ = *message++);
 		char nextsym = *message;
 		if(nextsym == '\0' || nextsym == '\n') break;
@@ -344,7 +344,7 @@ static uint32_t copyMessagePart(const char* message, char* part, uint32_t i, cha
 	return len;
 }
 
-bool Client_MakeSelection(Client client, uint8_t id, SVec* start, SVec* end, Color4* color) {
+bool Client_MakeSelection(Client client, cs_uint8 id, SVec* start, SVec* end, Color4* color) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
 		CPEPacket_WriteMakeSelection(client, id, start, end, color);
 		return true;
@@ -352,7 +352,7 @@ bool Client_MakeSelection(Client client, uint8_t id, SVec* start, SVec* end, Col
 	return false;
 }
 
-bool Client_RemoveSelection(Client client, uint8_t id) {
+bool Client_RemoveSelection(Client client, cs_uint8 id) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
 		CPEPacket_WriteRemoveSelection(client, id);
 		return true;
@@ -361,13 +361,13 @@ bool Client_RemoveSelection(Client client, uint8_t id) {
 }
 
 void Client_Chat(Client client, MessageType type, const char* message) {
-	uint32_t msgLen = (uint32_t)String_Length(message);
+	cs_uint32 msgLen = (cs_uint32)String_Length(message);
 
 	if(msgLen > 62 && type == MT_CHAT) {
 		char color = 0, part[65] = {0};
-		uint32_t parts = (msgLen / 60) + 1;
-		for(uint32_t i = 0; i < parts; i++) {
-			uint32_t len = copyMessagePart(message, part, i, &color);
+		cs_uint32 parts = (msgLen / 60) + 1;
+		for(cs_uint32 i = 0; i < parts; i++) {
+			cs_uint32 len = copyMessagePart(message, part, i, &color);
 			if(len > 0) {
 				Packet_WriteChat(client, type, part);
 				message += len;
@@ -397,8 +397,8 @@ static void HandlePacket(Client client, char* data, Packet packet, bool extended
 		client->pps += 1;
 }
 
-static uint16_t GetPacketSizeFor(Packet packet, Client client, bool* extended) {
-	uint16_t packetSize = packet->size;
+static cs_uint16 GetPacketSizeFor(Packet packet, Client client, bool* extended) {
+	cs_uint16 packetSize = packet->size;
 	bool _extended = *extended;
 	if(packet->haveCPEImp) {
 		_extended = Client_GetExtVer(client, packet->extCRC32) == packet->extVersion;
@@ -410,7 +410,7 @@ static uint16_t GetPacketSizeFor(Packet packet, Client client, bool* extended) {
 static void PacketReceiverWs(Client client) {
 	Packet packet;
 	bool extended;
-	uint16_t packetSize, recvSize;
+	cs_uint16 packetSize, recvSize;
 	WsClient ws = client->websock;
 	char* data = client->rdbuf;
 
@@ -455,8 +455,8 @@ static void PacketReceiverWs(Client client) {
 static void PacketReceiverRaw(Client client) {
 	Packet packet;
 	bool extended;
-	uint16_t packetSize;
-	uint8_t packetId;
+	cs_uint16 packetSize;
+	cs_uint8 packetId;
 
 	if(Socket_Receive(client->sock, (char*)&packetId, 1, 0) == 1) {
 		packet = Packet_Get(packetId);
@@ -468,7 +468,7 @@ static void PacketReceiverRaw(Client client) {
 		packetSize = GetPacketSizeFor(packet, client, &extended);
 
 		if(packetSize > 0) {
-			int32_t len = Socket_Receive(client->sock, client->rdbuf, packetSize, 0);
+			cs_int32 len = Socket_Receive(client->sock, client->rdbuf, packetSize, 0);
 
 			if(packetSize == len)
 				HandlePacket(client, client->rdbuf, packet, extended);
@@ -510,15 +510,15 @@ static TRET MapThreadProc(TARG param) {
 
 	Packet_WriteLvlInit(client);
 	Mutex_Lock(client->mutex);
-	uint8_t* data = (uint8_t*)client->wrbuf;
-	uint8_t* mapData = world->data;
-	int32_t mapSize = world->size;
+	cs_uint8* data = (cs_uint8*)client->wrbuf;
+	cs_uint8* mapData = world->data;
+	cs_int32 mapSize = world->size;
 
 	*data++ = 0x03;
-	uint16_t* len = (uint16_t*)data++;
-	uint8_t* out = ++data;
+	cs_uint16* len = (cs_uint16*)data++;
+	cs_uint8* out = ++data;
 
-	int32_t ret, windowBits = 31;
+	cs_int32 ret, windowBits = 31;
 	z_stream stream = {0};
 
 	if(Client_GetExtVer(client, EXT_FASTMAP)) {
@@ -550,7 +550,7 @@ static TRET MapThreadProc(TARG param) {
 			goto end;
 		}
 
-		*len = htons(1024 - (uint16_t)stream.avail_out);
+		*len = htons(1024 - (cs_uint16)stream.avail_out);
 		if(client->closed || !Client_Send(client, 1028)) {
 			pd->state = STATE_WLOADERR;
 			goto end;
@@ -608,7 +608,7 @@ bool Client_SetBlock(Client client, SVec* pos, BlockID id) {
 	return true;
 }
 
-bool Client_SetEnvProperty(Client client, uint8_t property, int32_t value) {
+bool Client_SetEnvProperty(Client client, cs_uint8 property, cs_int32 value) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
 		CPEPacket_WriteMapProperty(client, property, value);
 		return true;
@@ -616,7 +616,7 @@ bool Client_SetEnvProperty(Client client, uint8_t property, int32_t value) {
 	return false;
 }
 
-bool Client_SetEnvColor(Client client, uint8_t type, Color3* color) {
+bool Client_SetEnvColor(Client client, cs_uint8 type, Color3* color) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
 		CPEPacket_WriteEnvColor(client, type, color);
 		return true;
@@ -677,7 +677,7 @@ bool Client_SetBlockPerm(Client client, BlockID block, bool allowPlace, bool all
 	return false;
 }
 
-bool Client_SetModel(Client client, int16_t model) {
+bool Client_SetModel(Client client, cs_int16 model) {
 	if(!client->cpeData) return false;
 	if(!CPE_CheckModel(model)) return false;
 	client->cpeData->model = model;
@@ -709,7 +709,7 @@ bool Client_SetModelStr(Client client, const char* model) {
 	return Client_SetModel(client, CPE_GetModelNum(model));
 }
 
-bool Client_SetGroup(Client client, int16_t gid) {
+bool Client_SetGroup(Client client, cs_int16 gid) {
 	if(!client->playerData || !client->cpeData)
 		return false;
 	client->cpeData->group = gid;
@@ -780,7 +780,7 @@ void Client_Free(Client client) {
 	Memory_Free(client);
 }
 
-int32_t Client_Send(Client client, int32_t len) {
+cs_int32 Client_Send(Client client, cs_int32 len) {
 	if(client->closed) return 0;
 	if(client == Client_Broadcast) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
@@ -789,7 +789,7 @@ int32_t Client_Send(Client client, int32_t len) {
 			if(bClient && !bClient->closed) {
 				Mutex_Lock(bClient->mutex);
 				if(bClient->websock)
-					WsClient_SendHeader(bClient->websock, 0x02, (uint16_t)len);
+					WsClient_SendHeader(bClient->websock, 0x02, (cs_uint16)len);
 				Socket_Send(bClient->sock, client->wrbuf, len);
 				Mutex_Unlock(bClient->mutex);
 			}
@@ -798,7 +798,7 @@ int32_t Client_Send(Client client, int32_t len) {
 	}
 
 	if(client->websock)
-		WsClient_SendHeader(client->websock, 0x02, (uint16_t)len);
+		WsClient_SendHeader(client->websock, 0x02, (cs_uint16)len);
 	return Socket_Send(client->sock, client->wrbuf, len);
 }
 
@@ -810,7 +810,7 @@ int32_t Client_Send(Client client, int32_t len) {
 */
 
 static void SendSpawnPacket(Client client, Client other) {
-	int32_t extlist_ver = Client_GetExtVer(client, EXT_PLAYERLIST);
+	cs_int32 extlist_ver = Client_GetExtVer(client, EXT_PLAYERLIST);
 
 	if(extlist_ver == 2) {
 		CPEPacket_WriteAddEntity2(client, other);

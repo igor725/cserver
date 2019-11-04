@@ -7,9 +7,9 @@
 
 const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-static char* SHA1toB64(uint8_t* in, char* out) {
-	for (int32_t i = 0, j = 0; i < 20; i += 3, j += 4) {
-		int32_t v = in[i];
+static char* SHA1toB64(cs_uint8* in, char* out) {
+	for (cs_int32 i = 0, j = 0; i < 20; i += 3, j += 4) {
+		cs_int32 v = in[i];
 		v = i + 1 < 20 ? v << 8 | in[i + 1] : v << 8;
 		v = i + 2 < 20 ? v << 8 | in[i + 2] : v << 8;
 
@@ -36,15 +36,15 @@ static char* SHA1toB64(uint8_t* in, char* out) {
 
 bool WsClient_DoHandshake(WsClient ws) {
 	char line[1024] = {0}, wskey[32] = {0}, b64[30] = {0};
-	uint8_t hash[20] = {0};
+	cs_uint8 hash[20] = {0};
 	bool haveUpgrade = false;
-	int32_t wskeylen = 0;
+	cs_int32 wskeylen = 0;
 
 	if(Socket_ReceiveLine(ws->sock, line, 1024)) {
 		const char* httpver = String_LastChar(line, 'H');
 		if(!httpver || !String_CaselessCompare(httpver, "HTTP/1.1")) {
 			String_FormatBuf(line, 1024, WS_ERRRESP, 505, "HTTP Version Not Supported", 0, "");
-			Socket_Send(ws->sock, line, (int32_t)String_Length(line));
+			Socket_Send(ws->sock, line, (cs_int32)String_Length(line));
 			return false;
 		}
 	}
@@ -57,7 +57,7 @@ bool WsClient_DoHandshake(WsClient ws) {
 		*value = '\0';value += 2;
 
 		if(String_CaselessCompare(line, "Sec-WebSocket-Key")) {
-			wskeylen = (int32_t)String_Copy(wskey, 32, value);
+			wskeylen = (cs_int32)String_Copy(wskey, 32, value);
 		} else if(String_CaselessCompare(line, "Sec-WebSocket-Version")) {
 			if(String_ToInt(value) != 13) break;
 		} else if(String_CaselessCompare(line, "Upgrade")) {
@@ -74,13 +74,13 @@ bool WsClient_DoHandshake(WsClient ws) {
 		SHA1toB64(hash, b64);
 
 		String_FormatBuf(line, 1024, WS_RESP, b64);
-		Socket_Send(ws->sock, line, (int32_t)String_Length(line));
+		Socket_Send(ws->sock, line, (cs_int32)String_Length(line));
 		return true;
 	}
 
 	const char* str = Lang_Get(LANG_WSNOTVALID);
 	String_FormatBuf(line, 1024, WS_ERRRESP, 400, "Bad request", String_Length(str), str);
-	Socket_Send(ws->sock, line, (int32_t)String_Length(line));
+	Socket_Send(ws->sock, line, (cs_int32)String_Length(line));
 	return false;
 }
 
@@ -88,7 +88,7 @@ bool WsClient_ReceiveFrame(WsClient ws) {
 	if(ws->state == WS_ST_DONE) ws->state = WS_ST_HDR;
 
 	if(ws->state == WS_ST_HDR) {
-		uint32_t len = Socket_Receive(ws->sock, ws->header, 2, 0);
+		cs_uint32 len = Socket_Receive(ws->sock, ws->header, 2, 0);
 
 		if(len == 2) {
 			char plen = ws->header[1] & 0x7F;
@@ -114,7 +114,7 @@ bool WsClient_ReceiveFrame(WsClient ws) {
 	}
 
 	if(ws->state == WS_ST_PLEN) {
-		uint32_t len = Socket_Receive(ws->sock, (char*)&ws->plen, 2, 0);
+		cs_uint32 len = Socket_Receive(ws->sock, (char*)&ws->plen, 2, 0);
 
 		if(len == 2) {
 			ws->plen = ntohs(ws->plen);
@@ -127,16 +127,16 @@ bool WsClient_ReceiveFrame(WsClient ws) {
 	}
 
 	if(ws->state == WS_ST_MASK) {
-		uint32_t len = Socket_Receive(ws->sock, ws->mask, 4, 0);
+		cs_uint32 len = Socket_Receive(ws->sock, ws->mask, 4, 0);
 		if(len == 4) ws->state = WS_ST_RECVPL;
 	}
 
 	if(ws->state == WS_ST_RECVPL) {
 		if(ws->plen > 0) {
-			uint32_t len = Socket_Receive(ws->sock, ws->recvbuf, ws->plen, 0);
+			cs_uint32 len = Socket_Receive(ws->sock, ws->recvbuf, ws->plen, 0);
 
 			if(len == ws->plen) {
-				for(uint32_t i = 0; i < len; i++) {
+				for(cs_uint32 i = 0; i < len; i++) {
 					ws->recvbuf[i] ^= ws->mask[i % 4];
 				}
 			} else {
@@ -153,8 +153,8 @@ bool WsClient_ReceiveFrame(WsClient ws) {
 	return false;
 }
 
-bool WsClient_SendHeader(WsClient ws, uint8_t opcode, uint16_t len) {
-	uint16_t hdrlen = 2;
+bool WsClient_SendHeader(WsClient ws, cs_uint8 opcode, cs_uint16 len) {
+	cs_uint16 hdrlen = 2;
 	char hdr[4] = {0};
 
 	hdr[0] = 0x80 | (opcode & 0x0F);
@@ -164,7 +164,7 @@ bool WsClient_SendHeader(WsClient ws, uint8_t opcode, uint16_t len) {
 	} else if(len < 65535) {
 		hdrlen = 4;
 		hdr[1] = 126;
-		*(uint16_t*)&hdr[2] = htons((uint16_t)len);
+		*(cs_uint16*)&hdr[2] = htons((cs_uint16)len);
 	} else
 		return false;
 

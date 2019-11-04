@@ -5,5 +5,5 @@
 
 void SurvBrk_Start(SURVDATA data, BlockID bid);
 void SurvBrk_Stop(SURVDATA data);
-void SurvBrk_Tick(SURVDATA data, uint32_t delta);
+void SurvBrk_Tick(SURVDATA data, cs_uint32 delta);
 #endif

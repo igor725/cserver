@@ -84,7 +84,7 @@ static bool CHandler_ClientOnly(const char* args, Client caller, char* out) {
 	return true;
 }
 
-int32_t Plugin_ApiVer = PLUGIN_API_NUM; // Текущая версия API плагинов.
+cs_int32 Plugin_ApiVer = PLUGIN_API_NUM; // Текущая версия API плагинов.
 
 bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
   Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.

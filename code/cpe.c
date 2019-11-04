@@ -8,9 +8,9 @@
 #include "event.h"
 
 CPEExt firstExtension;
-uint16_t extensionsCount;
+cs_uint16 extensionsCount;
 
-void CPE_RegisterExtension(const char* name, int32_t version) {
+void CPE_RegisterExtension(const char* name, cs_int32 version) {
 	CPEExt tmp = Memory_Alloc(1, sizeof(struct cpeExt));
 
 	tmp->name = name;
@@ -31,7 +31,7 @@ void CPE_StartHandshake(Client client) {
 
 struct extReg {
 	const char* name;
-	int32_t version;
+	cs_int32 version;
 };
 
 static const struct extReg serverExtensions[] = {
@@ -87,14 +87,14 @@ static const char* validModelNames[MODELS_COUNT] = {
 	NULL
 };
 
-bool CPE_CheckModel(int16_t model) {
+bool CPE_CheckModel(cs_int16 model) {
 	if(model < 256) return Block_IsValid((BlockID)model);
 	return model - 256 < MODELS_COUNT;
 }
 
-int16_t CPE_GetModelNum(const char* model) {
-	int16_t modelnum = -1;
-	for(int16_t i = 0; validModelNames[i]; i++) {
+cs_int16 CPE_GetModelNum(const char* model) {
+	cs_int16 modelnum = -1;
+	for(cs_int16 i = 0; validModelNames[i]; i++) {
 		const char* cmdl = validModelNames[i];
 		if(String_CaselessCompare(model, cmdl)) {
 			modelnum = i + 256;
@@ -102,17 +102,17 @@ int16_t CPE_GetModelNum(const char* model) {
 		}
 	}
 	if(modelnum == -1) {
-		int32_t tmp = String_ToInt(model);
+		cs_int32 tmp = String_ToInt(model);
 		if(tmp < 0 || tmp > 255)
 			modelnum = 256;
 		else
-			modelnum = (int16_t)tmp;
+			modelnum = (cs_int16)tmp;
 	}
 
 	return modelnum;
 }
 
-const char* CPE_GetModelStr(int16_t num) {
+const char* CPE_GetModelStr(cs_int16 num) {
 	return num >= 0 && num < MODELS_COUNT ? validModelNames[num] : NULL;
 }
 
@@ -133,7 +133,7 @@ void CPEPacket_WriteInfo(Client client) {
 
 	*data++ = 0x10;
 	Proto_WriteString(&data, SOFTWARE_FULLNAME);
-	*(uint16_t*)data = htons(extensionsCount);
+	*(cs_uint16*)data = htons(extensionsCount);
 
 	PacketWriter_End(client, 67);
 }
@@ -143,16 +143,16 @@ void CPEPacket_WriteExtEntry(Client client, CPEExt ext) {
 
 	*data++ = 0x11;
 	Proto_WriteString(&data, ext->name);
-	*(uint32_t*)data = htonl(ext->version);
+	*(cs_uint32*)data = htonl(ext->version);
 
 	PacketWriter_End(client, 69);
 }
 
-void CPEPacket_WriteClickDistance(Client client, int16_t dist) {
+void CPEPacket_WriteClickDistance(Client client, cs_int16 dist) {
 	PacketWriter_Start(client);
 
 	*data = 0x12;
-	*(int16_t*)++data = dist;
+	*(cs_int16*)++data = dist;
 
 	PacketWriter_End(client, 3);
 }
@@ -194,7 +194,7 @@ void CPEPacket_WriteAddEntity2(Client client, Client other) {
 	Proto_WriteString(&data, Client_GetName(other));
 	Proto_WriteString(&data, Client_GetSkin(other));
 	bool extended = Client_GetExtVer(client, EXT_ENTPOS);
-	uint32_t len = Proto_WriteClientPos(data, other, extended);
+	cs_uint32 len = Proto_WriteClientPos(data, other, extended);
 
 	PacketWriter_End(client, 132 + len);
 }
@@ -209,7 +209,7 @@ void CPEPacket_WriteRemoveName(Client client, Client other) {
 	PacketWriter_End(client, 3);
 }
 
-void CPEPacket_WriteEnvColor(Client client, uint8_t type, Color3* col) {
+void CPEPacket_WriteEnvColor(Client client, cs_uint8 type, Color3* col) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x19;
@@ -219,7 +219,7 @@ void CPEPacket_WriteEnvColor(Client client, uint8_t type, Color3* col) {
 	PacketWriter_End(client, 8);
 }
 
-void CPEPacket_WriteMakeSelection(Client client, uint8_t id, SVec* start, SVec* end, Color4* color) {
+void CPEPacket_WriteMakeSelection(Client client, cs_uint8 id, SVec* start, SVec* end, Color4* color) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1A;
@@ -232,7 +232,7 @@ void CPEPacket_WriteMakeSelection(Client client, uint8_t id, SVec* start, SVec* 
 	PacketWriter_End(client, 86);
 }
 
-void CPEPacket_WriteRemoveSelection(Client client, uint8_t id) {
+void CPEPacket_WriteRemoveSelection(Client client, cs_uint8 id) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1B;
@@ -252,7 +252,7 @@ void CPEPacket_WriteBlockPerm(Client client, BlockID id, bool allowPlace, bool a
 	PacketWriter_End(client, 4);
 }
 
-void CPEPacket_WriteSetModel(Client client, ClientID id, int16_t model) {
+void CPEPacket_WriteSetModel(Client client, ClientID id, cs_int16 model) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1D;
@@ -285,7 +285,7 @@ void CPEPacket_WriteHackControl(Client client, Hacks hacks) {
 	*data++ = (char)hacks->speeding;
 	*data++ = (char)hacks->spawnControl;
 	*data++ = (char)hacks->tpv;
-	*(int16_t*)data = hacks->jumpHeight;
+	*(cs_int16*)data = hacks->jumpHeight;
 
 	PacketWriter_End(client, 8);
 }
@@ -304,7 +304,7 @@ void CPEPacket_WriteTexturePack(Client client, const char* url) {
 	PacketWriter_End(client, 65);
 }
 
-void CPEPacket_WriteMapProperty(Client client, uint8_t property, int32_t value) {
+void CPEPacket_WriteMapProperty(Client client, cs_uint8 property, cs_int32 value) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x29;
@@ -316,12 +316,12 @@ void CPEPacket_WriteMapProperty(Client client, uint8_t property, int32_t value) 
 
 // 0x2A - SetEntityProperty
 
-void CPEPacket_WriteTwoWayPing(Client client, uint8_t direction, int16_t num) {
+void CPEPacket_WriteTwoWayPing(Client client, cs_uint8 direction, cs_int16 num) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x2B;
 	*data++ = direction;
-	*(uint16_t*)data = num;
+	*(cs_uint16*)data = num;
 
 	PacketWriter_End(client, 4);
 }
@@ -351,7 +351,7 @@ bool CPEHandler_ExtInfo(Client client, const char* data) {
 	ValidateClientState(client, STATE_INITIAL, false);
 
 	if(!Proto_ReadString(&data, &client->cpeData->appName)) return false;
-	client->cpeData->_extCount = ntohs(*(uint16_t*)data);
+	client->cpeData->_extCount = ntohs(*(cs_uint16*)data);
 	return true;
 }
 
@@ -365,12 +365,12 @@ bool CPEHandler_ExtEntry(Client client, const char* data) {
 		Memory_Free(tmp);
 		return false;
 	}
-	tmp->version = ntohl(*(int32_t*)data);
+	tmp->version = ntohl(*(cs_int32*)data);
 	if(tmp->version < 1) {
 		Memory_Free(tmp);
 		return false;
 	}
-	tmp->crc32 = String_CRC32((uint8_t*)tmp->name);
+	tmp->crc32 = String_CRC32((cs_uint8*)tmp->name);
 
 	if(tmp->crc32 == EXT_HACKCTRL && !cpd->hacks)
 		cpd->hacks = Memory_Alloc(1, sizeof(struct cpeHacks));
@@ -395,8 +395,8 @@ bool CPEHandler_PlayerClick(Client client, const char* data) {
 
 	char button = *data++;
 	char action = *data++;
-	int16_t yaw = ntohs(*(int16_t*)data); data += 2;
-	int16_t pitch = ntohs(*(int16_t*)data); data += 2;
+	cs_int16 yaw = ntohs(*(cs_int16*)data); data += 2;
+	cs_int16 pitch = ntohs(*(cs_int16*)data); data += 2;
 	ClientID tgID = *data++;
 	SVec tgBlockPos = {0};
 	Proto_ReadSVec(&data, &tgBlockPos);
@@ -415,8 +415,8 @@ bool CPEHandler_PlayerClick(Client client, const char* data) {
 bool CPEHandler_TwoWayPing(Client client, const char* data) {
 	ValidateCpeClient(client, false);
 	CPEData cpd = client->cpeData;
-	uint8_t pingDirection = *data++;
-	uint16_t pingData = *(uint16_t*)data;
+	cs_uint8 pingDirection = *data++;
+	cs_uint16 pingData = *(cs_uint16*)data;
 
 	if(pingDirection == 0) {
 		CPEPacket_WriteTwoWayPing(client, 0, pingData);
@@ -430,7 +430,7 @@ bool CPEHandler_TwoWayPing(Client client, const char* data) {
 		if(cpd->pingStarted) {
 			cpd->pingStarted = false;
 			if(cpd->pingData == pingData)
-				cpd->pingTime = (uint32_t)((Time_GetMSec() - cpd->pingStart) / 2);
+				cpd->pingTime = (cs_uint32)((Time_GetMSec() - cpd->pingStart) / 2);
 			return true;
 		}
 	}

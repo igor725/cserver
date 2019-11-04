@@ -3,8 +3,8 @@
 #include "client.h"
 #include "cpe.h"
 
-typedef uint32_t ReturnType;
-typedef uint32_t EventType;
+typedef cs_uint32 ReturnType;
+typedef cs_uint32 EventType;
 typedef void(*evtVoidCallback)(void* param);
 typedef bool(*evtBoolCallback)(void* param);
 
@@ -44,15 +44,15 @@ typedef struct _onHeldBlockChange {
 
 typedef struct _onBlockPlace {
 	Client client;
-	uint8_t mode;
+	cs_uint8 mode;
 	SVec* pos;
 	BlockID* id;
 } *onBlockPlace;
 
 typedef struct _onPlayerClick {
 	Client client;
-	int8_t button, action;
-	int16_t yaw, pitch;
+	cs_int8 button, action;
+	cs_int16 yaw, pitch;
 	ClientID id;
 	SVec* pos;
 	char face;
@@ -73,6 +73,6 @@ API bool Event_Unregister(EventType type, void* callbackPtr);
 bool Event_Call(EventType type, void* param);
 bool Event_OnMessage(Client client, char* message, MessageType* type);
 void Event_OnHeldBlockChange(Client client, BlockID prev, BlockID curr);
-bool Event_OnBlockPlace(Client client, uint8_t mode, SVec* pos, BlockID* id);
-void Event_OnClick(Client client, char button, char action, int16_t yaw, int16_t pitch, ClientID tgID, SVec* tgBlockPos, char tgBlockFace);
+bool Event_OnBlockPlace(Client client, cs_uint8 mode, SVec* pos, BlockID* id);
+void Event_OnClick(Client client, char button, char action, cs_int16 yaw, cs_int16 pitch, ClientID tgID, SVec* tgBlockPos, char tgBlockFace);
 #endif

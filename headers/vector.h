@@ -1,7 +1,7 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 typedef struct _SVec {
-	int16_t x, y, z;
+	cs_int16 x, y, z;
 } SVec;
 
 typedef struct _Vec {

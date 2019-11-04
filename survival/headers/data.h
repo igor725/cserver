@@ -5,7 +5,7 @@ if(SurvData_Get(caller)->godMode) { \
 	Command_Print("This command can't be used from god mode."); \
 }
 
-uint16_t SurvData_AssocType;
+cs_uint16 SurvData_AssocType;
 
 enum survActions {
 	SURV_ACT_NONE,
@@ -14,16 +14,16 @@ enum survActions {
 
 typedef struct survivalData {
 	Client client;
-	uint16_t inventory[256];
+	cs_uint16 inventory[256];
 	SVec lastClick;
-	uint8_t health;
-	uint8_t oxygen;
+	cs_uint8 health;
+	cs_uint8 oxygen;
 	bool showOxygen;
 	bool godMode;
 	bool pvpMode;
 	bool breakStarted;
-	int16_t breakTimer;
-	uint8_t breakProgress;
+	cs_int16 breakTimer;
+	cs_uint8 breakProgress;
 	BlockID breakBlock;
 } *SURVDATA;
 

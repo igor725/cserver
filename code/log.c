@@ -3,9 +3,9 @@
 #include "str.h"
 #include "log.h"
 
-uint8_t Log_Level = LOG_ERROR | LOG_INFO | LOG_CHAT | LOG_WARN | LOG_DEBUG;
+cs_uint8 Log_Level = LOG_ERROR | LOG_INFO | LOG_CHAT | LOG_WARN | LOG_DEBUG;
 
-static const char* getName(uint8_t flag) {
+static const char* getName(cs_uint8 flag) {
 	switch(flag) {
 		case LOG_ERROR:
 			return "ERROR";
@@ -22,7 +22,7 @@ static const char* getName(uint8_t flag) {
 }
 
 void Log_SetLevelStr(const char* str) {
-	uint8_t level = LOG_ERROR;
+	cs_uint8 level = LOG_ERROR;
 
 	do {
 		switch (*str) {
@@ -47,7 +47,7 @@ void Log_SetLevelStr(const char* str) {
 	Log_Level = level;
 }
 
-void Log_Print(uint8_t flag, const char* str, va_list* args) {
+void Log_Print(cs_uint8 flag, const char* str, va_list* args) {
 	if((Log_Level & flag) == 0) return;
 
 	char time[13] = {0};

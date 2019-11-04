@@ -90,10 +90,10 @@ static bool CHandler_CFG(const char* args, Client caller, char* out) {
 					Config_SetInt(ent, String_ToInt(value));
 					break;
 				case CFG_INT16:
-					Config_SetInt16(ent, (int16_t)String_ToInt(value));
+					Config_SetInt16(ent, (cs_int16)String_ToInt(value));
 					break;
 				case CFG_INT8:
-					Config_SetInt8(ent, (int8_t)String_ToInt(value));
+					Config_SetInt8(ent, (cs_int8)String_ToInt(value));
 					break;
 				case CFG_BOOL:
 					Config_SetBool(ent, String_CaselessCompare(value, "True"));
@@ -197,11 +197,11 @@ static bool CHandler_Plugins(const char* args, Client caller, char* out) {
 
 			return true;
 		} else if(String_CaselessCompare(subcommand, "list")) {
-			int32_t idx = 1;
+			cs_int32 idx = 1;
 			char pluginfo[64];
 			String_Copy(out, MAX_CMD_OUT, "Plugins list:");
 
-			for(int32_t i = 0; i < MAX_PLUGINS; i++) {
+			for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
 				plugin = Plugins_List[i];
 				if(plugin) {
 					String_FormatBuf(pluginfo, 64, "\r\n%d. %s", idx++, plugin->name);
@@ -294,9 +294,9 @@ static bool CHandler_GenWorld(const char* args, Client caller, char* out) {
 	if(String_GetArgument(args, x, 6, 1) &&
 	String_GetArgument(args, y, 6, 2) &&
 	String_GetArgument(args, z, 6, 3)) {
-		uint16_t _x = (uint16_t)String_ToInt(x),
-		_y = (uint16_t)String_ToInt(y),
-		_z = (uint16_t)String_ToInt(z);
+		cs_uint16 _x = (cs_uint16)String_ToInt(x),
+		_y = (cs_uint16)String_ToInt(y),
+		_z = (cs_uint16)String_ToInt(z);
 
 		if(_x > 0 && _y > 0 && _z > 0) {
 			Command_ArgToWorldName(worldname, 0);

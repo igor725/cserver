@@ -18,7 +18,7 @@ void SurvInv_Init(SURVDATA data) {
 void SurvInv_UpdateInventory(SURVDATA data) {
 	Order invIdx = 0;
 	Client client = data->client;
-	uint16_t* inv = data->inventory;
+	cs_uint16* inv = data->inventory;
 
 	for(BlockID i = 1; i < 255; i++) {
 		bool mz = inv[i] > 0 || data->godMode;
@@ -30,12 +30,12 @@ void SurvInv_UpdateInventory(SURVDATA data) {
 	}
 }
 
-uint16_t SurvInv_Add(SURVDATA data, BlockID id, uint16_t count) {
-	uint16_t* inv = data->inventory;
-	uint16_t old = inv[id];
+cs_uint16 SurvInv_Add(SURVDATA data, BlockID id, cs_uint16 count) {
+	cs_uint16* inv = data->inventory;
+	cs_uint16 old = inv[id];
 
 	if(old < SURV_MAX_BLOCKS) {
-		uint16_t newC = min(SURV_MAX_BLOCKS, old + count);
+		cs_uint16 newC = min(SURV_MAX_BLOCKS, old + count);
 		inv[id] = newC;
 		if(old < 1)
 			SurvInv_UpdateInventory(data);
@@ -44,16 +44,16 @@ uint16_t SurvInv_Add(SURVDATA data, BlockID id, uint16_t count) {
 	return 0;
 }
 
-uint16_t SurvInv_Get(SURVDATA data, BlockID id) {
+cs_uint16 SurvInv_Get(SURVDATA data, BlockID id) {
 	return data->inventory[id];
 }
 
-uint16_t SurvInv_Take(SURVDATA data, BlockID id, uint16_t count) {
-	uint16_t* inv = data->inventory;
-	uint16_t old = inv[id];
+cs_uint16 SurvInv_Take(SURVDATA data, BlockID id, cs_uint16 count) {
+	cs_uint16* inv = data->inventory;
+	cs_uint16 old = inv[id];
 
 	if(old > 0) {
-		uint16_t newC = old - min(old, count);
+		cs_uint16 newC = old - min(old, count);
 		inv[id] = newC;
 		if(newC == 0)
 			SurvInv_UpdateInventory(data);

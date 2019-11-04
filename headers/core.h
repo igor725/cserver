@@ -1,66 +1,90 @@
 #ifndef CORE_H
 #define CORE_H
 #if defined(_WIN32)
-#  define WINDOWS
-#  define ZLIB_WINAPI
-#  define PATH_DELIM "\\"
-#  define DLIB_EXT "dll"
-#  define _CRT_SECURE_NO_WARNINGS
-#  define WIN32_LEAN_AND_MEAN
-#  include <windows.h>
-#  include <stdint.h>
+#define WINDOWS
+#define ZLIB_WINAPI
+#define PATH_DELIM "\\"
+#define DLIB_EXT "dll"
+#define _CRT_SECURE_NO_WARNINGS
+#define WIN32_LEAN_AND_MEAN
+#ifndef PLUGIN_BUILD
+#define API __declspec(dllexport, noinline)
+#define VAR __declspec(dllexport)
+#else
+#define API __declspec(dllimport)
+#define VAR __declspec(dllimport)
+#define EXP __declspec(dllexport)
+#endif
 
-#  ifndef PLUGIN_BUILD
-#    define API __declspec(dllexport, noinline)
-#    define VAR __declspec(dllexport)
-#  else
-#    define API __declspec(dllimport)
-#    define VAR __declspec(dllimport)
-#    define EXP __declspec(dllexport)
-#  endif
+typedef __int8 cs_int8;
+typedef __int16 cs_int16;
+typedef __int32 cs_int32;
+typedef __int64 cs_int64;
+typedef unsigned __int8 cs_uint8;
+typedef unsigned __int16 cs_uint16;
+typedef unsigned __int32 cs_uint32;
+typedef unsigned __int64 cs_uint64;
+#ifdef _WIN64
+typedef unsigned __int64 cs_uintptr;
+typedef unsigned __int64 cs_size;
+#else
+typedef unsigned int cs_uintptr;
+typedef unsigned int cs_size;
+#endif
 #elif defined(__unix__)
-#  define POSIX
-#  define PATH_DELIM "/"
-#  define DLIB_EXT "so"
-#  define _GNU_SOURCE
-#  include <stdint.h>
-#  include <unistd.h>
+#define POSIX
+#define PATH_DELIM "/"
+#define DLIB_EXT "so"
+#define _GNU_SOURCE
 
-#  ifndef PLUGIN_BUILD
-#    define API __attribute__((visibility("default"), noinline))
-#    define VAR __attribute__((visibility("default")))
-#  else
-#    define API
-#    define VAR
-#    define EXP __attribute__((__visibility__("default")))
-#  endif
+#ifndef PLUGIN_BUILD
+#define API __attribute__((visibility("default"), noinline))
+#define VAR __attribute__((visibility("default")))
+#else
+#define API
+#define VAR
+#define EXP __attribute__((__visibility__("default")))
+#endif
 
-#  define min(a, b) (((a)<(b))?(a):(b))
-#  define max(a, b) (((a)>(b))?(a):(b))
-#  define Sleep(ms) (usleep(ms * 1000))
-#  define INVALID_SOCKET -1
-#  define SD_SEND   SHUT_WR
-#  define MAX_PATH  PATH_MAX
+#define min(a, b) (((a)<(b))?(a):(b))
+#define max(a, b) (((a)>(b))?(a):(b))
+#define Sleep(ms) (usleep(ms * 1000))
+#define INVALID_SOCKET -1
+#define SD_SEND   SHUT_WR
+#define MAX_PATH  PATH_MAX
+
+typedef __INT8_TYPE__ cs_int8;
+typedef __INT16_TYPE__ cs_int16;
+typedef __INT32_TYPE__ cs_int32;
+typedef __INT64_TYPE__ cs_int64;
+typedef __UINT8_TYPE__ cs_uint8;
+typedef __UINT16_TYPE__ cs_uint16;
+typedef __UINT32_TYPE__ cs_uint32;
+typedef __UINT64_TYPE__ cs_uint64;
+typedef __UINTPTR_TYPE__ cs_uintptr;
+typedef __SIZE_TYPE__ cs_size;
 #else
 #  error Unknown OS
 #endif
 
-#ifndef true
-#  define true  1
-#  define false 0
+#define true  1
+#define false 0
+
+#ifndef NULL
+#define NULL ((void*)0)
 #endif
 
-typedef uint32_t bool;
-typedef uint8_t Order;
-typedef uint8_t BlockID;
-typedef uint8_t Weather;
-typedef uint8_t ClientID;
-typedef uint8_t MessageType;
+typedef cs_uint32 bool;
+typedef cs_uint8 Order;
+typedef cs_uint8 BlockID;
+typedef cs_uint8 Weather;
+typedef cs_uint8 ClientID;
+typedef cs_uint8 MessageType;
 
 #ifdef PLUGIN_BUILD
 EXP bool Plugin_Load();
 EXP bool Plugin_Unload();
-EXP int32_t Plugin_ApiVer;
+EXP cs_int32 Plugin_ApiVer;
 #endif
 
 #define SOFTWARE_NAME "C-Server"
@@ -84,10 +108,10 @@ EXP int32_t Plugin_ApiVer;
 #define MODE(b) (b ? Lang_Get(LANG_ENABLED) : Lang_Get(LANG_DISABLED))
 
 typedef struct _Color4 {
-	int16_t r, g, b, a;
+	cs_int16 r, g, b, a;
 } Color4;
 
 typedef struct _Color3 {
-	int16_t r, g, b;
+	cs_int16 r, g, b;
 } Color3;
 #endif

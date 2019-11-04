@@ -1,7 +1,7 @@
 #include "core.h"
 #include "lang.h"
 
-const char* Lang_Get(int32_t langid) {
+const char* Lang_Get(cs_int32 langid) {
 	switch (langid) {
 		case LANG_SUCC:
 			return "successfully";

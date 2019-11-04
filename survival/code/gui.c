@@ -12,11 +12,11 @@ void SurvGui_DrawHealth(SURVDATA data) {
 	char healthstr[20] = {0};
 
 	if(!data->godMode) {
-		uint8_t hltf = data->health / 2;
-		uint8_t empty = 10 - hltf;
+		cs_uint8 hltf = data->health / 2;
+		cs_uint8 empty = 10 - hltf;
 
 		String_Append(healthstr, 20, "&c");
-		for(int32_t i = 0; i < hltf; i++) {
+		for(cs_int32 i = 0; i < hltf; i++) {
 			String_Append(healthstr, 20, "\3");
 		}
 		if(data->health % 2) {
@@ -25,7 +25,7 @@ void SurvGui_DrawHealth(SURVDATA data) {
 		}
 		if(empty > 0) {
 			String_Append(healthstr, 20, "&8");
-			for(int32_t i = 0; i < empty; i++) {
+			for(cs_int32 i = 0; i < empty; i++) {
 				String_Append(healthstr, 20, "\3");
 			}
 		}
@@ -39,7 +39,7 @@ void SurvGui_DrawOxygen(SURVDATA data) {
 
 	if(!data->godMode && data->showOxygen) {
 		String_Copy(oxystr, 13, "&b");
-		for(uint8_t i = 0; i < 10; i++) {
+		for(cs_uint8 i = 0; i < 10; i++) {
 			String_Append(oxystr, 13, data->oxygen > i ? "\7" : " ");
 		}
 	}
@@ -52,7 +52,7 @@ void SurvGui_DrawBreakProgress(SURVDATA data) {
 
 	if(data->breakStarted) {
 		String_Append(breakstr, 19, "[&a");
-		for(int32_t i = 0; i < 10; i++) {
+		for(cs_int32 i = 0; i < 10; i++) {
 			if(i == data->breakProgress)
 				String_Append(breakstr, 19, "&8");
 			String_Append(breakstr, 19, "|");
@@ -68,7 +68,7 @@ void SurvGui_DrawBlockInfo(SURVDATA data, BlockID id) {
 
 	if(id > BLOCK_AIR) {
 		const char* bn = Block_GetName(id);
-		uint16_t bc = SurvInv_Get(data, id);
+		cs_uint16 bc = SurvInv_Get(data, id);
 		String_FormatBuf(blockinfo, 64, "%s (%d)", bn, bc);
 	}
 

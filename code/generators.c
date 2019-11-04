@@ -10,8 +10,8 @@ void Generator_Flat(World world) {
 	SVec* dims = &wi->dimensions;
 
 	BlockID* data = world->data + 4;
-	int32_t dirtEnd = dims->x * dims->z * (dims->y / 2 - 1);
-	for(int32_t i = 0; i < dirtEnd + dims->x * dims->z; i++) {
+	cs_int32 dirtEnd = dims->x * dims->z * (dims->y / 2 - 1);
+	for(cs_int32 i = 0; i < dirtEnd + dims->x * dims->z; i++) {
 		if(i < dirtEnd)
 			data[i] = 3;
 		else
@@ -36,10 +36,10 @@ void Generator_Flat(World world) {
 #define MAX_THREADS 16
 
 Thread threads[MAX_THREADS] = {0};
-int32_t cfgMaxThreads = 2;
+cs_int32 cfgMaxThreads = 2;
 
-static int32_t AddThread(TFUNC func, TARG arg) {
-	for(int32_t i = 0; i < MAX_THREADS; i++) {
+static cs_int32 AddThread(TFUNC func, TARG arg) {
+	for(cs_int32 i = 0; i < MAX_THREADS; i++) {
 		if(i > cfgMaxThreads) {
 			i = 0;
 			if(Thread_IsValid(threads[i])) {
@@ -56,7 +56,7 @@ static int32_t AddThread(TFUNC func, TARG arg) {
 }
 
 static void WaitAll(void) {
-	for(int32_t i = 0; i < MAX_THREADS; i++) {
+	for(cs_int32 i = 0; i < MAX_THREADS; i++) {
 		if(Thread_IsValid(threads[i]))
 			Thread_Join(threads[i]);
 	}

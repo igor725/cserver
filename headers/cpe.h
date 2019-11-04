@@ -35,10 +35,10 @@
 #define ValidateCpeClient(client, ret) \
 if(!client->cpeData) return ret;
 
-API bool CPE_CheckModel(int16_t model);
-API void CPE_RegisterExtension(const char* name, int32_t version);
-API int16_t CPE_GetModelNum(const char* model);
-API const char* CPE_GetModelStr(int16_t num);
+API bool CPE_CheckModel(cs_int16 model);
+API void CPE_RegisterExtension(const char* name, cs_int32 version);
+API cs_int16 CPE_GetModelNum(const char* model);
+API const char* CPE_GetModelStr(cs_int16 num);
 void CPE_StartHandshake(Client client);
 
 bool CPEHandler_ExtInfo(Client client, const char* data);
@@ -48,21 +48,21 @@ bool CPEHandler_PlayerClick(Client client, const char* data);
 
 void CPEPacket_WriteInfo(Client client);
 void CPEPacket_WriteExtEntry(Client client, CPEExt ext);
-void CPEPacket_WriteClickDistance(Client client, int16_t dist);
+void CPEPacket_WriteClickDistance(Client client, cs_int16 dist);
 void CPEPacket_WriteInventoryOrder(Client client, Order order, BlockID block);
 void CPEPacket_WriteHoldThis(Client client, BlockID block, bool preventChange);
 void CPEPacket_WriteAddName(Client client, Client other);
 void CPEPacket_WriteAddEntity2(Client client, Client other);
 void CPEPacket_WriteRemoveName(Client client, Client other);
-void CPEPacket_WriteEnvColor(Client client, uint8_t type, Color3* col);
-void CPEPacket_WriteMakeSelection(Client client, uint8_t id, SVec* start, SVec* end, Color4* color);
-void CPEPacket_WriteRemoveSelection(Client client, uint8_t id);
+void CPEPacket_WriteEnvColor(Client client, cs_uint8 type, Color3* col);
+void CPEPacket_WriteMakeSelection(Client client, cs_uint8 id, SVec* start, SVec* end, Color4* color);
+void CPEPacket_WriteRemoveSelection(Client client, cs_uint8 id);
 void CPEPacket_WriteHackControl(Client client, Hacks hacks);
 void CPEPacket_WriteSetHotBar(Client client, Order order, BlockID block);
 void CPEPacket_WriteWeatherType(Client client, Weather type);
 void CPEPacket_WriteTexturePack(Client client, const char* url);
-void CPEPacket_WriteMapProperty(Client client, uint8_t property, int32_t value);
-void CPEPacket_WriteTwoWayPing(Client client, uint8_t direction, int16_t num);
-void CPEPacket_WriteSetModel(Client client, ClientID id, int16_t model);
+void CPEPacket_WriteMapProperty(Client client, cs_uint8 property, cs_int32 value);
+void CPEPacket_WriteTwoWayPing(Client client, cs_uint8 direction, cs_int16 num);
+void CPEPacket_WriteSetModel(Client client, ClientID id, cs_int16 model);
 void CPEPacket_WriteBlockPerm(Client client, BlockID id, bool allowPlace, bool allowDestroy);
 #endif

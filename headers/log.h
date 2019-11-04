@@ -8,7 +8,7 @@ enum LogFlags {
 	LOG_DEBUG = 16
 };
 
-void Log_Print(uint8_t flag, const char* str, va_list* args);
+void Log_Print(cs_uint8 flag, const char* str, va_list* args);
 
 API void Log_Error(const char* str, ...);
 API void Log_Info(const char* str, ...);
@@ -17,5 +17,5 @@ API void Log_Warn(const char* str, ...);
 API void Log_Debug(const char* str, ...);
 
 API void Log_SetLevelStr(const char* str);
-VAR uint8_t Log_Level;
+VAR cs_uint8 Log_Level;
 #endif

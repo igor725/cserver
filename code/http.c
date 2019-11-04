@@ -8,7 +8,7 @@
 ** https://github.com/j-ulrich/http-status-codes-cpp/blob/master/HttpStatusCodes_C.h
 */
 
-const char* HttpCode_GetReason(int32_t code) {
+const char* HttpCode_GetReason(cs_int32 code) {
 	switch (code) {
 		case 100: return "Continue";
 		case 101: return "Switching Protocols";
@@ -136,14 +136,14 @@ const char* HttpRequest_GetHeaderStr(HTTPREQ req, const char* key) {
 	return NULL;
 }
 
-void HttpRequest_SetHeaderInt(HTTPREQ req, const char* key, int32_t value) {
+void HttpRequest_SetHeaderInt(HTTPREQ req, const char* key, cs_int32 value) {
 	HTTPHDR hdr = HttpRequest_GetHeader(req, key);
 	EmptyHeader(hdr);
 	hdr->type = HDRT_INT;
 	hdr->value.vint = value;
 }
 
-int32_t HttpRequest_GetHeaderInt(HTTPREQ req, const char* key) {
+cs_int32 HttpRequest_GetHeaderInt(HTTPREQ req, const char* key) {
 	HTTPHDR hdr = FindHeader(req->header, key);
 	if(hdr && hdr->type == HDRT_INT) return hdr->value.vint;
 	return 0;
@@ -160,7 +160,7 @@ void HttpRequest_SetHeader(HTTPREQ resp, const char* key, const char* value) {
 	}
 }
 
-void HttpRequest_SetHost(HTTPREQ req, const char* host, uint16_t port) {
+void HttpRequest_SetHost(HTTPREQ req, const char* host, cs_uint16 port) {
 	char hostfmt[26];
 	Socket_SetAddrGuess(&req->addr, host, port);
 	if(port != 80)
@@ -180,8 +180,8 @@ void HttpRequest_SetPath(HTTPREQ req, const char* path) {
 	req->path = String_AllocCopy(path);
 }
 
-static int32_t SendLine(Socket sock, char* line) {
-	uint32_t len = (uint32_t)String_Length(line);
+static cs_int32 SendLine(Socket sock, char* line) {
+	cs_uint32 len = (cs_uint32)String_Length(line);
 	return Socket_Send(sock, line, len);
 }
 
@@ -300,14 +300,14 @@ const char* HttpResponse_GetHeaderStr(HTTPRESP resp, const char* key) {
 	return NULL;
 }
 
-void HttpResponse_SetHeaderInt(HTTPRESP resp, const char* key, int32_t value) {
+void HttpResponse_SetHeaderInt(HTTPRESP resp, const char* key, cs_int32 value) {
 	HTTPHDR hdr = HttpResponse_GetHeader(resp, key);
 	EmptyHeader(hdr);
 	hdr->type = HDRT_INT;
 	hdr->value.vint = value;
 }
 
-int32_t HttpResponse_GetHeaderInt(HTTPRESP resp, const char* key) {
+cs_int32 HttpResponse_GetHeaderInt(HTTPRESP resp, const char* key) {
 	HTTPHDR hdr = FindHeader(resp->header, key);
 	if(hdr && hdr->type == HDRT_INT) return hdr->value.vint;
 	return 0;
@@ -324,7 +324,7 @@ void HttpResponse_SetHeader(HTTPRESP resp, const char* key, const char* value) {
 	}
 }
 
-void HttpResponse_SetBody(HTTPRESP resp, char* body, int32_t size) {
+void HttpResponse_SetBody(HTTPRESP resp, char* body, cs_int32 size) {
 	HttpResponse_SetHeaderInt(resp, "Content-Length", size);
 	resp->bodysize = size;
 	resp->body = body;
@@ -370,7 +370,7 @@ bool HttpResponse_Read(HTTPRESP resp, Socket sock) {
 		resp->error = HTTP_ERR_INVALID_REQUEST;
 		return false;
 	}
-	int32_t code = String_ToInt(code_start);
+	cs_int32 code = String_ToInt(code_start);
 
 	if(code < 100 || code > 599) {
 		resp->error = HTTP_ERR_INVALID_CODE;
@@ -386,7 +386,7 @@ bool HttpResponse_Read(HTTPRESP resp, Socket sock) {
 		}
 	}
 
-	int32_t len = HttpResponse_GetHeaderInt(resp, "Content-Length");
+	cs_int32 len = HttpResponse_GetHeaderInt(resp, "Content-Length");
 	if(len > 0) {
 		if(len <= 131072) {
 			resp->bodysize = len;
@@ -407,12 +407,12 @@ bool HttpResponse_Read(HTTPRESP resp, Socket sock) {
 		char hex[12];
 		while(Socket_ReceiveLine(sock, hex, 12)) {
 			if(*hex == '0') break;
-			int32_t clen = String_HexToInt(hex);
+			cs_int32 clen = String_HexToInt(hex);
 			if(clen == 0) {
 				resp->error = HTTP_ERR_BODY_RECV_FAIL;
 				return false;
 			}
-			int32_t oldbodysize = resp->bodysize;
+			cs_int32 oldbodysize = resp->bodysize;
 			if(!resp->body) {
 				resp->body = Memory_Alloc(1, clen);
 				if(Socket_Receive(sock, resp->body, clen, 0) != clen) {
