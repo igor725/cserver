@@ -241,14 +241,14 @@ bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
 bool Iter_Next(dirIter* iter) {
 	if(iter->state != 1) return false;
 
-	bool haveFile = FindNextFile(iter->dirHandle, &iter->fileHandle);
-	if(haveFile) {
+	if(FindNextFile(iter->dirHandle, &iter->fileHandle)) {
 		iter->isDir = isDir(iter->fileHandle);
 		iter->cfile = iter->fileHandle.cFileName;
-	} else
-		iter->state = 2;
-
-	return haveFile;
+		return true;
+	}
+	
+	iter->state = 2;
+	return false;
 }
 
 bool Iter_Close(dirIter* iter) {

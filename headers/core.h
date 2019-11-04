@@ -3,7 +3,7 @@
 #if defined(_WIN32)
 #  define WINDOWS
 #  define ZLIB_WINAPI
-#  define PATH_DELIM '\\'
+#  define PATH_DELIM "\\"
 #  define DLIB_EXT "dll"
 #  define WIN32_LEAN_AND_MEAN
 #  define _CRT_SECURE_NO_WARNINGS
@@ -29,7 +29,7 @@ typedef CRITICAL_SECTION Mutex;
 typedef SOCKET Socket;
 #elif defined(__unix__)
 #  define POSIX
-#  define PATH_DELIM '/'
+#  define PATH_DELIM "/"
 #  define DLIB_EXT "so"
 #  define _GNU_SOURCE
 #  include <errno.h>

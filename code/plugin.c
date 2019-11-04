@@ -11,7 +11,7 @@ Plugin Plugins_List[MAX_PLUGINS] = {0};
 bool Plugin_Load(const char* name) {
 	char path[256];
 	char error[512];
-	String_FormatBuf(path, 256, "plugins/%s", name);
+	String_FormatBuf(path, 256, "plugins" PATH_DELIM "%s", name);
 	if(Plugin_Get(name)) return false;
 	void *lib, *verSym, *initSym;
 

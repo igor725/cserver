@@ -246,10 +246,11 @@ bool World_ReadInfo(World world, FILE* fp) {
 static TRET wSaveThread(TARG param) {
 	World world = param;
 
+	bool succ = false;
 	char path[256];
 	char tmpname[256];
-	String_FormatBuf(path, 256, "worlds/%s", world->name);
-	String_FormatBuf(tmpname, 256, "worlds/%s.tmp", world->name);
+	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
+	String_FormatBuf(tmpname, 256, "worlds" PATH_DELIM "%s.tmp", world->name);
 
 	FILE* fp = File_Open(tmpname, "w");
 	if(!fp) {
@@ -287,7 +288,7 @@ static TRET wSaveThread(TARG param) {
 		}
 	} while(stream.avail_out == 0);
 
-	File_Rename(tmpname, path);
+	succ = true;
 	if(world->saveUnload)
 		World_Free(world);
 
@@ -296,7 +297,8 @@ static TRET wSaveThread(TARG param) {
 	deflateEnd(&stream);
 	Waitable_Signal(world->wait);
 	world->process = WP_NOPROC;
-
+	if(succ)
+		File_Rename(tmpname, path);
 	return 0;
 }
 
@@ -314,7 +316,7 @@ static TRET wLoadThread(TARG param) {
 
 	int32_t ret = 0;
 	char path[256];
-	String_FormatBuf(path, 256, "worlds/%s", world->name);
+	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
 
 	FILE* fp = File_Open(path, "r");
 	if(!fp) {
