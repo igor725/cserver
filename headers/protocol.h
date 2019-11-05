@@ -126,6 +126,7 @@ void CPEPacket_WriteExtEntry(Client client, CPEExt ext);
 void CPEPacket_WriteClickDistance(Client client, cs_int16 dist);
 void CPEPacket_WriteInventoryOrder(Client client, Order order, BlockID block);
 void CPEPacket_WriteHoldThis(Client client, BlockID block, cs_bool preventChange);
+void CPEPacket_WriteSetHotKey(Client client, const char* action, cs_int32 keycode, cs_int8 keymod);
 void CPEPacket_WriteAddName(Client client, Client other);
 void CPEPacket_WriteAddEntity2(Client client, Client other);
 void CPEPacket_WriteRemoveName(Client client, Client other);

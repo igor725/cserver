@@ -223,7 +223,7 @@ static const struct extReg serverExtensions[] = {
 	// CustomBlocks
 	{"HeldBlock", 1},
 	{"EmoteFix", 1},
-	// TextHotKey
+	{"TextHotKey", 1},
 	{"ExtPlayerList", 2},
 	{"EnvColors", 1},
 	{"SelectionCuboid", 1},
@@ -635,7 +635,17 @@ void CPEPacket_WriteHoldThis(Client client, BlockID block, cs_bool preventChange
 	PacketWriter_End(client, 3);
 }
 
-// 0x15 - SetTextHotKey
+void CPEPacket_WriteSetHotKey(Client client, const char* action, cs_int32 keycode, cs_int8 keymod) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x15;
+	Proto_WriteString(&data, NULL); // Label
+	Proto_WriteString(&data, action);
+	*(cs_int32*)data = htonl(keycode); data += 4;
+	*data = keymod;
+
+	PacketWriter_End(client, 134);
+}
 
 void CPEPacket_WriteAddName(Client client, Client other) {
 	PacketWriter_Start(client);

@@ -668,6 +668,14 @@ cs_bool Client_SetHeld(Client client, BlockID block, cs_bool canChange) {
 	return false;
 }
 
+cs_bool Client_SetHotkey(Client client, const char* action, cs_int32 keycode, cs_int8 keymod) {
+	if(Client_GetExtVer(client, EXT_TEXTHOTKEY)) {
+		CPEPacket_WriteSetHotKey(client, action, keycode, keymod);
+		return true;
+	}
+	return false;
+}
+
 cs_bool Client_SetHotbar(Client client, Order pos, BlockID block) {
 	if(!Block_IsValid(block) || pos > 8) return false;
 	if(Client_GetExtVer(client, EXT_SETHOTBAR)) {
@@ -743,12 +751,6 @@ void Client_UpdateGroup(Client client) {
 	}
 }
 
-static void SocketWaitClose(Client client) {
-	Socket_Shutdown(client->sock, SD_SEND);
-	while(Socket_Receive(client->sock, client->rdbuf, 131, 0) > 0) {}
-	Socket_Close(client->sock);
-}
-
 void Client_Free(Client client) {
 	if(client->id != 0xFF)
 		Clients_List[client->id] = NULL;
@@ -783,7 +785,9 @@ void Client_Free(Client client) {
 		Memory_Free(cpd);
 	}
 
-	SocketWaitClose(client);
+	Socket_Shutdown(client->sock, SD_SEND);
+	Socket_Close(client->sock);
+	
 	Memory_Free(client->rdbuf);
 	Memory_Free(client->wrbuf);
 	Memory_Free(client);

@@ -150,6 +150,7 @@ API cs_bool Client_SetModel(Client client, cs_int16 model);
 API cs_bool Client_SetModelStr(Client client, const char* model);
 API cs_bool Client_SetBlockPerm(Client client, BlockID block, cs_bool allowPlace, cs_bool allowDestroy);
 API cs_bool Client_SetHeld(Client client, BlockID block, cs_bool canChange);
+API cs_bool Client_SetHotkey(Client client, const char* action, cs_int32 keycode, cs_int8 keymod);
 API cs_bool Client_SetHotbar(Client client, Order pos, BlockID block);
 API cs_bool Client_SetSkin(Client client, const char* skin);
 API cs_bool Client_SetGroup(Client client, cs_int16 gid);
