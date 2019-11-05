@@ -13,7 +13,6 @@ const char* const Strings[] = {
 	"Can't parse line %d from file \"%s\".",
 	"Entry \"%s\" is not registred for \"%s\".",
 	"Trying to get entry \"%s\" from file \"%s\" as \"%s\", but the variable has type \"%s\".",
-	"Iterator already inited.",
 	"Invalid IPv4 address passed to Socket_SetAddr."
 };
 

@@ -36,11 +36,18 @@ typedef struct _Waitable {
 typedef cs_int32 Socket;
 #endif
 
+enum IterStates {
+	ITER_INITIAL,
+	ITER_READY,
+	ITER_DONE,
+	ITER_ERROR
+};
+
 typedef struct {
+	cs_uint8 state;
   char fmt[256];
   const char* cfile;
   cs_bool isDir;
-  char state;
   ITER_DIR dirHandle;
   ITER_FILE fileHandle;
 } dirIter;

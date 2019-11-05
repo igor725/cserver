@@ -85,7 +85,7 @@ cs_bool Plugin_Unload(Plugin plugin) {
 void Plugin_Start(void) {
 	Directory_Ensure("plugins");
 
-	dirIter pIter = {0};
+	dirIter pIter;
 	if(Iter_Init(&pIter, "plugins", DLIB_EXT)) {
 		do {
 			if(!pIter.isDir && pIter.cfile)

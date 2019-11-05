@@ -154,7 +154,7 @@ void Server_InitialWork(void) {
 
 	Directory_Ensure("worlds");
 	cs_int32 wIndex = 0;
-	dirIter wIter = {0};
+	dirIter wIter;
 	if(Iter_Init(&wIter, "worlds", "cws")) {
 		do {
 			if(wIter.isDir || !wIter.cfile) continue;

@@ -214,31 +214,27 @@ void Socket_Close(Socket sock) {
 #if defined(WINDOWS)
 #define isDir(h) (h.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 cs_bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
-	if(iter->state != 0) {
-		Error_Print2(ET_SERVER, EC_ITERINITED, false);
-		return false;
-	}
+	iter->state = ITER_INITIAL;
+	iter->dirHandle = INVALID_HANDLE_VALUE;
 
 	String_FormatBuf(iter->fmt, 256, "%s\\*.%s", dir, ext);
 	if((iter->dirHandle = FindFirstFile(iter->fmt, &iter->fileHandle)) == INVALID_HANDLE_VALUE) {
-		cs_uint32 err = GetLastError();
-		if(err != ERROR_FILE_NOT_FOUND) {
-			Error_Print2(ET_SYS, err, false);
-			iter->state = -1;
-			return false;
-		}
-		iter->state = 2;
-		return true;
+		if(GetLastError() == ERROR_FILE_NOT_FOUND)
+			iter->state = ITER_DONE;
+		else
+			iter->state = ITER_ERROR;
+		return false;
 	}
 
 	iter->cfile = iter->fileHandle.cFileName;
 	iter->isDir = isDir(iter->fileHandle);
-	iter->state = 1;
+	iter->state = ITER_READY;
 	return true;
 }
 
 cs_bool Iter_Next(dirIter* iter) {
-	if(iter->state != 1) return false;
+	if(iter->state != ITER_READY)
+		return false;
 
 	if(FindNextFile(iter->dirHandle, &iter->fileHandle)) {
 		iter->isDir = isDir(iter->fileHandle);
@@ -246,12 +242,13 @@ cs_bool Iter_Next(dirIter* iter) {
 		return true;
 	}
 
-	iter->state = 2;
+	iter->state = ITER_DONE;
 	return false;
 }
 
 cs_bool Iter_Close(dirIter* iter) {
-	if(iter->state == 0) return false;
+	if(iter->state == ITER_INITIAL)
+		return false;
 	FindClose(iter->dirHandle);
 	return true;
 }
@@ -265,32 +262,26 @@ static cs_bool checkExtension(const char* filename, const char* ext) {
 }
 
 cs_bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
-	if(iter->state != 0) {
-		Error_Print2(ET_SERVER, EC_ITERINITED, false);
-		return false;
-	}
-
+	iter->state = ITER_INITIAL;
+	iter->fileHandle = NULL;
 	iter->dirHandle = opendir(dir);
 	if(!iter->dirHandle) {
-		Error_Print2(ET_SYS, errno, false);
-		iter->state = -1;
+		iter->state = ITER_ERROR;
 		return false;
 	}
 
 	String_Copy(iter->fmt, 256, ext);
-	iter->state = 1;
-	Iter_Next(iter);
-	return true;
+	iter->state = ITER_READY;
+	return Iter_Next(iter);
 }
 
 cs_bool Iter_Next(dirIter* iter) {
-	if(iter->state != 1) return false;
+	if(iter->state != ITER_READY)
+		return false;
 
 	do {
 		if((iter->fileHandle = readdir(iter->dirHandle)) == NULL) {
-			iter->cfile = NULL;
-			iter->isDir = false;
-			iter->state = 2;
+			iter->state = ITER_DONE;
 			return false;
 		} else {
 			iter->cfile = iter->fileHandle->d_name;
@@ -302,8 +293,10 @@ cs_bool Iter_Next(dirIter* iter) {
 }
 
 cs_bool Iter_Close(dirIter* iter) {
-	if(iter->state == 0) return false;
-	closedir(iter->dirHandle);
+	if(iter->state == ITER_INITIAL)
+		return false;
+	if(iter->dirHandle)
+		closedir(iter->dirHandle);
 	return true;
 }
 #endif
