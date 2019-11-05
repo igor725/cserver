@@ -50,7 +50,7 @@ do
 	fi
 	if [ "$a" == "clean" ]; then clean; fi
 	if [ "$a" == "pb" ]; then PLUGIN_BUILD=1; fi
-	if [ "$a" == "wall" ]; then WARN="-Wall"; fi
+	if [ "$a" == "wall" ]; then WARN="-Wall -Wextra -pedantic-errors"; fi
 	if [ "$a" == "nowarn" ]; then WARN="-W0"; fi
 	if [ "$a" == "dbg" ]; then DEBUG=1; OPT="-O0"; fi
 	if [ "$a" == "o0" ]; then OPT="-O0"; fi

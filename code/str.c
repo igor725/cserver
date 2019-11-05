@@ -83,6 +83,7 @@ cs_uint32 String_FormatError(cs_uint32 code, char* buf, cs_size buflen, va_list*
 	}
 	return len;
 #elif defined(POSIX)
+	(void)args;
 	return String_Copy(buf, buflen, strerror(code));
 #endif
 }

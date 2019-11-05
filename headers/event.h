@@ -58,6 +58,7 @@ typedef struct event {
 	union {
 		evtBoolCallback fbool;
 		evtVoidCallback fvoid;
+		void* fptr;
 	} func;
 } *EVENT;
 

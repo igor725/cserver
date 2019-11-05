@@ -36,7 +36,7 @@ cs_bool Event_Unregister(cs_uint32 type, void* callbackPtr) {
 		EVENT evt = Event_List[type][pos];
 		if(!evt) continue;
 
-		if(evt->func.fvoid == callbackPtr) {
+		if(evt->func.fptr == callbackPtr) {
 			Event_List[type][pos] = NULL;
 			return true;
 		}
