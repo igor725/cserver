@@ -98,7 +98,7 @@ EXP cs_int32 Plugin_ApiVer;
 #define	MAX_CMD_OUT 1024
 #define MAX_CLIENT_PPS 128
 #define MAX_CFG_LEN 128
-#define MAX_CLIENTS 128
+#define MAX_CLIENTS 127
 #define MAX_PACKETS 256
 #define MAX_WORLDS 64
 #define MAX_EVENTS 64
