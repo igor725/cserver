@@ -17,7 +17,7 @@ set ZLIB_STBINARY=zlib.lib
 set WARN_LEVEL=/W3
 set OPT_LEVEL=/O2
 
-set MSVC_LINKER=/INCREMENTAL:NO /OPT:REF
+set MSVC_LINKER=/INCREMENTAL:NO /OPT:REF /SUBSYSTEM:CONSOLE
 set MSVC_OPTS=/MP /GL /Oi /Gy /fp:fast
 set OBJDIR=objs
 set MSVC_LIBS=ws2_32.lib kernel32.lib dbghelp.lib advapi32.lib
