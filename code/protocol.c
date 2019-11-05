@@ -496,8 +496,13 @@ cs_bool Handler_PosAndOrient(Client client, const char* data) {
 		cpd->heldBlock = cb;
 	}
 
-	if(Proto_ReadClientPos(client, data))
-		Client_UpdatePositions(client);
+	if(Proto_ReadClientPos(client, data)) {
+		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+			Client other = Clients_List[i];
+			if(other && client != other && Client_IsInGame(other) && Client_IsInSameWorld(client, other))
+				Packet_WritePosAndOrient(other, client);
+		}
+	}
 	return true;
 }
 

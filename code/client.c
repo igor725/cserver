@@ -11,6 +11,7 @@
 #include "lang.h"
 #include <zlib.h>
 
+static TRET ClientThreadProc(TARG param);
 static AssocType headAssocType = NULL;
 static CGroup headCGroup = NULL;
 
@@ -193,7 +194,7 @@ cs_bool Client_Add(Client client) {
 	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
 		if(!Clients_List[i]) {
 			client->id = i;
-			Thread_Create(Client_ThreadProc, client, true);
+			Thread_Create(ClientThreadProc, client, true);
 			Clients_List[i] = client;
 			return true;
 		}
@@ -568,19 +569,6 @@ static void PacketReceiverRaw(Client client) {
 		client->closed = true;
 }
 
-TRET Client_ThreadProc(TARG param) {
-	Client client = param;
-
-	while(!client->closed) {
-		if(client->websock)
-			PacketReceiverWs(client);
-		else
-			PacketReceiverRaw(client);
-	}
-
-	return 0;
-}
-
 void Client_Init(void) {
 	Client_Broadcast = Memory_Alloc(1, sizeof(struct client));
 	Client_Broadcast->wrbuf = Memory_Alloc(2048, 1);
@@ -822,6 +810,19 @@ cs_int32 Client_Send(Client client, cs_int32 len) {
 ** что с этим можно сделать.
 */
 
+static TRET ClientThreadProc(TARG param) {
+	Client client = param;
+
+	while(!client->closed) {
+		if(client->websock)
+			PacketReceiverWs(client);
+		else
+			PacketReceiverRaw(client);
+	}
+
+	return 0;
+}
+
 static void SendSpawnPacket(Client client, Client other) {
 	cs_int32 extlist_ver = Client_GetExtVer(client, EXT_PLAYERLIST);
 
@@ -890,14 +891,6 @@ void Client_Kick(Client client, const char* reason) {
 	** в основом потоке уже не работает.
 	*/
 	if(!Server_Active) Client_Tick(client);
-}
-
-void Client_UpdatePositions(Client client) {
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client other = Clients_List[i];
-		if(other && client != other && Client_IsInGame(other) && Client_IsInSameWorld(client, other))
-			Packet_WritePosAndOrient(other, client);
-	}
 }
 
 void Client_Tick(Client client) {

@@ -101,11 +101,9 @@ typedef struct client {
 	cs_uint32 ppstm; // Таймер для счётчика пакетов
 } *Client;
 
-void Client_UpdatePositions(Client client);
 cs_int32 Client_Send(Client client, cs_int32 len);
 void Client_HandshakeStage2(Client client);
 cs_bool Client_CheckAuth(Client client);
-TRET Client_ThreadProc(TARG param);
 void Client_Free(Client client);
 void Client_Tick(Client client);
 Client Client_New(Socket fd, cs_uint32 addr);
