@@ -126,7 +126,7 @@ void Server_InitialWork(void) {
 	Config_SetDefaultInt8(ent, 10);
 
 	ent = Config_NewEntry(cfg, CFG_CONN_KEY, CFG_INT8);
-	Config_SetComment(ent, "Max connections per one IP.");
+	Config_SetComment(ent, "Max connections per one IP. [1-5]");
 	Config_SetLimit(ent, 1, 5);
 	Config_SetDefaultInt8(ent, 5);
 
