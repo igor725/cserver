@@ -787,7 +787,7 @@ void Client_Free(Client client) {
 
 	Socket_Shutdown(client->sock, SD_SEND);
 	Socket_Close(client->sock);
-	
+
 	Memory_Free(client->rdbuf);
 	Memory_Free(client->wrbuf);
 	Memory_Free(client);
