@@ -47,7 +47,7 @@ cs_bool Plugin_Load(const char* name) {
 			}
 		}
 
-		if(plugin->id == -1 || !(*(pluginFunc*)initSym)()) {
+		if(plugin->id == -1 || !((pluginFunc)initSym)()) {
 			Plugin_Unload(plugin);
 			return false;
 		}
