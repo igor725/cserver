@@ -847,8 +847,7 @@ cs_bool CPEHandler_ExtEntry(Client client, const char* data) {
 	tmp->next = cpd->firstExtension;
 	cpd->firstExtension = tmp;
 
-	--cpd->_extCount;
-	if(cpd->_extCount == 0) {
+	if(--cpd->_extCount == 0) {
 		Event_Call(EVT_ONHANDSHAKEDONE, (void*)client);
 		Client_HandshakeStage2(client);
 	}

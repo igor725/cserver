@@ -20,7 +20,7 @@ cs_uint32 Delay = 5000;
 static void NewSecret(void) {
 	RNGState secrnd;
 	Random_SeedFromTime(&secrnd);
-	for(cs_int32 i = 0; i < 16; i++) {
+	for(cs_int32 i = 0; i < 17; i++) {
 		cs_int32 min, max;
 		switch(Random_Range(&secrnd, 0, 3)) {
 			case 0:
@@ -37,6 +37,13 @@ static void NewSecret(void) {
 				break;
 		}
 		Secret[i] = (char)Random_Range(&secrnd, min, max);
+	}
+
+	FILE* sfile = File_Open("secret.txt", "w");
+	if(sfile) {
+		File_Write("#Remove this file if you want to generate new secret key.\n", 58, 1, sfile);
+		File_Write(Secret, 16, 1, sfile);
+		File_Close(sfile);
 	}
 }
 
@@ -139,5 +146,11 @@ cs_bool Heartbeat_CheckKey(Client client) {
 
 void Heartbeat_Start(cs_uint32 delay) {
 	Delay = delay * 1000;
+	FILE* sfile = File_Open("secret.txt", "r");
+	if(sfile) {
+		File_Seek(sfile, 59, SEEK_SET);
+		File_Read(Secret, 16, 1, sfile);
+		File_Close(sfile);
+	}
 	Thread_Create(HeartbeatThreadProc, NULL, true);
 }
