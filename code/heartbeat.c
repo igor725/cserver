@@ -61,8 +61,7 @@ static void DoRequest() {
 	if(*Secret == '\0') NewSecret();
 	struct httpRequest req = {0};
 	struct httpResponse resp = {0};
-	char path[512] = {0};
-	char name[65] = {0};
+	char path[512], name[65];
 	String_Copy(name, 65, Config_GetStr(Server_Config, CFG_SERVERNAME_KEY));
 	TrimReserved(name, 65);
 
@@ -109,16 +108,6 @@ static void DoRequest() {
 	HttpResponse_Cleanup(&resp);
 }
 
-static TRET HeartbeatThreadProc(TARG param) {
-	(void)param;
-	while(true) {
-		DoRequest();
-		Sleep(Delay);
-		if(!Server_Active) break;
-	}
-	return 0;
-}
-
 static const char hexchars[] = "0123456789abcdef";
 
 cs_bool Heartbeat_CheckKey(Client client) {
@@ -126,9 +115,9 @@ cs_bool Heartbeat_CheckKey(Client client) {
 	const char* key = client->playerData->key;
 	const char* name =  client->playerData->name;
 
-	MD5_CTX ctx = {0};
-	cs_uint8 hash[16] = {0};
-	char hash_hex[16 * 2 + 1] = {0};
+	MD5_CTX ctx;
+	cs_uint8 hash[16];
+	char hash_hex[16 * 2 + 1];
 
 	MD5_Init(&ctx);
 	MD5_Update(&ctx, Secret, String_Length(Secret));
@@ -141,16 +130,27 @@ cs_bool Heartbeat_CheckKey(Client client) {
 		hash_hex[i * 2 + 1] = hexchars[b & 0xF];
 	}
 
+	hash_hex[16 * 2] = '\0';
 	return String_CaselessCompare(hash_hex, key);
 }
 
+static TRET HeartbeatThreadProc(TARG param) {
+	(void)param;
+	while(true) {
+		DoRequest();
+		Sleep(Delay);
+		if(!Server_Active) break;
+	}
+	return 0;
+}
+
 void Heartbeat_Start(cs_uint32 delay) {
-	Delay = delay * 1000;
 	FILE* sfile = File_Open("secret.txt", "r");
 	if(sfile) {
 		File_Seek(sfile, 59, SEEK_SET);
 		File_Read(Secret, 16, 1, sfile);
 		File_Close(sfile);
 	}
+	Delay = delay * 1000;
 	Thread_Create(HeartbeatThreadProc, NULL, true);
 }

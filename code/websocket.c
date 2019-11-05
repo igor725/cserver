@@ -35,8 +35,8 @@ static char* SHA1toB64(cs_uint8* in, char* out) {
 #define WS_ERRRESP "HTTP/1.1 %d %s\r\nConnection: Close\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s"
 
 cs_bool WsClient_DoHandshake(WsClient ws) {
-	char line[1024] = {0}, wskey[32] = {0}, b64[30] = {0};
-	cs_uint8 hash[20] = {0};
+	char line[1024], wskey[32], b64[30];
+	cs_uint8 hash[20];
 	cs_bool haveUpgrade = false;
 	cs_int32 wskeylen = 0;
 
@@ -85,7 +85,8 @@ cs_bool WsClient_DoHandshake(WsClient ws) {
 }
 
 cs_bool WsClient_ReceiveFrame(WsClient ws) {
-	if(ws->state == WS_ST_DONE) ws->state = WS_ST_HDR;
+	if(ws->state == WS_ST_DONE)
+		ws->state = WS_ST_HDR;
 
 	if(ws->state == WS_ST_HDR) {
 		cs_uint32 len = Socket_Receive(ws->sock, ws->header, 2, 0);
@@ -127,8 +128,8 @@ cs_bool WsClient_ReceiveFrame(WsClient ws) {
 	}
 
 	if(ws->state == WS_ST_MASK) {
-		cs_uint32 len = Socket_Receive(ws->sock, ws->mask, 4, 0);
-		if(len == 4) ws->state = WS_ST_RECVPL;
+		if(Socket_Receive(ws->sock, ws->mask, 4, 0) == 4)
+			ws->state = WS_ST_RECVPL;
 	}
 
 	if(ws->state == WS_ST_RECVPL) {
