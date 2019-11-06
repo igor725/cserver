@@ -3,8 +3,9 @@
 #include <log.h>
 #include <client.h>
 #include <event.h>
-#include <command.h>
 #include <block.h>
+#include <command.h>
+#include <protocol.h>
 #include <server.h>
 
 #include "data.h"

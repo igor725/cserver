@@ -180,7 +180,7 @@ void Clients_KickAll(const char* reason) {
 
 Client Client_New(Socket fd, cs_uint32 addr) {
 	Client tmp = Memory_Alloc(1, sizeof(struct client));
-	tmp->id = 0xFF;
+	tmp->id = -1;
 	tmp->sock = fd;
 	tmp->addr = addr;
 	tmp->mutex = Mutex_Create();
@@ -773,7 +773,7 @@ void Client_UpdateGroup(Client client) {
 }
 
 void Client_Free(Client client) {
-	if(client->id != 0xFF)
+	if(client->id != -1)
 		Clients_List[client->id] = NULL;
 
 	if(client->mutex) Mutex_Free(client->mutex);

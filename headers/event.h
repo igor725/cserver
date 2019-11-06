@@ -59,13 +59,13 @@ typedef struct event {
 	union {
 		evtBoolCallback fbool;
 		evtVoidCallback fvoid;
-		void* fptr;
+		cs_uintptr fptr;
 	} func;
 } *EVENT;
 
 API cs_bool Event_RegisterBool(cs_uint32 type, evtBoolCallback func);
 API cs_bool Event_RegisterVoid(cs_uint32 type, evtVoidCallback func);
-API cs_bool Event_Unregister(cs_uint32 type, void* callbackPtr);
+API cs_bool Event_Unregister(cs_uint32 type, cs_uintptr evtFuncPtr);
 
 cs_bool Event_Call(cs_uint32 type, void* param);
 cs_bool Event_OnMessage(Client client, char* message, MessageType* type);

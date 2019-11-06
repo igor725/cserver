@@ -94,7 +94,7 @@ EXP cs_int32 Plugin_ApiVer;
 #define WORLD_MAGIC 0x54414457
 #define PLUGIN_API_NUM 1
 
-#define MAX_PLUGINS 32
+#define MAX_PLUGINS 64
 #define	MAX_CMD_OUT 1024
 #define MAX_CLIENT_PPS 128
 #define MAX_CFG_LEN 128

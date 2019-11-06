@@ -31,12 +31,12 @@ cs_bool Event_RegisterVoid(cs_uint32 type, evtVoidCallback func) {
 	rgPart2;
 }
 
-cs_bool Event_Unregister(cs_uint32 type, void* callbackPtr) {
+cs_bool Event_Unregister(cs_uint32 type, cs_uintptr evtFuncPtr) {
 	for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) {
 		EVENT evt = Event_List[type][pos];
 		if(!evt) continue;
 
-		if(evt->func.fptr == callbackPtr) {
+		if(evt->func.fptr == evtFuncPtr) {
 			Event_List[type][pos] = NULL;
 			return true;
 		}

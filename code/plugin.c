@@ -10,18 +10,20 @@ Plugin Plugins_List[MAX_PLUGINS] = {0};
 
 cs_bool Plugin_Load(const char* name) {
 	char path[256], error[512];
-	void *lib, *verSym, *initSym;
+	void *lib;
+	pluginFunc initSym;
+	cs_int32* verSym;
 	String_FormatBuf(path, 256, "plugins" PATH_DELIM "%s", name);
 
 	if(DLib_Load(path, &lib)) {
-		if(!(DLib_GetSym(lib, "Plugin_ApiVer", &verSym) &&
-		DLib_GetSym(lib, "Plugin_Load", &initSym))) {
+		if(!(DLib_GetSym(lib, "Plugin_ApiVer", (void*)&verSym) &&
+		DLib_GetSym(lib, "Plugin_Load", (void*)&initSym))) {
 			Log_Error("%s: %s", path, DLib_GetError(error, 512));
 			DLib_Unload(lib);
 			return false;
 		}
 
-		cs_int32 ver = *((cs_int32*)verSym);
+		cs_int32 ver = *verSym;
 		if(ver != PLUGIN_API_NUM) {
 			if(ver < PLUGIN_API_NUM)
 				Log_Error(Lang_Get(LANG_CPAPIOLD), name, PLUGIN_API_NUM, ver);
@@ -39,7 +41,7 @@ cs_bool Plugin_Load(const char* name) {
 		plugin->lib = lib;
 		plugin->id = -1;
 
-		for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
+		for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
 			if(!Plugins_List[i]) {
 				Plugins_List[i] = plugin;
 				plugin->id = i;
@@ -47,7 +49,7 @@ cs_bool Plugin_Load(const char* name) {
 			}
 		}
 
-		if(plugin->id == -1 || !((pluginFunc)initSym)()) {
+		if(plugin->id == -1 || !initSym()) {
 			Plugin_Unload(plugin);
 			return false;
 		}

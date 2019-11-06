@@ -93,7 +93,7 @@ static cs_bool CHandler_ClientOnly(const char* args, Client caller, char* out) {
 
 static sBlockDef myBlock = {
 	BLOCK_ID, "My test block", 0,
-	{
+	{{
 		BDSOL_SOLID,
 		255,
 		8, 14, 80,
@@ -103,12 +103,12 @@ static sBlockDef myBlock = {
 		8,
 		BDDRW_OPAQUE,
 		0, 0, 0, 0
-	}
+	}}
 };
 
 static sBlockDef myExtendedBlock = {
 	BLOCK_ID_EXT, "My extended test block", BDF_EXTENDED,
-	{
+	{{
 		BDSOL_SWIM,
 		10,
 		17, 37, 53, 51, 35, 49,
@@ -119,7 +119,7 @@ static sBlockDef myExtendedBlock = {
 		13, 13, 13,
 		BDDRW_OPAQUE,
 		127, 0, 0, 0
-	}
+	}}
 };
 
 static BlockDef myDynBlock = NULL;
@@ -196,7 +196,7 @@ cs_bool Plugin_Load(void) { // Основная функция, вызывает
 }
 
 cs_bool Plugin_Unload(void) {
-	Event_Unregister(EVT_ONMESSAGE, (void*)onmesgfunc);
+	Event_Unregister(EVT_ONMESSAGE, (cs_uintptr)onmesgfunc);
 	Command_Unregister("plugtest");
 	Command_Unregister("atoggle");
 	Command_Unregister("selfdestroy");
