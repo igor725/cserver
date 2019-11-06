@@ -230,6 +230,7 @@ Client Client_GetByName(const char* name) {
 }
 
 Client Client_GetByID(ClientID id) {
+	if(id < 0) return NULL;
 	return id < MAX_CLIENTS ? Clients_List[id] : NULL;
 }
 
