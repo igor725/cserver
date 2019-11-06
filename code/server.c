@@ -152,6 +152,9 @@ void Server_InitialWork(void) {
 	Packet_RegisterDefault();
 	Command_RegisterDefault();
 
+	Log_Info(Lang_Get(LANG_SVPLUGINLOAD));
+	Plugin_Start();
+
 	Directory_Ensure("worlds");
 	cs_int32 wIndex = 0;
 	dirIter wIter;
@@ -175,21 +178,21 @@ void Server_InitialWork(void) {
 		Worlds_List[0] = tmp;
 	}
 
-	Log_Info(Lang_Get(LANG_SVPLUGINLOAD));
-	Plugin_Start();
 	if(Config_GetBool(cfg, CFG_HEARTBEAT_KEY)) {
 		Log_Info(Lang_Get(LANG_HBEAT));
 		Heartbeat_Start(Config_GetInt(cfg, CFG_HEARTBEATDELAY_KEY));
 	}
-	Event_Call(EVT_POSTSTART, NULL);
-	const char* ip = Config_GetStr(cfg, CFG_SERVERIP_KEY);
-	cs_uint16 port = Config_GetUInt16(cfg, CFG_SERVERPORT_KEY);
-	Thread_Create(AcceptThreadProc, NULL, true);
+
 	Server_StartTime = Time_GetMSec();
 	Server_Active = true;
 	Server_Config = cfg;
+
+	const char* ip = Config_GetStr(cfg, CFG_SERVERIP_KEY);
+	cs_uint16 port = Config_GetUInt16(cfg, CFG_SERVERPORT_KEY);
+	Thread_Create(AcceptThreadProc, NULL, true);
 	Console_Start();
 	Bind(ip, port);
+	Event_Call(EVT_POSTSTART, NULL);
 }
 
 void Server_DoStep(void) {

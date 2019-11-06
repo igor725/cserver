@@ -208,7 +208,7 @@ cs_bool Plugin_Load(void) {
 	Event_RegisterBool(EVT_ONBLOCKPLACE, Survival_OnBlockPlace);
 	Event_RegisterVoid(EVT_ONDISCONNECT, Survival_OnDisconnect);
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, Survival_OnHandshake);
-	Event_RegisterVoid(EVT_ONPLAYERCLICK, Survival_OnClick);
+	Event_RegisterVoid(EVT_ONCLICK, Survival_OnClick);
 	Command_Register("god", CHandler_God);
 	Command_Register("hurt", CHandler_Hurt);
 	Command_Register("pvp", CHandler_PvP);

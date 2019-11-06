@@ -1,7 +1,8 @@
 #include "core.h"
+#include "server.h"
 #include "block.h"
 
-const char* Block_Names[256] = {
+static const char* DefaultBlockNames[] = {
 	"Air", "Stone", "Grass", "Dirt",
 	"Cobblestone", "Planks", "Sapling",
 	"Bedrock", "Water", "Still Water",
@@ -30,20 +31,13 @@ const char* Block_Names[256] = {
 	"Stone Brick"
 };
 
+
 cs_bool Block_IsValid(BlockID id) {
-	return Block_Names[id] != NULL;
+	return id < 66;
 }
 
 const char* Block_GetName(BlockID id) {
 	if(Block_IsValid(id))
-		return Block_Names[id];
-	return "Unnamed block";
-}
-
-void Block_SetName(BlockID id, const char* name) {
-	if(name) Block_Names[id] = name;
-}
-
-void Block_DelName(BlockID id) {
-	Block_Names[id] = NULL;
+		return DefaultBlockNames[id];
+	return "Unknown block";
 }

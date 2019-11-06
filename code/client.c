@@ -121,11 +121,11 @@ CGroup Group_Add(cs_int16 gid, const char* gname, cs_uint8 grank) {
 	return gptr;
 }
 
-CGroup Group_GetByID(cs_int16 id) {
+CGroup Group_GetByID(cs_int16 gid) {
 	CGroup gptr = headCGroup;
 
 	while(gptr) {
-		if(gptr->id == id) break;
+		if(gptr->id == gid) break;
 		gptr = gptr->next;
 	}
 
@@ -353,6 +353,7 @@ static TRET wSendThread(TARG param) {
 		pd->state = STATE_INGAME;
 		pd->position = world->info->spawnVec;
 		pd->angle = world->info->spawnAng;
+		Event_Call(EVT_PRELVLFIN, client);
 		Packet_WriteLvlFin(client, &world->info->dimensions);
 		Client_Spawn(client);
 	}

@@ -174,13 +174,13 @@ cs_bool Proto_ReadClientPos(Client client, const char* data) {
 
 	if(newVec.x != vec->x || newVec.y != vec->y || newVec.z != vec->z) {
 		cpd->position = newVec;
-		Event_Call(EVT_ONPLAYERMOVE, client);
+		Event_Call(EVT_ONMOVE, client);
 		changed = true;
 	}
 
 	if(newAng.yaw != ang->yaw || newAng.pitch != ang->pitch) {
 		cpd->angle = newAng;
-		Event_Call(EVT_ONPLAYERROTATE, client);
+		Event_Call(EVT_ONROTATE, client);
 		changed = true;
 	}
 
@@ -772,7 +772,18 @@ void CPEPacket_WriteHackControl(Client client, Hacks hacks) {
 	PacketWriter_End(client, 8);
 }
 
-// 0x23 - BlockDefinition, 0x24 - RemoveBlockDefinition
+void CPEPacket_WriteDefineBlock(Client client, BlockDef block) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x23;
+	*data++ = block->id;
+	Proto_WriteString(&data, block->name);
+	*(BlockDef)data = *block;
+
+	PacketWriter_End(client, 138);
+}
+
+// 0x24 - RemoveBlockDefinition
 // 0x25 - ExtBlockDefinition
 // 0x26 - BulkBlockUpdate
 // 0x27 - SetTextColor

@@ -97,5 +97,5 @@ void Event_OnClick(Client client, char btn, char act, cs_int16 yaw, cs_int16 pit
 	params.id = id;
 	params.pos = pos;
 	params.face = face;
-	Event_Call(EVT_ONPLAYERCLICK, &params);
+	Event_Call(EVT_ONCLICK, &params);
 }

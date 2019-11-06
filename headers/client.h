@@ -117,7 +117,7 @@ API void* Assoc_GetPtr(Client client, cs_uint16 type);
 API cs_bool Assoc_Remove(Client client, cs_uint16 type, cs_bool freeData);
 
 API CGroup Group_Add(cs_int16 gid, const char* gname, cs_uint8 grank);
-API CGroup Group_GetByID(cs_int16 id);
+API CGroup Group_GetByID(cs_int16 gid);
 API cs_bool Group_Remove(cs_int16 gid);
 
 API cs_uint8 Clients_GetCount(cs_int32 state);

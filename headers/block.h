@@ -53,8 +53,23 @@ enum Blocks {
 	BLOCK_OBSIDIAN = 49,
 };
 
+typedef struct _BlockDef {
+	BlockID id;
+	const char* name;
+	cs_uint8 solidity;
+	cs_uint8 moveSpeed;
+	cs_uint8 topTex, sideTex, bottomTex;
+	cs_uint8 transmitsLight;
+	cs_uint8 walkSound;
+	cs_uint8 fullBright;
+	cs_uint8 shape;
+	cs_uint8 blockDraw;
+	cs_uint8 fogDensity;
+	cs_uint8 fogR, fogG, fogB;
+} *BlockDef;
+
 API cs_bool Block_IsValid(BlockID id);
 API const char* Block_GetName(BlockID id);
-API void Block_SetName(BlockID id, const char* name);
-API void Block_DelName(BlockID id);
+// API cs_bool Block_Define(BlockDef info);
+// API cs_bool Block_Undefine(BlockID id);
 #endif

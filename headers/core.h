@@ -78,7 +78,7 @@ typedef cs_uint8 cs_bool;
 typedef cs_uint8 Order;
 typedef cs_uint8 BlockID;
 typedef cs_uint8 Weather;
-typedef cs_uint8 ClientID;
+typedef cs_int8 ClientID;
 typedef cs_uint8 MessageType;
 
 #ifdef PLUGIN_BUILD
@@ -100,9 +100,9 @@ EXP cs_int32 Plugin_ApiVer;
 #define MAX_CFG_LEN 128
 #define MAX_CLIENTS 127
 #define MAX_PACKETS 256
-#define MAX_WORLDS 64
+#define MAX_WORLDS 127
 #define MAX_EVENTS 64
-#define EVENT_TYPES 15
+#define EVENT_TYPES 16
 
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
 #define MODE(b) (b ? Lang_Get(LANG_ENABLED) : Lang_Get(LANG_DISABLED))
