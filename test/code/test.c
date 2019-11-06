@@ -12,6 +12,8 @@
 #include <core.h>
 #include <str.h>
 #include <log.h>
+#include <client.h>
+#include <block.h>
 #include <event.h>
 #include <command.h>
 
@@ -27,6 +29,8 @@
 ** в структуру для дальнейшего взаимодействия с ними
 ** более удобного способа я не придумал.
 */
+static cs_bool enabled = false;
+
 static void onmesgfunc(void* param) {
   if(enabled)
     *((onMessage)param)->type = MT_ANNOUNCE;
@@ -84,6 +88,42 @@ static cs_bool CHandler_ClientOnly(const char* args, Client caller, char* out) {
 	return true;
 }
 
+/*
+*/
+
+static sBlockDef myBlock = {
+	BLOCK_ID, "My test block", 0,
+	{
+		BDSOL_SOLID,
+		255,
+		8, 14, 80,
+		false,
+		BDSND_STONE,
+		false,
+		8,
+		BDDRW_OPAQUE,
+		0, 0, 0, 0
+	}
+};
+
+static sBlockDef myExtendedBlock = {
+	BLOCK_ID_EXT, "My extended test block", BDF_EXTENDED,
+	{
+		BDSOL_SWIM,
+		10,
+		17, 37, 53, 51, 35, 49,
+		false,
+		BDSND_GRASS,
+		false,
+		10, 10, 10,
+		13, 13, 13,
+		BDDRW_OPAQUE,
+		127, 0, 0, 0
+	}
+};
+
+static BlockDef myDynBlock = NULL;
+
 cs_int32 Plugin_ApiVer = PLUGIN_API_NUM; // Текущая версия API плагинов.
 
 cs_bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
@@ -95,6 +135,54 @@ cs_bool Plugin_Load(void) { // Основная функция, вызывает
   Log_Info("Test plugin loaded"); // Отправка в консоль INFO сообщения.
   Log_Debug("It's a debug message");
   Log_Warn("It's a warning message");
+
+	/*
+	** С помощью дополнения BlockDefinitions
+	** можно регистрировать новые блоки для
+	** клиентов. Фунцкия Block_Define принимает
+	** указатель на структуру sBlockDef, в
+	** которую записана информация о блоке,
+	** который необходимо зарегистрировать.
+	** Структура sBlockDef содержит 4 поля:
+	** флаги, ID блока, его название и
+	** параметры. Если нужно создать
+	** расширенный блок, то в структуре
+	** следует установить флаг BDF_EXTENDED.
+	** P.S. Если имеется непреодалимое желание
+	** модифицировать имеющийся блок, то после
+	** внесения изменений в его параметры
+	** необходимо установить флаг BDF_UPDATED
+	** (block.flags |= BDF_UPDATED), а затем
+	** вызывать функцию Block_UpdateDefinitions.
+	*/
+	Block_Define(&myBlock);
+	Block_Define(&myExtendedBlock);
+	/*
+	** Структура sBlockDef также может
+	** находиться в динамической памяти, для этого
+	** её нужно создать через функцию Block_New, где
+	** первым аргументами являются ID блока, его имя и
+	** флаги соответственно. После завершения выделения
+	** памяти функция вернёт BlockDef, поинтер на sBlockDef.
+	** При динамической аллокации структуры происходит также
+	** КОПИРОВАНИЕ имени блока, соответственно, переданный в
+	** функцию const char* не обязан указывать постоянно на
+	** имя блока. При динамической аллокации структуре блока
+	** автоматически устанавливается флаг BDF_DYNALLOCED, для
+	** чего он нужен описано в теле Plugin_Unload.
+	*/
+	myDynBlock = Block_New(BLOCK_ID_DYN, "My dynamically allocated block", 0);
+	Block_Define(myDynBlock);
+	/*
+	** Эта функция должна вызываться как после изменений
+	** в структурах уже зарегистрированных блоков, так и
+	** после регистрации новых блоков. Она рассылает
+	** всем клиентам пакеты удаляющие или добавляющие
+	** новые блоки. Функцию нужно вызывать даже, если
+	** на сервере нет игроков, так как она производит
+	** манипуляции с полем "flags".
+	*/
+	Block_UpdateDefinitions();
 
 	/*
 	** Если функция вернула true, значит
@@ -113,6 +201,26 @@ cs_bool Plugin_Unload(void) {
 	Command_Unregister("atoggle");
 	Command_Unregister("selfdestroy");
 	Command_Unregister("clonly");
+
+	/*
+	** Функция Block_Undefine ТОЛЬКО УСТАНАВЛИВАЕТ
+	** ФЛАГИ, она не производит больше никаких
+	** манипуляций. Тем не менее, блоки, имеющие
+	** флаг BDF_UNDEFINED не будут отправлены игроку
+	** даже если после Block_Undefine не была вызвана
+	** функция Block_UpdateDefinitions.
+	*/
+	Block_Undefine(BLOCK_ID);
+	Block_Undefine(BLOCK_ID_EXT);
+	Block_Undefine(BLOCK_ID_DYN);
+	/*
+	** Здесь вызов Block_UpdateDefinitions нужен, чтобы
+	** разослать игрокам пакет RemoveBlockDefinition,
+	** убрать блок из массива, а также чтобы высвободить
+	** место, выделенное под поле "name" и саму структуру,
+	** если в ней установлен флаг BDF_DYNALLOCED.
+	*/
+	Block_UpdateDefinitions();
 
 	/*
 	** Возврат true говорит о том, что

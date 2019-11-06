@@ -1,5 +1,6 @@
 #ifndef CLIENT_H
 #define CLIENT_H
+#include "block.h"
 #include "vector.h"
 #include "world.h"
 #include "websocket.h"
@@ -129,6 +130,8 @@ API void Client_Chat(Client client, MessageType type, const char* message);
 API void Client_Kick(Client client, const char* reason);
 API void Client_UpdateWorldInfo(Client client, World world, cs_bool updateAll);
 API cs_bool Client_UpdateHacks(Client client);
+API cs_bool Client_DefineBlock(Client client, BlockDef block);
+API cs_bool Client_UndefineBlock(Client client, BlockID id);
 API void Client_UpdateGroup(Client client);
 API cs_bool Client_MakeSelection(Client client, cs_uint8 id, SVec* start, SVec* end, Color4* color);
 API cs_bool Client_RemoveSelection(Client client, cs_uint8 id);
@@ -167,6 +170,6 @@ API cs_int16 Client_GetGroupID(Client client);
 API cs_bool Client_Spawn(Client client);
 API cs_bool Client_Despawn(Client client);
 
-VAR Client Client_Broadcast;
+VAR Client Broadcast;
 VAR Client Clients_List[MAX_CLIENTS];
 #endif

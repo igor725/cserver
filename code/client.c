@@ -272,7 +272,7 @@ cs_bool Client_Despawn(Client client) {
 	PlayerData pd = client->playerData;
 	if(!pd || !pd->spawned) return false;
 	pd->spawned = false;
-	Packet_WriteDespawn(Client_Broadcast, client);
+	Packet_WriteDespawn(Broadcast, client);
 	Event_Call(EVT_ONDESPAWN, (void*)client);
 	return true;
 }
@@ -354,6 +354,13 @@ static TRET wSendThread(TARG param) {
 		pd->position = world->info->spawnVec;
 		pd->angle = world->info->spawnAng;
 		Event_Call(EVT_PRELVLFIN, client);
+		if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
+			for(BlockID id = 0; id < 255; id++) {
+				BlockDef bdef = Block_DefinitionsList[id];
+				if(bdef)
+					Client_DefineBlock(client, bdef);
+			}
+		}
 		Packet_WriteLvlFin(client, &world->info->dimensions);
 		Client_Spawn(client);
 	}
@@ -571,9 +578,9 @@ static void PacketReceiverRaw(Client client) {
 }
 
 void Client_Init(void) {
-	Client_Broadcast = Memory_Alloc(1, sizeof(struct client));
-	Client_Broadcast->wrbuf = Memory_Alloc(2048, 1);
-	Client_Broadcast->mutex = Mutex_Create();
+	Broadcast = Memory_Alloc(1, sizeof(struct client));
+	Broadcast->wrbuf = Memory_Alloc(2048, 1);
+	Broadcast->mutex = Mutex_Create();
 }
 
 cs_bool Client_IsInGame(Client client) {
@@ -732,6 +739,31 @@ cs_bool Client_UpdateHacks(Client client) {
 	return false;
 }
 
+cs_bool Client_DefineBlock(Client client, BlockDef block) {
+	if(block->flags & BDF_UNDEFINED) return false;
+	if(block->flags & BDF_EXTENDED) {
+		if(Client_GetExtVer(client, EXT_BLOCKDEF2)) {
+			CPEPacket_WriteDefineExBlock(client, block);
+			return true;
+		}
+	} else {
+		if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
+			CPEPacket_WriteDefineBlock(client, block);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+cs_bool Client_UndefineBlock(Client client, BlockID id) {
+	if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
+		CPEPacket_WriteUndefineBlock(client, id);
+		return true;
+	}
+	return false;
+}
+
 void Client_UpdateGroup(Client client) {
 	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
 		Client other = Clients_List[id];
@@ -784,7 +816,7 @@ void Client_Free(Client client) {
 
 cs_int32 Client_Send(Client client, cs_int32 len) {
 	if(client->closed) return 0;
-	if(client == Client_Broadcast) {
+	if(client == Broadcast) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			Client bClient = Clients_List[i];
 

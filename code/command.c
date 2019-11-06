@@ -3,6 +3,7 @@
 #include "log.h"
 #include "platform.h"
 #include "error.h"
+#include "client.h"
 #include "server.h"
 #include "generators.h"
 #include "command.h"
@@ -229,7 +230,7 @@ static cs_bool CHandler_Stop(const char* args, Client caller, char* out) {
 static cs_bool CHandler_Announce(const char* args, Client caller, char* out) {
 	Command_OnlyForOP;
 
-	if(!caller) caller = Client_Broadcast;
+	if(!caller) caller = Broadcast;
 	Client_Chat(caller, MT_ANNOUNCE, !args ? "Test announcement" : args);
 	return false;
 }

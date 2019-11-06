@@ -236,8 +236,8 @@ static const struct extReg serverExtensions[] = {
 	{"PlayerClick", 1},
 	{"LongerMessages", 1},
 	{"FullCP437", 1},
-	// BlockDefinitions
-	// BlockDefinitionsExt
+	{"BlockDefinitions", 1},
+	{"BlockDefinitionsExt", 2},
 	// BulkBlockUpdate
 	// TextColors
 	{"EnvMapAspect", 1},
@@ -355,7 +355,7 @@ void Packet_WriteDespawn(Client client, Client other) {
 
 void Packet_WriteChat(Client client, MessageType type, const char* mesg) {
 	PacketWriter_Start(client);
-	if(client == Client_Broadcast) {
+	if(client == Broadcast) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			Client tg = Clients_List[i];
 			if(tg) Packet_WriteChat(tg, type, mesg);
@@ -535,7 +535,7 @@ cs_bool Handler_Message(Client client, const char* data) {
 			if(!Command_Handle(messptr, client))
 				Packet_WriteChat(client, type, Lang_Get(LANG_CMDUNK));
 		} else
-			Client_Chat(Client_Broadcast, type, formatted);
+			Client_Chat(Broadcast, type, formatted);
 
 		Log_Chat(formatted);
 	}
@@ -778,12 +778,31 @@ void CPEPacket_WriteDefineBlock(Client client, BlockDef block) {
 	*data++ = 0x23;
 	*data++ = block->id;
 	Proto_WriteString(&data, block->name);
-	*(BlockDef)data = *block;
+	*(BlockParams*)data = block->params.nonext;
 
-	PacketWriter_End(client, 138);
+	PacketWriter_End(client, 80);
 }
 
-// 0x24 - RemoveBlockDefinition
+void CPEPacket_WriteUndefineBlock(Client client, BlockID id) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x24;
+	*data++ = id;
+
+	PacketWriter_End(client, 2);
+}
+
+void CPEPacket_WriteDefineExBlock(Client client, BlockDef block) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x25;
+	*data++ = block->id;
+	Proto_WriteString(&data, block->name);
+	*(BlockParamsExt*)data = block->params.ext;
+
+	PacketWriter_End(client, 88);
+}
+
 // 0x25 - ExtBlockDefinition
 // 0x26 - BulkBlockUpdate
 // 0x27 - SetTextColor

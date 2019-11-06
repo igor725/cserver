@@ -53,9 +53,41 @@ enum Blocks {
 	BLOCK_OBSIDIAN = 49,
 };
 
-typedef struct _BlockDef {
-	BlockID id;
-	const char* name;
+enum BlockDefFlags {
+	BDF_EXTENDED = 1,
+	BDF_DYNALLOCED = 2,
+	BDF_UPDATED = 4,
+	BDF_UNDEFINED = 8
+};
+
+enum BlockDefSolidity {
+	BDSOL_WALK,
+	BDSOL_SWIM,
+	BDSOL_SOLID
+};
+
+enum BlockDefSound {
+	BDSND_SILENT,
+	BDSND_WOOD,
+	BDSND_GRAVEL,
+	BDSND_GRASS,
+	BDSND_STONE,
+	BDSND_METAL,
+	BDSND_GLASS,
+	BDSND_WOOL,
+	BDSND_SAND,
+	BDSND_SNOW
+};
+
+enum BlockDefDraw {
+	BDDRW_OPAQUE,
+	BDDRW_TRANSPARENT,
+	BDDRW_TRANSPARENT2,
+	BDDRW_TRANSLUCENT,
+	BDDRW_GAS
+};
+
+typedef struct _BlockParams {
 	cs_uint8 solidity;
 	cs_uint8 moveSpeed;
 	cs_uint8 topTex, sideTex, bottomTex;
@@ -66,10 +98,39 @@ typedef struct _BlockDef {
 	cs_uint8 blockDraw;
 	cs_uint8 fogDensity;
 	cs_uint8 fogR, fogG, fogB;
-} *BlockDef;
+} BlockParams;
 
+typedef struct _BlockParamsExt {
+	cs_uint8 solidity;
+	cs_uint8 moveSpeed;
+	cs_uint8 topTex, leftTex;
+	cs_uint8 rightTex, frontTex;
+	cs_uint8 backTex, bottomTex;
+	cs_uint8 transmitsLight;
+	cs_uint8 walkSound;
+	cs_uint8 fullBright;
+	cs_uint8 minX, minY, minZ;
+	cs_uint8 maxX, maxY, maxZ;
+	cs_uint8 blockDraw;
+	cs_uint8 fogDensity;
+	cs_uint8 fogR, fogG, fogB;
+} BlockParamsExt;
+
+typedef struct _BlockDef {
+	BlockID id;
+	const char* name;
+	cs_uint8 flags;
+	union {
+		BlockParamsExt ext;
+		BlockParams nonext;
+	} params;
+} *BlockDef, sBlockDef;
+
+BlockDef Block_DefinitionsList[255];
 API cs_bool Block_IsValid(BlockID id);
 API const char* Block_GetName(BlockID id);
-// API cs_bool Block_Define(BlockDef info);
-// API cs_bool Block_Undefine(BlockID id);
+API BlockDef Block_New(BlockID id, const char* name, cs_uint8 flags);
+API cs_bool Block_Define(BlockDef info);
+API cs_bool Block_Undefine(BlockID id);
+API void Block_UpdateDefinitions();
 #endif
