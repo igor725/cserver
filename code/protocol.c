@@ -241,7 +241,7 @@ static const struct extReg serverExtensions[] = {
 	// BulkBlockUpdate
 	// TextColors
 	{"EnvMapAspect", 1},
-	// EntityProperty
+	{"EntityProperty", 1},
 	{"ExtEntityPositions", 1},
 	{"TwoWayPing", 1},
 	{"InventoryOrder", 1},
@@ -821,12 +821,21 @@ void CPEPacket_WriteMapProperty(Client client, cs_uint8 property, cs_int32 value
 
 	*data++ = 0x29;
 	*data++ = property;
-	*(int*)data = htonl(value);
+	*(cs_int32*)data = htonl(value);
 
 	PacketWriter_End(client, 6);
 }
 
-// 0x2A - SetEntityProperty
+void CPEPacket_WriteSetEntityProperty(Client client, Client other, cs_int8 type, cs_int32 value) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x2A;
+	*data++ = client == other ? 0xFF : other->id;
+	*data++ = type;
+	*(cs_int32*)data = htonl(value);
+
+	PacketWriter_End(client, 7);
+}
 
 void CPEPacket_WriteTwoWayPing(Client client, cs_uint8 direction, cs_int16 num) {
 	PacketWriter_Start(client);

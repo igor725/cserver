@@ -141,6 +141,7 @@ void CPEPacket_WriteSetHotBar(Client client, Order order, BlockID block);
 void CPEPacket_WriteWeatherType(Client client, Weather type);
 void CPEPacket_WriteTexturePack(Client client, const char* url);
 void CPEPacket_WriteMapProperty(Client client, cs_uint8 property, cs_int32 value);
+void CPEPacket_WriteSetEntityProperty(Client client, Client other, cs_int8 type, cs_int32 value);
 void CPEPacket_WriteTwoWayPing(Client client, cs_uint8 direction, cs_int16 num);
 void CPEPacket_WriteSetModel(Client client, Client other);
 void CPEPacket_WriteBlockPerm(Client client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy);

@@ -691,15 +691,11 @@ cs_bool Client_SetBlockPerm(Client client, BlockID block, cs_bool allowPlace, cs
 }
 
 cs_bool Client_SetModel(Client client, cs_int16 model) {
-	if(!client->cpeData) return false;
+	CPEData cpd = client->cpeData;
+	if(!cpd) return false;
 	if(!CPE_CheckModel(model)) return false;
-	client->cpeData->model = model;
-
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client other = Clients_List[i];
-		if(!other || !Client_GetExtVer(other, EXT_CHANGEMODEL)) continue;
-		CPEPacket_WriteSetModel(other, client);
-	}
+	cpd->model = model;
+	cpd->updates |= PCU_MODEL;
 	return true;
 }
 
@@ -709,12 +705,16 @@ cs_bool Client_SetSkin(Client client, const char* skin) {
 	if(cpd->skin)
 		Memory_Free((void*)cpd->skin);
 	cpd->skin = String_AllocCopy(skin);
+	cpd->updates |= PCU_SKIN;
+	return true;
+}
 
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client other = Clients_List[i];
-		if(!other || Client_GetExtVer(other, EXT_PLAYERLIST) != 2) continue;
-		CPEPacket_WriteAddEntity2(other, client);
-	}
+cs_bool Client_SetRotation(Client client, cs_uint8 type, cs_int32 value) {
+	if(type > 2) return false;
+	CPEData cpd = client->cpeData;
+	if(!cpd) return false;
+	cpd->rotation[type] = value;
+	cpd->updates |= PCU_ENTPROP;
 	return true;
 }
 
@@ -723,15 +723,16 @@ cs_bool Client_SetModelStr(Client client, const char* model) {
 }
 
 cs_bool Client_SetGroup(Client client, cs_int16 gid) {
-	if(!client->playerData || !client->cpeData)
+	CPEData cpd = client->cpeData;
+	PlayerData pd = client->playerData;
+	if(!pd || !cpd)
 		return false;
-	client->cpeData->group = gid;
-	if(!client->playerData->firstSpawn)
-		Client_UpdateGroup(client);
+	cpd->group = gid;
+	cpd->updates |= PCU_GROUP;
 	return true;
 }
 
-cs_bool Client_UpdateHacks(Client client) {
+cs_bool Client_SendHacks(Client client) {
 	if(Client_GetExtVer(client, EXT_HACKCTRL)) {
 		CPEPacket_WriteHackControl(client, client->cpeData->hacks);
 		return true;
@@ -764,12 +765,30 @@ cs_bool Client_UndefineBlock(Client client, BlockID id) {
 	return false;
 }
 
-void Client_UpdateGroup(Client client) {
+cs_bool Client_Update(Client client) {
+	CPEData cpd = client->cpeData;
+	if(!cpd) return false;
+	cs_uint8 updates = cpd->updates;
+	if(updates == PCU_NONE) return false;
+	cpd->updates = PCU_NONE;
+
 	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
 		Client other = Clients_List[id];
-		if(other)
-			CPEPacket_WriteAddName(other, client);
+		if(other) {
+			if(updates & PCU_GROUP)
+				CPEPacket_WriteAddName(other, client);
+			if(updates & PCU_MODEL)
+				CPEPacket_WriteSetModel(other, client);
+			if(updates & PCU_SKIN)
+				CPEPacket_WriteAddEntity2(other, client);
+			if(updates & PCU_ENTPROP)
+				for(cs_int8 i = 0; i < 3; i++) {
+					CPEPacket_WriteSetEntityProperty(other, client, i, cpd->rotation[i]);
+				}
+		}
 	}
+
+	return true;
 }
 
 void Client_Free(Client client) {

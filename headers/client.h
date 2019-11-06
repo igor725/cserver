@@ -24,6 +24,14 @@ enum playerStates {
 	STATE_INGAME // Игрок находится в игре
 };
 
+enum playerCPEUpdate {
+	PCU_NONE = 0,
+	PCU_GROUP = 2,
+	PCU_MODEL = 4,
+	PCU_SKIN = 8,
+	PCU_ENTPROP = 16
+};
+
 typedef struct _AssocType {
 	cs_uint16 type; // Сам тип, регистрируемый структурой
 	struct _AssocType* prev; // Предыдущий тип
@@ -62,6 +70,7 @@ typedef struct cpeData {
 	CPEExt firstExtension; // Начало списка дополнений клиента
 	const char* appName; // Название игрового клиента
 	const char* skin; // скин игрока, может быть NULL [ExtPlayerList]
+	cs_int32 rotation[3]; // Вращение модели игрока в градусах
 	Hacks hacks; // Структура с значениями чит-параметров для клиента [HacksControl]
 	char* message; // Используется для получения длинных сообщений [LongerMessages]
 	BlockID heldBlock; // Выбранный игроком блок в данный момент [HeldBlock]
@@ -72,6 +81,7 @@ typedef struct cpeData {
 	cs_uint16 pingData; // Данные, цепляемые к пинг-запросу
 	cs_uint64 pingStart; // Время начала пинг-запроса
 	cs_uint32 pingTime; // Сам пинг, в миллисекундах
+	cs_int8 updates; // Обновлённые значения игрока
 } *CPEData;
 
 typedef struct playerData {
@@ -129,10 +139,10 @@ API cs_bool Client_ChangeWorld(Client client, World world);
 API void Client_Chat(Client client, MessageType type, const char* message);
 API void Client_Kick(Client client, const char* reason);
 API void Client_UpdateWorldInfo(Client client, World world, cs_bool updateAll);
-API cs_bool Client_UpdateHacks(Client client);
+API cs_bool Client_Update(Client client);
+API cs_bool Client_SendHacks(Client client);
 API cs_bool Client_DefineBlock(Client client, BlockDef block);
 API cs_bool Client_UndefineBlock(Client client, BlockID id);
-API void Client_UpdateGroup(Client client);
 API cs_bool Client_MakeSelection(Client client, cs_uint8 id, SVec* start, SVec* end, Color4* color);
 API cs_bool Client_RemoveSelection(Client client, cs_uint8 id);
 
@@ -154,6 +164,7 @@ API cs_bool Client_SetHeld(Client client, BlockID block, cs_bool canChange);
 API cs_bool Client_SetHotkey(Client client, const char* action, cs_int32 keycode, cs_int8 keymod);
 API cs_bool Client_SetHotbar(Client client, Order pos, BlockID block);
 API cs_bool Client_SetSkin(Client client, const char* skin);
+API cs_bool Client_SetRotation(Client client, cs_uint8 type, cs_int32 value);
 API cs_bool Client_SetGroup(Client client, cs_int16 gid);
 
 API const char* Client_GetName(Client client);
