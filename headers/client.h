@@ -53,24 +53,18 @@ typedef struct _CGroup {
 	struct _CGroup* next; // Следующая группа
 } *CGroup;
 
-typedef struct cpeExt {
-	const char* name; // Название дополнения
-	cs_int32 version; // Его версия
-	cs_uint32 crc32; // crc32 хеш названия дополнения
-	struct cpeExt* next; // Следующее дополнение
-} *CPEExt;
-
 typedef struct cpeHacks {
 	cs_bool flying, noclip, speeding;
 	cs_bool spawnControl, tpv;
 	cs_int16 jumpHeight;
 } *Hacks;
 
-typedef struct cpeData {
-	CPEExt firstExtension; // Начало списка дополнений клиента
+typedef struct _CPEData {
+	CPEExt headExtension; // Список дополнений клиента
 	const char* appName; // Название игрового клиента
-	const char* skin; // скин игрока, может быть NULL [ExtPlayerList]
-	cs_int32 rotation[3]; // Вращение модели игрока в градусах
+	const char* skin; // Скин игрока, может быть NULL [ExtPlayerList]
+	cs_bool hideDisplayName; // Будет ли ник игрока скрыт [ExtPlayerList]
+	cs_int32 rotation[3]; // Вращение модели игрока в градусах [EntityProperty]
 	Hacks hacks; // Структура с значениями чит-параметров для клиента [HacksControl]
 	char* message; // Используется для получения длинных сообщений [LongerMessages]
 	BlockID heldBlock; // Выбранный игроком блок в данный момент [HeldBlock]
@@ -84,7 +78,7 @@ typedef struct cpeData {
 	cs_int8 updates; // Обновлённые значения игрока
 } *CPEData;
 
-typedef struct playerData {
+typedef struct _playerData {
 	cs_int32 state; // Текущее состояние игрока
 	const char* key; // Ключ, полученный от игрока
 	const char* name; // Имя игрока
@@ -96,7 +90,7 @@ typedef struct playerData {
 	cs_bool firstSpawn; // Был лы этот спавн первым с момента захода на сервер
 } *PlayerData;
 
-typedef struct client {
+typedef struct _Client {
 	ClientID id; // Используется в качестве entityid
 	CPEData cpeData; // В случае vanilla клиента эта структура не создаётся
 	PlayerData playerData; // Создаётся при получении hanshake пакета

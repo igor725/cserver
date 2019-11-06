@@ -179,7 +179,7 @@ void Clients_KickAll(const char* reason) {
 }
 
 Client Client_New(Socket fd, cs_uint32 addr) {
-	Client tmp = Memory_Alloc(1, sizeof(struct client));
+	Client tmp = Memory_Alloc(1, sizeof(struct _Client));
 	tmp->id = -1;
 	tmp->sock = fd;
 	tmp->addr = addr;
@@ -261,7 +261,7 @@ cs_int32 Client_GetExtVer(Client client, cs_uint32 extCRC32) {
 	CPEData cpd = client->cpeData;
 	if(!cpd) return false;
 
-	CPEExt ptr = cpd->firstExtension;
+	CPEExt ptr = cpd->headExtension;
 	while(ptr) {
 		if(ptr->crc32 == extCRC32) return ptr->version;
 		ptr = ptr->next;
@@ -579,7 +579,7 @@ static void PacketReceiverRaw(Client client) {
 }
 
 void Client_Init(void) {
-	Broadcast = Memory_Alloc(1, sizeof(struct client));
+	Broadcast = Memory_Alloc(1, sizeof(struct _Client));
 	Broadcast->wrbuf = Memory_Alloc(2048, 1);
 	Broadcast->mutex = Mutex_Create();
 }
@@ -793,12 +793,13 @@ cs_bool Client_Update(Client client) {
 }
 
 void Client_Free(Client client) {
-	if(client->id != -1)
+	if(client->id >= 0)
 		Clients_List[client->id] = NULL;
 
 	if(client->mutex) Mutex_Free(client->mutex);
-
 	if(client->websock) Memory_Free(client->websock);
+	if(client->rdbuf) Memory_Free(client->rdbuf);
+	if(client->wrbuf) Memory_Free(client->wrbuf);
 
 	PlayerData pd = client->playerData;
 
@@ -811,7 +812,7 @@ void Client_Free(Client client) {
 	CPEData cpd = client->cpeData;
 
 	if(cpd) {
-		CPEExt prev, ptr = cpd->firstExtension;
+		CPEExt prev, ptr = cpd->headExtension;
 
 		while(ptr) {
 			prev = ptr;
@@ -829,8 +830,6 @@ void Client_Free(Client client) {
 	Socket_Shutdown(client->sock, SD_SEND);
 	Socket_Close(client->sock);
 
-	Memory_Free(client->rdbuf);
-	Memory_Free(client->wrbuf);
 	Memory_Free(client);
 }
 

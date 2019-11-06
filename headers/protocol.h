@@ -109,7 +109,8 @@ cs_bool Handler_Message(Client client, const char* data);
 
 /*
 ** Врайтеры и хендлеры
-** CPE протокола
+** CPE протокола и прочие,
+** связанные с CPE вещи
 */
 API cs_bool CPE_CheckModel(cs_int16 model);
 API void CPE_RegisterExtension(const char* name, cs_int32 version);

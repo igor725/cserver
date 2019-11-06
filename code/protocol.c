@@ -12,7 +12,7 @@
 
 Packet PackList[MAX_PACKETS] = {0};
 cs_uint16 extensionsCount;
-CPEExt firstExtension;
+CPEExt headExtension;
 
 void Proto_WriteString(char** dataptr, const char* string) {
 	char* data = *dataptr;
@@ -208,8 +208,8 @@ void Packet_RegisterExtension(const char* name, cs_int32 version) {
 
 	tmp->name = name;
 	tmp->version = version;
-	tmp->next = firstExtension;
-	firstExtension = tmp;
+	tmp->next = headExtension;
+	headExtension = tmp;
 	++extensionsCount;
 }
 
@@ -397,7 +397,7 @@ cs_bool Handler_Handshake(Client client, const char* data) {
 		return true;
 	}
 
-	client->playerData = Memory_Alloc(1, sizeof(struct playerData));
+	client->playerData = Memory_Alloc(1, sizeof(struct _playerData));
 	client->playerData->firstSpawn = true;
 	if(client->addr == INADDR_LOOPBACK && Config_GetBool(Server_Config, CFG_LOCALOP_KEY))
 		client->playerData->isOP = true;
@@ -425,11 +425,11 @@ cs_bool Handler_Handshake(Client client, const char* data) {
 	}
 
 	if(*data == 0x42) {
-		client->cpeData = Memory_Alloc(1, sizeof(struct cpeData));
+		client->cpeData = Memory_Alloc(1, sizeof(struct _CPEData));
 		client->cpeData->model = 256; // Humanoid model id
 
 		CPEPacket_WriteInfo(client);
-		CPEExt ptr = firstExtension;
+		CPEExt ptr = headExtension;
 		while(ptr) {
 			CPEPacket_WriteExtEntry(client, ptr);
 			ptr = ptr->next;
@@ -672,7 +672,10 @@ void CPEPacket_WriteAddEntity2(Client client, Client other) {
 
 	*data++ = 0x21;
 	*data++ = client == other ? 0xFF : other->id;
-	Proto_WriteString(&data, Client_GetName(other));
+	if(other->cpeData && other->cpeData->hideDisplayName)
+		Proto_WriteString(&data, NULL);
+	else
+		Proto_WriteString(&data, Client_GetName(other));
 	Proto_WriteString(&data, Client_GetSkin(other));
 	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
 	cs_uint32 len = Proto_WriteClientPos(data, other, extended);
@@ -898,8 +901,8 @@ cs_bool CPEHandler_ExtEntry(Client client, const char* data) {
 	if(tmp->crc32 == EXT_LONGMSG && !cpd->message)
 		cpd->message = Memory_Alloc(1, 193);
 
-	tmp->next = cpd->firstExtension;
-	cpd->firstExtension = tmp;
+	tmp->next = cpd->headExtension;
+	cpd->headExtension = tmp;
 
 	if(--cpd->_extCount == 0) {
 		Event_Call(EVT_ONHANDSHAKEDONE, (void*)client);

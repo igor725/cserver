@@ -220,7 +220,6 @@ void Server_StartLoop(void) {
 		Server_DoStep();
 		Sleep(10);
 	}
-	Log_Info(Lang_Get(LANG_SVLOOPDONE));
 }
 
 void Server_Stop(void) {

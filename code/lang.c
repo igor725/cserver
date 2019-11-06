@@ -28,8 +28,6 @@ const char* Lang_Get(cs_int32 langid) {
 			return "Time ran backwards? Server_Delta < 0.";
 		case LANG_SVLONGTICK:
 			return "Last server tick took %dms!";
-		case LANG_SVLOOPDONE:
-			return "Main loop done.";
 		case LANG_SVSTOP0:
 			return "Kicking players...";
 		case LANG_SVSTOP1:

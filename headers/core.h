@@ -80,6 +80,13 @@ typedef cs_uint8 BlockID;
 typedef cs_uint8 Weather;
 typedef cs_int8 ClientID;
 typedef cs_uint8 MessageType;
+// TODO: Придумать, как пернести это чудо в protocol.h
+typedef struct cpeExt {
+	const char* name; // Название дополнения
+	cs_int32 version; // Его версия
+	cs_uint32 crc32; // crc32 хеш названия дополнения
+	struct cpeExt* next; // Следующее дополнение
+} *CPEExt;
 
 #ifdef PLUGIN_BUILD
 EXP cs_bool Plugin_Load();
