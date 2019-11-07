@@ -298,10 +298,10 @@ static TRET wSaveThread(TARG param) {
 	wsdone:
 	File_Close(fp);
 	deflateEnd(&stream);
-	Waitable_Signal(world->wait);
 	world->process = WP_NOPROC;
 	if(succ)
 		File_Rename(tmpname, path);
+	Waitable_Signal(world->wait);
 	return 0;
 }
 
@@ -371,8 +371,8 @@ static TRET wLoadThread(TARG param) {
 	inflateEnd(&stream);
 	if(ret != 0)
 		World_Unload(world);
-	Waitable_Signal(world->wait);
 	world->process = WP_NOPROC;
+	Waitable_Signal(world->wait);
 	return 0;
 }
 

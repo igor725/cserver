@@ -92,6 +92,7 @@ typedef struct _playerData {
 
 typedef struct _Client {
 	ClientID id; // Используется в качестве entityid
+	void* thread[2]; // Потоки клиента
 	CPEData cpeData; // В случае vanilla клиента эта структура не создаётся
 	PlayerData playerData; // Создаётся при получении hanshake пакета
 	AssocNode headNode; // Последняя созданная ассоциативная нода у клиента

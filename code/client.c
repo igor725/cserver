@@ -194,7 +194,7 @@ cs_bool Client_Add(Client client) {
 	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
 		if(!Clients_List[i]) {
 			client->id = i;
-			Thread_Create(ClientThreadProc, client, true);
+			client->thread[0] = Thread_Create(ClientThreadProc, client, false);
 			Clients_List[i] = client;
 			return true;
 		}
@@ -364,7 +364,8 @@ static TRET wSendThread(TARG param) {
 		}
 		Packet_WriteLvlFin(client, &world->info->dimensions);
 		Client_Spawn(client);
-	}
+	} else
+		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
 
 	return 0;
 }
@@ -382,7 +383,7 @@ cs_bool Client_ChangeWorld(Client client, World world) {
 	pd->world = world;
 	pd->state = STATE_MOTD;
 	if(!world->loaded) World_Load(world);
-	Thread_Create(wSendThread, client, true);
+	client->thread[1] = Thread_Create(wSendThread, client, false);
 	return true;
 }
 
@@ -793,6 +794,9 @@ cs_bool Client_Update(Client client) {
 }
 
 void Client_Free(Client client) {
+	if(client->thread[0])
+		Thread_Join(client->thread[0]);
+
 	if(client->id >= 0)
 		Clients_List[client->id] = NULL;
 
@@ -855,17 +859,15 @@ cs_int32 Client_Send(Client client, cs_int32 len) {
 	return Socket_Send(client->sock, client->wrbuf, len);
 }
 
-/*
-** Эта функция понадобилась ибо я не смог
-** придумать как это всё уместить внутри
-** Client_Spawn. Как-нибудь придумать,
-** что с этим можно сделать.
-*/
-
 static TRET ClientThreadProc(TARG param) {
 	Client client = param;
 
 	while(!client->closed) {
+		if(client->thread[1]) {
+			Thread_Join(client->thread[1]);
+			client->thread[1] = NULL;
+		}
+
 		if(client->websock)
 			PacketReceiverWs(client);
 		else
@@ -971,7 +973,4 @@ void Client_Tick(Client client) {
 		client->pps = 0;
 		client->ppstm = 0;
 	}
-
-	if(pd && pd->state == STATE_WLOADERR)
-		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
 }
