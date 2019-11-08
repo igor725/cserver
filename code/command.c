@@ -337,8 +337,7 @@ static cs_bool CHandler_UnlWorld(const char* args, Client caller, char* out) {
 			Client c = Clients_List[i];
 			if(c && Client_IsInWorld(c, tmp)) Client_ChangeWorld(c, Worlds_List[0]);
 		}
-		if(World_Save(tmp)) {
-			tmp->saveUnload = true;
+		if(World_Save(tmp, true, true)) {
 			Command_Print("World unloading scheduled.");
 		} else {
 			Command_Print("Can't start world saving process, try again later.");
@@ -355,7 +354,7 @@ static cs_bool CHandler_SavWorld(const char* args, Client caller, char* out) {
 	Command_ArgToWorldName(worldname, 0);
 	World tmp = World_GetByName(worldname);
 	if(tmp) {
-		if(World_Save(tmp)) {
+		if(World_Save(tmp, true, false)) {
 			Command_Print("World saving scheduled.");
 		} else {
 			Command_Print("Can't start world saving process, try again later.");

@@ -12,7 +12,7 @@ void Worlds_SaveAll(cs_bool join) {
 		World world = Worlds_List[i];
 
 		if(i < MAX_WORLDS && world) {
-			if(World_Save(world) && join)
+			if(World_Save(world, false, false) && join)
 				Waitable_Wait(world->wait);
 		}
 	}
@@ -162,7 +162,9 @@ void World_AllocBlockArray(World world) {
 }
 
 void World_Free(World world) {
-	if(world->wait) Waitable_Free(world->wait);
+	Waitable_Wait(world->wait);
+	Waitable_Free(world->wait);
+
 	if(world->data) Memory_Free(world->data);
 	if(world->info) Memory_Free(world->info);
 	if(world->id != -1) Worlds_List[world->id] = NULL;
@@ -292,8 +294,6 @@ static TRET wSaveThread(TARG param) {
 	} while(stream.avail_out == 0);
 
 	succ = true;
-	if(world->saveUnload)
-		World_Free(world);
 
 	wsdone:
 	File_Close(fp);
@@ -302,15 +302,19 @@ static TRET wSaveThread(TARG param) {
 	if(succ)
 		File_Rename(tmpname, path);
 	Waitable_Signal(world->wait);
+
+	if(world->saveUnload)
+		World_Free(world);
 	return 0;
 }
 
-cs_bool World_Save(World world) {
-	if(world->process != WP_NOPROC || !world->modified || !world->loaded)
+cs_bool World_Save(World world, cs_bool force, cs_bool unload) {
+	if(world->process != WP_NOPROC || (!world->modified || force) || !world->loaded)
 		return world->process == WP_SAVING;
 
 	Waitable_Reset(world->wait);
 	world->process = WP_SAVING;
+	world->saveUnload = unload;
 	Thread_Create(wSaveThread, world, true);
 	return true;
 }
