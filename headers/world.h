@@ -89,7 +89,7 @@ typedef struct world {
 	BlockID* data;
 } *World;
 
-API void Worlds_SaveAll(cs_bool join);
+API void Worlds_SaveAll(cs_bool join, cs_bool unload);
 
 API World World_Create(const char* name);
 API void World_AllocBlockArray(World world);
@@ -99,7 +99,7 @@ API void World_UpdateClients(World world);
 
 API cs_bool World_Load(World world);
 API void World_Unload(World world);
-API cs_bool World_Save(World world, cs_bool force, cs_bool unload);
+API cs_bool World_Save(World world, cs_bool unload);
 
 API void World_SetDimensions(World world, const SVec* dims);
 API cs_bool World_SetBlock(World world, SVec* pos, BlockID id);

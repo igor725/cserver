@@ -190,7 +190,7 @@ Client Client_New(Socket fd, cs_uint32 addr) {
 }
 
 cs_bool Client_Add(Client client) {
-	cs_int8 maxplayers = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
+	cs_int8 maxplayers = Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
 	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
 		if(!Clients_List[i]) {
 			client->id = i;

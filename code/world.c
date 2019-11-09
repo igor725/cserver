@@ -2,18 +2,22 @@
 #include "platform.h"
 #include "error.h"
 #include "str.h"
+#include "server.h"
 #include "client.h"
 #include "world.h"
 #include "event.h"
 #include <zlib.h>
 
-void Worlds_SaveAll(cs_bool join) {
+void Worlds_SaveAll(cs_bool join, cs_bool unload) {
 	for(cs_int32 i = 0; i < MAX_WORLDS; i++) {
 		World world = Worlds_List[i];
 
 		if(i < MAX_WORLDS && world) {
-			if(World_Save(world, false, false) && join)
+			if(World_Save(world, unload) && join) {
 				Waitable_Wait(world->wait);
+				if(!Server_Active)
+					World_Free(world);
+			}
 		}
 	}
 }
@@ -162,9 +166,7 @@ void World_AllocBlockArray(World world) {
 }
 
 void World_Free(World world) {
-	Waitable_Wait(world->wait);
 	Waitable_Free(world->wait);
-
 	if(world->data) Memory_Free(world->data);
 	if(world->info) Memory_Free(world->info);
 	if(world->id != -1) Worlds_List[world->id] = NULL;
@@ -301,20 +303,19 @@ static TRET wSaveThread(TARG param) {
 	world->process = WP_NOPROC;
 	if(succ)
 		File_Rename(tmpname, path);
-	Waitable_Signal(world->wait);
-
 	if(world->saveUnload)
-		World_Free(world);
+		World_Unload(world);
+	Waitable_Signal(world->wait);
 	return 0;
 }
 
-cs_bool World_Save(World world, cs_bool force, cs_bool unload) {
-	if(world->process != WP_NOPROC || (!world->modified || force) || !world->loaded)
+cs_bool World_Save(World world, cs_bool unload) {
+	if(world->process != WP_NOPROC || !world->modified || !world->loaded)
 		return world->process == WP_SAVING;
 
-	Waitable_Reset(world->wait);
 	world->process = WP_SAVING;
 	world->saveUnload = unload;
+	Waitable_Reset(world->wait);
 	Thread_Create(wSaveThread, world, true);
 	return true;
 }
@@ -376,6 +377,7 @@ static TRET wLoadThread(TARG param) {
 	if(ret != 0)
 		World_Unload(world);
 	world->process = WP_NOPROC;
+	world->saveUnload = false;
 	Waitable_Signal(world->wait);
 	return 0;
 }
@@ -385,13 +387,15 @@ cs_bool World_Load(World world) {
 	if(world->process != WP_NOPROC)
 		return world->process == WP_LOADING;
 
-	Waitable_Reset(world->wait);
 	world->process = WP_LOADING;
+	Waitable_Reset(world->wait);
 	Thread_Create(wLoadThread, world, true);
 	return true;
 }
 
 void World_Unload(World world) {
+	if(world->process != WP_NOPROC)
+		Waitable_Wait(world->wait);
 	if(world->data) Memory_Free(world->data);
 	world->loaded = false;
 	world->data = NULL;

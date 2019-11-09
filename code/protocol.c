@@ -399,7 +399,7 @@ cs_bool Handler_Handshake(Client client, const char* data) {
 
 	client->playerData = Memory_Alloc(1, sizeof(struct _playerData));
 	client->playerData->firstSpawn = true;
-	if(client->addr == INADDR_LOOPBACK && Config_GetBool(Server_Config, CFG_LOCALOP_KEY))
+	if(client->addr == INADDR_LOOPBACK && Config_GetBoolByKey(Server_Config, CFG_LOCALOP_KEY))
 		client->playerData->isOP = true;
 
 	if(!Proto_ReadString(&data, &client->playerData->name)) return false;
@@ -415,8 +415,8 @@ cs_bool Handler_Handshake(Client client, const char* data) {
 	}
 
 	if(Client_CheckAuth(client)) {
-		const char* name = Config_GetStr(Server_Config, CFG_SERVERNAME_KEY);
-		const char* motd = Config_GetStr(Server_Config, CFG_SERVERMOTD_KEY);
+		const char* name = Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY);
+		const char* motd = Config_GetStrByKey(Server_Config, CFG_SERVERMOTD_KEY);
 
 		Packet_WriteHandshake(client, name, motd);
 	} else {

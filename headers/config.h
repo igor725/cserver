@@ -3,7 +3,7 @@
 enum cfgTypes {
 	CFG_INVTYPE,
 	CFG_BOOL,
-	CFG_INT,
+	CFG_INT32,
 	CFG_INT16,
 	CFG_INT8,
 	CFG_STR
@@ -65,24 +65,27 @@ API cs_bool Config_Save(CFGStore store);
 API void Config_SetComment(CFGEntry ent, const char* commentary);
 API void Config_SetLimit(CFGEntry ent, cs_int32 min, cs_int32 max);
 
-API cs_int32 Config_GetInt(CFGStore store, const char* key);
-API cs_uint32 Config_GetUInt(CFGStore store, const char* key);
-API cs_int16 Config_GetInt16(CFGStore store, const char* key);
-API cs_uint16 Config_GetUInt16(CFGStore store, const char* key);
-API cs_int8 Config_GetInt8(CFGStore store, const char* key);
-API cs_uint8 Config_GetUInt8(CFGStore store, const char* key);
-API void Config_SetDefaultInt(CFGEntry ent, cs_int32 value);
-API void Config_SetDefaultInt8(CFGEntry ent, cs_int8 value);
+API cs_int32 Config_GetInt32(CFGEntry ent);
+API cs_int32 Config_GetInt32ByKey(CFGStore store, const char* key);
+API cs_int16 Config_GetInt16(CFGEntry ent);
+API cs_int16 Config_GetInt16ByKey(CFGStore store, const char* key);
+API cs_int8 Config_GetInt8(CFGEntry ent);
+API cs_int8 Config_GetInt8ByKey(CFGStore store, const char* key);
+
+API void Config_SetDefaultInt32(CFGEntry ent, cs_int32 value);
 API void Config_SetDefaultInt16(CFGEntry ent, cs_int16 value);
-API void Config_SetInt(CFGEntry ent, cs_int32 value);
+API void Config_SetDefaultInt8(CFGEntry ent, cs_int8 value);
+API void Config_SetInt32(CFGEntry ent, cs_int32 value);
 API void Config_SetInt16(CFGEntry ent, cs_int16 value);
 API void Config_SetInt8(CFGEntry ent, cs_int8 value);
 
-API const char* Config_GetStr(CFGStore store, const char* key);
+API const char* Config_GetStr(CFGEntry ent);
+API const char* Config_GetStrByKey(CFGStore store, const char* key);
 API void Config_SetDefaultStr(CFGEntry ent, const char* value);
 API void Config_SetStr(CFGEntry ent, const char* value);
 
-API cs_bool Config_GetBool(CFGStore store, const char* key);
+API cs_bool Config_GetBool(CFGEntry ent);
+API cs_bool Config_GetBoolByKey(CFGStore store, const char* key);
 API void Config_SetDefaultBool(CFGEntry ent, cs_bool value);
 API void Config_SetBool(CFGEntry ent, cs_bool value);
 #endif

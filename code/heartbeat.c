@@ -62,12 +62,12 @@ static void DoRequest() {
 	struct httpRequest req = {0};
 	struct httpResponse resp = {0};
 	char path[512], name[65];
-	String_Copy(name, 65, Config_GetStr(Server_Config, CFG_SERVERNAME_KEY));
+	String_Copy(name, 65, Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY));
 	TrimReserved(name, 65);
 
-	cs_uint16 port = Config_GetInt16(Server_Config, CFG_SERVERPORT_KEY);
-	cs_bool public = Config_GetBool(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
-	cs_uint8 max = Config_GetInt8(Server_Config, CFG_MAXPLAYERS_KEY);
+	cs_uint16 port = Config_GetInt16ByKey(Server_Config, CFG_SERVERPORT_KEY);
+	cs_bool public = Config_GetBoolByKey(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
+	cs_uint8 max = Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
 	cs_uint8 count = Clients_GetCount(STATE_INGAME);
 	String_FormatBuf(path, 512, HBEAT_URL,
 		name,

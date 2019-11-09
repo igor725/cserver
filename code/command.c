@@ -87,8 +87,8 @@ static cs_bool CHandler_CFG(const char* args, Client caller, char* out) {
 			}
 
 			switch (ent->type) {
-				case CFG_INT:
-					Config_SetInt(ent, String_ToInt(value));
+				case CFG_INT32:
+					Config_SetInt32(ent, String_ToInt(value));
 					break;
 				case CFG_INT16:
 					Config_SetInt16(ent, (cs_int16)String_ToInt(value));
@@ -337,8 +337,8 @@ static cs_bool CHandler_UnlWorld(const char* args, Client caller, char* out) {
 			Client c = Clients_List[i];
 			if(c && Client_IsInWorld(c, tmp)) Client_ChangeWorld(c, Worlds_List[0]);
 		}
-		if(World_Save(tmp, true, true)) {
-			Command_Print("World unloading scheduled.");
+		if(World_Save(tmp, true)) {
+			Command_Print("World unloaded.");
 		} else {
 			Command_Print("Can't start world saving process, try again later.");
 		}
@@ -354,7 +354,7 @@ static cs_bool CHandler_SavWorld(const char* args, Client caller, char* out) {
 	Command_ArgToWorldName(worldname, 0);
 	World tmp = World_GetByName(worldname);
 	if(tmp) {
-		if(World_Save(tmp, true, false)) {
+		if(World_Save(tmp, false)) {
 			Command_Print("World saving scheduled.");
 		} else {
 			Command_Print("Can't start world saving process, try again later.");

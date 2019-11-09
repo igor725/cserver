@@ -28,8 +28,8 @@ static void AcceptFunc(void) {
 
 		cs_uint32 addr = htonl(caddr.sin_addr.s_addr);
 	 	Client tmp = Client_New(fd, addr);
-		cs_uint32 sameAddrCount = 1;
-		cs_uint8 maxConnPerIP = Config_GetInt8(Server_Config, CFG_CONN_KEY);
+		cs_int8 sameAddrCount = 1;
+		cs_int8 maxConnPerIP = Config_GetInt8ByKey(Server_Config, CFG_CONN_KEY);
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			Client cc = Clients_List[i];
 			if(cc && cc->addr == addr)
@@ -134,9 +134,9 @@ void Server_InitialWork(void) {
 	Config_SetComment(ent, "Enable ClassiCube heartbeat.");
 	Config_SetDefaultBool(ent, false);
 
-	ent = Config_NewEntry(cfg, CFG_HEARTBEATDELAY_KEY, CFG_INT);
+	ent = Config_NewEntry(cfg, CFG_HEARTBEATDELAY_KEY, CFG_INT32);
 	Config_SetComment(ent, "Heartbeat request delay.");
-	Config_SetDefaultInt(ent, 10);
+	Config_SetDefaultInt32(ent, 10);
 
 	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_PUBLIC_KEY, CFG_BOOL);
 	Config_SetComment(ent, "Show server in the ClassiCube server list.");
@@ -147,7 +147,7 @@ void Server_InitialWork(void) {
 		Config_PrintError(cfg);
 		Process_Exit(1);
 	}
-	Log_SetLevelStr(Config_GetStr(cfg, CFG_LOGLEVEL_KEY));
+	Log_SetLevelStr(Config_GetStrByKey(cfg, CFG_LOGLEVEL_KEY));
 
 	Packet_RegisterDefault();
 	Command_RegisterDefault();
@@ -178,17 +178,17 @@ void Server_InitialWork(void) {
 		Worlds_List[0] = tmp;
 	}
 
-	if(Config_GetBool(cfg, CFG_HEARTBEAT_KEY)) {
+	if(Config_GetBoolByKey(cfg, CFG_HEARTBEAT_KEY)) {
 		Log_Info(Lang_Get(LANG_HBEAT));
-		Heartbeat_Start(Config_GetInt(cfg, CFG_HEARTBEATDELAY_KEY));
+		Heartbeat_Start(Config_GetInt32ByKey(cfg, CFG_HEARTBEATDELAY_KEY));
 	}
 
 	Server_StartTime = Time_GetMSec();
 	Server_Active = true;
 	Server_Config = cfg;
 
-	const char* ip = Config_GetStr(cfg, CFG_SERVERIP_KEY);
-	cs_uint16 port = Config_GetUInt16(cfg, CFG_SERVERPORT_KEY);
+	const char* ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
+	cs_uint16 port = Config_GetInt16ByKey(cfg, CFG_SERVERPORT_KEY);
 	Thread_Create(AcceptThreadProc, NULL, true);
 	Console_Start();
 	Bind(ip, port);
@@ -227,7 +227,7 @@ void Server_Stop(void) {
 	Log_Info(Lang_Get(LANG_SVSTOP0));
 	Clients_KickAll(Lang_Get(LANG_KICKSVSTOP));
 	Log_Info(Lang_Get(LANG_SVSTOP1));
-	Worlds_SaveAll(true);
+	Worlds_SaveAll(true, true);
 
 	Socket_Close(Server_Socket);
 	Log_Info(Lang_Get(LANG_SVSAVING), MAINCFG);
