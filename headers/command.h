@@ -23,6 +23,9 @@ return true;
 String_Copy(out, MAX_CMD_OUT, str); \
 return true;
 
+#define Command_UnusedArgs(a) \
+(void)(a);
+
 #define Command_ArgToWorldName(wn, idx) \
 if(String_GetArgument(args, wn, 64, idx)) { \
 	const char* wndot = String_LastChar(wn, '.'); \

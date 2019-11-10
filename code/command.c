@@ -68,6 +68,7 @@ static cs_bool CHandler_OP(const char* args, Client caller, char* out) {
 }
 
 static cs_bool CHandler_Uptime(const char* args, Client caller, char* out) {
+	Command_UnusedArgs((args, caller));
 	cs_uint64 msec, d, h, m, s, ms;
 	msec = Time_GetMSec() - Server_StartTime;
 	d = msec / 86400000;
@@ -162,10 +163,10 @@ if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) { \
 }
 
 static cs_bool CHandler_Plugins(const char* args, Client caller, char* out) {
+	Command_UnusedArgs(caller);
 	const char* cmdUsage = "/plugins <load/unload/print> [pluginName]";
 	char subcommand[64], name[64];
 	Plugin plugin;
-	(void)caller;
 
 	if(String_GetArgument(args, subcommand, 64, 0)) {
 		if(String_CaselessCompare(subcommand, "load")) {
@@ -232,9 +233,8 @@ static cs_bool CHandler_Plugins(const char* args, Client caller, char* out) {
 }
 
 static cs_bool CHandler_Stop(const char* args, Client caller, char* out) {
+	Command_UnusedArgs(args);
 	Command_OnlyForOP;
-	(void)args;
-
 	Server_Active = false;
 	return false;
 }

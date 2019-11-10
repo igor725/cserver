@@ -158,9 +158,9 @@ static void Survival_OnClick(void* param) {
 }
 
 static cs_bool CHandler_God(const char* args, Client caller, char* out) {
+	Command_UnusedArgs(args);
 	Command_OnlyForClient;
 	Command_OnlyForOP;
-	(void)args;
 
 	SURVDATA data = SurvData_Get(caller);
 	data->godMode ^= 1;
@@ -185,9 +185,9 @@ static cs_bool CHandler_Hurt(const char* args, Client caller, char* out) {
 }
 
 static cs_bool CHandler_PvP(const char* args, Client caller, char* out) {
+	Command_UnusedArgs(args);
 	Command_OnlyForClient;
 	Command_OnlyForSurvival;
-	(void)args;
 
 	SURVDATA data = SurvData_Get(caller);
 	data->pvpMode ^= 1;

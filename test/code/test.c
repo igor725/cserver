@@ -41,15 +41,16 @@ static void onmesgfunc(void* param) {
 ** Также стоит заметить, что "args" тоже будет NULL при отсутствии аргументов.
 */
 static cs_bool CHandler_Plugtest(const char* args, Client caller, char* out) {
-	(void)args; (void)caller;
+	// Макрос Command_UnusedArgs нужен, чтобы скрыть варнинги о неиспользуемых аргументах
+	Command_UnusedArgs((args, caller));
   String_Copy(out, MAX_CMD_OUT, "This command registred by testplugin." DLIB_EXT);
   return true;
 }
 
 static cs_bool CHandler_Atoggle(const char* args, Client caller, char* out) {
+	Command_UnusedArgs(args);
 	// Макрос проверяет была ли запущена команда администратором
 	Command_OnlyForOP;
-	(void)args;
 
   enabled ^= 1;
 	String_FormatBuf(out, MAX_CMD_OUT, "Announce chat %s", MODE(enabled));
@@ -65,7 +66,7 @@ static cs_bool CHandler_Atoggle(const char* args, Client caller, char* out) {
 ** вновь, вплоть до перезапуска сервера.
 */
 static cs_bool CHandler_SelfDestroy(const char* args, Client caller, char* out) {
-	(void)args; (void)caller;
+	Command_UnusedArgs((args, caller));
 	Command_Unregister("selfdestroy");
 	String_Copy(out, MAX_CMD_OUT, "This command can't be called anymore");
 	return true;
@@ -81,8 +82,8 @@ static cs_bool CHandler_SelfDestroy(const char* args, Client caller, char* out) 
 ** только игрок.
 */
 static cs_bool CHandler_ClientOnly(const char* args, Client caller, char* out) {
+	Command_UnusedArgs((args, caller));
 	Command_OnlyForClient;
-	(void)args;
 
 	String_FormatBuf(out, MAX_CMD_OUT, "Client-only command called by %s", Client_GetName(caller));
 	return true;
