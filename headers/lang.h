@@ -1,6 +1,6 @@
 #ifndef LANG_H
 #define LANG_H
-enum LangIDs {
+enum {
 	LANG_SUCC,
 	LANG_UNKERR,
 	LANG_DISABLED,

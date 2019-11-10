@@ -1,6 +1,6 @@
 #ifndef HTTP_H
 #define HTTP_H
-enum httpErrors {
+enum {
 	HTTP_ERR_OK,
 
 	HTTP_ERROR_CONNECTION_FAILED,
@@ -12,7 +12,7 @@ enum httpErrors {
 	HTTP_ERR_TOO_BIG_BODY,
 	HTTP_ERR_BODY_RECV_FAIL,
 };
-enum httpHeaderType {
+enum {
 	HDRT_INVALID,
 	HDRT_STR,
 	HDRT_INT,

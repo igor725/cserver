@@ -1,6 +1,6 @@
 #ifndef LOG_H
 #define LOG_H
-enum LogFlags {
+enum {
 	LOG_ERROR = 1,
 	LOG_INFO = 2,
 	LOG_CHAT = 4,

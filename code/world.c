@@ -151,7 +151,7 @@ Color3* World_GetEnvColor(World world, cs_uint8 type) {
 
 void World_UpdateClients(World world) {
 	Clients_UpdateWorldInfo(world);
-	world->info->modval = 0;
+	world->info->modval = MV_NONE;
 }
 
 Weather World_GetWeather(World world) {

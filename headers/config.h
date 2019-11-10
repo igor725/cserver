@@ -1,6 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
-enum cfgTypes {
+enum {
 	CFG_INVTYPE,
 	CFG_BOOL,
 	CFG_INT32,

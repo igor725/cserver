@@ -12,7 +12,7 @@
 #define WORLD_PROPS_COUNT 10
 #define WORLD_COLORS_COUNT 5
 
-enum ColorTypes {
+enum {
 	COLOR_SKY,
 	COLOR_CLOUD,
 	COLOR_FOG,
@@ -20,7 +20,7 @@ enum ColorTypes {
 	COLOR_DIFFUSE
 };
 
-enum MapEnvProps {
+enum {
 	PROP_SIDEBLOCK,
 	PROP_EDGEBLOCK,
 	PROP_EDGELEVEL,
@@ -33,13 +33,13 @@ enum MapEnvProps {
 	PROP_SIDEOFFSET
 };
 
-enum WeatherTypes {
+enum {
 	WEATHER_SUN,
 	WEATHER_RAIN,
 	WEATHER_SNOW
 };
 
-enum WorldDataType {
+enum {
 	DT_DIM,
 	DT_SV,
 	DT_SA,
@@ -50,14 +50,15 @@ enum WorldDataType {
 	DT_END = 0xFF
 };
 
-enum ModifiedValues {
-	MV_COLORS = 1,
-	MV_PROPS = 2,
-	MV_TEXPACK = 4,
-	MV_WEATHER = 8
+enum {
+	MV_NONE = 0,
+	MV_COLORS = (1 << 0),
+	MV_PROPS = (1 << 1),
+	MV_TEXPACK = (1 << 2),
+	MV_WEATHER = (1 << 3)
 };
 
-enum WorldProcesses {
+enum {
 	WP_NOPROC,
 	WP_SAVING,
 	WP_LOADING,

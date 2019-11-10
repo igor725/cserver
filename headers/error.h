@@ -1,7 +1,7 @@
 #ifndef ERROR_H
 #define ERROR_H
 #include "platform.h"
-enum ErrorTypes {
+enum {
 	ET_NOERR = -1,
 	ET_SERVER,
 	ET_ZLIB,
@@ -9,7 +9,7 @@ enum ErrorTypes {
 	ET_STR
 };
 
-enum ErrorCodes {
+enum {
 	EC_OK,
 	EC_MAGIC,
 	EC_FILECORR,

@@ -7,11 +7,6 @@ if(SurvData_Get(caller)->godMode) { \
 
 cs_uint16 SurvData_AssocType;
 
-enum survActions {
-	SURV_ACT_NONE,
-	SURV_ACT_BREAK
-};
-
 typedef struct survivalData {
 	Client client;
 	cs_uint16 inventory[256];

@@ -1,6 +1,6 @@
 #ifndef BLOCK_H
 #define BLOCK_H
-enum Blocks {
+enum {
 	BLOCK_AIR = 0,
 	BLOCK_STONE = 1,
 	BLOCK_GRASS = 2,
@@ -53,20 +53,20 @@ enum Blocks {
 	BLOCK_OBSIDIAN = 49,
 };
 
-enum BlockDefFlags {
+enum {
 	BDF_EXTENDED = 1,
 	BDF_DYNALLOCED = 2,
 	BDF_UPDATED = 4,
 	BDF_UNDEFINED = 8
 };
 
-enum BlockDefSolidity {
+enum {
 	BDSOL_WALK,
 	BDSOL_SWIM,
 	BDSOL_SOLID
 };
 
-enum BlockDefSound {
+enum {
 	BDSND_SILENT,
 	BDSND_WOOD,
 	BDSND_GRAVEL,
@@ -79,7 +79,7 @@ enum BlockDefSound {
 	BDSND_SNOW
 };
 
-enum BlockDefDraw {
+enum {
 	BDDRW_OPAQUE,
 	BDDRW_TRANSPARENT,
 	BDDRW_TRANSPARENT2,

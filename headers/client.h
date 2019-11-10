@@ -5,7 +5,7 @@
 #include "world.h"
 #include "websocket.h"
 
-enum messageTypes {
+enum {
 	MT_CHAT, // Сообщение в чате
 	MT_STATUS1, // Правый верхний угол
 	MT_STATUS2,
@@ -16,7 +16,7 @@ enum messageTypes {
 	MT_ANNOUNCE = 100 // Сообщение в середине экрана
 };
 
-enum playerStates {
+enum {
 	STATE_INITIAL, // Игрок только подключился
 	STATE_MOTD, // Игрок получает карту
 	STATE_WLOADDONE, // Карта была успешно получена
@@ -24,7 +24,7 @@ enum playerStates {
 	STATE_INGAME // Игрок находится в игре
 };
 
-enum playerCPEUpdate {
+enum {
 	PCU_NONE = 0,
 	PCU_GROUP = 2,
 	PCU_MODEL = 4,

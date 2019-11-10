@@ -3,7 +3,7 @@
 typedef void(*evtVoidCallback)(void* param);
 typedef cs_bool(*evtBoolCallback)(void* param);
 
-enum eventType {
+enum {
 	EVT_POSTSTART,
 	EVT_ONTICK,
 	EVT_ONSTOP,
@@ -22,7 +22,7 @@ enum eventType {
 	EVT_ONCOLOR
 };
 
-enum eventReturn {
+enum {
 	EVT_RTVOID,
 	EVT_RTBOOL
 };

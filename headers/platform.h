@@ -36,7 +36,7 @@ typedef struct _Waitable {
 typedef cs_int32 Socket;
 #endif
 
-enum IterStates {
+enum {
 	ITER_INITIAL,
 	ITER_READY,
 	ITER_DONE,

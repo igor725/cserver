@@ -1,6 +1,6 @@
 #ifndef WEBSOCKET_H
 #define WEBSOCKET_H
-enum wState {
+enum {
 	WS_ST_HDR,
 	WS_ST_PLEN,
 	WS_ST_MASK,
@@ -8,7 +8,7 @@ enum wState {
 	WS_ST_DONE
 };
 
-enum wErrors {
+enum {
 	WS_ERR_SUCC,
 	WS_ERR_UNKNOWN,
 	WS_ERR_MASK,
