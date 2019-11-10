@@ -29,8 +29,6 @@
 ** в структуру для дальнейшего взаимодействия с ними
 ** более удобного способа я не придумал.
 */
-static cs_bool enabled = false;
-
 static void onmesgfunc(void* param) {
   if(enabled)
     *((onMessage)param)->type = MT_ANNOUNCE;
@@ -90,6 +88,10 @@ static cs_bool CHandler_ClientOnly(const char* args, Client caller, char* out) {
 }
 
 /*
+** Дополнительная информация об
+** энумах, используемых при объявлении
+** структур sBlockDef может быть найдена
+** в файле block.h.
 */
 
 static sBlockDef myBlock = {
@@ -129,10 +131,11 @@ cs_int32 Plugin_ApiVer = PLUGIN_API_NUM; // Текущая версия API пл
 
 cs_bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
   Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.
-  Command_Register("plugtest", CHandler_Plugtest);
+  Command_Register("plugtest", CHandler_Plugtest); // Регистрация обработчика команд.
   Command_Register("atoggle", CHandler_Atoggle);
 	Command_Register("selfdestroy", CHandler_SelfDestroy);
 	Command_Register("clonly", CHandler_ClientOnly);
+	// Любая Log-функция принимает vararg'и и работает также, как и printf.
   Log_Info("Test plugin loaded"); // Отправка в консоль INFO сообщения.
   Log_Debug("It's a debug message");
   Log_Warn("It's a warning message");
@@ -158,6 +161,7 @@ cs_bool Plugin_Load(void) { // Основная функция, вызывает
 	*/
 	Block_Define(&myBlock);
 	Block_Define(&myExtendedBlock);
+
 	/*
 	** Структура sBlockDef также может
 	** находиться в динамической памяти, для этого
@@ -174,6 +178,7 @@ cs_bool Plugin_Load(void) { // Основная функция, вызывает
 	*/
 	myDynBlock = Block_New(BLOCK_ID_DYN, "My dynamically allocated block", 0);
 	Block_Define(myDynBlock);
+
 	/*
 	** Эта функция должна вызываться как после изменений
 	** в структурах уже зарегистрированных блоков, так и
@@ -197,6 +202,15 @@ cs_bool Plugin_Load(void) { // Основная функция, вызывает
 }
 
 cs_bool Plugin_Unload(void) {
+	/*
+	** Вызов Unregister функций внутри
+	** функции плагина Unload обязателен,
+	** так как он говорит серверу, чтобы тот
+	** не ссылался больше на эти участки памяти,
+	** ибо в скором времени они станут недоступны
+	** и обращение к ним приведёт к падению, а нам
+	** оно не нужно.
+	*/
 	Event_Unregister(EVT_ONMESSAGE, (cs_uintptr)onmesgfunc);
 	Command_Unregister("plugtest");
 	Command_Unregister("atoggle");
@@ -214,12 +228,15 @@ cs_bool Plugin_Unload(void) {
 	Block_Undefine(BLOCK_ID);
 	Block_Undefine(BLOCK_ID_EXT);
 	Block_Undefine(BLOCK_ID_DYN);
+
 	/*
 	** Здесь вызов Block_UpdateDefinitions нужен, чтобы
 	** разослать игрокам пакет RemoveBlockDefinition,
 	** убрать блок из массива, а также чтобы высвободить
 	** место, выделенное под поле "name" и саму структуру,
 	** если в ней установлен флаг BDF_DYNALLOCED.
+	** Этот вызов внутри функции Unload играет важную роль,
+	** сравнимую с Command_Unregister и Event_Unregister.
 	*/
 	Block_UpdateDefinitions();
 
