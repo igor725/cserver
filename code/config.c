@@ -91,11 +91,11 @@ const char* Config_TypeName(cs_int32 type) {
 		case CFG_STR:
 			return "string";
 		case CFG_INT32:
-			return "integer";
+			return "int32";
 		case CFG_INT16:
-			return "short";
+			return "int16";
 		case CFG_INT8:
-			return "byte";
+			return "int8";
 		case CFG_BOOL:
 			return "boolean";
 		default:
