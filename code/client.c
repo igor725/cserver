@@ -273,7 +273,7 @@ cs_bool Client_Despawn(Client client) {
 	PlayerData pd = client->playerData;
 	if(!pd || !pd->spawned) return false;
 	pd->spawned = false;
-	Packet_WriteDespawn(Broadcast, client);
+	Vanilla_WriteDespawn(Broadcast, client);
 	Event_Call(EVT_ONDESPAWN, (void*)client);
 	return true;
 }
@@ -294,7 +294,7 @@ static TRET wSendThread(TARG param) {
 		return 0;
 	}
 
-	Packet_WriteLvlInit(client);
+	Vanilla_WriteLvlInit(client);
 	Mutex_Lock(client->mutex);
 	cs_uint8* data = (cs_uint8*)client->wrbuf;
 	cs_uint8* worldData = world->data;
@@ -362,7 +362,7 @@ static TRET wSendThread(TARG param) {
 					Client_DefineBlock(client, bdef);
 			}
 		}
-		Packet_WriteLvlFin(client, &world->info->dimensions);
+		Vanilla_WriteLvlFin(client, &world->info->dimensions);
 		Client_Spawn(client);
 	} else
 		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
@@ -446,7 +446,7 @@ static cs_uint32 copyMessagePart(const char* message, char* part, cs_uint32 i, c
 
 cs_bool Client_MakeSelection(Client client, cs_uint8 id, SVec* start, SVec* end, Color4* color) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
-		CPEPacket_WriteMakeSelection(client, id, start, end, color);
+		CPE_WriteMakeSelection(client, id, start, end, color);
 		return true;
 	}
 	return false;
@@ -454,7 +454,7 @@ cs_bool Client_MakeSelection(Client client, cs_uint8 id, SVec* start, SVec* end,
 
 cs_bool Client_RemoveSelection(Client client, cs_uint8 id) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
-		CPEPacket_WriteRemoveSelection(client, id);
+		CPE_WriteRemoveSelection(client, id);
 		return true;
 	}
 	return false;
@@ -469,14 +469,14 @@ void Client_Chat(Client client, MessageType type, const char* message) {
 		for(cs_uint32 i = 0; i < parts; i++) {
 			cs_uint32 len = copyMessagePart(message, part, i, &color);
 			if(len > 0) {
-				Packet_WriteChat(client, type, part);
+				Vanilla_WriteChat(client, type, part);
 				message += len;
 			}
 		}
 		return;
 	}
 
-	Packet_WriteChat(client, type, message);
+	Vanilla_WriteChat(client, type, message);
 }
 
 static void HandlePacket(Client client, char* data, Packet packet, cs_bool extended) {
@@ -611,13 +611,13 @@ cs_bool Client_CheckAuth(Client client) {
 
 cs_bool Client_SetBlock(Client client, SVec* pos, BlockID id) {
 	if(client->playerData->state != STATE_INGAME) return false;
-	Packet_WriteSetBlock(client, pos, id);
+	Vanilla_WriteSetBlock(client, pos, id);
 	return true;
 }
 
 cs_bool Client_SetEnvProperty(Client client, cs_uint8 property, cs_int32 value) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
-		CPEPacket_WriteMapProperty(client, property, value);
+		CPE_WriteMapProperty(client, property, value);
 		return true;
 	}
 	return false;
@@ -625,7 +625,7 @@ cs_bool Client_SetEnvProperty(Client client, cs_uint8 property, cs_int32 value) 
 
 cs_bool Client_SetEnvColor(Client client, cs_uint8 type, Color3* color) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
-		CPEPacket_WriteEnvColor(client, type, color);
+		CPE_WriteEnvColor(client, type, color);
 		return true;
 	}
 	return false;
@@ -633,7 +633,7 @@ cs_bool Client_SetEnvColor(Client client, cs_uint8 type, Color3* color) {
 
 cs_bool Client_SetTexturePack(Client client, const char* url) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
-		CPEPacket_WriteTexturePack(client, url);
+		CPE_WriteTexturePack(client, url);
 		return true;
 	}
 	return false;
@@ -641,7 +641,7 @@ cs_bool Client_SetTexturePack(Client client, const char* url) {
 
 cs_bool Client_SetWeather(Client client, Weather type) {
 	if(Client_GetExtVer(client, EXT_WEATHER)) {
-		CPEPacket_WriteWeatherType(client, type);
+		CPE_WriteWeatherType(client, type);
 		return true;
 	}
 	return false;
@@ -651,7 +651,7 @@ cs_bool Client_SetInvOrder(Client client, Order order, BlockID block) {
 	if(!Block_IsValid(block)) return false;
 
 	if(Client_GetExtVer(client, EXT_INVORDER)) {
-		CPEPacket_WriteInventoryOrder(client, order, block);
+		CPE_WriteInventoryOrder(client, order, block);
 		return true;
 	}
 	return false;
@@ -660,7 +660,7 @@ cs_bool Client_SetInvOrder(Client client, Order order, BlockID block) {
 cs_bool Client_SetHeld(Client client, BlockID block, cs_bool canChange) {
 	if(!Block_IsValid(block)) return false;
 	if(Client_GetExtVer(client, EXT_HELDBLOCK)) {
-		CPEPacket_WriteHoldThis(client, block, canChange);
+		CPE_WriteHoldThis(client, block, canChange);
 		return true;
 	}
 	return false;
@@ -668,7 +668,7 @@ cs_bool Client_SetHeld(Client client, BlockID block, cs_bool canChange) {
 
 cs_bool Client_SetHotkey(Client client, const char* action, cs_int32 keycode, cs_int8 keymod) {
 	if(Client_GetExtVer(client, EXT_TEXTHOTKEY)) {
-		CPEPacket_WriteSetHotKey(client, action, keycode, keymod);
+		CPE_WriteSetHotKey(client, action, keycode, keymod);
 		return true;
 	}
 	return false;
@@ -677,7 +677,7 @@ cs_bool Client_SetHotkey(Client client, const char* action, cs_int32 keycode, cs
 cs_bool Client_SetHotbar(Client client, Order pos, BlockID block) {
 	if(!Block_IsValid(block) || pos > 8) return false;
 	if(Client_GetExtVer(client, EXT_SETHOTBAR)) {
-		CPEPacket_WriteSetHotBar(client, pos, block);
+		CPE_WriteSetHotBar(client, pos, block);
 		return true;
 	}
 	return false;
@@ -686,7 +686,7 @@ cs_bool Client_SetHotbar(Client client, Order pos, BlockID block) {
 cs_bool Client_SetBlockPerm(Client client, BlockID block, cs_bool allowPlace, cs_bool allowDestroy) {
 	if(!Block_IsValid(block)) return false;
 	if(Client_GetExtVer(client, EXT_BLOCKPERM)) {
-		CPEPacket_WriteBlockPerm(client, block, allowPlace, allowDestroy);
+		CPE_WriteBlockPerm(client, block, allowPlace, allowDestroy);
 		return true;
 	}
 	return false;
@@ -736,7 +736,7 @@ cs_bool Client_SetGroup(Client client, cs_int16 gid) {
 
 cs_bool Client_SendHacks(Client client) {
 	if(Client_GetExtVer(client, EXT_HACKCTRL)) {
-		CPEPacket_WriteHackControl(client, client->cpeData->hacks);
+		CPE_WriteHackControl(client, client->cpeData->hacks);
 		return true;
 	}
 	return false;
@@ -746,12 +746,12 @@ cs_bool Client_DefineBlock(Client client, BlockDef block) {
 	if(block->flags & BDF_UNDEFINED) return false;
 	if(block->flags & BDF_EXTENDED) {
 		if(Client_GetExtVer(client, EXT_BLOCKDEF2)) {
-			CPEPacket_WriteDefineExBlock(client, block);
+			CPE_WriteDefineExBlock(client, block);
 			return true;
 		}
 	} else {
 		if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
-			CPEPacket_WriteDefineBlock(client, block);
+			CPE_WriteDefineBlock(client, block);
 			return true;
 		}
 	}
@@ -761,7 +761,7 @@ cs_bool Client_DefineBlock(Client client, BlockDef block) {
 
 cs_bool Client_UndefineBlock(Client client, BlockID id) {
 	if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
-		CPEPacket_WriteUndefineBlock(client, id);
+		CPE_WriteUndefineBlock(client, id);
 		return true;
 	}
 	return false;
@@ -778,14 +778,14 @@ cs_bool Client_Update(Client client) {
 		Client other = Clients_List[id];
 		if(other) {
 			if(updates & PCU_GROUP)
-				CPEPacket_WriteAddName(other, client);
+				CPE_WriteAddName(other, client);
 			if(updates & PCU_MODEL)
-				CPEPacket_WriteSetModel(other, client);
+				CPE_WriteSetModel(other, client);
 			if(updates & PCU_SKIN)
-				CPEPacket_WriteAddEntity2(other, client);
+				CPE_WriteAddEntity2(other, client);
 			if(updates & PCU_ENTPROP)
 				for(cs_int8 i = 0; i < 3; i++) {
-					CPEPacket_WriteSetEntityProperty(other, client, i, cpd->rotation[i]);
+					CPE_WriteSetEntityProperty(other, client, i, cpd->rotation[i]);
 				}
 		}
 	}
@@ -881,9 +881,9 @@ static void SendSpawnPacket(Client client, Client other) {
 	cs_int32 extlist_ver = Client_GetExtVer(client, EXT_PLAYERLIST);
 
 	if(extlist_ver == 2) {
-		CPEPacket_WriteAddEntity2(client, other);
+		CPE_WriteAddEntity2(client, other);
 	} else { // TODO: ExtPlayerList ver. 1 support
-		Packet_WriteSpawn(client, other);
+		Vanilla_WriteSpawn(client, other);
 	}
 }
 
@@ -899,22 +899,22 @@ cs_bool Client_Spawn(Client client) {
 
 		if(pd->firstSpawn) {
 			if(Client_GetExtVer(other, EXT_PLAYERLIST))
-				CPEPacket_WriteAddName(other, client);
+				CPE_WriteAddName(other, client);
 			if(Client_GetExtVer(client, EXT_PLAYERLIST) && client != other)
-				CPEPacket_WriteAddName(client, other);
+				CPE_WriteAddName(client, other);
 		}
 
 		if(Client_IsInSameWorld(client, other)) {
 			SendSpawnPacket(other, client);
 
 			if(Client_GetExtVer(other, EXT_CHANGEMODEL))
-				CPEPacket_WriteSetModel(other, client);
+				CPE_WriteSetModel(other, client);
 
 			if(client != other) {
 				SendSpawnPacket(client, other);
 
 				if(Client_GetExtVer(client, EXT_CHANGEMODEL))
-					CPEPacket_WriteSetModel(client, other);
+					CPE_WriteSetModel(client, other);
 			}
 		}
 	}
@@ -937,7 +937,7 @@ void Client_HandshakeStage2(Client client) {
 void Client_Kick(Client client, const char* reason) {
 	if(client->closed) return;
 	if(!reason) reason = Lang_Get(LANG_KICKNOREASON);
-	Packet_WriteKick(client, reason);
+	Vanilla_WriteKick(client, reason);
 	client->closed = true;
 
 	/*
@@ -955,7 +955,7 @@ void Client_Tick(Client client) {
 			for(int i = 0; i < MAX_CLIENTS; i++) {
 				Client other = Clients_List[i];
 				if(other && Client_GetExtVer(other, EXT_PLAYERLIST))
-					CPEPacket_WriteRemoveName(other, client);
+					CPE_WriteRemoveName(other, client);
 			}
 			Event_Call(EVT_ONDISCONNECT, (void*)client);
 			Log_Info(Lang_Get(LANG_SVPLDISCONN), Client_GetName(client));

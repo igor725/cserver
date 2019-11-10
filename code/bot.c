@@ -54,7 +54,7 @@ void Bot_UpdatePosition(Client bot) {
 	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
 		Client client = Clients_List[id];
 		if(client && Client_IsInSameWorld(client, bot))
-			Packet_WritePosAndOrient(client, bot);
+			Vanilla_WritePosAndOrient(client, bot);
 	}
 }
 
@@ -63,9 +63,9 @@ cs_bool Bot_SpawnFor(Client bot, Client client) {
 	cs_int32 extlist_ver = Client_GetExtVer(client, EXT_PLAYERLIST);
 
 	if(extlist_ver == 2) {
-		CPEPacket_WriteAddEntity2(client, bot);
+		CPE_WriteAddEntity2(client, bot);
 	} else {
-		Packet_WriteSpawn(client, bot);
+		Vanilla_WriteSpawn(client, bot);
 	}
 
 	return true;
@@ -92,7 +92,7 @@ cs_bool Bot_Despawn(Client bot) {
 	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
 		Client client = Clients_List[id];
 		if(client && Client_IsInSameWorld(client, bot))
-			Packet_WriteDespawn(client, bot);
+			Vanilla_WriteDespawn(client, bot);
 	}
 
 	return true;
