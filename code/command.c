@@ -67,6 +67,18 @@ static cs_bool CHandler_OP(const char* args, Client caller, char* out) {
 	Command_PrintUsage;
 }
 
+static cs_bool CHandler_Uptime(const char* args, Client caller, char* out) {
+	cs_uint64 msec, d, h, m, s, ms;
+	msec = Time_GetMSec() - Server_StartTime;
+	d = msec / 86400000;
+	h = (msec % 86400000) / 3600000;
+	m = (msec / 60000) % 60000;
+	s = (msec / 1000) % 60;
+	ms = msec % 1000;
+	String_FormatBuf(out, MAX_CMD_OUT, "Server uptime: %03d:%02d:%02d:%02d.%03d", d, h, m, s, ms);
+	return true;
+}
+
 static cs_bool CHandler_CFG(const char* args, Client caller, char* out) {
 	const char* cmdUsage = "/cfg <set/get/print> [key] [value]";
 	Command_OnlyForOP;
@@ -365,6 +377,7 @@ static cs_bool CHandler_SavWorld(const char* args, Client caller, char* out) {
 
 void Command_RegisterDefault(void) {
 	Command_Register("op", CHandler_OP);
+	Command_Register("uptime", CHandler_Uptime);
 	Command_Register("cfg", CHandler_CFG);
 	Command_Register("plugins", CHandler_Plugins);
 	Command_Register("stop", CHandler_Stop);
