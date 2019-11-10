@@ -56,7 +56,7 @@ World World_Create(const char* name) {
 
 cs_bool World_Add(World world) {
 	if(world->id == -1) {
-		for(cs_int32 i = 0; i < MAX_WORLDS; i++) {
+		for(WorldID i = 0; i < MAX_WORLDS; i++) {
 			if(!Worlds_List[i]) {
 				world->id = i;
 				Worlds_List[i] = world;
@@ -72,7 +72,7 @@ cs_bool World_Add(World world) {
 }
 
 World World_GetByName(const char* name) {
-	for(cs_int32 i = 0; i < MAX_WORLDS; i++) {
+	for(WorldID i = 0; i < MAX_WORLDS; i++) {
 		World world = Worlds_List[i];
 		if(world && String_CaselessCompare(world->name, name))
 			return world;
@@ -80,7 +80,7 @@ World World_GetByName(const char* name) {
 	return NULL;
 }
 
-World World_GetByID(cs_int32 id) {
+World World_GetByID(WorldID id) {
 	return id < MAX_WORLDS ? Worlds_List[id] : NULL;
 }
 

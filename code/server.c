@@ -156,7 +156,7 @@ void Server_InitialWork(void) {
 	Plugin_Start();
 
 	Directory_Ensure("worlds");
-	cs_int32 wIndex = 0;
+	WorldID wIndex = 0;
 	dirIter wIter;
 	if(Iter_Init(&wIter, "worlds", "cws")) {
 		do {

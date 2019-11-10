@@ -77,7 +77,7 @@ typedef struct worldInfo {
 } *WorldInfo;
 
 typedef struct world {
-	cs_int32 id;
+	WorldID id;
 	const char* name;
 	cs_uint32 size;
 	WorldInfo info;
@@ -114,7 +114,7 @@ API cs_int32 World_GetProperty(World world, cs_uint8 property);
 API Color3* World_GetEnvColor(World world, cs_uint8 type);
 API Weather World_GetWeather(World world);
 API World World_GetByName(const char* name);
-API World World_GetByID(cs_int32 id);
+API World World_GetByID(WorldID id);
 
 VAR World Worlds_List[MAX_WORLDS];
 #endif

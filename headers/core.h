@@ -64,7 +64,7 @@ typedef __UINT64_TYPE__ cs_uint64;
 typedef __UINTPTR_TYPE__ cs_uintptr;
 typedef __SIZE_TYPE__ cs_size;
 #else
-#  error Unknown OS
+#error Unknown OS
 #endif
 
 #define true  1
@@ -79,6 +79,7 @@ typedef cs_uint8 Order;
 typedef cs_uint8 BlockID;
 typedef cs_uint8 Weather;
 typedef cs_int8 ClientID;
+typedef cs_int16 WorldID;
 typedef cs_uint8 MessageType;
 // TODO: Придумать, как пернести это чудо в protocol.h
 typedef struct cpeExt {
@@ -107,8 +108,8 @@ EXP cs_int32 Plugin_ApiVer;
 #define MAX_CFG_LEN 128
 #define MAX_CLIENTS 127
 #define MAX_PACKETS 256
-#define MAX_WORLDS 127
-#define MAX_EVENTS 64
+#define MAX_WORLDS 256
+#define MAX_EVENTS 128
 #define EVENT_TYPES 16
 
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
