@@ -74,6 +74,15 @@ void Proto_WriteColor4(char** dataptr, const Color4* color) {
 	*dataptr = data;
 }
 
+void Proto_WriteByteColor4(char** dataptr, const Color4* color) {
+	char* data = *dataptr;
+	*(cs_int8*)data++ = (cs_int8)color->r;
+	*(cs_int8*)data++ = (cs_int8)color->g;
+	*(cs_int8*)data++ = (cs_int8)color->b;
+	*(cs_int8*)data++ = (cs_int8)color->a;
+	*dataptr = data;
+}
+
 cs_uint32 Proto_WriteClientPos(char* data, Client client, cs_bool extended) {
 	PlayerData pd = client->playerData;
 
@@ -239,7 +248,7 @@ static const struct extReg serverExtensions[] = {
 	{"BlockDefinitions", 1},
 	{"BlockDefinitionsExt", 2},
 	// BulkBlockUpdate
-	// TextColors
+	{"TextColors", 1},
 	{"EnvMapAspect", 1},
 	{"EntityProperty", 1},
 	{"ExtEntityPositions", 1},
@@ -808,7 +817,15 @@ void CPE_WriteDefineExBlock(Client client, BlockDef block) {
 
 // 0x25 - ExtBlockDefinition
 // 0x26 - BulkBlockUpdate
-// 0x27 - SetTextColor
+void CPE_WriteSetTextColor(Client client, Color4* color, char code) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x27;
+	Proto_WriteByteColor4(&data, color);
+	*data = code;
+
+	PacketWriter_End(client, 6);
+}
 
 void CPE_WriteTexturePack(Client client, const char* url) {
 	PacketWriter_Start(client);

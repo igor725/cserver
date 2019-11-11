@@ -151,6 +151,7 @@ API cs_bool Client_SetInvOrder(Client client, Order order, BlockID block);
 API cs_bool Client_SetEnvProperty(Client client, cs_uint8 property, cs_int32 value);
 API cs_bool Client_SetEnvColor(Client client, cs_uint8 type, Color3* color);
 API cs_bool Client_SetTexturePack(Client client, const char* url);
+API cs_bool Client_AddTextColor(Client client, Color4* color, char code);
 API cs_bool Client_SetBlock(Client client, SVec* pos, BlockID id);
 API cs_bool Client_SetModel(Client client, cs_int16 model);
 API cs_bool Client_SetModelStr(Client client, const char* model);

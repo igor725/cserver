@@ -558,7 +558,7 @@ static void PacketReceiverRaw(Client client) {
 	cs_uint16 packetSize;
 	cs_uint8 packetId;
 
-	if(Socket_Receive(client->sock, (char*)&packetId, 1, MSG_WAITALL) == 1) {
+	if(Socket_Receive(client->sock, (char*)&packetId, 1, 0) == 1) {
 		packet = Packet_Get(packetId);
 		if(!packet) {
 			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
@@ -568,7 +568,7 @@ static void PacketReceiverRaw(Client client) {
 		packetSize = GetPacketSizeFor(packet, client, &extended);
 
 		if(packetSize > 0) {
-			cs_int32 len = Socket_Receive(client->sock, client->rdbuf, packetSize, MSG_WAITALL);
+			cs_int32 len = Socket_Receive(client->sock, client->rdbuf, packetSize, 0);
 
 			if(packetSize == len)
 				HandlePacket(client, client->rdbuf, packet, extended);
@@ -762,6 +762,14 @@ cs_bool Client_DefineBlock(Client client, BlockDef block) {
 cs_bool Client_UndefineBlock(Client client, BlockID id) {
 	if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
 		CPE_WriteUndefineBlock(client, id);
+		return true;
+	}
+	return false;
+}
+
+cs_bool Client_AddTextColor(Client client, Color4* color, char code) {
+	if(Client_GetExtVer(client, EXT_TEXTCOLORS)) {
+		CPE_WriteSetTextColor(client, color, code);
 		return true;
 	}
 	return false;

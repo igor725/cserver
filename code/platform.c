@@ -104,11 +104,10 @@ cs_bool File_Close(FILE* fp) {
 cs_bool Socket_Init(void) {
 #if defined(WINDOWS)
 	WSADATA ws;
-	if(WSAStartup(MAKEWORD(1, 1), &ws) == SOCKET_ERROR) {
-		return false;
-	}
-#endif
+	return WSAStartup(MAKEWORD(1, 1), &ws) != SOCKET_ERROR;
+#else
 	return true;
+#endif
 }
 
 cs_int32 Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, cs_uint16 port) {
@@ -171,10 +170,9 @@ Socket Socket_Accept(Socket sock, struct sockaddr_in* addr) {
 	return accept(sock, (struct sockaddr*)addr, &len);
 }
 
-#if defined(WINDOWS)
-static cs_int32 defaultFlags = 0;
-#elif defined(POSIX)
-static cs_int32 defaultFlags = MSG_NOSIGNAL;
+static cs_int32 defaultFlags = MSG_WAITALL;
+#if defined(POSIX)
+defaultFlags |= MSG_NOSIGNAL;
 #endif
 
 cs_int32 Socket_Receive(Socket sock, char* buf, cs_int32 len, cs_int32 flags) {
@@ -186,7 +184,7 @@ cs_int32 Socket_ReceiveLine(Socket sock, char* line, cs_int32 len) {
 	char sym;
 
 	while(len > 1) {
-		if(Socket_Receive(sock, &sym, 1, MSG_WAITALL) == 1) {
+		if(Socket_Receive(sock, &sym, 1, 0) == 1) {
 			if(sym == '\n') {
 				*line++ = '\0';
 				break;

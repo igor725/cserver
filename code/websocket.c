@@ -89,7 +89,7 @@ cs_bool WsClient_ReceiveFrame(WsClient ws) {
 		ws->state = WS_ST_HDR;
 
 	if(ws->state == WS_ST_HDR) {
-		cs_uint32 len = Socket_Receive(ws->sock, ws->header, 2, MSG_WAITALL);
+		cs_uint32 len = Socket_Receive(ws->sock, ws->header, 2, 0);
 
 		if(len == 2) {
 			char plen = ws->header[1] & 0x7F;
@@ -115,7 +115,7 @@ cs_bool WsClient_ReceiveFrame(WsClient ws) {
 	}
 
 	if(ws->state == WS_ST_PLEN) {
-		cs_uint32 len = Socket_Receive(ws->sock, (char*)&ws->plen, 2, MSG_WAITALL);
+		cs_uint32 len = Socket_Receive(ws->sock, (char*)&ws->plen, 2, 0);
 
 		if(len == 2) {
 			ws->plen = ntohs(ws->plen);
@@ -128,13 +128,13 @@ cs_bool WsClient_ReceiveFrame(WsClient ws) {
 	}
 
 	if(ws->state == WS_ST_MASK) {
-		if(Socket_Receive(ws->sock, ws->mask, 4, MSG_WAITALL) == 4)
+		if(Socket_Receive(ws->sock, ws->mask, 4, 0) == 4)
 			ws->state = WS_ST_RECVPL;
 	}
 
 	if(ws->state == WS_ST_RECVPL) {
 		if(ws->plen > 0) {
-			cs_uint32 len = Socket_Receive(ws->sock, ws->recvbuf, ws->plen, MSG_WAITALL);
+			cs_uint32 len = Socket_Receive(ws->sock, ws->recvbuf, ws->plen, 0);
 
 			if(len == ws->plen) {
 				for(cs_uint32 i = 0; i < len; i++) {

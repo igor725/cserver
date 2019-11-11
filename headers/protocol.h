@@ -40,7 +40,7 @@ return;
 #define EXT_BLOCKDEF 0xC6BAA7Bul
 #define EXT_BLOCKDEF2 0xEFB2BBECul
 #define EXT_BULKUPDATE 0x29509B8Ful
-#define EXT_EXTCLRS 0x56C393B8ul
+#define EXT_TEXTCOLORS 0x56C393B8ul
 #define EXT_MAPASPECT 0xB3F9BDF0ul
 #define EXT_ENTPROP 0x5865D50Eul
 #define EXT_ENTPOS 0x37D3033Ful
@@ -83,6 +83,7 @@ API void Proto_WriteSVec(char** dataptr, const SVec* vec);
 API void Proto_WriteAng(char** dataptr, const Ang* ang);
 API void Proto_WriteColor3(char** dataptr, const Color3* color);
 API void Proto_WriteColor4(char** dataptr, const Color4* color);
+API void Proto_WriteByteColor4(char** dataptr, const Color4* color);
 API cs_uint32 Proto_WriteClientPos(char* data, Client client, cs_bool extended);
 
 void Packet_RegisterDefault(void);
@@ -138,6 +139,7 @@ void CPE_WriteHackControl(Client client, Hacks hacks);
 void CPE_WriteDefineBlock(Client client, BlockDef block);
 void CPE_WriteUndefineBlock(Client client, BlockID id);
 void CPE_WriteDefineExBlock(Client client, BlockDef block);
+void CPE_WriteSetTextColor(Client client, Color4* color, char code);
 void CPE_WriteSetHotBar(Client client, Order order, BlockID block);
 void CPE_WriteWeatherType(Client client, Weather type);
 void CPE_WriteTexturePack(Client client, const char* url);
