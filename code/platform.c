@@ -169,13 +169,14 @@ Socket Socket_Accept(Socket sock, struct sockaddr_in* addr) {
 	return accept(sock, (struct sockaddr*)addr, &len);
 }
 
-static cs_int32 defaultFlags = MSG_WAITALL;
-#if defined(POSIX)
-defaultFlags |= MSG_NOSIGNAL;
+#if defined(WINDOWS)
+#define SOCK_DFLAGS MSG_WAITALL
+#elif defined(POSIX)
+#define SOCK_DFLAGS MSG_WAITALL | MSG_NOSIGNAL
 #endif
 
 cs_int32 Socket_Receive(Socket sock, char* buf, cs_int32 len, cs_int32 flags) {
-	return recv(sock, buf, len, defaultFlags | flags);
+	return recv(sock, buf, len, SOCK_DFLAGS | flags);
 }
 
 cs_int32 Socket_ReceiveLine(Socket sock, char* line, cs_int32 len) {
