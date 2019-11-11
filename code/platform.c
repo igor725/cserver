@@ -127,7 +127,6 @@ cs_bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, cs_uint16
 
 		char strport[6];
 		String_FormatBuf(strport, 6, "%d", port);
-
 		if((ret = getaddrinfo(host, strport, &hints, &addr)) == 0) {
 			struct sockaddr_in* new_ssa = (struct sockaddr_in*)addr->ai_addr;
 			*ssa = *new_ssa;

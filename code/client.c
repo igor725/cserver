@@ -507,78 +507,6 @@ static cs_uint16 GetPacketSizeFor(Packet packet, Client client, cs_bool* extende
 	return packetSize;
 }
 
-static void PacketReceiverWs(Client client) {
-	Packet packet;
-	cs_bool extended;
-	cs_uint16 packetSize, recvSize;
-	WsClient ws = client->websock;
-	char* data = client->rdbuf;
-
-	if(WsClient_ReceiveFrame(ws)) {
-		if(ws->opcode == 0x08) {
-			client->closed = true;
-			return;
-		}
-
-		recvSize = ws->plen - 1;
-		handlePacket:
-		packet = Packet_Get(*data++);
-		if(!packet) {
-			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
-			return;
-		}
-
-		packetSize = GetPacketSizeFor(packet, client, &extended);
-
-		if(packetSize <= recvSize) {
-			HandlePacket(client, data, packet, extended);
-			/*
-			** Каждую ~секунду к фрейму с пакетом 0x08 (Teleport)
-			** приклеивается пакет 0x2B (TwoWayPing) и поскольку
-			** не исключено, что таких приклеиваний может быть
-			** много, пришлось использовать goto для обработки
-			** всех пакетов, входящих в фрейм.
-			*/
-			if(recvSize > packetSize) {
-				data += packetSize;
-				recvSize -= packetSize + 1;
-				goto handlePacket;
-			}
-
-			return;
-		} else
-			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
-	} else
-		client->closed = true;
-}
-
-static void PacketReceiverRaw(Client client) {
-	Packet packet;
-	cs_bool extended;
-	cs_uint16 packetSize;
-	cs_uint8 packetId;
-
-	if(Socket_Receive(client->sock, (char*)&packetId, 1, 0) == 1) {
-		packet = Packet_Get(packetId);
-		if(!packet) {
-			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
-			return;
-		}
-
-		packetSize = GetPacketSizeFor(packet, client, &extended);
-
-		if(packetSize > 0) {
-			cs_int32 len = Socket_Receive(client->sock, client->rdbuf, packetSize, 0);
-
-			if(packetSize == len)
-				HandlePacket(client, client->rdbuf, packet, extended);
-			else
-				client->closed = true;
-		}
-	} else
-		client->closed = true;
-}
-
 void Client_Init(void) {
 	Broadcast = Memory_Alloc(1, sizeof(struct _Client));
 	Broadcast->wrbuf = Memory_Alloc(2048, 1);
@@ -867,19 +795,91 @@ cs_int32 Client_Send(Client client, cs_int32 len) {
 	return Socket_Send(client->sock, client->wrbuf, len);
 }
 
+static void PacketReceiverWs(Client client) {
+	Packet packet;
+	cs_bool extended;
+	cs_uint16 packetSize, recvSize;
+	WsClient ws = client->websock;
+	char* data = client->rdbuf;
+
+	if(WsClient_ReceiveFrame(ws)) {
+		if(ws->opcode == 0x08) {
+			client->closed = true;
+			return;
+		}
+
+		recvSize = ws->plen - 1;
+		handlePacket:
+		packet = Packet_Get(*data++);
+		if(!packet) {
+			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
+			return;
+		}
+
+		packetSize = GetPacketSizeFor(packet, client, &extended);
+
+		if(packetSize <= recvSize) {
+			HandlePacket(client, data, packet, extended);
+			/*
+			** Каждую ~секунду к фрейму с пакетом 0x08 (Teleport)
+			** приклеивается пакет 0x2B (TwoWayPing) и поскольку
+			** не исключено, что таких приклеиваний может быть
+			** много, пришлось использовать goto для обработки
+			** всех пакетов, входящих в фрейм.
+			*/
+			if(recvSize > packetSize) {
+				data += packetSize;
+				recvSize -= packetSize + 1;
+				goto handlePacket;
+			}
+
+			return;
+		} else
+			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
+	} else
+		client->closed = true;
+}
+
+static void PacketReceiverRaw(Client client) {
+	Packet packet;
+	cs_bool extended;
+	cs_uint16 packetSize;
+	cs_uint8 packetId;
+
+	if(Socket_Receive(client->sock, (char*)&packetId, 1, 0) == 1) {
+		packet = Packet_Get(packetId);
+		if(!packet) {
+			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
+			return;
+		}
+
+		packetSize = GetPacketSizeFor(packet, client, &extended);
+
+		if(packetSize > 0) {
+			cs_int32 len = Socket_Receive(client->sock, client->rdbuf, packetSize, 0);
+
+			if(packetSize == len)
+				HandlePacket(client, client->rdbuf, packet, extended);
+			else
+				client->closed = true;
+		}
+	} else
+		client->closed = true;
+}
+
 static TRET ClientThreadProc(TARG param) {
 	Client client = param;
 
 	while(!client->closed) {
-		if(client->thread[1]) {
-			Thread_Join(client->thread[1]);
-			client->thread[1] = NULL;
-		}
-
 		if(client->websock)
 			PacketReceiverWs(client);
 		else
 			PacketReceiverRaw(client);
+
+		if(client->thread[1]) {
+			Thread_Join(client->thread[1]);
+			client->thread[1] = NULL;
+		}
 	}
 
 	return 0;
