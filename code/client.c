@@ -638,11 +638,11 @@ cs_bool Client_SetSkin(Client client, const char* skin) {
 	return true;
 }
 
-cs_bool Client_SetRotation(Client client, cs_uint8 type, cs_int32 value) {
-	if(type > 2) return false;
+cs_bool Client_SetRotation(Client client, cs_uint8 axis, cs_int32 value) {
+	if(axis > 2) return false;
 	CPEData cpd = client->cpeData;
 	if(!cpd) return false;
-	cpd->rotation[type] = value;
+	cpd->rotation[axis] = value;
 	cpd->updates |= PCU_ENTPROP;
 	return true;
 }

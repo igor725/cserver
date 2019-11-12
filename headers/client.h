@@ -25,11 +25,17 @@ enum {
 };
 
 enum {
-	PCU_NONE = 0,
-	PCU_GROUP = 2,
-	PCU_MODEL = 4,
-	PCU_SKIN = 8,
-	PCU_ENTPROP = 16
+	PCU_NONE = 0, // Ни одно из CPE-значений игрока не изменилось
+	PCU_GROUP = 2, // Была обновлена группа игрока
+	PCU_MODEL = 4, // Была изменена модель игрока
+	PCU_SKIN = 8, // Был изменён скин игрока
+	PCU_ENTPROP = 16 // Модель игрока была повёрнута
+};
+
+enum {
+	ROT_X = 0, // Вращение модели по оси X
+	ROT_Y = 1,
+	ROT_Z = 2,
 };
 
 typedef struct _AssocType {
@@ -160,7 +166,7 @@ API cs_bool Client_SetHeld(Client client, BlockID block, cs_bool canChange);
 API cs_bool Client_SetHotkey(Client client, const char* action, cs_int32 keycode, cs_int8 keymod);
 API cs_bool Client_SetHotbar(Client client, Order pos, BlockID block);
 API cs_bool Client_SetSkin(Client client, const char* skin);
-API cs_bool Client_SetRotation(Client client, cs_uint8 type, cs_int32 value);
+API cs_bool Client_SetRotation(Client client, cs_uint8 axis, cs_int32 value);
 API cs_bool Client_SetGroup(Client client, cs_int16 gid);
 
 API const char* Client_GetName(Client client);
