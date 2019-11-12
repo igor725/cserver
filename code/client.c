@@ -313,8 +313,7 @@ static TRET wSendThread(TARG param) {
 	if(Client_GetExtVer(client, EXT_FASTMAP)) {
 		windBits = -15;
 		worldData += 4;
-		worldSize -= 4;
-	}
+	} else worldSize += 4;
 
 	if((ret = deflateInit2(
 		&stream,

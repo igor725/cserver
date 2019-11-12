@@ -86,7 +86,7 @@ World World_GetByID(WorldID id) {
 
 void World_SetDimensions(World world, const SVec* dims) {
 	world->info->dimensions = *dims;
-	world->size = 4 + dims->x * dims->y * dims->z;
+	world->size = dims->x * dims->y * dims->z;
 }
 
 cs_bool World_SetEnvProperty(World world, cs_uint8 property, cs_int32 value) {
@@ -160,7 +160,7 @@ Weather World_GetWeather(World world) {
 
 void World_AllocBlockArray(World world) {
 	BlockID* data = Memory_Alloc(world->size, sizeof(BlockID));
-	*(cs_uint32*)data = htonl(world->size - 4);
+	*(cs_uint32*)data = htonl(world->size);
 	world->data = data;
 	world->loaded = true;
 }
@@ -278,7 +278,7 @@ static TRET wSaveThread(TARG param) {
 		goto wsdone;
 	}
 
-	stream.avail_in = world->size;
+	stream.avail_in = world->size + 4;
 	stream.next_in = (cs_uint8*)world->data;
 
 	do {
@@ -403,17 +403,18 @@ void World_Unload(World world) {
 
 cs_uint32 World_GetOffset(World world, SVec* pos) {
 	WorldInfo wi = world->info;
-	SVec* dims = &wi->dimensions;
-	cs_uint16 dx = dims->x, dy = dims->y, dz = dims->z;
+	SVec* dim = &wi->dimensions;
 
-	if(pos->x > dx || pos->y > dy || pos->z > dz) return 0;
-	return pos->z * dz + pos->y * (dx * dy) + pos->x + 4;
+	if(dim->x < 0 || dim->y < 0 || dim->z < 0 ||
+	pos->x > dim->x || pos->y > dim->y || pos->z > dim->z)
+		return 0;
+	return pos->z * dim->z + pos->y * (dim->x * dim->y) + pos->x + 4;
 }
 
 cs_bool World_SetBlock(World world, SVec* pos, BlockID id) {
 	cs_uint32 offset = World_GetOffset(world, pos);
 
-	if(offset > 3 && offset < world->size) {
+	if(offset > 0) {
 		world->data[offset] = id;
 		world->modified = true;
 	} else
@@ -425,7 +426,7 @@ cs_bool World_SetBlock(World world, SVec* pos, BlockID id) {
 BlockID World_GetBlock(World world, SVec* pos) {
 	cs_uint32 offset = World_GetOffset(world, pos);
 
-	if(offset > 3 && offset < world->size)
+	if(offset > 0)
 		return world->data[offset];
 	else
 		return 0;

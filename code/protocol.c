@@ -295,7 +295,7 @@ void Vanilla_WriteHandshake(Client client, const char* name, const char* motd) {
 	*data++ = 0x07;
 	Proto_WriteString(&data, name);
 	Proto_WriteString(&data, motd);
-	*data = (char)client->playerData->isOP;
+	*data = 0x00;
 
 	PacketWriter_End(client, 131);
 }
@@ -305,7 +305,7 @@ void Vanilla_WriteLvlInit(Client client) {
 
 	*data++ = 0x02;
 	if(Client_GetExtVer(client, EXT_FASTMAP)) {
-		*(cs_uint32*)data = htonl(client->playerData->world->size - 4);
+		*(cs_uint32*)data = htonl(client->playerData->world->size);
 		PacketWriter_End(client, 5);
 	} else {
 		PacketWriter_End(client, 1);
@@ -781,7 +781,7 @@ void CPE_WriteHackControl(Client client, Hacks hacks) {
 	*data++ = (char)hacks->speeding;
 	*data++ = (char)hacks->spawnControl;
 	*data++ = (char)hacks->tpv;
-	*(cs_int16*)data = hacks->jumpHeight;
+	*(cs_int16*)data = htons(hacks->jumpHeight);
 
 	PacketWriter_End(client, 8);
 }
