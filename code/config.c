@@ -4,16 +4,16 @@
 #include "config.h"
 #include "error.h"
 
-#define CFG_SYSERROR \
-store->etype = ET_SYS; \
-store->ecode = Error_GetSysCode(); \
-store->eline = 0;
+#define CFG_SETERROR(type, error, linenum) \
+store->etype = ET_SERVER; \
+store->ecode = error; \
+store->eline = linenum;
+
+#define CFG_SYSERROR CFG_SETERROR(ET_SYS, 0, 0);
 
 #define CFG_LOADCHECKINT \
 if(*value < '0' || *value > '9') { \
-	store->etype = ET_SERVER; \
-	store->ecode = EC_CFGLINEPARSE; \
-	store->eline = linenum; \
+	CFG_SETERROR(ET_SERVER, EC_CFGLINEPARSE, linenum); \
 	return false; \
 }
 
@@ -177,9 +177,7 @@ cs_bool Config_Load(CFGStore store) {
 		}
 		char* value = (char*)String_FirstChar(line, '=');
 		if(!value) {
-			store->etype = ET_SERVER;
-			store->ecode = EC_CFGLINEPARSE;
-			store->eline = linenum;
+			CFG_SETERROR(ET_SERVER, EC_CFGLINEPARSE, linenum);
 			return false;
 		}
 		*value++ = '\0';
@@ -214,18 +212,14 @@ cs_bool Config_Load(CFGStore store) {
 	}
 
 	if(lnret == -1) {
-		store->etype = ET_SERVER;
-		store->ecode = EC_CFGEND;
-		store->eline = 0;
+		CFG_SETERROR(ET_SERVER, EC_CFGEND, 0);
 		return false;
 	}
 
 	store->modified = !AllCfgEntriesParsed(store);
 	File_Close(fp);
 
-	store->etype = ET_NOERR;
-	store->ecode = 0;
-	store->eline = 0;
+	CFG_SETERROR(ET_NOERR, 0, 0);
 	return true;
 }
 
@@ -304,9 +298,7 @@ cs_bool Config_Save(CFGStore store) {
 		return false;
 	}
 
-	store->etype = ET_NOERR;
-	store->ecode = 0;
-	store->eline = 0;
+	CFG_SETERROR(ET_NOERR, 0, 0);
 	return true;
 }
 
@@ -405,6 +397,11 @@ void Config_SetDefaultStr(CFGEntry ent, const char* value) {
 
 void Config_SetStr(CFGEntry ent, const char* value) {
 	CFG_TYPE(CFG_STR);
+	if(!value) {
+		EmptyEntry(ent);
+		ent->store->modified = true;
+		return;
+	}
 	if(!String_Compare(value, ent->defvalue.vchar)) {
 		if(ent->value.vchar && String_Compare(value, ent->value.vchar))
 			return;
