@@ -110,7 +110,8 @@ cs_uint8 Proto_ReadString(const char** dataptr, const char** dst) {
 		char* str = Memory_Alloc(end + 1, 1);
 		Memory_Copy(str, data, end);
 		str[end] = '\0';
-		dst[0] = str;
+		if(*dst) Memory_Free((void*)*dst);
+		*dst = str;
 	};
 
 
@@ -401,6 +402,7 @@ void Vanilla_WriteKick(Client client, const char* reason) {
 }
 
 cs_bool Handler_Handshake(Client client, const char* data) {
+	if(client->playerData) return false;
 	if(*data++ != 0x07) {
 		Client_Kick(client, Lang_Get(LANG_KICKPROTOVER));
 		return true;
