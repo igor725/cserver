@@ -74,12 +74,20 @@ void Proto_WriteColor4(char** dataptr, const Color4* color) {
 	*dataptr = data;
 }
 
+void Proto_WriteByteColor3(char** dataptr, const Color3* color) {
+	char* data = *dataptr;
+	*data++ = (cs_int8)color->r;
+	*data++ = (cs_int8)color->g;
+	*data++ = (cs_int8)color->b;
+	*dataptr = data;
+}
+
 void Proto_WriteByteColor4(char** dataptr, const Color4* color) {
 	char* data = *dataptr;
-	*(cs_int8*)data++ = (cs_int8)color->r;
-	*(cs_int8*)data++ = (cs_int8)color->g;
-	*(cs_int8*)data++ = (cs_int8)color->b;
-	*(cs_int8*)data++ = (cs_int8)color->a;
+	*data++ = (cs_int8)color->r;
+	*data++ = (cs_int8)color->g;
+	*data++ = (cs_int8)color->b;
+	*data++ = (cs_int8)color->a;
 	*dataptr = data;
 }
 

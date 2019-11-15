@@ -92,6 +92,7 @@ void Plugin_Start(void) {
 				Plugin_Load(pIter.cfile);
 		} while(Iter_Next(&pIter));
 	}
+	Iter_Close(&pIter);
 }
 
 void Plugin_Stop(void) {

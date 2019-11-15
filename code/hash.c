@@ -20,12 +20,10 @@ static cs_bool HashInit(HASH_CTX* ctx, cs_int32 type) {
 		PROV_RSA_FULL,
 		CRYPT_VERIFYCONTEXT
 	)) return false;
-
 	if(!CryptCreateHash(ctx->provider, type, 0, 0, &ctx->hash)) {
 		CryptReleaseContext(ctx->provider, 0);
 		return false;
 	}
-
 	return true;
 }
 

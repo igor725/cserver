@@ -498,10 +498,9 @@ static void HandlePacket(Client client, char* data, Packet packet, cs_bool exten
 
 static cs_uint16 GetPacketSizeFor(Packet packet, Client client, cs_bool* extended) {
 	cs_uint16 packetSize = packet->size;
-	cs_bool _extended = *extended;
 	if(packet->haveCPEImp) {
-		_extended = Client_GetExtVer(client, packet->extCRC32) == packet->extVersion;
-		if(_extended) packetSize = packet->extSize;
+		*extended = Client_GetExtVer(client, packet->extCRC32) == packet->extVersion;
+		if(*extended) packetSize = packet->extSize;
 	}
 	return packetSize;
 }

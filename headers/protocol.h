@@ -83,6 +83,7 @@ API void Proto_WriteSVec(char** dataptr, const SVec* vec);
 API void Proto_WriteAng(char** dataptr, const Ang* ang);
 API void Proto_WriteColor3(char** dataptr, const Color3* color);
 API void Proto_WriteColor4(char** dataptr, const Color4* color);
+API void Proto_WriteByteColor3(char** dataptr, const Color3* color);
 API void Proto_WriteByteColor4(char** dataptr, const Color4* color);
 API cs_uint32 Proto_WriteClientPos(char* data, Client client, cs_bool extended);
 
