@@ -16,8 +16,9 @@ typedef struct survivalData {
 	cs_bool showOxygen;
 	cs_bool godMode;
 	cs_bool pvpMode;
+	cs_uint16 regenTimer;
 	cs_bool breakStarted;
-	cs_int16 breakTimer;
+	cs_uint16 breakTimer;
 	cs_uint8 breakProgress;
 	BlockID breakBlock;
 } *SURVDATA;

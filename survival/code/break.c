@@ -1,5 +1,6 @@
 #include <core.h>
 #include <client.h>
+#include <block.h>
 
 #include "data.h"
 #include "break.h"
@@ -38,8 +39,8 @@ void SurvBrk_Done(SURVDATA data) {
 	SurvInv_Add(data, id, 1);
 	Client_SetHeld(client, id, false);
 	SurvGui_DrawBlockInfo(data, id);
-	World_SetBlock(world, pos, 0);
-	UpdateBlock(world, pos, 0);
+	World_SetBlock(world, pos, BLOCK_AIR);
+	UpdateBlock(world, pos, BLOCK_AIR);
 	SurvBrk_Stop(data);
 }
 
@@ -53,7 +54,7 @@ void SurvBrk_Tick(SURVDATA data, cs_uint32 delta) {
 		return;
 	}
 
-	data->breakTimer += (cs_int16)delta;
+	data->breakTimer += (cs_uint16)delta;
 	float df = (data->breakTimer / (float)breakTime);
 	cs_uint8 newProgress = (cs_uint8)(df * SURV_MAX_BRK);
 	if(newProgress > data->breakProgress) {

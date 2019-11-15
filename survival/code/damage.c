@@ -14,6 +14,11 @@ void SurvDmg_Hurt(SURVDATA target, SURVDATA attacker, cs_uint8 damage) {
 }
 
 void SurvDmg_Tick(SURVDATA data, cs_uint32 delta) {
-	(void)data; (void)delta;
-	// TODO: Восстановление 1 сердца каждые 5 секунд
+	if(data->health < 20) {
+		data->regenTimer += (cs_uint16)delta;
+		if(data->regenTimer > 1) {
+			data->regenTimer = 0;
+			data->health += 1;
+		}
+	}
 }
