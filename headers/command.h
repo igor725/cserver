@@ -59,12 +59,13 @@ typedef cs_bool(*cmdFunc)(CommandCallData cdata);
 typedef struct _Command {
 	const char* name;
 	cmdFunc func;
+	void* data;
 	struct _Command* next;
 	struct _Command* prev;
 } *Command;
 
-API void Command_Register(const char* cmd, cmdFunc func);
-API void Command_Unregister(const char* cmd);
+API Command Command_Register(const char* cmd, cmdFunc func);
+API cs_bool Command_Unregister(const char* cmd);
 
 void Command_RegisterDefault(void);
 cs_bool Command_Handle(char* cmd, Client caller);

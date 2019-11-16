@@ -13,7 +13,7 @@
 
 Command HeadCmd;
 
-void Command_Register(const char* cmd, cmdFunc func) {
+Command Command_Register(const char* cmd, cmdFunc func) {
 	Command tmp = Memory_Alloc(1, sizeof(struct _Command));
 
 	tmp->name = String_AllocCopy(cmd);
@@ -22,9 +22,11 @@ void Command_Register(const char* cmd, cmdFunc func) {
 		HeadCmd->prev = tmp;
 	tmp->next = HeadCmd;
 	HeadCmd = tmp;
+
+	return tmp;
 }
 
-void Command_Unregister(const char* cmd) {
+cs_bool Command_Unregister(const char* cmd) {
 	Command curr, tmp = HeadCmd;
 
 	while(tmp) {
@@ -43,8 +45,10 @@ void Command_Unregister(const char* cmd) {
 
 			Memory_Free((void*)curr->name);
 			Memory_Free(curr);
+			return true;
 		}
 	}
+	return false;
 }
 
 static cs_bool CHandler_OP(CommandCallData ccdata) {
