@@ -38,20 +38,17 @@ static void onmesgfunc(void* param) {
 ** При вызове команды из консоли сервера аргумент "caller" будет NULL.
 ** Также стоит заметить, что "args" тоже будет NULL при отсутствии аргументов.
 */
-static cs_bool CHandler_Plugtest(const char* args, Client caller, char* out) {
-	// Макрос Command_UnusedArgs нужен, чтобы скрыть варнинги о неиспользуемых аргументах
-	Command_UnusedArgs((args, caller));
-  String_Copy(out, MAX_CMD_OUT, "This command registred by testplugin." DLIB_EXT);
+static cs_bool CHandler_Plugtest(CommandCallData ccdata) {
+  String_Copy(ccdata->out, MAX_CMD_OUT, "This command registred by testplugin." DLIB_EXT);
   return true;
 }
 
-static cs_bool CHandler_Atoggle(const char* args, Client caller, char* out) {
-	Command_UnusedArgs(args);
+static cs_bool CHandler_Atoggle(CommandCallData ccdata) {
 	// Макрос проверяет была ли запущена команда администратором
-	Command_OnlyForOP;
+	Command_OnlyForOP(ccdata);
 
   enabled ^= 1;
-	String_FormatBuf(out, MAX_CMD_OUT, "Announce chat %s", MODE(enabled));
+	String_FormatBuf(ccdata->out, MAX_CMD_OUT, "Announce chat %s", MODE(enabled));
   return true;
 }
 
@@ -63,11 +60,9 @@ static cs_bool CHandler_Atoggle(const char* args, Client caller, char* out) {
 ** вызвана однажды - её нельзя будет вызвать
 ** вновь, вплоть до перезапуска сервера.
 */
-static cs_bool CHandler_SelfDestroy(const char* args, Client caller, char* out) {
-	Command_UnusedArgs((args, caller));
+static cs_bool CHandler_SelfDestroy(CommandCallData ccdata) {
 	Command_Unregister("selfdestroy");
-	String_Copy(out, MAX_CMD_OUT, "This command can't be called anymore");
-	return true;
+	Command_Print(ccdata, "This command can't be called anymore");
 }
 
 /*
@@ -79,11 +74,10 @@ static cs_bool CHandler_SelfDestroy(const char* args, Client caller, char* out) 
 ** сообщение о том, что команду может вызвать
 ** только игрок.
 */
-static cs_bool CHandler_ClientOnly(const char* args, Client caller, char* out) {
-	Command_UnusedArgs((args, caller));
-	Command_OnlyForClient;
+static cs_bool CHandler_ClientOnly(CommandCallData ccdata) {
+	Command_OnlyForClient(ccdata);
 
-	String_FormatBuf(out, MAX_CMD_OUT, "Client-only command called by %s", Client_GetName(caller));
+	String_FormatBuf(ccdata->out, MAX_CMD_OUT, "Client-only command called by %s", Client_GetName(ccdata->caller));
 	return true;
 }
 

@@ -1,8 +1,8 @@
 #ifndef SURV_DATA_H
 #define SURV_DATA_H
-#define Command_OnlyForSurvival \
-if(SurvData_Get(caller)->godMode) { \
-	Command_Print("This command can't be used from god mode."); \
+#define Command_OnlyForSurvival(a, b) \
+if((b)->godMode) { \
+	Command_Print((a), "This command can't be used from god mode."); \
 }
 
 cs_uint16 SurvData_AssocType;

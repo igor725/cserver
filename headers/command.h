@@ -3,64 +3,65 @@
 #include "client.h"
 #include "lang.h"
 
-#define Command_OnlyForClient \
-if(!caller) { \
-	String_Copy(out, MAX_CMD_OUT, Lang_Get(LANG_CMDONLYCL)); \
-	return true; \
+#define Command_OnlyForClient(a) \
+if(!(a)->caller) { \
+	Lang_Get(LANG_CMDONLYCL); \
 }
 
-#define Command_OnlyForConsole \
-if(caller) { \
-	String_Copy(out, MAX_CMD_OUT, Lang_Get(LANG_CMDONLYCON)); \
-	return true; \
+#define Command_OnlyForConsole(a) \
+if((a)->caller) { \
+	Command_Print((a), Lang_Get(LANG_CMDONLYCON)); \
 }
 
-#define Command_PrintUsage \
-String_FormatBuf(out, MAX_CMD_OUT, Lang_Get(LANG_CMDUSAGE), cmdUsage); \
+#define Command_PrintUsage(a) \
+String_FormatBuf((a)->out, MAX_CMD_OUT, Lang_Get(LANG_CMDUSAGE), cmdUsage); \
 return true;
 
-#define Command_Print(str) \
-String_Copy(out, MAX_CMD_OUT, str); \
+#define Command_Print(a, str) \
+String_Copy((a)->out, MAX_CMD_OUT, str); \
 return true;
 
-#define Command_UnusedArgs(a) \
-(void)(a);
-
-#define Command_ArgToWorldName(wn, idx) \
-if(String_GetArgument(args, wn, 64, idx)) { \
+#define Command_ArgToWorldName(a, wn, idx) \
+if(String_GetArgument((a)->args, wn, 64, idx)) { \
 	const char* wndot = String_LastChar(wn, '.'); \
 	if(!wndot || !String_CaselessCompare(wndot, ".cws")) \
 		String_Append(wn, 64, ".cws"); \
 } else { \
-	if(!caller) { \
-		Command_PrintUsage; \
+	if(!(a)->caller) { \
+		Command_PrintUsage((a)); \
 	} else { \
-		PlayerData pd = caller->playerData; \
+		PlayerData pd = (a)->caller->playerData; \
 		if(!pd) { \
-			Command_PrintUsage; \
+			Command_PrintUsage((a)); \
 		} \
 		World world = pd->world; \
 		if(!world) { \
-			Command_PrintUsage; \
+			Command_PrintUsage((a)); \
 		} \
 		String_Copy(wn, 64, world->name); \
 	} \
 }
 
+#define Command_OnlyForOP(a) \
+if((a)->caller && !(a)->caller->playerData->isOP) { \
+	Command_Print((a), Lang_Get(LANG_CMDAD)); \
+}
 
-#define Command_OnlyForOP \
-if(caller && !caller->playerData->isOP) { \
-	Command_Print(Lang_Get(LANG_CMDAD)); \
-} \
+typedef struct _CommandCallData {
+	struct _Command* command;
+	const char* args;
+	Client caller;
+	char* out;
+} *CommandCallData;
 
-typedef cs_bool(*cmdFunc)(const char* args, Client caller, char* out);
+typedef cs_bool(*cmdFunc)(CommandCallData cdata);
 
-typedef struct command {
+typedef struct _Command {
 	const char* name;
 	cmdFunc func;
-	struct command* next;
-	struct command* prev;
-} *COMMAND;
+	struct _Command* next;
+	struct _Command* prev;
+} *Command;
 
 API void Command_Register(const char* cmd, cmdFunc func);
 API void Command_Unregister(const char* cmd);

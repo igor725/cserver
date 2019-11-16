@@ -157,41 +157,39 @@ static void Survival_OnClick(void* param) {
 	}
 }
 
-static cs_bool CHandler_God(const char* args, Client caller, char* out) {
-	Command_UnusedArgs(args);
-	Command_OnlyForClient;
-	Command_OnlyForOP;
+static cs_bool CHandler_God(CommandCallData ccdata) {
+	Command_OnlyForClient(ccdata);
+	Command_OnlyForOP(ccdata);
 
-	SURVDATA data = SurvData_Get(caller);
+	SURVDATA data = SurvData_Get(ccdata->caller);
 	data->godMode ^= 1;
 	SurvGui_DrawAll(data);
 	SurvHacks_Update(data);
 	SurvInv_UpdateInventory(data);
-	SurvGui_DrawBlockInfo(data, data->godMode ? 0 : Client_GetHeldBlock(caller));
-	String_FormatBuf(out, MAX_CMD_OUT, "God mode %s", MODE(data->godMode));
+	SurvGui_DrawBlockInfo(data, data->godMode ? 0 : Client_GetHeldBlock(ccdata->caller));
+	String_FormatBuf(ccdata->out, MAX_CMD_OUT, "God mode %s", MODE(data->godMode));
 	return true;
 }
 
-static cs_bool CHandler_Hurt(const char* args, Client caller, char* out) {
-	Command_OnlyForClient;
+static cs_bool CHandler_Hurt(CommandCallData ccdata) {
+	Command_OnlyForClient(ccdata);
 
 	char damage[32];
-	if(String_GetArgument(args, damage, 32, 0)) {
+	if(String_GetArgument(ccdata->args, damage, 32, 0)) {
 		cs_uint8 dmg = (cs_uint8)(String_ToFloat(damage) * 2);
-		SurvDmg_Hurt(SurvData_Get(caller), NULL, dmg);
+		SurvDmg_Hurt(SurvData_Get(ccdata->caller), NULL, dmg);
 	}
 
 	return false;
 }
 
-static cs_bool CHandler_PvP(const char* args, Client caller, char* out) {
-	Command_UnusedArgs(args);
-	Command_OnlyForClient;
-	Command_OnlyForSurvival;
+static cs_bool CHandler_PvP(CommandCallData ccdata) {
+	Command_OnlyForClient(ccdata);
+	SURVDATA data = SurvData_Get(ccdata->caller);
+	Command_OnlyForSurvival(ccdata, data);
 
-	SURVDATA data = SurvData_Get(caller);
 	data->pvpMode ^= 1;
-	String_FormatBuf(out, MAX_CMD_OUT, "PvP mode %s", MODE(data->pvpMode));
+	String_FormatBuf(ccdata->out, MAX_CMD_OUT, "PvP mode %s", MODE(data->pvpMode));
 	return true;
 }
 
