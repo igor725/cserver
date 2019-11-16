@@ -13,10 +13,10 @@
 
 Command HeadCmd;
 
-Command Command_Register(const char* cmd, cmdFunc func) {
+Command Command_Register(const char* name, cmdFunc func) {
 	Command tmp = Memory_Alloc(1, sizeof(struct _Command));
 
-	tmp->name = String_AllocCopy(cmd);
+	tmp->name = String_AllocCopy(name);
 	tmp->func = func;
 	if(HeadCmd)
 		HeadCmd->prev = tmp;
@@ -26,29 +26,31 @@ Command Command_Register(const char* cmd, cmdFunc func) {
 	return tmp;
 }
 
-cs_bool Command_Unregister(const char* cmd) {
-	Command curr, tmp = HeadCmd;
+Command Command_Get(const char* name) {
+	Command ptr = HeadCmd;
 
-	while(tmp) {
-		curr = tmp;
-		tmp = curr->next;
-
-		if(String_CaselessCompare(curr->name, cmd)) {
-			if(curr->prev)
-				curr->prev->next = curr->prev;
-
-			if(curr->next) {
-				curr->next->prev = curr->next;
-				HeadCmd = curr->next->prev;
-			} else
-				HeadCmd = NULL;
-
-			Memory_Free((void*)curr->name);
-			Memory_Free(curr);
-			return true;
-		}
+	while(ptr) {
+		if(String_CaselessCompare(ptr->name, name))
+			return ptr;
+		ptr = ptr->next;
 	}
-	return false;
+
+	return NULL;
+}
+
+cs_bool Command_Unregister(Command cmd) {
+	if(cmd->prev)
+		cmd->prev->next = cmd->prev;
+
+	if(cmd->next) {
+		cmd->next->prev = cmd->next;
+		HeadCmd = cmd->next->prev;
+	} else
+		HeadCmd = NULL;
+
+	Memory_Free((void*)cmd->name);
+	Memory_Free(cmd);
+	return true;
 }
 
 static cs_bool CHandler_OP(CommandCallData ccdata) {
