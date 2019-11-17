@@ -60,9 +60,6 @@ const char* Lang_Get(cs_int32 langid) {
 		case LANG_KICKPACKETSPAM:
 			return "Too many packets per second";
 
-		case LANG_CPEVANILLA:
-			return "vanilla client";
-
 		case LANG_CMDUSAGE:
 			return "Usage: %s.";
 		case LANG_CMDAD:

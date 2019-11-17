@@ -203,11 +203,12 @@ cs_bool Client_Add(Client client) {
 }
 
 const char* Client_GetName(Client client) {
+	if(!client->playerData) return "unnamed";
 	return client->playerData->name;
 }
 
 const char* Client_GetAppName(Client client) {
-	if(!client->cpeData) return Lang_Get(LANG_CPEVANILLA);
+	if(!client->cpeData) return "vanilla client";
 	return client->cpeData->appName;
 }
 
