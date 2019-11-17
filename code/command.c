@@ -14,6 +14,7 @@
 Command HeadCmd;
 
 Command Command_Register(const char* name, cmdFunc func) {
+	if(Command_Get(name)) return NULL;
 	Command tmp = Memory_Alloc(1, sizeof(struct _Command));
 
 	tmp->name = String_AllocCopy(name);
