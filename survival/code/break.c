@@ -33,7 +33,7 @@ void SurvBrk_Stop(SURVDATA data) {
 void SurvBrk_Done(SURVDATA data) {
 	SVec* pos = &data->lastClick;
 	Client client = data->client;
-	World world = client->playerData->world;
+	World world = Client_GetWorld(client);
 	BlockID id = data->breakBlock;
 
 	SurvInv_Add(data, id, 1);

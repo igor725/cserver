@@ -235,6 +235,11 @@ Client Client_GetByID(ClientID id) {
 	return id < MAX_CLIENTS ? Clients_List[id] : NULL;
 }
 
+World Client_GetWorld(Client client) {
+	if(!client->playerData) return NULL;
+	return client->playerData->world;
+}
+
 static struct _CGroup dgroup = {-1, "", 0, NULL, NULL};
 
 CGroup Client_GetGroup(Client client) {
@@ -518,13 +523,11 @@ cs_bool Client_IsInGame(Client client) {
 }
 
 cs_bool Client_IsInSameWorld(Client client, Client other) {
-	if(!client->playerData || !other->playerData) return false;
-	return client->playerData->world == other->playerData->world;
+	return Client_GetWorld(client) == Client_GetWorld(other);
 }
 
 cs_bool Client_IsInWorld(Client client, World world) {
-	if(!client->playerData) return false;
-	return client->playerData->world == world;
+	return Client_GetWorld(client) == world;
 }
 
 cs_bool Client_IsOP(Client client) {

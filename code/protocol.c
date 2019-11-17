@@ -313,7 +313,7 @@ void Vanilla_WriteLvlInit(Client client) {
 
 	*data++ = 0x02;
 	if(Client_GetExtVer(client, EXT_FASTMAP)) {
-		*(cs_uint32*)data = htonl(client->playerData->world->size);
+		*(cs_uint32*)data = htonl(Client_GetWorld(client)->size);
 		PacketWriter_End(client, 5);
 	} else {
 		PacketWriter_End(client, 1);
@@ -472,7 +472,7 @@ static void UpdateBlock(World world, SVec* pos, BlockID block) {
 cs_bool Handler_SetBlock(Client client, const char* data) {
 	ValidateClientState(client, STATE_INGAME, false);
 
-	World world = client->playerData->world;
+	World world = Client_GetWorld(client);
 	if(!world) return false;
 	SVec pos = {0};
 
