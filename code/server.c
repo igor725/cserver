@@ -93,8 +93,8 @@ void Server_InitialWork(void) {
 	if(!Socket_Init()) return;
 
 	Log_Info(Lang_Get(LANG_SVLOADING), MAINCFG);
-	CFGStore cfg = Config_NewStore(MAINCFG);
-	CFGEntry ent;
+	CStore cfg = Config_NewStore(MAINCFG);
+	CEntry ent;
 
 	ent = Config_NewEntry(cfg, CFG_SERVERIP_KEY, CFG_STR);
 	Config_SetComment(ent, "Bind server to specified IP address. \"0.0.0.0\" - means \"all available network adapters\".");

@@ -100,7 +100,7 @@ static cs_bool CHandler_CFG(CommandCallData ccdata) {
 			if(!String_GetArgument(ccdata->args, key, MAX_CFG_LEN, 1)) {
 				Command_PrintUsage(ccdata);
 			}
-			CFGEntry ent = Config_GetEntry(Server_Config, key);
+			CEntry ent = Config_GetEntry(Server_Config, key);
 			if(!ent) {
 				Command_Print(ccdata, "This entry not found in \"server.cfg\" store.");
 			}
@@ -133,7 +133,7 @@ static cs_bool CHandler_CFG(CommandCallData ccdata) {
 				Command_PrintUsage(ccdata);
 			}
 
-			CFGEntry ent = Config_GetEntry(Server_Config, key);
+			CEntry ent = Config_GetEntry(Server_Config, key);
 			if(ent) {
 				if(!Config_ToStr(ent, value, MAX_CFG_LEN)) {
 					Command_Print(ccdata, "Can't detect entry type.");
@@ -143,7 +143,7 @@ static cs_bool CHandler_CFG(CommandCallData ccdata) {
 			}
 			Command_Print(ccdata, "This entry not found in \"server.cfg\" store.");
 		} else if(String_CaselessCompare(subcommand, "print")) {
-			CFGEntry ent = Server_Config->firstCfgEntry;
+			CEntry ent = Server_Config->firstCfgEntry;
 			String_Copy(ccdata->out, MAX_CMD_OUT, "Server config entries:");
 
 			while(ent) {

@@ -9,7 +9,7 @@ enum {
 	CFG_STR
 };
 
-typedef struct cfgEntry {
+typedef struct _CEntry {
 	const char* key; // Ключ, присваиваемый записи при создании
 	cs_int32 type; // Тип cfg-записи
 	cs_bool readed; // Была ли осуществленна попытка чтения значения из cfg файла
@@ -31,61 +31,61 @@ typedef struct cfgEntry {
 		const char* vchar;
 	} defvalue; // Значение записи, заданное по умолчанию
 	const char* commentary; // Комментарий к записи
-	struct cfgEntry* next; // Следующая запись
-	struct cfgStore* store; // Cfg-хранилище, которому принадлежит запись
-} *CFGEntry;
+	struct _CEntry* next; // Следующая запись
+	struct _CStore* store; // Cfg-хранилище, которому принадлежит запись
+} *CEntry;
 
-typedef struct cfgStore {
+typedef struct _CStore {
 	const char* path; // Путь до cfg-файла
 	cs_bool modified; // Было ли хранилище модифицировано во время работы сервера
 	cs_int32 etype; // Тип произошедшей ошибки ET_SYS/ET_SERVER (см. объявления в error.h)
 	cs_int32 ecode; // Код произошедшей ошибки (объявления также в error.h)
 	cs_int32 eline; // Номер строки в файле, на которой произошла ошибка
-	CFGEntry firstCfgEntry; // Первая запись в хранилище
-	CFGEntry lastCfgEntry; // Последняя запись в хранилище
-} *CFGStore;
+	CEntry firstCfgEntry; // Первая запись в хранилище
+	CEntry lastCfgEntry; // Последняя запись в хранилище
+} *CStore;
 
 
 API const char* Config_TypeName(cs_int32 type);
 API cs_int32 Config_TypeNameToInt(const char* name);
-API cs_bool Config_ToStr(CFGEntry ent, char* value, cs_uint8 len);
-API void Config_PrintError(CFGStore store);
+API cs_bool Config_ToStr(CEntry ent, char* value, cs_uint8 len);
+API void Config_PrintError(CStore store);
 
-API CFGStore Config_NewStore(const char* path);
-API void Config_EmptyStore(CFGStore store);
-API void Config_DestroyStore(CFGStore store);
+API CStore Config_NewStore(const char* path);
+API void Config_EmptyStore(CStore store);
+API void Config_DestroyStore(CStore store);
 
-API CFGEntry Config_NewEntry(CFGStore store, const char* key, cs_int32 type);
-API CFGEntry Config_GetEntry(CFGStore store, const char* key);
+API CEntry Config_NewEntry(CStore store, const char* key, cs_int32 type);
+API CEntry Config_GetEntry(CStore store, const char* key);
 
 
-API cs_bool Config_Load(CFGStore store);
-API cs_bool Config_Save(CFGStore store);
+API cs_bool Config_Load(CStore store);
+API cs_bool Config_Save(CStore store);
 
-API void Config_SetComment(CFGEntry ent, const char* commentary);
-API void Config_SetLimit(CFGEntry ent, cs_int32 min, cs_int32 max);
+API void Config_SetComment(CEntry ent, const char* commentary);
+API void Config_SetLimit(CEntry ent, cs_int32 min, cs_int32 max);
 
-API cs_int32 Config_GetInt32(CFGEntry ent);
-API cs_int32 Config_GetInt32ByKey(CFGStore store, const char* key);
-API cs_int16 Config_GetInt16(CFGEntry ent);
-API cs_int16 Config_GetInt16ByKey(CFGStore store, const char* key);
-API cs_int8 Config_GetInt8(CFGEntry ent);
-API cs_int8 Config_GetInt8ByKey(CFGStore store, const char* key);
+API cs_int32 Config_GetInt32(CEntry ent);
+API cs_int32 Config_GetInt32ByKey(CStore store, const char* key);
+API cs_int16 Config_GetInt16(CEntry ent);
+API cs_int16 Config_GetInt16ByKey(CStore store, const char* key);
+API cs_int8 Config_GetInt8(CEntry ent);
+API cs_int8 Config_GetInt8ByKey(CStore store, const char* key);
 
-API void Config_SetDefaultInt32(CFGEntry ent, cs_int32 value);
-API void Config_SetDefaultInt16(CFGEntry ent, cs_int16 value);
-API void Config_SetDefaultInt8(CFGEntry ent, cs_int8 value);
-API void Config_SetInt32(CFGEntry ent, cs_int32 value);
-API void Config_SetInt16(CFGEntry ent, cs_int16 value);
-API void Config_SetInt8(CFGEntry ent, cs_int8 value);
+API void Config_SetDefaultInt32(CEntry ent, cs_int32 value);
+API void Config_SetDefaultInt16(CEntry ent, cs_int16 value);
+API void Config_SetDefaultInt8(CEntry ent, cs_int8 value);
+API void Config_SetInt32(CEntry ent, cs_int32 value);
+API void Config_SetInt16(CEntry ent, cs_int16 value);
+API void Config_SetInt8(CEntry ent, cs_int8 value);
 
-API const char* Config_GetStr(CFGEntry ent);
-API const char* Config_GetStrByKey(CFGStore store, const char* key);
-API void Config_SetDefaultStr(CFGEntry ent, const char* value);
-API void Config_SetStr(CFGEntry ent, const char* value);
+API const char* Config_GetStr(CEntry ent);
+API const char* Config_GetStrByKey(CStore store, const char* key);
+API void Config_SetDefaultStr(CEntry ent, const char* value);
+API void Config_SetStr(CEntry ent, const char* value);
 
-API cs_bool Config_GetBool(CFGEntry ent);
-API cs_bool Config_GetBoolByKey(CFGStore store, const char* key);
-API void Config_SetDefaultBool(CFGEntry ent, cs_bool value);
-API void Config_SetBool(CFGEntry ent, cs_bool value);
+API cs_bool Config_GetBool(CEntry ent);
+API cs_bool Config_GetBoolByKey(CStore store, const char* key);
+API void Config_SetDefaultBool(CEntry ent, cs_bool value);
+API void Config_SetBool(CEntry ent, cs_bool value);
 #endif
