@@ -47,6 +47,7 @@ void Error_CallStack(void) {
 	}
 }
 #elif defined(POSIX)
+#ifndef __ANDROID__
 #include <execinfo.h>
 
 void Error_CallStack(void) {
@@ -62,6 +63,12 @@ void Error_CallStack(void) {
 		if(dli.dli_sname && String_Compare(dli.dli_sname, "main")) break;
 	}
 }
+#else
+void Error_CallStack(void) {
+	Log_Error("Error_CallStack not implemented.");
+}
+#endif
+
 #endif
 
 static void getErrorStr(cs_int32 type, cs_uint32 code, char* errbuf, cs_size sz, va_list* args) {
