@@ -1,5 +1,6 @@
 #ifndef COMMAND_H
 #define COMMAND_H
+#include "str.h"
 #include "client.h"
 #include "lang.h"
 

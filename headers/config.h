@@ -58,7 +58,6 @@ API void Config_DestroyStore(CStore store);
 API CEntry Config_NewEntry(CStore store, const char* key, cs_int32 type);
 API CEntry Config_GetEntry(CStore store, const char* key);
 
-
 API cs_bool Config_Load(CStore store);
 API cs_bool Config_Save(CStore store);
 
