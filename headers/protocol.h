@@ -140,6 +140,7 @@ void CPE_WriteHackControl(Client client, Hacks hacks);
 void CPE_WriteDefineBlock(Client client, BlockDef block);
 void CPE_WriteUndefineBlock(Client client, BlockID id);
 void CPE_WriteDefineExBlock(Client client, BlockDef block);
+void CPE_WriteBulkBlockUpdate(Client client, BulkBlockUpdate bbu);
 void CPE_WriteSetTextColor(Client client, Color4* color, char code);
 void CPE_WriteSetHotBar(Client client, Order order, BlockID block);
 void CPE_WriteWeatherType(Client client, Weather type);

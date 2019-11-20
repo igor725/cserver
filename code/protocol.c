@@ -238,7 +238,7 @@ struct extReg {
 
 static const struct extReg serverExtensions[] = {
 	{"ClickDistance", 1},
-	// CustomBlocks
+	// {"CustomBlocks", 1},
 	{"HeldBlock", 1},
 	{"EmoteFix", 1},
 	{"TextHotKey", 1},
@@ -247,7 +247,7 @@ static const struct extReg serverExtensions[] = {
 	{"SelectionCuboid", 1},
 	{"BlockPermissions", 1},
 	{"ChangeModel", 1},
-	// EnvMapAppearance
+	// {"EnvMapAppearance", 1},
 	{"EnvWeatherType", 1},
 	{"HackControl", 1},
 	{"MessageTypes", 1},
@@ -256,14 +256,14 @@ static const struct extReg serverExtensions[] = {
 	{"FullCP437", 1},
 	{"BlockDefinitions", 1},
 	{"BlockDefinitionsExt", 2},
-	// BulkBlockUpdate
+	{"BulkBlockUpdate", 1},
 	{"TextColors", 1},
 	{"EnvMapAspect", 1},
 	{"EntityProperty", 1},
 	{"ExtEntityPositions", 1},
 	{"TwoWayPing", 1},
 	{"InventoryOrder", 1},
-	// InstantMOTD
+	// {"InstantMOTD", 1},
 	{"FastMap", 1},
 	{"SetHotbar", 1},
 	{NULL, 0}
@@ -800,7 +800,7 @@ void CPE_WriteDefineBlock(Client client, BlockDef block) {
 	*data++ = 0x23;
 	*data++ = block->id;
 	Proto_WriteString(&data, block->name);
-	*(BlockParams*)data = block->params.nonext;
+	*(struct _BlockParams*)data = block->params.nonext;
 
 	PacketWriter_End(client, 80);
 }
@@ -820,13 +820,20 @@ void CPE_WriteDefineExBlock(Client client, BlockDef block) {
 	*data++ = 0x25;
 	*data++ = block->id;
 	Proto_WriteString(&data, block->name);
-	*(BlockParamsExt*)data = block->params.ext;
+	*(struct _BlockParamsExt*)data = block->params.ext;
 
 	PacketWriter_End(client, 88);
 }
 
-// 0x25 - ExtBlockDefinition
-// 0x26 - BulkBlockUpdate
+void CPE_WriteBulkBlockUpdate(Client client, BulkBlockUpdate bbu) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x26;
+	*(struct _BBUData*)data = bbu->data;
+
+	PacketWriter_End(client, 1282);
+}
+
 void CPE_WriteSetTextColor(Client client, Color4* color, char code) {
 	PacketWriter_Start(client);
 

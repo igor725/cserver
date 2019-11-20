@@ -121,6 +121,9 @@ void Client_Tick(Client client);
 Client Client_New(Socket fd, cs_uint32 addr);
 cs_bool Client_Add(Client client);
 void Client_Init(void);
+cs_bool Client_BulkBlockUpdate(Client client, BulkBlockUpdate bbu);
+cs_bool Client_DefineBlock(Client client, BlockDef block);
+cs_bool Client_UndefineBlock(Client client, BlockID id);
 
 API cs_uint16 Assoc_NewType();
 API cs_bool Assoc_DelType(cs_uint16 type, cs_bool freeData);
@@ -142,8 +145,6 @@ API void Client_Kick(Client client, const char* reason);
 API void Client_UpdateWorldInfo(Client client, World world, cs_bool updateAll);
 API cs_bool Client_Update(Client client);
 API cs_bool Client_SendHacks(Client client);
-API cs_bool Client_DefineBlock(Client client, BlockDef block);
-API cs_bool Client_UndefineBlock(Client client, BlockID id);
 API cs_bool Client_MakeSelection(Client client, cs_uint8 id, SVec* start, SVec* end, Color4* color);
 API cs_bool Client_RemoveSelection(Client client, cs_uint8 id);
 

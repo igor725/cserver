@@ -672,6 +672,14 @@ cs_bool Client_SendHacks(Client client) {
 	return false;
 }
 
+cs_bool Client_BulkBlockUpdate(Client client, BulkBlockUpdate bbu) {
+	if(Client_GetExtVer(client, EXT_BULKUPDATE)) {
+		CPE_WriteBulkBlockUpdate(client, bbu);
+		return true;
+	}
+	return false;
+}
+
 cs_bool Client_DefineBlock(Client client, BlockDef block) {
 	if(block->flags & BDF_UNDEFINED) return false;
 	if(block->flags & BDF_EXTENDED) {

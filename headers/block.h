@@ -1,5 +1,7 @@
 #ifndef BLOCK_H
 #define BLOCK_H
+#include "world.h"
+
 enum {
 	BLOCK_AIR = 0,
 	BLOCK_STONE = 1,
@@ -87,50 +89,61 @@ enum {
 	BDDRW_GAS
 };
 
-typedef struct _BlockParams {
-	cs_uint8 solidity;
-	cs_uint8 moveSpeed;
-	cs_uint8 topTex, sideTex, bottomTex;
-	cs_uint8 transmitsLight;
-	cs_uint8 walkSound;
-	cs_uint8 fullBright;
-	cs_uint8 shape;
-	cs_uint8 blockDraw;
-	cs_uint8 fogDensity;
-	cs_uint8 fogR, fogG, fogB;
-} BlockParams;
-
-typedef struct _BlockParamsExt {
-	cs_uint8 solidity;
-	cs_uint8 moveSpeed;
-	cs_uint8 topTex, leftTex;
-	cs_uint8 rightTex, frontTex;
-	cs_uint8 backTex, bottomTex;
-	cs_uint8 transmitsLight;
-	cs_uint8 walkSound;
-	cs_uint8 fullBright;
-	cs_uint8 minX, minY, minZ;
-	cs_uint8 maxX, maxY, maxZ;
-	cs_uint8 blockDraw;
-	cs_uint8 fogDensity;
-	cs_uint8 fogR, fogG, fogB;
-} BlockParamsExt;
-
 typedef struct _BlockDef {
 	BlockID id;
 	const char* name;
 	cs_uint8 flags;
 	union {
-		BlockParamsExt ext;
-		BlockParams nonext;
+		struct _BlockParamsExt {
+			cs_uint8 solidity;
+			cs_uint8 moveSpeed;
+			cs_uint8 topTex, leftTex;
+			cs_uint8 rightTex, frontTex;
+			cs_uint8 backTex, bottomTex;
+			cs_uint8 transmitsLight;
+			cs_uint8 walkSound;
+			cs_uint8 fullBright;
+			cs_uint8 minX, minY, minZ;
+			cs_uint8 maxX, maxY, maxZ;
+			cs_uint8 blockDraw;
+			cs_uint8 fogDensity;
+			cs_uint8 fogR, fogG, fogB;
+		} ext;
+		struct _BlockParams {
+			cs_uint8 solidity;
+			cs_uint8 moveSpeed;
+			cs_uint8 topTex, sideTex, bottomTex;
+			cs_uint8 transmitsLight;
+			cs_uint8 walkSound;
+			cs_uint8 fullBright;
+			cs_uint8 shape;
+			cs_uint8 blockDraw;
+			cs_uint8 fogDensity;
+			cs_uint8 fogR, fogG, fogB;
+		} nonext;
 	} params;
-} *BlockDef, sBlockDef;
+} *BlockDef;
+
+typedef struct _BulkBlockUpdate {
+	World world;
+	cs_bool autosend;
+	struct _BBUData {
+		cs_uint8 count;
+		cs_uint8 offsets[1024];
+		BlockID ids[256];
+	} data;
+} *BulkBlockUpdate;
 
 BlockDef Block_DefinitionsList[255];
 API cs_bool Block_IsValid(BlockID id);
 API const char* Block_GetName(BlockID id);
+
 API BlockDef Block_New(BlockID id, const char* name, cs_uint8 flags);
 API cs_bool Block_Define(BlockDef info);
 API cs_bool Block_Undefine(BlockID id);
 API void Block_UpdateDefinitions();
+
+API cs_bool Block_BulkUpdateAdd(BulkBlockUpdate bbu, SVec* pos, BlockID id);
+API void Block_BulkUpdateSend(BulkBlockUpdate bbu);
+void Block_BulkUpdateClean(BulkBlockUpdate bbu);
 #endif

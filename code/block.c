@@ -100,3 +100,29 @@ void Block_UpdateDefinitions() {
 		}
 	}
 }
+
+cs_bool Block_BulkUpdateAdd(BulkBlockUpdate bbu, SVec* pos, BlockID id) {
+	if(bbu->data.count == 255) {
+		if(bbu->autosend) {
+			Block_BulkUpdateSend(bbu);
+			Block_BulkUpdateClean(bbu);
+		} else return false;
+	}
+	cs_uint32 offset = World_GetOffset(bbu->world, pos);
+	cs_uint8 bcount = bbu->data.count++;
+	((cs_uint32*)bbu->data.offsets)[bcount] = htonl(offset - 4);
+	bbu->data.ids[bcount] = id;
+	return true;
+}
+
+void Block_BulkUpdateSend(BulkBlockUpdate bbu) {
+	for(ClientID cid = 0; cid < MAX_CLIENTS; cid++) {
+		Client client = Clients_List[cid];
+		if(client && Client_IsInWorld(client, bbu->world))
+			Client_BulkBlockUpdate(client, bbu);
+	}
+}
+
+void Block_BulkUpdateClean(BulkBlockUpdate bbu) {
+	Memory_Fill(&bbu->data, sizeof(struct _BBUData), 0);
+}
