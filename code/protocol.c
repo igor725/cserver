@@ -266,6 +266,7 @@ static const struct extReg serverExtensions[] = {
 	// {"InstantMOTD", 1},
 	{"FastMap", 1},
 	{"SetHotbar", 1},
+	// {"SetSpawnpoint", 1},
 	{NULL, 0}
 };
 
@@ -903,6 +904,8 @@ void CPE_WriteSetHotBar(Client client, Order order, BlockID block) {
 
 	PacketWriter_End(client, 3);
 }
+
+// 0x2E - SetSpawn
 
 cs_bool CPEHandler_ExtInfo(Client client, const char* data) {
 	ValidateCpeClient(client, false);
