@@ -24,8 +24,6 @@ static SVec* GetCuboid(Client client) {
 	return Assoc_GetPtr(client, WeAT);
 }
 
-static SVec _invalid = {-1, -1, -1};
-
 static void clickhandler(void* param) {
 	onPlayerClick a = param;
 	if(Client_GetHeldBlock(a->client) != BLOCK_AIR || a->button == 0)
@@ -58,8 +56,7 @@ static cs_bool CHandler_Select(CommandCallData ccdata) {
 		Command_Print(ccdata, "Selection mode &cdisabled");
 	}
 	ptr = Memory_Alloc(1, sizeof(SVec) * 2);
-	ptr[0] = _invalid;
-	ptr[1] = _invalid;
+	Memory_Fill(ptr, sizeof(SVec) * 2, 0xFF);
 	Assoc_Set(ccdata->caller, WeAT, ptr);
 	Command_Print(ccdata, "Selection mode &aenabled");
 }
@@ -81,7 +78,8 @@ static cs_bool CHandler_Set(CommandCallData ccdata) {
 	SVec s = ptr[0], e = ptr[1];
 	CubeNormalize(&s, &e);
 	cs_uint32 count = (s.x - e.x) * (s.y - e.y) * (s.z - e.z);
-	struct _BulkBlockUpdate bbu = {0};
+	struct _BulkBlockUpdate bbu;
+	Block_BulkUpdateClean(&bbu);
 	bbu.world = Client_GetWorld(client);
 	bbu.autosend = true;
 
@@ -96,7 +94,6 @@ static cs_bool CHandler_Set(CommandCallData ccdata) {
 	}
 
 	Block_BulkUpdateSend(&bbu);
-
 	Command_Printf(ccdata, "%d blocks filled with %d.", count, block);
 }
 
