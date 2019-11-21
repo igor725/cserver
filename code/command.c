@@ -71,8 +71,7 @@ static cs_bool CHandler_OP(CommandCallData ccdata) {
 			PlayerData pd = tg->playerData;
 			const char* name = pd->name;
 			pd->isOP ^= 1;
-			String_FormatBuf(ccdata->out, MAX_CMD_OUT, "Player %s %s", name, pd->isOP ? "opped" : "deopped");
-			return true;
+			Command_Printf(ccdata, "Player %s %s", name, pd->isOP ? "opped" : "deopped");
 		} else {
 			Command_Print(ccdata, Lang_Get(LANG_CMDPLNF));
 		}
@@ -88,11 +87,10 @@ static cs_bool CHandler_Uptime(CommandCallData ccdata) {
 	m = (msec / 60000) % 60000;
 	s = (msec / 1000) % 60;
 	ms = msec % 1000;
-	String_FormatBuf(ccdata->out, MAX_CMD_OUT,
+	Command_Printf(ccdata,
 		"Server uptime: %03d:%02d:%02d:%02d.%03d",
 		d, h, m, s, ms
 	);
-	return true;
 }
 
 static cs_bool CHandler_CFG(CommandCallData ccdata) {
@@ -144,8 +142,7 @@ static cs_bool CHandler_CFG(CommandCallData ccdata) {
 				if(!Config_ToStr(ent, value, MAX_CFG_LEN)) {
 					Command_Print(ccdata, "Can't detect entry type.");
 				}
-				String_FormatBuf(ccdata->out, MAX_CMD_OUT, "%s = %s (%s)", key, value, Config_TypeName(ent->type));
-				return true;
+				Command_Printf(ccdata, "%s = %s (%s)", key, value, Config_TypeName(ent->type));
 			}
 			Command_Print(ccdata, "This entry not found in \"server.cfg\" store.");
 		} else if(String_CaselessCompare(subcommand, "print")) {
@@ -186,12 +183,11 @@ static cs_bool CHandler_Plugins(CommandCallData ccdata) {
 			GetPluginName;
 			if(!Plugin_Get(name)) {
 				if(Plugin_Load(name)) {
-					String_FormatBuf(ccdata->out, MAX_CMD_OUT,
+					Command_Printf(ccdata,
 						Lang_Get(LANG_CPINF0),
 						name,
 						Lang_Get(LANG_CPLD)
 					);
-					return true;
 				} else {
 					Command_Print(ccdata, "Plugin_Init() = false, plugin unloaded.");
 				}
@@ -201,28 +197,27 @@ static cs_bool CHandler_Plugins(CommandCallData ccdata) {
 			GetPluginName;
 			plugin = Plugin_Get(name);
 			if(!plugin) {
-				String_FormatBuf(ccdata->out, MAX_CMD_OUT,
+				Command_Printf(ccdata,
 					Lang_Get(LANG_CPINF0),
 					name,
 					Lang_Get(LANG_CPNL)
 				);
-				return true;
 			}
-			if(Plugin_Unload(plugin))
-				String_FormatBuf(ccdata->out, MAX_CMD_OUT,
+			if(Plugin_Unload(plugin)) {
+				Command_Printf(ccdata,
 					Lang_Get(LANG_CPINF0),
 					name,
 					Lang_Get(LANG_CPUNLD)
 				);
-			else
-				String_FormatBuf(ccdata->out, MAX_CMD_OUT,
+			}
+			else {
+				Command_Printf(ccdata,
 					Lang_Get(LANG_CPINF1),
 					name,
 					Lang_Get(LANG_CPCB),
 					Lang_Get(LANG_CPUNLD)
 				);
-
-			return true;
+			}
 		} else if(String_CaselessCompare(subcommand, "list")) {
 			cs_int32 idx = 1;
 			char pluginfo[64];
@@ -272,8 +267,7 @@ static cs_bool CHandler_Kick(CommandCallData ccdata) {
 		if(tg) {
 			const char* reason = String_FromArgument(ccdata->args, 1);
 			Client_Kick(tg, reason);
-			String_FormatBuf(ccdata->out, MAX_CMD_OUT, "Player %s kicked", playername);
-			return true;
+			Command_Printf(ccdata, "Player %s kicked", playername);
 		} else {
 			Command_Print(ccdata, Lang_Get(LANG_CMDPLNF));
 		}
@@ -336,13 +330,11 @@ static cs_bool CHandler_GenWorld(CommandCallData ccdata) {
 			Generator_Flat(tmp);
 
 			if(World_Add(tmp)) {
-				String_FormatBuf(ccdata->out, MAX_CMD_OUT, "World \"%s\" created.", worldname);
+				Command_Printf(ccdata, "World \"%s\" created.", worldname);
 			} else {
 				World_Free(tmp);
 				Command_Print(ccdata, "Too many worlds already loaded.");
 			}
-
-			return true;
 		}
 	}
 

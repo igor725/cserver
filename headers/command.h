@@ -14,13 +14,16 @@ if((a)->caller) { \
 	Command_Print((a), Lang_Get(LANG_CMDONLYCON)); \
 }
 
-#define Command_PrintUsage(a) \
-String_FormatBuf((a)->out, MAX_CMD_OUT, Lang_Get(LANG_CMDUSAGE), cmdUsage); \
-return true;
-
 #define Command_Print(a, str) \
 String_Copy((a)->out, MAX_CMD_OUT, str); \
 return true;
+
+#define Command_Printf(a, f, ...) \
+String_FormatBuf((a)->out, MAX_CMD_OUT, f, __VA_ARGS__); \
+return true;
+
+#define Command_PrintUsage(a) \
+Command_Printf(a, Lang_Get(LANG_CMDUSAGE), cmdUsage);
 
 #define Command_ArgToWorldName(a, wn, idx) \
 if(String_GetArgument((a)->args, wn, 64, idx)) { \
