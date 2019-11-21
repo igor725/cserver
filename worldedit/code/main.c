@@ -75,26 +75,72 @@ static cs_bool CHandler_Set(CommandCallData ccdata) {
 	}
 
 	BlockID block = (BlockID)String_ToInt(blid);
+	World world = Client_GetWorld(client);
 	SVec s = ptr[0], e = ptr[1];
 	CubeNormalize(&s, &e);
 	cs_uint32 count = (s.x - e.x) * (s.y - e.y) * (s.z - e.z);
 	struct _BulkBlockUpdate bbu;
 	Block_BulkUpdateClean(&bbu);
-	bbu.world = Client_GetWorld(client);
+	bbu.world = world;
 	bbu.autosend = true;
 
 	for(cs_uint16 x = e.x; x < s.x; x++) {
 		for(cs_uint16 y = e.y; y < s.y; y++) {
 			for(cs_uint16 z = e.z; z < s.z; z++) {
 				SVec pos; Vec_Set(pos, x, y, z);
-				cs_uint32 offest = World_SetBlock(bbu.world, &pos, block);
-				Block_BulkUpdateAdd(&bbu, offest, block);
+				cs_uint32 offset = World_GetOffset(world, &pos);
+				if(offset > 0) {
+					Block_BulkUpdateAdd(&bbu, offset, block);
+					World_SetBlockO(world, offset, block);
+				}
 			}
 		}
 	}
 
 	Block_BulkUpdateSend(&bbu);
 	Command_Printf(ccdata, "%d blocks filled with %d.", count, block);
+}
+
+static cs_bool CHandler_Replace(CommandCallData ccdata) {
+	const char* cmdUsage = "/repalce <from> <to>";
+	Client client = ccdata->caller;
+	SVec* ptr = GetCuboid(client);
+	if(!ptr) {
+		Command_Print(ccdata, "Select cuboid first.");
+	}
+
+	char fromt[4], tot[4];
+	if(!String_GetArgument(ccdata->args, fromt, 4, 0) || !String_GetArgument(ccdata->args, tot, 4, 1)) {
+		Command_PrintUsage(ccdata);
+	}
+
+	BlockID from = (BlockID)String_ToInt(fromt);
+	BlockID to = (BlockID)String_ToInt(tot);
+	World world = Client_GetWorld(client);
+	SVec s = ptr[0], e = ptr[1];
+	CubeNormalize(&s, &e);
+	cs_uint32 count = 0;
+	struct _BulkBlockUpdate bbu;
+	Block_BulkUpdateClean(&bbu);
+	bbu.world = world;
+	bbu.autosend = true;
+
+	for(cs_uint16 x = e.x; x < s.x; x++) {
+		for(cs_uint16 y = e.y; y < s.y; y++) {
+			for(cs_uint16 z = e.z; z < s.z; z++) {
+				SVec pos; Vec_Set(pos, x, y, z);
+				cs_uint32 offset = World_GetOffset(world, &pos);
+				if(offset > 0 && world->data[offset] == from) {
+					Block_BulkUpdateAdd(&bbu, offset, to);
+					World_SetBlockO(world, offset, to);
+					count++;
+				}
+			}
+		}
+	}
+
+	Block_BulkUpdateSend(&bbu);
+	Command_Printf(ccdata, "%d blocks replaced with %d.", count, to);
 }
 
 static void freeselvecs(void* param) {
@@ -107,6 +153,7 @@ cs_bool Plugin_Load(void) {
 	WeAT = Assoc_NewType();
 	Command_Register("select", CHandler_Select);
 	Command_Register("set", CHandler_Set);
+	Command_Register("replace", CHandler_Replace);
 	Event_RegisterVoid(EVT_ONCLICK, clickhandler);
 	Event_RegisterVoid(EVT_ONDISCONNECT, freeselvecs);
 	return true;
@@ -115,6 +162,8 @@ cs_bool Plugin_Load(void) {
 cs_bool Plugin_Unload(void) {
 	Assoc_DelType(WeAT, true);
 	Command_UnregisterByName("select");
+	Command_UnregisterByName("set");
+	Command_UnregisterByName("replace");
 	Event_Unregister(EVT_ONCLICK, (cs_uintptr)clickhandler);
 	Event_Unregister(EVT_ONDISCONNECT, (cs_uintptr)freeselvecs);
 	return true;
