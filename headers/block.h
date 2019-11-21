@@ -143,7 +143,7 @@ API cs_bool Block_Define(BlockDef info);
 API cs_bool Block_Undefine(BlockID id);
 API void Block_UpdateDefinitions();
 
-API cs_bool Block_BulkUpdateAdd(BulkBlockUpdate bbu, SVec* pos, BlockID id);
+API cs_bool Block_BulkUpdateAdd(BulkBlockUpdate bbu, cs_uint32 offset, BlockID id);
 API void Block_BulkUpdateSend(BulkBlockUpdate bbu);
 void Block_BulkUpdateClean(BulkBlockUpdate bbu);
 #endif

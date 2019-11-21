@@ -101,14 +101,13 @@ void Block_UpdateDefinitions() {
 	}
 }
 
-cs_bool Block_BulkUpdateAdd(BulkBlockUpdate bbu, SVec* pos, BlockID id) {
+cs_bool Block_BulkUpdateAdd(BulkBlockUpdate bbu, cs_uint32 offset, BlockID id) {
 	if(bbu->data.count == 255) {
 		if(bbu->autosend) {
 			Block_BulkUpdateSend(bbu);
 			Block_BulkUpdateClean(bbu);
 		} else return false;
 	}
-	cs_uint32 offset = World_GetOffset(bbu->world, pos);
 	cs_uint8 bcount = bbu->data.count++;
 	((cs_uint32*)bbu->data.offsets)[bcount] = htonl(offset - 4);
 	bbu->data.ids[bcount] = id;

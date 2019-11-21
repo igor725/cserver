@@ -103,7 +103,7 @@ API void World_Unload(World world);
 API cs_bool World_Save(World world, cs_bool unload);
 
 API void World_SetDimensions(World world, const SVec* dims);
-API cs_bool World_SetBlock(World world, SVec* pos, BlockID id);
+API cs_uint32 World_SetBlock(World world, SVec* pos, BlockID id);
 API cs_bool World_SetEnvColor(World world, cs_uint8 type, Color3* color);
 API cs_bool World_SetEnvProperty(World world, cs_uint8 property, cs_int32 value);
 API cs_bool World_SetTexturePack(World world, const char* url);
