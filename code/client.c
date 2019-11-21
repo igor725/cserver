@@ -100,6 +100,8 @@ cs_bool Assoc_Remove(Client client, cs_uint16 type, cs_bool freeData) {
 		nptr->next->prev = nptr->next;
 	if(nptr->prev)
 		nptr->prev->next = nptr->prev;
+	else
+		client->headNode = NULL;
 	if(freeData) Memory_Free(nptr->dataptr);
 	Memory_Free((void*)nptr);
 	return true;
