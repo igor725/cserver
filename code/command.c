@@ -54,6 +54,12 @@ cs_bool Command_Unregister(Command cmd) {
 	return true;
 }
 
+cs_bool Command_UnregisterByName(const char* name) {
+	Command cmd = Command_Get(name);
+	if(!cmd) return false;
+	return Command_Unregister(cmd);
+}
+
 static cs_bool CHandler_OP(CommandCallData ccdata) {
 	const char* cmdUsage = "/op <playername>";
 	Command_OnlyForOP(ccdata);
