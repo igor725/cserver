@@ -411,15 +411,18 @@ cs_uint32 World_GetOffset(World world, SVec* pos) {
 	return pos->z * dim->z + pos->y * (dim->x * dim->y) + pos->x + 4;
 }
 
-cs_uint32 World_SetBlock(World world, SVec* pos, BlockID id) {
-	cs_uint32 offset = World_GetOffset(world, pos);
-
+cs_bool World_SetBlockO(World world, cs_uint32 offset, BlockID id) {
 	if(offset > 0) {
 		world->data[offset] = id;
 		world->modified = true;
-	} else return 0;
+	} else return false;
 
-	return offset;
+	return true;
+}
+
+cs_bool World_SetBlock(World world, SVec* pos, BlockID id) {
+	cs_uint32 offset = World_GetOffset(world, pos);
+	return World_SetBlockO(world, offset, id);
 }
 
 BlockID World_GetBlock(World world, SVec* pos) {
