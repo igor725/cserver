@@ -27,11 +27,17 @@ Command Command_Register(const char* name, cmdFunc func) {
 	return tmp;
 }
 
+void Command_SetAlias(Command cmd, const char* alias) {
+	if(cmd->alias) Memory_Free((void*)cmd->alias);
+	cmd->alias = String_AllocCopy(alias);
+}
+
 Command Command_Get(const char* name) {
 	Command ptr = HeadCmd;
 
 	while(ptr) {
-		if(String_CaselessCompare(ptr->name, name))
+		if(String_CaselessCompare(ptr->name, name) ||
+		(ptr->alias && String_CaselessCompare(ptr->alias, name)))
 			return ptr;
 		ptr = ptr->next;
 	}
@@ -435,24 +441,21 @@ cs_bool Command_Handle(char* cmd, Client caller) {
 		}
 	}
 
-	Command tmp = HeadCmd;
 	struct _CommandCallData cdata;
 	cdata.args = (const char*)args;
 	cdata.caller = caller;
 	cdata.out = ret;
 
-	while(tmp) {
-		if(String_CaselessCompare(tmp->name, cmd)) {
-			cdata.command = tmp;
-			if(tmp->func(&cdata)) {
-				if(caller) {
-					SendOutputToClient(caller, ret);
-				} else
-					Log_Info(ret);
-			}
-			return true;
+	Command _cmd = Command_Get(cmd);
+	if(_cmd) {
+		cdata.command = _cmd;
+		if(_cmd->func(&cdata)) {
+			if(caller) {
+				SendOutputToClient(caller, ret);
+			} else
+				Log_Info(ret);
 		}
-		tmp = tmp->next;
+		return true;
 	}
 
 	return false;

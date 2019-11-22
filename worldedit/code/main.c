@@ -110,7 +110,8 @@ static cs_bool CHandler_Replace(CommandCallData ccdata) {
 	}
 
 	char fromt[4], tot[4];
-	if(!String_GetArgument(ccdata->args, fromt, 4, 0) || !String_GetArgument(ccdata->args, tot, 4, 1)) {
+	if(!String_GetArgument(ccdata->args, fromt, 4, 0) ||
+	!String_GetArgument(ccdata->args, tot, 4, 1)) {
 		Command_PrintUsage(ccdata);
 	}
 
@@ -151,9 +152,13 @@ cs_int32 Plugin_ApiVer = PLUGIN_API_NUM;
 
 cs_bool Plugin_Load(void) {
 	WeAT = Assoc_NewType();
-	Command_Register("select", CHandler_Select);
-	Command_Register("set", CHandler_Set);
-	Command_Register("replace", CHandler_Replace);
+	Command cmd;
+	cmd = Command_Register("select", CHandler_Select);
+	Command_SetAlias(cmd, "sel");
+	cmd = Command_Register("fill", CHandler_Set);
+	Command_SetAlias(cmd, "set");
+	cmd = Command_Register("replace", CHandler_Replace);
+	Command_SetAlias(cmd, "repl");
 	Event_RegisterVoid(EVT_ONCLICK, clickhandler);
 	Event_RegisterVoid(EVT_ONDISCONNECT, freeselvecs);
 	return true;
