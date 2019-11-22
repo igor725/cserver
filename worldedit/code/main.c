@@ -167,7 +167,7 @@ cs_bool Plugin_Load(void) {
 cs_bool Plugin_Unload(void) {
 	Assoc_DelType(WeAT, true);
 	Command_UnregisterByName("select");
-	Command_UnregisterByName("set");
+	Command_UnregisterByName("fill");
 	Command_UnregisterByName("replace");
 	Event_Unregister(EVT_ONCLICK, (cs_uintptr)clickhandler);
 	Event_Unregister(EVT_ONDISCONNECT, (cs_uintptr)freeselvecs);
