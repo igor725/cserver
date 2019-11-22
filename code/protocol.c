@@ -10,7 +10,7 @@
 #include "command.h"
 #include "lang.h"
 
-Packet PackList[MAX_PACKETS] = {0};
+Packet PacketsList[MAX_PACKETS];
 cs_uint16 extensionsCount;
 CPEExt headExtension;
 
@@ -209,11 +209,11 @@ void Packet_Register(cs_int32 id, cs_uint16 size, packetHandler handler) {
 	Packet tmp = Memory_Alloc(1, sizeof(struct packet));
 	tmp->size = size;
 	tmp->handler = handler;
-	PackList[id] = tmp;
+	PacketsList[id] = tmp;
 }
 
 void Packet_RegisterCPE(cs_int32 id, cs_uint32 extCRC32, cs_int32 version, cs_uint16 size, packetHandler handler) {
-	Packet tmp = PackList[id];
+	Packet tmp = PacketsList[id];
 	tmp->extCRC32 = extCRC32;
 	tmp->extVersion = version;
 	tmp->cpeHandler = handler;
@@ -289,7 +289,7 @@ void Packet_RegisterDefault(void) {
 }
 
 Packet Packet_Get(cs_int32 id) {
-	return id < MAX_PACKETS ? PackList[id] : NULL;
+	return id < MAX_PACKETS ? PacketsList[id] : NULL;
 }
 
 /*
