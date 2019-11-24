@@ -290,7 +290,8 @@ static TRET wSaveThread(TARG param) {
 			goto wsdone;
 		}
 
-		if(!File_Write(out, 1, 1024 - stream.avail_out, fp)){
+		if(!File_Write(out, 1, 1024 - stream.avail_out, fp)) {
+			Error_PrintSys(false);
 			goto wsdone;
 		}
 	} while(stream.avail_out == 0);
@@ -323,7 +324,7 @@ cs_bool World_Save(World world, cs_bool unload) {
 static TRET wLoadThread(TARG param) {
 	World world = param;
 
-	cs_int32 ret = 0;
+	cs_bool error = true;
 	char path[256];
 	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
 
@@ -338,6 +339,7 @@ static TRET wLoadThread(TARG param) {
 
 	World_AllocBlockArray(world);
 
+	cs_int32 ret;
 	cs_uint8 in[1024];
 	z_stream stream;
 	stream.zalloc = Z_NULL;
@@ -363,18 +365,18 @@ static TRET wLoadThread(TARG param) {
 
 		do {
 			stream.avail_out = 1024;
-			if((ret = inflate(&stream, Z_NO_FLUSH)) == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
+			if((ret = inflate(&stream, Z_FINISH)) == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
 				Error_Print2(ET_ZLIB, ret, false);
 				goto wldone;
 			}
 		} while(stream.avail_out == 0);
 	} while(ret != Z_STREAM_END);
 
-	ret = 0;
+	error = true;
 	wldone:
 	File_Close(fp);
 	inflateEnd(&stream);
-	if(ret != 0)
+	if(error)
 		World_Unload(world);
 	world->process = WP_NOPROC;
 	world->saveUnload = false;
