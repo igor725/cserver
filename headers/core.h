@@ -110,7 +110,6 @@ EXP cs_int32 Plugin_ApiVer;
 #define MAX_PACKETS 256
 #define MAX_WORLDS 256
 #define MAX_EVENTS 128
-#define EVENT_TYPES 16
 
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
 #define MODE(b) (b ? Lang_Get(LANG_ENABLED) : Lang_Get(LANG_DISABLED))

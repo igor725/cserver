@@ -69,7 +69,7 @@ Packet Packet_Get(cs_int32 id);
 API void Packet_Register(cs_int32 id, cs_uint16 size, packetHandler handler);
 API void Packet_RegisterCPE(cs_int32 id, cs_uint32 extCRC32, cs_int32 extVersion, cs_uint16 extSize, packetHandler handler);
 
-API cs_uint8 Proto_ReadString(const char** data, const char** dst);
+API cs_uint8 Proto_ReadString(const char** data, const char** dstptr);
 API cs_uint8 Proto_ReadStringNoAlloc(const char** data, char* dst);
 API void Proto_ReadSVec(const char** dataptr, SVec* vec);
 API void Proto_ReadAng(const char** dataptr, Ang* ang);

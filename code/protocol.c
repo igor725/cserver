@@ -104,24 +104,21 @@ cs_uint32 Proto_WriteClientPos(char* data, Client client, cs_bool extended) {
 	return extended ? 12 : 6;
 }
 
-cs_uint8 Proto_ReadString(const char** dataptr, const char** dst) {
+cs_uint8 Proto_ReadString(const char** dataptr, const char** dstptr) {
 	const char* data = *dataptr;
 	*dataptr += 64;
 	cs_uint8 end;
 
-	for(end = 64; end > 0; end--) {
-		if(data[end - 1] != ' ')
-			break;
-	}
+	for(end = 64; end > 0; end--)
+		if(data[end - 1] != ' ') break;
 
 	if(end > 0) {
 		char* str = Memory_Alloc(end + 1, 1);
 		Memory_Copy(str, data, end);
 		str[end] = '\0';
-		if(*dst) Memory_Free((void*)*dst);
-		*dst = str;
+		if(*dstptr) Memory_Free((void*)*dstptr);
+		*dstptr = str;
 	};
-
 
 	return end;
 }
@@ -131,10 +128,8 @@ cs_uint8 Proto_ReadStringNoAlloc(const char** dataptr, char* dst) {
 	*dataptr += 64;
 	cs_uint8 end;
 
-	for(end = 64; end > 0; end--) {
-		if(data[end - 1] != ' ')
-			break;
-	}
+	for(end = 64; end > 0; end--)
+		if(data[end - 1] != ' ') break;
 
 	if(end > 0) {
 		Memory_Copy(dst, data, end);

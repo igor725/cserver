@@ -3,12 +3,12 @@
 #include "client.h"
 #include "event.h"
 
-EVENT Event_List[EVENT_TYPES][MAX_EVENTS] = {0};
+Event Event_List[EVENT_TYPES][MAX_EVENTS];
 
 #define rgPart1 \
 for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) { \
 	if(!Event_List[type][pos]) { \
-		EVENT evt = Memory_Alloc(1, sizeof(struct event));
+		Event evt = Memory_Alloc(1, sizeof(struct _Event));
 
 #define rgPart2 \
 		Event_List[type][pos] = evt; \
@@ -33,10 +33,9 @@ cs_bool Event_RegisterVoid(cs_uint32 type, evtVoidCallback func) {
 
 cs_bool Event_Unregister(cs_uint32 type, cs_uintptr evtFuncPtr) {
 	for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) {
-		EVENT evt = Event_List[type][pos];
-		if(!evt) continue;
+		Event evt = Event_List[type][pos];
 
-		if(evt->func.fptr == evtFuncPtr) {
+		if(evt && evt->func.fptr == evtFuncPtr) {
 			Event_List[type][pos] = NULL;
 			return true;
 		}
@@ -48,7 +47,7 @@ cs_bool Event_Call(cs_uint32 type, void* param) {
 	cs_bool ret = true;
 
 	for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) {
-		EVENT evt = Event_List[type][pos];
+		Event evt = Event_List[type][pos];
 		if(!evt) continue;
 
 		if(evt->rtype == EVT_RTBOOL)

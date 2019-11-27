@@ -19,7 +19,9 @@ enum {
 	EVT_ONROTATE,
 	EVT_ONDISCONNECT,
 	EVT_ONWEATHER,
-	EVT_ONCOLOR
+	EVT_ONCOLOR,
+
+	EVENT_TYPES
 };
 
 enum {
@@ -54,14 +56,14 @@ typedef struct _onPlayerClick {
 	char face;
 } *onPlayerClick;
 
-typedef struct event {
+typedef struct _Event {
 	cs_uint32 rtype;
 	union {
 		evtBoolCallback fbool;
 		evtVoidCallback fvoid;
 		cs_uintptr fptr;
 	} func;
-} *EVENT;
+} *Event;
 
 API cs_bool Event_RegisterBool(cs_uint32 type, evtBoolCallback func);
 API cs_bool Event_RegisterVoid(cs_uint32 type, evtVoidCallback func);
