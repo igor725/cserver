@@ -120,4 +120,4 @@ API void Time_Format(char* buf, cs_size len);
 API cs_uint64 Time_GetMSec(void);
 
 API void Process_Exit(cs_uint32 ecode);
-#endif
+#endif // PLATFORM_H

@@ -31,4 +31,4 @@ typedef struct wsClient {
 cs_bool WsClient_DoHandshake(WsClient ws);
 cs_bool WsClient_ReceiveFrame(WsClient ws);
 cs_bool WsClient_SendHeader(WsClient ws, cs_uint8 opcode, cs_uint16 len);
-#endif
+#endif // WEBSOCKET_H

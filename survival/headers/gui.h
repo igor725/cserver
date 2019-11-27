@@ -4,4 +4,4 @@ void SurvGui_DrawHealth(SURVDATA data);
 void SurvGui_DrawBreakProgress(SURVDATA data);
 void SurvGui_DrawBlockInfo(SURVDATA data, BlockID id);
 void SurvGui_DrawAll(SURVDATA data);
-#endif
+#endif // SURV_GUI_H

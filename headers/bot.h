@@ -11,4 +11,4 @@ API void Bot_SetSkin(Client bot, const char* skin);
 API void Bot_UpdatePosition(Client bot);
 API cs_bool Bot_Update(Client bot);
 API void Bot_Free(Client bot);
-#endif
+#endif // BOT_H

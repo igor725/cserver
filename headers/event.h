@@ -72,4 +72,4 @@ cs_bool Event_OnMessage(Client client, char* message, MessageType* type);
 void Event_OnHeldBlockChange(Client client, BlockID prev, BlockID curr);
 cs_bool Event_OnBlockPlace(Client client, cs_uint8 mode, SVec* pos, BlockID* id);
 void Event_OnClick(Client client, char button, char action, cs_int16 yaw, cs_int16 pitch, ClientID tgID, SVec* tgBlockPos, char tgBlockFace);
-#endif
+#endif // EVENT_H

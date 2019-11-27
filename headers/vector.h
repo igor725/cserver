@@ -19,4 +19,4 @@ static inline cs_bool SVec_Compare(const SVec* a, const SVec* b) {
 #define Vec_Set(v, vx, vy, vz) (v).x = vx; (v).y = vy; (v).z = vz;
 #define Vec_IsInvalid(v) ((v)->x == -1 && (v)->y == -1 && (v)->z == -1)
 #define Vec_IsZero(v) ((v)->x == 0 && (v)->y == 0 && (v)->z == 0)
-#endif
+#endif // VECTOR_H

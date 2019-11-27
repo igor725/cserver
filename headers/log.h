@@ -18,4 +18,4 @@ API void Log_Debug(const char* str, ...);
 
 API void Log_SetLevelStr(const char* str);
 VAR cs_uint8 Log_Level;
-#endif
+#endif // LOG_H

@@ -67,4 +67,4 @@ enum {
 };
 
 API const char* Lang_Get(cs_int32 langid);
-#endif
+#endif // LANG_H

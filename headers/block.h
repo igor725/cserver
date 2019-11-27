@@ -146,4 +146,4 @@ API void Block_UpdateDefinitions();
 API cs_bool Block_BulkUpdateAdd(BulkBlockUpdate bbu, cs_uint32 offset, BlockID id);
 API void Block_BulkUpdateSend(BulkBlockUpdate bbu);
 API void Block_BulkUpdateClean(BulkBlockUpdate bbu);
-#endif
+#endif // BLOCK_H

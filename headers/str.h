@@ -22,4 +22,4 @@ cs_uint32 String_CRC32(const cs_uint8* str);
 API cs_int32 String_ToInt(const char* str);
 API cs_int32 String_HexToInt(const char* str);
 API float String_ToFloat(const char* str);
-#endif
+#endif // STR_H

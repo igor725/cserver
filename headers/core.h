@@ -14,7 +14,7 @@
 #define API __declspec(dllimport)
 #define VAR __declspec(dllimport)
 #define EXP __declspec(dllexport)
-#endif
+#endif // PLUGIN_BUILD
 
 typedef __int8 cs_int8;
 typedef __int16 cs_int16;
@@ -30,7 +30,7 @@ typedef unsigned __int64 cs_size;
 #else
 typedef unsigned int cs_uintptr;
 typedef unsigned int cs_size;
-#endif
+#endif // _WIN64
 #elif defined(__unix__)
 #define POSIX
 #define PATH_DELIM "/"
@@ -44,7 +44,7 @@ typedef unsigned int cs_size;
 #define API
 #define VAR
 #define EXP __attribute__((__visibility__("default")))
-#endif
+#endif // PLUGIN_BUILD
 
 #define min(a, b) (((a)<(b))?(a):(b))
 #define max(a, b) (((a)>(b))?(a):(b))
@@ -65,7 +65,7 @@ typedef __UINTPTR_TYPE__ cs_uintptr;
 typedef __SIZE_TYPE__ cs_size;
 #else
 #error Unknown OS
-#endif
+#endif // OS defines
 
 #define true  1
 #define false 0

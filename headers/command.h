@@ -75,4 +75,4 @@ API cs_bool Command_UnregisterByName(const char* name);
 
 void Command_RegisterDefault(void);
 cs_bool Command_Handle(char* cmd, Client caller);
-#endif
+#endif // COMMAND_H

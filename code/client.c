@@ -643,6 +643,14 @@ cs_bool Client_SetSkin(Client client, const char* skin) {
 	return true;
 }
 
+cs_bool Client_SetVelocity(Client client, Vec* velocity, cs_bool mode) {
+	if(Client_GetExtVer(client, EXT_VELCTRL)) {
+		CPE_WriteVelocityControl(client, velocity, mode);
+		return true;
+	}
+	return false;
+}
+
 cs_bool Client_SetRotation(Client client, cs_uint8 axis, cs_int32 value) {
 	if(axis > 2) return false;
 	CPEData cpd = client->cpeData;

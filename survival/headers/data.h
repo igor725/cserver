@@ -27,4 +27,4 @@ void SurvData_Create(Client cl);
 void SurvData_Free(Client cl);
 SURVDATA SurvData_Get(Client cl);
 SURVDATA SurvData_GetByID(ClientID id);
-#endif
+#endif // SURV_DATA_H

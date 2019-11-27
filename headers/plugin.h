@@ -14,4 +14,4 @@ cs_bool Plugin_Load(const char* name);
 cs_bool Plugin_Unload(Plugin plugin);
 Plugin Plugin_Get(const char* name);
 Plugin Plugins_List[MAX_PLUGINS];
-#endif
+#endif // PLUGIN_H

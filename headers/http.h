@@ -65,4 +65,4 @@ API void HttpResponse_SetBody(HTTPRESP resp, char* body, cs_int32 size);
 API cs_bool HttpResponse_SendTo(HTTPRESP resp, Socket sock);
 API cs_bool HttpResponse_Read(HTTPRESP resp, Socket sock);
 API void HttpResponse_Cleanup(HTTPRESP resp);
-#endif
+#endif // HTTP_H

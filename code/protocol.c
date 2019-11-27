@@ -267,6 +267,7 @@ static const struct extReg serverExtensions[] = {
 	{"FastMap", 1},
 	{"SetHotbar", 1},
 	// {"SetSpawnpoint", 1},
+	{"VelocityControl", 1},
 	{NULL, 0}
 };
 
@@ -906,6 +907,16 @@ void CPE_WriteSetHotBar(Client client, Order order, BlockID block) {
 }
 
 // 0x2E - SetSpawn
+
+void CPE_WriteVelocityControl(Client client, Vec* velocity, cs_bool mode) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x2F;
+	Proto_WriteFlVec(&data, velocity);
+	*(cs_uint32*)data = mode ? true : false; // Why not?
+
+	PacketWriter_End(client, 16);
+}
 
 cs_bool CPEHandler_ExtInfo(Client client, const char* data) {
 	ValidateCpeClient(client, false);

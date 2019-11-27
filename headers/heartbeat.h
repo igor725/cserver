@@ -5,4 +5,4 @@
 cs_bool Heartbeat_CheckKey(Client client);
 void Heartbeat_Start(cs_uint32 delay);
 void Heartbeat_Close(void);
-#endif
+#endif // HEARTBEAT_H

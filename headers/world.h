@@ -119,4 +119,4 @@ API World World_GetByName(const char* name);
 API World World_GetByID(WorldID id);
 
 VAR World Worlds_List[MAX_WORLDS];
-#endif
+#endif // WORLD_H

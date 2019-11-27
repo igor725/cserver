@@ -25,4 +25,4 @@ void Server_InitialWork(void);
 void Server_DoStep(void);
 void Server_StartLoop(void);
 void Server_Stop(void);
-#endif
+#endif // SERVER_H

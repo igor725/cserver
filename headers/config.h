@@ -87,4 +87,4 @@ API cs_bool Config_GetBool(CEntry ent);
 API cs_bool Config_GetBoolByKey(CStore store, const char* key);
 API void Config_SetDefaultBool(CEntry ent, cs_bool value);
 API void Config_SetBool(CEntry ent, cs_bool value);
-#endif
+#endif // CONFIG_H

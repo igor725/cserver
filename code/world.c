@@ -372,7 +372,7 @@ static TRET wLoadThread(TARG param) {
 		} while(stream.avail_out == 0);
 	} while(ret != Z_STREAM_END);
 
-	error = true;
+	error = false;
 	wldone:
 	File_Close(fp);
 	inflateEnd(&stream);

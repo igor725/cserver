@@ -5,4 +5,4 @@ typedef struct _WED {
 	Client client;
 	SVec start, end;
 } *WEClientData;
-#endif
+#endif // WE_MAIN_H

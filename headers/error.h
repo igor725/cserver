@@ -39,4 +39,4 @@ if(abort) { \
 API cs_int32 Error_GetSysCode(void);
 API void Error_Print(cs_int32 type, cs_uint32 code, const char* file, cs_uint32 line, const char* func);
 API void Error_PrintF(cs_int32 type, cs_uint32 code, const char* file, cs_uint32 line, const char* func, ...);
-#endif
+#endif // ERROR_H
