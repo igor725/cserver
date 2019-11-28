@@ -262,13 +262,13 @@ cs_bool Config_Save(CStore store) {
 				break;
 			case CFG_INT32:
 				vint = Config_GetInt32(ptr);
-				goto writeint;
+				goto cfg_write_int;
 			case CFG_INT16:
 				vint = Config_GetInt16(ptr);
-				goto writeint;
+				goto cfg_write_int;
 			case CFG_INT8:
 				vint = Config_GetInt8(ptr);
-				writeint:
+				cfg_write_int:
 				if(!File_WriteFormat(fp, "=%d\n", vint)) {
 					CFG_SYSERROR;
 					return false;

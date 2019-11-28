@@ -23,8 +23,8 @@ void Worlds_SaveAll(cs_bool join, cs_bool unload) {
 }
 
 World World_Create(const char* name) {
-	World tmp = Memory_Alloc(1, sizeof(struct world));
-	WorldInfo wi = Memory_Alloc(1, sizeof(struct worldInfo));
+	World tmp = Memory_Alloc(1, sizeof(struct _World));
+	WorldInfo wi = Memory_Alloc(1, sizeof(struct _WorldInfo));
 
 	tmp->name = String_AllocCopy(name);
 	tmp->wait = Waitable_Create();
@@ -259,11 +259,11 @@ static TRET wSaveThread(TARG param) {
 	FILE* fp = File_Open(tmpname, "w");
 	if(!fp) {
 		Error_PrintSys(false);
-		goto wsdone;
+		goto world_save_done;
 	}
 
 	if(!World_WriteInfo(world, fp)) {
-		goto wsdone;
+		goto world_save_done;
 	}
 
 	cs_uint8 out[1024];
@@ -275,7 +275,7 @@ static TRET wSaveThread(TARG param) {
 
 	if((ret = deflateInit(&stream, Z_BEST_COMPRESSION)) != Z_OK) {
 		Error_Print2(ET_ZLIB, ret, false);
-		goto wsdone;
+		goto world_save_done;
 	}
 
 	stream.avail_in = world->size + 4;
@@ -287,18 +287,18 @@ static TRET wSaveThread(TARG param) {
 
 		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
 			Error_Print2(ET_ZLIB, ret, false);
-			goto wsdone;
+			goto world_save_done;
 		}
 
 		if(!File_Write(out, 1, 1024 - stream.avail_out, fp)) {
 			Error_PrintSys(false);
-			goto wsdone;
+			goto world_save_done;
 		}
 	} while(stream.avail_out == 0);
 
 	succ = true;
 
-	wsdone:
+	world_save_done:
 	File_Close(fp);
 	deflateEnd(&stream);
 	world->process = WP_NOPROC;
@@ -331,11 +331,11 @@ static TRET wLoadThread(TARG param) {
 	FILE* fp = File_Open(path, "r");
 	if(!fp) {
 		Error_PrintSys(false);
-		goto wldone;
+		goto world_load_done;
 	}
 
 	if(!World_ReadInfo(world, fp))
-		goto wldone;
+		goto world_load_done;
 
 	World_AllocBlockArray(world);
 
@@ -348,7 +348,7 @@ static TRET wLoadThread(TARG param) {
 
 	if((ret = inflateInit(&stream)) != Z_OK) {
 		Error_Print2(ET_ZLIB, ret, false);
-		goto wldone;
+		goto world_load_done;
 	}
 
 	stream.next_out = (cs_uint8*)world->data;
@@ -357,7 +357,7 @@ static TRET wLoadThread(TARG param) {
 		stream.avail_in = (cs_uint32)File_Read(in, 1, 1024, fp);
 		if(File_Error(fp)) {
 			Error_PrintSys(false);
-			goto wldone;
+			goto world_load_done;
 		}
 
 		if(stream.avail_in == 0) break;
@@ -367,13 +367,13 @@ static TRET wLoadThread(TARG param) {
 			stream.avail_out = 1024;
 			if((ret = inflate(&stream, Z_FINISH)) == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
 				Error_Print2(ET_ZLIB, ret, false);
-				goto wldone;
+				goto world_load_done;
 			}
 		} while(stream.avail_out == 0);
 	} while(ret != Z_STREAM_END);
-
 	error = false;
-	wldone:
+
+	world_load_done:
 	File_Close(fp);
 	inflateEnd(&stream);
 	if(error)

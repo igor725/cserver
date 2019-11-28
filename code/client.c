@@ -305,7 +305,7 @@ static TRET wSendThread(TARG param) {
 	Vanilla_WriteLvlInit(client);
 	Mutex_Lock(client->mutex);
 	cs_uint8* data = (cs_uint8*)client->wrbuf;
-	cs_uint8* worldData = world->data;
+	BlockID* worldData = world->data;
 	cs_int32 worldSize = world->size;
 
 	*data++ = 0x03;
@@ -343,18 +343,18 @@ static TRET wSendThread(TARG param) {
 
 		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
 			pd->state = STATE_WLOADERR;
-			goto end;
+			goto world_send_end;
 		}
 
 		*len = htons(1024 - (cs_uint16)stream.avail_out);
 		if(client->closed || !Client_Send(client, 1028)) {
 			pd->state = STATE_WLOADERR;
-			goto end;
+			goto world_send_end;
 		}
 	} while(stream.avail_out == 0);
 	pd->state = STATE_WLOADDONE;
 
-	end:
+	world_send_end:
 	deflateEnd(&stream);
 	Mutex_Unlock(client->mutex);
 	if(pd->state == STATE_WLOADDONE) {
@@ -365,8 +365,7 @@ static TRET wSendThread(TARG param) {
 		if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
 			for(BlockID id = 0; id < 255; id++) {
 				BlockDef bdef = Block_DefinitionsList[id];
-				if(bdef)
-					Client_DefineBlock(client, bdef);
+				if(bdef) Client_DefineBlock(client, bdef);
 			}
 		}
 		Vanilla_WriteLvlFin(client, &world->info->dimensions);
@@ -829,7 +828,7 @@ static void PacketReceiverWs(Client client) {
 		}
 
 		recvSize = ws->plen - 1;
-		handlePacket:
+		packet_handle:
 		packet = Packet_Get(*data++);
 		if(!packet) {
 			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
@@ -850,7 +849,7 @@ static void PacketReceiverWs(Client client) {
 			if(recvSize > packetSize) {
 				data += packetSize;
 				recvSize -= packetSize + 1;
-				goto handlePacket;
+				goto packet_handle;
 			}
 
 			return;

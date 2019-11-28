@@ -5,7 +5,7 @@
 /*
 ** Если какой-то из дефайнов ниже
 ** вырос, удостовериться, что
-** int-типа в структуре worldInfo
+** int-типа в структуре _WorldInfo
 ** хватает для представления всех
 ** этих значений в степени двойки.
 */
@@ -64,7 +64,7 @@ enum {
 	WP_LOADING,
 };
 
-typedef struct worldInfo {
+typedef struct _WorldInfo {
 	SVec dimensions;
 	Color3 colors[WORLD_COLORS_COUNT];
 	cs_int32 props[WORLD_PROPS_COUNT];
@@ -77,7 +77,7 @@ typedef struct worldInfo {
 	cs_uint8 modclr;
 } *WorldInfo;
 
-typedef struct world {
+typedef struct _World {
 	WorldID id;
 	const char* name;
 	cs_uint32 size;
