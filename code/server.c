@@ -135,7 +135,8 @@ void Server_InitialWork(void) {
 	Config_SetDefaultBool(ent, false);
 
 	ent = Config_NewEntry(cfg, CFG_HEARTBEATDELAY_KEY, CFG_INT32);
-	Config_SetComment(ent, "Heartbeat request delay.");
+	Config_SetComment(ent, "Heartbeat request delay. [1-60]");
+	Config_SetLimit(ent, 1, 60);
 	Config_SetDefaultInt32(ent, 10);
 
 	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_PUBLIC_KEY, CFG_BOOL);
