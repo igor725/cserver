@@ -310,7 +310,7 @@ static TRET wSendThread(TARG param) {
 
 	*data++ = 0x03;
 	cs_uint16* len = (cs_uint16*)data++;
-	cs_uint8* out = ++data;
+	Bytef* out = ++data;
 
 	cs_int32 ret, windBits = 31;
 	z_stream stream;
@@ -334,8 +334,8 @@ static TRET wSendThread(TARG param) {
 		return 0;
 	}
 
-	stream.avail_in = worldSize;
-	stream.next_in = worldData;
+	stream.avail_in = (uLongf)worldSize;
+	stream.next_in = (Bytef*)worldData;
 
 	do {
 		stream.next_out = out;
@@ -440,8 +440,10 @@ static cs_uint32 copyMessagePart(const char* message, char* part, cs_uint32 i, c
 	if(message[len - 1] == '&' && ISHEX(message[len])) --len;
 
 	for(cs_uint32 j = 0; j < len; j++) {
-		char prevsym = (*part++ = *message++);
+		char prevsym = *message++;
 		char nextsym = *message;
+		
+		if(prevsym != '\r') *part++ = prevsym;
 		if(nextsym == '\0' || nextsym == '\n') break;
 		if(prevsym == '&' && ISHEX(nextsym)) *color = nextsym;
 	}

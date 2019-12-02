@@ -266,7 +266,7 @@ static TRET wSaveThread(TARG param) {
 		goto world_save_done;
 	}
 
-	cs_uint8 out[1024];
+	Bytef out[1024];
 	cs_int32 ret;
 	z_stream stream;
 	stream.zalloc = Z_NULL;
@@ -278,8 +278,8 @@ static TRET wSaveThread(TARG param) {
 		goto world_save_done;
 	}
 
-	stream.avail_in = world->size + 4;
-	stream.next_in = (cs_uint8*)world->data;
+	stream.avail_in = (uLongf)world->size + 4;
+	stream.next_in = (Bytef*)world->data;
 
 	do {
 		stream.next_out = out;
@@ -340,7 +340,7 @@ static TRET wLoadThread(TARG param) {
 	World_AllocBlockArray(world);
 
 	cs_int32 ret;
-	cs_uint8 in[1024];
+	Bytef in[1024];
 	z_stream stream;
 	stream.zalloc = Z_NULL;
 	stream.zfree = Z_NULL;
@@ -351,10 +351,10 @@ static TRET wLoadThread(TARG param) {
 		goto world_load_done;
 	}
 
-	stream.next_out = (cs_uint8*)world->data;
+	stream.next_out = (Bytef*)world->data;
 
 	do {
-		stream.avail_in = (cs_uint32)File_Read(in, 1, 1024, fp);
+		stream.avail_in = (uLongf)File_Read(in, 1, 1024, fp);
 		if(File_Error(fp)) {
 			Error_PrintSys(false);
 			goto world_load_done;

@@ -83,7 +83,7 @@ static void Bind(const char* ip, cs_uint16 port) {
 	}
 
 	Client_Init();
-	Log_Info(Lang_Get(LANG_SVSTART), SOFTWARE_FULLNAME, ip, port);
+	Log_Info(Lang_Get(LANG_SVSTART), ip, port);
 	if(!Socket_Bind(Server_Socket, &ssa)) {
 		Error_PrintSys(true);
 	}
@@ -153,7 +153,7 @@ void Server_InitialWork(void) {
 	Packet_RegisterDefault();
 	Command_RegisterDefault();
 
-	Log_Info(Lang_Get(LANG_SVPLUGINLOAD));
+	Log_Info(Lang_Get(LANG_SVLOADING), "C plugins");
 	Plugin_Start();
 
 	Directory_Ensure("worlds");

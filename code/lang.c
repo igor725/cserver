@@ -13,15 +13,13 @@ const char* Lang_Get(cs_int32 langid) {
 			return "&aenabled";
 
 		case LANG_SVSTART:
-			return "%s started on %s:%d.";
+			return "Server started on %s:%d.";
 		case LANG_SVMANYCONN:
 			return "Too many connections from one IP.";
 		case LANG_SVPLCONN:
 			return "Player %s connected with %s.";
 		case LANG_SVPLDISCONN:
 			return "Player %s disconnected.";
-		case LANG_SVPLUGINLOAD:
-			return "Loading C plugins...";
 		case LANG_HBEAT:
 			return "Spawning heartbeat thread...";
 		case LANG_SVDELTALT0:

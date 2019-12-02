@@ -10,6 +10,7 @@
 #include "config.h"
 #include "plugin.h"
 #include "lang.h"
+#include <zlib.h>
 
 Command HeadCmd;
 
@@ -64,6 +65,30 @@ cs_bool Command_UnregisterByName(const char* name) {
 	Command cmd = Command_Get(name);
 	if(!cmd) return false;
 	return Command_Unregister(cmd);
+}
+
+static cs_bool CHandler_Info(CommandCallData ccdata) {
+	Command_OnlyForOP(ccdata);
+	
+	const char* zver = zlibVersion();
+	uLong zflags = zlibCompileFlags();
+	const char* format =
+	"Some info about server:\r\n"
+	"OS: "
+	#if defined(WINDOWS)
+	"Windows\r\n"
+	#elif defined(POSIX)
+	"Unix-like\r\n"
+	#endif
+	"Modules:\r\n"
+	"  Server core: %s\r\n"
+	"  PluginAPI version: %d\r\n"
+	"  zlib version: %s (build flags: %d)";
+	Command_Printf(ccdata, format,
+		GIT_COMMIT_SHA,
+		PLUGIN_API_NUM,
+		zver, zflags
+	);
 }
 
 static cs_bool CHandler_OP(CommandCallData ccdata) {
@@ -389,6 +414,7 @@ static cs_bool CHandler_SavWorld(CommandCallData ccdata) {
 }
 
 void Command_RegisterDefault(void) {
+	Command_Register("info", CHandler_Info);
 	Command_Register("op", CHandler_OP);
 	Command_Register("uptime", CHandler_Uptime);
 	Command_Register("cfg", CHandler_CFG);
