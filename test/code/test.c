@@ -61,7 +61,7 @@ static cs_bool CHandler_Atoggle(CommandCallData ccdata) {
 ** вновь, вплоть до перезапуска сервера.
 */
 static cs_bool CHandler_SelfDestroy(CommandCallData ccdata) {
-	Command_Unregister("selfdestroy");
+	Command_UnregisterByName("selfdestroy");
 	Command_Print(ccdata, "This command can't be called anymore");
 }
 
@@ -88,7 +88,7 @@ static cs_bool CHandler_ClientOnly(CommandCallData ccdata) {
 ** в файле block.h.
 */
 
-static sBlockDef myBlock = {
+static struct _BlockDef myBlock = {
 	BLOCK_ID, "My test block", 0,
 	{{
 		BDSOL_SOLID,
@@ -103,7 +103,7 @@ static sBlockDef myBlock = {
 	}}
 };
 
-static sBlockDef myExtendedBlock = {
+static struct _BlockDef myExtendedBlock = {
 	BLOCK_ID_EXT, "My extended test block", BDF_EXTENDED,
 	{{
 		BDSOL_SWIM,
@@ -206,10 +206,10 @@ cs_bool Plugin_Unload(void) {
 	** оно не нужно.
 	*/
 	Event_Unregister(EVT_ONMESSAGE, (cs_uintptr)onmesgfunc);
-	Command_Unregister("plugtest");
-	Command_Unregister("atoggle");
-	Command_Unregister("selfdestroy");
-	Command_Unregister("clonly");
+	Command_UnregisterByName("plugtest");
+	Command_UnregisterByName("atoggle");
+	Command_UnregisterByName("selfdestroy");
+	Command_UnregisterByName("clonly");
 
 	/*
 	** Функция Block_Undefine ТОЛЬКО УСТАНАВЛИВАЕТ

@@ -1,14 +1,15 @@
 @echo off
-setlocal
+setlocal enableextensions enabledelayedexpansion
+
 set ARCH=%VSCMD_ARG_TGT_ARCH%
 set CLEAN=0
 set DEBUG=0
 set PROJECT_ROOT=.
 set COMPILER=cl
+set BUILD_PLUGIN=0
 
 set SVOUTDIR=.\out\%ARCH%
 set BINNAME=server.exe
-set STNAME=server.lib
 
 set ZLIB_DIR=.\zlib\%ARCH%
 set ZLIB_DYNBINARY=zlib.dll
@@ -28,7 +29,7 @@ FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --short HEAD`) DO (
 :argloop
 IF "%1"=="" goto continue
 IF "%1"=="cls" cls
-IF "%1"=="cloc" goto :cloc
+IF "%1"=="cloc" goto cloc
 IF "%1"=="debug" set DEBUG=1
 IF "%1"=="dbg" set DEBUG=1
 IF "%1"=="run" set RUNMODE=0
@@ -47,6 +48,7 @@ goto argloop
 
 :pluginbuild
 set BUILD_PLUGIN=1
+set MSVC_LIBS=kernel32.lib
 SHIFT
 
 set PLUGNAME=%1
@@ -68,7 +70,6 @@ goto libloop
 IF "%ARCH%"=="" goto vcerror
 echo Build configuration:
 echo Architecture: %ARCH%
-echo Commit: %COMMIT_SHA%
 
 IF "%DEBUG%"=="0" (echo Debug: disabled) else (
 	set OPT_LEVEL=/Od
@@ -82,64 +83,69 @@ IF "%DEBUG%"=="0" (echo Debug: disabled) else (
 
 IF "%BUILD_PLUGIN%"=="1" (
   set COMPILER=cl /LD
-	if "%DEBUG%"=="1" (set OUTDIR=%PLUGNAME%\out\%ARCH%dbg) else (set OUTDIR=%PLUGNAME%\out\%ARCH%)
+	set SVPLUGDIR=%SVOUTDIR%\plugins
+	IF "%DEBUG%"=="1" (set OUTDIR=%PLUGNAME%\out\%ARCH%dbg) else (set OUTDIR=%PLUGNAME%\out\%ARCH%)
   set BINNAME=%PLUGNAME%
   set OBJDIR=%PLUGNAME%\objs
   set PROJECT_ROOT=.\%PLUGNAME%
 	echo Building plugin: %PLUGNAME%
-) else (set OUTDIR=%SVOUTDIR%)
+) else (
+	set OUTDIR=%SVOUTDIR%
+	set ZLIB_STATIC=%ZLIB_DIR%\lib
+	set ZLIB_DYNAMIC=%ZLIB_DIR%\bin
+	set ZLIB_INCLUDE=%ZLIB_DIR%\include
 
-set SVPLUGDIR=%SVOUTDIR%\plugins
+	set SERVER_ZDLL=!OUTDIR!\%ZLIB_DYNBINARY%
+	set MSVC_LIBS=%MSVC_LIBS% %ZLIB_STBINARY%
+	set MSVC_OPTS=%MSVC_OPTS% /I!ZLIB_INCLUDE!
+	set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:!ZLIB_STATIC!
+)
+
 set BINPATH=%OUTDIR%\%BINNAME%
 
-set ZLIB_STATIC=%ZLIB_DIR%\lib
-set ZLIB_DYNAMIC=%ZLIB_DIR%\bin
-set ZLIB_INCLUDE=%ZLIB_DIR%\include
-
-set SERVER_ZDLL=%OUTDIR%\%ZLIB_DYNBINARY%
-set MSVC_LIBS=%MSVC_LIBS% %ZLIB_STBINARY%
-
 IF "%CLEAN%"=="0" (
-	set COPYERR_LIB=zlib
-	set COPYERR_PATH=%ZLIB_DIR%
+	IF "%BUILD_PLUGIN%"=="0" (
+		set COPYERR_LIB=zlib
+		set COPYERR_PATH=%ZLIB_DIR%
 
-	IF NOT EXIST %ZLIB_DYNAMIC%\%ZLIB_DYNBINARY% goto copyerr
-	IF NOT EXIST %ZLIB_STATIC%\%ZLIB_STBINARY% goto copyerr
-	IF NOT EXIST %ZLIB_INCLUDE% goto copyerr
+		IF NOT EXIST !ZLIB_DYNAMIC!\!ZLIB_DYNBINARY! goto copyerr
+		IF NOT EXIST !ZLIB_STATIC!\!ZLIB_STBINARY! goto copyerr
+		IF NOT EXIST !ZLIB_INCLUDE! goto copyerr
+	)
 
-	IF NOT EXIST %OBJDIR% MD %OBJDIR%
-	IF NOT EXIST %OUTDIR% MD %OUTDIR%
-) else ( goto clean )
+	IF NOT EXIST !OBJDIR! MD !OBJDIR!
+	IF NOT EXIST !OUTDIR! MD !OUTDIR!
+) else (goto clean)
 
 IF "%BUILD_PLUGIN%"=="1" (
   set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DPLUGIN_BUILD /I.\headers\
-  set MSVC_LIBS=%MSVC_LIBS% %STNAME%
+  set MSVC_LIBS=server.lib %MSVC_LIBS%
 	set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%SVOUTDIR% /NOENTRY
 ) else (
-  copy /Y %ZLIB_DYNAMIC%\%ZLIB_DYNBINARY% %SERVER_ZDLL% 2> nul > nul
+  copy /Y !ZLIB_DYNAMIC!\!ZLIB_DYNBINARY! !SERVER_ZDLL! 2> nul > nul
 	set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH%
 )
 
 set MSVC_OPTS=%MSVC_OPTS% %WARN_LEVEL% %OPT_LEVEL% /Fo%OBJDIR%\
-set MSVC_OPTS=%MSVC_OPTS% /link /LIBPATH:%ZLIB_STATIC% %MSVC_LINKER%
+set MSVC_OPTS=%MSVC_OPTS% /link %MSVC_LINKER%
 
 IF EXIST %PROJECT_ROOT%\version.rc (
 	rc /nologo /fo%OBJDIR%\version.res %PROJECT_ROOT%\version.rc
 	set MSVC_OPTS=%OBJDIR%\version.res %MSVC_OPTS%
 )
 
-%COMPILER% %PROJECT_ROOT%\code\*.c /I%PROJECT_ROOT%\headers /I%ZLIB_INCLUDE% %MSVC_OPTS% %MSVC_LIBS%
+%COMPILER% %PROJECT_ROOT%\code\*.c /I%PROJECT_ROOT%\headers %MSVC_OPTS% %MSVC_LIBS%
 
 IF "%BUILD_PLUGIN%"=="1" (
 	IF "%PLUGINSTALL%"=="1" (
-		IF NOT EXIST %SVPLUGDIR% MD %SVPLUGDIR%
+		IF NOT EXIST !SVPLUGDIR! MD !SVPLUGDIR!
 		IF "%DEBUG%"=="1" (
-			copy /y %OUTDIR%\%BINNAME%.* %SVPLUGDIR%
+			copy /y !OUTDIR!\%BINNAME%.* !SVPLUGDIR!
 		) else (
-			copy /y %OUTDIR%\%BINNAME%.dll %SVPLUGDIR%
+			copy /y !OUTDIR!\%BINNAME%.dll !SVPLUGDIR!
 		)
 	)
-  goto :end
+  goto end
 ) else (
   IF "%ERRORLEVEL%"=="0" (goto binstart) else (goto compileerror)
 )
@@ -149,7 +155,7 @@ IF "%RUNMODE%"=="0" start /D %OUTDIR% %BINNAME%
 IF "%RUNMODE%"=="1" goto onerun
 goto end
 
-:onerun:
+:onerun
 pushd %OUTDIR%
 %BINNAME%
 popd
