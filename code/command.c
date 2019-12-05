@@ -48,11 +48,11 @@ Command Command_Get(const char* name) {
 
 cs_bool Command_Unregister(Command cmd) {
 	if(cmd->prev)
-		cmd->prev->next = cmd->prev;
+		cmd->prev->next = cmd->next;
 
 	if(cmd->next) {
-		cmd->next->prev = cmd->next;
-		HeadCmd = cmd->next->prev;
+		cmd->next->prev = cmd->prev;
+		HeadCmd = cmd->next;
 	} else
 		HeadCmd = NULL;
 
@@ -69,7 +69,7 @@ cs_bool Command_UnregisterByName(const char* name) {
 
 static cs_bool CHandler_Info(CommandCallData ccdata) {
 	Command_OnlyForOP(ccdata);
-	
+
 	const char* zver = zlibVersion();
 	uLong zflags = zlibCompileFlags();
 	const char* format =
