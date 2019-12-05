@@ -12,6 +12,10 @@ void* luax_checkmyobject(lua_State* L, cs_uint32 idx, const char* mt) {
 }
 
 void luax_pushmyobject(lua_State* L, void* obj, const char* mt) {
+	if(obj == NULL) {
+		lua_pushnil(L);
+		return;
+	}
 	lua_pushlightuserdata(L, obj);
 	lua_gettable(L, LUA_REGISTRYINDEX);
 
