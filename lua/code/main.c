@@ -65,6 +65,7 @@ static const luaL_Reg loadedlibs[] = {
   {LUA_UTF8LIBNAME, luaopen_utf8},
   {LUA_DBLIBNAME, luaopen_debug},
 
+	{"server", luaopen_server},
 	// {"vector", luaopen_vector},
 	{"client", luaopen_client},
 	{"world", luaopen_world},

@@ -45,6 +45,7 @@ void luax_printstack(lua_State* L);
 Script Script_GetByState(lua_State* L);
 void Script_Destroy(Script scr);
 
+LUA_APIFUNC(luaopen_server);
 // LUA_APIFUNC(luaopen_vector);
 LUA_APIFUNC(luaopen_client);
 LUA_APIFUNC(luaopen_world);

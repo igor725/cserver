@@ -96,6 +96,10 @@ void Server_InitialWork(void) {
 	CStore cfg = Config_NewStore(MAINCFG);
 	CEntry ent;
 
+	Server_StartTime = Time_GetMSec();
+	Server_Active = true;
+	Server_Config = cfg;
+
 	ent = Config_NewEntry(cfg, CFG_SERVERIP_KEY, CFG_STR);
 	Config_SetComment(ent, "Bind server to specified IP address. \"0.0.0.0\" - means \"all available network adapters\".");
 	Config_SetDefaultStr(ent, "0.0.0.0");
@@ -183,10 +187,6 @@ void Server_InitialWork(void) {
 		Log_Info(Lang_Get(LANG_HBEAT));
 		Heartbeat_Start(Config_GetInt32ByKey(cfg, CFG_HEARTBEATDELAY_KEY));
 	}
-
-	Server_StartTime = Time_GetMSec();
-	Server_Active = true;
-	Server_Config = cfg;
 
 	const char* ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
 	cs_uint16 port = Config_GetInt16ByKey(cfg, CFG_SERVERPORT_KEY);
