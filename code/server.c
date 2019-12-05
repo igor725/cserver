@@ -97,7 +97,6 @@ void Server_InitialWork(void) {
 	CEntry ent;
 
 	Server_StartTime = Time_GetMSec();
-	Server_Active = true;
 	Server_Config = cfg;
 
 	ent = Config_NewEntry(cfg, CFG_SERVERIP_KEY, CFG_STR);
@@ -191,9 +190,11 @@ void Server_InitialWork(void) {
 	const char* ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
 	cs_uint16 port = Config_GetInt16ByKey(cfg, CFG_SERVERPORT_KEY);
 	Thread_Create(AcceptThreadProc, NULL, true);
-	Console_Start();
 	Bind(ip, port);
+	
+	Server_Active = true;
 	Event_Call(EVT_POSTSTART, NULL);
+	Console_Start();
 }
 
 void Server_DoStep(void) {

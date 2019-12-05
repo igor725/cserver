@@ -148,6 +148,7 @@ cs_int32 Plugin_ApiVer = PLUGIN_API_NUM;
 cs_bool Plugin_Load() {
 	dirIter scIter;
 	Directory_Ensure("scripts");
+
 	if(Iter_Init(&scIter, "scripts", "lua")) {
 		do {
 			if(!scIter.isDir && scIter.cfile)
