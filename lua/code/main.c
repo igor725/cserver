@@ -74,13 +74,25 @@ static const luaL_Reg loadedlibs[] = {
   {NULL, NULL}
 };
 
-
 static void OpenLibs(lua_State *L) {
   const luaL_Reg *lib;
   for (lib = loadedlibs; lib->func; lib++) {
     luaL_requiref(L, lib->name, lib->func, 1);
     lua_pop(L, 1);
   }
+
+	lua_getglobal(L, "package");
+	lua_pushstring(L, "./scripts/libs/?.lua;./scripts/libs/?/init.lua");
+	lua_setfield(L, -2, "path");
+	const char* cpath = NULL;
+#if defined(WINDOWS)
+	cpath = "./scripts/bin/?.dll;./scripts/bin/?/core.dll";
+#elif defined(POSXI)
+	cpath = "./scripts/bin/?.so;./scripts/bin/?/core.so";
+#endif
+	lua_pushstring(L, cpath);
+	lua_setfield(L, -2, "cpath");
+	lua_pop(L, 1);
 }
 
 void Script_CallStart(Script scr) {
