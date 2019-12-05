@@ -6,6 +6,16 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
+#define LUA_FUNC(N) \
+cs_int32 N(lua_State* L)
+
+#define LUA_APIFUNC(N) \
+LUA_API LUA_FUNC(N)
+
+#define LUA_SFUNC(N) \
+static LUA_FUNC(N)
+
+
 #define Script_GetFuncBegin(scr, funcName) \
 if(scr->destroyed) return; \
 Mutex_Lock(scr->mutex); \
@@ -32,13 +42,11 @@ void* luax_checkmyobject(lua_State* L, cs_uint32 idx, const char* mt);
 void luax_pushmyobject(lua_State* L, void* obj, const char* mt);
 void luax_printstack(lua_State* L);
 
-LUA_API cs_int32 luaopen_server(lua_State* L);
-LUA_API cs_int32 luaopen_protocol(lua_State* L);
-LUA_API cs_int32 luaopen_command(lua_State* L);
-LUA_API cs_int32 luaopen_client(lua_State* L);
-LUA_API cs_int32 luaopen_world(lua_State* L);
-LUA_API cs_int32 luaopen_config(lua_State* L);
-
 Script Script_GetByState(lua_State* L);
 void Script_Destroy(Script scr);
+
+// LUA_APIFUNC(luaopen_vector);
+LUA_APIFUNC(luaopen_client);
+LUA_APIFUNC(luaopen_world);
+LUA_APIFUNC(luaopen_command);
 #endif

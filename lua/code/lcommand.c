@@ -34,7 +34,7 @@ static cs_bool lua_cmd_handler(CommandCallData ccdata) {
 	return false;
 }
 
-static cs_int32 c_register(lua_State* L) {
+LUA_SFUNC(lcmd_register) {
 	const char* name = luaL_checkstring(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 
@@ -48,7 +48,7 @@ static cs_int32 c_register(lua_State* L) {
 	return 0;
 }
 
-static cs_int32 c_unregister(lua_State* L) {
+LUA_SFUNC(lcmd_unregister) {
 	const char* name = luaL_checkstring(L, 1);
 	Command cmd = Command_Get(name);
 	if(cmd && cmd->data == Script_GetByState(L)) {
@@ -63,13 +63,13 @@ static cs_int32 c_unregister(lua_State* L) {
 }
 
 static const luaL_Reg cmdfuncs[] = {
-  {"register", c_register},
-  {"unregister", c_unregister},
+  {"register", lcmd_register},
+  {"unregister", lcmd_unregister},
 
   {NULL, NULL}
 };
 
-cs_int32 luaopen_command(lua_State* L) {
+LUA_FUNC(luaopen_command) {
 	luaL_newlib(L, cmdfuncs);
 	return 1;
 }
