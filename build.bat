@@ -60,7 +60,7 @@ IF NOT "%1"=="" (goto libloop) else (goto continue)
 
 :libloop
 IF "%1"=="" goto continue
-set MSVC_LIBS=%MSVC_LIBS% %1
+set MSVC_LIBS=%MSVC_LIBS% %1.lib
 SHIFT
 goto libloop
 
