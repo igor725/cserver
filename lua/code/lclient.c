@@ -235,15 +235,10 @@ LUA_SFUNC(lclient_sendchat) {
 	return 0;
 }
 
-LUA_SFUNC(lclient_gc) {
-	*(void**)luaL_testudata(L, 1, LUA_TCLIENT) = NULL;
-	return 0;
-}
-
 static const luaL_Reg clientfuncs[] = {
 	{"getbyid", lclient_getbyid},
 	{"getbyname", lclient_getbyname},
-	
+
 	{NULL, NULL}
 };
 
@@ -281,20 +276,13 @@ static const luaL_Reg clientmethods[] = {
 	{NULL, NULL}
 };
 
-LUA_SFUNC(lclient_tostring) {
-	Client client = luax_checkclient(L, 1);
-
-	lua_pushstring(L, Client_GetName(client));
-	return 1;
-}
-
 LUA_FUNC(luaopen_client) {
 	luaL_newmetatable(L, LUA_TCLIENT);
 	lua_newtable(L);
 	luaL_setfuncs(L, clientmethods, 0);
 
 	lua_setfield(L, -2, "__index");
-	lua_pushcfunction(L, lclient_gc);
+	lua_pushcfunction(L, lsuper_gc);
 	lua_setfield(L, -2, "__gc");
 
 	luaL_newlib(L, clientfuncs);

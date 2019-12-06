@@ -31,6 +31,17 @@ void luax_pushmyobject(lua_State* L, void* obj, const char* mt) {
 	}
 }
 
+LUA_FUNC(lsuper_release) {
+	void** upp = (void**)lua_touserdata(L, 1);
+	void* up = *upp;
+	*upp = NULL;
+
+	lua_pushlightuserdata(L, upp);
+	lua_pushnil(L);
+	lua_settable(L, LUA_REGISTRYINDEX);
+	return 0;
+}
+
 void luax_printstack(lua_State* L) {
 	Log_Info("Stack start:");
   for (int i = 0; i <= lua_gettop(L); i++) {
@@ -70,6 +81,7 @@ static const luaL_Reg loadedlibs[] = {
 	{"client", luaopen_client},
 	{"world", luaopen_world},
 	{"command", luaopen_command},
+	{"config", luaopen_config},
 
   {NULL, NULL}
 };

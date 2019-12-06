@@ -45,18 +45,13 @@ static const luaL_Reg worldfuncs[] = {
 	{NULL, NULL}
 };
 
-LUA_SFUNC(lworld_gc) {
-	*(void**)luaL_testudata(L, 1, LUA_TWORLD) = NULL;
-	return 0;
-}
-
 LUA_FUNC(luaopen_world) {
 	luaL_newmetatable(L, LUA_TWORLD);
 	lua_newtable(L);
 	luaL_setfuncs(L, worldmethods, 0);
 
 	lua_setfield(L, -2, "__index");
-	lua_pushcfunction(L, lworld_gc);
+	lua_pushcfunction(L, lsuper_gc);
 	lua_setfield(L, -2, "__gc");
 
 	luaL_newlib(L, worldfuncs);

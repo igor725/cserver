@@ -15,7 +15,6 @@ LUA_API LUA_FUNC(N)
 #define LUA_SFUNC(N) \
 static LUA_FUNC(N)
 
-
 #define Script_GetFuncBegin(scr, funcName) \
 if(scr->destroyed) return; \
 Mutex_Lock(scr->mutex); \
@@ -37,10 +36,10 @@ typedef struct _Script {
 	struct _Script* next;
 } *Script;
 
-// Служебные функции
 void* luax_checkmyobject(lua_State* L, cs_uint32 idx, const char* mt);
 void luax_pushmyobject(lua_State* L, void* obj, const char* mt);
 void luax_printstack(lua_State* L);
+LUA_FUNC(lsuper_gc);
 
 Script Script_GetByState(lua_State* L);
 void Script_Destroy(Script scr);
@@ -50,4 +49,5 @@ LUA_APIFUNC(luaopen_server);
 LUA_APIFUNC(luaopen_client);
 LUA_APIFUNC(luaopen_world);
 LUA_APIFUNC(luaopen_command);
+LUA_APIFUNC(luaopen_config);
 #endif
