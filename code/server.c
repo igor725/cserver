@@ -187,12 +187,11 @@ void Server_InitialWork(void) {
 		Heartbeat_Start(Config_GetInt32ByKey(cfg, CFG_HEARTBEATDELAY_KEY));
 	}
 
+	Server_Active = true;
 	const char* ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
 	cs_uint16 port = Config_GetInt16ByKey(cfg, CFG_SERVERPORT_KEY);
 	Thread_Create(AcceptThreadProc, NULL, true);
 	Bind(ip, port);
-	
-	Server_Active = true;
 	Event_Call(EVT_POSTSTART, NULL);
 	Console_Start();
 }
