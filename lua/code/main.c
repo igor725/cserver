@@ -21,7 +21,7 @@ void* luax_checkptr(lua_State* L, cs_int32 idx, const char* mt) {
 	return *(void**)luaL_checkudata(L, idx, mt);
 }
 
-void luax_pushmyptr(lua_State* L, void* obj, const char* mt) {
+void luax_pushmyptr(lua_State* L, void* obj, const char* mt, uptrSetupFunc setup) {
 	if(obj == NULL) {
 		lua_pushnil(L);
 		return;
@@ -33,12 +33,23 @@ void luax_pushmyptr(lua_State* L, void* obj, const char* mt) {
 		lua_pop(L, 1);
 		*(void**)lua_newuserdata(L, sizeof(cs_uintptr)) = obj;
 		luaL_setmetatable(L, mt);
+		if(setup) setup(L, obj);
 
 		lua_pushlightuserdata(L, obj);
 		lua_pushvalue(L, -2);
 
 		lua_settable(L, LUA_REGISTRYINDEX);
 	}
+}
+
+void luax_pushudataof(lua_State* L, cs_int32 idx, const char* key) {
+	lua_getfield(L, LUA_REGISTRYINDEX, "cs_udata");
+
+	if(idx < 0) idx--;
+	lua_pushvalue(L, idx);
+	lua_gettable(L, -2);
+
+	lua_getfield(L, -1, key);
 }
 
 void luax_destroymyptr(lua_State* L, void** upp, cs_bool free) {
@@ -119,6 +130,9 @@ static void OpenLibs(lua_State *L) {
 	lua_pushstring(L, cpath);
 	lua_setfield(L, -2, "cpath");
 	lua_pop(L, 1);
+
+	lua_newtable(L);
+	lua_setfield(L, LUA_REGISTRYINDEX, "cs_udata");
 }
 
 void Script_CallStart(Script scr) {

@@ -4,27 +4,27 @@
 
 #include "script.h"
 
-LUA_SFUNC(lserver_stop) {
+LUA_SFUNC(fserver_stop) {
 	(void)L;
 	Server_Active = false;
 	return 0;
 }
 
-LUA_SFUNC(lserver_currtime) {
+LUA_SFUNC(fserver_currtime) {
 	lua_pushinteger(L, Time_GetMSec());
 	return 1;
 }
 
-static const luaL_Reg serverfuncs[] = {
-	{"stop", lserver_stop},
+static const luaL_Reg sv_funcs[] = {
+	{"stop", fserver_stop},
 
-	{"currtime", lserver_currtime},
+	{"currtime", fserver_currtime},
 
 	{NULL, NULL}
 };
 
 LUA_FUNC(luaopen_server) {
-	luaL_newlib(L, serverfuncs);
+	luaL_newlib(L, sv_funcs);
 	lua_pushinteger(L, (lua_Integer)Server_StartTime);
 	lua_setfield(L, -2, "starttime");
 	return 1;

@@ -14,5 +14,10 @@ typedef struct _LuaVec {
 } LuaVec;
 
 LuaVec* luax_checkvec(lua_State* L, cs_int32 idx);
+SVec* luax_checksvec(lua_State* L, cs_int32 idx);
+Vec* luax_checkfvec(lua_State* L, cs_int32 idx);
 void luax_pushvec(lua_State* L, LuaVec* vec);
+
+LuaVec* luax_newpsvec(lua_State* L, SVec* vec);
+LuaVec* luax_newpfvec(lua_State* L, Vec* vec);
 #endif

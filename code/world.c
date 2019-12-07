@@ -89,7 +89,7 @@ void World_SetDimensions(World world, const SVec* dims) {
 	world->size = dims->x * dims->y * dims->z;
 }
 
-cs_bool World_SetEnvProperty(World world, cs_uint8 property, cs_int32 value) {
+cs_bool World_SetProperty(World world, cs_uint8 property, cs_int32 value) {
 	if(property > WORLD_PROPS_COUNT) return false;
 
 	world->modified = true;

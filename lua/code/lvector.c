@@ -11,20 +11,41 @@ LuaVec* luax_newvec(lua_State* L) {
 	return luax_newmyobject(L, sizeof(LuaVec), LUA_TVECTOR);
 }
 
+LuaVec* luax_newpsvec(lua_State* L, SVec* vec) {
+	LuaVec* lvec = luax_newmyobject(L, sizeof(LuaVec), LUA_TVECTOR);
+	lvec->type = VT_SHORT;
+	lvec->allocated = false;
+	lvec->val.s = vec;
+	return lvec;
+}
+
+LuaVec* luax_newpfvec(lua_State* L, Vec* vec) {
+	LuaVec* lvec = luax_newmyobject(L, sizeof(LuaVec), LUA_TVECTOR);
+	lvec->type = VT_FLOAT;
+	lvec->allocated = false;
+	lvec->val.f = vec;
+	return lvec;
+}
+
 LuaVec* luax_checkvec(lua_State* L, cs_int32 idx) {
 	return luax_checkobject(L, idx, LUA_TVECTOR);
 }
 
-LUA_SFUNC(lvec_new) {
-	cs_int8 type = (cs_int8)lua_toboolean(L, 1);
-	LuaVec* vec = luax_newvec(L);
-	vec->type = type;
-	vec->allocated = true;
-	vec->val.p = Memory_Alloc(1, type == false ? sizeof(struct _SVec) : sizeof(struct _Vec));
-	return 1;
+#define VEC_TYPEERROR "Vector object #%d must have type %q."
+
+SVec* luax_checksvec(lua_State* L, cs_int32 idx) {
+	const LuaVec* lvec = luax_checkvec(L, idx);
+	if(lvec->type != VT_SHORT) luaL_error(L, VEC_TYPEERROR, idx, "short");
+	return lvec->val.s;
 }
 
-LUA_SFUNC(lvec_set) {
+Vec* luax_checkfvec(lua_State* L, cs_int32 idx) {
+	const LuaVec* lvec = luax_checkvec(L, idx);
+	if(lvec->type != VT_FLOAT) luaL_error(L, VEC_TYPEERROR, idx, "float");
+	return lvec->val.f;
+}
+
+LUA_SFUNC(mvec_set) {
  	LuaVec* vec = luax_checkvec(L, 1);
 
 	if(vec->type == VT_SHORT) {
@@ -43,7 +64,7 @@ LUA_SFUNC(lvec_set) {
 	return 1;
 }
 
-LUA_SFUNC(lvec_copy) {
+LUA_SFUNC(mvec_copy) {
 	LuaVec* vec1 = luax_checkvec(L, 1);
 	LuaVec* vec2 = luax_checkvec(L, 2);
 	if(vec1->type != vec2->type) luaL_error(L, "Passed vectors have different types");
@@ -57,7 +78,7 @@ LUA_SFUNC(lvec_copy) {
 	return 1;
 }
 
-LUA_SFUNC(lvec_get) {
+LUA_SFUNC(mvec_get) {
 	LuaVec* vec = luax_checkvec(L, 1);
 
 	if(vec->type == VT_SHORT) {
@@ -75,7 +96,7 @@ LUA_SFUNC(lvec_get) {
 	return 3;
 }
 
-LUA_SFUNC(lvec_getx) {
+LUA_SFUNC(mvec_getx) {
 	LuaVec* vec = luax_checkvec(L, 1);
 
 	if(vec->type == VT_SHORT)
@@ -86,7 +107,7 @@ LUA_SFUNC(lvec_getx) {
 	return 1;
 }
 
-LUA_SFUNC(lvec_gety) {
+LUA_SFUNC(mvec_gety) {
 	LuaVec* vec = luax_checkvec(L, 1);
 
 	if(vec->type == VT_SHORT)
@@ -97,7 +118,7 @@ LUA_SFUNC(lvec_gety) {
 	return 1;
 }
 
-LUA_SFUNC(lvec_getz) {
+LUA_SFUNC(mvec_getz) {
 	LuaVec* vec = luax_checkvec(L, 1);
 
 	if(vec->type == VT_SHORT)
@@ -108,25 +129,34 @@ LUA_SFUNC(lvec_getz) {
 	return 1;
 }
 
-static const luaL_Reg vecmethods[] = {
-	{"set", lvec_set},
-	{"copy", lvec_copy},
+static const luaL_Reg vec_methods[] = {
+	{"set", mvec_set},
+	{"copy", mvec_copy},
 
-	{"get", lvec_get},
-	{"getx", lvec_getx},
-	{"gety", lvec_gety},
-	{"getz", lvec_getz},
-
-	{NULL, NULL}
-};
-
-static const luaL_Reg vecfuncs[] = {
-	{"new", lvec_new},
+	{"get", mvec_get},
+	{"getx", mvec_getx},
+	{"gety", mvec_gety},
+	{"getz", mvec_getz},
 
 	{NULL, NULL}
 };
 
-LUA_SFUNC(lvec_eq) {
+LUA_SFUNC(fvec_new) {
+	cs_int8 type = (cs_int8)lua_toboolean(L, 1);
+	LuaVec* vec = luax_newvec(L);
+	vec->type = type;
+	vec->allocated = true;
+	vec->val.p = Memory_Alloc(1, type == false ? sizeof(struct _SVec) : sizeof(struct _Vec));
+	return 1;
+}
+
+static const luaL_Reg vec_funcs[] = {
+	{"new", fvec_new},
+
+	{NULL, NULL}
+};
+
+LUA_SFUNC(mvec_eq) {
 	LuaVec* vec1 = luax_checkvec(L, 1);
 	LuaVec* vec2 = luax_checkvec(L, 2);
 	if(vec1->type != vec2->type) luaL_error(L, "Passed vectors have different types");
@@ -138,7 +168,7 @@ LUA_SFUNC(lvec_eq) {
 	return 1;
 }
 
-LUA_SFUNC(lvec_gc) {
+LUA_SFUNC(mvec_gc) {
 	LuaVec* vec = luax_checkvec(L, 1);
 	if(vec->allocated)
 		Memory_Free(vec->val.p);
@@ -148,14 +178,14 @@ LUA_SFUNC(lvec_gc) {
 LUA_FUNC(luaopen_vector) {
 	luaL_newmetatable(L, LUA_TVECTOR);
 	lua_newtable(L);
-	luaL_setfuncs(L, vecmethods, 0);
+	luaL_setfuncs(L, vec_methods, 0);
 
 	lua_setfield(L, -2, "__index");
-	lua_pushcfunction(L, lvec_eq);
+	lua_pushcfunction(L, mvec_eq);
 	lua_setfield(L, -2, "__eq");
-	lua_pushcfunction(L, lvec_gc);
+	lua_pushcfunction(L, mvec_gc);
 	lua_setfield(L, -2, "__gc");
 
-	luaL_newlib(L, vecfuncs);
+	luaL_newlib(L, vec_funcs);
 	return 1;
 }

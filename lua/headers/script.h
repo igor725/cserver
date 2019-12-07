@@ -36,11 +36,14 @@ typedef struct _Script {
 	struct _Script* next;
 } *Script;
 
+typedef void(*uptrSetupFunc)(lua_State* L, void* obj);
+
 void* luax_newmyobject(lua_State* L, cs_size size, const char* mt);
 void* luax_checkobject(lua_State* L, cs_int32 idx, const char* mt);
+void luax_pushudataof(lua_State* L, cs_int32 idx, const char* key);
 
 void* luax_checkptr(lua_State* L, cs_int32 idx, const char* mt);
-void luax_pushmyptr(lua_State* L, void* obj, const char* mt);
+void luax_pushmyptr(lua_State* L, void* obj, const char* mt, uptrSetupFunc setup);
 void luax_destroyptr(lua_State* L, void** upp, cs_bool free);
 
 LUA_FUNC(luax_printstack);

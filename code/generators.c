@@ -18,8 +18,8 @@ void Generator_Flat(World world) {
 			data[i] = 2;
 	}
 
-	World_SetEnvProperty(world, PROP_CLOUDSLEVEL, dims->y + 2);
-	World_SetEnvProperty(world, PROP_EDGELEVEL, dims->y / 2);
+	World_SetProperty(world, PROP_CLOUDSLEVEL, dims->y + 2);
+	World_SetProperty(world, PROP_EDGELEVEL, dims->y / 2);
 
 	wi->spawnVec.x = (float)dims->x / 2;
 	wi->spawnVec.y = (float)(dims->y / 2) + 1.59375f;
