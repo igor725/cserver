@@ -26,10 +26,11 @@ static void AcceptFunc(void) {
 			return;
 		}
 
-		cs_uint32 addr = htonl(caddr.sin_addr.s_addr);
+		cs_uint32 addr = caddr.sin_addr.s_addr;
 	 	Client tmp = Client_New(fd, addr);
-		cs_int8 sameAddrCount = 1;
-		cs_int8 maxConnPerIP = Config_GetInt8ByKey(Server_Config, CFG_CONN_KEY);
+		cs_int8 maxConnPerIP = Config_GetInt8ByKey(Server_Config, CFG_CONN_KEY),
+		sameAddrCount = 1;
+
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			Client cc = Clients_List[i];
 			if(cc && cc->addr == addr)
