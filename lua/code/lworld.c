@@ -3,7 +3,7 @@
 
 #include "script.h"
 #include "lworld.h"
-#include "lvector.h"
+#include "lmath.h"
 
 #define LUA_TWORLD "world"
 
@@ -21,6 +21,9 @@ static void setupworld(lua_State* L, void* obj) {
 	luax_newpfvec(L, &world->info->spawnVec);
 	lua_setfield(L, -2, "sv");
 
+	luax_newpang(L, &world->info->spawnAng);
+	lua_setfield(L, -2, "sa");
+
 	luax_newpsvec(L, &world->info->dimensions);
 	lua_setfield(L, -2, "dv");
 
@@ -29,7 +32,7 @@ static void setupworld(lua_State* L, void* obj) {
 }
 
 void luax_pushworld(lua_State* L, World world) {
-	luax_pushmyptr(L, world, LUA_TWORLD, setupworld);
+	luax_pushptr(L, world, LUA_TWORLD, setupworld);
 }
 
 LUA_SFUNC(mworld_getname) {
@@ -40,12 +43,15 @@ LUA_SFUNC(mworld_getname) {
 }
 
 LUA_SFUNC(mworld_getspawn) {
-	luax_pushudataof(L, 1, "sv");
-	return 1;
+	luax_pushrgtableof(L, 1);
+	lua_getfield(L, -1, "sv");
+	lua_getfield(L, -2, "sa");
+	return 2;
 }
 
 LUA_SFUNC(mworld_getdim) {
-	luax_pushudataof(L, 1, "dv");
+	luax_pushrgtableof(L, 1);
+	lua_getfield(L, -1, "dv");
 	return 1;
 }
 

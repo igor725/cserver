@@ -7,7 +7,7 @@
 #define LUA_BUILD_AS_DLL
 #include "script.h"
 
-void* luax_newmyobject(lua_State* L, cs_size size, const char* mt) {
+void* luax_newobject(lua_State* L, cs_size size, const char* mt) {
 	void* ptr = lua_newuserdata(L, size);
 	luaL_setmetatable(L, mt);
 	return ptr;
@@ -21,7 +21,7 @@ void* luax_checkptr(lua_State* L, cs_int32 idx, const char* mt) {
 	return *(void**)luaL_checkudata(L, idx, mt);
 }
 
-void luax_pushmyptr(lua_State* L, void* obj, const char* mt, uptrSetupFunc setup) {
+void luax_pushptr(lua_State* L, void* obj, const char* mt, uptrSetupFunc setup) {
 	if(obj == NULL) {
 		lua_pushnil(L);
 		return;
@@ -42,17 +42,16 @@ void luax_pushmyptr(lua_State* L, void* obj, const char* mt, uptrSetupFunc setup
 	}
 }
 
-void luax_pushudataof(lua_State* L, cs_int32 idx, const char* key) {
-	lua_getfield(L, LUA_REGISTRYINDEX, "cs_udata");
+void luax_pushrgtableof(lua_State* L, cs_int32 idx) {
+	lua_pushstring(L, "cs_udata");
+	lua_gettable(L, LUA_REGISTRYINDEX);
 
 	if(idx < 0) idx--;
 	lua_pushvalue(L, idx);
 	lua_gettable(L, -2);
-
-	lua_getfield(L, -1, key);
 }
 
-void luax_destroymyptr(lua_State* L, void** upp, cs_bool free) {
+void luax_destroyptr(lua_State* L, void** upp, cs_bool free) {
 	void* up = *upp;
 	if(free) Memory_Free(up);
 	lua_pushlightuserdata(L, up);
@@ -62,7 +61,7 @@ void luax_destroymyptr(lua_State* L, void** upp, cs_bool free) {
 }
 
 LUA_FUNC(lptr_gc) {
-	luax_destroymyptr(L, (void**)lua_touserdata(L, 1), false);
+	luax_destroyptr(L, (void**)lua_touserdata(L, 1), false);
 	return 0;
 }
 
@@ -102,7 +101,7 @@ static const luaL_Reg loadedlibs[] = {
   {LUA_DBLIBNAME, luaopen_debug},
 
 	{"server", luaopen_server},
-	{"vector", luaopen_vector},
+	{"vector", luaopen_csmath},
 	{"client", luaopen_client},
 	{"world", luaopen_world},
 	{"command", luaopen_command},

@@ -13,7 +13,7 @@ Client luax_checkclient(lua_State* L, cs_int32 idx) {
 }
 
 void luax_pushclient(lua_State* L, Client client) {
-	luax_pushmyptr(L, client, LUA_TCLIENT, NULL);
+	luax_pushptr(L, client, LUA_TCLIENT, NULL);
 }
 
 LUA_SFUNC(mclient_getid) {
