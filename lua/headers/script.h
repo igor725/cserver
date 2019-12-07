@@ -36,17 +36,21 @@ typedef struct _Script {
 	struct _Script* next;
 } *Script;
 
-void* luax_checkmyobject(lua_State* L, cs_uint32 idx, const char* mt);
-void luax_pushmyobject(lua_State* L, void* obj, const char* mt);
-void luax_destroymyobject(lua_State* L, void** upp, cs_bool free);
-void luax_printstack(lua_State* L);
-LUA_FUNC(lsuper_gc);
+void* luax_newmyobject(lua_State* L, cs_size size, const char* mt);
+void* luax_checkobject(lua_State* L, cs_int32 idx, const char* mt);
+
+void* luax_checkptr(lua_State* L, cs_int32 idx, const char* mt);
+void luax_pushmyptr(lua_State* L, void* obj, const char* mt);
+void luax_destroyptr(lua_State* L, void** upp, cs_bool free);
+
+LUA_FUNC(luax_printstack);
+LUA_FUNC(lptr_gc);
 
 Script Script_GetByState(lua_State* L);
 void Script_Destroy(Script scr);
 
 LUA_APIFUNC(luaopen_server);
-// LUA_APIFUNC(luaopen_vector);
+LUA_APIFUNC(luaopen_vector);
 LUA_APIFUNC(luaopen_client);
 LUA_APIFUNC(luaopen_world);
 LUA_APIFUNC(luaopen_command);

@@ -7,11 +7,21 @@
 #define LUA_BUILD_AS_DLL
 #include "script.h"
 
-void* luax_checkmyobject(lua_State* L, cs_uint32 idx, const char* mt) {
+void* luax_newmyobject(lua_State* L, cs_size size, const char* mt) {
+	void* ptr = lua_newuserdata(L, size);
+	luaL_setmetatable(L, mt);
+	return ptr;
+}
+
+void* luax_checkobject(lua_State* L, cs_int32 idx, const char* mt) {
+	return luaL_checkudata(L, idx, mt);
+}
+
+void* luax_checkptr(lua_State* L, cs_int32 idx, const char* mt) {
 	return *(void**)luaL_checkudata(L, idx, mt);
 }
 
-void luax_pushmyobject(lua_State* L, void* obj, const char* mt) {
+void luax_pushmyptr(lua_State* L, void* obj, const char* mt) {
 	if(obj == NULL) {
 		lua_pushnil(L);
 		return;
@@ -31,7 +41,7 @@ void luax_pushmyobject(lua_State* L, void* obj, const char* mt) {
 	}
 }
 
-void luax_destroymyobject(lua_State* L, void** upp, cs_bool free) {
+void luax_destroymyptr(lua_State* L, void** upp, cs_bool free) {
 	void* up = *upp;
 	if(free) Memory_Free(up);
 	lua_pushlightuserdata(L, up);
@@ -40,12 +50,12 @@ void luax_destroymyobject(lua_State* L, void** upp, cs_bool free) {
 	*upp = NULL;
 }
 
-LUA_FUNC(lsuper_gc) {
-	luax_destroymyobject(L, (void**)lua_touserdata(L, 1), false);
+LUA_FUNC(lptr_gc) {
+	luax_destroymyptr(L, (void**)lua_touserdata(L, 1), false);
 	return 0;
 }
 
-void luax_printstack(lua_State* L) {
+LUA_FUNC(luax_printstack) {
 	Log_Info("Stack start:");
   for (int i = 0; i <= lua_gettop(L); i++) {
     int t = lua_type(L, i);
@@ -64,6 +74,7 @@ void luax_printstack(lua_State* L) {
 				Log_Info("   %d - %s", i, luaL_typename(L, i));
     }
   }
+	return 0;
 }
 
 Script scriptHead = NULL;
@@ -80,7 +91,7 @@ static const luaL_Reg loadedlibs[] = {
   {LUA_DBLIBNAME, luaopen_debug},
 
 	{"server", luaopen_server},
-	// {"vector", luaopen_vector},
+	{"vector", luaopen_vector},
 	{"client", luaopen_client},
 	{"world", luaopen_world},
 	{"command", luaopen_command},

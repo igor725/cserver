@@ -7,11 +7,11 @@
 #define LUA_TWORLD "world"
 
 World luax_checkworld(lua_State* L, cs_int32 idx) {
-	return luax_checkmyobject(L, idx, LUA_TWORLD);
+	return luax_checkptr(L, idx, LUA_TWORLD);
 }
 
 void luax_pushworld(lua_State* L, World world) {
-	luax_pushmyobject(L, world, LUA_TWORLD);
+	luax_pushmyptr(L, world, LUA_TWORLD);
 }
 
 LUA_SFUNC(lworld_getbyname) {
@@ -51,7 +51,7 @@ LUA_FUNC(luaopen_world) {
 	luaL_setfuncs(L, worldmethods, 0);
 
 	lua_setfield(L, -2, "__index");
-	lua_pushcfunction(L, lsuper_gc);
+	lua_pushcfunction(L, lptr_gc);
 	lua_setfield(L, -2, "__gc");
 
 	luaL_newlib(L, worldfuncs);

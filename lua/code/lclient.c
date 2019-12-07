@@ -9,11 +9,11 @@
 #define LUA_TCLIENT "client"
 
 Client luax_checkclient(lua_State* L, cs_int32 idx) {
-	return luax_checkmyobject(L, idx, LUA_TCLIENT);
+	return luax_checkptr(L, idx, LUA_TCLIENT);
 }
 
 void luax_pushclient(lua_State* L, Client client) {
-	luax_pushmyobject(L, client, LUA_TCLIENT);
+	luax_pushmyptr(L, client, LUA_TCLIENT);
 }
 
 LUA_SFUNC(lclient_getbyid) {
@@ -282,7 +282,7 @@ LUA_FUNC(luaopen_client) {
 	luaL_setfuncs(L, clientmethods, 0);
 
 	lua_setfield(L, -2, "__index");
-	lua_pushcfunction(L, lsuper_gc);
+	lua_pushcfunction(L, lptr_gc);
 	lua_setfield(L, -2, "__gc");
 
 	luaL_newlib(L, clientfuncs);
