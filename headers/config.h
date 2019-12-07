@@ -17,17 +17,17 @@ typedef struct _CEntry {
 	cs_bool haveLimits; // Применимо только для integer типов
 	cs_int32 limits[2]; // Минимальный и максимальный предел значений записи
 	union {
-		cs_int32 vint;
+		cs_bool vbool;
 		cs_int8 vint8;
 		cs_int16 vint16;
-		cs_bool vbool;
+		cs_int32 vint;
 		const char* vchar;
 	} value; // Значение записи, заданное пользователем
 	union {
-		cs_int32 vint;
+		cs_bool vbool;
 		cs_int8 vint8;
 		cs_int16 vint16;
-		cs_bool vbool;
+		cs_int32 vint;
 		const char* vchar;
 	} defvalue; // Значение записи, заданное по умолчанию
 	const char* commentary; // Комментарий к записи

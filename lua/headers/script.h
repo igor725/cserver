@@ -38,6 +38,7 @@ typedef struct _Script {
 
 void* luax_checkmyobject(lua_State* L, cs_uint32 idx, const char* mt);
 void luax_pushmyobject(lua_State* L, void* obj, const char* mt);
+void luax_destroymyobject(lua_State* L, void** upp, cs_bool free);
 void luax_printstack(lua_State* L);
 LUA_FUNC(lsuper_gc);
 

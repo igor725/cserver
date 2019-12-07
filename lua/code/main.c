@@ -31,14 +31,17 @@ void luax_pushmyobject(lua_State* L, void* obj, const char* mt) {
 	}
 }
 
-LUA_FUNC(lsuper_release) {
-	void** upp = (void**)lua_touserdata(L, 1);
+void luax_destroymyobject(lua_State* L, void** upp, cs_bool free) {
 	void* up = *upp;
-	*upp = NULL;
-
-	lua_pushlightuserdata(L, upp);
+	if(free) Memory_Free(up);
+	lua_pushlightuserdata(L, up);
 	lua_pushnil(L);
 	lua_settable(L, LUA_REGISTRYINDEX);
+	*upp = NULL;
+}
+
+LUA_FUNC(lsuper_gc) {
+	luax_destroymyobject(L, (void**)lua_touserdata(L, 1), false);
 	return 0;
 }
 
@@ -81,7 +84,7 @@ static const luaL_Reg loadedlibs[] = {
 	{"client", luaopen_client},
 	{"world", luaopen_world},
 	{"command", luaopen_command},
-	{"config", luaopen_config},
+	// {"config", luaopen_config},
 
   {NULL, NULL}
 };
