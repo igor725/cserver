@@ -6,7 +6,7 @@
 #include "lclient.h"
 
 static cs_bool lua_cmd_handler(CommandCallData* ccdata) {
-	Script scr = ccdata->command->data;
+	Script* scr = ccdata->command->data;
 	Command* cmd = ccdata->command;
 
 	Mutex_Lock(scr->mutex);

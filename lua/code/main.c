@@ -43,8 +43,7 @@ void luax_pushptr(lua_State* L, void* obj, const char* mt, uptrSetupFunc setup) 
 }
 
 void luax_pushrgtableof(lua_State* L, cs_int32 idx) {
-	lua_pushstring(L, "cs_udata");
-	lua_gettable(L, LUA_REGISTRYINDEX);
+	lua_getfield(L, LUA_REGISTRYINDEX, "cs_udata");
 
 	if(idx < 0) idx--;
 	lua_pushvalue(L, idx);
@@ -87,7 +86,7 @@ LUA_FUNC(luax_printstack) {
 	return 0;
 }
 
-Script scriptHead = NULL;
+Script* scriptHead = NULL;
 
 static const luaL_Reg loadedlibs[] = {
   {"_G", luaopen_base},
@@ -134,44 +133,33 @@ static void OpenLibs(lua_State *L) {
 	lua_setfield(L, LUA_REGISTRYINDEX, "cs_udata");
 }
 
-void Script_CallStart(Script scr) {
+void Script_Open(const char* name) {
+	char path[256];
+	String_FormatBuf(path, 256, "scripts/%s", name);
+
+	lua_State* state = luaL_newstate();
+	OpenLibs(state);
+	if(luaL_dofile(state, path)) {
+		Log_Error("Can't load Lua script: %s.", lua_tostring(state, -1));
+		lua_close(state);
+		return;
+	}
+
+	Script* scr = Memory_Alloc(1, sizeof(Script));
+	scr->state = state;
+	scr->mutex = Mutex_Create();
+	scr->next = scriptHead;
+	scr->name = String_AllocCopy(name);
+	scriptHead = scr;
+
 	Script_GetFuncBegin(scr, "onStart");
 		cs_int32 ret = lua_pcall(L, 0, 0, 0);
 		if(ret) Log_Error("LuaVM error in \"%s\": %s.", scr->name, lua_tostring(L, -1));
 	Script_GetFuncEnd(scr);
 }
 
-void Script_CallStop(Script scr) {
-	Script_GetFuncBegin(scr, "onStop");
-		cs_int32 ret = lua_pcall(L, 0, 0, 0);
-		if(ret) Log_Error("LuaVM error can't call onStop \"%s\": %s.", scr->name, lua_tostring(L, -1));
-	Script_GetFuncEnd(scr);
-}
-
-void Script_Open(const char* name) {
-	char path[256];
-	String_FormatBuf(path, 256, "scripts/%s", name);
-
-	lua_State* L = luaL_newstate();
-	OpenLibs(L);
-	if(luaL_dofile(L, path)) {
-		Log_Error("Can't load Lua script: %s.", lua_tostring(L, -1));
-		lua_close(L);
-		return;
-	}
-
-	Script scr = Memory_Alloc(1, sizeof(struct _Script));
-	scr->state = L;
-	scr->mutex = Mutex_Create();
-	scr->next = scriptHead;
-	scr->name = String_AllocCopy(name);
-	scriptHead = scr;
-
-	Script_CallStart(scr);
-}
-
-Script Script_GetByState(lua_State* L) {
-	Script ptr = scriptHead;
+Script* Script_GetByState(lua_State* L) {
+	Script* ptr = scriptHead;
 
 	while(ptr) {
 		if(ptr->state == L)
@@ -182,8 +170,11 @@ Script Script_GetByState(lua_State* L) {
 	return NULL;
 }
 
-void Script_Destroy(Script scr) {
-	Script_CallStop(scr);
+void Script_Destroy(Script* scr) {
+	Script_GetFuncBegin(scr, "onStop");
+		cs_int32 ret = lua_pcall(L, 0, 0, 0);
+		if(ret) Log_Error("LuaVM error can't call onStop \"%s\": %s.", scr->name, lua_tostring(L, -1));
+	Script_GetFuncEnd(scr);
 
 	Mutex_Lock(scr->mutex);
 	scr->destroyed = true;
@@ -211,7 +202,7 @@ cs_bool Plugin_Load() {
 }
 
 cs_bool Plugin_Unload() {
-	Script ptr = scriptHead, tmp;
+	Script* ptr = scriptHead, *tmp;
 
 	while(ptr) {
 		tmp = ptr;

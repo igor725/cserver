@@ -1,5 +1,6 @@
 #ifndef EVENT_H
 #define EVENT_H
+#include <client.h>
 typedef void(*evtVoidCallback)(void* param);
 typedef cs_bool(*evtBoolCallback)(void* param);
 

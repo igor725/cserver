@@ -34,7 +34,7 @@ typedef struct _Script {
 	Mutex* mutex;
 	lua_State* state;
 	struct _Script* next;
-} *Script;
+} Script;
 
 typedef void(*uptrSetupFunc)(lua_State* L, void* obj);
 
@@ -49,8 +49,8 @@ void luax_destroyptr(lua_State* L, void** upp, cs_bool free);
 LUA_FUNC(luax_printstack);
 LUA_FUNC(lptr_gc);
 
-Script Script_GetByState(lua_State* L);
-void Script_Destroy(Script scr);
+Script* Script_GetByState(lua_State* L);
+void Script_Destroy(Script* scr);
 
 LUA_APIFUNC(luaopen_server);
 LUA_APIFUNC(luaopen_csmath);

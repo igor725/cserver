@@ -198,7 +198,7 @@ void Server_InitialWork(void) {
 }
 
 void Server_DoStep(void) {
-	Event_Call(EVT_ONTICK, NULL);
+	Event_Call(EVT_ONTICK, 0);
 	for(cs_int32 i = 0; i < MAX_CLIENTS; i++) {
 		Client* client = Clients_List[i];
 		if(client) Client_Tick(client);
