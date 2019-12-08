@@ -89,7 +89,7 @@ enum {
 	BDDRW_GAS
 };
 
-typedef struct _BlockDef {
+typedef struct {
 	BlockID id;
 	const char* name;
 	cs_uint8 flags;
@@ -122,28 +122,28 @@ typedef struct _BlockDef {
 			cs_uint8 fogR, fogG, fogB;
 		} nonext;
 	} params;
-} *BlockDef;
+} BlockDef;
 
-typedef struct _BulkBlockUpdate {
-	World world;
+typedef struct {
+	World* world;
 	cs_bool autosend;
 	struct _BBUData {
 		cs_uint8 count;
 		cs_uint8 offsets[1024];
 		BlockID ids[256];
 	} data;
-} *BulkBlockUpdate;
+} BulkBlockUpdate;
 
-BlockDef Block_DefinitionsList[255];
+BlockDef* Block_DefinitionsList[255];
 API cs_bool Block_IsValid(BlockID id);
 API const char* Block_GetName(BlockID id);
 
-API BlockDef Block_New(BlockID id, const char* name, cs_uint8 flags);
-API cs_bool Block_Define(BlockDef info);
+API BlockDef* Block_New(BlockID id, const char* name, cs_uint8 flags);
+API cs_bool Block_Define(BlockDef* info);
 API cs_bool Block_Undefine(BlockID id);
 API void Block_UpdateDefinitions();
 
-API cs_bool Block_BulkUpdateAdd(BulkBlockUpdate bbu, cs_uint32 offset, BlockID id);
-API void Block_BulkUpdateSend(BulkBlockUpdate bbu);
-API void Block_BulkUpdateClean(BulkBlockUpdate bbu);
+API cs_bool Block_BulkUpdateAdd(BulkBlockUpdate* bbu, cs_uint32 offset, BlockID id);
+API void Block_BulkUpdateSend(BulkBlockUpdate* bbu);
+API void Block_BulkUpdateClean(BulkBlockUpdate* bbu);
 #endif // BLOCK_H

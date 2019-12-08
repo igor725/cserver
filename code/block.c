@@ -38,29 +38,29 @@ cs_bool Block_IsValid(BlockID id) {
 
 const char* Block_GetName(BlockID id) {
 	if(!Block_IsValid(id)) return "Unknown block";
-	BlockDef bdef = Block_DefinitionsList[id];
+	BlockDef* bdef = Block_DefinitionsList[id];
 	if(bdef)
 		return bdef->name;
 	else
 		return DefaultBlockNames[id];
 }
 
-BlockDef Block_New(BlockID id, const char* name, cs_uint8 flags) {
-	BlockDef bdf = Memory_Alloc(1, sizeof(struct _BlockDef));
+BlockDef* Block_New(BlockID id, const char* name, cs_uint8 flags) {
+	BlockDef* bdf = Memory_Alloc(1, sizeof(BlockDef));
 	bdf->name = String_AllocCopy(name);
 	bdf->flags = BDF_DYNALLOCED | flags;
 	bdf->id = id;
 	return bdf;
 }
 
-void Block_Free(BlockDef bdef) {
+void Block_Free(BlockDef* bdef) {
 	if(bdef->flags & BDF_DYNALLOCED) {
 		Memory_Free((void*)bdef->name);
 		Memory_Free(bdef);
 	}
 }
 
-cs_bool Block_Define(BlockDef block) {
+cs_bool Block_Define(BlockDef* block) {
 	if(Block_DefinitionsList[block->id]) return false;
 	block->flags &= ~(BDF_UPDATED | BDF_UNDEFINED);
 	Block_DefinitionsList[block->id] = block;
@@ -68,7 +68,7 @@ cs_bool Block_Define(BlockDef block) {
 }
 
 cs_bool Block_Undefine(BlockID id) {
-	BlockDef bdef = Block_DefinitionsList[id];
+	BlockDef* bdef = Block_DefinitionsList[id];
 	if(bdef) {
 		bdef->flags |= BDF_UNDEFINED;
 		bdef->flags &= ~BDF_UPDATED;
@@ -79,12 +79,12 @@ cs_bool Block_Undefine(BlockID id) {
 
 void Block_UpdateDefinitions() {
 	for(BlockID id = 0; id < 255; id++) {
-		BlockDef bdef = Block_DefinitionsList[id];
+		BlockDef* bdef = Block_DefinitionsList[id];
 		if(bdef && (bdef->flags & BDF_UPDATED) != BDF_UPDATED) {
 			bdef->flags |= BDF_UPDATED;
 			if(bdef->flags & BDF_UNDEFINED) {
 				for(ClientID cid = 0; cid < MAX_CLIENTS; cid++) {
-					Client client = Clients_List[cid];
+					Client* client = Clients_List[cid];
 					if(client)
 						Client_UndefineBlock(client, bdef->id);
 				}
@@ -92,7 +92,7 @@ void Block_UpdateDefinitions() {
 				Block_Free(bdef);
 			} else {
 				for(ClientID cid = 0; cid < MAX_CLIENTS; cid++) {
-					Client client = Clients_List[cid];
+					Client* client = Clients_List[cid];
 					if(client)
 						Client_DefineBlock(client, bdef);
 				}
@@ -101,7 +101,7 @@ void Block_UpdateDefinitions() {
 	}
 }
 
-cs_bool Block_BulkUpdateAdd(BulkBlockUpdate bbu, cs_uint32 offset, BlockID id) {
+cs_bool Block_BulkUpdateAdd(BulkBlockUpdate* bbu, cs_uint32 offset, BlockID id) {
 	if(bbu->data.count == 255) {
 		if(bbu->autosend) {
 			Block_BulkUpdateSend(bbu);
@@ -114,14 +114,14 @@ cs_bool Block_BulkUpdateAdd(BulkBlockUpdate bbu, cs_uint32 offset, BlockID id) {
 	return true;
 }
 
-void Block_BulkUpdateSend(BulkBlockUpdate bbu) {
+void Block_BulkUpdateSend(BulkBlockUpdate* bbu) {
 	for(ClientID cid = 0; cid < MAX_CLIENTS; cid++) {
-		Client client = Clients_List[cid];
+		Client* client = Clients_List[cid];
 		if(client && Client_IsInWorld(client, bbu->world))
 			Client_BulkBlockUpdate(client, bbu);
 	}
 }
 
-void Block_BulkUpdateClean(BulkBlockUpdate bbu) {
+void Block_BulkUpdateClean(BulkBlockUpdate* bbu) {
 	Memory_Fill(&bbu->data, sizeof(struct _BBUData), 0);
 }

@@ -53,7 +53,7 @@ return;
 #define EXT_MOREBLOCKS 0xA349DCECul
 #define EXT_VELCTRL 0xF8DF4FF7
 
-typedef cs_bool(*packetHandler)(Client, const char*);
+typedef cs_bool(*packetHandler)(Client* client, const char* data);
 
 typedef struct packet {
 	cs_uint16 size;
@@ -75,7 +75,7 @@ API void Proto_ReadSVec(const char** dataptr, SVec* vec);
 API void Proto_ReadAng(const char** dataptr, Ang* ang);
 API void Proto_ReadFlSVec(const char** dataptr, Vec* vec);
 API void Proto_ReadFlVec(const char** dataptr, Vec* vec);
-API cs_bool Proto_ReadClientPos(Client client, const char* data);
+API cs_bool Proto_ReadClientPos(Client* client, const char* data);
 
 API void Proto_WriteString(char** dataptr, const char* string);
 API void Proto_WriteFlVec(char** dataptr, const Vec* vec);
@@ -86,7 +86,7 @@ API void Proto_WriteColor3(char** dataptr, const Color3* color);
 API void Proto_WriteColor4(char** dataptr, const Color4* color);
 API void Proto_WriteByteColor3(char** dataptr, const Color3* color);
 API void Proto_WriteByteColor4(char** dataptr, const Color4* color);
-API cs_uint32 Proto_WriteClientPos(char* data, Client client, cs_bool extended);
+API cs_uint32 Proto_WriteClientPos(char* data, Client* client, cs_bool extended);
 
 void Packet_RegisterDefault(void);
 
@@ -95,20 +95,20 @@ void Packet_RegisterDefault(void);
 ** ванильного протокола
 */
 
-void Vanilla_WriteHandshake(Client client, const char* name, const char* motd);
-void Vanilla_WriteLvlInit(Client client);
-void Vanilla_WriteLvlFin(Client client, SVec* dims);
-void Vanilla_WriteSetBlock(Client client, SVec* pos, BlockID block);
-void Vanilla_WriteSpawn(Client client, Client other);
-void Vanilla_WritePosAndOrient(Client client, Client other);
-void Vanilla_WriteDespawn(Client client, Client other);
-void Vanilla_WriteChat(Client client, MessageType type, const char* mesg);
-void Vanilla_WriteKick(Client client, const char* reason);
+void Vanilla_WriteHandshake(Client* client, const char* name, const char* motd);
+void Vanilla_WriteLvlInit(Client* client);
+void Vanilla_WriteLvlFin(Client* client, SVec* dims);
+void Vanilla_WriteSetBlock(Client* client, SVec* pos, BlockID block);
+void Vanilla_WriteSpawn(Client* client, Client* other);
+void Vanilla_WritePosAndOrient(Client* client, Client* other);
+void Vanilla_WriteDespawn(Client* client, Client* other);
+void Vanilla_WriteChat(Client* client, MessageType type, const char* mesg);
+void Vanilla_WriteKick(Client* client, const char* reason);
 
-cs_bool Handler_Handshake(Client client, const char* data);
-cs_bool Handler_SetBlock(Client client, const char* data);
-cs_bool Handler_PosAndOrient(Client client, const char* data);
-cs_bool Handler_Message(Client client, const char* data);
+cs_bool Handler_Handshake(Client* client, const char* data);
+cs_bool Handler_SetBlock(Client* client, const char* data);
+cs_bool Handler_PosAndOrient(Client* client, const char* data);
+cs_bool Handler_Message(Client* client, const char* data);
 
 /*
 ** Врайтеры и хендлеры
@@ -120,36 +120,36 @@ API void CPE_RegisterExtension(const char* name, cs_int32 version);
 API cs_int16 CPE_GetModelNum(const char* model);
 API const char* CPE_GetModelStr(cs_int16 num);
 
-cs_bool CPEHandler_ExtInfo(Client client, const char* data);
-cs_bool CPEHandler_ExtEntry(Client client, const char* data);
-cs_bool CPEHandler_TwoWayPing(Client client, const char* data);
-cs_bool CPEHandler_PlayerClick(Client client, const char* data);
+cs_bool CPEHandler_ExtInfo(Client* client, const char* data);
+cs_bool CPEHandler_ExtEntry(Client* client, const char* data);
+cs_bool CPEHandler_TwoWayPing(Client* client, const char* data);
+cs_bool CPEHandler_PlayerClick(Client* client, const char* data);
 
-void CPE_WriteInfo(Client client);
-void CPE_WriteExtEntry(Client client, CPEExt ext);
-void CPE_WriteClickDistance(Client client, cs_int16 dist);
-void CPE_WriteInventoryOrder(Client client, Order order, BlockID block);
-void CPE_WriteHoldThis(Client client, BlockID block, cs_bool preventChange);
-void CPE_WriteSetHotKey(Client client, const char* action, cs_int32 keycode, cs_int8 keymod);
-void CPE_WriteAddName(Client client, Client other);
-void CPE_WriteAddEntity2(Client client, Client other);
-void CPE_WriteRemoveName(Client client, Client other);
-void CPE_WriteEnvColor(Client client, cs_uint8 type, Color3* col);
-void CPE_WriteMakeSelection(Client client, cs_uint8 id, SVec* start, SVec* end, Color4* color);
-void CPE_WriteRemoveSelection(Client client, cs_uint8 id);
-void CPE_WriteHackControl(Client client, Hacks hacks);
-void CPE_WriteDefineBlock(Client client, BlockDef block);
-void CPE_WriteUndefineBlock(Client client, BlockID id);
-void CPE_WriteDefineExBlock(Client client, BlockDef block);
-void CPE_WriteBulkBlockUpdate(Client client, BulkBlockUpdate bbu);
-void CPE_WriteSetTextColor(Client client, Color4* color, char code);
-void CPE_WriteSetHotBar(Client client, Order order, BlockID block);
-void CPE_WriteVelocityControl(Client client, Vec* velocity, cs_bool mode);
-void CPE_WriteWeatherType(Client client, Weather type);
-void CPE_WriteTexturePack(Client client, const char* url);
-void CPE_WriteMapProperty(Client client, cs_uint8 property, cs_int32 value);
-void CPE_WriteSetEntityProperty(Client client, Client other, cs_int8 type, cs_int32 value);
-void CPE_WriteTwoWayPing(Client client, cs_uint8 direction, cs_int16 num);
-void CPE_WriteSetModel(Client client, Client other);
-void CPE_WriteBlockPerm(Client client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy);
+void CPE_WriteInfo(Client* client);
+void CPE_WriteExtEntry(Client* client, CPEExt ext);
+void CPE_WriteClickDistance(Client* client, cs_int16 dist);
+void CPE_WriteInventoryOrder(Client* client, Order order, BlockID block);
+void CPE_WriteHoldThis(Client* client, BlockID block, cs_bool preventChange);
+void CPE_WriteSetHotKey(Client* client, const char* action, cs_int32 keycode, cs_int8 keymod);
+void CPE_WriteAddName(Client* client, Client* other);
+void CPE_WriteAddEntity2(Client* client, Client* other);
+void CPE_WriteRemoveName(Client* client, Client* other);
+void CPE_WriteEnvColor(Client* client, cs_uint8 type, Color3* col);
+void CPE_WriteMakeSelection(Client* client, cs_uint8 id, SVec* start, SVec* end, Color4* color);
+void CPE_WriteRemoveSelection(Client* client, cs_uint8 id);
+void CPE_WriteHackControl(Client* client, CPEHacks* hacks);
+void CPE_WriteDefineBlock(Client* client, BlockDef* block);
+void CPE_WriteUndefineBlock(Client* client, BlockID id);
+void CPE_WriteDefineExBlock(Client* client, BlockDef* block);
+void CPE_WriteBulkBlockUpdate(Client* client, BulkBlockUpdate* bbu);
+void CPE_WriteSetTextColor(Client* client, Color4* color, char code);
+void CPE_WriteSetHotBar(Client* client, Order order, BlockID block);
+void CPE_WriteVelocityControl(Client* client, Vec* velocity, cs_bool mode);
+void CPE_WriteWeatherType(Client* client, Weather type);
+void CPE_WriteTexturePack(Client* client, const char* url);
+void CPE_WriteMapProperty(Client* client, cs_uint8 property, cs_int32 value);
+void CPE_WriteSetEntityProperty(Client* client, Client* other, cs_int8 type, cs_int32 value);
+void CPE_WriteTwoWayPing(Client* client, cs_uint8 direction, cs_int16 num);
+void CPE_WriteSetModel(Client* client, Client* other);
+void CPE_WriteBlockPerm(Client* client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy);
 #endif // PROTOCOL_H

@@ -16,7 +16,7 @@
 #include "inventory.h"
 
 static void Survival_OnHandshake(void* param) {
-	Client client = param;
+	Client* client = param;
 	if(!Client_GetExtVer(client, EXT_HACKCTRL) ||
 	!Client_GetExtVer(client, EXT_MESSAGETYPE) ||
 	!Client_GetExtVer(client, EXT_PLAYERCLICK) ||
@@ -28,7 +28,7 @@ static void Survival_OnHandshake(void* param) {
 }
 
 static void Survival_OnSpawn(void* param) {
-	SURVDATA data = SurvData_Get((Client)param);
+	SurvivalData* data = SurvData_Get((Client*)param);
 	SurvGui_DrawAll(data);
 	SurvHacks_Update(data);
 	SurvInv_Init(data);
@@ -36,8 +36,8 @@ static void Survival_OnSpawn(void* param) {
 
 static cs_bool Survival_OnBlockPlace(void* param) {
 	onBlockPlace a = param;
-	Client client = a->client;
-	SURVDATA data = SurvData_Get(client);
+	Client* client = a->client;
+	SurvivalData* data = SurvData_Get(client);
 	if(data->godMode) return true;
 
 	cs_uint8 mode = a->mode;
@@ -62,7 +62,7 @@ static cs_bool Survival_OnBlockPlace(void* param) {
 
 static void Survival_OnHeldChange(void* param) {
 	onHeldBlockChange a = param;
-	SURVDATA data = SurvData_Get(a->client);
+	SurvivalData* data = SurvData_Get(a->client);
 	if(!data->godMode)
 		SurvGui_DrawBlockInfo(data, a->curr);
 }
@@ -70,7 +70,7 @@ static void Survival_OnHeldChange(void* param) {
 static void Survival_OnTick(void* param) {
 	(void)param;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		SURVDATA data = SurvData_GetByID(i);
+		SurvivalData* data = SurvData_GetByID(i);
 		if(data) {
 			if(data->breakStarted)
 				SurvBrk_Tick(data, Server_Delta);
@@ -80,7 +80,7 @@ static void Survival_OnTick(void* param) {
 }
 
 static void Survival_OnDisconnect(void* param) {
-	SurvData_Free((Client)param);
+	SurvData_Free((Client*)param);
 }
 
 static double root(double n){
@@ -102,8 +102,8 @@ static void Survival_OnClick(void* param) {
 	onPlayerClick a = param;
 	if(a->button != 0) return;
 
-	Client client = a->client;
-	SURVDATA data = SurvData_Get(client);
+	Client* client = a->client;
+	SurvivalData* data = SurvData_Get(client);
 	if(data->godMode) return;
 
 	if(a->action == 1) {
@@ -112,14 +112,14 @@ static void Survival_OnClick(void* param) {
 	}
 
 	SVec* pos = a->pos;
-	Client target = Client_GetByID(a->id);
-	SURVDATA dataTg = NULL;
+	Client* target = Client_GetByID(a->id);
+	SurvivalData* dataTg = NULL;
 	if(target) dataTg = SurvData_Get(target);
 
 	float dist_entity = 32768.0f;
 	float dist_block = 32768.0f;
 
-	PlayerData pd = client->playerData;
+	PlayerData* pd = client->playerData;
 	Vec* pv = &pd->position;
 
 	if(!Vec_IsInvalid(pos)) {
@@ -157,11 +157,11 @@ static void Survival_OnClick(void* param) {
 	}
 }
 
-static cs_bool CHandler_God(CommandCallData ccdata) {
+static cs_bool CHandler_God(CommandCallData* ccdata) {
 	Command_OnlyForClient(ccdata);
 	Command_OnlyForOP(ccdata);
 
-	SURVDATA data = SurvData_Get(ccdata->caller);
+	SurvivalData* data = SurvData_Get(ccdata->caller);
 	data->godMode ^= 1;
 	SurvGui_DrawAll(data);
 	SurvHacks_Update(data);
@@ -171,7 +171,7 @@ static cs_bool CHandler_God(CommandCallData ccdata) {
 	return true;
 }
 
-static cs_bool CHandler_Hurt(CommandCallData ccdata) {
+static cs_bool CHandler_Hurt(CommandCallData* ccdata) {
 	Command_OnlyForClient(ccdata);
 
 	char damage[32];
@@ -183,9 +183,9 @@ static cs_bool CHandler_Hurt(CommandCallData ccdata) {
 	return false;
 }
 
-static cs_bool CHandler_PvP(CommandCallData ccdata) {
+static cs_bool CHandler_PvP(CommandCallData* ccdata) {
 	Command_OnlyForClient(ccdata);
-	SURVDATA data = SurvData_Get(ccdata->caller);
+	SurvivalData* data = SurvData_Get(ccdata->caller);
 	Command_OnlyForSurvival(ccdata, data);
 
 	data->pvpMode ^= 1;

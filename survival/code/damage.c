@@ -5,7 +5,7 @@
 #include "gui.h"
 #include "damage.h"
 
-void SurvDmg_Hurt(SURVDATA target, SURVDATA attacker, cs_uint8 damage) {
+void SurvDmg_Hurt(SurvivalData* target, SurvivalData* attacker, cs_uint8 damage) {
 	if(damage <= 0 || target->godMode) return;
 	(void)attacker;
 
@@ -13,7 +13,7 @@ void SurvDmg_Hurt(SURVDATA target, SURVDATA attacker, cs_uint8 damage) {
 	SurvGui_DrawHealth(target);
 }
 
-void SurvDmg_Tick(SURVDATA data, cs_uint32 delta) {
+void SurvDmg_Tick(SurvivalData* data, cs_uint32 delta) {
 	if(data->health < 20) {
 		data->regenTimer += (cs_uint16)delta;
 		if(data->regenTimer > 1) {

@@ -110,7 +110,7 @@ static void DoRequest() {
 
 static const char hexchars[] = "0123456789abcdef";
 
-cs_bool Heartbeat_CheckKey(Client client) {
+cs_bool Heartbeat_CheckKey(Client* client) {
 	if(*Secret == '\0') return true;
 	const char* key = client->playerData->key;
 	const char* name =  client->playerData->name;

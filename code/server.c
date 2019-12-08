@@ -27,13 +27,13 @@ static void AcceptFunc(void) {
 		}
 
 		cs_uint32 addr = ntohl(caddr.sin_addr.s_addr);
-	 	Client tmp = Client_New(fd, addr);
+	 	Client* tmp = Client_New(fd, addr);
 		cs_int8 maxConnPerIP = Config_GetInt8ByKey(Server_Config, CFG_CONN_KEY),
 		sameAddrCount = 1;
 
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-			Client cc = Clients_List[i];
-			if(cc && cc->addr == addr)
+			Client* other = Clients_List[i];
+			if(other && other->addr == addr)
 				++sameAddrCount;
 			else continue;
 
@@ -46,7 +46,7 @@ static void AcceptFunc(void) {
 
 		if(Socket_Receive(fd, tmp->rdbuf, 5, MSG_PEEK)) {
 			if(String_CaselessCompare(tmp->rdbuf, "GET /")) {
-				WsClient wscl = Memory_Alloc(1, sizeof(struct wsClient));
+				WsClient* wscl = Memory_Alloc(1, sizeof(WsClient));
 				wscl->recvbuf = tmp->rdbuf;
 				wscl->sock = tmp->sock;
 				tmp->websock = wscl;
@@ -166,7 +166,7 @@ void Server_InitialWork(void) {
 	if(Iter_Init(&wIter, "worlds", "cws")) {
 		do {
 			if(wIter.isDir || !wIter.cfile) continue;
-			World tmp = World_Create(wIter.cfile);
+			World* tmp = World_Create(wIter.cfile);
 			tmp->id = wIndex++;
 			if(!World_Load(tmp) || !World_Add(tmp))
 				World_Free(tmp);
@@ -175,7 +175,7 @@ void Server_InitialWork(void) {
 	Iter_Close(&wIter);
 
 	if(wIndex < 1) {
-		World tmp = World_Create("world.cws");
+		World* tmp = World_Create("world.cws");
 		SVec defdims = {256, 256, 256};
 		World_SetDimensions(tmp, &defdims);
 		World_AllocBlockArray(tmp);
@@ -200,7 +200,7 @@ void Server_InitialWork(void) {
 void Server_DoStep(void) {
 	Event_Call(EVT_ONTICK, NULL);
 	for(cs_int32 i = 0; i < MAX_CLIENTS; i++) {
-		Client client = Clients_List[i];
+		Client* client = Clients_List[i];
 		if(client) Client_Tick(client);
 	}
 }

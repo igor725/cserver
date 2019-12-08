@@ -30,25 +30,25 @@ enum {
 };
 
 typedef struct _onMessage {
-	Client client;
+	Client* client;
 	char* message;
 	MessageType* type;
 } *onMessage;
 
 typedef struct _onHeldBlockChange {
-	Client client;
+	Client* client;
 	BlockID prev, curr;
 } *onHeldBlockChange;
 
 typedef struct _onBlockPlace {
-	Client client;
+	Client* client;
 	cs_uint8 mode;
 	SVec* pos;
 	BlockID* id;
 } *onBlockPlace;
 
 typedef struct _onPlayerClick {
-	Client client;
+	Client* client;
 	cs_int8 button, action;
 	cs_int16 yaw, pitch;
 	ClientID id;
@@ -70,8 +70,8 @@ API cs_bool Event_RegisterVoid(cs_uint32 type, evtVoidCallback func);
 API cs_bool Event_Unregister(cs_uint32 type, cs_uintptr evtFuncPtr);
 
 cs_bool Event_Call(cs_uint32 type, void* param);
-cs_bool Event_OnMessage(Client client, char* message, MessageType* type);
-void Event_OnHeldBlockChange(Client client, BlockID prev, BlockID curr);
-cs_bool Event_OnBlockPlace(Client client, cs_uint8 mode, SVec* pos, BlockID* id);
-void Event_OnClick(Client client, char button, char action, cs_int16 yaw, cs_int16 pitch, ClientID tgID, SVec* tgBlockPos, char tgBlockFace);
+cs_bool Event_OnMessage(Client* client, char* message, MessageType* type);
+void Event_OnHeldBlockChange(Client* client, BlockID prev, BlockID curr);
+cs_bool Event_OnBlockPlace(Client* client, cs_uint8 mode, SVec* pos, BlockID* id);
+void Event_OnClick(Client* client, char button, char action, cs_int16 yaw, cs_int16 pitch, ClientID tgID, SVec* tgBlockPos, char tgBlockFace);
 #endif // EVENT_H

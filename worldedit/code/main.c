@@ -20,7 +20,7 @@ static void CubeNormalize(SVec* s, SVec* e) {
 	}
 }
 
-static SVec* GetCuboid(Client client) {
+static SVec* GetCuboid(Client* client) {
 	return Assoc_GetPtr(client, WeAT);
 }
 
@@ -48,7 +48,7 @@ static void clickhandler(void* param) {
 	}
 }
 
-static cs_bool CHandler_Select(CommandCallData ccdata) {
+static cs_bool CHandler_Select(CommandCallData* ccdata) {
 	SVec* ptr = GetCuboid(ccdata->caller);
 	if(ptr) {
 		Client_RemoveSelection(ccdata->caller, 0);
@@ -61,9 +61,9 @@ static cs_bool CHandler_Select(CommandCallData ccdata) {
 	Command_Print(ccdata, "Selection mode &aenabled");
 }
 
-static cs_bool CHandler_Set(CommandCallData ccdata) {
+static cs_bool CHandler_Set(CommandCallData* ccdata) {
 	const char* cmdUsage = "/set <blockid>";
-	Client client = ccdata->caller;
+	Client* client = ccdata->caller;
 	SVec* ptr = GetCuboid(client);
 	if(!ptr) {
 		Command_Print(ccdata, "Select cuboid first.");
@@ -75,11 +75,11 @@ static cs_bool CHandler_Set(CommandCallData ccdata) {
 	}
 
 	BlockID block = (BlockID)String_ToInt(blid);
-	World world = Client_GetWorld(client);
+	World* world = Client_GetWorld(client);
 	SVec s = ptr[0], e = ptr[1];
 	CubeNormalize(&s, &e);
 	cs_uint32 count = (s.x - e.x) * (s.y - e.y) * (s.z - e.z);
-	struct _BulkBlockUpdate bbu;
+	BulkBlockUpdate bbu;
 	Block_BulkUpdateClean(&bbu);
 	bbu.world = world;
 	bbu.autosend = true;
@@ -101,9 +101,9 @@ static cs_bool CHandler_Set(CommandCallData ccdata) {
 	Command_Printf(ccdata, "%d blocks filled with %d.", count, block);
 }
 
-static cs_bool CHandler_Replace(CommandCallData ccdata) {
+static cs_bool CHandler_Replace(CommandCallData* ccdata) {
 	const char* cmdUsage = "/repalce <from> <to>";
-	Client client = ccdata->caller;
+	Client* client = ccdata->caller;
 	SVec* ptr = GetCuboid(client);
 	if(!ptr) {
 		Command_Print(ccdata, "Select cuboid first.");
@@ -117,11 +117,11 @@ static cs_bool CHandler_Replace(CommandCallData ccdata) {
 
 	BlockID from = (BlockID)String_ToInt(fromt);
 	BlockID to = (BlockID)String_ToInt(tot);
-	World world = Client_GetWorld(client);
+	World* world = Client_GetWorld(client);
 	SVec s = ptr[0], e = ptr[1];
 	CubeNormalize(&s, &e);
 	cs_uint32 count = 0;
-	struct _BulkBlockUpdate bbu;
+	BulkBlockUpdate bbu;
 	Block_BulkUpdateClean(&bbu);
 	bbu.world = world;
 	bbu.autosend = true;
@@ -145,7 +145,7 @@ static cs_bool CHandler_Replace(CommandCallData ccdata) {
 }
 
 static void freeselvecs(void* param) {
-	Assoc_Remove((Client)param, WeAT, true);
+	Assoc_Remove((Client*)param, WeAT, true);
 }
 
 cs_int32 Plugin_ApiVer = PLUGIN_API_NUM;

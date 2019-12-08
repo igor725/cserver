@@ -16,7 +16,7 @@ enum {
 	WS_ERR_PAYLOAD_LEN_MISMATCH,
 };
 
-typedef struct wsClient {
+typedef struct {
 	Socket sock;
 	cs_int32 state;
 	cs_int32 error;
@@ -26,9 +26,9 @@ typedef struct wsClient {
 	cs_uint16 plen;
 	cs_uint8 opcode;
 	cs_bool done;
-} *WsClient;
+} WsClient;
 
-cs_bool WsClient_DoHandshake(WsClient ws);
-cs_bool WsClient_ReceiveFrame(WsClient ws);
-cs_bool WsClient_SendHeader(WsClient ws, cs_uint8 opcode, cs_uint16 len);
+cs_bool WsClient_DoHandshake(WsClient* ws);
+cs_bool WsClient_ReceiveFrame(WsClient* ws);
+cs_bool WsClient_SendHeader(WsClient* ws, cs_uint8 opcode, cs_uint16 len);
 #endif // WEBSOCKET_H

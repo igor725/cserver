@@ -34,7 +34,7 @@ static char* SHA1toB64(cs_uint8* in, char* out) {
 #define WS_RESP "HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Protocol: ClassiCube\r\nSec-WebSocket-Accept: %s\r\n\r\n"
 #define WS_ERRRESP "HTTP/1.1 %d %s\r\nConnection: Close\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s"
 
-cs_bool WsClient_DoHandshake(WsClient ws) {
+cs_bool WsClient_DoHandshake(WsClient* ws) {
 	char line[1024], wskey[32], b64[30];
 	cs_uint8 hash[20];
 	cs_bool haveUpgrade = false;
@@ -84,7 +84,7 @@ cs_bool WsClient_DoHandshake(WsClient ws) {
 	return false;
 }
 
-cs_bool WsClient_ReceiveFrame(WsClient ws) {
+cs_bool WsClient_ReceiveFrame(WsClient* ws) {
 	if(ws->state == WS_ST_DONE)
 		ws->state = WS_ST_HDR;
 
@@ -154,7 +154,7 @@ cs_bool WsClient_ReceiveFrame(WsClient ws) {
 	return false;
 }
 
-cs_bool WsClient_SendHeader(WsClient ws, cs_uint8 opcode, cs_uint16 len) {
+cs_bool WsClient_SendHeader(WsClient* ws, cs_uint8 opcode, cs_uint16 len) {
 	cs_uint16 hdrlen = 2;
 	char hdr[4] = {0};
 

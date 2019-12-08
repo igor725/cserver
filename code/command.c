@@ -12,11 +12,11 @@
 #include "lang.h"
 #include <zlib.h>
 
-Command HeadCmd;
+Command* HeadCmd;
 
-Command Command_Register(const char* name, cmdFunc func) {
+Command* Command_Register(const char* name, cmdFunc func) {
 	if(Command_Get(name)) return NULL;
-	Command tmp = Memory_Alloc(1, sizeof(struct _Command));
+	Command* tmp = Memory_Alloc(1, sizeof(Command));
 
 	tmp->name = String_AllocCopy(name);
 	tmp->func = func;
@@ -28,13 +28,13 @@ Command Command_Register(const char* name, cmdFunc func) {
 	return tmp;
 }
 
-void Command_SetAlias(Command cmd, const char* alias) {
+void Command_SetAlias(Command* cmd, const char* alias) {
 	if(cmd->alias) Memory_Free((void*)cmd->alias);
 	cmd->alias = String_AllocCopy(alias);
 }
 
-Command Command_Get(const char* name) {
-	Command ptr = HeadCmd;
+Command* Command_Get(const char* name) {
+	Command* ptr = HeadCmd;
 
 	while(ptr) {
 		if(String_CaselessCompare(ptr->name, name) ||
@@ -46,7 +46,7 @@ Command Command_Get(const char* name) {
 	return NULL;
 }
 
-cs_bool Command_Unregister(Command cmd) {
+cs_bool Command_Unregister(Command* cmd) {
 	if(cmd->prev)
 		cmd->prev->next = cmd->next;
 
@@ -62,12 +62,12 @@ cs_bool Command_Unregister(Command cmd) {
 }
 
 cs_bool Command_UnregisterByName(const char* name) {
-	Command cmd = Command_Get(name);
+	Command* cmd = Command_Get(name);
 	if(!cmd) return false;
 	return Command_Unregister(cmd);
 }
 
-static cs_bool CHandler_Info(CommandCallData ccdata) {
+static cs_bool CHandler_Info(CommandCallData* ccdata) {
 	Command_OnlyForOP(ccdata);
 
 	const char* zver = zlibVersion();
@@ -91,15 +91,15 @@ static cs_bool CHandler_Info(CommandCallData ccdata) {
 	);
 }
 
-static cs_bool CHandler_OP(CommandCallData ccdata) {
+static cs_bool CHandler_OP(CommandCallData* ccdata) {
 	const char* cmdUsage = "/op <playername>";
 	Command_OnlyForOP(ccdata);
 
 	char clientname[64];
 	if(String_GetArgument(ccdata->args, clientname, 64, 0)) {
-		Client tg = Client_GetByName(clientname);
+		Client* tg = Client_GetByName(clientname);
 		if(tg) {
-			PlayerData pd = tg->playerData;
+			PlayerData* pd = tg->playerData;
 			const char* name = pd->name;
 			pd->isOP ^= 1;
 			Command_Printf(ccdata, "Player %s %s", name, pd->isOP ? "opped" : "deopped");
@@ -110,7 +110,7 @@ static cs_bool CHandler_OP(CommandCallData ccdata) {
 	Command_PrintUsage(ccdata);
 }
 
-static cs_bool CHandler_Uptime(CommandCallData ccdata) {
+static cs_bool CHandler_Uptime(CommandCallData* ccdata) {
 	cs_uint64 msec, d, h, m, s, ms;
 	msec = Time_GetMSec() - Server_StartTime;
 	d = msec / 86400000;
@@ -124,7 +124,7 @@ static cs_bool CHandler_Uptime(CommandCallData ccdata) {
 	);
 }
 
-static cs_bool CHandler_CFG(CommandCallData ccdata) {
+static cs_bool CHandler_CFG(CommandCallData* ccdata) {
 	const char* cmdUsage = "/cfg <set/get/print> [key] [value]";
 	Command_OnlyForOP(ccdata);
 
@@ -204,7 +204,7 @@ if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) { \
 	String_Append(name, 64, "." DLIB_EXT); \
 }
 
-static cs_bool CHandler_Plugins(CommandCallData ccdata) {
+static cs_bool CHandler_Plugins(CommandCallData* ccdata) {
 	const char* cmdUsage = "/plugins <load/unload/print> [pluginName]";
 	char subcommand[64], name[64];
 	Plugin plugin;
@@ -271,13 +271,13 @@ static cs_bool CHandler_Plugins(CommandCallData ccdata) {
 	Command_PrintUsage(ccdata);
 }
 
-static cs_bool CHandler_Stop(CommandCallData ccdata) {
+static cs_bool CHandler_Stop(CommandCallData* ccdata) {
 	Command_OnlyForOP(ccdata);
 	Server_Active = false;
 	return false;
 }
 
-static cs_bool CHandler_Announce(CommandCallData ccdata) {
+static cs_bool CHandler_Announce(CommandCallData* ccdata) {
 	Command_OnlyForOP(ccdata);
 
 	Client_Chat(
@@ -288,13 +288,13 @@ static cs_bool CHandler_Announce(CommandCallData ccdata) {
 	return false;
 }
 
-static cs_bool CHandler_Kick(CommandCallData ccdata) {
+static cs_bool CHandler_Kick(CommandCallData* ccdata) {
 	const char* cmdUsage = "/kick <player> [reason]";
 	Command_OnlyForOP(ccdata);
 
 	char playername[64];
 	if(String_GetArgument(ccdata->args, playername, 64, 0)) {
-		Client tg = Client_GetByName(playername);
+		Client* tg = Client_GetByName(playername);
 		if(tg) {
 			const char* reason = String_FromArgument(ccdata->args, 1);
 			Client_Kick(tg, reason);
@@ -307,7 +307,7 @@ static cs_bool CHandler_Kick(CommandCallData ccdata) {
 	Command_PrintUsage(ccdata);
 }
 
-static cs_bool CHandler_SetModel(CommandCallData ccdata) {
+static cs_bool CHandler_SetModel(CommandCallData* ccdata) {
 	const char* cmdUsage = "/model <modelname/blockid>";
 	Command_OnlyForOP(ccdata);
 	Command_OnlyForClient(ccdata);
@@ -323,13 +323,13 @@ static cs_bool CHandler_SetModel(CommandCallData ccdata) {
 	Command_PrintUsage(ccdata);
 }
 
-static cs_bool CHandler_ChgWorld(CommandCallData ccdata) {
+static cs_bool CHandler_ChgWorld(CommandCallData* ccdata) {
 	const char* cmdUsage = "/chgworld <worldname>";
 	Command_OnlyForClient(ccdata);
 
 	char worldname[64];
 	Command_ArgToWorldName(ccdata, worldname, 0);
-	World world = World_GetByName(worldname);
+	World* world = World_GetByName(worldname);
 	if(world) {
 		if(Client_IsInWorld(ccdata->caller, world)) {
 			Command_Print(ccdata, "You already in this world.");
@@ -339,7 +339,7 @@ static cs_bool CHandler_ChgWorld(CommandCallData ccdata) {
 	Command_Print(ccdata, "World not found.");
 }
 
-static cs_bool CHandler_GenWorld(CommandCallData ccdata) {
+static cs_bool CHandler_GenWorld(CommandCallData* ccdata) {
 	const char* cmdUsage = "/genworld <name> <x> <y> <z>";
 	Command_OnlyForOP(ccdata);
 
@@ -353,7 +353,7 @@ static cs_bool CHandler_GenWorld(CommandCallData ccdata) {
 
 		if(_x > 0 && _y > 0 && _z > 0) {
 			Command_ArgToWorldName(ccdata, worldname, 0);
-			World tmp = World_Create(worldname);
+			World* tmp = World_Create(worldname);
 			SVec vec;
 			Vec_Set(vec, _x, _y, _z);
 			World_SetDimensions(tmp, &vec);
@@ -372,19 +372,19 @@ static cs_bool CHandler_GenWorld(CommandCallData ccdata) {
 	Command_PrintUsage(ccdata);
 }
 
-static cs_bool CHandler_UnlWorld(CommandCallData ccdata) {
+static cs_bool CHandler_UnlWorld(CommandCallData* ccdata) {
 	const char* cmdUsage = "/unlworld <worldname>";
 	Command_OnlyForOP(ccdata);
 
 	char worldname[64];
 	Command_ArgToWorldName(ccdata, worldname, 0);
-	World tmp = World_GetByName(worldname);
+	World* tmp = World_GetByName(worldname);
 	if(tmp) {
 		if(tmp->id == 0) {
 			Command_Print(ccdata, "Can't unload world with id 0.");
 		}
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-			Client c = Clients_List[i];
+			Client* c = Clients_List[i];
 			if(c && Client_IsInWorld(c, tmp)) Client_ChangeWorld(c, Worlds_List[0]);
 		}
 		if(World_Save(tmp, true)) {
@@ -396,13 +396,13 @@ static cs_bool CHandler_UnlWorld(CommandCallData ccdata) {
 	Command_Print(ccdata, "World not found.");
 }
 
-static cs_bool CHandler_SavWorld(CommandCallData ccdata) {
+static cs_bool CHandler_SavWorld(CommandCallData* ccdata) {
 	const char* cmdUsage = "/savworld <worldname>";
 	Command_OnlyForOP(ccdata);
 
 	char worldname[64];
 	Command_ArgToWorldName(ccdata, worldname, 0);
-	World tmp = World_GetByName(worldname);
+	World* tmp = World_GetByName(worldname);
 	if(tmp) {
 		if(World_Save(tmp, false)) {
 			Command_Print(ccdata, "World saving scheduled.");
@@ -436,7 +436,7 @@ void Command_RegisterDefault(void) {
 ** на счёт надёжности данной функции.
 ** TODO: Разобраться, может ли здесь произойти краш.
 */
-static void SendOutputToClient(Client client, char* ret) {
+static void SendOutputToClient(Client* client, char* ret) {
 	while(ret && *ret != '\0') {
 		char* nlptr = (char*)String_FirstChar(ret, '\r');
 		if(nlptr)
@@ -450,7 +450,7 @@ static void SendOutputToClient(Client client, char* ret) {
 	}
 }
 
-cs_bool Command_Handle(char* cmd, Client caller) {
+cs_bool Command_Handle(char* cmd, Client* caller) {
 	if(*cmd == '/') ++cmd;
 
 	char ret[MAX_CMD_OUT] = {0};
@@ -467,15 +467,15 @@ cs_bool Command_Handle(char* cmd, Client caller) {
 		}
 	}
 
-	struct _CommandCallData cdata;
-	cdata.args = (const char*)args;
-	cdata.caller = caller;
-	cdata.out = ret;
+	CommandCallData ccdata;
+	ccdata.args = (const char*)args;
+	ccdata.caller = caller;
+	ccdata.out = ret;
 
-	Command _cmd = Command_Get(cmd);
+	Command* _cmd = Command_Get(cmd);
 	if(_cmd) {
-		cdata.command = _cmd;
-		if(_cmd->func(&cdata)) {
+		ccdata.command = _cmd;
+		if(_cmd->func(&ccdata)) {
 			if(caller) {
 				SendOutputToClient(caller, ret);
 			} else

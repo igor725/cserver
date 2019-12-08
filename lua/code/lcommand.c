@@ -5,9 +5,9 @@
 #include "script.h"
 #include "lclient.h"
 
-static cs_bool lua_cmd_handler(CommandCallData ccdata) {
+static cs_bool lua_cmd_handler(CommandCallData* ccdata) {
 	Script scr = ccdata->command->data;
-	Command cmd = ccdata->command;
+	Command* cmd = ccdata->command;
 
 	Mutex_Lock(scr->mutex);
 	lua_pushlightuserdata(scr->state, cmd);
@@ -38,7 +38,7 @@ LUA_SFUNC(fcmd_register) {
 	const char* name = luaL_checkstring(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 
-	Command cmd = Command_Register(name, lua_cmd_handler);
+	Command* cmd = Command_Register(name, lua_cmd_handler);
 	cmd->data = Script_GetByState(L);
 
 	lua_pushlightuserdata(L, cmd);
@@ -50,7 +50,7 @@ LUA_SFUNC(fcmd_register) {
 
 LUA_SFUNC(fcmd_unregister) {
 	const char* name = luaL_checkstring(L, 1);
-	Command cmd = Command_Get(name);
+	Command* cmd = Command_Get(name);
 	if(cmd && cmd->data == Script_GetByState(L)) {
 		lua_pushlightuserdata(L, cmd);
 		lua_pushnil(L);

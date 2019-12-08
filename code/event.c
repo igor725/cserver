@@ -61,7 +61,7 @@ cs_bool Event_Call(cs_uint32 type, void* param) {
 	return ret;
 }
 
-cs_bool Event_OnMessage(Client client, char* message, MessageType* type) {
+cs_bool Event_OnMessage(Client* client, char* message, MessageType* type) {
 	struct _onMessage params = {0};
 	params.client = client;
 	params.message = message;
@@ -69,7 +69,7 @@ cs_bool Event_OnMessage(Client client, char* message, MessageType* type) {
 	return Event_Call(EVT_ONMESSAGE, &params);
 }
 
-cs_bool Event_OnBlockPlace(Client client, cs_uint8 mode, SVec* pos, BlockID* id) {
+cs_bool Event_OnBlockPlace(Client* client, cs_uint8 mode, SVec* pos, BlockID* id) {
 	struct _onBlockPlace params = {0};
 	params.client = client;
 	params.mode = mode;
@@ -78,7 +78,7 @@ cs_bool Event_OnBlockPlace(Client client, cs_uint8 mode, SVec* pos, BlockID* id)
 	return Event_Call(EVT_ONBLOCKPLACE, &params);
 }
 
-void Event_OnHeldBlockChange(Client client, BlockID prev, BlockID curr) {
+void Event_OnHeldBlockChange(Client* client, BlockID prev, BlockID curr) {
 	struct _onHeldBlockChange params = {0};
 	params.client = client;
 	params.prev = prev;
@@ -86,7 +86,7 @@ void Event_OnHeldBlockChange(Client client, BlockID prev, BlockID curr) {
 	Event_Call(EVT_ONHELDBLOCKCHNG, &params);
 }
 
-void Event_OnClick(Client client, char btn, char act, cs_int16 yaw, cs_int16 pitch, ClientID id, SVec* pos, char face) {
+void Event_OnClick(Client* client, char btn, char act, cs_int16 yaw, cs_int16 pitch, ClientID id, SVec* pos, char face) {
 	struct _onPlayerClick params = {0};
 	params.client = client;
 	params.button = btn;

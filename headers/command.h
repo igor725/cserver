@@ -34,11 +34,11 @@ if(String_GetArgument((a)->args, wn, 64, idx)) { \
 	if(!(a)->caller) { \
 		Command_PrintUsage((a)); \
 	} else { \
-		PlayerData pd = (a)->caller->playerData; \
+		PlayerData* pd = (a)->caller->playerData; \
 		if(!pd) { \
 			Command_PrintUsage((a)); \
 		} \
-		World world = pd->world; \
+		World* world = pd->world; \
 		if(!world) { \
 			Command_PrintUsage((a)); \
 		} \
@@ -51,28 +51,28 @@ if((a)->caller && !(a)->caller->playerData->isOP) { \
 	Command_Print((a), Lang_Get(LANG_CMDAD)); \
 }
 
-typedef struct _CommandCallData {
+typedef struct {
 	struct _Command* command;
 	const char* args;
-	Client caller;
+	Client* caller;
 	char* out;
-} *CommandCallData;
+} CommandCallData;
 
-typedef cs_bool(*cmdFunc)(CommandCallData cdata);
+typedef cs_bool(*cmdFunc)(CommandCallData* cdata);
 
 typedef struct _Command {
 	const char *name, *alias;
 	cmdFunc func;
 	void* data;
 	struct _Command *next, *prev;
-} *Command;
+} Command;
 
-API Command Command_Register(const char* name, cmdFunc func);
-API void Command_SetAlias(Command cmd, const char* alias);
-API Command Command_Get(const char* name);
-API cs_bool Command_Unregister(Command cmd);
+API Command* Command_Register(const char* name, cmdFunc func);
+API void Command_SetAlias(Command* cmd, const char* alias);
+API Command* Command_Get(const char* name);
+API cs_bool Command_Unregister(Command* cmd);
 API cs_bool Command_UnregisterByName(const char* name);
 
 void Command_RegisterDefault(void);
-cs_bool Command_Handle(char* cmd, Client caller);
+cs_bool Command_Handle(char* cmd, Client* caller);
 #endif // COMMAND_H

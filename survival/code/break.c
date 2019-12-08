@@ -11,29 +11,29 @@ static const cs_int32 BreakTimings[256] = {
 	0,4000,500,500,4000,1100,0,-1
 };
 
-static void UpdateBlock(World world, SVec* pos, BlockID bid) {
+static void UpdateBlock(World* world, SVec* pos, BlockID bid) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client cl = Client_GetByID(i);
+		Client* cl = Client_GetByID(i);
 		if(cl && Client_IsInWorld(cl, world)) Client_SetBlock(cl, pos, bid);
 	}
 }
 
-void SurvBrk_Start(SURVDATA data, BlockID block) {
+void SurvBrk_Start(SurvivalData* data, BlockID block) {
 	data->breakStarted = true;
 	data->breakBlock = block;
 	data->breakTimer = 0;
 }
 
-void SurvBrk_Stop(SURVDATA data) {
+void SurvBrk_Stop(SurvivalData* data) {
 	data->breakProgress = 0;
 	data->breakStarted = false;
 	SurvGui_DrawBreakProgress(data);
 }
 
-void SurvBrk_Done(SURVDATA data) {
+void SurvBrk_Done(SurvivalData* data) {
 	SVec* pos = &data->lastClick;
-	Client client = data->client;
-	World world = Client_GetWorld(client);
+	Client* client = data->client;
+	World* world = Client_GetWorld(client);
 	BlockID id = data->breakBlock;
 
 	SurvInv_Add(data, id, 1);
@@ -44,7 +44,7 @@ void SurvBrk_Done(SURVDATA data) {
 	SurvBrk_Stop(data);
 }
 
-void SurvBrk_Tick(SURVDATA data, cs_uint32 delta) {
+void SurvBrk_Tick(SurvivalData* data, cs_uint32 delta) {
 	cs_int32 breakTime = BreakTimings[data->breakBlock];
 	if(breakTime == -1) {
 		SurvBrk_Stop(data);

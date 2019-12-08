@@ -38,12 +38,12 @@ static void onmesgfunc(void* param) {
 ** При вызове команды из консоли сервера аргумент "caller" будет NULL.
 ** Также стоит заметить, что "args" тоже будет NULL при отсутствии аргументов.
 */
-static cs_bool CHandler_Plugtest(CommandCallData ccdata) {
+static cs_bool CHandler_Plugtest(CommandCallData* ccdata) {
   String_Copy(ccdata->out, MAX_CMD_OUT, "This command registred by testplugin." DLIB_EXT);
   return true;
 }
 
-static cs_bool CHandler_Atoggle(CommandCallData ccdata) {
+static cs_bool CHandler_Atoggle(CommandCallData* ccdata) {
 	// Макрос проверяет была ли запущена команда администратором
 	Command_OnlyForOP(ccdata);
 
@@ -60,7 +60,7 @@ static cs_bool CHandler_Atoggle(CommandCallData ccdata) {
 ** вызвана однажды - её нельзя будет вызвать
 ** вновь, вплоть до перезапуска сервера.
 */
-static cs_bool CHandler_SelfDestroy(CommandCallData ccdata) {
+static cs_bool CHandler_SelfDestroy(CommandCallData* ccdata) {
 	Command_UnregisterByName("selfdestroy");
 	Command_Print(ccdata, "This command can't be called anymore");
 }
@@ -74,7 +74,7 @@ static cs_bool CHandler_SelfDestroy(CommandCallData ccdata) {
 ** сообщение о том, что команду может вызвать
 ** только игрок.
 */
-static cs_bool CHandler_ClientOnly(CommandCallData ccdata) {
+static cs_bool CHandler_ClientOnly(CommandCallData* ccdata) {
 	Command_OnlyForClient(ccdata);
 
 	String_FormatBuf(ccdata->out, MAX_CMD_OUT, "Client-only command called by %s", Client_GetName(ccdata->caller));
@@ -88,7 +88,7 @@ static cs_bool CHandler_ClientOnly(CommandCallData ccdata) {
 ** в файле block.h.
 */
 
-static struct _BlockDef myBlock = {
+static BlockDef myBlock = {
 	BLOCK_ID, "My test block", 0,
 	{{
 		BDSOL_SOLID,
@@ -103,7 +103,7 @@ static struct _BlockDef myBlock = {
 	}}
 };
 
-static struct _BlockDef myExtendedBlock = {
+static BlockDef myExtendedBlock = {
 	BLOCK_ID_EXT, "My extended test block", BDF_EXTENDED,
 	{{
 		BDSOL_SWIM,
@@ -119,7 +119,7 @@ static struct _BlockDef myExtendedBlock = {
 	}}
 };
 
-static BlockDef myDynBlock = NULL;
+static BlockDef* myDynBlock = NULL;
 
 cs_int32 Plugin_ApiVer = PLUGIN_API_NUM; // Текущая версия API плагинов.
 
