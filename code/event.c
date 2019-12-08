@@ -31,7 +31,7 @@ cs_bool Event_RegisterVoid(cs_uint32 type, evtVoidCallback func) {
 	rgPart2;
 }
 
-cs_bool Event_Unregister(cs_uint32 type, cs_uintptr evtFuncPtr) {
+cs_bool Event_Unregister_(cs_uint32 type, cs_uintptr evtFuncPtr) {
 	for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) {
 		Event evt = Event_List[type][pos];
 

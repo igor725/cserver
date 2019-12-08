@@ -209,8 +209,11 @@ cs_bool Plugin_Unload(void) {
 	** ибо в скором времени они станут недоступны
 	** и обращение к ним приведёт к падению, а нам
 	** оно не нужно.
+	** P.S. Event_Unregister - это макрос, вызывающий
+	** функцию Event_Unregister_, кастуя переданный
+	** хендлер в cs_uintptr.
 	*/
-	Event_Unregister(EVT_ONMESSAGE, (cs_uintptr)onmesgfunc);
+	Event_Unregister(EVT_ONMESSAGE, onmesgfunc);
 	Command_UnregisterByName("plugtest");
 	Command_UnregisterByName("atoggle");
 	Command_UnregisterByName("selfdestroy");

@@ -169,7 +169,7 @@ cs_bool Plugin_Unload(void) {
 	Command_UnregisterByName("select");
 	Command_UnregisterByName("fill");
 	Command_UnregisterByName("replace");
-	Event_Unregister(EVT_ONCLICK, (cs_uintptr)clickhandler);
-	Event_Unregister(EVT_ONDISCONNECT, (cs_uintptr)freeselvecs);
+	Event_Unregister(EVT_ONCLICK, clickhandler);
+	Event_Unregister(EVT_ONDISCONNECT, freeselvecs);
 	return true;
 }

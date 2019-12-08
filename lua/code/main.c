@@ -268,9 +268,9 @@ cs_bool Plugin_Load() {
 }
 
 cs_bool Plugin_Unload() {
-	Event_Unregister(EVT_ONTICK, (cs_uintptr)scrtick);
-	Event_Unregister(EVT_ONHANDSHAKEDONE, (cs_uintptr)scrhshake);
-	Event_Unregister(EVT_ONDISCONNECT, (cs_uintptr)scrdisc);
+	Event_Unregister(EVT_ONTICK, scrtick);
+	Event_Unregister(EVT_ONHANDSHAKEDONE, scrhshake);
+	Event_Unregister(EVT_ONDISCONNECT, scrdisc);
 
 	Script* ptr = scriptHead, *tmp;
 
