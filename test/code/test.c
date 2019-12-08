@@ -121,7 +121,12 @@ static BlockDef myExtendedBlock = {
 
 static BlockDef* myDynBlock = NULL;
 
-cs_int32 Plugin_ApiVer = PLUGIN_API_NUM; // Текущая версия API плагинов.
+/*
+* Вызов этого макроса обязателен, он устанавливает
+* не только версию плагина, но и версию используемого
+* API сервера, которая используется при загрузке плагина.
+*/
+Plugin_SetVersion(1);
 
 cs_bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
   Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.

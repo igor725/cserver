@@ -148,7 +148,7 @@ static void freeselvecs(void* param) {
 	Assoc_Remove((Client*)param, WeAT, true);
 }
 
-cs_int32 Plugin_ApiVer = PLUGIN_API_NUM;
+Plugin_SetVersion(1);
 
 cs_bool Plugin_Load(void) {
 	WeAT = Assoc_NewType();

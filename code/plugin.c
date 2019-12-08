@@ -12,23 +12,25 @@ cs_bool Plugin_Load(const char* name) {
 	char path[256], error[512];
 	void *lib;
 	pluginFunc initSym;
-	cs_int32* verSym;
+	cs_int32* apiVerSym;
+	cs_int32* plugVerSym;
 	String_FormatBuf(path, 256, "plugins" PATH_DELIM "%s", name);
 
 	if(DLib_Load(path, &lib)) {
-		if(!(DLib_GetSym(lib, "Plugin_ApiVer", (void*)&verSym) &&
+		if(!(DLib_GetSym(lib, "Plugin_ApiVer", (void*)&apiVerSym) &&
 		DLib_GetSym(lib, "Plugin_Load", (void*)&initSym))) {
 			Log_Error("%s: %s", path, DLib_GetError(error, 512));
 			DLib_Unload(lib);
 			return false;
 		}
 
-		cs_int32 ver = *verSym;
-		if(ver != PLUGIN_API_NUM) {
-			if(ver < PLUGIN_API_NUM)
-				Log_Error(Lang_Get(LANG_CPAPIOLD), name, PLUGIN_API_NUM, ver);
+		DLib_GetSym(lib, "Plugin_Version", (void*)&plugVerSym);
+		cs_int32 apiVer = *apiVerSym;
+		if(apiVer != PLUGIN_API_NUM) {
+			if(apiVer < PLUGIN_API_NUM)
+				Log_Error(Lang_Get(LANG_CPAPIOLD), name, PLUGIN_API_NUM, apiVer);
 			else
-				Log_Error(Lang_Get(LANG_CPAPIUPG), name, ver, PLUGIN_API_NUM);
+				Log_Error(Lang_Get(LANG_CPAPIUPG), name, apiVer, PLUGIN_API_NUM);
 
 			DLib_Unload(lib);
 			return false;
@@ -38,6 +40,7 @@ cs_bool Plugin_Load(const char* name) {
 		DLib_GetSym(lib, "Plugin_Unload", (void*)&plugin->unload);
 
 		plugin->name = String_AllocCopy(name);
+		if(plugVerSym) plugin->version = *plugVerSym;
 		plugin->lib = lib;
 		plugin->id = -1;
 

@@ -352,8 +352,8 @@ char* DLib_GetError(char* buf, cs_size len) {
 	return buf;
 }
 
-cs_bool DLib_GetSym(void* lib, const char* sname, void** sym) {
-	return (*sym = (void*)GetProcAddress(lib, sname)) != NULL;
+cs_bool DLib_GetSym(void* lib, const char* sname, void* sym) {
+	return (*(void**)sym = (void*)GetProcAddress(lib, sname)) != NULL;
 }
 #elif defined(POSIX)
 cs_bool DLib_Load(const char* path, void** lib) {
@@ -369,8 +369,8 @@ char* DLib_GetError(char* buf, cs_size len) {
 	return buf;
 }
 
-cs_bool DLib_GetSym(void* lib, const char* sname, void** sym) {
-	return (*sym = dlsym(lib, sname)) != NULL;
+cs_bool DLib_GetSym(void* lib, const char* sname, void* sym) {
+	return (*(void**)sym = dlsym(lib, sname)) != NULL;
 }
 #endif
 

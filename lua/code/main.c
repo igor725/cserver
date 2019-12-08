@@ -246,7 +246,7 @@ static void scrdisc(void* param) {
 // 	EndLuaEventCall;
 // }
 
-cs_int32 Plugin_ApiVer = PLUGIN_API_NUM;
+Plugin_SetVersion(1);
 
 cs_bool Plugin_Load() {
 	dirIter scIter;

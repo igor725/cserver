@@ -257,7 +257,7 @@ static cs_bool CHandler_Plugins(CommandCallData* ccdata) {
 			for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
 				plugin = Plugins_List[i];
 				if(plugin) {
-					String_FormatBuf(pluginfo, 64, "\r\n%d. %s", idx++, plugin->name);
+					String_FormatBuf(pluginfo, 64, "\r\n%d. %s v%d", idx++, plugin->name, plugin->version);
 					String_Append(ccdata->out, MAX_CMD_OUT, pluginfo);
 				}
 			}

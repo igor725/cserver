@@ -85,7 +85,7 @@ API cs_bool Directory_SetCurrentDir(const char* path);
 cs_bool DLib_Load(const char* path, void** lib);
 cs_bool DLib_Unload(void* lib);
 char* DLib_GetError(char* buf, cs_size len);
-cs_bool DLib_GetSym(void* lib, const char* sname, void** sym);
+cs_bool DLib_GetSym(void* lib, const char* sname, void* sym);
 
 cs_bool Socket_Init(void);
 API Socket Socket_New(void);

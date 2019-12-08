@@ -2,8 +2,9 @@
 #define PLUGIN_H
 typedef cs_bool(*pluginFunc)(void);
 typedef struct cPlugin {
-	const char* name;
 	cs_int8 id;
+	const char* name;
+	cs_int32 version;
 	void* lib;
 	pluginFunc unload;
 } *Plugin;

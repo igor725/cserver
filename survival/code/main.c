@@ -193,7 +193,7 @@ static cs_bool CHandler_PvP(CommandCallData* ccdata) {
 	return true;
 }
 
-cs_int32 Plugin_ApiVer = PLUGIN_API_NUM;
+Plugin_SetVersion(1);
 
 cs_bool Plugin_Load(void) {
 	if(Server_Active) {

@@ -92,7 +92,8 @@ typedef struct cpeExt {
 #ifdef PLUGIN_BUILD
 EXP cs_bool Plugin_Load();
 EXP cs_bool Plugin_Unload();
-EXP cs_int32 Plugin_ApiVer;
+EXP cs_int32 Plugin_ApiVer, Plugin_Version;
+#define Plugin_SetVersion(ver) cs_int32 Plugin_ApiVer = PLUGIN_API_NUM, Plugin_Version = ver;
 #endif
 
 #define SOFTWARE_NAME "C-Server"
