@@ -207,7 +207,7 @@ if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) { \
 static cs_bool CHandler_Plugins(CommandCallData* ccdata) {
 	const char* cmdUsage = "/plugins <load/unload/print> [pluginName]";
 	char subcommand[64], name[64];
-	Plugin plugin;
+	Plugin* plugin;
 
 	if(String_GetArgument(ccdata->args, subcommand, 64, 0)) {
 		if(String_CaselessCompare(subcommand, "load")) {

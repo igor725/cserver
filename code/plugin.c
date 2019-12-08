@@ -6,7 +6,7 @@
 #include "command.h"
 #include "lang.h"
 
-Plugin Plugins_List[MAX_PLUGINS] = {0};
+Plugin* Plugins_List[MAX_PLUGINS] = {0};
 
 cs_bool Plugin_Load(const char* name) {
 	char path[256], error[512];
@@ -36,7 +36,7 @@ cs_bool Plugin_Load(const char* name) {
 			return false;
 		}
 
-		Plugin plugin = Memory_Alloc(1, sizeof(struct cPlugin));
+		Plugin* plugin = Memory_Alloc(1, sizeof(Plugin));
 		DLib_GetSym(lib, "Plugin_Unload", (void*)&plugin->unload);
 
 		plugin->name = String_AllocCopy(name);
@@ -64,15 +64,15 @@ cs_bool Plugin_Load(const char* name) {
 	return false;
 }
 
-Plugin Plugin_Get(const char* name) {
+Plugin* Plugin_Get(const char* name) {
 	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
-		Plugin ptr = Plugins_List[i];
+		Plugin* ptr = Plugins_List[i];
 		if(ptr && String_Compare(ptr->name, name)) return ptr;
 	}
 	return NULL;
 }
 
-cs_bool Plugin_Unload(Plugin plugin) {
+cs_bool Plugin_Unload(Plugin* plugin) {
 	if(plugin->unload && !(*(pluginFunc)plugin->unload)())
 		return false;
 	if(plugin->name)
@@ -100,7 +100,7 @@ void Plugin_Start(void) {
 
 void Plugin_Stop(void) {
 	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
-		Plugin plugin = Plugins_List[i];
+		Plugin* plugin = Plugins_List[i];
 		if(plugin && plugin->unload)
 			(*(pluginFunc)plugin->unload)();
 	}
