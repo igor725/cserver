@@ -5,6 +5,7 @@
 #include "script.h"
 #include "lclient.h"
 #include "lworld.h"
+#include "lmath.h"
 
 #define LUA_TCLIENT "client"
 
@@ -12,8 +13,25 @@ Client luax_checkclient(lua_State* L, cs_int32 idx) {
 	return luax_checkptr(L, idx, LUA_TCLIENT);
 }
 
+static void setupclient(lua_State* L, void* obj) {
+	Client client = (Client)obj;
+	lua_getfield(L, LUA_REGISTRYINDEX, "cs_udata");
+
+	lua_pushvalue(L, -2);
+	lua_newtable(L);
+
+	luax_newpfvec(L, &client->playerData->position);
+	lua_setfield(L, -2, "cv");
+
+	luax_newpang(L, &client->playerData->angle);
+	lua_setfield(L, -2, "ca");
+
+	lua_settable(L, -3);
+	lua_pop(L, 1);
+}
+
 void luax_pushclient(lua_State* L, Client client) {
-	luax_pushptr(L, client, LUA_TCLIENT, NULL);
+	luax_pushptr(L, client, LUA_TCLIENT, setupclient);
 }
 
 LUA_SFUNC(mclient_getid) {
@@ -42,6 +60,13 @@ LUA_SFUNC(mclient_getworld) {
 
 	luax_pushworld(L, Client_GetWorld(client));
 	return 1;
+}
+
+LUA_SFUNC(mclient_getpos) {
+	luax_pushrgtableof(L, 1);
+	lua_getfield(L, -1, "cv");
+	lua_getfield(L, -2, "ca");
+	return 2;
 }
 
 LUA_SFUNC(mclient_getgroupid) {
@@ -225,6 +250,7 @@ static const luaL_Reg client_methods[] = {
 	{"getname", mclient_getname},
 	{"getappname", mclient_getappname},
 	{"getworld", mclient_getworld},
+	{"getpos", mclient_getpos},
 	{"getgroupid", mclient_getgroupid},
 	{"getmodel", mclient_getmodel},
 	{"getheldblock", mclient_getheldblock},
