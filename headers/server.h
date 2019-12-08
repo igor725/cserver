@@ -15,13 +15,12 @@
 #define CFG_HEARTBEAT_PUBLIC_KEY "heartbeat-public"
 
 VAR cs_bool Server_Active;
-VAR cs_int32 Server_Delta;
 VAR CStore Server_Config;
 VAR cs_uint64 Server_StartTime;
 Socket Server_Socket;
 
 void Server_InitialWork(void);
-void Server_DoStep(void);
+void Server_DoStep(cs_int32 delta);
 void Server_StartLoop(void);
 void Server_Stop(void);
 #endif // SERVER_H

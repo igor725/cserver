@@ -973,10 +973,10 @@ void Client_Kick(Client* client, const char* reason) {
 	** сокет клиента после кика, если цикл сервера
 	** в основом потоке уже не работает.
 	*/
-	if(!Server_Active) Client_Tick(client);
+	if(!Server_Active) Client_Tick(client, 0);
 }
 
-void Client_Tick(Client* client) {
+void Client_Tick(Client* client, cs_int32 delta) {
 	PlayerData* pd = client->playerData;
 	if(client->closed) {
 		if(pd && pd->state > STATE_WLOADDONE) {
@@ -993,7 +993,7 @@ void Client_Tick(Client* client) {
 		return;
 	}
 
-	client->ppstm += Server_Delta;
+	client->ppstm += delta;
 	if(client->ppstm > 1000) {
 		if(client->pps > MAX_CLIENT_PPS) {
 			Client_Kick(client, Lang_Get(LANG_KICKPACKETSPAM));

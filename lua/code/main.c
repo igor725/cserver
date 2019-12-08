@@ -2,10 +2,12 @@
 #include <core.h>
 #include <str.h>
 #include <log.h>
+#include <event.h>
 
 #define LUA_LIB
 #define LUA_BUILD_AS_DLL
 #include "script.h"
+#include "lclient.h"
 
 void* luax_newobject(lua_State* L, cs_size size, const char* mt) {
 	void* ptr = lua_newuserdata(L, size);
@@ -185,11 +187,75 @@ void Script_Destroy(Script* scr) {
 	Memory_Free(scr);
 }
 
+#define BeginLuaEventCall(ename) \
+Script* ptr = scriptHead; \
+while(ptr) { \
+	Script_GetFuncBegin(ptr, ename);
+
+#define EndLuaEventCall \
+	Script_GetFuncEnd(ptr); \
+	ptr = ptr->next; \
+}
+
+static void scrtick(void* param) {
+	cs_int32 delta = *(cs_int32*)param;
+	BeginLuaEventCall("onTick");
+		lua_pushinteger(L, delta);
+		if(lua_pcall(L, 1, 0, 0)) {
+			Log_Error("LuaVM error \"%s\": %s.", ptr->name, lua_tostring(L, -1));
+			ptr->stopped = true;
+		}
+	EndLuaEventCall;
+}
+
+static void scrhshake(void* param) {
+	BeginLuaEventCall("onConnect");
+		luax_pushclient(L, param);
+		if(lua_pcall(L, 1, 0, 0)) {
+			Log_Error("LuaVM error \"%s\": %s.", ptr->name, lua_tostring(L, -1));
+			ptr->stopped = true;
+		}
+	EndLuaEventCall;
+}
+
+static void scrdisc(void* param) {
+	BeginLuaEventCall("onDisconnect");
+		luax_pushclient(L, param);
+		if(lua_pcall(L, 1, 0, 0)) {
+			Log_Error("LuaVM error \"%s\": %s.", ptr->name, lua_tostring(L, -1));
+			ptr->stopped = true;
+		}
+	EndLuaEventCall;
+}
+
+// static void scrmsg(void* param) {
+// 	onMessage a = (onMessage)param;
+// 	BeginLuaEventCall("onMessage");
+// 		luax_pushclient(L, a->client);
+// 		lua_pushstring(L, a->message);
+// 		lua_pushinteger(L, *a->type);
+// 		if(lua_pcall(L, 3, 1, 0)) {
+// 			Log_Error("LuaVM error \"%s\": %s.", ptr->name, lua_tostring(L, -1));
+// 			ptr->stopped = true;
+// 		} else {
+// 			if(lua_isinteger(L, -1)) {
+// 				*a->type = (MessageType)lua_tointeger(L, -1);
+// 				break;
+// 			}
+// 		}
+// 	EndLuaEventCall;
+// }
+
 cs_int32 Plugin_ApiVer = PLUGIN_API_NUM;
 
 cs_bool Plugin_Load() {
 	dirIter scIter;
 	Directory_Ensure("scripts");
+
+	Event_RegisterVoid(EVT_ONTICK, scrtick);
+	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, scrhshake);
+	Event_RegisterVoid(EVT_ONDISCONNECT, scrdisc);
+	// Event_RegisterVoid(EVT_ONMESSAGE, scrmsg);
 
 	if(Iter_Init(&scIter, "scripts", "lua")) {
 		do {

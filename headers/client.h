@@ -116,7 +116,7 @@ cs_int32 Client_Send(Client* client, cs_int32 len);
 void Client_HandshakeStage2(Client* client);
 cs_bool Client_CheckAuth(Client* client);
 void Client_Free(Client* client);
-void Client_Tick(Client* client);
+void Client_Tick(Client* client, cs_int32 delta);
 Client* Client_New(Socket fd, cs_uint32 addr);
 cs_bool Client_Add(Client* client);
 void Client_Init(void);

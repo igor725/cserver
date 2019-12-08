@@ -23,7 +23,7 @@ const char* Lang_Get(cs_int32 langid) {
 		case LANG_HBEAT:
 			return "Spawning heartbeat thread...";
 		case LANG_SVDELTALT0:
-			return "Time ran backwards? Server_Delta < 0.";
+			return "Time ran backwards? Time between last ticks < 0.";
 		case LANG_SVLONGTICK:
 			return "Last server tick took %dms!";
 		case LANG_SVSTOP0:

@@ -68,13 +68,13 @@ static void Survival_OnHeldChange(void* param) {
 }
 
 static void Survival_OnTick(void* param) {
-	(void)param;
+	cs_int32 delta = *(cs_int32*)param;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		SurvivalData* data = SurvData_GetByID(i);
 		if(data) {
 			if(data->breakStarted)
-				SurvBrk_Tick(data, Server_Delta);
-			SurvDmg_Tick(data, Server_Delta);
+				SurvBrk_Tick(data, delta);
+			SurvDmg_Tick(data, delta);
 		}
 	}
 }

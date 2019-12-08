@@ -197,29 +197,31 @@ void Server_InitialWork(void) {
 	Console_Start();
 }
 
-void Server_DoStep(void) {
-	Event_Call(EVT_ONTICK, 0);
+void Server_DoStep(cs_int32 delta) {
+	Event_Call(EVT_ONTICK, &delta);
 	for(cs_int32 i = 0; i < MAX_CLIENTS; i++) {
 		Client* client = Clients_List[i];
-		if(client) Client_Tick(client);
+		if(client) Client_Tick(client, delta);
 	}
 }
 
 void Server_StartLoop(void) {
 	cs_uint64 last, curr = Time_GetMSec();
+	cs_int32 delta;
+
 	while(Server_Active) {
 		last = curr;
 		curr = Time_GetMSec();
-		Server_Delta = (cs_int32)(curr - last);
-		if(Server_Delta < 0) {
+		delta = (cs_int32)(curr - last);
+		if(delta < 0) {
 			Log_Warn(Lang_Get(LANG_SVDELTALT0));
-			Server_Delta = 0;
+			delta = 0;
 		}
-		if(Server_Delta > 500) {
-			Log_Warn(Lang_Get(LANG_SVLONGTICK), Server_Delta);
-			Server_Delta = 500;
+		if(delta > 500) {
+			Log_Warn(Lang_Get(LANG_SVLONGTICK), delta);
+			delta = 500;
 		}
-		Server_DoStep();
+		Server_DoStep(delta);
 		Sleep(10);
 	}
 }
