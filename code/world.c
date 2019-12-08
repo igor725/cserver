@@ -173,30 +173,26 @@ void World_Free(World world) {
 	Memory_Free(world);
 }
 
-cs_bool _WriteData(FILE* fp, cs_uint8 dataType, void* ptr, cs_int32 size) {
-	if(!File_Write(&dataType, 1, 1, fp))
-		return false;
-	if(ptr && !File_Write(ptr, size, 1, fp))
-		return false;
-	return true;
+static cs_bool WriteWData(FILE* fp, cs_uint8 dataType, void* ptr, cs_int32 size) {
+	return File_Write(&dataType, 1, 1, fp) && (size > 0 && File_Write(ptr, size, 1, fp)) || true;
 }
 
-cs_bool World_WriteInfo(World world, FILE* fp) {
+static cs_bool WriteInfo(World world, FILE* fp) {
 	cs_int32 magic = WORLD_MAGIC;
 	if(!File_Write((char*)&magic, 4, 1, fp)) {
 		Error_PrintSys(false);
 		return false;
 	}
-	return _WriteData(fp, DT_DIM, &world->info->dimensions, sizeof(struct _SVec)) &&
-	_WriteData(fp, DT_SV, &world->info->spawnVec, sizeof(struct _Vec)) &&
-	_WriteData(fp, DT_SA, &world->info->spawnAng, sizeof(struct _Ang)) &&
-	_WriteData(fp, DT_WT, &world->info->wt, sizeof(Weather)) &&
-	_WriteData(fp, DT_PROPS, world->info->props, 4 * WORLD_PROPS_COUNT) &&
-	_WriteData(fp, DT_COLORS, world->info->colors, sizeof(Color3) * WORLD_COLORS_COUNT) &&
-	_WriteData(fp, DT_END, NULL, 0);
+	return WriteWData(fp, DT_DIM, &world->info->dimensions, sizeof(struct _SVec)) &&
+	WriteWData(fp, DT_SV, &world->info->spawnVec, sizeof(struct _Vec)) &&
+	WriteWData(fp, DT_SA, &world->info->spawnAng, sizeof(struct _Ang)) &&
+	WriteWData(fp, DT_WT, &world->info->wt, sizeof(Weather)) &&
+	WriteWData(fp, DT_PROPS, world->info->props, 4 * WORLD_PROPS_COUNT) &&
+	WriteWData(fp, DT_COLORS, world->info->colors, sizeof(Color3) * WORLD_COLORS_COUNT) &&
+	WriteWData(fp, DT_END, NULL, 0);
 }
 
-cs_bool World_ReadInfo(World world, FILE* fp) {
+static cs_bool ReadInfo(World world, FILE* fp) {
 	cs_uint8 id = 0;
 	cs_uint32 magic = 0;
 	if(!File_Read(&magic, 4, 1, fp))
@@ -262,7 +258,7 @@ static TRET wSaveThread(TARG param) {
 		goto world_save_done;
 	}
 
-	if(!World_WriteInfo(world, fp)) {
+	if(!WriteInfo(world, fp)) {
 		goto world_save_done;
 	}
 
@@ -334,7 +330,7 @@ static TRET wLoadThread(TARG param) {
 		goto world_load_done;
 	}
 
-	if(!World_ReadInfo(world, fp))
+	if(!ReadInfo(world, fp))
 		goto world_load_done;
 
 	World_AllocBlockArray(world);

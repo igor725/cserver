@@ -35,6 +35,25 @@ void luax_pushworld(lua_State* L, World world) {
 	luax_pushptr(L, world, LUA_TWORLD, setupworld);
 }
 
+LUA_SFUNC(mworld_save) {
+	World world = luax_checkworld(L, 1);
+	lua_pushboolean(L, World_Save(world));
+	return 1;
+}
+
+LUA_SFUNC(mworld_load) {
+	World world = luax_checkworld(L, 1);
+	lua_pushboolean(L, World_Load(world));
+	return 1;
+}
+
+LUA_SFUNC(mworld_unload) {
+	World world = luax_checkworld(L, 1);
+	World_Unload(world);
+	lua_pushboolean(L, world->data == NULL);
+	return 1;
+}
+
 LUA_SFUNC(mworld_getname) {
 	World world = luax_checkworld(L, 1);
 
@@ -105,6 +124,10 @@ LUA_SFUNC(mworld_update) {
 }
 
 static const luaL_Reg world_methods[] = {
+	{"save", mworld_save},
+	{"load", mworld_load},
+	{"unload", mworld_unload},
+
 	{"getname", mworld_getname},
 	{"getspawn", mworld_getspawn},
 	{"getdim", mworld_getdim},
@@ -133,18 +156,37 @@ LUA_SFUNC(fworld_getbyname) {
 	return 1;
 }
 
+LUA_SFUNC(fworld_getbyid) {
+	World world = World_GetByID(luaL_checkinteger(L, 1));
+
+	if(world)
+		luax_pushworld(L, world);
+	else
+		lua_pushnil(L);
+
+	return 1;
+}
+
 LUA_SFUNC(fworld_create) {
 	const char* name = luaL_checkstring(L, 1);
 	const SVec* dims = luax_checksvec(L, 2);
 	World world = World_Create(name);
 	World_SetDimensions(world, dims);
 	World_AllocBlockArray(world);
-	luax_pushworld(L, world);
+
+	if(World_Add(world))
+		luax_pushworld(L, world);
+	else {
+		lua_pushnil(L);
+		World_Free(world);
+	}
+
 	return 1;
 };
 
 static const luaL_Reg world_funcs[] = {
 	{"getbyname", fworld_getbyname},
+	{"getbyid", fworld_getbyid},
 	{"create", fworld_create},
 
 	{NULL, NULL}

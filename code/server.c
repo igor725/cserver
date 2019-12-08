@@ -26,7 +26,7 @@ static void AcceptFunc(void) {
 			return;
 		}
 
-		cs_uint32 addr = caddr.sin_addr.s_addr;
+		cs_uint32 addr = ntohl(caddr.sin_addr.s_addr);
 	 	Client tmp = Client_New(fd, addr);
 		cs_int8 maxConnPerIP = Config_GetInt8ByKey(Server_Config, CFG_CONN_KEY),
 		sameAddrCount = 1;
