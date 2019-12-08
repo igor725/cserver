@@ -152,7 +152,7 @@ cs_int32 Plugin_ApiVer = PLUGIN_API_NUM;
 
 cs_bool Plugin_Load(void) {
 	WeAT = Assoc_NewType();
-	Command cmd;
+	Command* cmd;
 	cmd = Command_Register("select", CHandler_Select);
 	Command_SetAlias(cmd, "sel");
 	cmd = Command_Register("fill", CHandler_Set);
