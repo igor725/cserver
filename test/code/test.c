@@ -31,7 +31,7 @@
 */
 static void onmesgfunc(void* param) {
   if(enabled)
-    *((onMessage)param)->type = MT_ANNOUNCE;
+    *((onMessage*)param)->type = MT_ANNOUNCE;
 }
 
 /*
@@ -134,7 +134,7 @@ cs_bool Plugin_Load(void) { // Основная функция, вызывает
   Command_Register("atoggle", CHandler_Atoggle);
 	Command_Register("selfdestroy", CHandler_SelfDestroy);
 	Command_Register("clonly", CHandler_ClientOnly);
-	// Любая Log-функция принимает vararg'и и работает также, как и printf.
+	// Любая Log-функция принимает vararg и работает также, как и printf.
   Log_Info("Test plugin loaded"); // Отправка в консоль INFO сообщения.
   Log_Debug("It's a debug message");
   Log_Warn("It's a warning message");

@@ -25,7 +25,7 @@ static SVec* GetCuboid(Client* client) {
 }
 
 static void clickhandler(void* param) {
-	onPlayerClick a = param;
+	onPlayerClick* a = param;
 	if(Client_GetHeldBlock(a->client) != BLOCK_AIR || a->button == 0)
 		return;
 

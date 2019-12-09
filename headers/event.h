@@ -25,49 +25,35 @@ enum {
 	EVENT_TYPES
 };
 
-enum {
-	EVT_RTVOID,
-	EVT_RTBOOL
-};
-
-typedef struct _onMessage {
+typedef struct {
 	Client* client;
 	char* message;
 	MessageType* type;
-} *onMessage;
+} onMessage;
 
-typedef struct _onHeldBlockChange {
+typedef struct {
 	Client* client;
 	BlockID prev, curr;
-} *onHeldBlockChange;
+} onHeldBlockChange;
 
-typedef struct _onBlockPlace {
+typedef struct {
 	Client* client;
 	cs_uint8 mode;
 	SVec* pos;
 	BlockID* id;
-} *onBlockPlace;
+} onBlockPlace;
 
-typedef struct _onPlayerClick {
+typedef struct {
 	Client* client;
 	cs_int8 button, action;
 	cs_int16 yaw, pitch;
 	ClientID id;
 	SVec* pos;
 	char face;
-} *onPlayerClick;
+} onPlayerClick;
 
-typedef struct _Event {
-	cs_uint32 rtype;
-	union {
-		evtBoolCallback fbool;
-		evtVoidCallback fvoid;
-		cs_uintptr fptr;
-	} func;
-} *Event;
-
-API cs_bool Event_RegisterBool(cs_uint32 type, evtBoolCallback func);
 API cs_bool Event_RegisterVoid(cs_uint32 type, evtVoidCallback func);
+API cs_bool Event_RegisterBool(cs_uint32 type, evtBoolCallback func);
 API cs_bool Event_Unregister_(cs_uint32 type, cs_uintptr evtFuncPtr);
 #define Event_Unregister(t, e) \
 Event_Unregister_(t, (cs_uintptr)e);
