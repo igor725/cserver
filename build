@@ -47,7 +47,8 @@ do
 		else
 			if [ "$a" == "install" ]; then
 				PLUGIN_INSTALL=1
-				break
+			else
+				LIBS="$LIBS -l$a"
 			fi
 		fi
 		continue
