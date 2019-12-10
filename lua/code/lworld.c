@@ -184,7 +184,7 @@ LUA_SFUNC(fworld_create) {
 	}
 
 	return 1;
-};
+}
 
 static const luaL_Reg world_funcs[] = {
 	{"getbyname", fworld_getbyname},
