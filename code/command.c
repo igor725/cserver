@@ -15,7 +15,7 @@
 Command* HeadCmd;
 
 Command* Command_Register(const char* name, cmdFunc func) {
-	if(Command_Get(name)) return NULL;
+	if(Command_GetByName(name)) return NULL;
 	Command* tmp = Memory_Alloc(1, sizeof(Command));
 
 	tmp->name = String_AllocCopy(name);
@@ -33,12 +33,24 @@ void Command_SetAlias(Command* cmd, const char* alias) {
 	cmd->alias = String_AllocCopy(alias);
 }
 
-Command* Command_Get(const char* name) {
+Command* Command_GetByName(const char* name) {
 	Command* ptr = HeadCmd;
 
 	while(ptr) {
 		if(String_CaselessCompare(ptr->name, name) ||
 		(ptr->alias && String_CaselessCompare(ptr->alias, name)))
+			return ptr;
+		ptr = ptr->next;
+	}
+
+	return NULL;
+}
+
+Command* Command_GetByFunc(cmdFunc func) {
+	Command* ptr = HeadCmd;
+
+	while(ptr) {
+		if(ptr->func == func)
 			return ptr;
 		ptr = ptr->next;
 	}
@@ -62,7 +74,13 @@ cs_bool Command_Unregister(Command* cmd) {
 }
 
 cs_bool Command_UnregisterByName(const char* name) {
-	Command* cmd = Command_Get(name);
+	Command* cmd = Command_GetByName(name);
+	if(!cmd) return false;
+	return Command_Unregister(cmd);
+}
+
+cs_bool Command_UnregisterByFunc(cmdFunc func) {
+	Command* cmd = Command_GetByFunc(func);
 	if(!cmd) return false;
 	return Command_Unregister(cmd);
 }
@@ -450,11 +468,11 @@ static void SendOutputToClient(Client* client, char* ret) {
 	}
 }
 
-cs_bool Command_Handle(char* cmd, Client* caller) {
-	if(*cmd == '/') ++cmd;
+cs_bool Command_Handle(char* str, Client* caller) {
+	if(*str == '/') ++str;
 
 	char ret[MAX_CMD_OUT] = {0};
-	char* args = cmd;
+	char* args = str;
 
 	while(1) {
 		++args;
@@ -472,10 +490,10 @@ cs_bool Command_Handle(char* cmd, Client* caller) {
 	ccdata.caller = caller;
 	ccdata.out = ret;
 
-	Command* _cmd = Command_Get(cmd);
-	if(_cmd) {
-		ccdata.command = _cmd;
-		if(_cmd->func(&ccdata)) {
+	Command* cmd = Command_GetByName(str);
+	if(cmd) {
+		ccdata.command = cmd;
+		if(cmd->func(&ccdata)) {
 			if(caller) {
 				SendOutputToClient(caller, ret);
 			} else

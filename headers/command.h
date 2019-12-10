@@ -55,7 +55,10 @@ if(ccdata->caller && !ccdata->caller->playerData->isOP) { \
 static cs_bool svcmd_##N(CommandCallData* ccdata)
 
 #define COMMAND_ADD(N) \
-Command_Register(#N, svcmd_##N);
+Command_Register(#N, (cmdFunc)svcmd_##N);
+
+#define COMMAND_REMOVE(N) \
+Command_UnregisterByFunc((cmdFunc)svcmd_##N);
 
 typedef struct {
 	struct _Command* command;
@@ -75,9 +78,11 @@ typedef struct _Command {
 
 API Command* Command_Register(const char* name, cmdFunc func);
 API void Command_SetAlias(Command* cmd, const char* alias);
-API Command* Command_Get(const char* name);
+API Command* Command_GetByName(const char* name);
+API Command* Command_GetByFunc(cmdFunc func);
 API cs_bool Command_Unregister(Command* cmd);
 API cs_bool Command_UnregisterByName(const char* name);
+API cs_bool Command_UnregisterByFunc(cmdFunc func);
 
 void Command_RegisterDefault(void);
 cs_bool Command_Handle(char* cmd, Client* caller);

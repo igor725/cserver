@@ -67,9 +67,9 @@ const char* Lang_Get(cs_int32 langid) {
 		case LANG_CMDUNK:
 			return "Unknown command.";
 		case LANG_CMDONLYCL:
-			return "This command can't be used from console.";
+			return "This command can't be called from console.";
 		case LANG_CMDONLYCON:
-			return "This command can be used only from console.";
+			return "This command can be called only from console.";
 
 		case LANG_CPLD:
 			return "loaded";

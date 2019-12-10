@@ -159,7 +159,7 @@ cs_bool Plugin_Load(void) {
 	cmd = COMMAND_ADD(Select);
 	Command_SetAlias(cmd, "sel");
 	cmd = COMMAND_ADD(Set);
-	Command_SetAlias(cmd, "set");
+	Command_SetAlias(cmd, "fill");
 	cmd = COMMAND_ADD(Replace);
 	Command_SetAlias(cmd, "repl");
 	Event_RegisterVoid(EVT_ONCLICK, clickhandler);
@@ -169,9 +169,9 @@ cs_bool Plugin_Load(void) {
 
 cs_bool Plugin_Unload(void) {
 	Assoc_DelType(WeAT, true);
-	Command_UnregisterByName("select");
-	Command_UnregisterByName("fill");
-	Command_UnregisterByName("replace");
+	COMMAND_REMOVE(Select);
+	COMMAND_REMOVE(Set);
+	COMMAND_REMOVE(Replace);
 	Event_Unregister(EVT_ONCLICK, clickhandler);
 	Event_Unregister(EVT_ONDISCONNECT, freeselvecs);
 	return true;

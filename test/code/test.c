@@ -39,8 +39,7 @@ static void onmesgfunc(void* param) {
 ** Также стоит заметить, что "args" тоже будет NULL при отсутствии аргументов.
 */
 COMMAND_FUNC(PlugTest) {
-  String_Copy(ccdata->out, MAX_CMD_OUT, "This command registred by testplugin." DLIB_EXT);
-  return true;
+  Command_Print("This command registred by testplugin." DLIB_EXT);
 }
 
 COMMAND_FUNC(Atoggle) {
@@ -48,8 +47,7 @@ COMMAND_FUNC(Atoggle) {
 	Command_OnlyForOP;
 
   enabled ^= 1;
-	String_FormatBuf(ccdata->out, MAX_CMD_OUT, "Announce chat %s", MODE(enabled));
-  return true;
+	Command_Printf("Announce chat %s", MODE(enabled));
 }
 
 /*
@@ -77,8 +75,7 @@ COMMAND_FUNC(SelfDestroy) {
 COMMAND_FUNC(ClientOnly) {
 	Command_OnlyForClient;
 
-	String_FormatBuf(ccdata->out, MAX_CMD_OUT, "Client-only command called by %s", Client_GetName(ccdata->caller));
-	return true;
+	Command_Printf("Client-only command called by %s", Client_GetName(ccdata->caller));
 }
 
 /*
@@ -214,10 +211,10 @@ cs_bool Plugin_Unload(void) {
 	** хендлер в cs_uintptr.
 	*/
 	Event_Unregister(EVT_ONMESSAGE, onmesgfunc);
-	Command_UnregisterByName("plugtest");
-	Command_UnregisterByName("atoggle");
-	Command_UnregisterByName("selfdestroy");
-	Command_UnregisterByName("clonly");
+	COMMAND_REMOVE(PlugTest);
+	COMMAND_REMOVE(Atoggle);
+	COMMAND_REMOVE(SelfDestroy);
+	COMMAND_REMOVE(ClientOnly);
 
 	/*
 	** Функция Block_Undefine ТОЛЬКО УСТАНАВЛИВАЕТ

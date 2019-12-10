@@ -50,7 +50,7 @@ LUA_SFUNC(fcmd_register) {
 
 LUA_SFUNC(fcmd_unregister) {
 	const char* name = luaL_checkstring(L, 1);
-	Command* cmd = Command_Get(name);
+	Command* cmd = Command_GetByName(name);
 	if(cmd && cmd->data == Script_GetByState(L)) {
 		lua_pushlightuserdata(L, cmd);
 		lua_pushnil(L);
