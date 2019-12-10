@@ -112,7 +112,7 @@ static void Survival_OnClick(void* param) {
 	}
 
 	SVec* pos = a->pos;
-	Client* target = Client_GetByID(a->id);
+	Client* target = Client_GetByID(a->tgid);
 	SurvivalData* dataTg = NULL;
 	if(target) dataTg = SurvData_Get(target);
 

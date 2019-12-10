@@ -102,7 +102,7 @@ void Event_OnClick(Client* client, char btn, char act, cs_int16 yaw, cs_int16 pi
 	params.action = act;
 	params.yaw = yaw;
 	params.pitch = pitch;
-	params.id = id;
+	params.tgid = id;
 	params.pos = pos;
 	params.face = face;
 	Event_Call(EVT_ONCLICK, &params);

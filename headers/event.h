@@ -27,7 +27,7 @@ enum {
 
 typedef struct {
 	Client* client;
-	char* message;
+	const char* message;
 	MessageType* type;
 } onMessage;
 
@@ -47,7 +47,7 @@ typedef struct {
 	Client* client;
 	cs_int8 button, action;
 	cs_int16 yaw, pitch;
-	ClientID id;
+	ClientID tgid;
 	SVec* pos;
 	char face;
 } onPlayerClick;

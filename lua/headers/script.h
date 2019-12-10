@@ -16,17 +16,18 @@ LUA_API LUA_FUNC(N)
 static LUA_FUNC(N)
 
 #define Script_GetFuncBegin(scr, funcName) \
-if(scr->destroyed || scr->stopped) return; \
-Mutex_Lock(scr->mutex); \
-lua_State* L = scr->state; \
-lua_getglobal(L, funcName); \
-if(lua_isfunction(L, -1)) {
+if(!scr->destroyed && !scr->stopped) { \
+	Mutex_Lock(scr->mutex); \
+	lua_State* L = scr->state; \
+	lua_getglobal(L, funcName); \
+	if(lua_isfunction(L, -1)) {
 
 #define Script_GetFuncEnd(scr) \
-} else { \
-	lua_pop(L, 1); \
-} \
-Mutex_Unlock(scr->mutex);
+	} else { \
+		lua_pop(L, 1); \
+	} \
+	Mutex_Unlock(scr->mutex); \
+}
 
 typedef struct _Script {
 	cs_bool destroyed, stopped;

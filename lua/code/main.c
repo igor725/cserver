@@ -82,7 +82,7 @@ LUA_FUNC(luax_printstack) {
 				Log_Info("   %d - %s: %d", i, luaL_typename(L, i), lua_tonumber(L, i));
 				break;
 			default:
-				Log_Info("   %d - %s", i, luaL_typename(L, i));
+				Log_Info("   %d - %s (0x%X)", i, luaL_typename(L, i), lua_topointer(L, i));
     }
   }
 	return 0;
@@ -192,10 +192,16 @@ Script* ptr = scriptHead; \
 while(ptr) { \
 	Script_GetFuncBegin(ptr, ename);
 
-#define EndLuaEventCall \
-	Script_GetFuncEnd(ptr); \
+#define EndLuaEventCall_p1 \
+	Script_GetFuncEnd(ptr);
+
+#define EndLuaEventCall_p2 \
 	ptr = ptr->next; \
 }
+
+#define EndLuaEventCall \
+EndLuaEventCall_p1; \
+EndLuaEventCall_p2;
 
 static void scrtick(void* param) {
 	cs_int32 delta = *(cs_int32*)param;
@@ -228,34 +234,33 @@ static void scrdisc(void* param) {
 	EndLuaEventCall;
 }
 
-// static void scrmsg(void* param) {
-// 	onMessage a = (onMessage)param;
-// 	BeginLuaEventCall("onMessage");
-// 		luax_pushclient(L, a->client);
-// 		lua_pushstring(L, a->message);
-// 		lua_pushinteger(L, *a->type);
-// 		if(lua_pcall(L, 3, 1, 0)) {
-// 			Log_Error("LuaVM error \"%s\": %s.", ptr->name, lua_tostring(L, -1));
-// 			ptr->stopped = true;
-// 		} else {
-// 			if(lua_isinteger(L, -1)) {
-// 				*a->type = (MessageType)lua_tointeger(L, -1);
-// 				break;
-// 			}
-// 		}
-// 	EndLuaEventCall;
-// }
+static cs_bool scrmsg(void* param) {
+	onMessage* a = param;
+	cs_bool ret = true;
+	BeginLuaEventCall("onMessage");
+		luax_pushclient(L, a->client);
+		lua_pushstring(L, a->message);
+		lua_pushinteger(L, *a->type);
+		if(lua_pcall(L, 3, 2, 0)) {
+			Log_Error("LuaVM error \"%s\": %s.", ptr->name, lua_tostring(L, -1));
+			ptr->stopped = true;
+		} else {
+			if(lua_isboolean(L, -2))
+				ret = (cs_bool)lua_toboolean(L, -2);
+			if(lua_isinteger(L, -1))
+				*a->type = (MessageType)lua_tointeger(L, -1);
+		}
+	EndLuaEventCall_p1;
+	if(!ret) break;
+	EndLuaEventCall_p2;
+	return ret;
+}
 
 Plugin_SetVersion(1);
 
 cs_bool Plugin_Load() {
 	dirIter scIter;
 	Directory_Ensure("scripts");
-
-	Event_RegisterVoid(EVT_ONTICK, scrtick);
-	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, scrhshake);
-	Event_RegisterVoid(EVT_ONDISCONNECT, scrdisc);
-	// Event_RegisterVoid(EVT_ONMESSAGE, scrmsg);
 
 	if(Iter_Init(&scIter, "scripts", "lua")) {
 		do {
@@ -264,14 +269,15 @@ cs_bool Plugin_Load() {
 		} while(Iter_Next(&scIter));
 	}
 	Iter_Close(&scIter);
+
+	Event_RegisterVoid(EVT_ONTICK, scrtick);
+	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, scrhshake);
+	Event_RegisterVoid(EVT_ONDISCONNECT, scrdisc);
+	Event_RegisterBool(EVT_ONMESSAGE, scrmsg);
 	return true;
 }
 
 cs_bool Plugin_Unload() {
-	Event_Unregister(EVT_ONTICK, scrtick);
-	Event_Unregister(EVT_ONHANDSHAKEDONE, scrhshake);
-	Event_Unregister(EVT_ONDISCONNECT, scrdisc);
-
 	Script* ptr = scriptHead, *tmp;
 
 	while(ptr) {
@@ -280,5 +286,9 @@ cs_bool Plugin_Unload() {
 		Script_Destroy(tmp);
 	}
 
+	Event_Unregister(EVT_ONTICK, scrtick);
+	Event_Unregister(EVT_ONHANDSHAKEDONE, scrhshake);
+	Event_Unregister(EVT_ONDISCONNECT, scrdisc);
+	Event_Unregister(EVT_ONMESSAGE, scrmsg);
 	return true;
 }
