@@ -38,14 +38,14 @@ static void onmesgfunc(void* param) {
 ** При вызове команды из консоли сервера аргумент "caller" будет NULL.
 ** Также стоит заметить, что "args" тоже будет NULL при отсутствии аргументов.
 */
-static cs_bool CHandler_Plugtest(CommandCallData* ccdata) {
+COMMAND_FUNC(PlugTest) {
   String_Copy(ccdata->out, MAX_CMD_OUT, "This command registred by testplugin." DLIB_EXT);
   return true;
 }
 
-static cs_bool CHandler_Atoggle(CommandCallData* ccdata) {
+COMMAND_FUNC(Atoggle) {
 	// Макрос проверяет была ли запущена команда администратором
-	Command_OnlyForOP(ccdata);
+	Command_OnlyForOP;
 
   enabled ^= 1;
 	String_FormatBuf(ccdata->out, MAX_CMD_OUT, "Announce chat %s", MODE(enabled));
@@ -60,9 +60,9 @@ static cs_bool CHandler_Atoggle(CommandCallData* ccdata) {
 ** вызвана однажды - её нельзя будет вызвать
 ** вновь, вплоть до перезапуска сервера.
 */
-static cs_bool CHandler_SelfDestroy(CommandCallData* ccdata) {
+COMMAND_FUNC(SelfDestroy) {
 	Command_UnregisterByName("selfdestroy");
-	Command_Print(ccdata, "This command can't be called anymore");
+	Command_Print("This command can't be called anymore");
 }
 
 /*
@@ -74,8 +74,8 @@ static cs_bool CHandler_SelfDestroy(CommandCallData* ccdata) {
 ** сообщение о том, что команду может вызвать
 ** только игрок.
 */
-static cs_bool CHandler_ClientOnly(CommandCallData* ccdata) {
-	Command_OnlyForClient(ccdata);
+COMMAND_FUNC(ClientOnly) {
+	Command_OnlyForClient;
 
 	String_FormatBuf(ccdata->out, MAX_CMD_OUT, "Client-only command called by %s", Client_GetName(ccdata->caller));
 	return true;
@@ -130,10 +130,10 @@ Plugin_SetVersion(1)
 
 cs_bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
   Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.
-  Command_Register("plugtest", CHandler_Plugtest); // Регистрация обработчика команд.
-  Command_Register("atoggle", CHandler_Atoggle);
-	Command_Register("selfdestroy", CHandler_SelfDestroy);
-	Command_Register("clonly", CHandler_ClientOnly);
+  COMMAND_ADD(PlugTest); // Регистрация обработчика команд.
+  COMMAND_ADD(Atoggle);
+	COMMAND_ADD(SelfDestroy);
+	COMMAND_ADD(ClientOnly);
 	// Любая Log-функция принимает vararg и работает также, как и printf.
   Log_Info("Test plugin loaded"); // Отправка в консоль INFO сообщения.
   Log_Debug("It's a debug message");

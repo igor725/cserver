@@ -67,8 +67,8 @@ cs_bool Command_UnregisterByName(const char* name) {
 	return Command_Unregister(cmd);
 }
 
-static cs_bool CHandler_Info(CommandCallData* ccdata) {
-	Command_OnlyForOP(ccdata);
+COMMAND_FUNC(Info) {
+	Command_OnlyForOP;
 
 	const char* zver = zlibVersion();
 	uLong zflags = zlibCompileFlags();
@@ -84,16 +84,16 @@ static cs_bool CHandler_Info(CommandCallData* ccdata) {
 	"  Server core: %s\r\n"
 	"  PluginAPI version: %d\r\n"
 	"  zlib version: %s (build flags: %d)";
-	Command_Printf(ccdata, format,
+	Command_Printf(format,
 		GIT_COMMIT_SHA,
 		PLUGIN_API_NUM,
 		zver, zflags
 	);
 }
 
-static cs_bool CHandler_OP(CommandCallData* ccdata) {
+COMMAND_FUNC(OP) {
 	const char* cmdUsage = "/op <playername>";
-	Command_OnlyForOP(ccdata);
+	Command_OnlyForOP;
 
 	char clientname[64];
 	if(String_GetArgument(ccdata->args, clientname, 64, 0)) {
@@ -102,15 +102,15 @@ static cs_bool CHandler_OP(CommandCallData* ccdata) {
 			PlayerData* pd = tg->playerData;
 			const char* name = pd->name;
 			pd->isOP ^= 1;
-			Command_Printf(ccdata, "Player %s %s", name, pd->isOP ? "opped" : "deopped");
+			Command_Printf("Player %s %s", name, pd->isOP ? "opped" : "deopped");
 		} else {
-			Command_Print(ccdata, Lang_Get(LANG_CMDPLNF));
+			Command_Print(Lang_Get(LANG_CMDPLNF));
 		}
 	}
-	Command_PrintUsage(ccdata);
+	Command_PrintUsage;
 }
 
-static cs_bool CHandler_Uptime(CommandCallData* ccdata) {
+COMMAND_FUNC(Uptime) {
 	cs_uint64 msec, d, h, m, s, ms;
 	msec = Time_GetMSec() - Server_StartTime;
 	d = msec / 86400000;
@@ -118,29 +118,29 @@ static cs_bool CHandler_Uptime(CommandCallData* ccdata) {
 	m = (msec / 60000) % 60000;
 	s = (msec / 1000) % 60;
 	ms = msec % 1000;
-	Command_Printf(ccdata,
+	Command_Printf(
 		"Server uptime: %03d:%02d:%02d:%02d.%03d",
 		d, h, m, s, ms
 	);
 }
 
-static cs_bool CHandler_CFG(CommandCallData* ccdata) {
+COMMAND_FUNC(CFG) {
 	const char* cmdUsage = "/cfg <set/get/print> [key] [value]";
-	Command_OnlyForOP(ccdata);
+	Command_OnlyForOP;
 
 	char subcommand[8], key[MAX_CFG_LEN], value[MAX_CFG_LEN];
 
 	if(String_GetArgument(ccdata->args, subcommand, 8, 0)) {
 		if(String_CaselessCompare(subcommand, "set")) {
 			if(!String_GetArgument(ccdata->args, key, MAX_CFG_LEN, 1)) {
-				Command_PrintUsage(ccdata);
+				Command_PrintUsage;
 			}
 			CEntry ent = Config_GetEntry(Server_Config, key);
 			if(!ent) {
-				Command_Print(ccdata, "This entry not found in \"server.cfg\" store.");
+				Command_Print("This entry not found in \"server.cfg\" store.");
 			}
 			if(!String_GetArgument(ccdata->args, value, MAX_CFG_LEN, 2)) {
-				Command_PrintUsage(ccdata);
+				Command_PrintUsage;
 			}
 
 			switch (ent->type) {
@@ -160,22 +160,22 @@ static cs_bool CHandler_CFG(CommandCallData* ccdata) {
 					Config_SetStr(ent, value);
 					break;
 				default:
-					Command_Print(ccdata, "Can't detect entry type.");
+					Command_Print("Can't detect entry type.");
 			}
-			Command_Print(ccdata, "Entry value changed successfully.");
+			Command_Print("Entry value changed successfully.");
 		} else if(String_CaselessCompare(subcommand, "get")) {
 			if(!String_GetArgument(ccdata->args, key, MAX_CFG_LEN, 1)) {
-				Command_PrintUsage(ccdata);
+				Command_PrintUsage;
 			}
 
 			CEntry ent = Config_GetEntry(Server_Config, key);
 			if(ent) {
 				if(!Config_ToStr(ent, value, MAX_CFG_LEN)) {
-					Command_Print(ccdata, "Can't detect entry type.");
+					Command_Print("Can't detect entry type.");
 				}
-				Command_Printf(ccdata, "%s = %s (%s)", key, value, Config_TypeName(ent->type));
+				Command_Printf("%s = %s (%s)", key, value, Config_TypeName(ent->type));
 			}
-			Command_Print(ccdata, "This entry not found in \"server.cfg\" store.");
+			Command_Print("This entry not found in \"server.cfg\" store.");
 		} else if(String_CaselessCompare(subcommand, "print")) {
 			CEntry ent = Server_Config->firstCfgEntry;
 			String_Copy(ccdata->out, MAX_CMD_OUT, "Server config entries:");
@@ -192,19 +192,19 @@ static cs_bool CHandler_CFG(CommandCallData* ccdata) {
 		}
 	}
 
-	Command_PrintUsage(ccdata);
+	Command_PrintUsage;
 }
 
 #define GetPluginName \
 if(!String_GetArgument(ccdata->args, name, 64, 1)) { \
-	Command_Print(ccdata, Lang_Get(LANG_CPINVNAME)); \
+	Command_Print(Lang_Get(LANG_CPINVNAME)); \
 } \
 const char* lc = String_LastChar(name, '.'); \
 if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) { \
 	String_Append(name, 64, "." DLIB_EXT); \
 }
 
-static cs_bool CHandler_Plugins(CommandCallData* ccdata) {
+COMMAND_FUNC(Plugins) {
 	const char* cmdUsage = "/plugins <load/unload/print> [pluginName]";
 	char subcommand[64], name[64];
 	Plugin* plugin;
@@ -214,35 +214,35 @@ static cs_bool CHandler_Plugins(CommandCallData* ccdata) {
 			GetPluginName;
 			if(!Plugin_Get(name)) {
 				if(Plugin_Load(name)) {
-					Command_Printf(ccdata,
+					Command_Printf(
 						Lang_Get(LANG_CPINF0),
 						name,
 						Lang_Get(LANG_CPLD)
 					);
 				} else {
-					Command_Print(ccdata, "Plugin_Init() = false, plugin unloaded.");
+					Command_Print("Plugin_Init() = false, plugin unloaded.");
 				}
 			}
-			Command_Print(ccdata, "This plugin already loaded.");
+			Command_Print("This plugin already loaded.");
 		} else if(String_CaselessCompare(subcommand, "unload")) {
 			GetPluginName;
 			plugin = Plugin_Get(name);
 			if(!plugin) {
-				Command_Printf(ccdata,
+				Command_Printf(
 					Lang_Get(LANG_CPINF0),
 					name,
 					Lang_Get(LANG_CPNL)
 				);
 			}
 			if(Plugin_Unload(plugin)) {
-				Command_Printf(ccdata,
+				Command_Printf(
 					Lang_Get(LANG_CPINF0),
 					name,
 					Lang_Get(LANG_CPUNLD)
 				);
 			}
 			else {
-				Command_Printf(ccdata,
+				Command_Printf(
 					Lang_Get(LANG_CPINF1),
 					name,
 					Lang_Get(LANG_CPCB),
@@ -264,21 +264,21 @@ static cs_bool CHandler_Plugins(CommandCallData* ccdata) {
 
 			return true;
 		} else {
-			Command_PrintUsage(ccdata);
+			Command_PrintUsage;
 		}
 	}
 
-	Command_PrintUsage(ccdata);
+	Command_PrintUsage;
 }
 
-static cs_bool CHandler_Stop(CommandCallData* ccdata) {
-	Command_OnlyForOP(ccdata);
+COMMAND_FUNC(Stop) {
+	Command_OnlyForOP;
 	Server_Active = false;
 	return false;
 }
 
-static cs_bool CHandler_Announce(CommandCallData* ccdata) {
-	Command_OnlyForOP(ccdata);
+COMMAND_FUNC(Announce) {
+	Command_OnlyForOP;
 
 	Client_Chat(
 		!ccdata->caller ? Broadcast : ccdata->caller,
@@ -288,9 +288,9 @@ static cs_bool CHandler_Announce(CommandCallData* ccdata) {
 	return false;
 }
 
-static cs_bool CHandler_Kick(CommandCallData* ccdata) {
+COMMAND_FUNC(Kick) {
 	const char* cmdUsage = "/kick <player> [reason]";
-	Command_OnlyForOP(ccdata);
+	Command_OnlyForOP;
 
 	char playername[64];
 	if(String_GetArgument(ccdata->args, playername, 64, 0)) {
@@ -298,50 +298,50 @@ static cs_bool CHandler_Kick(CommandCallData* ccdata) {
 		if(tg) {
 			const char* reason = String_FromArgument(ccdata->args, 1);
 			Client_Kick(tg, reason);
-			Command_Printf(ccdata, "Player %s kicked", playername);
+			Command_Printf("Player %s kicked", playername);
 		} else {
-			Command_Print(ccdata, Lang_Get(LANG_CMDPLNF));
+			Command_Print(Lang_Get(LANG_CMDPLNF));
 		}
 	}
 
-	Command_PrintUsage(ccdata);
+	Command_PrintUsage;
 }
 
-static cs_bool CHandler_SetModel(CommandCallData* ccdata) {
+COMMAND_FUNC(SetModel) {
 	const char* cmdUsage = "/model <modelname/blockid>";
-	Command_OnlyForOP(ccdata);
-	Command_OnlyForClient(ccdata);
+	Command_OnlyForOP;
+	Command_OnlyForClient;
 
 	char modelname[64];
 	if(String_GetArgument(ccdata->args, modelname, 64, 0)) {
 		if(!Client_SetModelStr(ccdata->caller, modelname)) {
-			Command_Print(ccdata, "Invalid model name.");
+			Command_Print("Invalid model name.");
 		}
-		Command_Print(ccdata, "Model changed successfully.");
+		Command_Print("Model changed successfully.");
 	}
 
-	Command_PrintUsage(ccdata);
+	Command_PrintUsage;
 }
 
-static cs_bool CHandler_ChgWorld(CommandCallData* ccdata) {
+COMMAND_FUNC(ChgWorld) {
 	const char* cmdUsage = "/chgworld <worldname>";
-	Command_OnlyForClient(ccdata);
+	Command_OnlyForClient;
 
 	char worldname[64];
-	Command_ArgToWorldName(ccdata, worldname, 0);
+	Command_ArgToWorldName(worldname, 0);
 	World* world = World_GetByName(worldname);
 	if(world) {
 		if(Client_IsInWorld(ccdata->caller, world)) {
-			Command_Print(ccdata, "You already in this world.");
+			Command_Print("You already in this world.");
 		}
 		if(Client_ChangeWorld(ccdata->caller, world)) return false;
 	}
-	Command_Print(ccdata, "World not found.");
+	Command_Print("World not found.");
 }
 
-static cs_bool CHandler_GenWorld(CommandCallData* ccdata) {
+COMMAND_FUNC(GenWorld) {
 	const char* cmdUsage = "/genworld <name> <x> <y> <z>";
-	Command_OnlyForOP(ccdata);
+	Command_OnlyForOP;
 
 	char worldname[64], x[6], y[6], z[6];
 	if(String_GetArgument(ccdata->args, x, 6, 1) &&
@@ -352,7 +352,7 @@ static cs_bool CHandler_GenWorld(CommandCallData* ccdata) {
 		_z = (cs_uint16)String_ToInt(z);
 
 		if(_x > 0 && _y > 0 && _z > 0) {
-			Command_ArgToWorldName(ccdata, worldname, 0);
+			Command_ArgToWorldName(worldname, 0);
 			World* tmp = World_Create(worldname);
 			SVec vec;
 			Vec_Set(vec, _x, _y, _z);
@@ -361,72 +361,72 @@ static cs_bool CHandler_GenWorld(CommandCallData* ccdata) {
 			Generator_Flat(tmp);
 
 			if(World_Add(tmp)) {
-				Command_Printf(ccdata, "World \"%s\" created.", worldname);
+				Command_Printf("World \"%s\" created.", worldname);
 			} else {
 				World_Free(tmp);
-				Command_Print(ccdata, "Too many worlds already loaded.");
+				Command_Print("Too many worlds already loaded.");
 			}
 		}
 	}
 
-	Command_PrintUsage(ccdata);
+	Command_PrintUsage;
 }
 
-static cs_bool CHandler_UnlWorld(CommandCallData* ccdata) {
+COMMAND_FUNC(UnlWorld) {
 	const char* cmdUsage = "/unlworld <worldname>";
-	Command_OnlyForOP(ccdata);
+	Command_OnlyForOP;
 
 	char worldname[64];
-	Command_ArgToWorldName(ccdata, worldname, 0);
+	Command_ArgToWorldName(worldname, 0);
 	World* tmp = World_GetByName(worldname);
 	if(tmp) {
 		if(tmp->id == 0) {
-			Command_Print(ccdata, "Can't unload world with id 0.");
+			Command_Print("Can't unload world with id 0.");
 		}
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			Client* c = Clients_List[i];
 			if(c && Client_IsInWorld(c, tmp)) Client_ChangeWorld(c, Worlds_List[0]);
 		}
 		if(World_Save(tmp, true)) {
-			Command_Print(ccdata, "World unloaded.");
+			Command_Print("World unloaded.");
 		} else {
-			Command_Print(ccdata, "Can't start world saving process, try again later.");
+			Command_Print("Can't start world saving process, try again later.");
 		}
 	}
-	Command_Print(ccdata, "World not found.");
+	Command_Print("World not found.");
 }
 
-static cs_bool CHandler_SavWorld(CommandCallData* ccdata) {
+COMMAND_FUNC(SavWorld) {
 	const char* cmdUsage = "/savworld <worldname>";
-	Command_OnlyForOP(ccdata);
+	Command_OnlyForOP;
 
 	char worldname[64];
-	Command_ArgToWorldName(ccdata, worldname, 0);
+	Command_ArgToWorldName(worldname, 0);
 	World* tmp = World_GetByName(worldname);
 	if(tmp) {
 		if(World_Save(tmp, false)) {
-			Command_Print(ccdata, "World saving scheduled.");
+			Command_Print("World saving scheduled.");
 		} else {
-			Command_Print(ccdata, "Can't start world saving process, try again later.");
+			Command_Print("Can't start world saving process, try again later.");
 		}
 	}
-	Command_Print(ccdata, "World not found.");
+	Command_Print("World not found.");
 }
 
 void Command_RegisterDefault(void) {
-	Command_Register("info", CHandler_Info);
-	Command_Register("op", CHandler_OP);
-	Command_Register("uptime", CHandler_Uptime);
-	Command_Register("cfg", CHandler_CFG);
-	Command_Register("plugins", CHandler_Plugins);
-	Command_Register("stop", CHandler_Stop);
-	Command_Register("announce", CHandler_Announce);
-	Command_Register("kick", CHandler_Kick);
-	Command_Register("setmodel", CHandler_SetModel);
-	Command_Register("chgworld", CHandler_ChgWorld);
-	Command_Register("genworld", CHandler_GenWorld);
-	Command_Register("unlworld", CHandler_UnlWorld);
-	Command_Register("savworld", CHandler_SavWorld);
+	COMMAND_ADD(Info);
+	COMMAND_ADD(OP);
+	COMMAND_ADD(Uptime);
+	COMMAND_ADD(CFG);
+	COMMAND_ADD(Plugins);
+	COMMAND_ADD(Stop);
+	COMMAND_ADD(Announce);
+	COMMAND_ADD(Kick);
+	COMMAND_ADD(SetModel);
+	COMMAND_ADD(ChgWorld);
+	COMMAND_ADD(GenWorld);
+	COMMAND_ADD(UnlWorld);
+	COMMAND_ADD(SavWorld);
 }
 
 /*

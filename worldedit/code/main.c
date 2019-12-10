@@ -48,30 +48,32 @@ static void clickhandler(void* param) {
 	}
 }
 
-static cs_bool CHandler_Select(CommandCallData* ccdata) {
+COMMAND_FUNC(Select) {
+	Command_OnlyForClient;
 	SVec* ptr = GetCuboid(ccdata->caller);
 	if(ptr) {
 		Client_RemoveSelection(ccdata->caller, 0);
 		Assoc_Remove(ccdata->caller, WeAT, true);
-		Command_Print(ccdata, "Selection mode &cdisabled");
+		Command_Print("Selection mode &cdisabled");
 	}
 	ptr = Memory_Alloc(1, sizeof(SVec) * 2);
 	Memory_Fill(ptr, sizeof(SVec) * 2, 0xFF);
 	Assoc_Set(ccdata->caller, WeAT, ptr);
-	Command_Print(ccdata, "Selection mode &aenabled");
+	Command_Print("Selection mode &aenabled");
 }
 
-static cs_bool CHandler_Set(CommandCallData* ccdata) {
+COMMAND_FUNC(Set) {
+	Command_OnlyForClient;
 	const char* cmdUsage = "/set <blockid>";
 	Client* client = ccdata->caller;
 	SVec* ptr = GetCuboid(client);
 	if(!ptr) {
-		Command_Print(ccdata, "Select cuboid first.");
+		Command_Print("Select cuboid first.");
 	}
 
 	char blid[4];
 	if(!String_GetArgument(ccdata->args, blid, 4, 0)) {
-		Command_PrintUsage(ccdata);
+		Command_PrintUsage;
 	}
 
 	BlockID block = (BlockID)String_ToInt(blid);
@@ -98,21 +100,22 @@ static cs_bool CHandler_Set(CommandCallData* ccdata) {
 	}
 
 	Block_BulkUpdateSend(&bbu);
-	Command_Printf(ccdata, "%d blocks filled with %d.", count, block);
+	Command_Printf("%d blocks filled with %d.", count, block);
 }
 
-static cs_bool CHandler_Replace(CommandCallData* ccdata) {
+COMMAND_FUNC(Replace) {
+	Command_OnlyForClient;
 	const char* cmdUsage = "/repalce <from> <to>";
 	Client* client = ccdata->caller;
 	SVec* ptr = GetCuboid(client);
 	if(!ptr) {
-		Command_Print(ccdata, "Select cuboid first.");
+		Command_Print("Select cuboid first.");
 	}
 
 	char fromt[4], tot[4];
 	if(!String_GetArgument(ccdata->args, fromt, 4, 0) ||
 	!String_GetArgument(ccdata->args, tot, 4, 1)) {
-		Command_PrintUsage(ccdata);
+		Command_PrintUsage;
 	}
 
 	BlockID from = (BlockID)String_ToInt(fromt);
@@ -141,7 +144,7 @@ static cs_bool CHandler_Replace(CommandCallData* ccdata) {
 	}
 
 	Block_BulkUpdateSend(&bbu);
-	Command_Printf(ccdata, "%d blocks replaced with %d.", count, to);
+	Command_Printf("%d blocks replaced with %d.", count, to);
 }
 
 static void freeselvecs(void* param) {
@@ -153,11 +156,11 @@ Plugin_SetVersion(1)
 cs_bool Plugin_Load(void) {
 	WeAT = Assoc_NewType();
 	Command* cmd;
-	cmd = Command_Register("select", CHandler_Select);
+	cmd = COMMAND_ADD(Select);
 	Command_SetAlias(cmd, "sel");
-	cmd = Command_Register("fill", CHandler_Set);
+	cmd = COMMAND_ADD(Set);
 	Command_SetAlias(cmd, "set");
-	cmd = Command_Register("replace", CHandler_Replace);
+	cmd = COMMAND_ADD(Replace);
 	Command_SetAlias(cmd, "repl");
 	Event_RegisterVoid(EVT_ONCLICK, clickhandler);
 	Event_RegisterVoid(EVT_ONDISCONNECT, freeselvecs);

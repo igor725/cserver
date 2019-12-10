@@ -157,9 +157,9 @@ static void Survival_OnClick(void* param) {
 	}
 }
 
-static cs_bool CHandler_God(CommandCallData* ccdata) {
-	Command_OnlyForClient(ccdata);
-	Command_OnlyForOP(ccdata);
+COMMAND_FUNC(God) {
+	Command_OnlyForClient;
+	Command_OnlyForOP;
 
 	SurvivalData* data = SurvData_Get(ccdata->caller);
 	data->godMode ^= 1;
@@ -171,8 +171,8 @@ static cs_bool CHandler_God(CommandCallData* ccdata) {
 	return true;
 }
 
-static cs_bool CHandler_Hurt(CommandCallData* ccdata) {
-	Command_OnlyForClient(ccdata);
+COMMAND_FUNC(Hurt) {
+	Command_OnlyForClient;
 
 	char damage[32];
 	if(String_GetArgument(ccdata->args, damage, 32, 0)) {
@@ -183,10 +183,10 @@ static cs_bool CHandler_Hurt(CommandCallData* ccdata) {
 	return false;
 }
 
-static cs_bool CHandler_PvP(CommandCallData* ccdata) {
-	Command_OnlyForClient(ccdata);
+COMMAND_FUNC(PvP) {
+	Command_OnlyForClient;
 	SurvivalData* data = SurvData_Get(ccdata->caller);
-	Command_OnlyForSurvival(ccdata, data);
+	Command_OnlyForSurvival(data);
 
 	data->pvpMode ^= 1;
 	String_FormatBuf(ccdata->out, MAX_CMD_OUT, "PvP mode %s", MODE(data->pvpMode));
@@ -200,6 +200,11 @@ cs_bool Plugin_Load(void) {
 		Log_Error("Survival plugin can be loaded only at server startup.");
 		return false;
 	}
+
+	COMMAND_ADD(God);
+	COMMAND_ADD(Hurt);
+	COMMAND_ADD(PvP);
+
 	SurvData_AssocType = Assoc_NewType();
 	Event_RegisterVoid(EVT_ONTICK, Survival_OnTick);
 	Event_RegisterVoid(EVT_ONSPAWN, Survival_OnSpawn);
@@ -208,9 +213,6 @@ cs_bool Plugin_Load(void) {
 	Event_RegisterVoid(EVT_ONDISCONNECT, Survival_OnDisconnect);
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, Survival_OnHandshake);
 	Event_RegisterVoid(EVT_ONCLICK, Survival_OnClick);
-	Command_Register("god", CHandler_God);
-	Command_Register("hurt", CHandler_Hurt);
-	Command_Register("pvp", CHandler_PvP);
 	return true;
 }
 

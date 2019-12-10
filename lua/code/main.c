@@ -3,6 +3,7 @@
 #include <str.h>
 #include <log.h>
 #include <event.h>
+#include <command.h>
 
 #include "script.h"
 #include "lclient.h"
@@ -287,6 +288,10 @@ static void scronweather(void* param) {
 	EndLuaEventCallNoRet;
 }
 
+COMMAND_FUNC(Lua) {
+	Command_Print("This command not implemented yet.");
+}
+
 Plugin_SetVersion(1)
 
 cs_bool Plugin_Load() {
@@ -303,6 +308,8 @@ cs_bool Plugin_Load() {
 		} while(Iter_Next(&scIter));
 	}
 	Iter_Close(&scIter);
+
+	COMMAND_ADD(Lua);
 
 	Event_RegisterVoid(EVT_ONTICK, scrtick);
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, scrhshake);

@@ -27,7 +27,7 @@ static cs_bool lua_cmd_handler(CommandCallData* ccdata) {
 		}
 	} else {
 		Mutex_Unlock(scr->mutex);
-		Command_Printf(ccdata, "Strange lua error: Eh? Where is callback for \"%s\" command????", cmd->name);
+		Command_Printf("Strange lua error: Eh? Where is callback for \"%s\" command????", cmd->name);
 	}
 
 	Mutex_Unlock(scr->mutex);

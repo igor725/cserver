@@ -4,52 +4,58 @@
 #include "client.h"
 #include "lang.h"
 
-#define Command_OnlyForClient(a) \
-if(!(a)->caller) { \
+#define Command_OnlyForClient \
+if(!ccdata->caller) { \
 	Lang_Get(LANG_CMDONLYCL); \
 }
 
-#define Command_OnlyForConsole(a) \
-if((a)->caller) { \
-	Command_Print((a), Lang_Get(LANG_CMDONLYCON)); \
+#define Command_OnlyForConsole \
+if(ccdata->caller) { \
+	Command_Print(Lang_Get(LANG_CMDONLYCON)); \
 }
 
-#define Command_Print(a, str) \
-String_Copy((a)->out, MAX_CMD_OUT, str); \
+#define Command_Print(str) \
+String_Copy(ccdata->out, MAX_CMD_OUT, str); \
 return true;
 
-#define Command_Printf(a, f, ...) \
-String_FormatBuf((a)->out, MAX_CMD_OUT, f, __VA_ARGS__); \
+#define Command_Printf(f, ...) \
+String_FormatBuf(ccdata->out, MAX_CMD_OUT, f, __VA_ARGS__); \
 return true;
 
-#define Command_PrintUsage(a) \
-Command_Printf(a, Lang_Get(LANG_CMDUSAGE), cmdUsage);
+#define Command_PrintUsage \
+Command_Printf(Lang_Get(LANG_CMDUSAGE), cmdUsage);
 
-#define Command_ArgToWorldName(a, wn, idx) \
-if(String_GetArgument((a)->args, wn, 64, idx)) { \
+#define Command_ArgToWorldName(wn, idx) \
+if(String_GetArgument(ccdata->args, wn, 64, idx)) { \
 	const char* wndot = String_LastChar(wn, '.'); \
 	if(!wndot || !String_CaselessCompare(wndot, ".cws")) \
 		String_Append(wn, 64, ".cws"); \
 } else { \
-	if(!(a)->caller) { \
-		Command_PrintUsage((a)); \
+	if(!ccdata->caller) { \
+		Command_PrintUsage; \
 	} else { \
-		PlayerData* pd = (a)->caller->playerData; \
+		PlayerData* pd = ccdata->caller->playerData; \
 		if(!pd) { \
-			Command_PrintUsage((a)); \
+			Command_PrintUsage; \
 		} \
 		World* world = pd->world; \
 		if(!world) { \
-			Command_PrintUsage((a)); \
+			Command_PrintUsage; \
 		} \
 		String_Copy(wn, 64, world->name); \
 	} \
 }
 
-#define Command_OnlyForOP(a) \
-if((a)->caller && !(a)->caller->playerData->isOP) { \
-	Command_Print((a), Lang_Get(LANG_CMDAD)); \
+#define Command_OnlyForOP \
+if(ccdata->caller && !ccdata->caller->playerData->isOP) { \
+	Command_Print(Lang_Get(LANG_CMDAD)); \
 }
+
+#define COMMAND_FUNC(N) \
+static cs_bool svcmd_##N(CommandCallData* ccdata)
+
+#define COMMAND_ADD(N) \
+Command_Register(#N, svcmd_##N);
 
 typedef struct {
 	struct _Command* command;
