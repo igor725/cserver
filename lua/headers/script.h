@@ -2,6 +2,11 @@
 #define SCRIPT_H
 #include <platform.h>
 
+#if defined(WINDOWS)
+#define LUA_LIB
+#define LUA_BUILD_AS_DLL
+#endif
+
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"

@@ -4,8 +4,6 @@
 #include <log.h>
 #include <event.h>
 
-#define LUA_LIB
-#define LUA_BUILD_AS_DLL
 #include "script.h"
 #include "lclient.h"
 #include "lworld.h"
@@ -289,7 +287,7 @@ static void scronweather(void* param) {
 	EndLuaEventCallNoRet;
 }
 
-Plugin_SetVersion(1);
+Plugin_SetVersion(1)
 
 cs_bool Plugin_Load() {
 	dirIter scIter;

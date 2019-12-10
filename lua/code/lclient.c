@@ -227,7 +227,7 @@ LUA_SFUNC(mclient_iscpe) {
 
 	lua_pushboolean(L, client->cpeData != NULL);
 	return 1;
-};
+}
 
 LUA_SFUNC(mclient_isop) {
 	Client* client = luax_checkclient(L, 1);

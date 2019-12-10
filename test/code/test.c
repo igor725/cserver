@@ -126,7 +126,7 @@ static BlockDef* myDynBlock = NULL;
 * не только версию плагина, но и версию используемого
 * API сервера, которая используется при загрузке плагина.
 */
-Plugin_SetVersion(1);
+Plugin_SetVersion(1)
 
 cs_bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
   Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.
