@@ -6,7 +6,7 @@
 
 #define Command_OnlyForClient \
 if(!ccdata->caller) { \
-	Lang_Get(LANG_CMDONLYCL); \
+	Command_Print(Lang_Get(LANG_CMDONLYCL)); \
 }
 
 #define Command_OnlyForConsole \
