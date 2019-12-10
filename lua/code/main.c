@@ -124,7 +124,7 @@ static void OpenLibs(lua_State *L) {
 	const char* cpath = NULL;
 #if defined(WINDOWS)
 	cpath = "./scripts/bin/?.dll;./scripts/bin/?/core.dll";
-#elif defined(POSXI)
+#elif defined(POSIX)
 	cpath = "./scripts/bin/?.so;./scripts/bin/?/core.so";
 #endif
 	lua_pushstring(L, cpath);

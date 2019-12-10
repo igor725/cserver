@@ -7,9 +7,9 @@
 #define LUA_BUILD_AS_DLL
 #endif
 
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
+#include <lua/lua.h>
+#include <lua/lauxlib.h>
+#include <lua/lualib.h>
 
 #define LUA_FUNC(N) \
 cs_int32 N(lua_State* L)
