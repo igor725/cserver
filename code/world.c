@@ -174,7 +174,7 @@ void World_Free(World* world) {
 }
 
 static cs_bool WriteWData(FILE* fp, cs_uint8 dataType, void* ptr, cs_int32 size) {
-	return File_Write(&dataType, 1, 1, fp) && (size > 0 && File_Write(ptr, size, 1, fp)) || true;
+	return File_Write(&dataType, 1, 1, fp) && ((size > 0 && File_Write(ptr, size, 1, fp)) || true);
 }
 
 static cs_bool WriteInfo(World* world, FILE* fp) {
