@@ -113,7 +113,7 @@ LUA_SFUNC(mworld_setenvprop) {
 
 LUA_SFUNC(mworld_setweather) {
 	World* world = luax_checkworld(L, 1);
-	Weather wt = (Weather)luaL_checkinteger(L, 1);
+	Weather wt = (Weather)luaL_checkinteger(L, 2);
 	lua_pushboolean(L, World_SetWeather(world, wt));
 	return 1;
 }

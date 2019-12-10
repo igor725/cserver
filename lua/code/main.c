@@ -8,6 +8,8 @@
 #define LUA_BUILD_AS_DLL
 #include "script.h"
 #include "lclient.h"
+#include "lworld.h"
+#include "lmath.h"
 
 void* luax_newobject(lua_State* L, cs_size size, const char* mt) {
 	void* ptr = lua_newuserdata(L, size);
@@ -192,46 +194,50 @@ Script* ptr = scriptHead; \
 while(ptr) { \
 	Script_GetFuncBegin(ptr, ename);
 
-#define EndLuaEventCall_p1 \
-	Script_GetFuncEnd(ptr);
-
-#define EndLuaEventCall_p2 \
+#define EndLuaEventCallNoRet \
+	Script_GetFuncEnd(ptr); \
 	ptr = ptr->next; \
 }
 
-#define EndLuaEventCall \
-EndLuaEventCall_p1; \
-EndLuaEventCall_p2;
+#define EndLuaEventCallWithRet \
+	Script_GetFuncEnd(ptr); \
+	if(!ret) break; \
+	ptr = ptr->next; \
+} \
+return ret;
+
+#define LogLuaErrorInScript(scr) \
+Log_Error("LuaVM error \"%s\": %s.", scr->name, lua_tostring(scr->state, -1));
 
 static void scrtick(void* param) {
 	cs_int32 delta = *(cs_int32*)param;
 	BeginLuaEventCall("onTick");
 		lua_pushinteger(L, delta);
 		if(lua_pcall(L, 1, 0, 0)) {
-			Log_Error("LuaVM error \"%s\": %s.", ptr->name, lua_tostring(L, -1));
+			LogLuaErrorInScript(ptr);
 			ptr->stopped = true;
 		}
-	EndLuaEventCall;
+	EndLuaEventCallNoRet;
 }
 
 static void scrhshake(void* param) {
 	BeginLuaEventCall("onConnect");
 		luax_pushclient(L, param);
 		if(lua_pcall(L, 1, 0, 0)) {
-			Log_Error("LuaVM error \"%s\": %s.", ptr->name, lua_tostring(L, -1));
+			LogLuaErrorInScript(ptr);
 			ptr->stopped = true;
 		}
-	EndLuaEventCall;
+	EndLuaEventCallNoRet;
 }
 
 static void scrdisc(void* param) {
 	BeginLuaEventCall("onDisconnect");
 		luax_pushclient(L, param);
 		if(lua_pcall(L, 1, 0, 0)) {
-			Log_Error("LuaVM error \"%s\": %s.", ptr->name, lua_tostring(L, -1));
+			LogLuaErrorInScript(ptr);
 			ptr->stopped = true;
 		}
-	EndLuaEventCall;
+	EndLuaEventCallNoRet;
 }
 
 static cs_bool scrmsg(void* param) {
@@ -242,7 +248,7 @@ static cs_bool scrmsg(void* param) {
 		lua_pushstring(L, a->message);
 		lua_pushinteger(L, *a->type);
 		if(lua_pcall(L, 3, 2, 0)) {
-			Log_Error("LuaVM error \"%s\": %s.", ptr->name, lua_tostring(L, -1));
+			LogLuaErrorInScript(ptr);
 			ptr->stopped = true;
 		} else {
 			if(lua_isboolean(L, -2))
@@ -250,10 +256,37 @@ static cs_bool scrmsg(void* param) {
 			if(lua_isinteger(L, -1))
 				*a->type = (MessageType)lua_tointeger(L, -1);
 		}
-	EndLuaEventCall_p1;
-	if(!ret) break;
-	EndLuaEventCall_p2;
-	return ret;
+	EndLuaEventCallWithRet;
+}
+
+static cs_bool scrblockplace(void* param) {
+	onBlockPlace* a = param;
+	cs_bool ret = true;
+	BeginLuaEventCall("onBlockPlace");
+		luax_pushclient(L, a->client);
+		lua_pushinteger(L, a->mode);
+		luax_newpsvec(L, a->pos); // TODO: Хранить где-нибудь объект вектора, чтобы не создавать его каждый раз
+		lua_pushinteger(L, *a->id);
+		if(lua_pcall(L, 4, 2, 0)) {
+			LogLuaErrorInScript(ptr);
+			ptr->stopped = true;
+		} else {
+			if(lua_isboolean(L, -2))
+				ret = (cs_bool)lua_toboolean(L, -2);
+			if(lua_isinteger(L, -1))
+				*a->id = (BlockID)lua_tointeger(L, -1);
+		}
+	EndLuaEventCallWithRet;
+}
+
+static void scronweather(void* param) {
+	BeginLuaEventCall("onWeatherChange");
+		luax_pushworld(L, param);
+		if(lua_pcall(L, 1, 0, 0)) {
+			LogLuaErrorInScript(ptr);
+			ptr->stopped = true;
+		}
+	EndLuaEventCallNoRet;
 }
 
 Plugin_SetVersion(1);
@@ -274,6 +307,8 @@ cs_bool Plugin_Load() {
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, scrhshake);
 	Event_RegisterVoid(EVT_ONDISCONNECT, scrdisc);
 	Event_RegisterBool(EVT_ONMESSAGE, scrmsg);
+	Event_RegisterBool(EVT_ONBLOCKPLACE, scrblockplace);
+	Event_RegisterVoid(EVT_ONWEATHER, scronweather);
 	return true;
 }
 
@@ -290,5 +325,6 @@ cs_bool Plugin_Unload() {
 	Event_Unregister(EVT_ONHANDSHAKEDONE, scrhshake);
 	Event_Unregister(EVT_ONDISCONNECT, scrdisc);
 	Event_Unregister(EVT_ONMESSAGE, scrmsg);
+	Event_Unregister(EVT_ONWEATHER, scronweather);
 	return true;
 }
