@@ -119,13 +119,13 @@ static void OpenLibs(lua_State *L) {
   }
 
 	lua_getglobal(L, "package");
-	lua_pushstring(L, "./scripts/libs/?.lua;./scripts/libs/?/init.lua");
+	lua_pushstring(L, "lua/lib/?.lua;lua/lib/?/init.lua");
 	lua_setfield(L, -2, "path");
 	const char* cpath = NULL;
 #if defined(WINDOWS)
-	cpath = "./scripts/bin/?.dll;./scripts/bin/?/core.dll";
+	cpath = "lua/bin/?.dll;lua/bin/?/core.dll";
 #elif defined(POSIX)
-	cpath = "./scripts/bin/?.so;./scripts/bin/?/core.so";
+	cpath = "lua/bin/?.so;lua/bin/?/core.so";
 #endif
 	lua_pushstring(L, cpath);
 	lua_setfield(L, -2, "cpath");
@@ -137,7 +137,7 @@ static void OpenLibs(lua_State *L) {
 
 void Script_Open(const char* name) {
 	char path[256];
-	String_FormatBuf(path, 256, "scripts/%s", name);
+	String_FormatBuf(path, 256, "lua/addons/%s", name);
 
 	lua_State* state = luaL_newstate();
 	OpenLibs(state);
@@ -291,9 +291,12 @@ Plugin_SetVersion(1)
 
 cs_bool Plugin_Load() {
 	dirIter scIter;
-	Directory_Ensure("scripts");
+	Directory_Ensure("lua");
+	Directory_Ensure("lua/addons");
+	Directory_Ensure("lua/bin");
+	Directory_Ensure("lua/lib");
 
-	if(Iter_Init(&scIter, "scripts", "lua")) {
+	if(Iter_Init(&scIter, "lua/addons", "lua")) {
 		do {
 			if(!scIter.isDir && scIter.cfile)
 				Script_Open(scIter.cfile);
