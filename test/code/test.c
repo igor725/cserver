@@ -61,7 +61,7 @@ COMMAND_FUNC(Atoggle) {
 ** вновь, вплоть до перезапуска сервера.
 */
 COMMAND_FUNC(SelfDestroy) {
-	Command_UnregisterByName("selfdestroy");
+	Command_Unregister(ccdata->command);
 	Command_Print("This command can't be called anymore");
 }
 
