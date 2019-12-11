@@ -62,7 +62,7 @@ COMMAND_FUNC(Select) {
 }
 
 COMMAND_FUNC(Set) {
-	const char* cmdUsage = "/set <blockid>";
+	Command_SetUsage("/set <blockid>");
 	Client* client = ccdata->caller;
 	SVec* ptr = GetCuboid(client);
 	if(!ptr) {
@@ -102,7 +102,7 @@ COMMAND_FUNC(Set) {
 }
 
 COMMAND_FUNC(Replace) {
-	const char* cmdUsage = "/repalce <from> <to>";
+	Command_SetUsage("/repalce <from> <to>");
 	Client* client = ccdata->caller;
 	SVec* ptr = GetCuboid(client);
 	if(!ptr) {

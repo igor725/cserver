@@ -4,6 +4,9 @@
 #include "client.h"
 #include "lang.h"
 
+#define Command_SetUsage(str) \
+static const char* cmdUsage = str;
+
 #define Command_Print(str) \
 String_Copy(ccdata->out, MAX_CMD_OUT, str); \
 return true;

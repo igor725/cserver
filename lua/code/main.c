@@ -89,7 +89,7 @@ LUA_FUNC(luax_printstack) {
 	return 0;
 }
 
-Script* scriptHead = NULL;
+Script* headScript = NULL;
 
 static const luaL_Reg loadedlibs[] = {
   {"_G", luaopen_base},
@@ -151,9 +151,9 @@ void Script_Open(const char* name) {
 	Script* scr = Memory_Alloc(1, sizeof(Script));
 	scr->state = state;
 	scr->mutex = Mutex_Create();
-	scr->next = scriptHead;
+	scr->next = headScript;
 	scr->name = String_AllocCopy(name);
-	scriptHead = scr;
+	headScript = scr;
 
 	Script_GetFuncBegin(scr, "onStart");
 		cs_int32 ret = lua_pcall(L, 0, 0, 0);
@@ -162,7 +162,7 @@ void Script_Open(const char* name) {
 }
 
 Script* Script_GetByState(lua_State* L) {
-	Script* ptr = scriptHead;
+	Script* ptr = headScript;
 
 	while(ptr) {
 		if(ptr->state == L)
@@ -189,7 +189,7 @@ void Script_Destroy(Script* scr) {
 }
 
 #define BeginLuaEventCall(ename) \
-Script* ptr = scriptHead; \
+Script* ptr = headScript; \
 while(ptr) { \
 	Script_GetFuncBegin(ptr, ename);
 
@@ -289,7 +289,33 @@ static void scronweather(void* param) {
 }
 
 COMMAND_FUNC(Lua) {
-	Command_Print("This command not implemented yet.");
+	Command_SetUsage("/lua <list/reload>");
+	char subcommand[8];
+	if(String_GetArgument(ccdata->args, subcommand, 8, 0)) {
+		if(String_CaselessCompare(subcommand, "list")) {
+			String_Copy(ccdata->out, MAX_CMD_OUT, "Scripts list:");
+			Script* scr = headScript;
+			char scriptinfo[64];
+			cs_int32 idx = 1;
+
+			while(scr) {
+				if(idx > 10) {
+					String_Append(ccdata->out, MAX_CMD_OUT, "\r\n(Can't show full scripts list)");
+					break;
+				}
+				cs_int32 usage = lua_gc(scr->state, LUA_GCCOUNT, 0);
+				String_FormatBuf(scriptinfo, 64, "\r\n%d.%s: %d Kbytes", idx++, scr->name, usage);
+				String_Append(ccdata->out, MAX_CMD_OUT, scriptinfo);
+				scr = scr->next;
+			}
+
+			return true;
+		} else if(String_CaselessCompare(subcommand, "reload")) {
+			Command_Print("Not implemented yet");
+		}
+	}
+
+	Command_PrintUsage;
 }
 
 Plugin_SetVersion(1)
@@ -321,12 +347,19 @@ cs_bool Plugin_Load() {
 }
 
 cs_bool Plugin_Unload() {
-	Script* ptr = scriptHead, *tmp;
+	Script* ptr = headScript, *tmp;
 
 	while(ptr) {
 		tmp = ptr;
 		ptr = ptr->next;
 		Script_Destroy(tmp);
+		/*
+		** У нас могут возникнуть большие проблемы,
+		** если headScript будет ссылаться на уничтоженный
+		** скрипт, а какая-нибудь функция, например,
+		** Script_GetByState захочет пройтись по списку скриптов.
+		*/
+		headScript = ptr;
 	}
 
 	Event_Unregister(EVT_ONTICK, scrtick);

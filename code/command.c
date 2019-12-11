@@ -109,7 +109,7 @@ COMMAND_FUNC(Info) {
 }
 
 COMMAND_FUNC(OP) {
-	const char* cmdUsage = "/op <playername>";
+	Command_SetUsage("/op <playername>");
 
 	char clientname[64];
 	if(String_GetArgument(ccdata->args, clientname, 64, 0)) {
@@ -141,7 +141,7 @@ COMMAND_FUNC(Uptime) {
 }
 
 COMMAND_FUNC(CFG) {
-	const char* cmdUsage = "/cfg <set/get/print> [key] [value]";
+	Command_SetUsage("/cfg <set/get/print> [key] [value]");
 	char subcommand[8], key[MAX_CFG_LEN], value[MAX_CFG_LEN];
 
 	if(String_GetArgument(ccdata->args, subcommand, 8, 0)) {
@@ -219,11 +219,11 @@ if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) { \
 }
 
 COMMAND_FUNC(Plugins) {
-	const char* cmdUsage = "/plugins <load/unload/print> [pluginName]";
-	char subcommand[64], name[64];
+	Command_SetUsage("/plugins <load/unload/print> [pluginName]");
+	char subcommand[8], name[64];
 	Plugin* plugin;
 
-	if(String_GetArgument(ccdata->args, subcommand, 64, 0)) {
+	if(String_GetArgument(ccdata->args, subcommand, 8, 0)) {
 		if(String_CaselessCompare(subcommand, "load")) {
 			GetPluginName;
 			if(!Plugin_Get(name)) {
@@ -271,14 +271,16 @@ COMMAND_FUNC(Plugins) {
 			for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
 				plugin = Plugins_List[i];
 				if(plugin) {
-					String_FormatBuf(pluginfo, 64, "\r\n%d. %s v%d", idx++, plugin->name, plugin->version);
+					if(idx > 10) {
+						String_Append(ccdata->out, MAX_CMD_OUT, "\r\n(Can't show full plugins list)");
+						break;
+					}
+					String_FormatBuf(pluginfo, 64, "\r\n%d.%s v%d", idx++, plugin->name, plugin->version);
 					String_Append(ccdata->out, MAX_CMD_OUT, pluginfo);
 				}
 			}
 
 			return true;
-		} else {
-			Command_PrintUsage;
 		}
 	}
 
@@ -301,7 +303,7 @@ COMMAND_FUNC(Announce) {
 }
 
 COMMAND_FUNC(Kick) {
-	const char* cmdUsage = "/kick <player> [reason]";
+	Command_SetUsage("/kick <player> [reason]");
 
 	char playername[64];
 	if(String_GetArgument(ccdata->args, playername, 64, 0)) {
@@ -319,7 +321,7 @@ COMMAND_FUNC(Kick) {
 }
 
 COMMAND_FUNC(SetModel) {
-	const char* cmdUsage = "/model <modelname/blockid>";
+	Command_SetUsage("/model <modelname/blockid>");
 
 	char modelname[64];
 	if(String_GetArgument(ccdata->args, modelname, 64, 0)) {
@@ -333,7 +335,7 @@ COMMAND_FUNC(SetModel) {
 }
 
 COMMAND_FUNC(ChgWorld) {
-	const char* cmdUsage = "/chgworld <worldname>";
+	Command_SetUsage("/chgworld <worldname>");
 
 	char worldname[64];
 	Command_ArgToWorldName(worldname, 0);
@@ -348,7 +350,7 @@ COMMAND_FUNC(ChgWorld) {
 }
 
 COMMAND_FUNC(GenWorld) {
-	const char* cmdUsage = "/genworld <name> <x> <y> <z>";
+	Command_SetUsage("/genworld <name> <x> <y> <z>");
 
 	char worldname[64], x[6], y[6], z[6];
 	if(String_GetArgument(ccdata->args, x, 6, 1) &&
@@ -380,7 +382,7 @@ COMMAND_FUNC(GenWorld) {
 }
 
 COMMAND_FUNC(UnlWorld) {
-	const char* cmdUsage = "/unlworld <worldname>";
+	Command_SetUsage("/unlworld <worldname>");
 
 	char worldname[64];
 	Command_ArgToWorldName(worldname, 0);
@@ -403,7 +405,7 @@ COMMAND_FUNC(UnlWorld) {
 }
 
 COMMAND_FUNC(SavWorld) {
-	const char* cmdUsage = "/savworld <worldname>";
+	Command_SetUsage("/savworld <worldname>");
 
 	char worldname[64];
 	Command_ArgToWorldName(worldname, 0);
