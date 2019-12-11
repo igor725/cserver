@@ -21,7 +21,9 @@ void* luax_checkobject(lua_State* L, cs_int32 idx, const char* mt) {
 }
 
 void* luax_checkptr(lua_State* L, cs_int32 idx, const char* mt) {
-	return *(void**)luaL_checkudata(L, idx, mt);
+	void* ptr = *(void**)luaL_checkudata(L, idx, mt);
+	if(!ptr) luaL_error(L, "Userdata \"%s\" pointing to NULL.", mt);
+	return ptr;
 }
 
 void luax_pushptr(lua_State* L, void* obj, const char* mt, uptrSetupFunc setup) {
@@ -107,7 +109,7 @@ static const luaL_Reg loadedlibs[] = {
 	{"client", luaopen_client},
 	{"world", luaopen_world},
 	{"command", luaopen_command},
-	// {"config", luaopen_config},
+	{"config", luaopen_config},
 
   {NULL, NULL}
 };

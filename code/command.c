@@ -149,7 +149,7 @@ COMMAND_FUNC(CFG) {
 			if(!String_GetArgument(ccdata->args, key, MAX_CFG_LEN, 1)) {
 				Command_PrintUsage;
 			}
-			CEntry ent = Config_GetEntry(Server_Config, key);
+			CEntry* ent = Config_GetEntry(Server_Config, key);
 			if(!ent) {
 				Command_Print("This entry not found in \"server.cfg\" store.");
 			}
@@ -182,7 +182,7 @@ COMMAND_FUNC(CFG) {
 				Command_PrintUsage;
 			}
 
-			CEntry ent = Config_GetEntry(Server_Config, key);
+			CEntry* ent = Config_GetEntry(Server_Config, key);
 			if(ent) {
 				if(!Config_ToStr(ent, value, MAX_CFG_LEN)) {
 					Command_Print("Can't detect entry type.");
@@ -191,7 +191,7 @@ COMMAND_FUNC(CFG) {
 			}
 			Command_Print("This entry not found in \"server.cfg\" store.");
 		} else if(String_CaselessCompare(subcommand, "print")) {
-			CEntry ent = Server_Config->firstCfgEntry;
+			CEntry* ent = Server_Config->firstCfgEntry;
 			String_Copy(ccdata->out, MAX_CMD_OUT, "Server config entries:");
 
 			while(ent) {

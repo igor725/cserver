@@ -94,8 +94,8 @@ void Server_InitialWork(void) {
 	if(!Socket_Init()) return;
 
 	Log_Info(Lang_Get(LANG_SVLOADING), MAINCFG);
-	CStore cfg = Config_NewStore(MAINCFG);
-	CEntry ent;
+	CStore* cfg = Config_NewStore(MAINCFG);
+	CEntry* ent;
 
 	Server_StartTime = Time_GetMSec();
 	Server_Config = cfg;

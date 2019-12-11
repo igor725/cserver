@@ -1,5 +1,6 @@
 #ifndef SERVER_H
 #define SERVER_H
+#include "platform.h"
 #include "config.h"
 
 #define CFG_SERVERIP_KEY "server-ip"
@@ -15,7 +16,7 @@
 #define CFG_HEARTBEAT_PUBLIC_KEY "heartbeat-public"
 
 VAR cs_bool Server_Active;
-VAR CStore Server_Config;
+VAR CStore* Server_Config;
 VAR cs_uint64 Server_StartTime;
 Socket Server_Socket;
 
