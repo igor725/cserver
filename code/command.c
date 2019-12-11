@@ -464,7 +464,7 @@ static void SendOutput(Client* caller, const char* ret) {
 cs_bool Command_Handle(char* str, Client* caller) {
 	if(*str == '/') ++str;
 
-	char ret[MAX_CMD_OUT] = {0};
+	char ret[MAX_CMD_OUT];
 	char* args = str;
 
 	while(1) {
@@ -473,7 +473,7 @@ cs_bool Command_Handle(char* str, Client* caller) {
 			args = NULL;
 			break;
 		} else if(*args == 32) {
-			*args++ = 0;
+			*args++ = '\0';
 			break;
 		}
 	}
@@ -495,10 +495,9 @@ cs_bool Command_Handle(char* str, Client* caller) {
 		ccdata.command = cmd;
 		ccdata.out = ret;
 
-		if(cmd->func(&ccdata)) {
+		if(cmd->func(&ccdata))
 			SendOutput(caller, ret);
-			return true;
-		}
+		return true;
 	}
 
 	return false;
