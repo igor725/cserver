@@ -36,9 +36,10 @@ static cs_bool lua_cmd_handler(CommandCallData* ccdata) {
 
 LUA_SFUNC(fcmd_register) {
 	const char* name = luaL_checkstring(L, 1);
+	cs_uint8 flags = (cs_uint8)luaL_checkinteger(L, 2);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 
-	Command* cmd = Command_Register(name, lua_cmd_handler);
+	Command* cmd = Command_Register(name, lua_cmd_handler, flags);
 	cmd->data = Script_GetByState(L);
 
 	lua_pushlightuserdata(L, cmd);

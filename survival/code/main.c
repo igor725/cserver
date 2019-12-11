@@ -158,9 +158,6 @@ static void Survival_OnClick(void* param) {
 }
 
 COMMAND_FUNC(God) {
-	Command_OnlyForClient;
-	Command_OnlyForOP;
-
 	SurvivalData* data = SurvData_Get(ccdata->caller);
 	data->godMode ^= 1;
 	SurvGui_DrawAll(data);
@@ -172,8 +169,6 @@ COMMAND_FUNC(God) {
 }
 
 COMMAND_FUNC(Hurt) {
-	Command_OnlyForClient;
-
 	char damage[32];
 	if(String_GetArgument(ccdata->args, damage, 32, 0)) {
 		cs_uint8 dmg = (cs_uint8)(String_ToFloat(damage) * 2);
@@ -184,9 +179,10 @@ COMMAND_FUNC(Hurt) {
 }
 
 COMMAND_FUNC(PvP) {
-	Command_OnlyForClient;
 	SurvivalData* data = SurvData_Get(ccdata->caller);
-	Command_OnlyForSurvival(data);
+	if(data->godMode) {
+		Command_Print("This command can't be used from god mode.");
+	}
 
 	data->pvpMode ^= 1;
 	String_FormatBuf(ccdata->out, MAX_CMD_OUT, "PvP mode %s", MODE(data->pvpMode));
@@ -201,9 +197,9 @@ cs_bool Plugin_Load(void) {
 		return false;
 	}
 
-	COMMAND_ADD(God);
-	COMMAND_ADD(Hurt);
-	COMMAND_ADD(PvP);
+	COMMAND_ADD(God, CMDF_OP | CMDF_CLIENT);
+	COMMAND_ADD(Hurt, CMDF_CLIENT);
+	COMMAND_ADD(PvP, CMDF_CLIENT);
 
 	SurvData_AssocType = Assoc_NewType();
 	Event_RegisterVoid(EVT_ONTICK, Survival_OnTick);

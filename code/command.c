@@ -12,18 +12,19 @@
 #include "lang.h"
 #include <zlib.h>
 
-Command* HeadCmd;
+Command* headCmd;
 
-Command* Command_Register(const char* name, cmdFunc func) {
+Command* Command_Register(const char* name, cmdFunc func, cs_uint8 flags) {
 	if(Command_GetByName(name)) return NULL;
 	Command* tmp = Memory_Alloc(1, sizeof(Command));
 
 	tmp->name = String_AllocCopy(name);
+	tmp->flags = flags;
 	tmp->func = func;
-	if(HeadCmd)
-		HeadCmd->prev = tmp;
-	tmp->next = HeadCmd;
-	HeadCmd = tmp;
+	if(headCmd)
+		headCmd->prev = tmp;
+	tmp->next = headCmd;
+	headCmd = tmp;
 
 	return tmp;
 }
@@ -34,7 +35,7 @@ void Command_SetAlias(Command* cmd, const char* alias) {
 }
 
 Command* Command_GetByName(const char* name) {
-	Command* ptr = HeadCmd;
+	Command* ptr = headCmd;
 
 	while(ptr) {
 		if(String_CaselessCompare(ptr->name, name) ||
@@ -47,7 +48,7 @@ Command* Command_GetByName(const char* name) {
 }
 
 Command* Command_GetByFunc(cmdFunc func) {
-	Command* ptr = HeadCmd;
+	Command* ptr = headCmd;
 
 	while(ptr) {
 		if(ptr->func == func)
@@ -64,9 +65,9 @@ cs_bool Command_Unregister(Command* cmd) {
 
 	if(cmd->next) {
 		cmd->next->prev = cmd->prev;
-		HeadCmd = cmd->next;
+		headCmd = cmd->next;
 	} else
-		HeadCmd = NULL;
+		headCmd = NULL;
 
 	Memory_Free((void*)cmd->name);
 	Memory_Free(cmd);
@@ -86,8 +87,6 @@ cs_bool Command_UnregisterByFunc(cmdFunc func) {
 }
 
 COMMAND_FUNC(Info) {
-	Command_OnlyForOP;
-
 	const char* zver = zlibVersion();
 	uLong zflags = zlibCompileFlags();
 	const char* format =
@@ -111,7 +110,6 @@ COMMAND_FUNC(Info) {
 
 COMMAND_FUNC(OP) {
 	const char* cmdUsage = "/op <playername>";
-	Command_OnlyForOP;
 
 	char clientname[64];
 	if(String_GetArgument(ccdata->args, clientname, 64, 0)) {
@@ -144,8 +142,6 @@ COMMAND_FUNC(Uptime) {
 
 COMMAND_FUNC(CFG) {
 	const char* cmdUsage = "/cfg <set/get/print> [key] [value]";
-	Command_OnlyForOP;
-
 	char subcommand[8], key[MAX_CFG_LEN], value[MAX_CFG_LEN];
 
 	if(String_GetArgument(ccdata->args, subcommand, 8, 0)) {
@@ -290,14 +286,12 @@ COMMAND_FUNC(Plugins) {
 }
 
 COMMAND_FUNC(Stop) {
-	Command_OnlyForOP;
+	(void)ccdata;
 	Server_Active = false;
 	return false;
 }
 
 COMMAND_FUNC(Announce) {
-	Command_OnlyForOP;
-
 	Client_Chat(
 		!ccdata->caller ? Broadcast : ccdata->caller,
 		MT_ANNOUNCE,
@@ -308,7 +302,6 @@ COMMAND_FUNC(Announce) {
 
 COMMAND_FUNC(Kick) {
 	const char* cmdUsage = "/kick <player> [reason]";
-	Command_OnlyForOP;
 
 	char playername[64];
 	if(String_GetArgument(ccdata->args, playername, 64, 0)) {
@@ -327,8 +320,6 @@ COMMAND_FUNC(Kick) {
 
 COMMAND_FUNC(SetModel) {
 	const char* cmdUsage = "/model <modelname/blockid>";
-	Command_OnlyForOP;
-	Command_OnlyForClient;
 
 	char modelname[64];
 	if(String_GetArgument(ccdata->args, modelname, 64, 0)) {
@@ -343,7 +334,6 @@ COMMAND_FUNC(SetModel) {
 
 COMMAND_FUNC(ChgWorld) {
 	const char* cmdUsage = "/chgworld <worldname>";
-	Command_OnlyForClient;
 
 	char worldname[64];
 	Command_ArgToWorldName(worldname, 0);
@@ -359,7 +349,6 @@ COMMAND_FUNC(ChgWorld) {
 
 COMMAND_FUNC(GenWorld) {
 	const char* cmdUsage = "/genworld <name> <x> <y> <z>";
-	Command_OnlyForOP;
 
 	char worldname[64], x[6], y[6], z[6];
 	if(String_GetArgument(ccdata->args, x, 6, 1) &&
@@ -392,7 +381,6 @@ COMMAND_FUNC(GenWorld) {
 
 COMMAND_FUNC(UnlWorld) {
 	const char* cmdUsage = "/unlworld <worldname>";
-	Command_OnlyForOP;
 
 	char worldname[64];
 	Command_ArgToWorldName(worldname, 0);
@@ -416,7 +404,6 @@ COMMAND_FUNC(UnlWorld) {
 
 COMMAND_FUNC(SavWorld) {
 	const char* cmdUsage = "/savworld <worldname>";
-	Command_OnlyForOP;
 
 	char worldname[64];
 	Command_ArgToWorldName(worldname, 0);
@@ -432,19 +419,19 @@ COMMAND_FUNC(SavWorld) {
 }
 
 void Command_RegisterDefault(void) {
-	COMMAND_ADD(Info);
-	COMMAND_ADD(OP);
-	COMMAND_ADD(Uptime);
-	COMMAND_ADD(CFG);
-	COMMAND_ADD(Plugins);
-	COMMAND_ADD(Stop);
-	COMMAND_ADD(Announce);
-	COMMAND_ADD(Kick);
-	COMMAND_ADD(SetModel);
-	COMMAND_ADD(ChgWorld);
-	COMMAND_ADD(GenWorld);
-	COMMAND_ADD(UnlWorld);
-	COMMAND_ADD(SavWorld);
+	COMMAND_ADD(Info, CMDF_OP);
+	COMMAND_ADD(OP, CMDF_OP);
+	COMMAND_ADD(Uptime, CMDF_NONE);
+	COMMAND_ADD(CFG, CMDF_OP);
+	COMMAND_ADD(Plugins, CMDF_OP);
+	COMMAND_ADD(Stop, CMDF_OP);
+	COMMAND_ADD(Announce, CMDF_OP);
+	COMMAND_ADD(Kick, CMDF_OP);
+	COMMAND_ADD(SetModel, CMDF_OP | CMDF_CLIENT);
+	COMMAND_ADD(ChgWorld, CMDF_OP | CMDF_CLIENT);
+	COMMAND_ADD(GenWorld, CMDF_OP);
+	COMMAND_ADD(UnlWorld, CMDF_OP);
+	COMMAND_ADD(SavWorld, CMDF_OP);
 }
 
 /*
@@ -454,18 +441,22 @@ void Command_RegisterDefault(void) {
 ** на счёт надёжности данной функции.
 ** TODO: Разобраться, может ли здесь произойти краш.
 */
-static void SendOutputToClient(Client* client, char* ret) {
-	while(ret && *ret != '\0') {
-		char* nlptr = (char*)String_FirstChar(ret, '\r');
-		if(nlptr)
-			*nlptr++ = '\0';
-		else
-			nlptr = ret;
-		nlptr = (char*)String_FirstChar(nlptr, '\n');
-		if(nlptr) *nlptr++ = '\0';
-		Client_Chat(client, 0, ret);
-		ret = nlptr;
-	}
+static void SendOutput(Client* caller, const char* ret) {
+	if(caller) {
+		while(*ret != '\0') {
+			char* nlptr = (char*)String_FirstChar(ret, '\r');
+			if(nlptr)
+				*nlptr++ = '\0';
+			else
+				nlptr = (char*)ret;
+			nlptr = (char*)String_FirstChar(nlptr, '\n');
+			if(nlptr) *nlptr++ = '\0';
+			Client_Chat(caller, 0, ret);
+			if(!nlptr) break;
+			ret = nlptr;
+		}
+	} else
+		Log_Info(ret);
 }
 
 cs_bool Command_Handle(char* str, Client* caller) {
@@ -485,21 +476,27 @@ cs_bool Command_Handle(char* str, Client* caller) {
 		}
 	}
 
-	CommandCallData ccdata;
-	ccdata.args = (const char*)args;
-	ccdata.caller = caller;
-	ccdata.out = ret;
-
 	Command* cmd = Command_GetByName(str);
 	if(cmd) {
-		ccdata.command = cmd;
-		if(cmd->func(&ccdata)) {
-			if(caller) {
-				SendOutputToClient(caller, ret);
-			} else
-				Log_Info(ret);
+		if(cmd->flags & CMDF_CLIENT && !caller) {
+			SendOutput(caller, Lang_Get(LANG_CMDONLYCL));
+			return true;
 		}
-		return true;
+		if(cmd->flags & CMDF_OP && (caller ? !Client_IsOP(caller) : false)) {
+			SendOutput(caller, Lang_Get(LANG_CMDAD));
+			return true;
+		}
+
+		CommandCallData ccdata;
+		ccdata.args = (const char*)args;
+		ccdata.caller = caller;
+		ccdata.command = cmd;
+		ccdata.out = ret;
+
+		if(cmd->func(&ccdata)) {
+			SendOutput(caller, ret);
+			return true;
+		}
 	}
 
 	return false;

@@ -4,16 +4,6 @@
 #include "client.h"
 #include "lang.h"
 
-#define Command_OnlyForClient \
-if(!ccdata->caller) { \
-	Command_Print(Lang_Get(LANG_CMDONLYCL)); \
-}
-
-#define Command_OnlyForConsole \
-if(ccdata->caller) { \
-	Command_Print(Lang_Get(LANG_CMDONLYCON)); \
-}
-
 #define Command_Print(str) \
 String_Copy(ccdata->out, MAX_CMD_OUT, str); \
 return true;
@@ -25,6 +15,7 @@ return true;
 #define Command_PrintUsage \
 Command_Printf(Lang_Get(LANG_CMDUSAGE), cmdUsage);
 
+// TODO: Сделать это добро функцией
 #define Command_ArgToWorldName(wn, idx) \
 if(String_GetArgument(ccdata->args, wn, 64, idx)) { \
 	const char* wndot = String_LastChar(wn, '.'); \
@@ -46,19 +37,23 @@ if(String_GetArgument(ccdata->args, wn, 64, idx)) { \
 	} \
 }
 
-#define Command_OnlyForOP \
-if(ccdata->caller && !ccdata->caller->playerData->isOP) { \
-	Command_Print(Lang_Get(LANG_CMDAD)); \
-}
-
 #define COMMAND_FUNC(N) \
 static cs_bool svcmd_##N(CommandCallData* ccdata)
 
-#define COMMAND_ADD(N) \
-Command_Register(#N, (cmdFunc)svcmd_##N);
+#define COMMAND_ADD(N, F) \
+Command_Register(#N, (cmdFunc)svcmd_##N, F);
 
 #define COMMAND_REMOVE(N) \
 Command_UnregisterByFunc((cmdFunc)svcmd_##N);
+
+enum {
+	CMDF_NONE,
+	CMDF_OP = (1 << 0),
+	CMDF_CLIENT = (1 << 1),
+	CMDF_RESERVED0 = (1 << 2),
+	CMDF_RESERVED1 = (1 << 3),
+	CMDF_RESERVED2 = (1 << 4)
+};
 
 typedef struct {
 	struct _Command* command;
@@ -71,12 +66,13 @@ typedef cs_bool(*cmdFunc)(CommandCallData* cdata);
 
 typedef struct _Command {
 	const char *name, *alias;
+	cs_uint8 flags;
 	cmdFunc func;
 	void* data;
 	struct _Command *next, *prev;
 } Command;
 
-API Command* Command_Register(const char* name, cmdFunc func);
+API Command* Command_Register(const char* name, cmdFunc func, cs_uint8 flags);
 API void Command_SetAlias(Command* cmd, const char* alias);
 API Command* Command_GetByName(const char* name);
 API Command* Command_GetByFunc(cmdFunc func);

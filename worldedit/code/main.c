@@ -49,7 +49,6 @@ static void clickhandler(void* param) {
 }
 
 COMMAND_FUNC(Select) {
-	Command_OnlyForClient;
 	SVec* ptr = GetCuboid(ccdata->caller);
 	if(ptr) {
 		Client_RemoveSelection(ccdata->caller, 0);
@@ -63,7 +62,6 @@ COMMAND_FUNC(Select) {
 }
 
 COMMAND_FUNC(Set) {
-	Command_OnlyForClient;
 	const char* cmdUsage = "/set <blockid>";
 	Client* client = ccdata->caller;
 	SVec* ptr = GetCuboid(client);
@@ -104,7 +102,6 @@ COMMAND_FUNC(Set) {
 }
 
 COMMAND_FUNC(Replace) {
-	Command_OnlyForClient;
 	const char* cmdUsage = "/repalce <from> <to>";
 	Client* client = ccdata->caller;
 	SVec* ptr = GetCuboid(client);
@@ -156,11 +153,11 @@ Plugin_SetVersion(1)
 cs_bool Plugin_Load(void) {
 	WeAT = Assoc_NewType();
 	Command* cmd;
-	cmd = COMMAND_ADD(Select);
+	cmd = COMMAND_ADD(Select, CMDF_OP | CMDF_CLIENT);
 	Command_SetAlias(cmd, "sel");
-	cmd = COMMAND_ADD(Set);
+	cmd = COMMAND_ADD(Set, CMDF_OP | CMDF_CLIENT);
 	Command_SetAlias(cmd, "fill");
-	cmd = COMMAND_ADD(Replace);
+	cmd = COMMAND_ADD(Replace, CMDF_OP | CMDF_CLIENT);
 	Command_SetAlias(cmd, "repl");
 	Event_RegisterVoid(EVT_ONCLICK, clickhandler);
 	Event_RegisterVoid(EVT_ONDISCONNECT, freeselvecs);

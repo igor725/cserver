@@ -1,10 +1,5 @@
 #ifndef SURV_DATA_H
 #define SURV_DATA_H
-#define Command_OnlyForSurvival(a, b) \
-if((b)->godMode) { \
-	Command_Print((a), "This command can't be used from god mode."); \
-}
-
 cs_uint16 SurvData_AssocType;
 
 typedef struct {

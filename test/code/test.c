@@ -44,8 +44,6 @@ COMMAND_FUNC(PlugTest) {
 
 COMMAND_FUNC(Atoggle) {
 	// Макрос проверяет была ли запущена команда администратором
-	Command_OnlyForOP;
-
   enabled ^= 1;
 	Command_Printf("Announce chat %s", MODE(enabled));
 }
@@ -73,8 +71,6 @@ COMMAND_FUNC(SelfDestroy) {
 ** только игрок.
 */
 COMMAND_FUNC(ClientOnly) {
-	Command_OnlyForClient;
-
 	Command_Printf("Client-only command called by %s", Client_GetName(ccdata->caller));
 }
 
@@ -127,10 +123,10 @@ Plugin_SetVersion(1)
 
 cs_bool Plugin_Load(void) { // Основная функция, вызывается после подгрузки плагина.
   Event_RegisterVoid(EVT_ONMESSAGE, onmesgfunc); // Регистрация обработчика эвента.
-  COMMAND_ADD(PlugTest); // Регистрация обработчика команд.
-  COMMAND_ADD(Atoggle);
-	COMMAND_ADD(SelfDestroy);
-	COMMAND_ADD(ClientOnly);
+  COMMAND_ADD(PlugTest, CMDF_NONE); // Регистрация обработчика команд.
+  COMMAND_ADD(Atoggle, CMDF_OP);
+	COMMAND_ADD(SelfDestroy, CMDF_NONE);
+	COMMAND_ADD(ClientOnly, CMDF_CLIENT);
 	// Любая Log-функция принимает vararg и работает также, как и printf.
   Log_Info("Test plugin loaded"); // Отправка в консоль INFO сообщения.
   Log_Debug("It's a debug message");

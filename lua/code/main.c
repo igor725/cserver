@@ -309,7 +309,7 @@ cs_bool Plugin_Load() {
 	}
 	Iter_Close(&scIter);
 
-	COMMAND_ADD(Lua);
+	COMMAND_ADD(Lua, CMDF_OP);
 
 	Event_RegisterVoid(EVT_ONTICK, scrtick);
 	Event_RegisterVoid(EVT_ONHANDSHAKEDONE, scrhshake);
