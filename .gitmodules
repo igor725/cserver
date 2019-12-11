@@ -1,0 +1,12 @@
+[submodule "lua"]
+	path = lua
+	url = git@igvx.ru:cs-lua
+[submodule "worldedit"]
+	path = worldedit
+	url = git@igvx.ru:cs-worldedit
+[submodule "survival"]
+	path = survival
+	url = git@igvx.ru:cs-survival
+[submodule "test"]
+	path = test
+	url = git@igvx.ru:cs-test
