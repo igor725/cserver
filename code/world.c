@@ -208,16 +208,16 @@ static cs_bool ReadInfo(World* world, FILE* fp) {
 	while(File_Read(&id, 1, 1, fp) == 1) {
 		switch (id) {
 			case DT_DIM:
-				if(File_Read(&dims, sizeof(struct _SVec), 1, fp) != 1)
+				if(File_Read(&dims, sizeof(SVec), 1, fp) != 1)
 					return false;
 				World_SetDimensions(world, &dims);
 				break;
 			case DT_SV:
-				if(File_Read(&world->info->spawnVec, sizeof(struct _Vec), 1, fp) != 1)
+				if(File_Read(&world->info->spawnVec, sizeof(Vec), 1, fp) != 1)
 					return false;
 				break;
 			case DT_SA:
-				if(File_Read(&world->info->spawnAng, sizeof(struct _Ang), 1, fp) != 1)
+				if(File_Read(&world->info->spawnAng, sizeof(Ang), 1, fp) != 1)
 					return false;
 				break;
 			case DT_WT:
@@ -229,7 +229,7 @@ static cs_bool ReadInfo(World* world, FILE* fp) {
 					return false;
 				break;
 			case DT_COLORS:
-				if(File_Read(world->info->colors, sizeof(struct _Color3) * WORLD_COLORS_COUNT, 1, fp) != 1)
+				if(File_Read(world->info->colors, sizeof(Color3) * WORLD_COLORS_COUNT, 1, fp) != 1)
 					return false;
 				break;
 			case DT_END:

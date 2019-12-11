@@ -9,7 +9,7 @@ typedef void* ITER_DIR;
 typedef WIN32_FIND_DATA ITER_FILE;
 typedef void* Thread;
 typedef cs_uint32 TRET;
-typedef void* Waitable;
+typedef void Waitable;
 typedef CRITICAL_SECTION Mutex;
 typedef SOCKET Socket;
 #elif defined(POSIX)
@@ -29,10 +29,10 @@ typedef struct dirent* ITER_FILE;
 typedef void* TRET;
 typedef pthread_t* Thread;
 typedef pthread_mutex_t Mutex;
-typedef struct _Waitable {
+typedef struct {
 	cs_int32 pipefd[2];
 	char buf[2];
-} *Waitable;
+} Waitable;
 typedef cs_int32 Socket;
 #endif
 
@@ -110,11 +110,11 @@ API void Mutex_Free(Mutex* handle);
 API void Mutex_Lock(Mutex* handle);
 API void Mutex_Unlock(Mutex* handle);
 
-API Waitable Waitable_Create(void);
-API void Waitable_Free(Waitable handle);
-API void Waitable_Signal(Waitable handle);
-API void Waitable_Wait(Waitable handle);
-API void Waitable_Reset(Waitable handle);
+API Waitable* Waitable_Create(void);
+API void Waitable_Free(Waitable* handle);
+API void Waitable_Signal(Waitable* handle);
+API void Waitable_Wait(Waitable* handle);
+API void Waitable_Reset(Waitable* handle);
 
 API void Time_Format(char* buf, cs_size len);
 API cs_uint64 Time_GetMSec(void);

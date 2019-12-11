@@ -51,7 +51,8 @@ return;
 #define EXT_SETHOTBAR 0xB8703914ul
 #define EXT_MORETEXTURES 0xBFAA6298ul
 #define EXT_MOREBLOCKS 0xA349DCECul
-#define EXT_VELCTRL 0xF8DF4FF7
+#define EXT_SETSPAWN 0x9149FD59ul
+#define EXT_VELCTRL 0xF8DF4FF7ul
 
 typedef cs_bool(*packetHandler)(Client* client, const char* data);
 
@@ -144,6 +145,7 @@ void CPE_WriteDefineExBlock(Client* client, BlockDef* block);
 void CPE_WriteBulkBlockUpdate(Client* client, BulkBlockUpdate* bbu);
 void CPE_WriteSetTextColor(Client* client, Color4* color, char code);
 void CPE_WriteSetHotBar(Client* client, Order order, BlockID block);
+void CPE_WriteSetSpawnPoint(Client* client, Vec* pos, Ang* ang);
 void CPE_WriteVelocityControl(Client* client, Vec* velocity, cs_bool mode);
 void CPE_WriteWeatherType(Client* client, Weather type);
 void CPE_WriteTexturePack(Client* client, const char* url);

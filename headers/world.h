@@ -83,7 +83,7 @@ typedef struct _World {
 	cs_uint32 size;
 	WorldInfo* info;
 	cs_bool modified;
-	Waitable wait;
+	Waitable* wait;
 	cs_bool loaded;
 	cs_bool saveUnload;
 	cs_int32 process;

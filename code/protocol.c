@@ -261,7 +261,7 @@ static const struct extReg serverExtensions[] = {
 	// {"InstantMOTD", 1},
 	{"FastMap", 1},
 	{"SetHotbar", 1},
-	// {"SetSpawnpoint", 1},
+	{"SetSpawnpoint", 1},
 	{"VelocityControl", 1},
 	{NULL, 0}
 };
@@ -901,7 +901,23 @@ void CPE_WriteSetHotBar(Client* client, Order order, BlockID block) {
 	PacketWriter_End(client, 3);
 }
 
-// 0x2E - SetSpawn
+void CPE_WriteSetSpawnPoint(Client* client, Vec* pos, Ang* ang) {
+	PacketWriter_Start(client);
+
+	cs_int32 len;
+
+	*data++ = 0x2E;
+	if(Client_GetExtVer(client, EXT_ENTPOS)) {
+		Proto_WriteFlVec(&data, pos);
+		len = 15;
+	} else {
+		Proto_WriteFlSVec(&data, pos);
+		len = 9;
+	}
+	Proto_WriteAng(&data, ang);
+
+	PacketWriter_End(client, len);
+}
 
 void CPE_WriteVelocityControl(Client* client, Vec* velocity, cs_bool mode) {
 	PacketWriter_Start(client);

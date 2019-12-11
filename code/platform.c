@@ -460,29 +460,29 @@ void Mutex_Unlock(Mutex* handle) {
 	LeaveCriticalSection(handle);
 }
 
-Waitable Waitable_Create(void) {
-	Waitable handle = CreateEvent(NULL, true, false, NULL);
+Waitable* Waitable_Create(void) {
+	Waitable* handle = CreateEvent(NULL, true, false, NULL);
 	if(!handle) {
 		Error_PrintSys(true);
 	}
 	return handle;
 }
 
-void Waitable_Free(Waitable handle) {
+void Waitable_Free(Waitable* handle) {
 	if(!CloseHandle(handle)) {
 		Error_PrintSys(true);
 	}
 }
 
-void Waitable_Reset(Waitable handle) {
+void Waitable_Reset(Waitable* handle) {
 	ResetEvent(handle);
 }
 
-void Waitable_Signal(Waitable handle) {
+void Waitable_Signal(Waitable* handle) {
 	SetEvent(handle);
 }
 
-void Waitable_Wait(Waitable handle) {
+void Waitable_Wait(Waitable* handle) {
 	WaitForSingleObject(handle, INFINITE);
 }
 #elif defined(POSIX)
@@ -521,27 +521,27 @@ void Mutex_Unlock(Mutex* handle) {
 	}
 }
 
-Waitable Waitable_Create(void) {
-	Waitable handle = Memory_Alloc(1, sizeof(struct _Waitable));
+Waitable* Waitable_Create(void) {
+	Waitable* handle = Memory_Alloc(1, sizeof(Waitable));
 	pipe2(handle->pipefd, O_NONBLOCK);
 	return handle;
 }
 
-void Waitable_Free(Waitable handle) {
+void Waitable_Free(Waitable* handle) {
 	close(handle->pipefd[0]);
 	close(handle->pipefd[1]);
 	Memory_Free(handle);
 }
 
-void Waitable_Signal(Waitable handle) {
+void Waitable_Signal(Waitable* handle) {
 	write(handle->pipefd[1], &handle->buf, 1);
 }
 
-void Waitable_Reset(Waitable handle) {
+void Waitable_Reset(Waitable* handle) {
 	read(handle->pipefd[0], &handle->buf, 1);
 }
 
-void Waitable_Wait(Waitable handle) {
+void Waitable_Wait(Waitable* handle) {
 	struct pollfd pfd;
 	pfd.fd = handle->pipefd[0];
 	pfd.events = POLLRDNORM;

@@ -644,6 +644,14 @@ cs_bool Client_SetSkin(Client* client, const char* skin) {
 	return true;
 }
 
+cs_bool Client_SetSpawn(Client* client, Vec* pos, Ang* ang) {
+	if(Client_GetExtVer(client, EXT_SETSPAWN)) {
+		CPE_WriteSetSpawnPoint(client, pos, ang);
+		return true;
+	}
+	return false;
+}
+
 cs_bool Client_SetVelocity(Client* client, Vec* velocity, cs_bool mode) {
 	if(Client_GetExtVer(client, EXT_VELCTRL)) {
 		CPE_WriteVelocityControl(client, velocity, mode);

@@ -166,6 +166,7 @@ API cs_bool Client_SetHeld(Client* client, BlockID block, cs_bool canChange);
 API cs_bool Client_SetHotkey(Client* client, const char* action, cs_int32 keycode, cs_int8 keymod);
 API cs_bool Client_SetHotbar(Client* client, Order pos, BlockID block);
 API cs_bool Client_SetSkin(Client* client, const char* skin);
+API cs_bool Client_SetSpawn(Client* client, Vec* pos, Ang* ang);
 API cs_bool Client_SetVelocity(Client* client, Vec* velocity, cs_bool mode);
 API cs_bool Client_SetRotation(Client* client, cs_uint8 axis, cs_int32 value);
 API cs_bool Client_SetGroup(Client* client, cs_int16 gid);

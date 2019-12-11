@@ -115,11 +115,11 @@ EXP cs_int32 Plugin_ApiVer, Plugin_Version;
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
 #define MODE(b) (b ? Lang_Get(LANG_ENABLED) : Lang_Get(LANG_DISABLED))
 
-typedef struct _Color4 {
+typedef struct {
 	cs_int16 r, g, b, a;
 } Color4;
 
-typedef struct _Color3 {
+typedef struct {
 	cs_int16 r, g, b;
 } Color3;
 #endif

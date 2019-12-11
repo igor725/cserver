@@ -23,7 +23,7 @@ if(ent->type != expectedType) { \
 }
 
 CStore* Config_NewStore(const char* path) {
-	CStore* store = Memory_Alloc(1, sizeof(struct _CStore));
+	CStore* store = Memory_Alloc(1, sizeof(CStore));
 	store->path = String_AllocCopy(path);
 	return store;
 }
@@ -52,7 +52,7 @@ CEntry* Config_NewEntry(CStore* store, const char* key, cs_int32 type) {
 	CEntry* ent = Config_GetEntry(store, key);
 	if(ent) return ent;
 
-	ent = Memory_Alloc(1, sizeof(struct _CEntry));
+	ent = Memory_Alloc(1, sizeof(CEntry));
 	ent->key = String_AllocCopy(key);
 	ent->store = store;
 	ent->type = type;
