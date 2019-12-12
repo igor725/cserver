@@ -52,10 +52,10 @@ enum {
 
 enum {
 	MV_NONE = 0,
-	MV_COLORS = (1 << 0),
-	MV_PROPS = (1 << 1),
-	MV_TEXPACK = (1 << 2),
-	MV_WEATHER = (1 << 3)
+	MV_COLORS = (1 << 1),
+	MV_PROPS = (1 << 2),
+	MV_TEXPACK = (1 << 3),
+	MV_WEATHER = (1 << 4)
 };
 
 enum {

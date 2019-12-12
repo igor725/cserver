@@ -46,11 +46,11 @@ const char* Block_GetName(BlockID id) {
 }
 
 BlockDef* Block_New(BlockID id, const char* name, cs_uint8 flags) {
-	BlockDef* bdf = Memory_Alloc(1, sizeof(BlockDef));
-	bdf->name = String_AllocCopy(name);
-	bdf->flags = BDF_DYNALLOCED | flags;
-	bdf->id = id;
-	return bdf;
+	BlockDef* bdef = Memory_Alloc(1, sizeof(BlockDef));
+	bdef->name = String_AllocCopy(name);
+	bdef->flags = BDF_DYNALLOCED | flags;
+	bdef->id = id;
+	return bdef;
 }
 
 void Block_Free(BlockDef* bdef) {
@@ -60,10 +60,10 @@ void Block_Free(BlockDef* bdef) {
 	}
 }
 
-cs_bool Block_Define(BlockDef* block) {
-	if(Block_DefinitionsList[block->id]) return false;
-	block->flags &= ~(BDF_UPDATED | BDF_UNDEFINED);
-	Block_DefinitionsList[block->id] = block;
+cs_bool Block_Define(BlockDef* bdef) {
+	if(Block_DefinitionsList[bdef->id]) return false;
+	bdef->flags &= ~(BDF_UPDATED | BDF_UNDEFINED);
+	Block_DefinitionsList[bdef->id] = bdef;
 	return true;
 }
 

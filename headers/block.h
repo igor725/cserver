@@ -56,10 +56,10 @@ enum {
 };
 
 enum {
-	BDF_EXTENDED = (1 << 0),
-	BDF_DYNALLOCED = (1 << 1),
-	BDF_UPDATED = (1 << 2),
-	BDF_UNDEFINED = (1 << 3)
+	BDF_EXTENDED = (1 << 1),
+	BDF_DYNALLOCED = (1 << 2),
+	BDF_UPDATED = (1 << 3),
+	BDF_UNDEFINED = (1 << 4)
 };
 
 enum {
@@ -139,7 +139,7 @@ API cs_bool Block_IsValid(BlockID id);
 API const char* Block_GetName(BlockID id);
 
 API BlockDef* Block_New(BlockID id, const char* name, cs_uint8 flags);
-API cs_bool Block_Define(BlockDef* info);
+API cs_bool Block_Define(BlockDef* bdef);
 API cs_bool Block_Undefine(BlockID id);
 API void Block_UpdateDefinitions();
 

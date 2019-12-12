@@ -410,11 +410,9 @@ cs_uint32 World_GetOffset(World* world, SVec* pos) {
 }
 
 cs_bool World_SetBlockO(World* world, cs_uint32 offset, BlockID id) {
-	if(offset > 0) {
-		world->data[offset] = id;
-		world->modified = true;
-	} else return false;
-
+	if(offset == 0) return false;
+	world->data[offset] = id;
+	world->modified = true;
 	return true;
 }
 
