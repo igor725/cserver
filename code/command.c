@@ -87,10 +87,8 @@ cs_bool Command_UnregisterByFunc(cmdFunc func) {
 }
 
 COMMAND_FUNC(Info) {
-	const char* zver = zlibVersion();
-	uLong zflags = zlibCompileFlags();
-	const char* format =
-	"Some info about server:\r\n"
+	static const char* format =
+	"== Some info about server ==\r\n"
 	"OS: "
 	#if defined(WINDOWS)
 	"Windows\r\n"
@@ -104,7 +102,8 @@ COMMAND_FUNC(Info) {
 	Command_Printf(format,
 		GIT_COMMIT_SHA,
 		PLUGIN_API_NUM,
-		zver, zflags
+		zlibVersion(),
+		zlibCompileFlags()
 	);
 }
 
