@@ -25,7 +25,7 @@ static void HandleCommand(char* cmd) {
 		Log_Info(Lang_Get(LANG_CMDUNK));
 }
 
-static TRET ConsoleThreadProc(TARG param) {
+THREAD_FUNC(ConsoleThread) {
 	char buf[CON_STR_LEN] = {0};
 	(void)param;
 
@@ -37,5 +37,5 @@ static TRET ConsoleThreadProc(TARG param) {
 }
 
 void Console_Start(void) {
-	Thread_Create(ConsoleThreadProc, NULL, true);
+	Thread_Create(ConsoleThread, NULL, true);
 }

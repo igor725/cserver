@@ -134,7 +134,7 @@ cs_bool Heartbeat_CheckKey(Client* client) {
 	return String_CaselessCompare(hash_hex, key);
 }
 
-static TRET HeartbeatThreadProc(TARG param) {
+THREAD_FUNC(HeartbeatThread) {
 	(void)param;
 	while(true) {
 		DoRequest();
@@ -152,5 +152,5 @@ void Heartbeat_Start(cs_uint32 delay) {
 		File_Close(sfile);
 	}
 	Delay = delay * 1000;
-	Thread_Create(HeartbeatThreadProc, NULL, true);
+	Thread_Create(HeartbeatThread, NULL, true);
 }

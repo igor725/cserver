@@ -11,7 +11,7 @@
 #include "lang.h"
 #include <zlib.h>
 
-static TRET ClientThreadProc(TARG param);
+THREAD_FUNC(ClientThread);
 static AssocType* headAssocType = NULL;
 static CGroup* headCGroup = NULL;
 
@@ -196,7 +196,7 @@ cs_bool Client_Add(Client* client) {
 	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
 		if(!Clients_List[i]) {
 			client->id = i;
-			client->thread[0] = Thread_Create(ClientThreadProc, client, false);
+			client->thread[0] = Thread_Create(ClientThread, client, false);
 			Clients_List[i] = client;
 			return true;
 		}
@@ -286,7 +286,7 @@ cs_bool Client_Despawn(Client* client) {
 	return true;
 }
 
-static TRET wSendThread(TARG param) {
+THREAD_FUNC(WorldSendThread) {
 	Client* client = param;
 	if(client->closed) return 0;
 	PlayerData* pd = client->playerData;
@@ -389,7 +389,7 @@ cs_bool Client_ChangeWorld(Client* client, World* world) {
 	pd->world = world;
 	pd->state = STATE_MOTD;
 	if(!world->loaded) World_Load(world);
-	client->thread[1] = Thread_Create(wSendThread, client, false);
+	client->thread[1] = Thread_Create(WorldSendThread, client, false);
 	return true;
 }
 
@@ -895,7 +895,7 @@ static void PacketReceiverRaw(Client* client) {
 		client->closed = true;
 }
 
-static TRET ClientThreadProc(TARG param) {
+THREAD_FUNC(ClientThread) {
 	Client* client = param;
 
 	while(!client->closed) {

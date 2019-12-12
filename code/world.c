@@ -243,7 +243,7 @@ static cs_bool ReadInfo(World* world, FILE* fp) {
 	return false;
 }
 
-static TRET wSaveThread(TARG param) {
+THREAD_FUNC(WorldSaveThread) {
 	World* world = param;
 
 	cs_bool succ = false;
@@ -313,11 +313,11 @@ cs_bool World_Save(World* world, cs_bool unload) {
 	world->process = WP_SAVING;
 	world->saveUnload = unload;
 	Waitable_Reset(world->wait);
-	Thread_Create(wSaveThread, world, true);
+	Thread_Create(WorldSaveThread, world, true);
 	return true;
 }
 
-static TRET wLoadThread(TARG param) {
+THREAD_FUNC(WorldLoadThread) {
 	World* world = param;
 
 	cs_bool error = true;
@@ -387,7 +387,7 @@ cs_bool World_Load(World* world) {
 
 	world->process = WP_LOADING;
 	Waitable_Reset(world->wait);
-	Thread_Create(wLoadThread, world, true);
+	Thread_Create(WorldLoadThread, world, true);
 	return true;
 }
 

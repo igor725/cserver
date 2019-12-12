@@ -4,7 +4,6 @@
 
 #if defined(WINDOWS)
 #include <ws2tcpip.h>
-
 typedef void* ITER_DIR;
 typedef WIN32_FIND_DATA ITER_FILE;
 typedef void* Thread;
@@ -36,6 +35,12 @@ typedef struct {
 typedef cs_int32 Socket;
 #endif
 
+typedef void* TARG;
+typedef TRET(*TFUNC)(TARG);
+
+#define THREAD_FUNC(N) \
+static TRET N(TARG param)
+
 enum {
 	ITER_INITIAL,
 	ITER_READY,
@@ -51,9 +56,6 @@ typedef struct {
   ITER_DIR dirHandle;
   ITER_FILE fileHandle;
 } dirIter;
-
-typedef void* TARG;
-typedef TRET(*TFUNC)(TARG);
 
 API void* Memory_Alloc(cs_size num, cs_size size);
 API void* Memory_Realloc(void* buf, cs_size old, cs_size new);

@@ -65,7 +65,7 @@ static void AcceptFunc(void) {
 	}
 }
 
-static TRET AcceptThreadProc(TARG param) {
+THREAD_FUNC(AcceptThread) {
 	(void)param;
 	while(Server_Active) AcceptFunc();
 	return 0;
@@ -191,7 +191,7 @@ void Server_InitialWork(void) {
 	Server_Active = true;
 	const char* ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
 	cs_uint16 port = Config_GetInt16ByKey(cfg, CFG_SERVERPORT_KEY);
-	Thread_Create(AcceptThreadProc, NULL, true);
+	Thread_Create(AcceptThread, NULL, true);
 	Bind(ip, port);
 	Event_Call(EVT_POSTSTART, NULL);
 	Console_Start();
