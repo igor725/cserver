@@ -18,6 +18,11 @@ PLUGIN_BUILD=0
 PLUGIN_INSTALL=0
 PLUGINS_DIR="$ROOT/out/plugins"
 
+notaplugin () {
+	echo "Looks like the specified directory is not a plugin."
+	exit 1;
+}
+
 dowait () {
 	wait $1
 	if [ $? -ne 0 ]; then
@@ -35,6 +40,8 @@ do
 			PLUGIN_NAME="$a"
 			OUTBIN="$a.so"
 			ROOT="../cs-$a"
+			if [ ! -d $ROOT ]; then notaplugin; fi
+			if [ ! -d $ROOT/code ]; then notaplugin; fi
 		else
 			if [ "$a" == "install" ]; then
 				PLUGIN_INSTALL=1
