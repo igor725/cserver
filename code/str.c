@@ -53,17 +53,17 @@ cs_size String_Length(const char* str) {
 }
 
 cs_size String_Append(char* dst, cs_size len, const char* src) {
-	cs_size end = String_Length(dst);
-	return String_Copy(dst + end, len - end, src);
+	cs_size curr_len = String_Length(dst);
+	return String_Copy(dst + curr_len, len - curr_len, src);
 }
 
 cs_size String_Copy(char* dst, cs_size len, const char* src) {
-	cs_size _len = len;
+	cs_size avail = len;
 
-	while(_len > 1 && (*dst++ = *src++) != '\0') --_len;
-	*dst = 0;
+	while(avail > 1 && (*dst++ = *src++) != '\0') --avail;
+	*dst = '\0';
 
-	return len - _len;
+	return len - avail;
 }
 
 char* String_CopyUnsafe(char* dst, const char* src) {
@@ -90,9 +90,9 @@ cs_uint32 String_FormatError(cs_uint32 code, char* buf, cs_size buflen, va_list*
 
 cs_int32 String_FormatBufVararg(char* buf, cs_size len, const char* str, va_list* args) {
 #if defined(WINDOWS)
-	return vsprintf_s(buf, len, str,* args);
+	return vsprintf_s(buf, len, str, *args);
 #elif defined(POSIX)
-	return vsnprintf(buf, len, str,* args);
+	return vsnprintf(buf, len, str, *args);
 #endif
 }
 
@@ -130,24 +130,23 @@ const char* String_FromArgument(const char* args, cs_int32 index) {
 	return NULL;
 }
 
-cs_size String_GetArgument(const char* args, char* arg, cs_size arrsz, cs_int32 index) {
-	if(!args || arrsz == 0) return 0;
-	cs_size start_len = arrsz;
+cs_size String_GetArgument(const char* args, char* arg, cs_size len, cs_int32 index) {
+	if(len == 0) return 0;
+	cs_size avail = len;
 
 	while(*args != '\0') {
-		if(index > 0) {
-			if(*args++ == ' ') --index;
-			if(*args == '\0') return 0;
-		} else {
+		if(index > 0 && *args++ == ' ')
+			--index;
+		else {
 			do {
 				*arg++ = *args++;
-			} while(--arrsz > 1 && *args != '\0' && *args != ' ');
+			} while(--avail > 1 && *args != '\0' && *args != ' ');
 			*arg = '\0';
 			break;
 		}
 	}
 
-	return start_len - arrsz;
+	return len - avail;
 }
 
 /*
