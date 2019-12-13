@@ -94,6 +94,8 @@ IF "%BUILD_PLUGIN%"=="1" (
 	) else (
 		set OUTDIR=!PROJECT_ROOT!\out\%ARCH%
 	)
+	IF NOT EXIST !PROJECT_ROOT! goto notaplugin
+	IF NOT EXIST !PROJECT_ROOT!\code goto notaplugin
 	echo Building plugin: %PLUGNAME%
 ) else (
 	set OUTDIR=%SVOUTDIR%
@@ -179,6 +181,10 @@ goto end
 :vcerror
 echo Error: Script must be runned from VS Native Tools Command Prompt.
 echo Note: Also you can call "vcvars64" or "vcvars32" to configure VS env.
+goto end
+
+:notaplugin
+echo Looks like the specified directory is not a plugin.
 goto end
 
 :copyerr
