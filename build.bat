@@ -54,15 +54,17 @@ SHIFT
 set PLUGNAME=%1
 SHIFT
 
-IF "%1"=="install" (
-	set PLUGINSTALL=1
-	SHIFT
-)
 IF NOT "%1"=="" (goto libloop) else (goto continue)
 
 :libloop
+IF "%1"=="install" (
+	SET PLUGIN_INSTALL=1
+	SHIFT
+)
 IF "%1"=="" goto continue
 set MSVC_LIBS=%MSVC_LIBS% %1.lib
+
+:libloop_shift
 SHIFT
 goto libloop
 
@@ -84,10 +86,14 @@ IF "%DEBUG%"=="0" (echo Debug: disabled) else (
 IF "%BUILD_PLUGIN%"=="1" (
   set COMPILER=cl /LD
 	set SVPLUGDIR=%SVOUTDIR%\plugins
-	IF "%DEBUG%"=="1" (set OUTDIR=%PLUGNAME%\out\%ARCH%dbg) else (set OUTDIR=%PLUGNAME%\out\%ARCH%)
   set BINNAME=%PLUGNAME%
-  set OBJDIR=%PLUGNAME%\objs
-  set PROJECT_ROOT=.\%PLUGNAME%
+	set PROJECT_ROOT=..\cs-%PLUGNAME%
+  set OBJDIR=!PROJECT_ROOT!\objs
+	IF "%DEBUG%"=="1" (
+		set OUTDIR=!PROJECT_ROOT!\out\%ARCH%dbg
+	) else (
+		set OUTDIR=!PROJECT_ROOT!\out\%ARCH%
+	)
 	echo Building plugin: %PLUGNAME%
 ) else (
 	set OUTDIR=%SVOUTDIR%
@@ -137,7 +143,7 @@ IF EXIST %PROJECT_ROOT%\version.rc (
 %COMPILER% %PROJECT_ROOT%\code\*.c /I%PROJECT_ROOT%\headers %MSVC_OPTS% %MSVC_LIBS%
 
 IF "%BUILD_PLUGIN%"=="1" (
-	IF "%PLUGINSTALL%"=="1" (
+	IF "%PLUGIN_INSTALL%"=="1" (
 		IF NOT EXIST !SVPLUGDIR! MD !SVPLUGDIR!
 		IF "%DEBUG%"=="1" (
 			copy /y !OUTDIR!\%BINNAME%.* !SVPLUGDIR!

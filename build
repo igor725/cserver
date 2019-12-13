@@ -10,20 +10,13 @@ WARN=""
 ROOT="."
 CC="$CC -fdiagnostics-color=always"
 LNK="$CC -rdynamic"
-CFLAGS="-pipe -fPIC -funwind-tables"
+CFLAGS="-pipe -fPIC"
 LIBS="-lz -lpthread -ldl -lcrypto"
 OUTBIN="server"
 COMMIT_SHA="-DGIT_COMMIT_SHA=\"$(git rev-parse --short HEAD)\""
 PLUGIN_BUILD=0
 PLUGIN_INSTALL=0
 PLUGINS_DIR="$ROOT/out/plugins"
-STDERR="$ROOT/out/stderr"
-OUTDIR="$ROOT/out"
-
-clean () {
-	rm -rf objs/* out/server
-	exit 0
-}
 
 dowait () {
 	wait $1
@@ -33,8 +26,6 @@ dowait () {
 	fi
 }
 
-if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
-
 for a in "$@"
 do
 	if [ $PLUGIN_BUILD -eq 1 ]; then
@@ -43,7 +34,7 @@ do
 			LNK="$CC -shared"
 			PLUGIN_NAME="$a"
 			OUTBIN="$a.so"
-			ROOT="$a"
+			ROOT="../cs-$a"
 		else
 			if [ "$a" == "install" ]; then
 				PLUGIN_INSTALL=1
@@ -53,11 +44,10 @@ do
 		fi
 		continue
 	fi
-	if [ "$a" == "clean" ]; then clean; fi
 	if [ "$a" == "pb" ]; then PLUGIN_BUILD=1; fi
 	if [ "$a" == "wall" ]; then WARN="-Wall -Wextra -pedantic-errors"; fi
 	if [ "$a" == "nowarn" ]; then WARN="-W0"; fi
-	if [ "$a" == "dbg" ]; then DEBUG=1; OPT="-O0"; fi
+	if [ "$a" == "dbg" ]; then DEBUG=1; CFLAGS="$CFLAGS -g"; OPT="-O0"; fi
 	if [ "$a" == "o0" ]; then OPT="-O0"; fi
 	if [ "$a" == "o1" ]; then OPT="-O1"; fi
 	if [ "$a" == "o2" ]; then OPT="-O2"; fi
@@ -65,15 +55,15 @@ do
 	if [ "$a" == "of" ]; then OPT="-Ofast"; fi
 done
 
-if [ $DEBUG -eq 1 ]; then
-	CFLAGS="$CFLAGS -g"
-	OPT="-O0"
-fi
+STDERR="$ROOT/out/stderr"
+OBJDIR="$ROOT/objs"
+OUTDIR="$ROOT/out"
+
+if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
+if [ ! -d "$OBJDIR" ]; then mkdir $OBJDIR; fi
 
 echo -n "Compiling..."
-OBJDIR="$ROOT/objs"
 OBJS=""
-if [ ! -d "$OBJDIR" ]; then mkdir $OBJDIR; fi
 echo -n "" > $STDERR
 pids=()
 cnt=0
@@ -93,6 +83,7 @@ done
 for pid in ${pids[@]}; do
 	dowait $pid
 done
+
 echo -ne "done\nLinking..."
 $LNK -o "$OUTDIR/$OUTBIN" $LIBS $OBJS 2>> $STDERR
 if [ $? -ne 0 ]; then
