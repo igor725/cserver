@@ -17,7 +17,7 @@ API const char* String_FirstChar(const char* str, char sym);
 API const char* String_AllocCopy(const char* str);
 API cs_size String_GetArgument(const char* args, char* arg, cs_size len, cs_int32 index);
 API const char* String_FromArgument(const char* args, cs_int32 index);
-cs_uint32 String_CRC32(const cs_uint8* str);
+API cs_uint32 String_CRC32(const cs_uint8* str);
 API cs_int32 String_ToInt(const char* str);
 API cs_int32 String_HexToInt(const char* str);
 API float String_ToFloat(const char* str);

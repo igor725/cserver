@@ -141,9 +141,10 @@ cs_size String_GetArgument(const char* args, char* arg, cs_size len, cs_int32 in
 	cs_size avail = len;
 
 	while(*args != '\0') {
-		if(index > 0 && *args++ == ' ')
-			--index;
-		else {
+		if(index > 0) {
+			if(*args++ == ' ') --index;
+			if(*args == '\0') return 0;
+		} else {
 			do {
 				*arg++ = *args++;
 			} while(--avail > 1 && *args != '\0' && *args != ' ');
