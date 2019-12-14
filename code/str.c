@@ -4,24 +4,23 @@
 #include <string.h>
 #include <stdlib.h>
 
-char* String_FindSubstr(const char* str, const char* strsrch) {
-	return strstr(str, strsrch);
-}
-
 cs_bool String_CaselessCompare(const char* str1, const char* str2) {
-#if defined(WINDOWS)
-	return _stricmp(str1, str2) == 0;
-#elif defined(POSIX)
-	return strcasecmp(str1, str2) == 0;
-#endif
+	cs_uint8 c1, c2;
+
+	while(true) {
+		c1 = *str1++, c2 = *str2++;
+		if(c1 >= 'A' && c1 <= 'Z') c1 += 32;
+		if(c2 >= 'A' && c2 <= 'Z') c2 += 32;
+		if(c1 != c2) return false;
+		if(c1 == '\0' && c2 == '\0') return true;
+	}
 }
 
 cs_bool String_CaselessCompare2(const char* str1, const char* str2, cs_size len) {
 	cs_uint8 c1, c2;
 
-	while(len-- > 0) {
-		c1 = *str1++;
-		c2 = *str2++;
+	while(len--) {
+		c1 = *str1++, c2 = *str2++;
 		if(c1 >= 'A' && c1 <= 'Z') c1 += 32;
 		if(c2 >= 'A' && c2 <= 'Z') c2 += 32;
 		if(c1 != c2) return false;
@@ -31,7 +30,13 @@ cs_bool String_CaselessCompare2(const char* str1, const char* str2, cs_size len)
 }
 
 cs_bool String_Compare(const char* str1, const char* str2) {
-	return strcmp(str1, str2) == 0;
+	cs_uint8 c1, c2;
+
+	while(true) {
+		c1 = *str1++, c2 = *str2++;
+		if(c1 != c2) return false;
+		if(c1 == '\0' && c2 == '\0') return true;
+	}
 }
 
 cs_int32 String_ToInt(const char* str) {
@@ -47,7 +52,9 @@ float String_ToFloat(const char* str) {
 }
 
 cs_size String_Length(const char* str) {
-	return strlen(str);
+	const char* s;
+	for (s = str; *s; ++s);
+	return s - str;
 }
 
 cs_size String_Append(char* dst, cs_size len, const char* src) {
@@ -62,10 +69,6 @@ cs_size String_Copy(char* dst, cs_size len, const char* src) {
 	*dst = '\0';
 
 	return len - avail;
-}
-
-char* String_CopyUnsafe(char* dst, const char* src) {
-	return strcpy(dst, src);
 }
 
 cs_uint32 String_FormatError(cs_uint32 code, char* buf, cs_size buflen, va_list* args) {
@@ -111,9 +114,14 @@ const char* String_FirstChar(const char* str, char sym) {
 	return strchr(str, sym);
 }
 
+char* String_FindSubstr(const char* str, const char* strsrch) {
+	return strstr(str, strsrch);
+}
+
 const char* String_AllocCopy(const char* str) {
-	char* ptr = Memory_Alloc(1, String_Length(str) + 1);
-	String_CopyUnsafe(ptr, str);
+	cs_size len = String_Length(str) + 1;
+	char* ptr = Memory_Alloc(1, len);
+	String_Copy(ptr, len, str);
 	return (const char*)ptr;
 }
 

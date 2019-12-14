@@ -9,7 +9,6 @@ API cs_bool String_CaselessCompare2(const char* str1, const char* str2, cs_size 
 API cs_size String_Length(const char* str);
 API cs_size String_Append(char* dst, cs_size len, const char* src);
 API cs_size String_Copy(char* dst, cs_size len, const char* src);
-API char* String_CopyUnsafe(char* dst, const char* src);
 API cs_uint32 String_FormatError(cs_uint32 code, char* buf, cs_size buflen, va_list* args);
 API cs_int32 String_FormatBufVararg(char* buf, cs_size len, const char* str, va_list* args);
 API cs_int32 String_FormatBuf(char* buf, cs_size len, const char* str, ...);
