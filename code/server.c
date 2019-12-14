@@ -38,7 +38,7 @@ static void AcceptFunc(void) {
 			else continue;
 
 			if(sameAddrCount > maxConnPerIP) {
-				Client_Kick(tmp, Lang_Get(LANG_SVMANYCONN));
+				Client_Kick(tmp, Lang_Get(LANG_KICKMANYCONN));
 				Client_Free(tmp);
 				return;
 			}

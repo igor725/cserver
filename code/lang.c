@@ -1,10 +1,8 @@
 #include "core.h"
 #include "lang.h"
 
-const char* Lang_Get(cs_int32 langid) {
-	switch (langid) {
-		case LANG_SUCC:
-			return "successfully";
+const char* Lang_Get(LangID id) {
+	switch (id) {
 		case LANG_UNKERR:
 			return "Unexpected error.";
 		case LANG_DISABLED:
@@ -14,8 +12,6 @@ const char* Lang_Get(cs_int32 langid) {
 
 		case LANG_SVSTART:
 			return "Server started on %s:%d.";
-		case LANG_SVMANYCONN:
-			return "Too many connections from one IP.";
 		case LANG_SVPLCONN:
 			return "Player %s connected with %s.";
 		case LANG_SVPLDISCONN:
@@ -57,6 +53,8 @@ const char* Lang_Get(cs_int32 langid) {
 			return "Invalid block ID";
 		case LANG_KICKPACKETSPAM:
 			return "Too many packets per second";
+		case LANG_KICKMANYCONN:
+			return "Too many connections from one IP";
 
 		case LANG_CMDUSAGE:
 			return "Usage: %s.";

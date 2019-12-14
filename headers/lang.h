@@ -1,13 +1,11 @@
 #ifndef LANG_H
 #define LANG_H
 enum {
-	LANG_SUCC,
 	LANG_UNKERR,
 	LANG_DISABLED,
 	LANG_ENABLED,
 
 	LANG_SVSTART,
-	LANG_SVMANYCONN,
 	LANG_SVPLCONN,
 	LANG_SVPLDISCONN,
 	LANG_HBEAT,
@@ -29,6 +27,7 @@ enum {
 	LANG_KICKPACKETREAD,
 	LANG_KICKBLOCKID,
 	LANG_KICKPACKETSPAM,
+	LANG_KICKMANYCONN,
 
 	LANG_CMDUSAGE,
 	LANG_CMDAD,
@@ -64,5 +63,6 @@ enum {
 	LANG_INFWWAIT
 };
 
-API const char* Lang_Get(cs_int32 langid);
+typedef cs_uint16 LangID;
+API const char* Lang_Get(LangID id);
 #endif // LANG_H
