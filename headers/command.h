@@ -15,6 +15,13 @@ return true;
 String_FormatBuf(ccdata->out, MAX_CMD_OUT, f, __VA_ARGS__); \
 return true;
 
+#define Command_Append(str) \
+String_Append(ccdata->out, MAX_CMD_OUT, str);
+
+#define Command_Appendf(buf, sz, fmt, ...) \
+String_FormatBuf(buf, sz, fmt, __VA_ARGS__); \
+String_Append(ccdata->out, MAX_CMD_OUT, buf);
+
 #define Command_PrintUsage \
 Command_Printf(Lang_Get(LANG_CMDUSAGE), cmdUsage);
 

@@ -190,12 +190,12 @@ COMMAND_FUNC(CFG) {
 			Command_Print("This entry not found in \"server.cfg\" store.");
 		} else if(String_CaselessCompare(subcommand, "print")) {
 			CEntry* ent = Server_Config->firstCfgEntry;
-			String_Copy(ccdata->out, MAX_CMD_OUT, "Server config entries:");
+			Command_Append("Server config entries:");
 
 			while(ent) {
 				if(Config_ToStr(ent, value, MAX_CFG_LEN)) {
-					String_FormatBuf(key, MAX_CFG_LEN, "\r\n%s = %s (%s)", ent->key, value, Config_TypeName(ent->type));
-					String_Append(ccdata->out, MAX_CMD_OUT, key);
+					const char* type = Config_TypeName(ent->type);
+					Command_Appendf(key, MAX_CFG_LEN, "\r\n%s = %s (%s)", ent->key, value, type);
 				}
 				ent = ent->next;
 			}
@@ -264,17 +264,16 @@ COMMAND_FUNC(Plugins) {
 		} else if(String_CaselessCompare(subcommand, "list")) {
 			cs_int32 idx = 1;
 			char pluginfo[64];
-			String_Copy(ccdata->out, MAX_CMD_OUT, "Plugins list:");
+			Command_Append("Plugins list:");
 
 			for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
 				plugin = Plugins_List[i];
 				if(plugin) {
 					if(idx > 10) {
-						String_Append(ccdata->out, MAX_CMD_OUT, "\r\n(Can't show full plugins list)");
+						Command_Append("\r\n(Can't show full plugins list)");
 						break;
 					}
-					String_FormatBuf(pluginfo, 64, "\r\n%d.%s v%d", idx++, plugin->name, plugin->version);
-					String_Append(ccdata->out, MAX_CMD_OUT, pluginfo);
+					Command_Appendf(pluginfo, 64, "\r\n%d.%s v%d", idx++, plugin->name, plugin->version);
 				}
 			}
 
