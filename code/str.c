@@ -19,17 +19,15 @@ cs_bool String_CaselessCompare(const char* str1, const char* str2) {
 cs_bool String_CaselessCompare2(const char* str1, const char* str2, cs_size len) {
 	cs_uint8 c1, c2;
 
-	for(;;) {
-		if(len == 0) return true;
-		c1 = *str1;
-		c2 = *str2;
-		if(c1 >= 'A' && c1 <= 'Z') c1 += 'a' - 'A';
-		if(c2 >= 'A' && c2 <= 'Z') c2 += 'a' - 'A';
+	while(len-- > 0) {
+		c1 = *str1++;
+		c2 = *str2++;
+		if(c1 >= 'A' && c1 <= 'Z') c1 += 32;
+		if(c2 >= 'A' && c2 <= 'Z') c2 += 32;
 		if(c1 != c2) return false;
-		++str1;
-		++str2;
-		--len;
 	}
+
+	return true;
 }
 
 cs_bool String_Compare(const char* str1, const char* str2) {
@@ -120,7 +118,7 @@ const char* String_AllocCopy(const char* str) {
 }
 
 const char* String_FromArgument(const char* args, cs_int32 index) {
-	if(!args || *args == '\0') return NULL;
+	if(!args) return NULL;
 
 	do {
 		if(index > 0 && *args == ' ') --index;
@@ -131,7 +129,7 @@ const char* String_FromArgument(const char* args, cs_int32 index) {
 }
 
 cs_size String_GetArgument(const char* args, char* arg, cs_size len, cs_int32 index) {
-	if(len == 0) return 0;
+	if(len == 0 || args == NULL) return 0;
 	cs_size avail = len;
 
 	while(*args != '\0') {

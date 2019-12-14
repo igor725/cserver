@@ -95,10 +95,9 @@ COMMAND_FUNC(Info) {
 	#elif defined(POSIX)
 	"Unix-like\r\n"
 	#endif
-	"Modules:\r\n"
-	"  Server core: %s\r\n"
-	"  PluginAPI version: %d\r\n"
-	"  zlib version: %s (build flags: %d)";
+	"Server core: %s\r\n"
+	"PluginAPI version: %d\r\n"
+	"zlib version: %s (build flags: %d)";
 	Command_Printf(format,
 		GIT_COMMIT_SHA,
 		PLUGIN_API_NUM,
@@ -483,7 +482,7 @@ cs_bool Command_Handle(char* str, Client* caller) {
 			SendOutput(caller, Lang_Get(LANG_CMDONLYCL));
 			return true;
 		}
-		if(cmd->flags & CMDF_OP && (caller ? !Client_IsOP(caller) : false)) {
+		if(cmd->flags & CMDF_OP && (caller && !Client_IsOP(caller))) {
 			SendOutput(caller, Lang_Get(LANG_CMDAD));
 			return true;
 		}
