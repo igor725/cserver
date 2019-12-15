@@ -22,12 +22,15 @@ String_Append(ccdata->out, MAX_CMD_OUT, str);
 String_FormatBuf(buf, sz, fmt, __VA_ARGS__); \
 String_Append(ccdata->out, MAX_CMD_OUT, buf);
 
+#define Command_GetArg(a, s, n) \
+String_GetArgument(ccdata->args, a, s, n)
+
 #define Command_PrintUsage \
 Command_Printf(Lang_Get(LANG_CMDUSAGE), cmdUsage);
 
 // TODO: Сделать это добро функцией
 #define Command_ArgToWorldName(wn, idx) \
-if(String_GetArgument(ccdata->args, wn, 64, idx)) { \
+if(Command_GetArg(wn, 64, idx)) { \
 	const char* wndot = String_LastChar(wn, '.'); \
 	if(!wndot || !String_CaselessCompare(wndot, ".cws")) \
 		String_Append(wn, 64, ".cws"); \

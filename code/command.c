@@ -110,7 +110,7 @@ COMMAND_FUNC(OP) {
 	Command_SetUsage("/op <playername>");
 
 	char clientname[64];
-	if(String_GetArgument(ccdata->args, clientname, 64, 0)) {
+	if(Command_GetArg(clientname, 64, 0)) {
 		Client* tg = Client_GetByName(clientname);
 		if(tg) {
 			PlayerData* pd = tg->playerData;
@@ -142,16 +142,16 @@ COMMAND_FUNC(CFG) {
 	Command_SetUsage("/cfg <set/get/print> [key] [value]");
 	char subcommand[8], key[MAX_CFG_LEN], value[MAX_CFG_LEN];
 
-	if(String_GetArgument(ccdata->args, subcommand, 8, 0)) {
+	if(Command_GetArg(subcommand, 8, 0)) {
 		if(String_CaselessCompare(subcommand, "set")) {
-			if(!String_GetArgument(ccdata->args, key, MAX_CFG_LEN, 1)) {
+			if(!Command_GetArg(key, MAX_CFG_LEN, 1)) {
 				Command_PrintUsage;
 			}
 			CEntry* ent = Config_GetEntry(Server_Config, key);
 			if(!ent) {
 				Command_Print("This entry not found in \"server.cfg\" store.");
 			}
-			if(!String_GetArgument(ccdata->args, value, MAX_CFG_LEN, 2)) {
+			if(!Command_GetArg(value, MAX_CFG_LEN, 2)) {
 				Command_PrintUsage;
 			}
 
@@ -176,7 +176,7 @@ COMMAND_FUNC(CFG) {
 			}
 			Command_Print("Entry value changed successfully.");
 		} else if(String_CaselessCompare(subcommand, "get")) {
-			if(!String_GetArgument(ccdata->args, key, MAX_CFG_LEN, 1)) {
+			if(!Command_GetArg(key, MAX_CFG_LEN, 1)) {
 				Command_PrintUsage;
 			}
 
@@ -208,7 +208,7 @@ COMMAND_FUNC(CFG) {
 }
 
 #define GetPluginName \
-if(!String_GetArgument(ccdata->args, name, 64, 1)) { \
+if(!Command_GetArg(name, 64, 1)) { \
 	Command_Print(Lang_Get(LANG_CPINVNAME)); \
 } \
 const char* lc = String_LastChar(name, '.'); \
@@ -221,7 +221,7 @@ COMMAND_FUNC(Plugins) {
 	char subcommand[8], name[64];
 	Plugin* plugin;
 
-	if(String_GetArgument(ccdata->args, subcommand, 8, 0)) {
+	if(Command_GetArg(subcommand, 8, 0)) {
 		if(String_CaselessCompare(subcommand, "load")) {
 			GetPluginName;
 			if(!Plugin_Get(name)) {
@@ -303,7 +303,7 @@ COMMAND_FUNC(Kick) {
 	Command_SetUsage("/kick <player> [reason]");
 
 	char playername[64];
-	if(String_GetArgument(ccdata->args, playername, 64, 0)) {
+	if(Command_GetArg(playername, 64, 0)) {
 		Client* tg = Client_GetByName(playername);
 		if(tg) {
 			const char* reason = String_FromArgument(ccdata->args, 1);
@@ -321,7 +321,7 @@ COMMAND_FUNC(SetModel) {
 	Command_SetUsage("/model <modelname/blockid>");
 
 	char modelname[64];
-	if(String_GetArgument(ccdata->args, modelname, 64, 0)) {
+	if(Command_GetArg(modelname, 64, 0)) {
 		if(!Client_SetModelStr(ccdata->caller, modelname)) {
 			Command_Print("Invalid model name.");
 		}
@@ -350,9 +350,9 @@ COMMAND_FUNC(GenWorld) {
 	Command_SetUsage("/genworld <name> <x> <y> <z>");
 
 	char worldname[64], x[6], y[6], z[6];
-	if(String_GetArgument(ccdata->args, x, 6, 1) &&
-	String_GetArgument(ccdata->args, y, 6, 2) &&
-	String_GetArgument(ccdata->args, z, 6, 3)) {
+	if(Command_GetArg(x, 6, 1) &&
+	Command_GetArg(y, 6, 2) &&
+	Command_GetArg(z, 6, 3)) {
 		cs_uint16 _x = (cs_uint16)String_ToInt(x),
 		_y = (cs_uint16)String_ToInt(y),
 		_z = (cs_uint16)String_ToInt(z);
