@@ -10,7 +10,7 @@
 #include "command.h"
 #include "lang.h"
 
-Packet packetsList[MAX_PACKETS];
+Packet* packetsList[MAX_PACKETS];
 cs_uint16 extensionsCount;
 CPEExt headExtension;
 
@@ -174,8 +174,8 @@ cs_bool Proto_ReadClientPos(Client* client, const char* data) {
 	PlayerData* cpd = client->playerData;
 	Vec* vec = &cpd->position;
 	Ang* ang = &cpd->angle;
-	Vec newVec = {0};
-	Ang newAng = {0};
+	Vec newVec;
+	Ang newAng;
 	cs_bool changed = false;
 
 	if(Client_GetExtVer(client, EXT_ENTPOS))
@@ -200,17 +200,17 @@ cs_bool Proto_ReadClientPos(Client* client, const char* data) {
 	return changed;
 }
 
-void Packet_Register(cs_int32 id, cs_uint16 size, packetHandler handler) {
-	Packet tmp = Memory_Alloc(1, sizeof(struct packet));
+void Packet_Register(cs_uint8 id, cs_uint16 size, packetHandler handler) {
+	Packet* tmp = Memory_Alloc(1, sizeof(Packet));
 	tmp->size = size;
 	tmp->handler = handler;
 	packetsList[id] = tmp;
 }
 
-void Packet_RegisterCPE(cs_int32 id, cs_uint32 extCRC32, cs_int32 version, cs_uint16 size, packetHandler handler) {
-	Packet tmp = packetsList[id];
-	tmp->extCRC32 = extCRC32;
-	tmp->extVersion = version;
+void Packet_RegisterCPE(cs_uint8 id, cs_uint32 crc32, cs_int32 ver, cs_uint16 size, packetHandler handler) {
+	Packet* tmp = packetsList[id];
+	tmp->extCRC32 = crc32;
+	tmp->extVersion = ver;
 	tmp->cpeHandler = handler;
 	tmp->extSize = size;
 	tmp->haveCPEImp = true;
@@ -284,7 +284,7 @@ void Packet_RegisterDefault(void) {
 	Packet_RegisterCPE(0x08, EXT_ENTPOS, 1, 15, NULL);
 }
 
-Packet Packet_Get(cs_int32 id) {
+Packet* Packet_Get(cs_uint8 id) {
 	return id < MAX_PACKETS ? packetsList[id] : NULL;
 }
 
@@ -471,8 +471,8 @@ cs_bool Handler_SetBlock(Client* client, const char* data) {
 
 	World* world = Client_GetWorld(client);
 	if(!world) return false;
-	SVec pos = {0};
 
+	SVec pos;
 	Proto_ReadSVec(&data, &pos);
 	cs_uint8 mode = *data++;
 	BlockID block = *data;
@@ -560,7 +560,6 @@ cs_bool Handler_Message(Client* client, const char* data) {
 
 	return true;
 }
-
 
 /*
 ** Врайтеры и хендлеры
@@ -978,7 +977,7 @@ cs_bool CPEHandler_PlayerClick(Client* client, const char* data) {
 	cs_int16 yaw = ntohs(*(cs_int16*)data); data += 2;
 	cs_int16 pitch = ntohs(*(cs_int16*)data); data += 2;
 	ClientID tgID = *data++;
-	SVec tgBlockPos = {0};
+	SVec tgBlockPos;
 	Proto_ReadSVec(&data, &tgBlockPos);
 	char tgBlockFace = *data;
 

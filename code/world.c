@@ -203,8 +203,7 @@ static cs_bool ReadInfo(World* world, FILE* fp) {
 		return false;
 	}
 
-	SVec dims = {0};
-
+	SVec dims;
 	while(File_Read(&id, 1, 1, fp) == 1) {
 		switch (id) {
 			case DT_DIM:

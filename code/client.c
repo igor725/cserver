@@ -487,7 +487,7 @@ void Client_Chat(Client* client, MessageType type, const char* message) {
 	Vanilla_WriteChat(client, type, message);
 }
 
-static void HandlePacket(Client* client, char* data, Packet packet, cs_bool extended) {
+static void HandlePacket(Client* client, char* data, Packet* packet, cs_bool extended) {
 	cs_bool ret = false;
 
 	if(extended)
@@ -505,7 +505,7 @@ static void HandlePacket(Client* client, char* data, Packet packet, cs_bool exte
 		client->pps += 1;
 }
 
-static cs_uint16 GetPacketSizeFor(Packet packet, Client* client, cs_bool* extended) {
+static cs_uint16 GetPacketSizeFor(Packet* packet, Client* client, cs_bool* extended) {
 	cs_uint16 packetSize = packet->size;
 	if(packet->haveCPEImp) {
 		*extended = Client_GetExtVer(client, packet->extCRC32) == packet->extVersion;
@@ -824,7 +824,7 @@ cs_int32 Client_Send(Client* client, cs_int32 len) {
 }
 
 static void PacketReceiverWs(Client* client) {
-	Packet packet;
+	Packet* packet;
 	cs_bool extended;
 	cs_uint16 packetSize, recvSize;
 	WsClient* ws = client->websock;
@@ -869,7 +869,7 @@ static void PacketReceiverWs(Client* client) {
 }
 
 static void PacketReceiverRaw(Client* client) {
-	Packet packet;
+	Packet* packet;
 	cs_bool extended;
 	cs_uint16 packetSize;
 	cs_uint8 packetId;

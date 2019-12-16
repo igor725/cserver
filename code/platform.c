@@ -120,7 +120,8 @@ cs_bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, cs_uint16
 	cs_int32 ret;
 	if((ret = Socket_SetAddr(ssa, host, port)) == 0) {
 		struct addrinfo* addr;
-		struct addrinfo hints = {0};
+		struct addrinfo hints;
+		hints.ai_flags = 0;
 		hints.ai_family = AF_INET;
 		hints.ai_socktype = 0;
 		hints.ai_protocol = 0;

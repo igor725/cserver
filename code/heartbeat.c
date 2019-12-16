@@ -59,9 +59,9 @@ static void TrimReserved(char* name, cs_int32 len) {
 
 static void DoRequest() {
 	if(*Secret == '\0') NewSecret();
-	struct httpRequest req = {0};
-	struct httpResponse resp = {0};
-	char path[512], name[65];
+	struct httpRequest req;
+	struct httpResponse resp;
+	char reqstr[512], name[65];
 	String_Copy(name, 65, Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY));
 	TrimReserved(name, 65);
 
@@ -69,7 +69,7 @@ static void DoRequest() {
 	cs_bool public = Config_GetBoolByKey(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
 	cs_uint8 max = Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
 	cs_uint8 count = Clients_GetCount(STATE_INGAME);
-	String_FormatBuf(path, 512, HBEAT_URL,
+	String_FormatBuf(reqstr, 512, HBEAT_URL,
 		name,
 		port,
 		count,
@@ -83,7 +83,7 @@ static void DoRequest() {
 	req.sock = fd;
 
 	HttpRequest_SetHost(&req, "classicube.net", 80);
-	HttpRequest_SetPath(&req, path);
+	HttpRequest_SetPath(&req, reqstr);
 	HttpRequest_SetHeaderStr(&req, "Pragma", "no-cache");
 	HttpRequest_SetHeaderStr(&req, "Connection", "close");
 

@@ -56,7 +56,7 @@ return;
 
 typedef cs_bool(*packetHandler)(Client* client, const char* data);
 
-typedef struct packet {
+typedef struct {
 	cs_uint16 size;
 	cs_bool haveCPEImp;
 	cs_uint32 extCRC32;
@@ -64,11 +64,11 @@ typedef struct packet {
 	cs_uint16 extSize;
 	packetHandler handler;
 	packetHandler cpeHandler;
-} *Packet;
+} Packet;
 
-Packet Packet_Get(cs_int32 id);
-API void Packet_Register(cs_int32 id, cs_uint16 size, packetHandler handler);
-API void Packet_RegisterCPE(cs_int32 id, cs_uint32 extCRC32, cs_int32 extVersion, cs_uint16 extSize, packetHandler handler);
+Packet* Packet_Get(cs_uint8 id);
+API void Packet_Register(cs_uint8 id, cs_uint16 size, packetHandler handler);
+API void Packet_RegisterCPE(cs_uint8 id, cs_uint32 crc32, cs_int32 ver, cs_uint16 size, packetHandler handler);
 
 API cs_uint8 Proto_ReadString(const char** data, const char** dstptr);
 API cs_uint8 Proto_ReadStringNoAlloc(const char** data, char* dst);

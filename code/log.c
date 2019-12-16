@@ -50,8 +50,7 @@ void Log_SetLevelStr(const char* str) {
 void Log_Print(cs_uint8 flag, const char* str, va_list* args) {
 	if((Log_Level & flag) == 0) return;
 
-	char time[13] = {0};
-	char buf[8192] = {0};
+	char time[13], buf[8192];
 	Time_Format(time, 13);
 
 	if(args)

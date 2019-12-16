@@ -35,7 +35,7 @@ void Generator_Flat(World* world) {
 /*
 #define MAX_THREADS 16
 
-Thread threads[MAX_THREADS] = {0};
+Thread threads[MAX_THREADS];
 cs_int32 cfgMaxThreads = 2;
 
 static cs_int32 AddThread(TFUNC func, TARG arg) {

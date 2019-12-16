@@ -26,7 +26,7 @@ static void HandleCommand(char* cmd) {
 }
 
 THREAD_FUNC(ConsoleThread) {
-	char buf[CON_STR_LEN] = {0};
+	char buf[CON_STR_LEN];
 	(void)param;
 
 	while(Server_Active) {
