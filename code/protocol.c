@@ -285,7 +285,7 @@ void Packet_RegisterDefault(void) {
 }
 
 Packet* Packet_Get(cs_uint8 id) {
-	return id < MAX_PACKETS ? packetsList[id] : NULL;
+	return packetsList[id];
 }
 
 /*
