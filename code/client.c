@@ -191,19 +191,6 @@ Client* Client_New(Socket fd, cs_uint32 addr) {
 	return tmp;
 }
 
-cs_bool Client_Add(Client* client) {
-	cs_int8 maxplayers = Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
-	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
-		if(!Clients_List[i]) {
-			client->id = i;
-			client->thread[0] = Thread_Create(ClientThread, client, false);
-			Clients_List[i] = client;
-			return true;
-		}
-	}
-	return false;
-}
-
 const char* Client_GetName(Client* client) {
 	if(!client->playerData) return "unnamed";
 	return client->playerData->name;
@@ -282,7 +269,7 @@ cs_bool Client_Despawn(Client* client) {
 	if(!pd || !pd->spawned) return false;
 	pd->spawned = false;
 	Vanilla_WriteDespawn(Broadcast, client);
-	Event_Call(EVT_ONDESPAWN, (void*)client);
+	Event_Call(EVT_ONDESPAWN, client);
 	return true;
 }
 
@@ -423,35 +410,6 @@ void Client_UpdateWorldInfo(Client* client, World* world, cs_bool updateAll) {
 		Client_SetWeather(client, wi->wt);
 }
 
-static cs_uint32 copyMessagePart(const char* message, char* part, cs_uint32 i, char* color) {
-	if(*message == '\0') return 0;
-
-	if(i > 0) {
-		*part++ = '>';
-		*part++ = ' ';
-	}
-
-	if(*color > 0) {
-		*part++ = '&';
-		*part++ = *color;
-	}
-
-	cs_uint32 len = min(60, (cs_uint32)String_Length(message));
-	if(message[len - 1] == '&' && ISHEX(message[len])) --len;
-
-	for(cs_uint32 j = 0; j < len; j++) {
-		char prevsym = *message++;
-		char nextsym = *message;
-
-		if(prevsym != '\r') *part++ = prevsym;
-		if(nextsym == '\0' || nextsym == '\n') break;
-		if(prevsym == '&' && ISHEX(nextsym)) *color = nextsym;
-	}
-
-	*part = '\0';
-	return len;
-}
-
 cs_bool Client_MakeSelection(Client* client, cs_uint8 id, SVec* start, SVec* end, Color4* color) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
 		CPE_WriteMakeSelection(client, id, start, end, color);
@@ -466,6 +424,35 @@ cs_bool Client_RemoveSelection(Client* client, cs_uint8 id) {
 		return true;
 	}
 	return false;
+}
+
+static cs_uint32 copyMessagePart(const char* msg, char* part, cs_uint32 i, char* color) {
+	if(*msg == '\0') return 0;
+
+	if(i > 0) {
+		*part++ = '>';
+		*part++ = ' ';
+	}
+
+	if(*color > 0) {
+		*part++ = '&';
+		*part++ = *color;
+	}
+
+	cs_uint32 len = min(60, (cs_uint32)String_Length(msg));
+	if(msg[len - 1] == '&' && ISHEX(msg[len])) --len;
+
+	for(cs_uint32 j = 0; j < len; j++) {
+		char prevsym = *msg++;
+		char nextsym = *msg;
+
+		if(prevsym != '\r') *part++ = prevsym;
+		if(nextsym == '\0' || nextsym == '\n') break;
+		if(prevsym == '&' && ISHEX(nextsym)) *color = nextsym;
+	}
+
+	*part = '\0';
+	return len;
 }
 
 void Client_Chat(Client* client, MessageType type, const char* message) {
@@ -913,14 +900,24 @@ THREAD_FUNC(ClientThread) {
 	return 0;
 }
 
-static void SendSpawnPacket(Client* client, Client* other) {
-	cs_int32 extlist_ver = Client_GetExtVer(client, EXT_PLAYERLIST);
-
-	if(extlist_ver == 2) {
-		CPE_WriteAddEntity2(client, other);
-	} else { // TODO: ExtPlayerList ver. 1 support
-		Vanilla_WriteSpawn(client, other);
+cs_bool Client_Add(Client* client) {
+	cs_int8 maxplayers = Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
+	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
+		if(!Clients_List[i]) {
+			client->id = i;
+			client->thread[0] = Thread_Create(ClientThread, client, false);
+			Clients_List[i] = client;
+			return true;
+		}
 	}
+	return false;
+}
+
+static void SendSpawnPacket(Client* client, Client* other) {
+	if(Client_GetExtVer(client, EXT_PLAYERLIST))
+		CPE_WriteAddEntity2(client, other);
+	else
+		Vanilla_WriteSpawn(client, other);
 }
 
 cs_bool Client_Spawn(Client* client) {
@@ -956,7 +953,7 @@ cs_bool Client_Spawn(Client* client) {
 	}
 
 	pd->spawned = true;
-	Event_Call(EVT_ONSPAWN, (void*)client);
+	Event_Call(EVT_ONSPAWN, client);
 	if(pd->firstSpawn) { // TODO: Перенести это куда-нибудь
 		const char* name = Client_GetName(client);
 		const char* appname = Client_GetAppName(client);
@@ -993,7 +990,7 @@ void Client_Tick(Client* client, cs_int32 delta) {
 				if(other && Client_GetExtVer(other, EXT_PLAYERLIST))
 					CPE_WriteRemoveName(other, client);
 			}
-			Event_Call(EVT_ONDISCONNECT, (void*)client);
+			Event_Call(EVT_ONDISCONNECT, client);
 			Log_Info(Lang_Get(LANG_SVPLDISCONN), Client_GetName(client));
 		}
 		Client_Despawn(client);

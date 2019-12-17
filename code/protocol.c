@@ -258,11 +258,11 @@ static const struct extReg serverExtensions[] = {
 	{"ExtEntityPositions", 1},
 	{"TwoWayPing", 1},
 	{"InventoryOrder", 1},
-	// {"InstantMOTD", 1},
 	{"FastMap", 1},
 	{"SetHotbar", 1},
 	{"SetSpawnpoint", 1},
 	{"VelocityControl", 1},
+
 	{NULL, 0}
 };
 
@@ -451,7 +451,7 @@ cs_bool Handler_Handshake(Client* client, const char* data) {
 			ptr = ptr->next;
 		}
 	} else {
-		Event_Call(EVT_ONHANDSHAKEDONE, (void*)client);
+		Event_Call(EVT_ONHANDSHAKEDONE, client);
 		Client_HandshakeStage2(client);
 	}
 
@@ -961,7 +961,7 @@ cs_bool CPEHandler_ExtEntry(Client* client, const char* data) {
 	cpd->headExtension = tmp;
 
 	if(--cpd->_extCount == 0) {
-		Event_Call(EVT_ONHANDSHAKEDONE, (void*)client);
+		Event_Call(EVT_ONHANDSHAKEDONE, client);
 		Client_HandshakeStage2(client);
 	}
 

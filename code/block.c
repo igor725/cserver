@@ -3,7 +3,7 @@
 #include "client.h"
 #include "block.h"
 
-static const char* DefaultBlockNames[] = {
+static const char* defaultBlockNames[] = {
 	"Air", "Stone", "Grass", "Dirt",
 	"Cobblestone", "Planks", "Sapling",
 	"Bedrock", "Water", "Still Water",
@@ -42,7 +42,7 @@ const char* Block_GetName(BlockID id) {
 	if(bdef)
 		return bdef->name;
 	else
-		return DefaultBlockNames[id];
+		return defaultBlockNames[id];
 }
 
 BlockDef* Block_New(BlockID id, const char* name, cs_uint8 flags) {
@@ -85,16 +85,14 @@ void Block_UpdateDefinitions() {
 			if(bdef->flags & BDF_UNDEFINED) {
 				for(ClientID cid = 0; cid < MAX_CLIENTS; cid++) {
 					Client* client = Clients_List[cid];
-					if(client)
-						Client_UndefineBlock(client, bdef->id);
+					if(client) Client_UndefineBlock(client, bdef->id);
 				}
 				Block_DefinitionsList[id] = NULL;
 				Block_Free(bdef);
 			} else {
 				for(ClientID cid = 0; cid < MAX_CLIENTS; cid++) {
 					Client* client = Clients_List[cid];
-					if(client)
-						Client_DefineBlock(client, bdef);
+					if(client) Client_DefineBlock(client, bdef);
 				}
 			}
 		}
