@@ -11,7 +11,6 @@
 #include "lang.h"
 #include <zlib.h>
 
-THREAD_FUNC(ClientThread);
 static AssocType* headAssocType = NULL;
 static CGroup* headCGroup = NULL;
 
@@ -148,9 +147,9 @@ cs_bool Group_Remove(cs_int16 gid) {
 		cg->next->prev = cg->prev;
 	if(cg->prev)
 		cg->prev->next = cg->next;
-
 	Memory_Free((void*)cg->name);
 	Memory_Free(cg);
+	
 	return true;
 }
 
