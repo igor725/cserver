@@ -421,7 +421,7 @@ cs_bool Handler_Handshake(Client* client, const char* data) {
 	if(!Proto_ReadString(&data, &client->playerData->name)) return false;
 	if(!Proto_ReadString(&data, &client->playerData->key)) return false;
 
-	for(cs_int32 i = 0; i < MAX_CLIENTS; i++) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client* other = Clients_List[i];
 		if(!other || !other->playerData || other == client) continue;
 		if(String_CaselessCompare(client->playerData->name, other->playerData->name)) {

@@ -105,9 +105,8 @@ cs_int32 World_GetProperty(World* world, cs_uint8 property) {
 }
 
 cs_bool World_SetTexturePack(World* world, const char* url) {
-	if(String_CaselessCompare(world->info->texturepack, url)) {
+	if(String_CaselessCompare(world->info->texturepack, url))
 		return true;
-	}
 	world->modified = true;
 	world->info->modval |= MV_TEXPACK;
 	if(!url || String_Length(url) > 64) {
@@ -127,7 +126,6 @@ const char* World_GetTexturePack(World* world) {
 
 cs_bool World_SetWeather(World* world, Weather type) {
 	if(type > 2) return false;
-
 	world->info->wt = type;
 	world->modified = true;
 	world->info->modval |= MV_WEATHER;
@@ -244,7 +242,6 @@ static cs_bool ReadInfo(World* world, FILE* fp) {
 
 THREAD_FUNC(WorldSaveThread) {
 	World* world = param;
-
 	cs_bool succ = false;
 	char path[256];
 	char tmpname[256];
@@ -257,9 +254,8 @@ THREAD_FUNC(WorldSaveThread) {
 		goto world_save_done;
 	}
 
-	if(!WriteInfo(world, fp)) {
+	if(!WriteInfo(world, fp))
 		goto world_save_done;
-	}
 
 	Bytef out[1024];
 	cs_int32 ret;
@@ -290,7 +286,6 @@ THREAD_FUNC(WorldSaveThread) {
 			goto world_save_done;
 		}
 	} while(stream.avail_out == 0);
-
 	succ = true;
 
 	world_save_done:
@@ -299,16 +294,15 @@ THREAD_FUNC(WorldSaveThread) {
 	world->process = WP_NOPROC;
 	if(succ)
 		File_Rename(tmpname, path);
+	Waitable_Signal(world->wait);
 	if(world->saveUnload)
 		World_Unload(world);
-	Waitable_Signal(world->wait);
 	return 0;
 }
 
 cs_bool World_Save(World* world, cs_bool unload) {
 	if(world->process != WP_NOPROC || !world->modified || !world->loaded)
 		return world->process == WP_SAVING;
-
 	world->process = WP_SAVING;
 	world->saveUnload = unload;
 	Waitable_Reset(world->wait);
@@ -318,7 +312,6 @@ cs_bool World_Save(World* world, cs_bool unload) {
 
 THREAD_FUNC(WorldLoadThread) {
 	World* world = param;
-
 	cs_bool error = true;
 	char path[256];
 	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
@@ -371,10 +364,10 @@ THREAD_FUNC(WorldLoadThread) {
 	world_load_done:
 	File_Close(fp);
 	inflateEnd(&stream);
-	if(error)
-		World_Unload(world);
 	world->process = WP_NOPROC;
 	world->saveUnload = false;
+	if(error)
+		World_Unload(world);
 	Waitable_Signal(world->wait);
 	return 0;
 }
@@ -383,7 +376,6 @@ cs_bool World_Load(World* world) {
 	if(world->loaded) return false;
 	if(world->process != WP_NOPROC)
 		return world->process == WP_LOADING;
-
 	world->process = WP_LOADING;
 	Waitable_Reset(world->wait);
 	Thread_Create(WorldLoadThread, world, true);
@@ -403,8 +395,7 @@ cs_uint32 World_GetOffset(World* world, SVec* pos) {
 	SVec* dim = &wi->dimensions;
 
 	if(dim->x < 0 || dim->y < 0 || dim->z < 0 ||
-	pos->x > dim->x || pos->y > dim->y || pos->z > dim->z)
-		return 0;
+	pos->x > dim->x || pos->y > dim->y || pos->z > dim->z) return 0;
 	return pos->z * dim->z + pos->y * (dim->x * dim->y) + pos->x + 4;
 }
 
@@ -422,7 +413,6 @@ cs_bool World_SetBlock(World* world, SVec* pos, BlockID id) {
 
 BlockID World_GetBlock(World* world, SVec* pos) {
 	cs_uint32 offset = World_GetOffset(world, pos);
-
 	if(offset == 0) return 0;
 	return world->data[offset];
 }

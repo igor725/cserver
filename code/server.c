@@ -6,7 +6,6 @@
 #include "client.h"
 #include "protocol.h"
 #include "config.h"
-#include "console.h"
 #include "command.h"
 #include "websocket.h"
 #include "generators.h"
@@ -88,6 +87,18 @@ static void Bind(const char* ip, cs_uint16 port) {
 	if(!Socket_Bind(Server_Socket, &ssa)) {
 		Error_PrintSys(true);
 	}
+}
+
+THREAD_FUNC(ConsoleThread) {
+	(void)param;
+	char buf[192];
+
+	while(Server_Active) {
+		if(File_ReadLine(stdin, buf, 192))
+			if(!Command_Handle(buf, NULL))
+				Log_Info(Lang_Get(LANG_CMDUNK));
+	}
+	return 0;
 }
 
 void Server_InitialWork(void) {
@@ -194,12 +205,12 @@ void Server_InitialWork(void) {
 	Thread_Create(AcceptThread, NULL, true);
 	Bind(ip, port);
 	Event_Call(EVT_POSTSTART, NULL);
-	Console_Start();
+	Thread_Create(ConsoleThread, NULL, true);
 }
 
 void Server_DoStep(cs_int32 delta) {
 	Event_Call(EVT_ONTICK, &delta);
-	for(cs_int32 i = 0; i < MAX_CLIENTS; i++) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client* client = Clients_List[i];
 		if(client) Client_Tick(client, delta);
 	}
