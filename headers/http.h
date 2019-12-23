@@ -18,51 +18,51 @@ enum {
 	HDRT_INT,
 };
 
-typedef struct httpHeader {
+typedef struct HTTPHeader {
 	const char* key;
 	cs_int32 type;
 	union {
 		const char* vchar;
 		cs_uint32 vint;
 	} value;
-	struct httpHeader* next;
-} *HTTPHDR;
+	struct HTTPHeader* next;
+} HTTPHeader;
 
-typedef struct httpResponse {
+typedef struct HTTPResponse {
 	cs_int32 error, code, bodysize;
 	char* body;
-	HTTPHDR header;
-} *HTTPRESP;
+	struct HTTPHeader* header;
+} HTTPResponse;
 
-typedef struct httpRequest {
+typedef struct HTTPRequest {
 	Socket sock;
 	cs_int32 error;
 	struct sockaddr_in addr;
 	const char* path;
-	HTTPHDR header;
-} *HTTPREQ;
+	HTTPHeader* header;
+} HTTPRequest;
 
 API const char* HttpCode_GetReason(cs_int32 code);
 
-API HTTPHDR HttpRequest_GetHeader(HTTPREQ req, const char* key);
-API void HttpRequest_SetHeaderStr(HTTPREQ req, const char* key, const char* value);
-API const char* HttpRequest_GetHeaderStr(HTTPREQ req, const char* key);
-API void HttpRequest_SetHeaderInt(HTTPREQ req, const char* key, cs_int32 value);
-cs_int32 HttpRequest_GetHeaderInt(HTTPREQ req, const char* key);
-API void HttpRequest_SetHost(HTTPREQ req, const char* host, cs_uint16 port);
-API void HttpRequest_SetPath(HTTPREQ req, const char* path);
-API cs_bool HttpRequest_Read(HTTPREQ req, Socket sock);
-API cs_bool HttpRequest_Perform(HTTPREQ req, HTTPRESP resp);
-API void HttpRequest_Cleanup(HTTPREQ req);
+API HTTPHeader* HttpRequest_GetHeader(HTTPRequest* req, const char* key);
+API void HttpRequest_SetHeaderStr(HTTPRequest* req, const char* key, const char* value);
+API const char* HttpRequest_GetHeaderStr(HTTPRequest* req, const char* key);
+API void HttpRequest_SetHeaderInt(HTTPRequest* req, const char* key, cs_int32 value);
+cs_int32 HttpRequest_GetHeaderInt(HTTPRequest* req, const char* key);
+API void HttpRequest_SetHost(HTTPRequest* req, const char* host, cs_uint16 port);
+API void HttpRequest_SetPath(HTTPRequest* req, const char* path);
+API cs_bool HttpRequest_Read(HTTPRequest* req, Socket sock);
+API cs_bool HttpRequest_Perform(HTTPRequest* req, HTTPResponse* resp);
+API void HttpRequest_Cleanup(HTTPRequest* req);
 
-API HTTPHDR HttpResponse_GetHeader(HTTPRESP resp, const char* key);
-API void HttpResponse_SetHeaderStr(HTTPRESP resp, const char* key, const char* value);
-API const char* HttpResponse_GetHeaderStr(HTTPRESP resp, const char* key);
-API void HttpResponse_SetHeaderInt(HTTPRESP resp, const char* key, cs_int32 value);
-API cs_int32 HttpResponse_GetHeaderInt(HTTPRESP resp, const char* key);
-API void HttpResponse_SetHeader(HTTPRESP resp, const char* key, const char* value);
-API void HttpResponse_SetBody(HTTPRESP resp, char* body, cs_int32 size);
-API cs_bool HttpResponse_SendTo(HTTPRESP resp, Socket sock);
-API cs_bool HttpResponse_Read(HTTPRESP resp, Socket sock);
-API void HttpResponse_Cleanup(HTTPRESP resp);
+API HTTPHeader* HttpResponse_GetHeader(HTTPResponse* resp, const char* key);
+API void HttpResponse_SetHeaderStr(HTTPResponse* resp, const char* key, const char* value);
+API const char* HttpResponse_GetHeaderStr(HTTPResponse* resp, const char* key);
+API void HttpResponse_SetHeaderInt(HTTPResponse* resp, const char* key, cs_int32 value);
+API cs_int32 HttpResponse_GetHeaderInt(HTTPResponse* resp, const char* key);
+API void HttpResponse_SetHeader(HTTPResponse* resp, const char* key, const char* value);
+API void HttpResponse_SetBody(HTTPResponse* resp, char* body, cs_int32 size);
+API cs_bool HttpResponse_SendTo(HTTPResponse* resp, Socket sock);
+API cs_bool HttpResponse_Read(HTTPResponse* resp, Socket sock);
+API void HttpResponse_Cleanup(HTTPResponse* resp);
 #endif // HTTP_H
