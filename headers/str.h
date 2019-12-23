@@ -20,7 +20,7 @@ API const char* String_FromArgument(const char* args, cs_int32 index);
 API cs_int32 String_ToInt(const char* str);
 API cs_int32 String_HexToInt(const char* str);
 API float String_ToFloat(const char* str);
-API size_t String_SizeOfB64(size_t inlen);
-API size_t String_ToB64(const cs_uint8* src, size_t len, char* dst);
+API cs_size String_SizeOfB64(cs_size inlen);
+API cs_size String_ToB64(const cs_uint8* src, cs_size len, char* dst);
 API cs_uint32 String_CRC32(const cs_uint8* str);
 #endif // STR_H

@@ -169,11 +169,11 @@ size_t String_SizeOfB64(size_t inlen) {
 
 const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-size_t String_ToB64(const cs_uint8* src, size_t len, char* dst) {
-	size_t elen = String_SizeOfB64(len);
+cs_size String_ToB64(const cs_uint8* src, cs_size len, char* dst) {
+	cs_size elen = String_SizeOfB64(len);
 	dst[elen] = '\0';
 
-	for (size_t i = 0, j = 0; i < len; i += 3, j += 4) {
+	for (cs_size i = 0, j = 0; i < len; i += 3, j += 4) {
 		cs_int32 v = src[i];
 		v = i + 1 < len ? v << 8 | src[i + 1] : v << 8;
 		v = i + 2 < len ? v << 8 | src[i + 2] : v << 8;
