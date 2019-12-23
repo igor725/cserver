@@ -28,7 +28,7 @@ enum {
 typedef struct {
 	Client* client;
 	const char* message;
-	MessageType* type;
+	cs_uint8* type;
 } onMessage;
 
 typedef struct {
@@ -59,7 +59,7 @@ API cs_bool Event_Unregister_(cs_uint32 type, cs_uintptr evtFuncPtr);
 Event_Unregister_(t, (cs_uintptr)e);
 
 cs_bool Event_Call(cs_uint32 type, void* param);
-cs_bool Event_OnMessage(Client* client, char* message, MessageType* type);
+cs_bool Event_OnMessage(Client* client, char* message, cs_uint8* type);
 void Event_OnHeldBlockChange(Client* client, BlockID prev, BlockID curr);
 cs_bool Event_OnBlockPlace(Client* client, cs_uint8 mode, SVec* pos, BlockID* id);
 void Event_OnClick(Client* client, char button, char action, cs_int16 yaw, cs_int16 pitch, ClientID tgID, SVec* tgBlockPos, char tgBlockFace);

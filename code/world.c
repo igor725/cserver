@@ -15,8 +15,9 @@ void Worlds_SaveAll(cs_bool join, cs_bool unload) {
 		if(i < MAX_WORLDS && world) {
 			if(World_Save(world, unload) && join) {
 				Waitable_Wait(world->wait);
-				if(!Server_Active)
+				if(!Server_Active) {
 					World_Free(world);
+				}
 			}
 		}
 	}
@@ -24,31 +25,31 @@ void Worlds_SaveAll(cs_bool join, cs_bool unload) {
 
 World* World_Create(const char* name) {
 	World* tmp = Memory_Alloc(1, sizeof(World));
-	WorldInfo* wi = Memory_Alloc(1, sizeof(WorldInfo));
 
 	tmp->name = String_AllocCopy(name);
 	tmp->wait = Waitable_Create();
 	tmp->process = WP_NOPROC;
 	tmp->id = -1;
-	tmp->info = wi;
 
 	/*
 	** Устанавливаем дефолтные значения
 	** согласно документации по CPE.
 	*/
-	wi->props[PROP_SIDEBLOCK] = 7;
-	wi->props[PROP_EDGEBLOCK] = 8;
-	wi->props[PROP_FOGDIST] = 0;
-	wi->props[PROP_SPDCLOUDS] = 256;
-	wi->props[PROP_SPDWEATHER] = 256;
-	wi->props[PROP_FADEWEATHER] = 128;
-	wi->props[PROP_EXPFOG] = 0;
-	wi->props[PROP_SIDEOFFSET] = -2;
+	cs_int32* props = tmp->info.props;
+	props[PROP_SIDEBLOCK] = 7;
+	props[PROP_EDGEBLOCK] = 8;
+	props[PROP_FOGDIST] = 0;
+	props[PROP_SPDCLOUDS] = 256;
+	props[PROP_SPDWEATHER] = 256;
+	props[PROP_FADEWEATHER] = 128;
+	props[PROP_EXPFOG] = 0;
+	props[PROP_SIDEOFFSET] = -2;
 
+	Color3* colors = tmp->info.colors;
 	for(int i = 0; i < WORLD_COLORS_COUNT; i++) {
-		wi->colors[i].r = -1;
-		wi->colors[i].g = -1;
-		wi->colors[i].b = -1;
+		colors[i].r = -1;
+		colors[i].g = -1;
+		colors[i].b = -1;
 	}
 
 	return tmp;
@@ -85,7 +86,7 @@ World* World_GetByID(WorldID id) {
 }
 
 void World_SetDimensions(World* world, const SVec* dims) {
-	world->info->dimensions = *dims;
+	world->info.dimensions = *dims;
 	world->size = dims->x * dims->y * dims->z;
 }
 
@@ -93,67 +94,67 @@ cs_bool World_SetProperty(World* world, cs_uint8 property, cs_int32 value) {
 	if(property > WORLD_PROPS_COUNT) return false;
 
 	world->modified = true;
-	world->info->props[property] = value;
-	world->info->modval |= MV_PROPS;
-	world->info->modprop |= 2 ^ property;
+	world->info.props[property] = value;
+	world->info.modval |= MV_PROPS;
+	world->info.modprop |= 2 ^ property;
 	return true;
 }
 
 cs_int32 World_GetProperty(World* world, cs_uint8 property) {
 	if(property > WORLD_PROPS_COUNT) return 0;
-	return world->info->props[property];
+	return world->info.props[property];
 }
 
 cs_bool World_SetTexturePack(World* world, const char* url) {
-	if(String_CaselessCompare(world->info->texturepack, url))
+	if(String_CaselessCompare(world->info.texturepack, url))
 		return true;
 	world->modified = true;
-	world->info->modval |= MV_TEXPACK;
+	world->info.modval |= MV_TEXPACK;
 	if(!url || String_Length(url) > 64) {
-		world->info->texturepack[0] = '\0';
+		world->info.texturepack[0] = '\0';
 		return true;
 	}
-	if(!String_Copy(world->info->texturepack, 65, url)) {
-		world->info->texturepack[0] = '\0';
+	if(!String_Copy(world->info.texturepack, 65, url)) {
+		world->info.texturepack[0] = '\0';
 		return false;
 	}
 	return true;
 }
 
 const char* World_GetTexturePack(World* world) {
-	return world->info->texturepack;
+	return world->info.texturepack;
 }
 
-cs_bool World_SetWeather(World* world, Weather type) {
+cs_bool World_SetWeather(World* world, cs_int8 type) {
 	if(type > 2) return false;
-	world->info->wt = type;
+	world->info.weatherType = type;
 	world->modified = true;
-	world->info->modval |= MV_WEATHER;
+	world->info.modval |= MV_WEATHER;
 	Event_Call(EVT_ONWEATHER, world);
 	return true;
 }
 
 cs_bool World_SetEnvColor(World* world, cs_uint8 type, Color3* color) {
 	if(type > WORLD_COLORS_COUNT) return false;
-	world->info->modval |= MV_COLORS;
+	world->info.modval |= MV_COLORS;
 	world->modified = true;
-	world->info->colors[type * 3] = *color;
+	world->info.colors[type * 3] = *color;
 	Event_Call(EVT_ONCOLOR, world);
 	return true;
 }
 
 Color3* World_GetEnvColor(World* world, cs_uint8 type) {
 	if(type > WORLD_COLORS_COUNT) return false;
-	return &world->info->colors[type];
+	return &world->info.colors[type];
 }
 
 void World_UpdateClients(World* world) {
 	Clients_UpdateWorldInfo(world);
-	world->info->modval = MV_NONE;
+	world->info.modval = MV_NONE;
 }
 
-Weather World_GetWeather(World* world) {
-	return world->info->wt;
+cs_int8 World_GetWeather(World* world) {
+	return world->info.weatherType;
 }
 
 void World_AllocBlockArray(World* world) {
@@ -165,8 +166,6 @@ void World_AllocBlockArray(World* world) {
 
 void World_Free(World* world) {
 	Waitable_Free(world->wait);
-	if(world->data) Memory_Free(world->data);
-	if(world->info) Memory_Free(world->info);
 	if(world->id != -1) Worlds_List[world->id] = NULL;
 	Memory_Free(world);
 }
@@ -181,12 +180,13 @@ static cs_bool WriteInfo(World* world, FILE* fp) {
 		Error_PrintSys(false);
 		return false;
 	}
-	return WriteWData(fp, DT_DIM, &world->info->dimensions, sizeof(SVec)) &&
-	WriteWData(fp, DT_SV, &world->info->spawnVec, sizeof(Vec)) &&
-	WriteWData(fp, DT_SA, &world->info->spawnAng, sizeof(Ang)) &&
-	WriteWData(fp, DT_WT, &world->info->wt, sizeof(Weather)) &&
-	WriteWData(fp, DT_PROPS, world->info->props, 4 * WORLD_PROPS_COUNT) &&
-	WriteWData(fp, DT_COLORS, world->info->colors, sizeof(Color3) * WORLD_COLORS_COUNT) &&
+	WorldInfo* wi = &world->info;
+	return WriteWData(fp, DT_DIM, &wi->dimensions, sizeof(SVec)) &&
+	WriteWData(fp, DT_SV, &wi->spawnVec, sizeof(Vec)) &&
+	WriteWData(fp, DT_SA, &wi->spawnAng, sizeof(Ang)) &&
+	WriteWData(fp, DT_WT, &wi->weatherType, 1) &&
+	WriteWData(fp, DT_PROPS, wi->props, 4 * WORLD_PROPS_COUNT) &&
+	WriteWData(fp, DT_COLORS, wi->colors, sizeof(Color3) * WORLD_COLORS_COUNT) &&
 	WriteWData(fp, DT_END, NULL, 0);
 }
 
@@ -202,6 +202,7 @@ static cs_bool ReadInfo(World* world, FILE* fp) {
 	}
 
 	SVec dims;
+	WorldInfo* wi = &world->info;
 	while(File_Read(&id, 1, 1, fp) == 1) {
 		switch (id) {
 			case DT_DIM:
@@ -210,23 +211,23 @@ static cs_bool ReadInfo(World* world, FILE* fp) {
 				World_SetDimensions(world, &dims);
 				break;
 			case DT_SV:
-				if(File_Read(&world->info->spawnVec, sizeof(Vec), 1, fp) != 1)
+				if(File_Read(&wi->spawnVec, sizeof(Vec), 1, fp) != 1)
 					return false;
 				break;
 			case DT_SA:
-				if(File_Read(&world->info->spawnAng, sizeof(Ang), 1, fp) != 1)
+				if(File_Read(&wi->spawnAng, sizeof(Ang), 1, fp) != 1)
 					return false;
 				break;
 			case DT_WT:
-				if(File_Read(&world->info->wt, sizeof(Weather), 1, fp) != 1)
+				if(File_Read(&wi->weatherType, 1, 1, fp) != 1)
 					return false;
 				break;
 			case DT_PROPS:
-				if(File_Read(world->info->props, 4 * WORLD_PROPS_COUNT, 1, fp) != 1)
+				if(File_Read(wi->props, 4 * WORLD_PROPS_COUNT, 1, fp) != 1)
 					return false;
 				break;
 			case DT_COLORS:
-				if(File_Read(world->info->colors, sizeof(Color3) * WORLD_COLORS_COUNT, 1, fp) != 1)
+				if(File_Read(wi->colors, sizeof(Color3) * WORLD_COLORS_COUNT, 1, fp) != 1)
 					return false;
 				break;
 			case DT_END:
@@ -391,7 +392,7 @@ void World_Unload(World* world) {
 }
 
 cs_uint32 World_GetOffset(World* world, SVec* pos) {
-	WorldInfo* wi = world->info;
+	WorldInfo* wi = &world->info;
 	SVec* dim = &wi->dimensions;
 
 	if(dim->x < 0 || dim->y < 0 || dim->z < 0 ||

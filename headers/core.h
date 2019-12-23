@@ -77,10 +77,8 @@ typedef __SIZE_TYPE__ cs_size;
 typedef cs_uint8 cs_bool;
 typedef cs_uint8 Order;
 typedef cs_uint8 BlockID;
-typedef cs_uint8 Weather;
 typedef cs_int8 ClientID;
 typedef cs_int16 WorldID;
-typedef cs_uint8 MessageType;
 // TODO: Придумать, как пернести это чудо в protocol.h
 typedef struct cpeExt {
 	const char* name; // Название дополнения

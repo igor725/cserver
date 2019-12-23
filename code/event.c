@@ -70,7 +70,7 @@ cs_bool Event_Call(cs_uint32 type, void* param) {
 	return ret;
 }
 
-cs_bool Event_OnMessage(Client* client, char* message, MessageType* type) {
+cs_bool Event_OnMessage(Client* client, char* message, cs_uint8* type) {
 	onMessage params;
 	params.client = client;
 	params.message = message;

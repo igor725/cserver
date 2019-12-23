@@ -345,8 +345,8 @@ THREAD_FUNC(WorldSendThread) {
 	Mutex_Unlock(client->mutex);
 	if(pd->state == STATE_WLOADDONE) {
 		pd->state = STATE_INGAME;
-		pd->position = world->info->spawnVec;
-		pd->angle = world->info->spawnAng;
+		pd->position = world->info.spawnVec;
+		pd->angle = world->info.spawnAng;
 		Event_Call(EVT_PRELVLFIN, client);
 		if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
 			for(BlockID id = 0; id < 255; id++) {
@@ -354,7 +354,7 @@ THREAD_FUNC(WorldSendThread) {
 				if(bdef) Client_DefineBlock(client, bdef);
 			}
 		}
-		Vanilla_WriteLvlFin(client, &world->info->dimensions);
+		Vanilla_WriteLvlFin(client, &world->info.dimensions);
 		Client_Spawn(client);
 	} else
 		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
@@ -386,7 +386,7 @@ void Client_UpdateWorldInfo(Client* client, World* world, cs_bool updateAll) {
 	** он не поддерживает CPE вообще.
 	*/
 	if(!client->cpeData) return;
-	WorldInfo* wi = world->info;
+	WorldInfo* wi = &world->info;
 	cs_uint8 modval = wi->modval;
 	cs_uint16 modprop = wi->modprop;
 	cs_uint8 modclr = wi->modclr;
@@ -406,7 +406,7 @@ void Client_UpdateWorldInfo(Client* client, World* world, cs_bool updateAll) {
 		}
 	}
 	if(updateAll || modval & MV_WEATHER)
-		Client_SetWeather(client, wi->wt);
+		Client_SetWeather(client, wi->weatherType);
 }
 
 cs_bool Client_MakeSelection(Client* client, cs_uint8 id, SVec* start, SVec* end, Color4* color) {
@@ -454,7 +454,7 @@ static cs_uint32 copyMessagePart(const char* msg, char* part, cs_uint32 i, char*
 	return len;
 }
 
-void Client_Chat(Client* client, MessageType type, const char* message) {
+void Client_Chat(Client* client, cs_uint8 type, const char* message) {
 	cs_uint32 msgLen = (cs_uint32)String_Length(message);
 
 	if(msgLen > 62 && type == MT_CHAT) {
@@ -558,7 +558,7 @@ cs_bool Client_SetTexturePack(Client* client, const char* url) {
 	return false;
 }
 
-cs_bool Client_SetWeather(Client* client, Weather type) {
+cs_bool Client_SetWeather(Client* client, cs_int8 type) {
 	if(Client_GetExtVer(client, EXT_WEATHER)) {
 		CPE_WriteWeatherType(client, type);
 		return true;

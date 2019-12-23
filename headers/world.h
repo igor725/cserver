@@ -71,7 +71,7 @@ typedef struct _WorldInfo {
 	char texturepack[65];
 	Vec spawnVec;
 	Ang spawnAng;
-	Weather wt;
+	cs_int8 weatherType;
 	cs_uint8 modval;
 	cs_uint16 modprop;
 	cs_uint8 modclr;
@@ -81,7 +81,7 @@ typedef struct _World {
 	WorldID id;
 	const char* name;
 	cs_uint32 size;
-	WorldInfo* info;
+	WorldInfo info;
 	cs_bool modified;
 	Waitable* wait;
 	cs_bool loaded;
@@ -108,13 +108,13 @@ API cs_bool World_SetBlockO(World* world, cs_uint32 offset, BlockID id);
 API cs_bool World_SetEnvColor(World* world, cs_uint8 type, Color3* color);
 API cs_bool World_SetProperty(World* world, cs_uint8 property, cs_int32 value);
 API cs_bool World_SetTexturePack(World* world, const char* url);
-API cs_bool World_SetWeather(World* world, Weather type);
+API cs_bool World_SetWeather(World* world, cs_int8 type);
 
 API cs_uint32 World_GetOffset(World* world, SVec* pos);
 API BlockID World_GetBlock(World* world, SVec* pos);
 API cs_int32 World_GetProperty(World* world, cs_uint8 property);
 API Color3* World_GetEnvColor(World* world, cs_uint8 type);
-API Weather World_GetWeather(World* world);
+API cs_int8 World_GetWeather(World* world);
 
 API World* World_GetByName(const char* name);
 API World* World_GetByID(WorldID id);

@@ -25,7 +25,7 @@ Client* Bot_New(const char* name, World* world, cs_bool hideName) {
 	bot->id = id;
 	Bots_List[id] = bot;
 
-	WorldInfo* wi = world->info;
+	WorldInfo* wi = &world->info;
 	Bot_SetPosition(bot, &wi->spawnVec, &wi->spawnAng);
 
 	return bot;

@@ -6,7 +6,7 @@
 // Генератор плоского мира
 
 void Generator_Flat(World* world) {
-	WorldInfo* wi = world->info;
+	WorldInfo* wi = &world->info;
 	SVec* dims = &wi->dimensions;
 
 	BlockID* data = world->data + 4;

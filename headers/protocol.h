@@ -103,7 +103,7 @@ void Vanilla_WriteSetBlock(Client* client, SVec* pos, BlockID block);
 void Vanilla_WriteSpawn(Client* client, Client* other);
 void Vanilla_WritePosAndOrient(Client* client, Client* other);
 void Vanilla_WriteDespawn(Client* client, Client* other);
-void Vanilla_WriteChat(Client* client, MessageType type, const char* mesg);
+void Vanilla_WriteChat(Client* client, cs_uint8 type, const char* mesg);
 void Vanilla_WriteKick(Client* client, const char* reason);
 
 cs_bool Handler_Handshake(Client* client, const char* data);
@@ -147,7 +147,7 @@ void CPE_WriteSetTextColor(Client* client, Color4* color, char code);
 void CPE_WriteSetHotBar(Client* client, Order order, BlockID block);
 void CPE_WriteSetSpawnPoint(Client* client, Vec* pos, Ang* ang);
 void CPE_WriteVelocityControl(Client* client, Vec* velocity, cs_bool mode);
-void CPE_WriteWeatherType(Client* client, Weather type);
+void CPE_WriteWeatherType(Client* client, cs_int8 type);
 void CPE_WriteTexturePack(Client* client, const char* url);
 void CPE_WriteMapProperty(Client* client, cs_uint8 property, cs_int32 value);
 void CPE_WriteSetEntityProperty(Client* client, Client* other, cs_int8 type, cs_int32 value);

@@ -139,7 +139,7 @@ API void Clients_KickAll(const char* reason);
 API void Clients_UpdateWorldInfo(World* world);
 
 API cs_bool Client_ChangeWorld(Client* client, World* world);
-API void Client_Chat(Client* client, MessageType type, const char* message);
+API void Client_Chat(Client* client, cs_uint8 type, const char* message);
 API void Client_Kick(Client* client, const char* reason);
 API void Client_UpdateWorldInfo(Client* client, World* world, cs_bool updateAll);
 API cs_bool Client_Update(Client* client);
@@ -152,7 +152,7 @@ API cs_bool Client_IsInWorld(Client* client, World* world);
 API cs_bool Client_IsInGame(Client* client);
 API cs_bool Client_IsOP(Client* client);
 
-API cs_bool Client_SetWeather(Client* client, Weather type);
+API cs_bool Client_SetWeather(Client* client, cs_int8 type);
 API cs_bool Client_SetInvOrder(Client* client, Order order, BlockID block);
 API cs_bool Client_SetEnvProperty(Client* client, cs_uint8 property, cs_int32 value);
 API cs_bool Client_SetEnvColor(Client* client, cs_uint8 type, Color3* color);

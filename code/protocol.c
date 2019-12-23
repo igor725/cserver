@@ -368,7 +368,7 @@ void Vanilla_WriteDespawn(Client* client, Client* other) {
 	PacketWriter_End(client, 2);
 }
 
-void Vanilla_WriteChat(Client* client, MessageType type, const char* mesg) {
+void Vanilla_WriteChat(Client* client, cs_uint8 type, const char* mesg) {
 	PacketWriter_Start(client);
 	if(client == Broadcast) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
@@ -525,7 +525,7 @@ cs_bool Handler_PosAndOrient(Client* client, const char* data) {
 cs_bool Handler_Message(Client* client, const char* data) {
 	ValidateClientState(client, STATE_INGAME, true);
 
-	MessageType type = 0;
+	cs_uint8 type = 0;
 	char message[65];
 	char* messptr = message;
 	cs_uint8 partial = *data++;
@@ -767,7 +767,7 @@ void CPE_WriteSetModel(Client* client, Client* other) {
 	PacketWriter_End(client, 66);
 }
 
-void CPE_WriteWeatherType(Client* client, Weather type) {
+void CPE_WriteWeatherType(Client* client, cs_int8 type) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1F;
