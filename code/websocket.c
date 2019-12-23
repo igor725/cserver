@@ -45,7 +45,7 @@ cs_bool WsClient_DoHandshake(WsClient* ws) {
 		SHA1_Update(&ctx, wskey, wskeylen);
 		SHA1_Update(&ctx, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", 36);
 		SHA1_Final(hash, &ctx);
-		String_ToB64((const char*)hash, 20, b64);
+		String_ToB64(hash, 20, b64);
 
 		String_FormatBuf(line, 1024, WS_RESP, b64);
 		Socket_Send(ws->sock, line, (cs_int32)String_Length(line));
@@ -63,7 +63,7 @@ cs_bool WsClient_ReceiveFrame(WsClient* ws) {
 		ws->state = WS_ST_HDR;
 
 	if(ws->state == WS_ST_HDR) {
-		cs_uint32 len = Socket_Receive(ws->sock, ws->header, 2, 0);
+		cs_uint32 len = Socket_Receive(ws->sock, ws->header, 2, MSG_WAITALL);
 
 		if(len == 2) {
 			char plen = ws->header[1] & 0x7F;
@@ -89,7 +89,7 @@ cs_bool WsClient_ReceiveFrame(WsClient* ws) {
 	}
 
 	if(ws->state == WS_ST_PLEN) {
-		cs_uint32 len = Socket_Receive(ws->sock, (char*)&ws->plen, 2, 0);
+		cs_uint32 len = Socket_Receive(ws->sock, (char*)&ws->plen, 2, MSG_WAITALL);
 
 		if(len == 2) {
 			ws->plen = ntohs(ws->plen);
@@ -102,13 +102,13 @@ cs_bool WsClient_ReceiveFrame(WsClient* ws) {
 	}
 
 	if(ws->state == WS_ST_MASK) {
-		if(Socket_Receive(ws->sock, ws->mask, 4, 0) == 4)
+		if(Socket_Receive(ws->sock, ws->mask, 4, MSG_WAITALL) == 4)
 			ws->state = WS_ST_RECVPL;
 	}
 
 	if(ws->state == WS_ST_RECVPL) {
 		if(ws->plen > 0) {
-			cs_uint32 len = Socket_Receive(ws->sock, ws->recvbuf, ws->plen, 0);
+			cs_uint32 len = Socket_Receive(ws->sock, ws->recvbuf, ws->plen, MSG_WAITALL);
 
 			if(len == ws->plen) {
 				for(cs_uint32 i = 0; i < len; i++) {

@@ -43,7 +43,12 @@ static void AcceptFunc(void) {
 			}
 		}
 
-		if(Socket_Receive(fd, tmp->rdbuf, 5, MSG_PEEK)) {
+		/*
+		** TOOD: При ну очень низкой скорости соединения
+		** в этом месте возможно, что 5 байт не успеют
+		** прийти, придумать, как обойти это.
+		*/
+		if(Socket_Receive(fd, tmp->rdbuf, 5, MSG_PEEK) == 5) {
 			if(String_CaselessCompare(tmp->rdbuf, "GET /")) {
 				WsClient* wscl = Memory_Alloc(1, sizeof(WsClient));
 				wscl->recvbuf = tmp->rdbuf;

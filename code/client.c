@@ -149,7 +149,7 @@ cs_bool Group_Remove(cs_int16 gid) {
 		cg->prev->next = cg->next;
 	Memory_Free((void*)cg->name);
 	Memory_Free(cg);
-	
+
 	return true;
 }
 
@@ -860,7 +860,7 @@ static void PacketReceiverRaw(Client* client) {
 	cs_uint16 packetSize;
 	cs_uint8 packetId;
 
-	if(Socket_Receive(client->sock, (char*)&packetId, 1, 0) == 1) {
+	if(Socket_Receive(client->sock, (char*)&packetId, 1, MSG_WAITALL) == 1) {
 		packet = Packet_Get(packetId);
 		if(!packet) {
 			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
@@ -870,7 +870,7 @@ static void PacketReceiverRaw(Client* client) {
 		packetSize = GetPacketSizeFor(packet, client, &extended);
 
 		if(packetSize > 0) {
-			cs_int32 len = Socket_Receive(client->sock, client->rdbuf, packetSize, 0);
+			cs_int32 len = Socket_Receive(client->sock, client->rdbuf, packetSize, MSG_WAITALL);
 
 			if(packetSize == len)
 				HandlePacket(client, client->rdbuf, packet, extended);

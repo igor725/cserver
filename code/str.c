@@ -65,7 +65,7 @@ cs_size String_Append(char* dst, cs_size len, const char* src) {
 cs_size String_Copy(char* dst, cs_size len, const char* src) {
 	cs_size avail = len;
 
-	while(avail-- > 1 && (*dst++ = *src++) != '\0');
+	while(avail > 0 && (*dst++ = *src++) != '\0') avail--;
 	*dst = '\0';
 
 	return len - avail;
@@ -156,36 +156,43 @@ cs_size String_GetArgument(const char* args, char* arg, cs_size len, cs_int32 in
 	return len - avail;
 }
 
+size_t String_SizeOfB64(size_t inlen) {
+	size_t ret = inlen;
+
+	if (inlen % 3 != 0)
+		ret += 3 - (inlen % 3);
+	ret /= 3;
+	ret *= 4;
+
+	return ret;
+}
+
 const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-size_t String_ToB64(const char* src, size_t len, char* dst) {
-	char* p = dst;
-	size_t i;
+size_t String_ToB64(const cs_uint8* src, size_t len, char* dst) {
+	size_t elen = String_SizeOfB64(len);
+	dst[elen] = '\0';
 
-	for (i = 0; i < len - 2; i += 3) {
-		*p++ = b64chars[(src[i] >> 2) & 0x3F];
-		*p++ = b64chars[((src[i] & 0x3) << 4) |
-		((int) (src[i + 1] & 0xF0) >> 4)];
-		*p++ = b64chars[((src[i + 1] & 0xF) << 2) |
-		((int) (src[i + 2] & 0xC0) >> 6)];
-		*p++ = b64chars[src[i + 2] & 0x3F];
-	}
-	if (i < len) {
-		*p++ = b64chars[(src[i] >> 2) & 0x3F];
-		if (i == (len - 1)) {
-			*p++ = b64chars[((src[i] & 0x3) << 4)];
-			*p++ = '=';
+	for (size_t i = 0, j = 0; i < len; i += 3, j += 4) {
+		cs_int32 v = src[i];
+		v = i + 1 < len ? v << 8 | src[i + 1] : v << 8;
+		v = i + 2 < len ? v << 8 | src[i + 2] : v << 8;
+
+		dst[j] = b64chars[(v >> 18) & 0x3F];
+		dst[j + 1] = b64chars[(v >> 12) & 0x3F];
+		if (i + 1 < len) {
+			dst[j + 2] = b64chars[(v >> 6) & 0x3F];
+		} else {
+			dst[j + 2] = '=';
 		}
-		else {
-			*p++ = b64chars[((src[i] & 0x3) << 4) |
-			((int) (src[i + 1] & 0xF0) >> 4)];
-			*p++ = b64chars[((src[i + 1] & 0xF) << 2)];
+		if (i + 2 < len) {
+			dst[j + 3] = b64chars[v & 0x3F];
+		} else {
+			dst[j + 3] = '=';
 		}
-		*p++ = '=';
 	}
 
-	*p++ = '\0';
-	return p - dst;
+	return elen;
 }
 
 /*

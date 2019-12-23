@@ -171,9 +171,9 @@ Socket Socket_Accept(Socket sock, struct sockaddr_in* addr) {
 }
 
 #if defined(WINDOWS)
-#define SOCK_DFLAGS MSG_WAITALL
+#define SOCK_DFLAGS 0
 #elif defined(POSIX)
-#define SOCK_DFLAGS MSG_WAITALL | MSG_NOSIGNAL
+#define SOCK_DFLAGS MSG_NOSIGNAL
 #endif
 
 cs_int32 Socket_Receive(Socket sock, char* buf, cs_int32 len, cs_int32 flags) {
@@ -185,7 +185,7 @@ cs_int32 Socket_ReceiveLine(Socket sock, char* line, cs_int32 len) {
 	char sym;
 
 	while(len > 1) {
-		if(Socket_Receive(sock, &sym, 1, 0) == 1) {
+		if(Socket_Receive(sock, &sym, 1, MSG_WAITALL) == 1) {
 			if(sym == '\n') {
 				*line++ = '\0';
 				break;

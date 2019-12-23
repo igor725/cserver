@@ -392,7 +392,7 @@ cs_bool HttpResponse_Read(HTTPResponse* resp, Socket sock) {
 		if(len <= 131072) {
 			resp->bodysize = len;
 			resp->body = Memory_Alloc(1, len + 1);
-			if(Socket_Receive(sock, resp->body, len, 0) != len) {
+			if(Socket_Receive(sock, resp->body, len, MSG_WAITALL) != len) {
 				resp->error = HTTP_ERR_BODY_RECV_FAIL;
 				return false;
 			}
@@ -416,7 +416,7 @@ cs_bool HttpResponse_Read(HTTPResponse* resp, Socket sock) {
 			cs_int32 oldbodysize = resp->bodysize;
 			if(!resp->body) {
 				resp->body = Memory_Alloc(1, clen);
-				if(Socket_Receive(sock, resp->body, clen, 0) != clen) {
+				if(Socket_Receive(sock, resp->body, clen, MSG_WAITALL) != clen) {
 					resp->error = HTTP_ERR_BODY_RECV_FAIL;
 					return false;
 				}
@@ -428,7 +428,7 @@ cs_bool HttpResponse_Read(HTTPResponse* resp, Socket sock) {
 			}
 			if(oldbodysize > 0) {
 				resp->body = Memory_Realloc(resp->body, oldbodysize, resp->bodysize);
-				if(Socket_Receive(sock, resp->body + oldbodysize, clen, 0) != clen) {
+				if(Socket_Receive(sock, resp->body + oldbodysize, clen, MSG_WAITALL) != clen) {
 					resp->error = HTTP_ERR_BODY_RECV_FAIL;
 					return false;
 				}
