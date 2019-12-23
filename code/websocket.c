@@ -5,32 +5,6 @@
 #include "lang.h"
 #include "hash.h"
 
-const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-static char* SHA1toB64(cs_uint8* in, char* out) {
-	for (cs_int32 i = 0, j = 0; i < 20; i += 3, j += 4) {
-		cs_int32 v = in[i];
-		v = i + 1 < 20 ? v << 8 | in[i + 1] : v << 8;
-		v = i + 2 < 20 ? v << 8 | in[i + 2] : v << 8;
-
-		out[j] = b64chars[(v >> 18) & 0x3F];
-		out[j + 1] = b64chars[(v >> 12) & 0x3F];
-		if (i + 1 < 20) {
-			out[j + 2] = b64chars[(v >> 6) & 0x3F];
-		} else {
-			out[j + 2] = '=';
-		}
-		if (i + 2 < 20) {
-			out[j + 3] = b64chars[v & 0x3F];
-		} else {
-			out[j + 3] = '=';
-		}
-	}
-
-	out[28] = '\0';
-	return out;
-}
-
 #define WS_RESP "HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Protocol: ClassiCube\r\nSec-WebSocket-Accept: %s\r\n\r\n"
 #define WS_ERRRESP "HTTP/1.1 %d %s\r\nConnection: Close\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s"
 
@@ -71,7 +45,7 @@ cs_bool WsClient_DoHandshake(WsClient* ws) {
 		SHA1_Update(&ctx, wskey, wskeylen);
 		SHA1_Update(&ctx, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", 36);
 		SHA1_Final(hash, &ctx);
-		SHA1toB64(hash, b64);
+		String_ToB64((const char*)hash, 20, b64);
 
 		String_FormatBuf(line, 1024, WS_RESP, b64);
 		Socket_Send(ws->sock, line, (cs_int32)String_Length(line));

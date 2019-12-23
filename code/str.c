@@ -156,6 +156,38 @@ cs_size String_GetArgument(const char* args, char* arg, cs_size len, cs_int32 in
 	return len - avail;
 }
 
+const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+size_t String_ToB64(const char* src, size_t len, char* dst) {
+	char* p = dst;
+	size_t i;
+
+	for (i = 0; i < len - 2; i += 3) {
+		*p++ = b64chars[(src[i] >> 2) & 0x3F];
+		*p++ = b64chars[((src[i] & 0x3) << 4) |
+		((int) (src[i + 1] & 0xF0) >> 4)];
+		*p++ = b64chars[((src[i + 1] & 0xF) << 2) |
+		((int) (src[i + 2] & 0xC0) >> 6)];
+		*p++ = b64chars[src[i + 2] & 0x3F];
+	}
+	if (i < len) {
+		*p++ = b64chars[(src[i] >> 2) & 0x3F];
+		if (i == (len - 1)) {
+			*p++ = b64chars[((src[i] & 0x3) << 4)];
+			*p++ = '=';
+		}
+		else {
+			*p++ = b64chars[((src[i] & 0x3) << 4) |
+			((int) (src[i + 1] & 0xF0) >> 4)];
+			*p++ = b64chars[((src[i + 1] & 0xF) << 2)];
+		}
+		*p++ = '=';
+	}
+
+	*p++ = '\0';
+	return p - dst;
+}
+
 /*
 ** Взято здеся:
 ** https://stackoverflow.com/questions/21001659/crc32-algorithm-implementation-in-c-without-a-look-up-table-and-with-a-public-li
