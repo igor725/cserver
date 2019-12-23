@@ -65,7 +65,7 @@ cs_size String_Append(char* dst, cs_size len, const char* src) {
 cs_size String_Copy(char* dst, cs_size len, const char* src) {
 	cs_size avail = len;
 
-	while(avail > 0 && (*dst++ = *src++) != '\0') avail--;
+	while(avail > 1 && (*dst++ = *src++) != '\0') avail--;
 	*dst = '\0';
 
 	return len - avail;
