@@ -261,8 +261,10 @@ cs_bool HttpRequest_Perform(HTTPRequest* req, HTTPResponse* resp) {
 
 void HttpRequest_Cleanup(HTTPRequest* req) {
 	if(req->path) Memory_Free((void*)req->path);
+	req->path = NULL;
 	if(req->header) {
 		HTTPHeader* ptr = req->header;
+		req->header = NULL;
 
 		while(ptr) {
 			FreeHeader(ptr);
@@ -442,6 +444,7 @@ cs_bool HttpResponse_Read(HTTPResponse* resp, Socket sock) {
 void HttpResponse_Cleanup(HTTPResponse* resp) {
 	if(resp->header) {
 		HTTPHeader* ptr = resp->header;
+		resp->header = NULL;
 
 		while(ptr) {
 			FreeHeader(ptr);

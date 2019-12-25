@@ -59,8 +59,8 @@ static void TrimReserved(char* name, cs_int32 len) {
 
 static void DoRequest() {
 	if(*Secret == '\0') NewSecret();
-	HTTPRequest req;
-	HTTPResponse resp;
+	HTTPRequest req = {0};
+	HTTPResponse resp = {0};
 	char reqstr[512], name[65];
 	String_Copy(name, 65, Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY));
 	TrimReserved(name, 65);
