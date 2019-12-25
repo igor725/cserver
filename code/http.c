@@ -383,7 +383,8 @@ cs_bool HttpResponse_Read(HTTPResponse* resp, Socket sock) {
 		char* value = (char*)String_FirstChar(line, ':');
 		if(value) {
 			*value++ = '\0';
-			HttpResponse_SetHeader(resp, line, ++value);
+			if(*value == ' ') ++value;
+			HttpResponse_SetHeader(resp, line, value);
 		}
 	}
 
