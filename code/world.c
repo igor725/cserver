@@ -249,7 +249,7 @@ THREAD_FUNC(WorldSaveThread) {
 	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
 	String_FormatBuf(tmpname, 256, "worlds" PATH_DELIM "%s.tmp", world->name);
 
-	FILE* fp = File_Open(tmpname, "w");
+	FILE* fp = File_Open(tmpname, "wb");
 	if(!fp) {
 		Error_PrintSys(false);
 		goto world_save_done;
@@ -317,7 +317,7 @@ THREAD_FUNC(WorldLoadThread) {
 	char path[256];
 	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
 
-	FILE* fp = File_Open(path, "r");
+	FILE* fp = File_Open(path, "rb");
 	if(!fp) {
 		Error_PrintSys(false);
 		goto world_load_done;
@@ -392,8 +392,7 @@ void World_Unload(World* world) {
 }
 
 cs_uint32 World_GetOffset(World* world, SVec* pos) {
-	WorldInfo* wi = &world->info;
-	SVec* dim = &wi->dimensions;
+	SVec* dim = &world->info->dimensions;
 
 	if(dim->x < 0 || dim->y < 0 || dim->z < 0 ||
 	pos->x > dim->x || pos->y > dim->y || pos->z > dim->z) return 0;
