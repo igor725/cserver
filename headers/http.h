@@ -49,7 +49,7 @@ API void HttpRequest_SetHeaderStr(HTTPRequest* req, const char* key, const char*
 API const char* HttpRequest_GetHeaderStr(HTTPRequest* req, const char* key);
 API void HttpRequest_SetHeaderInt(HTTPRequest* req, const char* key, cs_int32 value);
 cs_int32 HttpRequest_GetHeaderInt(HTTPRequest* req, const char* key);
-API void HttpRequest_SetHost(HTTPRequest* req, const char* host, cs_uint16 port);
+API cs_bool HttpRequest_SetHost(HTTPRequest* req, const char* host, cs_uint16 port, cs_bool addwww);
 API void HttpRequest_SetPath(HTTPRequest* req, const char* path);
 API cs_bool HttpRequest_Read(HTTPRequest* req, Socket sock);
 API cs_bool HttpRequest_Perform(HTTPRequest* req, HTTPResponse* resp);

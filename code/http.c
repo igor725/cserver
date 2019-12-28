@@ -161,14 +161,19 @@ void HttpRequest_SetHeader(HTTPRequest* resp, const char* key, const char* value
 	}
 }
 
-void HttpRequest_SetHost(HTTPRequest* req, const char* host, cs_uint16 port) {
+cs_bool HttpRequest_SetHost(HTTPRequest* req, const char* host, cs_uint16 port, cs_bool addwww) {
 	char hostfmt[26];
-	Socket_SetAddrGuess(&req->addr, host, port);
-	if(port != 80)
-		String_FormatBuf(hostfmt, 26, "www.%s:%d", host, port);
-	else
-		String_FormatBuf(hostfmt, 26, "www.%s", host);
-	HttpRequest_SetHeaderStr(req, "Host", hostfmt);
+	if(Socket_SetAddrGuess(&req->addr, host, port)) {
+		if(addwww) {
+			if(port != 80)
+				String_FormatBuf(hostfmt, 26, "www.%s:%d", host, port);
+			else
+				String_FormatBuf(hostfmt, 26, "www.%s", host);
+		}
+		HttpRequest_SetHeaderStr(req, "Host", hostfmt);
+		return true;
+	}
+	return false;
 }
 
 void HttpRequest_SetPath(HTTPRequest* req, const char* path) {

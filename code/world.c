@@ -392,7 +392,7 @@ void World_Unload(World* world) {
 }
 
 cs_uint32 World_GetOffset(World* world, SVec* pos) {
-	SVec* dim = &world->info->dimensions;
+	SVec* dim = &world->info.dimensions;
 
 	if(dim->x < 0 || dim->y < 0 || dim->z < 0 ||
 	pos->x > dim->x || pos->y > dim->y || pos->z > dim->z) return 0;

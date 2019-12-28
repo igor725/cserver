@@ -82,25 +82,28 @@ static void DoRequest() {
 	Socket fd = Socket_New();
 	req.sock = fd;
 
-	HttpRequest_SetHost(&req, "classicube.net", 80);
-	HttpRequest_SetPath(&req, reqstr);
-	HttpRequest_SetHeaderStr(&req, "Pragma", "no-cache");
-	HttpRequest_SetHeaderStr(&req, "Connection", "close");
+	if(HttpRequest_SetHost(&req, "classicube.net", 80, true)) {
+		HttpRequest_SetPath(&req, reqstr);
+		HttpRequest_SetHeaderStr(&req, "Pragma", "no-cache");
+		HttpRequest_SetHeaderStr(&req, "Connection", "close");
 
-	if(HttpRequest_Perform(&req, &resp)) {
-		if(!PlayURL && resp.body && resp.code == 200) {
-			if(String_CaselessCompare2(resp.body, PLAY_URL, PLAY_URL_LEN)) {
-				PlayURL = String_AllocCopy(resp.body);
-				Log_Info(Lang_Get(LANG_HBPLAY), resp.body);
+		if(HttpRequest_Perform(&req, &resp)) {
+			if(!PlayURL && resp.body && resp.code == 200) {
+				if(String_CaselessCompare2(resp.body, PLAY_URL, PLAY_URL_LEN)) {
+					PlayURL = String_AllocCopy(resp.body);
+					Log_Info(Lang_Get(LANG_HBPLAY), resp.body);
+				}
 			}
+			if(resp.code != 200)
+				Log_Error(Lang_Get(LANG_HBRESPERR), resp.code);
+		} else {
+			if(req.error == HTTP_ERR_RESPONSE_READ)
+				Log_Error(Lang_Get(LANG_HBERR), Lang_Get(LANG_HBRR), resp.error);
+			else
+				Log_Error(Lang_Get(LANG_HBERR), Lang_Get(LANG_HBRSP), resp.error);
 		}
-		if(resp.code != 200)
-			Log_Error(Lang_Get(LANG_HBRESPERR), resp.code);
 	} else {
-		if(req.error == HTTP_ERR_RESPONSE_READ)
-			Log_Error(Lang_Get(LANG_HBERR), Lang_Get(LANG_HBRR), resp.error);
-		else
-			Log_Error(Lang_Get(LANG_HBERR), Lang_Get(LANG_HBRSP), resp.error);
+		Log_Error(Lang_Get(LANG_HBADDRERR));
 	}
 
 	Socket_Close(fd);

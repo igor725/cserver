@@ -95,6 +95,8 @@ const char* Lang_Get(LangID id) {
 
 		case LANG_HBRESPERR:
 			return "Heartbeat server responded with an error %d";
+		case LANG_HBADDRERR:
+			return "Can't send heartbeat request to this address.";
 		case LANG_HBRR:
 			return "request reading";
 		case LANG_HBRSP:
@@ -102,7 +104,7 @@ const char* Lang_Get(LangID id) {
 		case LANG_HBERR:
 			return "%s error: %d";
 		case LANG_HBPLAY:
-			return "Server play URL: %s";
+			return "Server play URL: %s.";
 
 		case LANG_WSNOTVALID:
 			return "Not a websocket connection.";
