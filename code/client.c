@@ -47,9 +47,10 @@ cs_uint16 Assoc_NewType() {
 			tptr2 = tptr2->next;
 		}
 
-		tptr->type = type++;
+		tptr->type = ++type;
 		headAssocType->prev = tptr;
 	}
+
 	tptr->next = headAssocType;
 	headAssocType = tptr;
 	return tptr->type;
