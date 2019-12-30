@@ -170,7 +170,9 @@ popd
 goto end
 
 :cloc
-cloc --exclude-dir=zlib .
+set CLOCPATH=.
+IF "%2" == "full" set CLOCPATH=..
+cloc --exclude-dir=zlib !CLOCPATH!
 goto end
 
 :clean
