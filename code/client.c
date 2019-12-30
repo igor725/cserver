@@ -228,6 +228,29 @@ World* Client_GetWorld(Client* client) {
 	return client->playerData->world;
 }
 
+cs_int8 Client_GetFluidLevel(Client* client) {
+	PlayerData* pd = client->playerData;
+	Vec* cpos = &pd->position;
+	World* world = pd->world;
+	SVec tpos; SVec_Set(tpos, cpos->x, cpos->y, cpos->z);
+
+	BlockID id;
+	cs_int8 level = 2;
+
+	test_wtrlevel:
+	if((id = World_GetBlock(world, &tpos)) > 7 && id < 12) {
+		return level;
+	}
+
+	if(level > 1) {
+		level--;
+		tpos.y -= 1;
+		goto test_wtrlevel;
+	}
+
+	return 0;
+}
+
 static CGroup dgroup = {-1, "", 0, NULL, NULL};
 
 CGroup* Client_GetGroup(Client* client) {

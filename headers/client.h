@@ -177,6 +177,7 @@ API const char* Client_GetSkin(Client* client);
 API Client* Client_GetByID(ClientID id);
 API Client* Client_GetByName(const char* name);
 API World* Client_GetWorld(Client* client);
+API cs_int8 Client_GetFluidLevel(Client* client);
 API cs_int16 Client_GetModel(Client* client);
 API BlockID Client_GetHeldBlock(Client* client);
 API cs_int32 Client_GetExtVer(Client* client, cs_uint32 extCRC32);
