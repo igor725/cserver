@@ -231,9 +231,8 @@ World* Client_GetWorld(Client* client) {
 
 cs_int8 Client_GetFluidLevel(Client* client) {
 	PlayerData* pd = client->playerData;
-	Vec* cpos = &pd->position;
 	World* world = pd->world;
-	SVec tpos; SVec_Set(tpos, cpos->x, cpos->y, cpos->z);
+	SVec tpos; SVec_Copy(tpos, pd->position);
 
 	BlockID id;
 	cs_int8 level = 2;
