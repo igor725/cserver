@@ -111,6 +111,8 @@ const char* Lang_Get(LangID id) {
 
 		case LANG_ERRFMT:
 			return "%s:%d in function %s: %s";
+		case LANG_ERRPACKETREAD:
+			return "Invalid packet 0x%02X from Client[%d]";
 
 		case LANG_INFWWAIT:
 			return "Server is loading the world, please wait...";

@@ -451,6 +451,14 @@ cs_bool Client_RemoveSelection(Client* client, cs_uint8 id) {
 	return false;
 }
 
+cs_bool Client_TeleportTo(Client* client, Vec* pos, Ang* ang) {
+	if(Client_IsInGame(client)) {
+		Vanilla_WriteTeleport(client, pos, ang);
+		return true;
+	}
+	return false;
+}
+
 static cs_uint32 copyMessagePart(const char* msg, char* part, cs_uint32 i, char* color) {
 	if(*msg == '\0') return 0;
 
@@ -511,9 +519,10 @@ static void HandlePacket(Client* client, char* data, Packet* packet, cs_bool ext
 		if(packet->handler)
 			ret = packet->handler(client, data);
 
-	if(!ret)
+	if(!ret) {
+		Log_Error(Lang_Get(LANG_ERRPACKETREAD), packet->id, client->id);
 		Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
-	else
+	} else
 		client->pps += 1;
 }
 
@@ -841,6 +850,7 @@ static void PacketReceiverWs(Client* client) {
 	cs_uint16 packetSize, recvSize;
 	WsClient* ws = client->websock;
 	char* data = client->rdbuf;
+	cs_uint8 packetId = *data++;
 
 	if(WsClient_ReceiveFrame(ws)) {
 		if(ws->opcode == 0x08) {
@@ -850,8 +860,9 @@ static void PacketReceiverWs(Client* client) {
 
 		recvSize = ws->plen - 1;
 		packet_handle:
-		packet = Packet_Get(*data++);
+		packet = Packet_Get(packetId);
 		if(!packet) {
+			Log_Error(Lang_Get(LANG_ERRPACKETREAD), packetId, client->id);
 			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
 			return;
 		}
@@ -889,6 +900,7 @@ static void PacketReceiverRaw(Client* client) {
 	if(Socket_Receive(client->sock, (char*)&packetId, 1, MSG_WAITALL) == 1) {
 		packet = Packet_Get(packetId);
 		if(!packet) {
+			Log_Error(Lang_Get(LANG_ERRPACKETREAD), packetId, client->id);
 			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
 			return;
 		}

@@ -69,7 +69,7 @@ enum {
 };
 
 enum {
-	BDSND_SILENT,
+	BDSND_NONE,
 	BDSND_WOOD,
 	BDSND_GRAVEL,
 	BDSND_GRASS,

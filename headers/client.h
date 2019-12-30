@@ -146,6 +146,7 @@ API cs_bool Client_Update(Client* client);
 API cs_bool Client_SendHacks(Client* client, CPEHacks* hacks);
 API cs_bool Client_MakeSelection(Client* client, cs_uint8 id, SVec* start, SVec* end, Color4* color);
 API cs_bool Client_RemoveSelection(Client* client, cs_uint8 id);
+API cs_bool Client_TeleportTo(Client* client, Vec* pos, Ang* ang);
 
 API cs_bool Client_IsInSameWorld(Client* client, Client* other);
 API cs_bool Client_IsInWorld(Client* client, World* world);

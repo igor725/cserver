@@ -57,6 +57,7 @@ return;
 typedef cs_bool(*packetHandler)(Client* client, const char* data);
 
 typedef struct {
+	cs_uint8 id;
 	cs_uint16 size;
 	cs_bool haveCPEImp;
 	cs_uint32 extCRC32;
@@ -101,6 +102,7 @@ void Vanilla_WriteLvlInit(Client* client);
 void Vanilla_WriteLvlFin(Client* client, SVec* dims);
 void Vanilla_WriteSetBlock(Client* client, SVec* pos, BlockID block);
 void Vanilla_WriteSpawn(Client* client, Client* other);
+void Vanilla_WriteTeleport(Client* client, Vec* pos, Ang* ang);
 void Vanilla_WritePosAndOrient(Client* client, Client* other);
 void Vanilla_WriteDespawn(Client* client, Client* other);
 void Vanilla_WriteChat(Client* client, cs_uint8 type, const char* mesg);

@@ -91,17 +91,18 @@ void Proto_WriteByteColor4(char** dataptr, const Color4* color) {
 	*dataptr = data;
 }
 
+cs_uint32 Proto_WriteVecAng(char** dataptr, Vec* vec, Ang* ang, cs_bool extended) {
+	if(extended)
+		Proto_WriteFlVec(dataptr, vec);
+	else
+		Proto_WriteFlSVec(dataptr, vec);
+	Proto_WriteAng(dataptr, ang);
+	return extended ? 12 : 6;
+}
+
 cs_uint32 Proto_WriteClientPos(char* data, Client* client, cs_bool extended) {
 	PlayerData* pd = client->playerData;
-
-	if(extended)
-		Proto_WriteFlVec(&data, &pd->position);
-	else
-		Proto_WriteFlSVec(&data, &pd->position);
-
-	Proto_WriteAng(&data, &pd->angle);
-
-	return extended ? 12 : 6;
+	return Proto_WriteVecAng(&data, &pd->position, &pd->angle, extended);
 }
 
 cs_uint8 Proto_ReadString(const char** dataptr, const char** dstptr) {
@@ -202,6 +203,7 @@ cs_bool Proto_ReadClientPos(Client* client, const char* data) {
 
 void Packet_Register(cs_uint8 id, cs_uint16 size, packetHandler handler) {
 	Packet* tmp = Memory_Alloc(1, sizeof(Packet));
+	tmp->id = id;
 	tmp->size = size;
 	tmp->handler = handler;
 	packetsList[id] = tmp;
@@ -346,6 +348,17 @@ void Vanilla_WriteSpawn(Client* client, Client* other) {
 	cs_uint32 len = Proto_WriteClientPos(data, other, extended);
 
 	PacketWriter_End(client, 68 + len);
+}
+
+void Vanilla_WriteTeleport(Client* client, Vec* pos, Ang* ang) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x08;
+	*data++ = 0xFF;
+	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
+	cs_uint32 len = Proto_WriteVecAng(&data, pos, ang, extended);
+
+	PacketWriter_End(client, 4 + len);
 }
 
 void Vanilla_WritePosAndOrient(Client* client, Client* other) {
