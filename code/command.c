@@ -62,13 +62,11 @@ Command* Command_GetByFunc(cmdFunc func) {
 cs_bool Command_Unregister(Command* cmd) {
 	if(cmd->prev)
 		cmd->prev->next = cmd->next;
-
 	if(cmd->next) {
 		cmd->next->prev = cmd->prev;
 		headCmd = cmd->next;
 	} else
 		headCmd = NULL;
-
 	Memory_Free((void*)cmd->name);
 	Memory_Free(cmd);
 	return true;

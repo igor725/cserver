@@ -66,9 +66,12 @@ cs_bool Assoc_DelType(cs_uint16 type, cs_bool freeData) {
 	}
 
 	if(tptr->next)
-		tptr->next->prev = tptr->next;
+		tptr->next->prev = tptr->prev;
 	if(tptr->prev)
-		tptr->prev->next = tptr->prev;
+		tptr->prev->next = tptr->next;
+	else
+		headAssocType = tptr->next;
+
 	Memory_Free((void*)tptr);
 	return true;
 }
@@ -97,11 +100,11 @@ cs_bool Assoc_Remove(Client* client, cs_uint16 type, cs_bool freeData) {
 	AssocNode* nptr = AGetNode(client, type);
 	if(!nptr) return false;
 	if(nptr->next)
-		nptr->next->prev = nptr->next;
+		nptr->next->prev = nptr->prev;
 	if(nptr->prev)
-		nptr->prev->next = nptr->prev;
+		nptr->prev->next = nptr->next;
 	else
-		client->headNode = NULL;
+		client->headNode = nptr->next;
 	if(freeData) Memory_Free(nptr->dataptr);
 	Memory_Free((void*)nptr);
 	return true;

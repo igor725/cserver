@@ -14,6 +14,7 @@
 #include "event.h"
 #include "plugin.h"
 #include "lang.h"
+#include "timer.h"
 
 static void AcceptFunc(void) {
 	struct sockaddr_in caddr;
@@ -215,6 +216,7 @@ void Server_InitialWork(void) {
 
 void Server_DoStep(cs_int32 delta) {
 	Event_Call(EVT_ONTICK, &delta);
+	Timer_Update(delta);
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client* client = Clients_List[i];
 		if(client) Client_Tick(client, delta);
