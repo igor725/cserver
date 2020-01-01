@@ -489,11 +489,11 @@ cs_bool Command_Handle(char* str, Client* caller) {
 		ccdata.caller = caller;
 		ccdata.command = cmd;
 		ccdata.out = ret;
+		*ret = '\0';
 
 		if(cmd->func(&ccdata))
 			SendOutput(caller, ret);
 
-		*ret = '\0';
 		return true;
 	}
 
