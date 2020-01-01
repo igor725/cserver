@@ -392,11 +392,11 @@ void World_Unload(World* world) {
 }
 
 cs_uint32 World_GetOffset(World* world, SVec* pos) {
+	if(pos->x < 0 || pos->y < 0 || pos->z < 0) return 0;
 	SVec* dim = &world->info.dimensions;
-
-	if(dim->x < 0 || dim->y < 0 || dim->z < 0 ||
-	pos->x > dim->x || pos->y > dim->y || pos->z > dim->z) return 0;
-	return pos->z * dim->z + pos->y * (dim->x * dim->y) + pos->x + 4;
+	cs_uint32 offset = pos->z * dim->z + pos->y * (dim->x * dim->y) + pos->x;
+	if(offset > world->size) return 0;
+	return offset + 4;
 }
 
 cs_bool World_SetBlockO(World* world, cs_uint32 offset, BlockID id) {

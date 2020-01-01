@@ -62,11 +62,10 @@ cs_bool Bot_SpawnFor(Client* bot, Client* client) {
 	if(!Client_IsInSameWorld(client, bot)) return false;
 	cs_int32 extlist_ver = Client_GetExtVer(client, EXT_PLAYERLIST);
 
-	if(extlist_ver == 2) {
+	if(extlist_ver == 2)
 		CPE_WriteAddEntity2(client, bot);
-	} else {
+	else
 		Vanilla_WriteSpawn(client, bot);
-	}
 
 	return true;
 }
