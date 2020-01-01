@@ -44,25 +44,25 @@ static void AcceptFunc(void) {
 			}
 		}
 
-		/*
-		** TOOD: При ну очень низкой скорости соединения
-		** в этом месте возможно, что 5 байт не успеют
-		** прийти, придумать, как обойти это.
-		*/
-		if(Socket_Receive(fd, tmp->rdbuf, 5, MSG_PEEK) == 5) {
-			if(String_CaselessCompare(tmp->rdbuf, "GET /")) {
-				WsClient* wscl = Memory_Alloc(1, sizeof(WsClient));
-				wscl->recvbuf = tmp->rdbuf;
-				wscl->sock = tmp->sock;
-				tmp->websock = wscl;
-
-				if(!WsClient_DoHandshake(wscl)) {
-					Client_Free(tmp);
-					return;
-				}
+		cs_uint8 attempt = 0;
+		while(attempt++ < 5) {
+			if(Socket_Receive(fd, tmp->rdbuf, 5, MSG_PEEK) == 5) {
+				if(String_CaselessCompare(tmp->rdbuf, "GET /")) {
+					WsClient* wscl = Memory_Alloc(1, sizeof(WsClient));
+					wscl->recvbuf = tmp->rdbuf;
+					wscl->sock = tmp->sock;
+					tmp->websock = wscl;
+					if(WsClient_DoHandshake(wscl))
+						goto client_ok;
+					else break;
+				} else goto client_ok;
 			}
+			Sleep(100);
 		}
+		Client_Kick(tmp, Lang_Get(LANG_KICKPACKETREAD));
+		Client_Free(tmp);
 
+		client_ok:
 		if(!Client_Add(tmp)) {
 			Client_Kick(tmp, Lang_Get(LANG_KICKSVFULL));
 			Client_Free(tmp);

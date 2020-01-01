@@ -850,7 +850,6 @@ static void PacketReceiverWs(Client* client) {
 	cs_uint16 packetSize, recvSize;
 	WsClient* ws = client->websock;
 	char* data = client->rdbuf;
-	cs_uint8 packetId = *data++;
 
 	if(WsClient_ReceiveFrame(ws)) {
 		if(ws->opcode == 0x08) {
@@ -860,6 +859,7 @@ static void PacketReceiverWs(Client* client) {
 
 		recvSize = ws->plen - 1;
 		packet_handle:
+		cs_uint8 packetId = *data++;
 		packet = Packet_Get(packetId);
 		if(!packet) {
 			Log_Error(Lang_Get(LANG_ERRPACKETREAD), packetId, client->id);
