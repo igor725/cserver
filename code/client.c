@@ -845,6 +845,7 @@ cs_int32 Client_Send(Client* client, cs_int32 len) {
 }
 
 static void PacketReceiverWs(Client* client) {
+	cs_uint8 packetId;
 	Packet* packet;
 	cs_bool extended;
 	cs_uint16 packetSize, recvSize;
@@ -859,7 +860,7 @@ static void PacketReceiverWs(Client* client) {
 
 		recvSize = ws->plen - 1;
 		packet_handle:
-		cs_uint8 packetId = *data++;
+		packetId = *data++;
 		packet = Packet_Get(packetId);
 		if(!packet) {
 			Log_Error(Lang_Get(LANG_ERRPACKETREAD), packetId, client->id);
