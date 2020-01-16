@@ -342,7 +342,7 @@ void Vanilla_WriteSpawn(Client* client, Client* other) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x07;
-	*data++ = client == other ? 0xFF : other->id;
+	*data++ = client == other ? CLIENT_SELF : other->id;
 	Proto_WriteString(&data, other->playerData->name);
 	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
 	cs_uint32 len = Proto_WriteClientPos(data, other, extended);
@@ -354,7 +354,7 @@ void Vanilla_WriteTeleport(Client* client, Vec* pos, Ang* ang) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x08;
-	*data++ = 0xFF;
+	*data++ = CLIENT_SELF;
 	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
 	cs_uint32 len = Proto_WriteVecAng(&data, pos, ang, extended);
 
@@ -365,7 +365,7 @@ void Vanilla_WritePosAndOrient(Client* client, Client* other) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x08;
-	*data++ = client == other ? 0xFF : other->id;
+	*data++ = client == other ? CLIENT_SELF : other->id;
 	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
 	cs_uint32 len = Proto_WriteClientPos(data, other, extended);
 
@@ -376,7 +376,7 @@ void Vanilla_WriteDespawn(Client* client, Client* other) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x0C;
-	*data = client == other ? 0xFF : other->id;
+	*data = client == other ? CLIENT_SELF : other->id;
 
 	PacketWriter_End(client, 2);
 }
@@ -685,7 +685,7 @@ void CPE_WriteAddName(Client* client, Client* other) {
 
 	*data++ = 0x16;
 	data++; // 16 bit id? For what?
-	*data++ = client == other ? 0xFF : other->id;
+	*data++ = client == other ? CLIENT_SELF : other->id;
 	Proto_WriteString(&data, Client_GetName(other));
 	Proto_WriteString(&data, Client_GetName(other));
 	CGroup* group = Client_GetGroup(other);
@@ -699,7 +699,7 @@ void CPE_WriteAddEntity2(Client* client, Client* other) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x21;
-	*data++ = client == other ? 0xFF : other->id;
+	*data++ = client == other ? CLIENT_SELF : other->id;
 	if(other->cpeData && other->cpeData->hideDisplayName)
 		Proto_WriteString(&data, NULL);
 	else
@@ -716,7 +716,7 @@ void CPE_WriteRemoveName(Client* client, Client* other) {
 
 	*data++ = 0x18;
 	data++; // Short value... again.
-	*data++ = client == other ? 0xFF : other->id;
+	*data++ = client == other ? CLIENT_SELF : other->id;
 
 	PacketWriter_End(client, 3);
 }
@@ -768,7 +768,7 @@ void CPE_WriteSetModel(Client* client, Client* other) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1D;
-	*data++ = client == other ? 0xFF : other->id;
+	*data++ = client == other ? CLIENT_SELF : other->id;
 	cs_int16 model = Client_GetModel(other);
 	if(model < 256) {
 		char modelname[4];
@@ -876,7 +876,7 @@ void CPE_WriteSetEntityProperty(Client* client, Client* other, cs_int8 type, cs_
 	PacketWriter_Start(client);
 
 	*data++ = 0x2A;
-	*data++ = client == other ? 0xFF : other->id;
+	*data++ = client == other ? CLIENT_SELF : other->id;
 	*data++ = type;
 	*(cs_int32*)data = htonl(value);
 
