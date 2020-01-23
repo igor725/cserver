@@ -56,10 +56,10 @@ enum {
 };
 
 enum {
-	BDF_EXTENDED = (1 << 1),
-	BDF_DYNALLOCED = (1 << 2),
-	BDF_UPDATED = (1 << 3),
-	BDF_UNDEFINED = (1 << 4)
+	BDF_EXTENDED = BIT(0),
+	BDF_DYNALLOCED = BIT(1),
+	BDF_UPDATED = BIT(2),
+	BDF_UNDEFINED = BIT(3)
 };
 
 enum {

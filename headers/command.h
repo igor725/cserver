@@ -61,11 +61,11 @@ Command_UnregisterByFunc((cmdFunc)svcmd_##N);
 
 enum {
 	CMDF_NONE,
-	CMDF_OP = (1 << 1),
-	CMDF_CLIENT = (1 << 2),
-	CMDF_RESERVED0 = (1 << 3),
-	CMDF_RESERVED1 = (1 << 4),
-	CMDF_RESERVED2 = (1 << 5)
+	CMDF_OP = BIT(0),
+	CMDF_CLIENT = BIT(1),
+	CMDF_RESERVED0 = BIT(2),
+	CMDF_RESERVED1 = BIT(3),
+	CMDF_RESERVED2 = BIT(4)
 };
 
 typedef struct {
