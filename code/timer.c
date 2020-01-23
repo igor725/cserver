@@ -8,7 +8,7 @@ typedef struct Timer {
 	void* userdata;
 } Timer;
 
-AListField* headTimer;
+static AListField* headTimer;
 
 AListField* Timer_Add(cs_int32 ticks, cs_uint32 delay, TimerCallback callback, void* ud) {
 	Timer* timer = Memory_Alloc(1, sizeof(Timer));

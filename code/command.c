@@ -1,5 +1,6 @@
 #include "core.h"
 #include "str.h"
+#include "list.h"
 #include "log.h"
 #include "platform.h"
 #include "error.h"
@@ -12,20 +13,14 @@
 #include "lang.h"
 #include <zlib.h>
 
-Command* headCmd;
+KListField* headCmd;
 
 Command* Command_Register(cs_str name, cmdFunc func, cs_uint8 flags) {
 	if(Command_GetByName(name)) return NULL;
 	Command* tmp = Memory_Alloc(1, sizeof(Command));
-
-	tmp->name = String_AllocCopy(name);
 	tmp->flags = flags;
 	tmp->func = func;
-	if(headCmd)
-		headCmd->prev = tmp;
-	tmp->next = headCmd;
-	headCmd = tmp;
-
+	KList_Add(&headCmd, (void*)String_AllocCopy(name), tmp);
 	return tmp;
 }
 
@@ -35,53 +30,41 @@ void Command_SetAlias(Command* cmd, cs_str alias) {
 }
 
 Command* Command_GetByName(cs_str name) {
-	Command* ptr = headCmd;
+	KListField* field;
+	List_Iter(field, &headCmd) {
+		if(String_CaselessCompare(field->key.str, name))
+			return field->value;
 
-	while(ptr) {
-		if(String_CaselessCompare(ptr->name, name) ||
-		(ptr->alias && String_CaselessCompare(ptr->alias, name)))
-			return ptr;
-		ptr = ptr->next;
+		Command* cmd = field->value;
+		if(cmd->alias && String_CaselessCompare(cmd->alias, name))
+			return field->value;
 	}
-
 	return NULL;
 }
 
-Command* Command_GetByFunc(cmdFunc func) {
-	Command* ptr = headCmd;
-
-	while(ptr) {
-		if(ptr->func == func)
-			return ptr;
-		ptr = ptr->next;
+void Command_Unregister(Command* cmd) {
+	KListField* field;
+	List_Iter(field, &headCmd) {
+		if(field->value == cmd) {
+			if(cmd->alias) Memory_Free((void*)cmd->alias);
+			Memory_Free(field->key.ptr);
+			KList_Remove(&headCmd, field);
+			Memory_Free(cmd);
+		}
 	}
-
-	return NULL;
 }
 
-cs_bool Command_Unregister(Command* cmd) {
-	if(cmd->prev)
-		cmd->prev->next = cmd->next;
-	if(cmd->next) {
-		cmd->next->prev = cmd->prev;
-		headCmd = cmd->next;
-	} else
-		headCmd = NULL;
-	Memory_Free((void*)cmd->name);
-	Memory_Free(cmd);
-	return true;
-}
-
-cs_bool Command_UnregisterByName(cs_str name) {
-	Command* cmd = Command_GetByName(name);
-	if(!cmd) return false;
-	return Command_Unregister(cmd);
-}
-
-cs_bool Command_UnregisterByFunc(cmdFunc func) {
-	Command* cmd = Command_GetByFunc(func);
-	if(!cmd) return false;
-	return Command_Unregister(cmd);
+void Command_UnregisterByFunc(void* func) {
+	KListField* field;
+	List_Iter(field, &headCmd) {
+		Command* cmd = field->value;
+		if(cmd->func == func) {
+			if(cmd->alias) Memory_Free((void*)cmd->alias);
+			Memory_Free(field->key.ptr);
+			KList_Remove(&headCmd, field);
+			Memory_Free(cmd);
+		}
+	}
 }
 
 COMMAND_FUNC(Info) {

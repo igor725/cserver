@@ -18,13 +18,11 @@ typedef struct KListField {
 } KListField;
 
 #define List_Iter(field, head) \
-for(field = *head; field->prev; field = field->prev)
+for(field = *head; field || (field && field->prev); field = field->prev)
 
 AListField* AList_AddField(AListField** head, void* value);
 void AList_Remove(AListField** head, AListField* field);
 
 KListField* KList_Add(KListField** head, void* key, void* value);
-KListField* KList_GetByStr(KListField** head, cs_str key);
-KListField* KList_GetByNum(KListField** head, cs_uintptr num);
 void KList_Remove(KListField** head, KListField* field);
 #endif

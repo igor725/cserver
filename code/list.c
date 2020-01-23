@@ -34,22 +34,6 @@ KListField* KList_Add(KListField** head, void* key, void* value) {
 	return ptr;
 }
 
-KListField* KList_GetByStr(KListField** head, cs_str key) {
-	KListField* field;
-	List_Iter(field, head) {
-		if(String_CaselessCompare(field->key.str, key))
-			return field;
-	}
-}
-
-KListField* KList_GetByNum(KListField** head, cs_uintptr num) {
-	KListField* field;
-	List_Iter(field, head) {
-		if(field->key.num == num)
-			return field;
-	}
-}
-
 void KList_Remove(KListField** head, KListField* field) {
 	if(field->next)
 		field->next->prev = field->prev;

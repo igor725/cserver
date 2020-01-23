@@ -57,7 +57,7 @@ static cs_bool svcmd_##N(CommandCallData* ccdata)
 Command_Register(#N, (cmdFunc)svcmd_##N, F);
 
 #define COMMAND_REMOVE(N) \
-Command_UnregisterByFunc((cmdFunc)svcmd_##N);
+Command_UnregisterByFunc((void*)svcmd_##N);
 
 enum {
 	CMDF_NONE,
@@ -78,20 +78,17 @@ typedef struct {
 typedef cs_bool(*cmdFunc)(CommandCallData* cdata);
 
 typedef struct _Command {
-	const char *name, *alias;
+	const char* alias;
 	cs_uint8 flags;
 	cmdFunc func;
 	void* data;
-	struct _Command *next, *prev;
 } Command;
 
 API Command* Command_Register(cs_str name, cmdFunc func, cs_uint8 flags);
 API void Command_SetAlias(Command* cmd, cs_str alias);
 API Command* Command_GetByName(cs_str name);
-API Command* Command_GetByFunc(cmdFunc func);
-API cs_bool Command_Unregister(Command* cmd);
-API cs_bool Command_UnregisterByName(cs_str name);
-API cs_bool Command_UnregisterByFunc(cmdFunc func);
+API void Command_Unregister(Command* cmd);
+API void Command_UnregisterByFunc(void* func);
 
 void Command_RegisterDefault(void);
 cs_bool Command_Handle(char* cmd, Client* caller);
