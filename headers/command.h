@@ -57,7 +57,7 @@ static cs_bool svcmd_##N(CommandCallData* ccdata)
 Command_Register(#N, (cmdFunc)svcmd_##N, F);
 
 #define COMMAND_REMOVE(N) \
-Command_UnregisterByFunc((void*)svcmd_##N);
+Command_UnregisterByFunc((cmdFunc)svcmd_##N);
 
 enum {
 	CMDF_NONE,
@@ -88,7 +88,7 @@ API Command* Command_Register(cs_str name, cmdFunc func, cs_uint8 flags);
 API void Command_SetAlias(Command* cmd, cs_str alias);
 API Command* Command_GetByName(cs_str name);
 API void Command_Unregister(Command* cmd);
-API void Command_UnregisterByFunc(void* func);
+API void Command_UnregisterByFunc(cmdFunc func);
 
 void Command_RegisterDefault(void);
 cs_bool Command_Handle(char* cmd, Client* caller);

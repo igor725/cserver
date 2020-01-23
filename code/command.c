@@ -3,7 +3,6 @@
 #include "list.h"
 #include "log.h"
 #include "platform.h"
-#include "error.h"
 #include "client.h"
 #include "server.h"
 #include "generators.h"
@@ -54,7 +53,7 @@ void Command_Unregister(Command* cmd) {
 	}
 }
 
-void Command_UnregisterByFunc(void* func) {
+void Command_UnregisterByFunc(cmdFunc func) {
 	KListField* field;
 	List_Iter(field, &headCmd) {
 		Command* cmd = field->value;
