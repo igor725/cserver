@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-cs_bool String_CaselessCompare(const char* str1, const char* str2) {
+cs_bool String_CaselessCompare(cs_str str1, cs_str str2) {
 	cs_uint8 c1, c2;
 
 	while(true) {
@@ -16,7 +16,7 @@ cs_bool String_CaselessCompare(const char* str1, const char* str2) {
 	}
 }
 
-cs_bool String_CaselessCompare2(const char* str1, const char* str2, cs_size len) {
+cs_bool String_CaselessCompare2(cs_str str1, cs_str str2, cs_size len) {
 	cs_uint8 c1, c2;
 
 	while(len--) {
@@ -29,7 +29,7 @@ cs_bool String_CaselessCompare2(const char* str1, const char* str2, cs_size len)
 	return true;
 }
 
-cs_bool String_Compare(const char* str1, const char* str2) {
+cs_bool String_Compare(cs_str str1, cs_str str2) {
 	cs_uint8 c1, c2;
 
 	while(true) {
@@ -39,30 +39,30 @@ cs_bool String_Compare(const char* str1, const char* str2) {
 	}
 }
 
-cs_int32 String_ToInt(const char* str) {
+cs_int32 String_ToInt(cs_str str) {
 	return atoi(str);
 }
 
-cs_int32 String_HexToInt(const char* str) {
+cs_int32 String_HexToInt(cs_str str) {
 	return strtol(str, NULL, 16);
 }
 
-float String_ToFloat(const char* str) {
+float String_ToFloat(cs_str str) {
 	return (float)atof(str);
 }
 
-cs_size String_Length(const char* str) {
-	const char* s;
+cs_size String_Length(cs_str str) {
+	cs_str s;
 	for (s = str; *s; ++s);
 	return s - str;
 }
 
-cs_size String_Append(char* dst, cs_size len, const char* src) {
+cs_size String_Append(char* dst, cs_size len, cs_str src) {
 	cs_size curr_len = String_Length(dst);
 	return String_Copy(dst + curr_len, len - curr_len, src);
 }
 
-cs_size String_Copy(char* dst, cs_size len, const char* src) {
+cs_size String_Copy(char* dst, cs_size len, cs_str src) {
 	cs_size avail = len;
 
 	while(avail > 1 && (*dst++ = *src++) != '\0') avail--;
@@ -89,7 +89,7 @@ cs_uint32 String_FormatError(cs_uint32 code, char* buf, cs_size buflen, va_list*
 #endif
 }
 
-cs_int32 String_FormatBufVararg(char* buf, cs_size len, const char* str, va_list* args) {
+cs_int32 String_FormatBufVararg(char* buf, cs_size len, cs_str str, va_list* args) {
 #if defined(WINDOWS)
 	return vsprintf_s(buf, len, str, *args);
 #elif defined(POSIX)
@@ -97,7 +97,7 @@ cs_int32 String_FormatBufVararg(char* buf, cs_size len, const char* str, va_list
 #endif
 }
 
-cs_int32 String_FormatBuf(char* buf, cs_size len, const char* str, ...) {
+cs_int32 String_FormatBuf(char* buf, cs_size len, cs_str str, ...) {
 	cs_int32 wrlen;
 	va_list args;
 	va_start(args, str);
@@ -106,26 +106,26 @@ cs_int32 String_FormatBuf(char* buf, cs_size len, const char* str, ...) {
 	return wrlen;
 }
 
-const char* String_LastChar(const char* str, char sym) {
+cs_str String_LastChar(cs_str str, char sym) {
 	return strrchr(str, sym);
 }
 
-const char* String_FirstChar(const char* str, char sym) {
+cs_str String_FirstChar(cs_str str, char sym) {
 	return strchr(str, sym);
 }
 
-char* String_FindSubstr(const char* str, const char* strsrch) {
+char* String_FindSubstr(cs_str str, cs_str strsrch) {
 	return strstr(str, strsrch);
 }
 
-const char* String_AllocCopy(const char* str) {
+cs_str String_AllocCopy(cs_str str) {
 	cs_size len = String_Length(str) + 1;
 	char* ptr = Memory_Alloc(1, len);
 	String_Copy(ptr, len, str);
-	return (const char*)ptr;
+	return (cs_str)ptr;
 }
 
-const char* String_FromArgument(const char* args, cs_int32 index) {
+cs_str String_FromArgument(cs_str args, cs_int32 index) {
 	if(!args) return NULL;
 
 	do {
@@ -136,7 +136,7 @@ const char* String_FromArgument(const char* args, cs_int32 index) {
 	return NULL;
 }
 
-cs_size String_GetArgument(const char* args, char* arg, cs_size len, cs_int32 index) {
+cs_size String_GetArgument(cs_str args, char* arg, cs_size len, cs_int32 index) {
 	if(len == 0 || args == NULL) return 0;
 	cs_size avail = len;
 
@@ -212,5 +212,6 @@ cs_uint32 String_CRC32(const cs_uint8* str) {
 		}
 		i = i + 1;
 	}
+	
 	return ~crc;
 }

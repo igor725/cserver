@@ -13,7 +13,7 @@
 #define PLAY_URL "http://www.classicube.net/server/play/"
 #define PLAY_URL_LEN 38
 
-const char* PlayURL = NULL;
+cs_str PlayURL = NULL;
 char Secret[17] = {0};
 cs_uint32 Delay = 5000;
 
@@ -47,7 +47,7 @@ static void NewSecret(void) {
 	}
 }
 
-const char* reserved = "!*'();:@&=+$,/?#[]%";
+cs_str reserved = "!*'();:@&=+$,/?#[]%";
 static void TrimReserved(char* name, cs_int32 len) {
 	for(cs_int32 i = 0; i < len; i++) {
 		char sym = name[i];
@@ -115,8 +115,8 @@ static const char hexchars[] = "0123456789abcdef";
 
 cs_bool Heartbeat_CheckKey(Client* client) {
 	if(*Secret == '\0') return true;
-	const char* key = client->playerData->key;
-	const char* name =  client->playerData->name;
+	cs_str key = client->playerData->key;
+	cs_str name =  client->playerData->name;
 
 	MD5_CTX ctx;
 	cs_uint8 hash[16];

@@ -15,7 +15,7 @@ cs_bool WsClient_DoHandshake(WsClient* ws) {
 	cs_int32 wskeylen = 0;
 
 	if(Socket_ReceiveLine(ws->sock, line, 1024)) {
-		const char* httpver = String_LastChar(line, 'H');
+		cs_str httpver = String_LastChar(line, 'H');
 		if(!httpver || !String_CaselessCompare(httpver, "HTTP/1.1")) {
 			String_FormatBuf(line, 1024, WS_ERRRESP, 505, "HTTP Version Not Supported", 0, "");
 			Socket_Send(ws->sock, line, (cs_int32)String_Length(line));
@@ -52,7 +52,7 @@ cs_bool WsClient_DoHandshake(WsClient* ws) {
 		return true;
 	}
 
-	const char* str = Lang_Get(LANG_WSNOTVALID);
+	cs_str str = Lang_Get(LANG_WSNOTVALID);
 	String_FormatBuf(line, 1024, WS_ERRRESP, 400, "Bad request", String_Length(str), str);
 	Socket_Send(ws->sock, line, (cs_int32)String_Length(line));
 	return false;

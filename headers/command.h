@@ -5,7 +5,7 @@
 #include "lang.h"
 
 #define Command_SetUsage(str) \
-static const char* cmdUsage = str;
+static cs_str cmdUsage = str;
 
 #define Command_Print(str) \
 String_Copy(ccdata->out, MAX_CMD_OUT, str); \
@@ -31,7 +31,7 @@ Command_Printf(Lang_Get(LANG_CMDUSAGE), cmdUsage);
 // TODO: Сделать это добро функцией
 #define Command_ArgToWorldName(wn, idx) \
 if(Command_GetArg(wn, 64, idx)) { \
-	const char* wndot = String_LastChar(wn, '.'); \
+	cs_str wndot = String_LastChar(wn, '.'); \
 	if(!wndot || !String_CaselessCompare(wndot, ".cws")) \
 		String_Append(wn, 64, ".cws"); \
 } else { \
@@ -70,7 +70,7 @@ enum {
 
 typedef struct {
 	struct _Command* command;
-	const char* args;
+	cs_str args;
 	Client* caller;
 	char* out;
 } CommandCallData;
@@ -85,12 +85,12 @@ typedef struct _Command {
 	struct _Command *next, *prev;
 } Command;
 
-API Command* Command_Register(const char* name, cmdFunc func, cs_uint8 flags);
-API void Command_SetAlias(Command* cmd, const char* alias);
-API Command* Command_GetByName(const char* name);
+API Command* Command_Register(cs_str name, cmdFunc func, cs_uint8 flags);
+API void Command_SetAlias(Command* cmd, cs_str alias);
+API Command* Command_GetByName(cs_str name);
 API Command* Command_GetByFunc(cmdFunc func);
 API cs_bool Command_Unregister(Command* cmd);
-API cs_bool Command_UnregisterByName(const char* name);
+API cs_bool Command_UnregisterByName(cs_str name);
 API cs_bool Command_UnregisterByFunc(cmdFunc func);
 
 void Command_RegisterDefault(void);

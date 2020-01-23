@@ -27,7 +27,7 @@ enum {
 
 typedef struct {
 	Client* client;
-	const char* message;
+	cs_str message;
 	cs_uint8* type;
 } onMessage;
 

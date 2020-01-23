@@ -1,7 +1,7 @@
 #include "core.h"
 #include "lang.h"
 
-const char* Lang_Get(LangID id) {
+cs_str Lang_Get(LangID id) {
 	switch (id) {
 		case LANG_UNKERR:
 			return "Unexpected error.";

@@ -110,7 +110,7 @@ cs_bool Assoc_Remove(Client* client, cs_uint16 type, cs_bool freeData) {
 	return true;
 }
 
-CGroup* Group_Add(cs_int16 gid, const char* gname, cs_uint8 grank) {
+CGroup* Group_Add(cs_int16 gid, cs_str gname, cs_uint8 grank) {
 	CGroup* gptr = Group_GetByID(gid);
 	if(!gptr) {
 		gptr = Memory_Alloc(1, sizeof(CGroup));
@@ -176,7 +176,7 @@ void Clients_UpdateWorldInfo(World* world) {
 	}
 }
 
-void Clients_KickAll(const char* reason) {
+void Clients_KickAll(cs_str reason) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client* client = Clients_List[i];
 		if(client) Client_Kick(client, reason);
@@ -194,24 +194,24 @@ Client* Client_New(Socket fd, cs_uint32 addr) {
 	return tmp;
 }
 
-const char* Client_GetName(Client* client) {
+cs_str Client_GetName(Client* client) {
 	if(!client->playerData) return "unnamed";
 	return client->playerData->name;
 }
 
-const char* Client_GetAppName(Client* client) {
+cs_str Client_GetAppName(Client* client) {
 	if(!client->cpeData) return "vanilla client";
 	return client->cpeData->appName;
 }
 
-const char* Client_GetSkin(Client* client) {
+cs_str Client_GetSkin(Client* client) {
 	CPEData* cpd = client->cpeData;
 	if(!cpd || !cpd->skin)
 		return Client_GetName(client);
 	return cpd->skin;
 }
 
-Client* Client_GetByName(const char* name) {
+Client* Client_GetByName(cs_str name) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client* client = Clients_List[i];
 		if(!client) continue;
@@ -459,7 +459,7 @@ cs_bool Client_TeleportTo(Client* client, Vec* pos, Ang* ang) {
 	return false;
 }
 
-static cs_uint32 copyMessagePart(const char* msg, char* part, cs_uint32 i, char* color) {
+static cs_uint32 copyMessagePart(cs_str msg, char* part, cs_uint32 i, char* color) {
 	if(*msg == '\0') return 0;
 
 	if(i > 0) {
@@ -488,7 +488,7 @@ static cs_uint32 copyMessagePart(const char* msg, char* part, cs_uint32 i, char*
 	return len;
 }
 
-void Client_Chat(Client* client, cs_uint8 type, const char* message) {
+void Client_Chat(Client* client, cs_uint8 type, cs_str message) {
 	cs_uint32 msgLen = (cs_uint32)String_Length(message);
 
 	if(msgLen > 62 && type == MT_CHAT) {
@@ -585,7 +585,7 @@ cs_bool Client_SetEnvColor(Client* client, cs_uint8 type, Color3* color) {
 	return false;
 }
 
-cs_bool Client_SetTexturePack(Client* client, const char* url) {
+cs_bool Client_SetTexturePack(Client* client, cs_str url) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
 		CPE_WriteTexturePack(client, url);
 		return true;
@@ -620,7 +620,7 @@ cs_bool Client_SetHeld(Client* client, BlockID block, cs_bool canChange) {
 	return false;
 }
 
-cs_bool Client_SetHotkey(Client* client, const char* action, cs_int32 keycode, cs_int8 keymod) {
+cs_bool Client_SetHotkey(Client* client, cs_str action, cs_int32 keycode, cs_int8 keymod) {
 	if(Client_GetExtVer(client, EXT_TEXTHOTKEY)) {
 		CPE_WriteSetHotKey(client, action, keycode, keymod);
 		return true;
@@ -655,7 +655,7 @@ cs_bool Client_SetModel(Client* client, cs_int16 model) {
 	return true;
 }
 
-cs_bool Client_SetSkin(Client* client, const char* skin) {
+cs_bool Client_SetSkin(Client* client, cs_str skin) {
 	CPEData* cpd = client->cpeData;
 	if(!cpd) return false;
 	if(cpd->skin)
@@ -690,7 +690,7 @@ cs_bool Client_SetRotation(Client* client, cs_uint8 axis, cs_int32 value) {
 	return true;
 }
 
-cs_bool Client_SetModelStr(Client* client, const char* model) {
+cs_bool Client_SetModelStr(Client* client, cs_str model) {
 	return Client_SetModel(client, CPE_GetModelNum(model));
 }
 
@@ -993,8 +993,8 @@ cs_bool Client_Spawn(Client* client) {
 	pd->spawned = true;
 	Event_Call(EVT_ONSPAWN, client);
 	if(pd->firstSpawn) { // TODO: Перенести это куда-нибудь
-		const char* name = Client_GetName(client);
-		const char* appname = Client_GetAppName(client);
+		cs_str name = Client_GetName(client);
+		cs_str appname = Client_GetAppName(client);
 		Log_Info(Lang_Get(LANG_SVPLCONN), name, appname);
 		pd->firstSpawn = false;
 	}
@@ -1005,7 +1005,7 @@ void Client_HandshakeStage2(Client* client) {
 	Client_ChangeWorld(client, Worlds_List[0]);
 }
 
-void Client_Kick(Client* client, const char* reason) {
+void Client_Kick(Client* client, cs_str reason) {
 	if(client->closed) return;
 	if(!reason) reason = Lang_Get(LANG_KICKNOREASON);
 	Vanilla_WriteKick(client, reason);

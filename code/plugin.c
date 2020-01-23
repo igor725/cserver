@@ -8,7 +8,7 @@
 
 Plugin* pluginsList[MAX_PLUGINS];
 
-cs_bool Plugin_Load(const char* name) {
+cs_bool Plugin_Load(cs_str name) {
 	char path[256], error[512];
 	void *lib;
 	pluginFunc initSym;
@@ -64,7 +64,7 @@ cs_bool Plugin_Load(const char* name) {
 	return false;
 }
 
-Plugin* Plugin_Get(const char* name) {
+Plugin* Plugin_Get(cs_str name) {
 	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
 		Plugin* ptr = pluginsList[i];
 		if(ptr && String_Compare(ptr->name, name)) return ptr;

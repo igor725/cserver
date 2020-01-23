@@ -79,7 +79,7 @@ typedef struct _WorldInfo {
 
 typedef struct _World {
 	WorldID id;
-	const char* name;
+	cs_str name;
 	cs_uint32 size;
 	WorldInfo info;
 	cs_bool modified;
@@ -92,7 +92,7 @@ typedef struct _World {
 
 API void Worlds_SaveAll(cs_bool join, cs_bool unload);
 
-API World* World_Create(const char* name);
+API World* World_Create(cs_str name);
 API void World_AllocBlockArray(World* world);
 API void World_Free(World* world);
 API cs_bool World_Add(World* world);
@@ -107,7 +107,7 @@ API cs_bool World_SetBlock(World* world, SVec* pos, BlockID id);
 API cs_bool World_SetBlockO(World* world, cs_uint32 offset, BlockID id);
 API cs_bool World_SetEnvColor(World* world, cs_uint8 type, Color3* color);
 API cs_bool World_SetProperty(World* world, cs_uint8 property, cs_int32 value);
-API cs_bool World_SetTexturePack(World* world, const char* url);
+API cs_bool World_SetTexturePack(World* world, cs_str url);
 API cs_bool World_SetWeather(World* world, cs_int8 type);
 
 API cs_uint32 World_GetOffset(World* world, SVec* pos);
@@ -116,7 +116,7 @@ API cs_int32 World_GetProperty(World* world, cs_uint8 property);
 API Color3* World_GetEnvColor(World* world, cs_uint8 type);
 API cs_int8 World_GetWeather(World* world);
 
-API World* World_GetByName(const char* name);
+API World* World_GetByName(cs_str name);
 API World* World_GetByID(WorldID id);
 
 VAR World* Worlds_List[MAX_WORLDS];

@@ -14,7 +14,7 @@ Packet* packetsList[MAX_PACKETS];
 cs_uint16 extensionsCount;
 CPEExt headExtension;
 
-void Proto_WriteString(char** dataptr, const char* string) {
+void Proto_WriteString(char** dataptr, cs_str string) {
 	char* data = *dataptr;
 	cs_size size = 0;
 	if(string) {
@@ -105,8 +105,8 @@ cs_uint32 Proto_WriteClientPos(char* data, Client* client, cs_bool extended) {
 	return Proto_WriteVecAng(&data, &pd->position, &pd->angle, extended);
 }
 
-cs_uint8 Proto_ReadString(const char** dataptr, const char** dstptr) {
-	const char* data = *dataptr;
+cs_uint8 Proto_ReadString(cs_str* dataptr, cs_str* dstptr) {
+	cs_str data = *dataptr;
 	*dataptr += 64;
 	cs_uint8 end;
 
@@ -124,8 +124,8 @@ cs_uint8 Proto_ReadString(const char** dataptr, const char** dstptr) {
 	return end;
 }
 
-cs_uint8 Proto_ReadStringNoAlloc(const char** dataptr, char* dst) {
-	const char* data = *dataptr;
+cs_uint8 Proto_ReadStringNoAlloc(cs_str* dataptr, char* dst) {
+	cs_str data = *dataptr;
 	*dataptr += 64;
 	cs_uint8 end;
 
@@ -140,38 +140,38 @@ cs_uint8 Proto_ReadStringNoAlloc(const char** dataptr, char* dst) {
 	return end;
 }
 
-void Proto_ReadSVec(const char** dataptr, SVec* vec) {
-	const char* data = *dataptr;
+void Proto_ReadSVec(cs_str* dataptr, SVec* vec) {
+	cs_str data = *dataptr;
 	vec->x = ntohs(*(cs_int16*)data); data += 2;
 	vec->y = ntohs(*(cs_int16*)data); data += 2;
 	vec->z = ntohs(*(cs_int16*)data); data += 2;
 	*dataptr = data;
 }
 
-void Proto_ReadAng(const char** dataptr, Ang* ang) {
-	const char* data = *dataptr;
+void Proto_ReadAng(cs_str* dataptr, Ang* ang) {
+	cs_str data = *dataptr;
 	ang->yaw = (((float)(cs_uint8)*data++) / 256) * 360;
 	ang->pitch = (((float)(cs_uint8)*data++) / 256) * 360;
 	*dataptr = data;
 }
 
-void Proto_ReadFlSVec(const char** dataptr, Vec* vec) {
-	const char* data = *dataptr;
+void Proto_ReadFlSVec(cs_str* dataptr, Vec* vec) {
+	cs_str data = *dataptr;
 	vec->x = (float)ntohs(*(cs_int16*)data) / 32; data += 2;
 	vec->y = (float)ntohs(*(cs_int16*)data) / 32; data += 2;
 	vec->z = (float)ntohs(*(cs_int16*)data) / 32; data += 2;
 	*dataptr = data;
 }
 
-void Proto_ReadFlVec(const char** dataptr, Vec* vec) {
-	const char* data = *dataptr;
+void Proto_ReadFlVec(cs_str* dataptr, Vec* vec) {
+	cs_str data = *dataptr;
 	vec->x = (float)ntohl(*(cs_int32*)data) / 32; data += 4;
 	vec->y = (float)ntohl(*(cs_int32*)data) / 32; data += 4;
 	vec->z = (float)ntohl(*(cs_int32*)data) / 32; data += 4;
 	*dataptr = data;
 }
 
-cs_bool Proto_ReadClientPos(Client* client, const char* data) {
+cs_bool Proto_ReadClientPos(Client* client, cs_str data) {
 	PlayerData* cpd = client->playerData;
 	Vec* vec = &cpd->position;
 	Ang* ang = &cpd->angle;
@@ -218,7 +218,7 @@ void Packet_RegisterCPE(cs_uint8 id, cs_uint32 crc32, cs_int32 ver, cs_uint16 si
 	tmp->haveCPEImp = true;
 }
 
-void Packet_RegisterExtension(const char* name, cs_int32 version) {
+void Packet_RegisterExtension(cs_str name, cs_int32 version) {
 	CPEExt tmp = Memory_Alloc(1, sizeof(struct cpeExt));
 
 	tmp->name = name;
@@ -229,7 +229,7 @@ void Packet_RegisterExtension(const char* name, cs_int32 version) {
 }
 
 struct extReg {
-	const char* name;
+	cs_str name;
 	cs_int32 version;
 };
 
@@ -295,7 +295,7 @@ Packet* Packet_Get(cs_uint8 id) {
 ** ванильного протокола
 */
 
-void Vanilla_WriteHandshake(Client* client, const char* name, const char* motd) {
+void Vanilla_WriteHandshake(Client* client, cs_str name, cs_str motd) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x00;
@@ -381,7 +381,7 @@ void Vanilla_WriteDespawn(Client* client, Client* other) {
 	PacketWriter_End(client, 2);
 }
 
-void Vanilla_WriteChat(Client* client, cs_uint8 type, const char* mesg) {
+void Vanilla_WriteChat(Client* client, cs_uint8 type, cs_str mesg) {
 	PacketWriter_Start(client);
 	if(client == Broadcast) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
@@ -410,7 +410,7 @@ void Vanilla_WriteChat(Client* client, cs_uint8 type, const char* mesg) {
 	PacketWriter_End(client, 66);
 }
 
-void Vanilla_WriteKick(Client* client, const char* reason) {
+void Vanilla_WriteKick(Client* client, cs_str reason) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x0E;
@@ -419,7 +419,7 @@ void Vanilla_WriteKick(Client* client, const char* reason) {
 	PacketWriter_End(client, 65);
 }
 
-cs_bool Handler_Handshake(Client* client, const char* data) {
+cs_bool Handler_Handshake(Client* client, cs_str data) {
 	if(client->playerData) return false;
 	if(*data++ != 0x07) {
 		Client_Kick(client, Lang_Get(LANG_KICKPROTOVER));
@@ -444,8 +444,8 @@ cs_bool Handler_Handshake(Client* client, const char* data) {
 	}
 
 	if(Client_CheckAuth(client)) {
-		const char* name = Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY);
-		const char* motd = Config_GetStrByKey(Server_Config, CFG_SERVERMOTD_KEY);
+		cs_str name = Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY);
+		cs_str motd = Config_GetStrByKey(Server_Config, CFG_SERVERMOTD_KEY);
 
 		Vanilla_WriteHandshake(client, name, motd);
 	} else {
@@ -479,7 +479,7 @@ static void UpdateBlock(World* world, SVec* pos, BlockID block) {
 	}
 }
 
-cs_bool Handler_SetBlock(Client* client, const char* data) {
+cs_bool Handler_SetBlock(Client* client, cs_str data) {
 	ValidateClientState(client, STATE_INGAME, false);
 
 	World* world = Client_GetWorld(client);
@@ -515,7 +515,7 @@ cs_bool Handler_SetBlock(Client* client, const char* data) {
 	return true;
 }
 
-cs_bool Handler_PosAndOrient(Client* client, const char* data) {
+cs_bool Handler_PosAndOrient(Client* client, cs_str data) {
 	ValidateClientState(client, STATE_INGAME, false);
 	CPEData* cpd = client->cpeData;
 	BlockID cb = *data++;
@@ -535,7 +535,7 @@ cs_bool Handler_PosAndOrient(Client* client, const char* data) {
 	return true;
 }
 
-cs_bool Handler_Message(Client* client, const char* data) {
+cs_bool Handler_Message(Client* client, cs_str data) {
 	ValidateClientState(client, STATE_INGAME, true);
 
 	cs_uint8 type = 0;
@@ -580,7 +580,7 @@ cs_bool Handler_Message(Client* client, const char* data) {
 */
 #define MODELS_COUNT 15
 
-static const char* validModelNames[MODELS_COUNT] = {
+static cs_str validModelNames[MODELS_COUNT] = {
 	"humanoid",
 	"chicken",
 	"creeper",
@@ -603,10 +603,10 @@ cs_bool CPE_CheckModel(cs_int16 model) {
 	return model - 256 < MODELS_COUNT;
 }
 
-cs_int16 CPE_GetModelNum(const char* model) {
+cs_int16 CPE_GetModelNum(cs_str model) {
 	cs_int16 modelnum = -1;
 	for(cs_int16 i = 0; validModelNames[i]; i++) {
-		const char* cmdl = validModelNames[i];
+		cs_str cmdl = validModelNames[i];
 		if(String_CaselessCompare(model, cmdl)) {
 			modelnum = i + 256;
 			break;
@@ -623,7 +623,7 @@ cs_int16 CPE_GetModelNum(const char* model) {
 	return modelnum;
 }
 
-const char* CPE_GetModelStr(cs_int16 num) {
+cs_str CPE_GetModelStr(cs_int16 num) {
 	return num >= 0 && num < MODELS_COUNT ? validModelNames[num] : NULL;
 }
 
@@ -668,7 +668,7 @@ void CPE_WriteHoldThis(Client* client, BlockID block, cs_bool preventChange) {
 	PacketWriter_End(client, 3);
 }
 
-void CPE_WriteSetHotKey(Client* client, const char* action, cs_int32 keycode, cs_int8 keymod) {
+void CPE_WriteSetHotKey(Client* client, cs_str action, cs_int32 keycode, cs_int8 keymod) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x15;
@@ -853,7 +853,7 @@ void CPE_WriteSetTextColor(Client* client, Color4* color, char code) {
 	PacketWriter_End(client, 6);
 }
 
-void CPE_WriteTexturePack(Client* client, const char* url) {
+void CPE_WriteTexturePack(Client* client, cs_str url) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x28;
@@ -941,7 +941,7 @@ void CPE_WriteVelocityControl(Client* client, Vec* velocity, cs_bool mode) {
 	PacketWriter_End(client, 16);
 }
 
-cs_bool CPEHandler_ExtInfo(Client* client, const char* data) {
+cs_bool CPEHandler_ExtInfo(Client* client, cs_str data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_INITIAL, false);
 
@@ -950,7 +950,7 @@ cs_bool CPEHandler_ExtInfo(Client* client, const char* data) {
 	return true;
 }
 
-cs_bool CPEHandler_ExtEntry(Client* client, const char* data) {
+cs_bool CPEHandler_ExtEntry(Client* client, cs_str data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_INITIAL, false);
 
@@ -981,7 +981,7 @@ cs_bool CPEHandler_ExtEntry(Client* client, const char* data) {
 	return true;
 }
 
-cs_bool CPEHandler_PlayerClick(Client* client, const char* data) {
+cs_bool CPEHandler_PlayerClick(Client* client, cs_str data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_INGAME, false);
 
@@ -1004,7 +1004,7 @@ cs_bool CPEHandler_PlayerClick(Client* client, const char* data) {
 	return true;
 }
 
-cs_bool CPEHandler_TwoWayPing(Client* client, const char* data) {
+cs_bool CPEHandler_TwoWayPing(Client* client, cs_str data) {
 	ValidateCpeClient(client, false);
 	CPEData* cpd = client->cpeData;
 	cs_uint8 pingDirection = *data++;

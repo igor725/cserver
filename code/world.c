@@ -23,7 +23,7 @@ void Worlds_SaveAll(cs_bool join, cs_bool unload) {
 	}
 }
 
-World* World_Create(const char* name) {
+World* World_Create(cs_str name) {
 	World* tmp = Memory_Alloc(1, sizeof(World));
 
 	tmp->name = String_AllocCopy(name);
@@ -72,7 +72,7 @@ cs_bool World_Add(World* world) {
 	return true;
 }
 
-World* World_GetByName(const char* name) {
+World* World_GetByName(cs_str name) {
 	for(WorldID i = 0; i < MAX_WORLDS; i++) {
 		World* world = Worlds_List[i];
 		if(world && String_CaselessCompare(world->name, name))
@@ -105,7 +105,7 @@ cs_int32 World_GetProperty(World* world, cs_uint8 property) {
 	return world->info.props[property];
 }
 
-cs_bool World_SetTexturePack(World* world, const char* url) {
+cs_bool World_SetTexturePack(World* world, cs_str url) {
 	if(String_CaselessCompare(world->info.texturepack, url))
 		return true;
 	world->modified = true;
@@ -121,7 +121,7 @@ cs_bool World_SetTexturePack(World* world, const char* url) {
 	return true;
 }
 
-const char* World_GetTexturePack(World* world) {
+cs_str World_GetTexturePack(World* world) {
 	return world->info.texturepack;
 }
 

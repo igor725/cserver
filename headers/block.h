@@ -91,7 +91,7 @@ enum {
 
 typedef struct {
 	BlockID id;
-	const char* name;
+	cs_str name;
 	cs_uint8 flags;
 	union {
 		struct _BlockParamsExt {
@@ -136,9 +136,9 @@ typedef struct {
 
 BlockDef* Block_DefinitionsList[255];
 API cs_bool Block_IsValid(BlockID id);
-API const char* Block_GetName(BlockID id);
+API cs_str Block_GetName(BlockID id);
 
-API BlockDef* Block_New(BlockID id, const char* name, cs_uint8 flags);
+API BlockDef* Block_New(BlockID id, cs_str name, cs_uint8 flags);
 API cs_bool Block_Define(BlockDef* bdef);
 API cs_bool Block_Undefine(BlockID id);
 API void Block_UpdateDefinitions();

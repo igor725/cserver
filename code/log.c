@@ -5,7 +5,7 @@
 
 cs_uint8 Log_Level = LOG_ERROR | LOG_INFO | LOG_CHAT | LOG_WARN | LOG_DEBUG;
 
-static const char* getName(cs_uint8 flag) {
+static cs_str getName(cs_uint8 flag) {
 	switch(flag) {
 		case LOG_ERROR:
 			return "ERROR";
@@ -21,7 +21,7 @@ static const char* getName(cs_uint8 flag) {
 	return NULL;
 }
 
-void Log_SetLevelStr(const char* str) {
+void Log_SetLevelStr(cs_str str) {
 	cs_uint8 level = LOG_ERROR;
 
 	do {
@@ -47,7 +47,7 @@ void Log_SetLevelStr(const char* str) {
 	Log_Level = level;
 }
 
-void Log_Print(cs_uint8 flag, const char* str, va_list* args) {
+void Log_Print(cs_uint8 flag, cs_str str, va_list* args) {
 	if((Log_Level & flag) == 0) return;
 
 	char time[13], buf[8192];
@@ -65,32 +65,32 @@ void Log_Print(cs_uint8 flag, const char* str, va_list* args) {
 	);
 }
 
-void Log_Error(const char* str, ...) {
+void Log_Error(cs_str str, ...) {
 	va_list args;
 	va_start(args, str);
 	Log_Print(LOG_ERROR, str, &args);
 	va_end(args);
 }
 
-void Log_Info(const char* str, ...) {
+void Log_Info(cs_str str, ...) {
 	va_list args;
 	va_start(args, str);
 	Log_Print(LOG_INFO, str, &args);
 	va_end(args);
 }
 
-void Log_Chat(const char* str, ...) {
+void Log_Chat(cs_str str, ...) {
 	Log_Print(LOG_CHAT, str, (va_list*)NULL);
 }
 
-void Log_Warn(const char* str, ...) {
+void Log_Warn(cs_str str, ...) {
 	va_list args;
 	va_start(args, str);
 	Log_Print(LOG_WARN, str, &args);
 	va_end(args);
 }
 
-void Log_Debug(const char* str, ...) {
+void Log_Debug(cs_str str, ...) {
 	va_list args;
 	va_start(args, str);
 	Log_Print(LOG_DEBUG, str, &args);

@@ -36,7 +36,7 @@ void Memory_Free(void* ptr) {
 	free(ptr);
 }
 
-cs_bool File_Rename(const char* path, const char* newpath) {
+cs_bool File_Rename(cs_str path, cs_str newpath) {
 #if defined(WINDOWS)
 	return (cs_bool)MoveFileExA(path, newpath, MOVEFILE_REPLACE_EXISTING);
 #elif defined(POSIX)
@@ -44,7 +44,7 @@ cs_bool File_Rename(const char* path, const char* newpath) {
 #endif
 }
 
-FILE* File_Open(const char* path, const char* mode) {
+FILE* File_Open(cs_str path, cs_str mode) {
 	return fopen(path, mode);
 }
 
@@ -80,7 +80,7 @@ cs_bool File_Error(FILE* fp) {
 	return ferror(fp) != 0;
 }
 
-cs_bool File_WriteFormat(FILE* fp, const char* fmt, ...) {
+cs_bool File_WriteFormat(FILE* fp, cs_str fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
 	vfprintf(fp, fmt, args);
@@ -110,13 +110,13 @@ cs_bool Socket_Init(void) {
 #endif
 }
 
-cs_int32 Socket_SetAddr(struct sockaddr_in* ssa, const char* ip, cs_uint16 port) {
+cs_int32 Socket_SetAddr(struct sockaddr_in* ssa, cs_str ip, cs_uint16 port) {
 	ssa->sin_family = AF_INET;
 	ssa->sin_port = htons(port);
 	return inet_pton(AF_INET, ip, &ssa->sin_addr.s_addr);
 }
 
-cs_bool Socket_SetAddrGuess(struct sockaddr_in* ssa, const char* host, cs_uint16 port) {
+cs_bool Socket_SetAddrGuess(struct sockaddr_in* ssa, cs_str host, cs_uint16 port) {
 	cs_int32 ret;
 	if((ret = Socket_SetAddr(ssa, host, port)) == 0) {
 		struct addrinfo* addr;
@@ -216,7 +216,7 @@ void Socket_Close(Socket sock) {
 
 #if defined(WINDOWS)
 #define isDir(h) (h.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-cs_bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
+cs_bool Iter_Init(dirIter* iter, cs_str dir, cs_str ext) {
 	iter->state = ITER_INITIAL;
 	iter->dirHandle = INVALID_HANDLE_VALUE;
 
@@ -256,15 +256,15 @@ cs_bool Iter_Close(dirIter* iter) {
 	return true;
 }
 #elif defined(POSIX)
-static cs_bool checkExtension(const char* filename, const char* ext) {
-	const char* _ext = String_LastChar(filename, '.');
+static cs_bool checkExtension(cs_str filename, cs_str ext) {
+	cs_str _ext = String_LastChar(filename, '.');
 	if(!_ext && !ext) return true;
 	if(!_ext || !ext) return false;
 
 	return String_Compare(++_ext, ext);
 }
 
-cs_bool Iter_Init(dirIter* iter, const char* dir, const char* ext) {
+cs_bool Iter_Init(dirIter* iter, cs_str dir, cs_str ext) {
 	iter->state = ITER_INITIAL;
 	iter->fileHandle = NULL;
 	iter->dirHandle = opendir(dir);
@@ -305,40 +305,40 @@ cs_bool Iter_Close(dirIter* iter) {
 #endif
 
 #if defined(WINDOWS)
-cs_bool Directory_Exists(const char* path) {
+cs_bool Directory_Exists(cs_str path) {
 	cs_uint32 attr = GetFileAttributes(path);
 	return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
-cs_bool Directory_SetCurrentDir(const char* path) {
+cs_bool Directory_SetCurrentDir(cs_str path) {
 	return (cs_bool)SetCurrentDirectory(path);
 }
 
-cs_bool Directory_Create(const char* path) {
+cs_bool Directory_Create(cs_str path) {
 	return (cs_bool)CreateDirectory(path, NULL);
 }
 #elif defined(POSIX)
-cs_bool Directory_Exists(const char* path) {
+cs_bool Directory_Exists(cs_str path) {
 	struct stat ss;
 	return stat(path, &ss) == 0 && S_ISDIR(ss.st_mode);
 }
 
-cs_bool Directory_SetCurrentDir(const char* path) {
+cs_bool Directory_SetCurrentDir(cs_str path) {
 	return chdir(path) == 0;
 }
 
-cs_bool Directory_Create(const char* path) {
+cs_bool Directory_Create(cs_str path) {
 	return mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0;
 }
 #endif
 
-cs_bool Directory_Ensure(const char* path) {
+cs_bool Directory_Ensure(cs_str path) {
 	if(Directory_Exists(path)) return true;
 	return Directory_Create(path);
 }
 
 #if defined(WINDOWS)
-cs_bool DLib_Load(const char* path, void** lib) {
+cs_bool DLib_Load(cs_str path, void** lib) {
 	return (*lib = LoadLibrary(path)) != NULL;
 }
 
@@ -351,11 +351,11 @@ char* DLib_GetError(char* buf, cs_size len) {
 	return buf;
 }
 
-cs_bool DLib_GetSym(void* lib, const char* sname, void* sym) {
+cs_bool DLib_GetSym(void* lib, cs_str sname, void* sym) {
 	return (*(void**)sym = (void*)GetProcAddress(lib, sname)) != NULL;
 }
 #elif defined(POSIX)
-cs_bool DLib_Load(const char* path, void** lib) {
+cs_bool DLib_Load(cs_str path, void** lib) {
 	return (*lib = dlopen(path, RTLD_NOW)) != NULL;
 }
 
@@ -368,7 +368,7 @@ char* DLib_GetError(char* buf, cs_size len) {
 	return buf;
 }
 
-cs_bool DLib_GetSym(void* lib, const char* sname, void* sym) {
+cs_bool DLib_GetSym(void* lib, cs_str sname, void* sym) {
 	return (*(void**)sym = dlsym(lib, sname)) != NULL;
 }
 #endif

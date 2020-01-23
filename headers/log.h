@@ -8,14 +8,14 @@ enum {
 	LOG_DEBUG = 16
 };
 
-void Log_Print(cs_uint8 flag, const char* str, va_list* args);
+void Log_Print(cs_uint8 flag, cs_str str, va_list* args);
 
-API void Log_Error(const char* str, ...);
-API void Log_Info(const char* str, ...);
-API void Log_Chat(const char* str, ...);
-API void Log_Warn(const char* str, ...);
-API void Log_Debug(const char* str, ...);
+API void Log_Error(cs_str str, ...);
+API void Log_Info(cs_str str, ...);
+API void Log_Chat(cs_str str, ...);
+API void Log_Warn(cs_str str, ...);
+API void Log_Debug(cs_str str, ...);
 
-API void Log_SetLevelStr(const char* str);
+API void Log_SetLevelStr(cs_str str);
 VAR cs_uint8 Log_Level;
 #endif // LOG_H

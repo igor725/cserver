@@ -5,7 +5,7 @@
 #include "error.h"
 #include <zlib.h>
 
-const char* const Strings[] = {
+cs_str const Strings[] = {
 	"All ok.",
 	"Invalid magic.",
 	"File \"%s\" corrupted.",
@@ -98,7 +98,7 @@ cs_int32 Error_GetSysCode(void) {
 #endif
 }
 
-void Error_Print(cs_int32 type, cs_uint32 code, const char* file, cs_uint32 line, const char* func) {
+void Error_Print(cs_int32 type, cs_uint32 code, cs_str file, cs_uint32 line, cs_str func) {
 	char strbuf[384] = {0};
 	char errbuf[256] = {0};
 
@@ -113,7 +113,7 @@ void Error_Print(cs_int32 type, cs_uint32 code, const char* file, cs_uint32 line
 	}
 }
 
-void Error_PrintF(cs_int32 type, cs_uint32 code, const char* file, cs_uint32 line, const char* func, ...) {
+void Error_PrintF(cs_int32 type, cs_uint32 code, cs_str file, cs_uint32 line, cs_str func, ...) {
 	char strbuf[384] = {0};
 	char errbuf[256] = {0};
 

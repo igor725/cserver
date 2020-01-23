@@ -14,7 +14,7 @@
 
 Command* headCmd;
 
-Command* Command_Register(const char* name, cmdFunc func, cs_uint8 flags) {
+Command* Command_Register(cs_str name, cmdFunc func, cs_uint8 flags) {
 	if(Command_GetByName(name)) return NULL;
 	Command* tmp = Memory_Alloc(1, sizeof(Command));
 
@@ -29,12 +29,12 @@ Command* Command_Register(const char* name, cmdFunc func, cs_uint8 flags) {
 	return tmp;
 }
 
-void Command_SetAlias(Command* cmd, const char* alias) {
+void Command_SetAlias(Command* cmd, cs_str alias) {
 	if(cmd->alias) Memory_Free((void*)cmd->alias);
 	cmd->alias = String_AllocCopy(alias);
 }
 
-Command* Command_GetByName(const char* name) {
+Command* Command_GetByName(cs_str name) {
 	Command* ptr = headCmd;
 
 	while(ptr) {
@@ -72,7 +72,7 @@ cs_bool Command_Unregister(Command* cmd) {
 	return true;
 }
 
-cs_bool Command_UnregisterByName(const char* name) {
+cs_bool Command_UnregisterByName(cs_str name) {
 	Command* cmd = Command_GetByName(name);
 	if(!cmd) return false;
 	return Command_Unregister(cmd);
@@ -85,7 +85,7 @@ cs_bool Command_UnregisterByFunc(cmdFunc func) {
 }
 
 COMMAND_FUNC(Info) {
-	static const char* format =
+	static cs_str format =
 	"== Some info about server ==\r\n"
 	"OS: "
 	#if defined(WINDOWS)
@@ -112,7 +112,7 @@ COMMAND_FUNC(OP) {
 		Client* tg = Client_GetByName(clientname);
 		if(tg) {
 			PlayerData* pd = tg->playerData;
-			const char* name = pd->name;
+			cs_str name = pd->name;
 			pd->isOP ^= 1;
 			Command_Printf("Player %s %s", name, pd->isOP ? "opped" : "deopped");
 		} else {
@@ -192,7 +192,7 @@ COMMAND_FUNC(CFG) {
 
 			while(ent) {
 				if(Config_ToStr(ent, value, MAX_CFG_LEN)) {
-					const char* type = Config_TypeName(ent->type);
+					cs_str type = Config_TypeName(ent->type);
 					Command_Appendf(key, MAX_CFG_LEN, "\r\n%s = %s (%s)", ent->key, value, type);
 				}
 				ent = ent->next;
@@ -209,7 +209,7 @@ COMMAND_FUNC(CFG) {
 if(!Command_GetArg(name, 64, 1)) { \
 	Command_Print(Lang_Get(LANG_CPINVNAME)); \
 } \
-const char* lc = String_LastChar(name, '.'); \
+cs_str lc = String_LastChar(name, '.'); \
 if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) { \
 	String_Append(name, 64, "." DLIB_EXT); \
 }
@@ -304,7 +304,7 @@ COMMAND_FUNC(Kick) {
 	if(Command_GetArg(playername, 64, 0)) {
 		Client* tg = Client_GetByName(playername);
 		if(tg) {
-			const char* reason = String_FromArgument(ccdata->args, 1);
+			cs_str reason = String_FromArgument(ccdata->args, 1);
 			Client_Kick(tg, reason);
 			Command_Printf("Player %s kicked", playername);
 		} else {
@@ -438,7 +438,7 @@ void Command_RegisterDefault(void) {
 ** на счёт надёжности данной функции.
 ** TODO: Разобраться, может ли здесь произойти краш.
 */
-static void SendOutput(Client* caller, const char* ret) {
+static void SendOutput(Client* caller, cs_str ret) {
 	if(caller) {
 		while(*ret != '\0') {
 			char* nlptr = (char*)String_FirstChar(ret, '\r');
@@ -485,7 +485,7 @@ cs_bool Command_Handle(char* str, Client* caller) {
 		}
 
 		CommandCallData ccdata;
-		ccdata.args = (const char*)args;
+		ccdata.args = (cs_str)args;
 		ccdata.caller = caller;
 		ccdata.command = cmd;
 		ccdata.out = ret;

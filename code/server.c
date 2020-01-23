@@ -76,7 +76,7 @@ THREAD_FUNC(AcceptThread) {
 	return 0;
 }
 
-static void Bind(const char* ip, cs_uint16 port) {
+static void Bind(cs_str ip, cs_uint16 port) {
 	Server_Socket = Socket_New();
 	struct sockaddr_in ssa;
 	switch (Socket_SetAddr(&ssa, ip, port)) {
@@ -174,7 +174,7 @@ void Server_InitialWork(void) {
 	Packet_RegisterDefault();
 	Command_RegisterDefault();
 
-	Log_Info(Lang_Get(LANG_SVLOADING), "C plugins");
+	Log_Info(Lang_Get(LANG_SVLOADING), "plugins");
 	Plugin_Start();
 
 	Directory_Ensure("worlds");
@@ -206,7 +206,7 @@ void Server_InitialWork(void) {
 	}
 
 	Server_Active = true;
-	const char* ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
+	cs_str ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
 	cs_uint16 port = Config_GetInt16ByKey(cfg, CFG_SERVERPORT_KEY);
 	Thread_Create(AcceptThread, NULL, true);
 	Bind(ip, port);

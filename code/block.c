@@ -3,7 +3,7 @@
 #include "client.h"
 #include "block.h"
 
-static const char* defaultBlockNames[] = {
+static cs_str defaultBlockNames[] = {
 	"Air", "Stone", "Grass", "Dirt",
 	"Cobblestone", "Planks", "Sapling",
 	"Bedrock", "Water", "Still Water",
@@ -36,7 +36,7 @@ cs_bool Block_IsValid(BlockID id) {
 	return id < 50 || Block_DefinitionsList[id] != NULL;
 }
 
-const char* Block_GetName(BlockID id) {
+cs_str Block_GetName(BlockID id) {
 	if(!Block_IsValid(id)) return "Unknown block";
 	BlockDef* bdef = Block_DefinitionsList[id];
 	if(bdef)
@@ -45,7 +45,7 @@ const char* Block_GetName(BlockID id) {
 		return defaultBlockNames[id];
 }
 
-BlockDef* Block_New(BlockID id, const char* name, cs_uint8 flags) {
+BlockDef* Block_New(BlockID id, cs_str name, cs_uint8 flags) {
 	BlockDef* bdef = Memory_Alloc(1, sizeof(BlockDef));
 	bdef->name = String_AllocCopy(name);
 	bdef->flags = BDF_DYNALLOCED | flags;

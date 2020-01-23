@@ -22,13 +22,13 @@ if(ent->type != expectedType) { \
 	Error_PrintF2(ET_SERVER, EC_CFGINVGET, true, ent->key, ent->store->path, Config_TypeName(expectedType), Config_TypeName(ent->type)); \
 }
 
-CStore* Config_NewStore(const char* path) {
+CStore* Config_NewStore(cs_str path) {
 	CStore* store = Memory_Alloc(1, sizeof(CStore));
 	store->path = String_AllocCopy(path);
 	return store;
 }
 
-CEntry* Config_GetEntry(CStore* store, const char* key) {
+CEntry* Config_GetEntry(CStore* store, cs_str key) {
 	CEntry* ent = store->firstCfgEntry;
 
 	while(ent) {
@@ -40,7 +40,7 @@ CEntry* Config_GetEntry(CStore* store, const char* key) {
 	return NULL;
 }
 
-CEntry* Config_CheckEntry(CStore* store, const char* key) {
+CEntry* Config_CheckEntry(CStore* store, cs_str key) {
 	CEntry* ent = Config_GetEntry(store, key);
 	if(!ent) {
 		Error_PrintF2(ET_SERVER, EC_CFGUNK, true, key, store->path);
@@ -48,7 +48,7 @@ CEntry* Config_CheckEntry(CStore* store, const char* key) {
 	return ent;
 }
 
-CEntry* Config_NewEntry(CStore* store, const char* key, cs_int32 type) {
+CEntry* Config_NewEntry(CStore* store, cs_str key, cs_int32 type) {
 	CEntry* ent = Config_GetEntry(store, key);
 	if(ent) return ent;
 
@@ -86,7 +86,7 @@ static cs_bool AllCfgEntriesParsed(CStore* store) {
 	return loaded;
 }
 
-const char* Config_TypeName(cs_int32 type) {
+cs_str Config_TypeName(cs_int32 type) {
 	switch (type) {
 		case CFG_STR:
 			return "string";
@@ -103,7 +103,7 @@ const char* Config_TypeName(cs_int32 type) {
 	}
 }
 
-cs_int32 Config_TypeNameToInt(const char* name) {
+cs_int32 Config_TypeNameToInt(cs_str name) {
 	if(String_CaselessCompare(name, "string")) {
 		return CFG_STR;
 	} else if(String_CaselessCompare(name, "int32")) {
@@ -302,7 +302,7 @@ cs_bool Config_Save(CStore* store) {
 	return true;
 }
 
-void Config_SetComment(CEntry* ent, const char* commentary) {
+void Config_SetComment(CEntry* ent, cs_str commentary) {
 	if(ent->commentary)
 		Memory_Free((void*)ent->commentary);
 	ent->commentary = String_AllocCopy(commentary);
@@ -366,7 +366,7 @@ cs_int32 Config_GetInt32(CEntry* ent) {
 	return ent->changed ? ent->value.vint : ent->defvalue.vint;
 }
 
-cs_int32 Config_GetInt32ByKey(CStore* store, const char* key) {
+cs_int32 Config_GetInt32ByKey(CStore* store, cs_str key) {
 	return Config_GetInt32(Config_CheckEntry(store, key));
 }
 
@@ -375,7 +375,7 @@ cs_int8 Config_GetInt8(CEntry* ent) {
 	return ent->changed ? ent->value.vint8 : ent->defvalue.vint8;
 }
 
-cs_int8 Config_GetInt8ByKey(CStore* store, const char* key) {
+cs_int8 Config_GetInt8ByKey(CStore* store, cs_str key) {
 	return Config_GetInt8(Config_CheckEntry(store, key));
 }
 
@@ -384,18 +384,18 @@ cs_int16 Config_GetInt16(CEntry* ent) {
 	return ent->changed ? ent->value.vint16 : ent->defvalue.vint16;
 }
 
-cs_int16 Config_GetInt16ByKey(CStore* store, const char* key) {
+cs_int16 Config_GetInt16ByKey(CStore* store, cs_str key) {
 	return Config_GetInt16(Config_CheckEntry(store, key));
 }
 
-void Config_SetDefaultStr(CEntry* ent, const char* value) {
+void Config_SetDefaultStr(CEntry* ent, cs_str value) {
 	CFG_TYPE(CFG_STR);
 	if(ent->defvalue.vchar)
 		Memory_Free((void*)ent->defvalue.vchar);
 	ent->defvalue.vchar = String_AllocCopy(value);
 }
 
-void Config_SetStr(CEntry* ent, const char* value) {
+void Config_SetStr(CEntry* ent, cs_str value) {
 	CFG_TYPE(CFG_STR);
 	if(!value) {
 		EmptyEntry(ent);
@@ -410,12 +410,12 @@ void Config_SetStr(CEntry* ent, const char* value) {
 	}
 }
 
-const char* Config_GetStr(CEntry* ent) {
+cs_str Config_GetStr(CEntry* ent) {
 	CFG_TYPE(CFG_STR);
 	return ent->changed ? ent->value.vchar : ent->defvalue.vchar;
 }
 
-const char* Config_GetStrByKey(CStore* store, const char* key) {
+cs_str Config_GetStrByKey(CStore* store, cs_str key) {
 	return Config_GetStr(Config_CheckEntry(store, key));
 }
 
@@ -438,7 +438,7 @@ cs_bool Config_GetBool(CEntry* ent) {
 	return ent->changed ? ent->value.vbool : ent->defvalue.vbool;
 }
 
-cs_bool Config_GetBoolByKey(CStore* store, const char* key) {
+cs_bool Config_GetBoolByKey(CStore* store, cs_str key) {
 	return Config_GetBool(Config_CheckEntry(store, key));
 }
 

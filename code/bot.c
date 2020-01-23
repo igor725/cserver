@@ -5,7 +5,7 @@
 #include "server.h"
 #include "bot.h"
 
-Client* Bot_New(const char* name, World* world, cs_bool hideName) {
+Client* Bot_New(cs_str name, World* world, cs_bool hideName) {
 	ClientID id;
 	for(id = -127; id < 0; id++) {
 		if(!Bots_List[id]) break;
@@ -36,7 +36,7 @@ void Bot_SetPosition(Client* bot, Vec* pos, Ang* ang) {
 	bot->playerData->angle = *ang;
 }
 
-void Bot_SetSkin(Client* bot, const char* skin) {
+void Bot_SetSkin(Client* bot, cs_str skin) {
 	Client_SetSkin(bot, skin);
 }
 

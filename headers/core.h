@@ -74,6 +74,7 @@ typedef __SIZE_TYPE__ cs_size;
 #define NULL ((void*)0)
 #endif
 
+typedef const char* cs_str;
 typedef cs_uint8 cs_bool;
 typedef cs_uint8 Order;
 typedef cs_uint8 BlockID;
@@ -81,7 +82,7 @@ typedef cs_int8 ClientID;
 typedef cs_int16 WorldID;
 // TODO: Придумать, как пернести это чудо в protocol.h
 typedef struct cpeExt {
-	const char* name; // Название дополнения
+	cs_str name; // Название дополнения
 	cs_int32 version; // Его версия
 	cs_uint32 crc32; // crc32 хеш названия дополнения
 	struct cpeExt* next; // Следующее дополнение

@@ -66,5 +66,5 @@ enum {
 };
 
 typedef cs_uint16 LangID;
-API const char* Lang_Get(LangID id);
+API cs_str Lang_Get(LangID id);
 #endif // LANG_H
