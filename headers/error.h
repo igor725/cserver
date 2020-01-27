@@ -20,7 +20,7 @@ enum {
 	EC_INVALIDIP
 };
 
-#define Error_Print2(etype, ecode, abort) \
+#define ERROR_PRINT(etype, ecode, abort) \
 Error_Print(etype, ecode, __FILE__, __LINE__, __func__); \
 if(abort) { \
 	Process_Exit(ecode); \
@@ -31,9 +31,9 @@ if(abort) { \
 	Process_Exit(ecode); \
 }
 #if defined(WINDOWS)
-#  define Error_PrintSys(abort) Error_Print2(ET_SYS, GetLastError(), abort);
+#  define Error_PrintSys(abort) ERROR_PRINT(ET_SYS, GetLastError(), abort);
 #elif defined(POSIX)
-#  define Error_PrintSys(abort) Error_Print2(ET_SYS, errno, abort);
+#  define Error_PrintSys(abort) ERROR_PRINT(ET_SYS, errno, abort);
 #endif
 
 API cs_int32 Error_GetSysCode(void);

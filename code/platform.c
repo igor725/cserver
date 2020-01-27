@@ -215,7 +215,7 @@ void Socket_Close(Socket sock) {
 }
 
 #if defined(WINDOWS)
-#define isDir(h) (h.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+#define ISDIR(h) (h.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 cs_bool Iter_Init(dirIter* iter, cs_str dir, cs_str ext) {
 	iter->state = ITER_INITIAL;
 	iter->dirHandle = INVALID_HANDLE_VALUE;
@@ -230,7 +230,7 @@ cs_bool Iter_Init(dirIter* iter, cs_str dir, cs_str ext) {
 	}
 
 	iter->cfile = iter->fileHandle.cFileName;
-	iter->isDir = isDir(iter->fileHandle);
+	iter->isDir = ISDIR(iter->fileHandle);
 	iter->state = ITER_READY;
 	return true;
 }
@@ -240,7 +240,7 @@ cs_bool Iter_Next(dirIter* iter) {
 		return false;
 
 	if(FindNextFile(iter->dirHandle, &iter->fileHandle)) {
-		iter->isDir = isDir(iter->fileHandle);
+		iter->isDir = ISDIR(iter->fileHandle);
 		iter->cfile = iter->fileHandle.cFileName;
 		return true;
 	}
@@ -385,7 +385,7 @@ Thread Thread_Create(TFUNC func, TARG param, cs_bool detach) {
 	);
 
 	if(!th) {
-		Error_Print2(ET_SYS, GetLastError(), true);
+		ERROR_PRINT(ET_SYS, GetLastError(), true);
 	}
 
 	if(detach) Thread_Detach(th);
@@ -410,7 +410,7 @@ void Thread_Join(Thread th) {
 Thread Thread_Create(TFUNC func, TARG arg, cs_bool detach) {
 	Thread th = Memory_Alloc(1, sizeof(Thread));
 	if(pthread_create(th, NULL, func, arg) != 0) {
-		Error_Print2(ET_SYS, errno, true);
+		ERROR_PRINT(ET_SYS, errno, true);
 		return NULL;
 	}
 
@@ -430,7 +430,7 @@ void Thread_Detach(Thread th) {
 void Thread_Join(Thread th) {
 	cs_int32 ret = pthread_join(*th, NULL);
 	if(ret) {
-		Error_Print2(ET_SYS, ret, true);
+		ERROR_PRINT(ET_SYS, ret, true);
 	}
 	Thread_Detach(th);
 }
@@ -440,7 +440,7 @@ void Thread_Join(Thread th) {
 Mutex* Mutex_Create(void) {
 	Mutex* ptr = Memory_Alloc(1, sizeof(Mutex));
 	if(!ptr) {
-		Error_Print2(ET_SYS, GetLastError(), true);
+		ERROR_PRINT(ET_SYS, GetLastError(), true);
 	}
 	InitializeCriticalSection(ptr);
 	return ptr;
@@ -492,7 +492,7 @@ Mutex* Mutex_Create(void) {
 	Mutex* ptr = Memory_Alloc(1, sizeof(Mutex));
 	cs_int32 ret = pthread_mutex_init(ptr, NULL);
 	if(ret) {
-		Error_Print2(ET_SYS, ret, true);
+		ERROR_PRINT(ET_SYS, ret, true);
 		return NULL;
 	}
 	return ptr;
@@ -501,7 +501,7 @@ Mutex* Mutex_Create(void) {
 void Mutex_Free(Mutex* handle) {
 	cs_int32 ret = pthread_mutex_destroy(handle);
 	if(ret) {
-		Error_Print2(ET_SYS, ret, true);
+		ERROR_PRINT(ET_SYS, ret, true);
 	}
 	Memory_Free(handle);
 }
@@ -509,14 +509,14 @@ void Mutex_Free(Mutex* handle) {
 void Mutex_Lock(Mutex* handle) {
 	cs_int32 ret = pthread_mutex_lock(handle);
 	if(ret) {
-		Error_Print2(ET_SYS, ret, true);
+		ERROR_PRINT(ET_SYS, ret, true);
 	}
 }
 
 void Mutex_Unlock(Mutex* handle) {
 	cs_int32 ret = pthread_mutex_unlock(handle);
 	if(ret) {
-		Error_Print2(ET_SYS, ret, true);
+		ERROR_PRINT(ET_SYS, ret, true);
 	}
 }
 

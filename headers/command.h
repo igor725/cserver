@@ -4,47 +4,47 @@
 #include "client.h"
 #include "lang.h"
 
-#define Command_SetUsage(str) \
+#define COMMAND_SETUSAGE(str) \
 static cs_str cmdUsage = str;
 
-#define Command_Print(str) \
+#define COMMAND_PRINT(str) \
 String_Copy(ccdata->out, MAX_CMD_OUT, str); \
 return true;
 
-#define Command_Printf(f, ...) \
+#define COMMAND_PRINTF(f, ...) \
 String_FormatBuf(ccdata->out, MAX_CMD_OUT, f, __VA_ARGS__); \
 return true;
 
-#define Command_Append(str) \
+#define COMMAND_APPEND(str) \
 String_Append(ccdata->out, MAX_CMD_OUT, str);
 
-#define Command_Appendf(buf, sz, fmt, ...) \
+#define COMMAND_APPENDF(buf, sz, fmt, ...) \
 String_FormatBuf(buf, sz, fmt, __VA_ARGS__); \
 String_Append(ccdata->out, MAX_CMD_OUT, buf);
 
-#define Command_GetArg(a, s, n) \
+#define COMMAND_GETARG(a, s, n) \
 String_GetArgument(ccdata->args, a, s, n)
 
-#define Command_PrintUsage \
-Command_Printf(Lang_Get(LANG_CMDUSAGE), cmdUsage);
+#define COMMAND_PRINTUSAGE \
+COMMAND_PRINTF(Lang_Get(LANG_CMDUSAGE), cmdUsage);
 
 // TODO: Сделать это добро функцией
-#define Command_ArgToWorldName(wn, idx) \
-if(Command_GetArg(wn, 64, idx)) { \
+#define COMMAND_ARG2WN(wn, idx) \
+if(COMMAND_GETARG(wn, 64, idx)) { \
 	cs_str wndot = String_LastChar(wn, '.'); \
 	if(!wndot || !String_CaselessCompare(wndot, ".cws")) \
 		String_Append(wn, 64, ".cws"); \
 } else { \
 	if(!ccdata->caller) { \
-		Command_PrintUsage; \
+		COMMAND_PRINTUSAGE; \
 	} else { \
 		PlayerData* pd = ccdata->caller->playerData; \
 		if(!pd) { \
-			Command_PrintUsage; \
+			COMMAND_PRINTUSAGE; \
 		} \
 		World* world = pd->world; \
 		if(!world) { \
-			Command_PrintUsage; \
+			COMMAND_PRINTUSAGE; \
 		} \
 		String_Copy(wn, 64, world->name); \
 	} \

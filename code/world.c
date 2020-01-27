@@ -197,7 +197,7 @@ static cs_bool ReadInfo(World* world, FILE* fp) {
 		return false;
 
 	if(WORLD_MAGIC != magic) {
-		Error_Print2(ET_SERVER, EC_MAGIC, true);
+		ERROR_PRINT(ET_SERVER, EC_MAGIC, true);
 		return false;
 	}
 
@@ -266,7 +266,7 @@ THREAD_FUNC(WorldSaveThread) {
 	stream.opaque = Z_NULL;
 
 	if((ret = deflateInit(&stream, Z_BEST_COMPRESSION)) != Z_OK) {
-		Error_Print2(ET_ZLIB, ret, false);
+		ERROR_PRINT(ET_ZLIB, ret, false);
 		goto world_save_done;
 	}
 
@@ -278,7 +278,7 @@ THREAD_FUNC(WorldSaveThread) {
 		stream.avail_out = 1024;
 
 		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
-			Error_Print2(ET_ZLIB, ret, false);
+			ERROR_PRINT(ET_ZLIB, ret, false);
 			goto world_save_done;
 		}
 
@@ -336,7 +336,7 @@ THREAD_FUNC(WorldLoadThread) {
 	stream.opaque = Z_NULL;
 
 	if((ret = inflateInit(&stream)) != Z_OK) {
-		Error_Print2(ET_ZLIB, ret, false);
+		ERROR_PRINT(ET_ZLIB, ret, false);
 		goto world_load_done;
 	}
 
@@ -355,7 +355,7 @@ THREAD_FUNC(WorldLoadThread) {
 		do {
 			stream.avail_out = 1024;
 			if((ret = inflate(&stream, Z_FINISH)) == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
-				Error_Print2(ET_ZLIB, ret, false);
+				ERROR_PRINT(ET_ZLIB, ret, false);
 				goto world_load_done;
 			}
 		} while(stream.avail_out == 0);

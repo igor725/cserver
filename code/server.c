@@ -81,7 +81,7 @@ static void Bind(cs_str ip, cs_uint16 port) {
 	struct sockaddr_in ssa;
 	switch (Socket_SetAddr(&ssa, ip, port)) {
 		case 0:
-			Error_Print2(ET_SERVER, EC_INVALIDIP, true);
+			ERROR_PRINT(ET_SERVER, EC_INVALIDIP, true);
 			break;
 		case -1:
 			Error_PrintSys(true);

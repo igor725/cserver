@@ -54,9 +54,9 @@ typedef struct {
 
 API cs_bool Event_RegisterVoid(cs_uint32 type, evtVoidCallback func);
 API cs_bool Event_RegisterBool(cs_uint32 type, evtBoolCallback func);
-API cs_bool Event_Unregister_(cs_uint32 type, cs_uintptr evtFuncPtr);
-#define Event_Unregister(t, e) \
-Event_Unregister_(t, (cs_uintptr)e);
+API cs_bool Event_Unregister(cs_uint32 type, cs_uintptr evtFuncPtr);
+#define EVENT_UNREGISTER(t, e) \
+Event_Unregister(t, (cs_uintptr)e);
 
 cs_bool Event_Call(cs_uint32 type, void* param);
 cs_bool Event_OnMessage(Client* client, char* message, cs_uint8* type);
