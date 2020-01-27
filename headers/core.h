@@ -49,6 +49,7 @@ typedef unsigned int cs_size;
 #define min(a, b) (((a)<(b))?(a):(b))
 #define max(a, b) (((a)>(b))?(a):(b))
 #define Sleep(ms) (usleep(ms * 1000))
+#define ExitProcess(c) (exit(c))
 #define INVALID_SOCKET -1
 #define SD_SEND   SHUT_WR
 #define MAX_PATH  PATH_MAX

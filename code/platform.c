@@ -589,9 +589,5 @@ cs_uint64 Time_GetMSec() {
 #endif
 
 void Process_Exit(cs_uint32 code) {
-#if defined(WINDOWS)
 	ExitProcess(code);
-#elif defined(POSIX)
-	exit(code);
-#endif
 }
