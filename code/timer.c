@@ -20,14 +20,14 @@ AListField* Timer_Add(cs_int32 ticks, cs_uint32 delay, TimerCallback callback, v
 }
 
 void Timer_Remove(AListField* timer) {
-	Memory_Free(timer->value);
+	Memory_Free(timer->value.ptr);
 	AList_Remove(&headTimer, timer);
 }
 
 void Timer_Update(cs_int32 delta) {
 	AListField* field;
 	List_Iter(field, &headTimer) {
-		Timer* timer = field->value;
+		Timer* timer = field->value.ptr;
 		timer->nexttick -= delta;
 		if(timer->nexttick <= 0) {
 			timer->nexttick = timer->delay;

@@ -32,11 +32,11 @@ Command* Command_GetByName(cs_str name) {
 	KListField* field;
 	List_Iter(field, &headCmd) {
 		if(String_CaselessCompare(field->key.str, name))
-			return field->value;
+			return field->value.ptr;
 
-		Command* cmd = field->value;
+		Command* cmd = field->value.ptr;
 		if(cmd->alias && String_CaselessCompare(cmd->alias, name))
-			return field->value;
+			return field->value.ptr;
 	}
 	return NULL;
 }
@@ -44,7 +44,7 @@ Command* Command_GetByName(cs_str name) {
 void Command_Unregister(Command* cmd) {
 	KListField* field;
 	List_Iter(field, &headCmd) {
-		if(field->value == cmd) {
+		if(field->value.ptr == cmd) {
 			if(cmd->alias) Memory_Free((void*)cmd->alias);
 			Memory_Free(field->key.ptr);
 			KList_Remove(&headCmd, field);
@@ -56,7 +56,7 @@ void Command_Unregister(Command* cmd) {
 void Command_UnregisterByFunc(cmdFunc func) {
 	KListField* field;
 	List_Iter(field, &headCmd) {
-		Command* cmd = field->value;
+		Command* cmd = field->value.ptr;
 		if(cmd->func == func) {
 			if(cmd->alias) Memory_Free((void*)cmd->alias);
 			Memory_Free(field->key.ptr);

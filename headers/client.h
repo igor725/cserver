@@ -1,5 +1,6 @@
 #ifndef CLIENT_H
 #define CLIENT_H
+#include "list.h"
 #include "block.h"
 #include "vector.h"
 #include "world.h"
@@ -38,25 +39,11 @@ enum {
 	ROT_Z = 2,
 };
 
-typedef struct _AssocType {
-	cs_uint16 type; // Сам тип, регистрируемый структурой
-	struct _AssocType* prev; // Предыдущий тип
-	struct _AssocType* next; // Следующий тип
-} AssocType;
-
-typedef struct _AssocNode {
-	cs_uint16 type; // Тип ноды
-	void* dataptr; // Поинтер, который ей присвоен
-	struct _AssocNode* prev; // Предыдущая нода
-	struct _AssocNode* next; // Следующая нода
-} AssocNode;
-
 typedef struct _CGroup {
 	cs_int16 id;
 	cs_str name;
 	cs_uint8 rank;
-	struct _CGroup* prev; // Предыдущая группа
-	struct _CGroup* next; // Следующая группа
+	AListField* field;
 } CGroup;
 
 typedef struct {
@@ -100,7 +87,7 @@ typedef struct {
 	void* thread[2]; // Потоки клиента
 	CPEData* cpeData; // В случае vanilla клиента эта структура не создаётся
 	PlayerData* playerData; // Создаётся при получении hanshake пакета
-	AssocNode* headNode; // Последняя созданная ассоциативная нода у клиента
+	KListField* headNode; // Последняя созданная ассоциативная нода у клиента
 	WsClient* websock; // Создаётся, если клиент был определён как браузерный
 	Mutex* mutex; // Мьютекс записи, на время отправки пакета клиенту он лочится
 	cs_bool closed; // В случае значения true сервер прекращает общение с клиентом и удаляет его

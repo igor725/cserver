@@ -1,6 +1,7 @@
 #include "core.h"
 #include "str.h"
 #include "log.h"
+#include "list.h"
 #include "platform.h"
 #include "block.h"
 #include "client.h"
@@ -11,53 +12,37 @@
 #include "lang.h"
 #include <zlib.h>
 
-static AssocType* headAssocType = NULL;
-static CGroup* headCGroup = NULL;
+AListField* headAssocType = NULL;
+AListField* headCGroup = NULL;
 
-static AssocType* AGetType(cs_uint16 type) {
-	AssocType* ptr = headAssocType;
+AListField* AGetType(cs_uint16 type) {
+	AListField* ptr;
 
-	while(ptr) {
-		if(ptr->type == type) break;
-		ptr = ptr->next;
+	List_Iter(ptr, &headAssocType) {
+		if(ptr->value.num16 == type) break;
 	}
 
 	return ptr;
 }
 
-static AssocNode* AGetNode(Client* client, cs_uint16 type) {
-	AssocNode* ptr = client->headNode;
+KListField* AGetNode(Client* client, cs_uint16 type) {
+	KListField* ptr = NULL;
 
-	while(ptr) {
-		if(ptr->type == type) break;
-		ptr = ptr->next;
+	List_Iter(ptr, &client->headNode) {
+		if(ptr->key.num16 == type) break;
 	}
 
 	return ptr;
 }
 
 cs_uint16 Assoc_NewType() {
-	AssocType* tptr = Memory_Alloc(1, sizeof(AssocType));
-	if(headAssocType) {
-		cs_uint16 type = 0;
-		AssocType* tptr2 = headAssocType;
-
-		while(tptr2) {
-			type = min(type, tptr2->type);
-			tptr2 = tptr2->next;
-		}
-
-		tptr->type = ++type;
-		headAssocType->prev = tptr;
-	}
-
-	tptr->next = headAssocType;
-	headAssocType = tptr;
-	return tptr->type;
+	cs_uint16 next_id = headAssocType ? headAssocType->value.num16 : 0;
+	AList_AddField(&headAssocType, NULL)->value.num16 = next_id;
+	return next_id;
 }
 
 cs_bool Assoc_DelType(cs_uint16 type, cs_bool freeData) {
-	AssocType* tptr = AGetType(type);
+	AListField* tptr = AGetType(type);
 	if(!tptr) return false;
 
 	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
@@ -65,48 +50,30 @@ cs_bool Assoc_DelType(cs_uint16 type, cs_bool freeData) {
 			Assoc_Remove(Clients_List[id], type, freeData);
 	}
 
-	if(tptr->next)
-		tptr->next->prev = tptr->prev;
-	if(tptr->prev)
-		tptr->prev->next = tptr->next;
-	else
-		headAssocType = tptr->next;
-
-	Memory_Free((void*)tptr);
+	AList_Remove(&headAssocType, tptr);
 	return true;
 }
 
 cs_bool Assoc_Set(Client* client, cs_uint16 type, void* ptr) {
 	if(AGetNode(client, type)) return false;
-	AssocNode* nptr = AGetNode(client, type);
-	if(!nptr) {
-		nptr = Memory_Alloc(1, sizeof(AssocNode));
-		nptr->type = type;
-	}
-	nptr->dataptr = ptr;
-	nptr->next = client->headNode;
-	if(client->headNode) client->headNode->prev = nptr;
-	client->headNode = nptr;
+	KListField* nptr = AGetNode(client, type);
+	if(!nptr) nptr = KList_Add(&client->headNode, NULL, NULL);
+	nptr->key.num16 = type;
+	nptr->value.ptr = ptr;
 	return true;
 }
 
 void* Assoc_GetPtr(Client* client, cs_uint16 type) {
-	AssocNode* nptr = AGetNode(client, type);
-	if(nptr) return nptr->dataptr;
+	KListField* nptr = AGetNode(client, type);
+	if(nptr) return nptr->value.ptr;
 	return NULL;
 }
 
 cs_bool Assoc_Remove(Client* client, cs_uint16 type, cs_bool freeData) {
-	AssocNode* nptr = AGetNode(client, type);
+	KListField* nptr = AGetNode(client, type);
 	if(!nptr) return false;
-	if(nptr->next)
-		nptr->next->prev = nptr->prev;
-	if(nptr->prev)
-		nptr->prev->next = nptr->next;
-	else
-		client->headNode = nptr->next;
-	if(freeData) Memory_Free(nptr->dataptr);
-	Memory_Free((void*)nptr);
+	if(freeData) Memory_Free(nptr->value.ptr);
+	KList_Remove(&client->headNode, nptr);
 	return true;
 }
 
@@ -115,9 +82,7 @@ CGroup* Group_Add(cs_int16 gid, cs_str gname, cs_uint8 grank) {
 	if(!gptr) {
 		gptr = Memory_Alloc(1, sizeof(CGroup));
 		gptr->id = gid;
-		gptr->next = headCGroup;
-		if(headCGroup) headCGroup->prev = gptr;
-		headCGroup = gptr;
+		gptr->field = AList_AddField(&headCGroup, gptr);
 	}
 
 	if(gptr->name) Memory_Free((void*)gptr->name);
@@ -127,11 +92,15 @@ CGroup* Group_Add(cs_int16 gid, cs_str gname, cs_uint8 grank) {
 }
 
 CGroup* Group_GetByID(cs_int16 gid) {
-	CGroup* gptr = headCGroup;
+	CGroup* gptr = NULL;
+	AListField* lptr = NULL;
 
-	while(gptr) {
-		if(gptr->id == gid) break;
-		gptr = gptr->next;
+	List_Iter(lptr, &headCGroup) {
+		CGroup* tmp = lptr->value.ptr;
+		if(tmp->id == gid) {
+			gptr = tmp;
+			break;
+		}
 	}
 
 	return gptr;
@@ -147,12 +116,9 @@ cs_bool Group_Remove(cs_int16 gid) {
 			Client_SetGroup(client, -1);
 	}
 
-	if(cg->next)
-		cg->next->prev = cg->prev;
-	if(cg->prev)
-		cg->prev->next = cg->next;
 	Memory_Free((void*)cg->name);
 	Memory_Free(cg);
+	AList_Remove(&headCGroup, cg->field);
 
 	return true;
 }
@@ -254,7 +220,7 @@ cs_int8 Client_GetFluidLevel(Client* client) {
 	return 0;
 }
 
-static CGroup dgroup = {-1, "", 0, NULL, NULL};
+static CGroup dgroup = {-1, "", 0, NULL};
 
 CGroup* Client_GetGroup(Client* client) {
 	if(!client->cpeData) return &dgroup;
