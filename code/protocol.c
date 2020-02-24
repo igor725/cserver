@@ -936,7 +936,7 @@ void CPE_WriteVelocityControl(Client* client, Vec* velocity, cs_bool mode) {
 
 	*data++ = 0x2F;
 	Proto_WriteFlVec(&data, velocity);
-	*(cs_uint32*)data = mode ? true : false; // Why not?
+	*(cs_uint32*)data = mode ? 0x01010101 : 0x00000000; // Why not?
 
 	PacketWriter_End(client, 16);
 }
