@@ -151,7 +151,7 @@ void Clients_KickAll(cs_str reason) {
 
 Client* Client_New(Socket fd, cs_uint32 addr) {
 	Client* tmp = Memory_Alloc(1, sizeof(Client));
-	tmp->id = -1;
+	tmp->id = CLIENT_SELF;
 	tmp->sock = fd;
 	tmp->addr = addr;
 	tmp->mutex = Mutex_Create();
