@@ -552,6 +552,7 @@ cs_bool Handler_Message(Client* client, cs_str data) {
 
 	CPEData* cpd = client->cpeData;
 	if(cpd && Client_GetExtVer(client, EXT_LONGMSG)) {
+		if(!cpd->message) cpd->message = Memory_Alloc(1, 193);
 		if(String_Append(cpd->message, 193, message) && partial == 1) return true;
 		messptr = cpd->message;
 	}
@@ -962,14 +963,12 @@ cs_bool CPEHandler_ExtEntry(Client* client, cs_str data) {
 	}
 	tmp->version = ntohl(*(cs_int32*)data);
 	if(tmp->version < 1) {
+		Memory_Free((void*)tmp->name);
 		Memory_Free(tmp);
 		return false;
 	}
+
 	tmp->crc32 = String_CRC32((cs_uint8*)tmp->name);
-
-	if(tmp->crc32 == EXT_LONGMSG && !cpd->message)
-		cpd->message = Memory_Alloc(1, 193);
-
 	tmp->next = cpd->headExtension;
 	cpd->headExtension = tmp;
 
