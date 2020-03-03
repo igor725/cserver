@@ -16,27 +16,27 @@ AListField* headAssocType = NULL;
 AListField* headCGroup = NULL;
 
 AListField* AGetType(cs_uint16 type) {
-	AListField* ptr;
+	AListField* ptr = NULL;
 
-	List_Iter(ptr, &headAssocType) {
-		if(ptr->value.num16 == type) break;
+	List_Iter(ptr, headAssocType) {
+		if(ptr->value.num16 == type) return ptr;
 	}
 
-	return ptr;
+	return NULL;
 }
 
 KListField* AGetNode(Client* client, cs_uint16 type) {
 	KListField* ptr = NULL;
 
-	List_Iter(ptr, &client->headNode) {
-		if(ptr->key.num16 == type) break;
+	List_Iter(ptr, client->headNode) {
+		if(ptr->key.num16 == type) return ptr;
 	}
 
-	return ptr;
+	return NULL;
 }
 
 cs_uint16 Assoc_NewType() {
-	cs_uint16 next_id = headAssocType ? headAssocType->value.num16 : 0;
+	cs_uint16 next_id = headAssocType ? headAssocType->value.num16 + 1 : 0;
 	AList_AddField(&headAssocType, NULL)->value.num16 = next_id;
 	return next_id;
 }
@@ -95,7 +95,7 @@ CGroup* Group_GetByID(cs_int16 gid) {
 	CGroup* gptr = NULL;
 	AListField* lptr = NULL;
 
-	List_Iter(lptr, &headCGroup) {
+	List_Iter(lptr, headCGroup) {
 		CGroup* tmp = lptr->value.ptr;
 		if(tmp->id == gid) {
 			gptr = tmp;

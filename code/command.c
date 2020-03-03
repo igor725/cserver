@@ -30,7 +30,7 @@ void Command_SetAlias(Command* cmd, cs_str alias) {
 
 Command* Command_GetByName(cs_str name) {
 	KListField* field;
-	List_Iter(field, &headCmd) {
+	List_Iter(field, headCmd) {
 		if(String_CaselessCompare(field->key.str, name))
 			return field->value.ptr;
 
@@ -43,7 +43,7 @@ Command* Command_GetByName(cs_str name) {
 
 void Command_Unregister(Command* cmd) {
 	KListField* field;
-	List_Iter(field, &headCmd) {
+	List_Iter(field, headCmd) {
 		if(field->value.ptr == cmd) {
 			if(cmd->alias) Memory_Free((void*)cmd->alias);
 			Memory_Free(field->key.ptr);
@@ -55,7 +55,7 @@ void Command_Unregister(Command* cmd) {
 
 void Command_UnregisterByFunc(cmdFunc func) {
 	KListField* field;
-	List_Iter(field, &headCmd) {
+	List_Iter(field, headCmd) {
 		Command* cmd = field->value.ptr;
 		if(cmd->func == func) {
 			if(cmd->alias) Memory_Free((void*)cmd->alias);

@@ -26,7 +26,7 @@ void Timer_Remove(AListField* timer) {
 
 void Timer_Update(cs_int32 delta) {
 	AListField* field;
-	List_Iter(field, &headTimer) {
+	List_Iter(field, headTimer) {
 		Timer* timer = field->value.ptr;
 		timer->nexttick -= delta;
 		if(timer->nexttick <= 0) {

@@ -35,7 +35,7 @@ typedef struct KListField {
 } KListField;
 
 #define List_Iter(field, head) \
-for(field = *head; field || (field && field->prev); field = field->prev)
+for(field = head; field || (field && field->prev); field = field->prev)
 
 AListField* AList_AddField(AListField** head, void* value);
 void AList_Remove(AListField** head, AListField* field);
