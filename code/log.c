@@ -47,7 +47,7 @@ void Log_SetLevelStr(cs_str str) {
 	Log_Level = level;
 }
 
-void Log_Print(cs_uint8 flag, cs_str str, va_list* args) {
+void Log_Print(cs_uint8 flag, cs_str str, va_list *args) {
 	if((Log_Level & flag) == 0) return;
 
 	char time[13], buf[8192];
@@ -80,7 +80,7 @@ void Log_Info(cs_str str, ...) {
 }
 
 void Log_Chat(cs_str str, ...) {
-	Log_Print(LOG_CHAT, str, (va_list*)NULL);
+	Log_Print(LOG_CHAT, str, (va_list *)NULL);
 }
 
 void Log_Warn(cs_str str, ...) {

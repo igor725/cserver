@@ -125,7 +125,7 @@ typedef struct {
 } BlockDef;
 
 typedef struct {
-	World* world;
+	World *world;
 	cs_bool autosend;
 	struct _BBUData {
 		cs_uint8 count;
@@ -134,16 +134,16 @@ typedef struct {
 	} data;
 } BulkBlockUpdate;
 
-BlockDef* Block_DefinitionsList[255];
+BlockDef *Block_DefinitionsList[255];
 API cs_bool Block_IsValid(BlockID id);
 API cs_str Block_GetName(BlockID id);
 
-API BlockDef* Block_New(BlockID id, cs_str name, cs_uint8 flags);
-API cs_bool Block_Define(BlockDef* bdef);
+API BlockDef *Block_New(BlockID id, cs_str name, cs_uint8 flags);
+API cs_bool Block_Define(BlockDef *bdef);
 API cs_bool Block_Undefine(BlockID id);
 API void Block_UpdateDefinitions();
 
-API cs_bool Block_BulkUpdateAdd(BulkBlockUpdate* bbu, cs_uint32 offset, BlockID id);
-API void Block_BulkUpdateSend(BulkBlockUpdate* bbu);
-API void Block_BulkUpdateClean(BulkBlockUpdate* bbu);
+API cs_bool Block_BulkUpdateAdd(BulkBlockUpdate *bbu, cs_uint32 offset, BlockID id);
+API void Block_BulkUpdateSend(BulkBlockUpdate *bbu);
+API void Block_BulkUpdateClean(BulkBlockUpdate *bbu);
 #endif // BLOCK_H

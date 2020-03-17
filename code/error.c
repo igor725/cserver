@@ -20,7 +20,7 @@ cs_str const Strings[] = {
 #include <dbghelp.h>
 
 void Error_CallStack(void) {
-	void* stack[16];
+	void *stack[16];
 	cs_uint16 frames;
 	SYMBOL_INFO symbol = {0};
 	HANDLE process = GetCurrentProcess();
@@ -51,7 +51,7 @@ void Error_CallStack(void) {
 #include <execinfo.h>
 
 void Error_CallStack(void) {
-	void* stack[16];
+	void *stack[16];
 	cs_int32 frames = backtrace(stack, 16);
 
 	for(cs_int32 i = 0; i < frames; i++) {
@@ -71,7 +71,7 @@ void Error_CallStack(void) {
 
 #endif
 
-static void getErrorStr(cs_int32 type, cs_uint32 code, char* errbuf, cs_size sz, va_list* args) {
+static void getErrorStr(cs_int32 type, cs_uint32 code, char *errbuf, cs_size sz, va_list *args) {
 	switch(type) {
 		case ET_SERVER:
 			if(!args)

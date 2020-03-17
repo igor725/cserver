@@ -10,7 +10,7 @@
 
 void Worlds_SaveAll(cs_bool join, cs_bool unload) {
 	for(cs_int32 i = 0; i < MAX_WORLDS; i++) {
-		World* world = Worlds_List[i];
+		World *world = Worlds_List[i];
 
 		if(i < MAX_WORLDS && world) {
 			if(World_Save(world, unload) && join) {
@@ -23,8 +23,8 @@ void Worlds_SaveAll(cs_bool join, cs_bool unload) {
 	}
 }
 
-World* World_Create(cs_str name) {
-	World* tmp = Memory_Alloc(1, sizeof(World));
+World *World_Create(cs_str name) {
+	World *tmp = Memory_Alloc(1, sizeof(World));
 
 	tmp->name = String_AllocCopy(name);
 	tmp->wait = Waitable_Create();
@@ -35,7 +35,7 @@ World* World_Create(cs_str name) {
 	** Устанавливаем дефолтные значения
 	** согласно документации по CPE.
 	*/
-	cs_int32* props = tmp->info.props;
+	cs_int32 *props = tmp->info.props;
 	props[PROP_SIDEBLOCK] = 7;
 	props[PROP_EDGEBLOCK] = 8;
 	props[PROP_FOGDIST] = 0;
@@ -55,7 +55,7 @@ World* World_Create(cs_str name) {
 	return tmp;
 }
 
-cs_bool World_Add(World* world) {
+cs_bool World_Add(World *world) {
 	if(world->id == -1) {
 		for(WorldID i = 0; i < MAX_WORLDS; i++) {
 			if(!Worlds_List[i]) {
@@ -72,25 +72,25 @@ cs_bool World_Add(World* world) {
 	return true;
 }
 
-World* World_GetByName(cs_str name) {
+World *World_GetByName(cs_str name) {
 	for(WorldID i = 0; i < MAX_WORLDS; i++) {
-		World* world = Worlds_List[i];
+		World *world = Worlds_List[i];
 		if(world && String_CaselessCompare(world->name, name))
 			return world;
 	}
 	return NULL;
 }
 
-World* World_GetByID(WorldID id) {
+World *World_GetByID(WorldID id) {
 	return id < MAX_WORLDS ? Worlds_List[id] : NULL;
 }
 
-void World_SetDimensions(World* world, const SVec* dims) {
+void World_SetDimensions(World *world, const SVec *dims) {
 	world->info.dimensions = *dims;
 	world->size = dims->x * dims->y * dims->z;
 }
 
-cs_bool World_SetProperty(World* world, cs_uint8 property, cs_int32 value) {
+cs_bool World_SetProperty(World *world, cs_uint8 property, cs_int32 value) {
 	if(property > WORLD_PROPS_COUNT) return false;
 
 	world->modified = true;
@@ -100,12 +100,12 @@ cs_bool World_SetProperty(World* world, cs_uint8 property, cs_int32 value) {
 	return true;
 }
 
-cs_int32 World_GetProperty(World* world, cs_uint8 property) {
+cs_int32 World_GetProperty(World *world, cs_uint8 property) {
 	if(property > WORLD_PROPS_COUNT) return 0;
 	return world->info.props[property];
 }
 
-cs_bool World_SetTexturePack(World* world, cs_str url) {
+cs_bool World_SetTexturePack(World *world, cs_str url) {
 	if(String_CaselessCompare(world->info.texturepack, url))
 		return true;
 	world->modified = true;
@@ -121,11 +121,11 @@ cs_bool World_SetTexturePack(World* world, cs_str url) {
 	return true;
 }
 
-cs_str World_GetTexturePack(World* world) {
+cs_str World_GetTexturePack(World *world) {
 	return world->info.texturepack;
 }
 
-cs_bool World_SetWeather(World* world, cs_int8 type) {
+cs_bool World_SetWeather(World *world, cs_int8 type) {
 	if(type > 2) return false;
 	world->info.weatherType = type;
 	world->modified = true;
@@ -134,7 +134,7 @@ cs_bool World_SetWeather(World* world, cs_int8 type) {
 	return true;
 }
 
-cs_bool World_SetEnvColor(World* world, cs_uint8 type, Color3* color) {
+cs_bool World_SetEnvColor(World *world, cs_uint8 type, Color3* color) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	world->info.modval |= MV_COLORS;
 	world->modified = true;
@@ -143,44 +143,44 @@ cs_bool World_SetEnvColor(World* world, cs_uint8 type, Color3* color) {
 	return true;
 }
 
-Color3* World_GetEnvColor(World* world, cs_uint8 type) {
+Color3* World_GetEnvColor(World *world, cs_uint8 type) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	return &world->info.colors[type];
 }
 
-void World_UpdateClients(World* world) {
+void World_UpdateClients(World *world) {
 	Clients_UpdateWorldInfo(world);
 	world->info.modval = MV_NONE;
 }
 
-cs_int8 World_GetWeather(World* world) {
+cs_int8 World_GetWeather(World *world) {
 	return world->info.weatherType;
 }
 
-void World_AllocBlockArray(World* world) {
-	BlockID* data = Memory_Alloc(world->size, sizeof(BlockID));
-	*(cs_uint32*)data = htonl(world->size);
+void World_AllocBlockArray(World *world) {
+	BlockID *data = Memory_Alloc(world->size, sizeof(BlockID));
+	*(cs_uint32 *)data = htonl(world->size);
 	world->data = data;
 	world->loaded = true;
 }
 
-void World_Free(World* world) {
+void World_Free(World *world) {
 	Waitable_Free(world->wait);
 	if(world->id != -1) Worlds_List[world->id] = NULL;
 	Memory_Free(world);
 }
 
-static cs_bool WriteWData(FILE* fp, cs_uint8 dataType, void* ptr, cs_int32 size) {
+static cs_bool WriteWData(FILE *fp, cs_uint8 dataType, void *ptr, cs_int32 size) {
 	return File_Write(&dataType, 1, 1, fp) && (size > 0 ? File_Write(ptr, size, 1, fp) : true);
 }
 
-static cs_bool WriteInfo(World* world, FILE* fp) {
+static cs_bool WriteInfo(World *world, FILE *fp) {
 	cs_int32 magic = WORLD_MAGIC;
-	if(!File_Write((char*)&magic, 4, 1, fp)) {
+	if(!File_Write((char *)&magic, 4, 1, fp)) {
 		Error_PrintSys(false);
 		return false;
 	}
-	WorldInfo* wi = &world->info;
+	WorldInfo *wi = &world->info;
 	return WriteWData(fp, DT_DIM, &wi->dimensions, sizeof(SVec)) &&
 	WriteWData(fp, DT_SV, &wi->spawnVec, sizeof(Vec)) &&
 	WriteWData(fp, DT_SA, &wi->spawnAng, sizeof(Ang)) &&
@@ -190,7 +190,7 @@ static cs_bool WriteInfo(World* world, FILE* fp) {
 	WriteWData(fp, DT_END, NULL, 0);
 }
 
-static cs_bool ReadInfo(World* world, FILE* fp) {
+static cs_bool ReadInfo(World *world, FILE *fp) {
 	cs_uint8 id = 0;
 	cs_uint32 magic = 0;
 	if(!File_Read(&magic, 4, 1, fp))
@@ -202,7 +202,7 @@ static cs_bool ReadInfo(World* world, FILE* fp) {
 	}
 
 	SVec dims;
-	WorldInfo* wi = &world->info;
+	WorldInfo *wi = &world->info;
 	while(File_Read(&id, 1, 1, fp) == 1) {
 		switch (id) {
 			case DT_DIM:
@@ -242,14 +242,14 @@ static cs_bool ReadInfo(World* world, FILE* fp) {
 }
 
 THREAD_FUNC(WorldSaveThread) {
-	World* world = param;
+	World *world = param;
 	cs_bool succ = false;
 	char path[256];
 	char tmpname[256];
 	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
 	String_FormatBuf(tmpname, 256, "worlds" PATH_DELIM "%s.tmp", world->name);
 
-	FILE* fp = File_Open(tmpname, "wb");
+	FILE *fp = File_Open(tmpname, "wb");
 	if(!fp) {
 		Error_PrintSys(false);
 		goto world_save_done;
@@ -271,7 +271,7 @@ THREAD_FUNC(WorldSaveThread) {
 	}
 
 	stream.avail_in = (uLongf)world->size + 4;
-	stream.next_in = (Bytef*)world->data;
+	stream.next_in = (Bytef *)world->data;
 
 	do {
 		stream.next_out = out;
@@ -301,7 +301,7 @@ THREAD_FUNC(WorldSaveThread) {
 	return 0;
 }
 
-cs_bool World_Save(World* world, cs_bool unload) {
+cs_bool World_Save(World *world, cs_bool unload) {
 	if(world->process != WP_NOPROC || !world->modified || !world->loaded)
 		return world->process == WP_SAVING;
 	world->process = WP_SAVING;
@@ -312,12 +312,12 @@ cs_bool World_Save(World* world, cs_bool unload) {
 }
 
 THREAD_FUNC(WorldLoadThread) {
-	World* world = param;
+	World *world = param;
 	cs_bool error = true;
 	char path[256];
 	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
 
-	FILE* fp = File_Open(path, "rb");
+	FILE *fp = File_Open(path, "rb");
 	if(!fp) {
 		Error_PrintSys(false);
 		goto world_load_done;
@@ -340,7 +340,7 @@ THREAD_FUNC(WorldLoadThread) {
 		goto world_load_done;
 	}
 
-	stream.next_out = (Bytef*)world->data;
+	stream.next_out = (Bytef *)world->data;
 
 	do {
 		stream.avail_in = (uLongf)File_Read(in, 1, 1024, fp);
@@ -373,7 +373,7 @@ THREAD_FUNC(WorldLoadThread) {
 	return 0;
 }
 
-cs_bool World_Load(World* world) {
+cs_bool World_Load(World *world) {
 	if(world->loaded) return false;
 	if(world->process != WP_NOPROC)
 		return world->process == WP_LOADING;
@@ -383,7 +383,7 @@ cs_bool World_Load(World* world) {
 	return true;
 }
 
-void World_Unload(World* world) {
+void World_Unload(World *world) {
 	if(world->process != WP_NOPROC)
 		Waitable_Wait(world->wait);
 	if(world->data) Memory_Free(world->data);
@@ -391,27 +391,27 @@ void World_Unload(World* world) {
 	world->data = NULL;
 }
 
-cs_uint32 World_GetOffset(World* world, SVec* pos) {
+cs_uint32 World_GetOffset(World *world, SVec *pos) {
 	if(pos->x < 0 || pos->y < 0 || pos->z < 0) return 0;
-	SVec* dim = &world->info.dimensions;
+	SVec *dim = &world->info.dimensions;
 	cs_uint32 offset = pos->z * dim->z + pos->y * (dim->x * dim->y) + pos->x;
 	if(offset > world->size) return 0;
 	return offset + 4;
 }
 
-cs_bool World_SetBlockO(World* world, cs_uint32 offset, BlockID id) {
+cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id) {
 	if(offset == 0) return false;
 	world->data[offset] = id;
 	world->modified = true;
 	return true;
 }
 
-cs_bool World_SetBlock(World* world, SVec* pos, BlockID id) {
+cs_bool World_SetBlock(World *world, SVec *pos, BlockID id) {
 	cs_uint32 offset = World_GetOffset(world, pos);
 	return World_SetBlockO(world, offset, id);
 }
 
-BlockID World_GetBlock(World* world, SVec* pos) {
+BlockID World_GetBlock(World *world, SVec *pos) {
 	cs_uint32 offset = World_GetOffset(world, pos);
 	if(offset == 0) return 0;
 	return world->data[offset];

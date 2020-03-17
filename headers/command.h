@@ -38,11 +38,11 @@ if(COMMAND_GETARG(wn, 64, idx)) { \
 	if(!ccdata->caller) { \
 		COMMAND_PRINTUSAGE; \
 	} else { \
-		PlayerData* pd = ccdata->caller->playerData; \
+		PlayerData *pd = ccdata->caller->playerData; \
 		if(!pd) { \
 			COMMAND_PRINTUSAGE; \
 		} \
-		World* world = pd->world; \
+		World *world = pd->world; \
 		if(!world) { \
 			COMMAND_PRINTUSAGE; \
 		} \
@@ -51,7 +51,7 @@ if(COMMAND_GETARG(wn, 64, idx)) { \
 }
 
 #define COMMAND_FUNC(N) \
-static cs_bool svcmd_##N(CommandCallData* ccdata)
+static cs_bool svcmd_##N(CommandCallData *ccdata)
 
 #define COMMAND_ADD(N, F) \
 Command_Register(#N, (cmdFunc)svcmd_##N, F);
@@ -69,27 +69,27 @@ enum {
 };
 
 typedef struct {
-	struct _Command* command;
+	struct _Command *command;
 	cs_str args;
-	Client* caller;
-	char* out;
+	Client *caller;
+	char *out;
 } CommandCallData;
 
-typedef cs_bool(*cmdFunc)(CommandCallData* cdata);
+typedef cs_bool(*cmdFunc)(CommandCallData *cdata);
 
 typedef struct _Command {
-	const char* alias;
+	const char *alias;
 	cs_uint8 flags;
 	cmdFunc func;
-	void* data;
+	void *data;
 } Command;
 
-API Command* Command_Register(cs_str name, cmdFunc func, cs_uint8 flags);
-API void Command_SetAlias(Command* cmd, cs_str alias);
-API Command* Command_GetByName(cs_str name);
-API void Command_Unregister(Command* cmd);
+API Command *Command_Register(cs_str name, cmdFunc func, cs_uint8 flags);
+API void Command_SetAlias(Command *cmd, cs_str alias);
+API Command *Command_GetByName(cs_str name);
+API void Command_Unregister(Command *cmd);
 API void Command_UnregisterByFunc(cmdFunc func);
 
 void Command_RegisterDefault(void);
-cs_bool Command_Handle(char* cmd, Client* caller);
+cs_bool Command_Handle(char *cmd, Client *caller);
 #endif // COMMAND_H

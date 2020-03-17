@@ -39,7 +39,7 @@ static void NewSecret(void) {
 		Secret[i] = (char)Random_Range(&secrnd, min, max);
 	}
 
-	FILE* sfile = File_Open("secret.txt", "w");
+	FILE *sfile = File_Open("secret.txt", "w");
 	if(sfile) {
 		File_Write("#Remove this file if you want to generate new secret key.\n", 58, 1, sfile);
 		File_Write(Secret, 16, 1, sfile);
@@ -48,7 +48,7 @@ static void NewSecret(void) {
 }
 
 cs_str reserved = "!*'();:@&=+$,/?#[]%";
-static void TrimReserved(char* name, cs_int32 len) {
+static void TrimReserved(char *name, cs_int32 len) {
 	for(cs_int32 i = 0; i < len; i++) {
 		char sym = name[i];
 		if(sym == '\0') break;
@@ -113,7 +113,7 @@ static void DoRequest() {
 
 static const char hexchars[] = "0123456789abcdef";
 
-cs_bool Heartbeat_CheckKey(Client* client) {
+cs_bool Heartbeat_CheckKey(Client *client) {
 	if(*Secret == '\0') return true;
 	cs_str key = client->playerData->key;
 	cs_str name =  client->playerData->name;
@@ -148,7 +148,7 @@ THREAD_FUNC(HeartbeatThread) {
 }
 
 void Heartbeat_Start(cs_uint32 delay) {
-	FILE* sfile = File_Open("secret.txt", "r");
+	FILE *sfile = File_Open("secret.txt", "r");
 	if(sfile) {
 		File_Seek(sfile, 59, SEEK_SET);
 		File_Read(Secret, 16, 1, sfile);

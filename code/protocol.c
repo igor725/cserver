@@ -10,12 +10,12 @@
 #include "command.h"
 #include "lang.h"
 
-Packet* packetsList[MAX_PACKETS];
+Packet *packetsList[MAX_PACKETS];
 cs_uint16 extensionsCount;
 CPEExt headExtension;
 
-void Proto_WriteString(char** dataptr, cs_str string) {
-	char* data = *dataptr;
+void Proto_WriteString(char **dataptr, cs_str string) {
+	char *data = *dataptr;
 	cs_size size = 0;
 	if(string) {
 		size = min(String_Length(string), 64);
@@ -26,64 +26,64 @@ void Proto_WriteString(char** dataptr, cs_str string) {
 	*dataptr += 64;
 }
 
-void Proto_WriteFlVec(char** dataptr, const Vec* vec) {
-	char* data = *dataptr;
-	*(cs_int32*)data = htonl((cs_int32)(vec->x * 32)); data += 4;
-	*(cs_int32*)data = htonl((cs_int32)(vec->y * 32)); data += 4;
-	*(cs_int32*)data = htonl((cs_int32)(vec->z * 32)); data += 4;
+void Proto_WriteFlVec(char **dataptr, const Vec *vec) {
+	char *data = *dataptr;
+	*(cs_int32 *)data = htonl((cs_int32)(vec->x * 32)); data += 4;
+	*(cs_int32 *)data = htonl((cs_int32)(vec->y * 32)); data += 4;
+	*(cs_int32 *)data = htonl((cs_int32)(vec->z * 32)); data += 4;
 	*dataptr = data;
 }
 
-void Proto_WriteFlSVec(char** dataptr, const Vec* vec) {
-	char* data = *dataptr;
-	*(cs_int16*)data = htons((cs_int16)(vec->x * 32)); data += 2;
-	*(cs_int16*)data = htons((cs_int16)(vec->y * 32)); data += 2;
-	*(cs_int16*)data = htons((cs_int16)(vec->z * 32)); data += 2;
+void Proto_WriteFlSVec(char **dataptr, const Vec *vec) {
+	char *data = *dataptr;
+	*(cs_int16 *)data = htons((cs_int16)(vec->x * 32)); data += 2;
+	*(cs_int16 *)data = htons((cs_int16)(vec->y * 32)); data += 2;
+	*(cs_int16 *)data = htons((cs_int16)(vec->z * 32)); data += 2;
 	*dataptr = data;
 }
 
-void Proto_WriteSVec(char** dataptr, const SVec* vec) {
-	char* data = *dataptr;
-	*(cs_int16*)data = htons(vec->x); data += 2;
-	*(cs_int16*)data = htons(vec->y); data += 2;
-	*(cs_int16*)data = htons(vec->z); data += 2;
+void Proto_WriteSVec(char **dataptr, const SVec *vec) {
+	char *data = *dataptr;
+	*(cs_int16 *)data = htons(vec->x); data += 2;
+	*(cs_int16 *)data = htons(vec->y); data += 2;
+	*(cs_int16 *)data = htons(vec->z); data += 2;
 	*dataptr = data;
 }
 
-void Proto_WriteAng(char** dataptr, const Ang* ang) {
-	char* data = *dataptr;
-	*(cs_uint8*)data++ = (cs_uint8)((ang->yaw / 360) * 256);
-	*(cs_uint8*)data++ = (cs_uint8)((ang->pitch / 360) * 256);
+void Proto_WriteAng(char **dataptr, const Ang *ang) {
+	char *data = *dataptr;
+	*(cs_uint8 *)data++ = (cs_uint8)((ang->yaw / 360) * 256);
+	*(cs_uint8 *)data++ = (cs_uint8)((ang->pitch / 360) * 256);
 	*dataptr = data;
 }
 
-void Proto_WriteColor3(char** dataptr, const Color3* color) {
-	char* data = *dataptr;
-	*(cs_int16*)data = htons(color->r); data += 2;
-	*(cs_int16*)data = htons(color->g); data += 2;
-	*(cs_int16*)data = htons(color->b); data += 2;
+void Proto_WriteColor3(char **dataptr, const Color3* color) {
+	char *data = *dataptr;
+	*(cs_int16 *)data = htons(color->r); data += 2;
+	*(cs_int16 *)data = htons(color->g); data += 2;
+	*(cs_int16 *)data = htons(color->b); data += 2;
 	*dataptr = data;
 }
 
-void Proto_WriteColor4(char** dataptr, const Color4* color) {
-	char* data = *dataptr;
-	*(cs_int16*)data = htons(color->r); data += 2;
-	*(cs_int16*)data = htons(color->g); data += 2;
-	*(cs_int16*)data = htons(color->b); data += 2;
-	*(cs_int16*)data = htons(color->a); data += 2;
+void Proto_WriteColor4(char **dataptr, const Color4* color) {
+	char *data = *dataptr;
+	*(cs_int16 *)data = htons(color->r); data += 2;
+	*(cs_int16 *)data = htons(color->g); data += 2;
+	*(cs_int16 *)data = htons(color->b); data += 2;
+	*(cs_int16 *)data = htons(color->a); data += 2;
 	*dataptr = data;
 }
 
-void Proto_WriteByteColor3(char** dataptr, const Color3* color) {
-	char* data = *dataptr;
+void Proto_WriteByteColor3(char **dataptr, const Color3* color) {
+	char *data = *dataptr;
 	*data++ = (cs_int8)color->r;
 	*data++ = (cs_int8)color->g;
 	*data++ = (cs_int8)color->b;
 	*dataptr = data;
 }
 
-void Proto_WriteByteColor4(char** dataptr, const Color4* color) {
-	char* data = *dataptr;
+void Proto_WriteByteColor4(char **dataptr, const Color4* color) {
+	char *data = *dataptr;
 	*data++ = (cs_int8)color->r;
 	*data++ = (cs_int8)color->g;
 	*data++ = (cs_int8)color->b;
@@ -91,7 +91,7 @@ void Proto_WriteByteColor4(char** dataptr, const Color4* color) {
 	*dataptr = data;
 }
 
-cs_uint32 Proto_WriteVecAng(char** dataptr, Vec* vec, Ang* ang, cs_bool extended) {
+cs_uint32 Proto_WriteVecAng(char **dataptr, Vec *vec, Ang *ang, cs_bool extended) {
 	if(extended)
 		Proto_WriteFlVec(dataptr, vec);
 	else
@@ -100,12 +100,12 @@ cs_uint32 Proto_WriteVecAng(char** dataptr, Vec* vec, Ang* ang, cs_bool extended
 	return extended ? 12 : 6;
 }
 
-cs_uint32 Proto_WriteClientPos(char* data, Client* client, cs_bool extended) {
-	PlayerData* pd = client->playerData;
+cs_uint32 Proto_WriteClientPos(char *data, Client *client, cs_bool extended) {
+	PlayerData *pd = client->playerData;
 	return Proto_WriteVecAng(&data, &pd->position, &pd->angle, extended);
 }
 
-cs_uint8 Proto_ReadString(cs_str* dataptr, cs_str* dstptr) {
+cs_uint8 Proto_ReadString(cs_str *dataptr, cs_str *dstptr) {
 	cs_str data = *dataptr;
 	*dataptr += 64;
 	cs_uint8 end;
@@ -114,17 +114,17 @@ cs_uint8 Proto_ReadString(cs_str* dataptr, cs_str* dstptr) {
 		if(data[end - 1] != ' ') break;
 
 	if(end > 0) {
-		char* str = Memory_Alloc(end + 1, 1);
+		char *str = Memory_Alloc(end + 1, 1);
 		Memory_Copy(str, data, end);
 		str[end] = '\0';
-		if(*dstptr) Memory_Free((void*)*dstptr);
+		if(*dstptr) Memory_Free((void *)*dstptr);
 		*dstptr = str;
 	};
 
 	return end;
 }
 
-cs_uint8 Proto_ReadStringNoAlloc(cs_str* dataptr, char* dst) {
+cs_uint8 Proto_ReadStringNoAlloc(cs_str *dataptr, char *dst) {
 	cs_str data = *dataptr;
 	*dataptr += 64;
 	cs_uint8 end;
@@ -140,41 +140,41 @@ cs_uint8 Proto_ReadStringNoAlloc(cs_str* dataptr, char* dst) {
 	return end;
 }
 
-void Proto_ReadSVec(cs_str* dataptr, SVec* vec) {
+void Proto_ReadSVec(cs_str *dataptr, SVec *vec) {
 	cs_str data = *dataptr;
-	vec->x = ntohs(*(cs_int16*)data); data += 2;
-	vec->y = ntohs(*(cs_int16*)data); data += 2;
-	vec->z = ntohs(*(cs_int16*)data); data += 2;
+	vec->x = ntohs(*(cs_int16 *)data); data += 2;
+	vec->y = ntohs(*(cs_int16 *)data); data += 2;
+	vec->z = ntohs(*(cs_int16 *)data); data += 2;
 	*dataptr = data;
 }
 
-void Proto_ReadAng(cs_str* dataptr, Ang* ang) {
+void Proto_ReadAng(cs_str *dataptr, Ang *ang) {
 	cs_str data = *dataptr;
 	ang->yaw = (((float)(cs_uint8)*data++) / 256) * 360;
 	ang->pitch = (((float)(cs_uint8)*data++) / 256) * 360;
 	*dataptr = data;
 }
 
-void Proto_ReadFlSVec(cs_str* dataptr, Vec* vec) {
+void Proto_ReadFlSVec(cs_str *dataptr, Vec *vec) {
 	cs_str data = *dataptr;
-	vec->x = (float)ntohs(*(cs_int16*)data) / 32; data += 2;
-	vec->y = (float)ntohs(*(cs_int16*)data) / 32; data += 2;
-	vec->z = (float)ntohs(*(cs_int16*)data) / 32; data += 2;
+	vec->x = (float)ntohs(*(cs_int16 *)data) / 32; data += 2;
+	vec->y = (float)ntohs(*(cs_int16 *)data) / 32; data += 2;
+	vec->z = (float)ntohs(*(cs_int16 *)data) / 32; data += 2;
 	*dataptr = data;
 }
 
-void Proto_ReadFlVec(cs_str* dataptr, Vec* vec) {
+void Proto_ReadFlVec(cs_str *dataptr, Vec *vec) {
 	cs_str data = *dataptr;
-	vec->x = (float)ntohl(*(cs_int32*)data) / 32; data += 4;
-	vec->y = (float)ntohl(*(cs_int32*)data) / 32; data += 4;
-	vec->z = (float)ntohl(*(cs_int32*)data) / 32; data += 4;
+	vec->x = (float)ntohl(*(cs_int32 *)data) / 32; data += 4;
+	vec->y = (float)ntohl(*(cs_int32 *)data) / 32; data += 4;
+	vec->z = (float)ntohl(*(cs_int32 *)data) / 32; data += 4;
 	*dataptr = data;
 }
 
-cs_bool Proto_ReadClientPos(Client* client, cs_str data) {
-	PlayerData* cpd = client->playerData;
-	Vec* vec = &cpd->position;
-	Ang* ang = &cpd->angle;
+cs_bool Proto_ReadClientPos(Client *client, cs_str data) {
+	PlayerData *cpd = client->playerData;
+	Vec *vec = &cpd->position;
+	Ang *ang = &cpd->angle;
 	Vec newVec;
 	Ang newAng;
 	cs_bool changed = false;
@@ -202,7 +202,7 @@ cs_bool Proto_ReadClientPos(Client* client, cs_str data) {
 }
 
 void Packet_Register(cs_uint8 id, cs_uint16 size, packetHandler handler) {
-	Packet* tmp = Memory_Alloc(1, sizeof(Packet));
+	Packet *tmp = Memory_Alloc(1, sizeof(Packet));
 	tmp->id = id;
 	tmp->size = size;
 	tmp->handler = handler;
@@ -210,7 +210,7 @@ void Packet_Register(cs_uint8 id, cs_uint16 size, packetHandler handler) {
 }
 
 void Packet_RegisterCPE(cs_uint8 id, cs_uint32 crc32, cs_int32 ver, cs_uint16 size, packetHandler handler) {
-	Packet* tmp = packetsList[id];
+	Packet *tmp = packetsList[id];
 	tmp->extCRC32 = crc32;
 	tmp->extVersion = ver;
 	tmp->cpeHandler = handler;
@@ -274,7 +274,7 @@ void Packet_RegisterDefault(void) {
 	Packet_Register(0x08,   9, Handler_PosAndOrient);
 	Packet_Register(0x0D,  65, Handler_Message);
 
-	const struct extReg* ext;
+	const struct extReg *ext;
 	for(ext = serverExtensions; ext->name; ext++) {
 		Packet_RegisterExtension(ext->name, ext->version);
 	}
@@ -286,7 +286,7 @@ void Packet_RegisterDefault(void) {
 	Packet_RegisterCPE(0x08, EXT_ENTPOS, 1, 15, NULL);
 }
 
-Packet* Packet_Get(cs_uint8 id) {
+Packet *Packet_Get(cs_uint8 id) {
 	return packetsList[id];
 }
 
@@ -295,7 +295,7 @@ Packet* Packet_Get(cs_uint8 id) {
 ** ванильного протокола
 */
 
-void Vanilla_WriteHandshake(Client* client, cs_str name, cs_str motd) {
+void Vanilla_WriteHandshake(Client *client, cs_str name, cs_str motd) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x00;
@@ -307,19 +307,19 @@ void Vanilla_WriteHandshake(Client* client, cs_str name, cs_str motd) {
 	PacketWriter_End(client, 131);
 }
 
-void Vanilla_WriteLvlInit(Client* client) {
+void Vanilla_WriteLvlInit(Client *client) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x02;
 	if(Client_GetExtVer(client, EXT_FASTMAP)) {
-		*(cs_uint32*)data = htonl(Client_GetWorld(client)->size);
+		*(cs_uint32 *)data = htonl(Client_GetWorld(client)->size);
 		PacketWriter_End(client, 5);
 	} else {
 		PacketWriter_End(client, 1);
 	}
 }
 
-void Vanilla_WriteLvlFin(Client* client, SVec* dims) {
+void Vanilla_WriteLvlFin(Client *client, SVec *dims) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x04;
@@ -328,7 +328,7 @@ void Vanilla_WriteLvlFin(Client* client, SVec* dims) {
 	PacketWriter_End(client, 7);
 }
 
-void Vanilla_WriteSetBlock(Client* client, SVec* pos, BlockID block) {
+void Vanilla_WriteSetBlock(Client *client, SVec *pos, BlockID block) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x06;
@@ -338,7 +338,7 @@ void Vanilla_WriteSetBlock(Client* client, SVec* pos, BlockID block) {
 	PacketWriter_End(client, 8);
 }
 
-void Vanilla_WriteSpawn(Client* client, Client* other) {
+void Vanilla_WriteSpawn(Client *client, Client *other) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x07;
@@ -350,7 +350,7 @@ void Vanilla_WriteSpawn(Client* client, Client* other) {
 	PacketWriter_End(client, 68 + len);
 }
 
-void Vanilla_WriteTeleport(Client* client, Vec* pos, Ang* ang) {
+void Vanilla_WriteTeleport(Client *client, Vec *pos, Ang *ang) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x08;
@@ -361,7 +361,7 @@ void Vanilla_WriteTeleport(Client* client, Vec* pos, Ang* ang) {
 	PacketWriter_End(client, 4 + len);
 }
 
-void Vanilla_WritePosAndOrient(Client* client, Client* other) {
+void Vanilla_WritePosAndOrient(Client *client, Client *other) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x08;
@@ -372,7 +372,7 @@ void Vanilla_WritePosAndOrient(Client* client, Client* other) {
 	PacketWriter_End(client, 4 + len);
 }
 
-void Vanilla_WriteDespawn(Client* client, Client* other) {
+void Vanilla_WriteDespawn(Client *client, Client *other) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x0C;
@@ -381,11 +381,11 @@ void Vanilla_WriteDespawn(Client* client, Client* other) {
 	PacketWriter_End(client, 2);
 }
 
-void Vanilla_WriteChat(Client* client, cs_uint8 type, cs_str mesg) {
+void Vanilla_WriteChat(Client *client, cs_uint8 type, cs_str mesg) {
 	PacketWriter_Start(client);
 	if(client == Broadcast) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-			Client* tg = Clients_List[i];
+			Client *tg = Clients_List[i];
 			if(tg) Vanilla_WriteChat(tg, type, mesg);
 		}
 		PacketWriter_Stop(client);
@@ -410,7 +410,7 @@ void Vanilla_WriteChat(Client* client, cs_uint8 type, cs_str mesg) {
 	PacketWriter_End(client, 66);
 }
 
-void Vanilla_WriteKick(Client* client, cs_str reason) {
+void Vanilla_WriteKick(Client *client, cs_str reason) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x0E;
@@ -419,7 +419,7 @@ void Vanilla_WriteKick(Client* client, cs_str reason) {
 	PacketWriter_End(client, 65);
 }
 
-cs_bool Handler_Handshake(Client* client, cs_str data) {
+cs_bool Handler_Handshake(Client *client, cs_str data) {
 	if(client->playerData) return false;
 	if(*data++ != 0x07) {
 		Client_Kick(client, Lang_Get(LANG_KICKPROTOVER));
@@ -435,7 +435,7 @@ cs_bool Handler_Handshake(Client* client, cs_str data) {
 	if(!Proto_ReadString(&data, &client->playerData->key)) return false;
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client* other = Clients_List[i];
+		Client *other = Clients_List[i];
 		if(!other || !other->playerData || other == client) continue;
 		if(String_CaselessCompare(client->playerData->name, other->playerData->name)) {
 			Client_Kick(client, Lang_Get(LANG_KICKNAMEUSED));
@@ -471,18 +471,18 @@ cs_bool Handler_Handshake(Client* client, cs_str data) {
 	return true;
 }
 
-static void UpdateBlock(World* world, SVec* pos, BlockID block) {
+static void UpdateBlock(World *world, SVec *pos, BlockID block) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client* client = Clients_List[i];
+		Client *client = Clients_List[i];
 		if(client && Client_IsInGame(client) && Client_IsInWorld(client, world))
 			Vanilla_WriteSetBlock(client, pos, block);
 	}
 }
 
-cs_bool Handler_SetBlock(Client* client, cs_str data) {
+cs_bool Handler_SetBlock(Client *client, cs_str data) {
 	ValidateClientState(client, STATE_INGAME, false);
 
-	World* world = Client_GetWorld(client);
+	World *world = Client_GetWorld(client);
 	if(!world) return false;
 
 	SVec pos;
@@ -515,9 +515,9 @@ cs_bool Handler_SetBlock(Client* client, cs_str data) {
 	return true;
 }
 
-cs_bool Handler_PosAndOrient(Client* client, cs_str data) {
+cs_bool Handler_PosAndOrient(Client *client, cs_str data) {
 	ValidateClientState(client, STATE_INGAME, false);
-	CPEData* cpd = client->cpeData;
+	CPEData *cpd = client->cpeData;
 	BlockID cb = *data++;
 
 	if(cpd && cpd->heldBlock != cb) {
@@ -527,7 +527,7 @@ cs_bool Handler_PosAndOrient(Client* client, cs_str data) {
 
 	if(Proto_ReadClientPos(client, data)) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-			Client* other = Clients_List[i];
+			Client *other = Clients_List[i];
 			if(other && client != other && Client_IsInGame(other) && Client_IsInSameWorld(client, other))
 				Vanilla_WritePosAndOrient(other, client);
 		}
@@ -535,12 +535,12 @@ cs_bool Handler_PosAndOrient(Client* client, cs_str data) {
 	return true;
 }
 
-cs_bool Handler_Message(Client* client, cs_str data) {
+cs_bool Handler_Message(Client *client, cs_str data) {
 	ValidateClientState(client, STATE_INGAME, true);
 
 	cs_uint8 type = 0;
 	char message[65];
-	char* messptr = message;
+	char *messptr = message;
 	cs_uint8 partial = *data++;
 	cs_uint8 len = Proto_ReadStringNoAlloc(&data, message);
 	if(len == 0) return false;
@@ -550,7 +550,7 @@ cs_bool Handler_Message(Client* client, cs_str data) {
 			message[i] = '&';
 	}
 
-	CPEData* cpd = client->cpeData;
+	CPEData *cpd = client->cpeData;
 	if(cpd && Client_GetExtVer(client, EXT_LONGMSG)) {
 		if(!cpd->message) cpd->message = Memory_Alloc(1, 193);
 		if(String_Append(cpd->message, 193, message) && partial == 1) return true;
@@ -628,38 +628,38 @@ cs_str CPE_GetModelStr(cs_int16 num) {
 	return num >= 0 && num < MODELS_COUNT ? validModelNames[num] : NULL;
 }
 
-void CPE_WriteInfo(Client* client) {
+void CPE_WriteInfo(Client *client) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x10;
 	Proto_WriteString(&data, SOFTWARE_FULLNAME);
-	*(cs_uint16*)data = htons(extensionsCount);
+	*(cs_uint16 *)data = htons(extensionsCount);
 
 	PacketWriter_End(client, 67);
 }
 
-void CPE_WriteExtEntry(Client* client, CPEExt ext) {
+void CPE_WriteExtEntry(Client *client, CPEExt ext) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x11;
 	Proto_WriteString(&data, ext->name);
-	*(cs_uint32*)data = htonl(ext->version);
+	*(cs_uint32 *)data = htonl(ext->version);
 
 	PacketWriter_End(client, 69);
 }
 
-void CPE_WriteClickDistance(Client* client, cs_int16 dist) {
+void CPE_WriteClickDistance(Client *client, cs_int16 dist) {
 	PacketWriter_Start(client);
 
 	*data = 0x12;
-	*(cs_int16*)++data = dist;
+	*(cs_int16 *)++data = dist;
 
 	PacketWriter_End(client, 3);
 }
 
 // 0x13 - CustomBlocksSupportLevel
 
-void CPE_WriteHoldThis(Client* client, BlockID block, cs_bool preventChange) {
+void CPE_WriteHoldThis(Client *client, BlockID block, cs_bool preventChange) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x14;
@@ -669,19 +669,19 @@ void CPE_WriteHoldThis(Client* client, BlockID block, cs_bool preventChange) {
 	PacketWriter_End(client, 3);
 }
 
-void CPE_WriteSetHotKey(Client* client, cs_str action, cs_int32 keycode, cs_int8 keymod) {
+void CPE_WriteSetHotKey(Client *client, cs_str action, cs_int32 keycode, cs_int8 keymod) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x15;
 	Proto_WriteString(&data, NULL); // Label
 	Proto_WriteString(&data, action);
-	*(cs_int32*)data = htonl(keycode); data += 4;
+	*(cs_int32 *)data = htonl(keycode); data += 4;
 	*data = keymod;
 
 	PacketWriter_End(client, 134);
 }
 
-void CPE_WriteAddName(Client* client, Client* other) {
+void CPE_WriteAddName(Client *client, Client *other) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x16;
@@ -689,14 +689,14 @@ void CPE_WriteAddName(Client* client, Client* other) {
 	*data++ = client == other ? CLIENT_SELF : other->id;
 	Proto_WriteString(&data, Client_GetName(other));
 	Proto_WriteString(&data, Client_GetName(other));
-	CGroup* group = Client_GetGroup(other);
+	CGroup *group = Client_GetGroup(other);
 	Proto_WriteString(&data, group->name);
 	*data = group->rank;
 
 	PacketWriter_End(client, 196);
 }
 
-void CPE_WriteAddEntity2(Client* client, Client* other) {
+void CPE_WriteAddEntity2(Client *client, Client *other) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x21;
@@ -712,7 +712,7 @@ void CPE_WriteAddEntity2(Client* client, Client* other) {
 	PacketWriter_End(client, 132 + len);
 }
 
-void CPE_WriteRemoveName(Client* client, Client* other) {
+void CPE_WriteRemoveName(Client *client, Client *other) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x18;
@@ -722,7 +722,7 @@ void CPE_WriteRemoveName(Client* client, Client* other) {
 	PacketWriter_End(client, 3);
 }
 
-void CPE_WriteEnvColor(Client* client, cs_uint8 type, Color3* col) {
+void CPE_WriteEnvColor(Client *client, cs_uint8 type, Color3* col) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x19;
@@ -732,7 +732,7 @@ void CPE_WriteEnvColor(Client* client, cs_uint8 type, Color3* col) {
 	PacketWriter_End(client, 8);
 }
 
-void CPE_WriteMakeSelection(Client* client, cs_uint8 id, SVec* start, SVec* end, Color4* color) {
+void CPE_WriteMakeSelection(Client *client, cs_uint8 id, SVec *start, SVec *end, Color4* color) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1A;
@@ -745,7 +745,7 @@ void CPE_WriteMakeSelection(Client* client, cs_uint8 id, SVec* start, SVec* end,
 	PacketWriter_End(client, 86);
 }
 
-void CPE_WriteRemoveSelection(Client* client, cs_uint8 id) {
+void CPE_WriteRemoveSelection(Client *client, cs_uint8 id) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1B;
@@ -754,7 +754,7 @@ void CPE_WriteRemoveSelection(Client* client, cs_uint8 id) {
 	PacketWriter_End(client, 2);
 }
 
-void CPE_WriteBlockPerm(Client* client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy) {
+void CPE_WriteBlockPerm(Client *client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1C;
@@ -765,7 +765,7 @@ void CPE_WriteBlockPerm(Client* client, BlockID id, cs_bool allowPlace, cs_bool 
 	PacketWriter_End(client, 4);
 }
 
-void CPE_WriteSetModel(Client* client, Client* other) {
+void CPE_WriteSetModel(Client *client, Client *other) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1D;
@@ -781,7 +781,7 @@ void CPE_WriteSetModel(Client* client, Client* other) {
 	PacketWriter_End(client, 66);
 }
 
-void CPE_WriteWeatherType(Client* client, cs_int8 type) {
+void CPE_WriteWeatherType(Client *client, cs_int8 type) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1F;
@@ -790,7 +790,7 @@ void CPE_WriteWeatherType(Client* client, cs_int8 type) {
 	PacketWriter_End(client, 2);
 }
 
-void CPE_WriteHackControl(Client* client, CPEHacks* hacks) {
+void CPE_WriteHackControl(Client *client, CPEHacks *hacks) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x20;
@@ -799,23 +799,23 @@ void CPE_WriteHackControl(Client* client, CPEHacks* hacks) {
 	*data++ = (char)hacks->speeding;
 	*data++ = (char)hacks->spawnControl;
 	*data++ = (char)hacks->tpv;
-	*(cs_int16*)data = htons(hacks->jumpHeight);
+	*(cs_int16 *)data = htons(hacks->jumpHeight);
 
 	PacketWriter_End(client, 8);
 }
 
-void CPE_WriteDefineBlock(Client* client, BlockDef* block) {
+void CPE_WriteDefineBlock(Client *client, BlockDef *block) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x23;
 	*data++ = block->id;
 	Proto_WriteString(&data, block->name);
-	*(struct _BlockParams*)data = block->params.nonext;
+	*(struct _BlockParams *)data = block->params.nonext;
 
 	PacketWriter_End(client, 80);
 }
 
-void CPE_WriteUndefineBlock(Client* client, BlockID id) {
+void CPE_WriteUndefineBlock(Client *client, BlockID id) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x24;
@@ -824,27 +824,27 @@ void CPE_WriteUndefineBlock(Client* client, BlockID id) {
 	PacketWriter_End(client, 2);
 }
 
-void CPE_WriteDefineExBlock(Client* client, BlockDef* block) {
+void CPE_WriteDefineExBlock(Client *client, BlockDef *block) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x25;
 	*data++ = block->id;
 	Proto_WriteString(&data, block->name);
-	*(struct _BlockParamsExt*)data = block->params.ext;
+	*(struct _BlockParamsExt *)data = block->params.ext;
 
 	PacketWriter_End(client, 88);
 }
 
-void CPE_WriteBulkBlockUpdate(Client* client, BulkBlockUpdate* bbu) {
+void CPE_WriteBulkBlockUpdate(Client *client, BulkBlockUpdate *bbu) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x26;
-	*(struct _BBUData*)data = bbu->data;
+	*(struct _BBUData *)data = bbu->data;
 
 	PacketWriter_End(client, 1282);
 }
 
-void CPE_WriteSetTextColor(Client* client, Color4* color, char code) {
+void CPE_WriteSetTextColor(Client *client, Color4* color, char code) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x27;
@@ -854,7 +854,7 @@ void CPE_WriteSetTextColor(Client* client, Color4* color, char code) {
 	PacketWriter_End(client, 6);
 }
 
-void CPE_WriteTexturePack(Client* client, cs_str url) {
+void CPE_WriteTexturePack(Client *client, cs_str url) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x28;
@@ -863,38 +863,38 @@ void CPE_WriteTexturePack(Client* client, cs_str url) {
 	PacketWriter_End(client, 65);
 }
 
-void CPE_WriteMapProperty(Client* client, cs_uint8 property, cs_int32 value) {
+void CPE_WriteMapProperty(Client *client, cs_uint8 property, cs_int32 value) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x29;
 	*data++ = property;
-	*(cs_int32*)data = htonl(value);
+	*(cs_int32 *)data = htonl(value);
 
 	PacketWriter_End(client, 6);
 }
 
-void CPE_WriteSetEntityProperty(Client* client, Client* other, cs_int8 type, cs_int32 value) {
+void CPE_WriteSetEntityProperty(Client *client, Client *other, cs_int8 type, cs_int32 value) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x2A;
 	*data++ = client == other ? CLIENT_SELF : other->id;
 	*data++ = type;
-	*(cs_int32*)data = htonl(value);
+	*(cs_int32 *)data = htonl(value);
 
 	PacketWriter_End(client, 7);
 }
 
-void CPE_WriteTwoWayPing(Client* client, cs_uint8 direction, cs_int16 num) {
+void CPE_WriteTwoWayPing(Client *client, cs_uint8 direction, cs_int16 num) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x2B;
 	*data++ = direction;
-	*(cs_uint16*)data = num;
+	*(cs_uint16 *)data = num;
 
 	PacketWriter_End(client, 4);
 }
 
-void CPE_WriteInventoryOrder(Client* client, Order order, BlockID block) {
+void CPE_WriteInventoryOrder(Client *client, Order order, BlockID block) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x2C;
@@ -904,7 +904,7 @@ void CPE_WriteInventoryOrder(Client* client, Order order, BlockID block) {
 	PacketWriter_End(client, 3);
 }
 
-void CPE_WriteSetHotBar(Client* client, Order order, BlockID block) {
+void CPE_WriteSetHotBar(Client *client, Order order, BlockID block) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x2D;
@@ -914,7 +914,7 @@ void CPE_WriteSetHotBar(Client* client, Order order, BlockID block) {
 	PacketWriter_End(client, 3);
 }
 
-void CPE_WriteSetSpawnPoint(Client* client, Vec* pos, Ang* ang) {
+void CPE_WriteSetSpawnPoint(Client *client, Vec *pos, Ang *ang) {
 	PacketWriter_Start(client);
 
 	cs_int32 len;
@@ -932,43 +932,43 @@ void CPE_WriteSetSpawnPoint(Client* client, Vec* pos, Ang* ang) {
 	PacketWriter_End(client, len);
 }
 
-void CPE_WriteVelocityControl(Client* client, Vec* velocity, cs_bool mode) {
+void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_bool mode) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x2F;
 	Proto_WriteFlVec(&data, velocity);
-	*(cs_uint32*)data = mode ? 0x01010101 : 0x00000000; // Why not?
+	*(cs_uint32 *)data = mode ? 0x01010101 : 0x00000000; // Why not?
 
 	PacketWriter_End(client, 16);
 }
 
-cs_bool CPEHandler_ExtInfo(Client* client, cs_str data) {
+cs_bool CPEHandler_ExtInfo(Client *client, cs_str data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_INITIAL, false);
 
 	if(!Proto_ReadString(&data, &client->cpeData->appName)) return false;
-	client->cpeData->_extCount = ntohs(*(cs_uint16*)data);
+	client->cpeData->_extCount = ntohs(*(cs_uint16 *)data);
 	return true;
 }
 
-cs_bool CPEHandler_ExtEntry(Client* client, cs_str data) {
+cs_bool CPEHandler_ExtEntry(Client *client, cs_str data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_INITIAL, false);
 
-	CPEData* cpd = client->cpeData;
+	CPEData *cpd = client->cpeData;
 	CPEExt tmp = Memory_Alloc(1, sizeof(struct cpeExt));
 	if(!Proto_ReadString(&data, &tmp->name)) {
 		Memory_Free(tmp);
 		return false;
 	}
-	tmp->version = ntohl(*(cs_int32*)data);
+	tmp->version = ntohl(*(cs_int32 *)data);
 	if(tmp->version < 1) {
-		Memory_Free((void*)tmp->name);
+		Memory_Free((void *)tmp->name);
 		Memory_Free(tmp);
 		return false;
 	}
 
-	tmp->crc32 = String_CRC32((cs_uint8*)tmp->name);
+	tmp->crc32 = String_CRC32((cs_uint8 *)tmp->name);
 	tmp->next = cpd->headExtension;
 	cpd->headExtension = tmp;
 
@@ -980,14 +980,14 @@ cs_bool CPEHandler_ExtEntry(Client* client, cs_str data) {
 	return true;
 }
 
-cs_bool CPEHandler_PlayerClick(Client* client, cs_str data) {
+cs_bool CPEHandler_PlayerClick(Client *client, cs_str data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_INGAME, false);
 
 	char button = *data++;
 	char action = *data++;
-	cs_int16 yaw = ntohs(*(cs_int16*)data); data += 2;
-	cs_int16 pitch = ntohs(*(cs_int16*)data); data += 2;
+	cs_int16 yaw = ntohs(*(cs_int16 *)data); data += 2;
+	cs_int16 pitch = ntohs(*(cs_int16 *)data); data += 2;
 	ClientID tgID = *data++;
 	SVec tgBlockPos;
 	Proto_ReadSVec(&data, &tgBlockPos);
@@ -1003,11 +1003,11 @@ cs_bool CPEHandler_PlayerClick(Client* client, cs_str data) {
 	return true;
 }
 
-cs_bool CPEHandler_TwoWayPing(Client* client, cs_str data) {
+cs_bool CPEHandler_TwoWayPing(Client *client, cs_str data) {
 	ValidateCpeClient(client, false);
-	CPEData* cpd = client->cpeData;
+	CPEData *cpd = client->cpeData;
 	cs_uint8 pingDirection = *data++;
-	cs_uint16 pingData = *(cs_uint16*)data;
+	cs_uint16 pingData = *(cs_uint16 *)data;
 
 	if(pingDirection == 0) {
 		CPE_WriteTwoWayPing(client, 0, pingData);

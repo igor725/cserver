@@ -8,7 +8,7 @@ enum {
 	LOG_DEBUG = BIT(4)
 };
 
-void Log_Print(cs_uint8 flag, cs_str str, va_list* args);
+void Log_Print(cs_uint8 flag, cs_str str, va_list *args);
 
 API void Log_Error(cs_str str, ...);
 API void Log_Info(cs_str str, ...);

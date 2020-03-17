@@ -16,7 +16,7 @@
 #define CFG_HEARTBEAT_PUBLIC_KEY "heartbeat-public"
 
 VAR cs_bool Server_Active;
-VAR CStore* Server_Config;
+VAR CStore *Server_Config;
 VAR cs_uint64 Server_StartTime;
 Socket Server_Socket;
 

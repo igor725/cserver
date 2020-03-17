@@ -20,7 +20,7 @@ typedef struct {
 	Socket sock;
 	cs_int32 state;
 	cs_int32 error;
-	char* recvbuf;
+	char *recvbuf;
 	char header[2];
 	char mask[4];
 	cs_uint16 plen;
@@ -28,7 +28,7 @@ typedef struct {
 	cs_bool done;
 } WsClient;
 
-cs_bool WsClient_DoHandshake(WsClient* ws);
-cs_bool WsClient_ReceiveFrame(WsClient* ws);
-cs_bool WsClient_SendHeader(WsClient* ws, cs_uint8 opcode, cs_uint16 len);
+cs_bool WsClient_DoHandshake(WsClient *ws);
+cs_bool WsClient_ReceiveFrame(WsClient *ws);
+cs_bool WsClient_SendHeader(WsClient *ws, cs_uint8 opcode, cs_uint16 len);
 #endif // WEBSOCKET_H

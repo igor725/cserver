@@ -12,12 +12,12 @@ typedef struct {
 	} func;
 } Event;
 
-Event* Event_List[EVENT_TYPES][MAX_EVENTS];
+Event *Event_List[EVENT_TYPES][MAX_EVENTS];
 
 #define rgPart1 \
 for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) { \
 	if(!Event_List[type][pos]) { \
-		Event* evt = Memory_Alloc(1, sizeof(Event));
+		Event *evt = Memory_Alloc(1, sizeof(Event));
 
 #define rgPart2 \
 		Event_List[type][pos] = evt; \
@@ -42,7 +42,7 @@ cs_bool Event_RegisterBool(cs_uint32 type, evtBoolCallback func) {
 
 cs_bool Event_Unregister(cs_uint32 type, cs_uintptr evtFuncPtr) {
 	for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) {
-		Event* evt = Event_List[type][pos];
+		Event *evt = Event_List[type][pos];
 
 		if(evt && evt->func.fptr == evtFuncPtr) {
 			Event_List[type][pos] = NULL;
@@ -52,11 +52,11 @@ cs_bool Event_Unregister(cs_uint32 type, cs_uintptr evtFuncPtr) {
 	return false;
 }
 
-cs_bool Event_Call(cs_uint32 type, void* param) {
+cs_bool Event_Call(cs_uint32 type, void *param) {
 	cs_bool ret = true;
 
 	for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) {
-		Event* evt = Event_List[type][pos];
+		Event *evt = Event_List[type][pos];
 		if(!evt) continue;
 
 		if(evt->rtype == 1)
@@ -70,7 +70,7 @@ cs_bool Event_Call(cs_uint32 type, void* param) {
 	return ret;
 }
 
-cs_bool Event_OnMessage(Client* client, char* message, cs_uint8* type) {
+cs_bool Event_OnMessage(Client *client, char *message, cs_uint8 *type) {
 	onMessage params;
 	params.client = client;
 	params.message = message;
@@ -78,7 +78,7 @@ cs_bool Event_OnMessage(Client* client, char* message, cs_uint8* type) {
 	return Event_Call(EVT_ONMESSAGE, &params);
 }
 
-cs_bool Event_OnBlockPlace(Client* client, cs_uint8 mode, SVec* pos, BlockID* id) {
+cs_bool Event_OnBlockPlace(Client *client, cs_uint8 mode, SVec *pos, BlockID *id) {
 	onBlockPlace params;
 	params.client = client;
 	params.mode = mode;
@@ -87,7 +87,7 @@ cs_bool Event_OnBlockPlace(Client* client, cs_uint8 mode, SVec* pos, BlockID* id
 	return Event_Call(EVT_ONBLOCKPLACE, &params);
 }
 
-void Event_OnHeldBlockChange(Client* client, BlockID prev, BlockID curr) {
+void Event_OnHeldBlockChange(Client *client, BlockID prev, BlockID curr) {
 	onHeldBlockChange params;
 	params.client = client;
 	params.prev = prev;
@@ -95,7 +95,7 @@ void Event_OnHeldBlockChange(Client* client, BlockID prev, BlockID curr) {
 	Event_Call(EVT_ONHELDBLOCKCHNG, &params);
 }
 
-void Event_OnClick(Client* client, char btn, char act, cs_int16 yaw, cs_int16 pitch, ClientID id, SVec* pos, char face) {
+void Event_OnClick(Client *client, char btn, char act, cs_int16 yaw, cs_int16 pitch, ClientID id, SVec *pos, char face) {
 	onPlayerClick params;
 	params.client = client;
 	params.button = btn;

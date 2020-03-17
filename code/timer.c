@@ -5,13 +5,13 @@
 typedef struct Timer {
 	cs_int32 delay, nexttick, ticks, left;
 	TimerCallback callback;
-	void* userdata;
+	void *userdata;
 } Timer;
 
-static AListField* headTimer;
+static AListField *headTimer;
 
-AListField* Timer_Add(cs_int32 ticks, cs_uint32 delay, TimerCallback callback, void* ud) {
-	Timer* timer = Memory_Alloc(1, sizeof(Timer));
+AListField *Timer_Add(cs_int32 ticks, cs_uint32 delay, TimerCallback callback, void *ud) {
+	Timer *timer = Memory_Alloc(1, sizeof(Timer));
 	timer->left = ticks;
 	timer->delay = delay;
 	timer->callback = callback;
@@ -19,15 +19,15 @@ AListField* Timer_Add(cs_int32 ticks, cs_uint32 delay, TimerCallback callback, v
 	return AList_AddField(&headTimer, timer);
 }
 
-void Timer_Remove(AListField* timer) {
+void Timer_Remove(AListField *timer) {
 	Memory_Free(timer->value.ptr);
 	AList_Remove(&headTimer, timer);
 }
 
 void Timer_Update(cs_int32 delta) {
-	AListField* field;
+	AListField *field;
 	List_Iter(field, headTimer) {
-		Timer* timer = field->value.ptr;
+		Timer *timer = field->value.ptr;
 		timer->nexttick -= delta;
 		if(timer->nexttick <= 0) {
 			timer->nexttick = timer->delay;

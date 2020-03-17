@@ -5,11 +5,11 @@
 
 // Генератор плоского мира
 
-void Generator_Flat(World* world) {
-	WorldInfo* wi = &world->info;
-	SVec* dims = &wi->dimensions;
+void Generator_Flat(World *world) {
+	WorldInfo *wi = &world->info;
+	SVec *dims = &wi->dimensions;
 
-	BlockID* data = world->data + 4;
+	BlockID *data = world->data + 4;
 	cs_int32 dirtEnd = dims->x * dims->z * (dims->y / 2 - 1);
 	for(cs_int32 i = 0; i < dirtEnd + dims->x * dims->z; i++) {
 		if(i < dirtEnd)
@@ -62,7 +62,7 @@ static void WaitAll(void) {
 	}
 }
 
-void Generator_Default(World* world) {
+void Generator_Default(World *world) {
 	RNGState rnd;
 	Random_Seed(&rnd, 1337);
 }

@@ -6,25 +6,25 @@
 #include "command.h"
 #include "lang.h"
 
-Plugin* pluginsList[MAX_PLUGINS];
+Plugin *pluginsList[MAX_PLUGINS];
 
 cs_bool Plugin_Load(cs_str name) {
 	char path[256], error[512];
 	void *lib;
 	pluginFunc initSym;
-	cs_int32* apiVerSym;
-	cs_int32* plugVerSym;
+	cs_int32 *apiVerSym;
+	cs_int32 *plugVerSym;
 	String_FormatBuf(path, 256, "plugins" PATH_DELIM "%s", name);
 
 	if(DLib_Load(path, &lib)) {
-		if(!(DLib_GetSym(lib, "Plugin_ApiVer", (void*)&apiVerSym) &&
-		DLib_GetSym(lib, "Plugin_Load", (void*)&initSym))) {
+		if(!(DLib_GetSym(lib, "Plugin_ApiVer", (void *)&apiVerSym) &&
+		DLib_GetSym(lib, "Plugin_Load", (void *)&initSym))) {
 			Log_Error("%s: %s", path, DLib_GetError(error, 512));
 			DLib_Unload(lib);
 			return false;
 		}
 
-		DLib_GetSym(lib, "Plugin_Version", (void*)&plugVerSym);
+		DLib_GetSym(lib, "Plugin_Version", (void *)&plugVerSym);
 		cs_int32 apiVer = *apiVerSym;
 		if(apiVer != PLUGIN_API_NUM) {
 			if(apiVer < PLUGIN_API_NUM)
@@ -36,8 +36,8 @@ cs_bool Plugin_Load(cs_str name) {
 			return false;
 		}
 
-		Plugin* plugin = Memory_Alloc(1, sizeof(Plugin));
-		DLib_GetSym(lib, "Plugin_Unload", (void*)&plugin->unload);
+		Plugin *plugin = Memory_Alloc(1, sizeof(Plugin));
+		DLib_GetSym(lib, "Plugin_Unload", (void *)&plugin->unload);
 
 		plugin->name = String_AllocCopy(name);
 		if(plugVerSym) plugin->version = *plugVerSym;
@@ -64,19 +64,19 @@ cs_bool Plugin_Load(cs_str name) {
 	return false;
 }
 
-Plugin* Plugin_Get(cs_str name) {
+Plugin *Plugin_Get(cs_str name) {
 	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
-		Plugin* ptr = pluginsList[i];
+		Plugin *ptr = pluginsList[i];
 		if(ptr && String_Compare(ptr->name, name)) return ptr;
 	}
 	return NULL;
 }
 
-cs_bool Plugin_Unload(Plugin* plugin) {
+cs_bool Plugin_Unload(Plugin *plugin) {
 	if(plugin->unload && !(*(pluginFunc)plugin->unload)())
 		return false;
 	if(plugin->name)
-		Memory_Free((void*)plugin->name);
+		Memory_Free((void *)plugin->name);
 	if(plugin->id != -1)
 		pluginsList[plugin->id] = NULL;
 
@@ -100,7 +100,7 @@ void Plugin_Start(void) {
 
 void Plugin_Stop(void) {
 	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
-		Plugin* plugin = pluginsList[i];
+		Plugin *plugin = pluginsList[i];
 		if(plugin && plugin->unload)
 			(*(pluginFunc)plugin->unload)();
 	}

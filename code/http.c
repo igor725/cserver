@@ -79,8 +79,8 @@ cs_str HttpCode_GetReason(cs_int32 code) {
 	}
 }
 
-static HTTPHeader* FindHeader(HTTPHeader* hdr, cs_str key) {
-	HTTPHeader* ptr = hdr;
+static HTTPHeader *FindHeader(HTTPHeader *hdr, cs_str key) {
+	HTTPHeader *ptr = hdr;
 	while(ptr) {
 		if(String_CaselessCompare(ptr->key, key)) return ptr;
 		ptr = ptr->next;
@@ -88,31 +88,31 @@ static HTTPHeader* FindHeader(HTTPHeader* hdr, cs_str key) {
 	return NULL;
 }
 
-static HTTPHeader* AllocHeader(cs_str key) {
-	HTTPHeader* hdr = Memory_Alloc(1, sizeof(HTTPHeader));
+static HTTPHeader *AllocHeader(cs_str key) {
+	HTTPHeader *hdr = Memory_Alloc(1, sizeof(HTTPHeader));
 	hdr->key = String_AllocCopy(key);
 	return hdr;
 }
 
-static void EmptyHeader(HTTPHeader* hdr) {
+static void EmptyHeader(HTTPHeader *hdr) {
 	if(hdr->type == HDRT_STR && hdr->value.vchar)
-		Memory_Free((void*)hdr->value.vchar);
+		Memory_Free((void *)hdr->value.vchar);
 	hdr->value.vchar = NULL;
 	hdr->type = 0;
 }
 
-static void FreeHeader(HTTPHeader* hdr) {
-	Memory_Free((void*)hdr->key);
+static void FreeHeader(HTTPHeader *hdr) {
+	Memory_Free((void *)hdr->key);
 	EmptyHeader(hdr);
 	Memory_Free(hdr);
 }
 
-HTTPHeader* HttpRequest_GetHeader(HTTPRequest* req, cs_str key) {
-	HTTPHeader* hdr = FindHeader(req->header, key);
+HTTPHeader *HttpRequest_GetHeader(HTTPRequest *req, cs_str key) {
+	HTTPHeader *hdr = FindHeader(req->header, key);
 	if(!hdr) {
 		hdr = AllocHeader(key);
 		if(req->header) {
-			HTTPHeader* ptr = req->header;
+			HTTPHeader *ptr = req->header;
 			while(ptr)
 				if(ptr->next)
 					ptr = ptr->next;
@@ -124,33 +124,33 @@ HTTPHeader* HttpRequest_GetHeader(HTTPRequest* req, cs_str key) {
 	return hdr;
 }
 
-void HttpRequest_SetHeaderStr(HTTPRequest* req, cs_str key, cs_str value) {
-	HTTPHeader* hdr = HttpRequest_GetHeader(req, key);
+void HttpRequest_SetHeaderStr(HTTPRequest *req, cs_str key, cs_str value) {
+	HTTPHeader *hdr = HttpRequest_GetHeader(req, key);
 	EmptyHeader(hdr);
 	hdr->type = HDRT_STR;
 	hdr->value.vchar = String_AllocCopy(value);
 }
 
-cs_str HttpRequest_GetHeaderStr(HTTPRequest* req, cs_str key) {
-	HTTPHeader* hdr = FindHeader(req->header, key);
+cs_str HttpRequest_GetHeaderStr(HTTPRequest *req, cs_str key) {
+	HTTPHeader *hdr = FindHeader(req->header, key);
 	if(hdr && hdr->type == HDRT_STR) return hdr->value.vchar;
 	return NULL;
 }
 
-void HttpRequest_SetHeaderInt(HTTPRequest* req, cs_str key, cs_int32 value) {
-	HTTPHeader* hdr = HttpRequest_GetHeader(req, key);
+void HttpRequest_SetHeaderInt(HTTPRequest *req, cs_str key, cs_int32 value) {
+	HTTPHeader *hdr = HttpRequest_GetHeader(req, key);
 	EmptyHeader(hdr);
 	hdr->type = HDRT_INT;
 	hdr->value.vint = value;
 }
 
-cs_int32 HttpRequest_GetHeaderInt(HTTPRequest* req, cs_str key) {
-	HTTPHeader* hdr = FindHeader(req->header, key);
+cs_int32 HttpRequest_GetHeaderInt(HTTPRequest *req, cs_str key) {
+	HTTPHeader *hdr = FindHeader(req->header, key);
 	if(hdr && hdr->type == HDRT_INT) return hdr->value.vint;
 	return 0;
 }
 
-void HttpRequest_SetHeader(HTTPRequest* resp, cs_str key, cs_str value) {
+void HttpRequest_SetHeader(HTTPRequest *resp, cs_str key, cs_str value) {
 	char first = *value;
 	if(first >= '0' && first <= '9') {
 		HttpRequest_SetHeaderInt(resp, key, String_ToInt(value));
@@ -161,7 +161,7 @@ void HttpRequest_SetHeader(HTTPRequest* resp, cs_str key, cs_str value) {
 	}
 }
 
-cs_bool HttpRequest_SetHost(HTTPRequest* req, cs_str host, cs_uint16 port, cs_bool addwww) {
+cs_bool HttpRequest_SetHost(HTTPRequest *req, cs_str host, cs_uint16 port, cs_bool addwww) {
 	char hostfmt[26];
 	if(Socket_SetAddrGuess(&req->addr, host, port)) {
 		if(addwww) {
@@ -176,8 +176,8 @@ cs_bool HttpRequest_SetHost(HTTPRequest* req, cs_str host, cs_uint16 port, cs_bo
 	return false;
 }
 
-void HttpRequest_SetPath(HTTPRequest* req, cs_str path) {
-	if(req->path) Memory_Free((void*)req->path);
+void HttpRequest_SetPath(HTTPRequest *req, cs_str path) {
+	if(req->path) Memory_Free((void *)req->path);
 	/*
 	** TODO: Придумать как запилить здесь кодирование url,
 	** по началу можно и не полное, а просто заменять пробелы
@@ -186,12 +186,12 @@ void HttpRequest_SetPath(HTTPRequest* req, cs_str path) {
 	req->path = String_AllocCopy(path);
 }
 
-static cs_int32 SendLine(Socket sock, char* line) {
+static cs_int32 SendLine(Socket sock, char *line) {
 	cs_uint32 len = (cs_uint32)String_Length(line);
 	return Socket_Send(sock, line, len);
 }
 
-static void SendHeaders(Socket sock, HTTPHeader* hdr, char* line) {
+static void SendHeaders(Socket sock, HTTPHeader *hdr, char *line) {
 	while(hdr) {
 		switch(hdr->type) {
 			case HDRT_INT:
@@ -211,7 +211,7 @@ static void SendHeaders(Socket sock, HTTPHeader* hdr, char* line) {
 	SendLine(sock, line);
 }
 
-cs_bool HttpRequest_Read(HTTPRequest* req, Socket sock) {
+cs_bool HttpRequest_Read(HTTPRequest *req, Socket sock) {
 	char line[1024];
 	if(!Socket_ReceiveLine(sock, line, 1023)) {
 		req->error = HTTP_ERR_INVALID_REQUEST;
@@ -223,8 +223,8 @@ cs_bool HttpRequest_Read(HTTPRequest* req, Socket sock) {
 		return false;
 	}
 
-	char* path_start = line + 4;
-	char* path_end = (char*)String_LastChar(path_start, ' ');
+	char *path_start = line + 4;
+	char *path_end = (char *)String_LastChar(path_start, ' ');
 	if(!path_end) {
 		req->error = HTTP_ERR_INVALID_REQUEST;
 		return false;
@@ -238,7 +238,7 @@ cs_bool HttpRequest_Read(HTTPRequest* req, Socket sock) {
 	}
 
 	while(Socket_ReceiveLine(sock, line, 1023)) {
-		char* value = (char*)String_FirstChar(line, ':');
+		char *value = (char *)String_FirstChar(line, ':');
 		if(value) {
 			*value++ = '\0';
 			HttpRequest_SetHeader(req, line, ++value);
@@ -248,7 +248,7 @@ cs_bool HttpRequest_Read(HTTPRequest* req, Socket sock) {
 	return true;
 }
 
-cs_bool HttpRequest_Perform(HTTPRequest* req, HTTPResponse* resp) {
+cs_bool HttpRequest_Perform(HTTPRequest *req, HTTPResponse *resp) {
 	char line[1024];
 	if(!Socket_Connect(req->sock, &req->addr)) {
 		req->error = HTTP_ERROR_CONNECTION_FAILED;
@@ -264,11 +264,11 @@ cs_bool HttpRequest_Perform(HTTPRequest* req, HTTPResponse* resp) {
 	return true;
 }
 
-void HttpRequest_Cleanup(HTTPRequest* req) {
-	if(req->path) Memory_Free((void*)req->path);
+void HttpRequest_Cleanup(HTTPRequest *req) {
+	if(req->path) Memory_Free((void *)req->path);
 	req->path = NULL;
 	if(req->header) {
-		HTTPHeader* ptr = req->header;
+		HTTPHeader *ptr = req->header;
 		req->header = NULL;
 
 		while(ptr) {
@@ -278,12 +278,12 @@ void HttpRequest_Cleanup(HTTPRequest* req) {
 	}
 }
 
-HTTPHeader* HttpResponse_GetHeader(HTTPResponse* resp, cs_str key) {
-	HTTPHeader* hdr = FindHeader(resp->header, key);
+HTTPHeader *HttpResponse_GetHeader(HTTPResponse *resp, cs_str key) {
+	HTTPHeader *hdr = FindHeader(resp->header, key);
 	if(!hdr) {
 		hdr = AllocHeader(key);
 		if(resp->header) {
-			HTTPHeader* ptr = resp->header;
+			HTTPHeader *ptr = resp->header;
 			while(ptr)
 				if(ptr->next)
 					ptr = ptr->next;
@@ -295,33 +295,33 @@ HTTPHeader* HttpResponse_GetHeader(HTTPResponse* resp, cs_str key) {
 	return hdr;
 }
 
-void HttpResponse_SetHeaderStr(HTTPResponse* resp, cs_str key, cs_str value) {
-	HTTPHeader* hdr = HttpResponse_GetHeader(resp, key);
+void HttpResponse_SetHeaderStr(HTTPResponse *resp, cs_str key, cs_str value) {
+	HTTPHeader *hdr = HttpResponse_GetHeader(resp, key);
 	EmptyHeader(hdr);
 	hdr->type = HDRT_STR;
 	hdr->value.vchar = String_AllocCopy(value);
 }
 
-cs_str HttpResponse_GetHeaderStr(HTTPResponse* resp, cs_str key) {
-	HTTPHeader* hdr = FindHeader(resp->header, key);
+cs_str HttpResponse_GetHeaderStr(HTTPResponse *resp, cs_str key) {
+	HTTPHeader *hdr = FindHeader(resp->header, key);
 	if(hdr && hdr->type == HDRT_STR) return hdr->value.vchar;
 	return NULL;
 }
 
-void HttpResponse_SetHeaderInt(HTTPResponse* resp, cs_str key, cs_int32 value) {
-	HTTPHeader* hdr = HttpResponse_GetHeader(resp, key);
+void HttpResponse_SetHeaderInt(HTTPResponse *resp, cs_str key, cs_int32 value) {
+	HTTPHeader *hdr = HttpResponse_GetHeader(resp, key);
 	EmptyHeader(hdr);
 	hdr->type = HDRT_INT;
 	hdr->value.vint = value;
 }
 
-cs_int32 HttpResponse_GetHeaderInt(HTTPResponse* resp, cs_str key) {
-	HTTPHeader* hdr = FindHeader(resp->header, key);
+cs_int32 HttpResponse_GetHeaderInt(HTTPResponse *resp, cs_str key) {
+	HTTPHeader *hdr = FindHeader(resp->header, key);
 	if(hdr && hdr->type == HDRT_INT) return hdr->value.vint;
 	return 0;
 }
 
-void HttpResponse_SetHeader(HTTPResponse* resp, cs_str key, cs_str value) {
+void HttpResponse_SetHeader(HTTPResponse *resp, cs_str key, cs_str value) {
 	char first = *value;
 	if(first >= '0' && first <= '9') {
 		HttpResponse_SetHeaderInt(resp, key, String_ToInt(value));
@@ -332,13 +332,13 @@ void HttpResponse_SetHeader(HTTPResponse* resp, cs_str key, cs_str value) {
 	}
 }
 
-void HttpResponse_SetBody(HTTPResponse* resp, char* body, cs_int32 size) {
+void HttpResponse_SetBody(HTTPResponse *resp, char *body, cs_int32 size) {
 	HttpResponse_SetHeaderInt(resp, "Content-Length", size);
 	resp->bodysize = size;
 	resp->body = body;
 }
 
-cs_bool HttpResponse_SendTo(HTTPResponse* resp, Socket sock) {
+cs_bool HttpResponse_SendTo(HTTPResponse *resp, Socket sock) {
 	char line[1024];
 	cs_str phrase = HttpCode_GetReason(resp->code);
 	if(!phrase) {
@@ -354,7 +354,7 @@ cs_bool HttpResponse_SendTo(HTTPResponse* resp, Socket sock) {
 	return true;
 }
 
-cs_bool HttpResponse_Read(HTTPResponse* resp, Socket sock) {
+cs_bool HttpResponse_Read(HTTPResponse *resp, Socket sock) {
 	char line[1024];
 	if(Socket_ReceiveLine(sock, line, 1023)) {
 		if(!String_CaselessCompare2(line, "HTTP/1.1 ", 9)) {
@@ -371,7 +371,7 @@ cs_bool HttpResponse_Read(HTTPResponse* resp, Socket sock) {
 		resp->error = HTTP_ERR_INVALID_REQUEST;
 		return false;
 	}
-	char* code_end = (char*)++code_start;
+	char *code_end = (char *)++code_start;
 	while(*code_end >= '0' && *code_end <= '9') ++code_end;
 	*code_end = '\0';
 	if(code_start == code_end) {
@@ -387,7 +387,7 @@ cs_bool HttpResponse_Read(HTTPResponse* resp, Socket sock) {
 
 	resp->code = code;
 	while(Socket_ReceiveLine(sock, line, 1023)) {
-		char* value = (char*)String_FirstChar(line, ':');
+		char *value = (char *)String_FirstChar(line, ':');
 		if(value) {
 			*value++ = '\0';
 			if(*value == ' ') ++value;
@@ -446,9 +446,9 @@ cs_bool HttpResponse_Read(HTTPResponse* resp, Socket sock) {
 	return true;
 }
 
-void HttpResponse_Cleanup(HTTPResponse* resp) {
+void HttpResponse_Cleanup(HTTPResponse *resp) {
 	if(resp->header) {
-		HTTPHeader* ptr = resp->header;
+		HTTPHeader *ptr = resp->header;
 		resp->header = NULL;
 
 		while(ptr) {

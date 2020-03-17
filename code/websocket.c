@@ -8,7 +8,7 @@
 #define WS_RESP "HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Protocol: ClassiCube\r\nSec-WebSocket-Accept: %s\r\n\r\n"
 #define WS_ERRRESP "HTTP/1.1 %d %s\r\nConnection: Close\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s"
 
-cs_bool WsClient_DoHandshake(WsClient* ws) {
+cs_bool WsClient_DoHandshake(WsClient *ws) {
 	char line[1024], wskey[32], b64[30];
 	cs_uint8 hash[20];
 	cs_bool haveUpgrade = false;
@@ -26,7 +26,7 @@ cs_bool WsClient_DoHandshake(WsClient* ws) {
 	while(Socket_ReceiveLine(ws->sock, line, 1024)) {
 		if(*line == '\0') break;
 
-		char* value = (char*)String_FirstChar(line, ':');
+		char *value = (char *)String_FirstChar(line, ':');
 		if(!value) break;
 		*value = '\0';value += 2;
 
@@ -58,7 +58,7 @@ cs_bool WsClient_DoHandshake(WsClient* ws) {
 	return false;
 }
 
-cs_bool WsClient_ReceiveFrame(WsClient* ws) {
+cs_bool WsClient_ReceiveFrame(WsClient *ws) {
 	if(ws->state == WS_ST_DONE)
 		ws->state = WS_ST_HDR;
 
@@ -89,7 +89,7 @@ cs_bool WsClient_ReceiveFrame(WsClient* ws) {
 	}
 
 	if(ws->state == WS_ST_PLEN) {
-		cs_uint32 len = Socket_Receive(ws->sock, (char*)&ws->plen, 2, MSG_WAITALL);
+		cs_uint32 len = Socket_Receive(ws->sock, (char *)&ws->plen, 2, MSG_WAITALL);
 
 		if(len == 2) {
 			ws->plen = ntohs(ws->plen);
@@ -128,7 +128,7 @@ cs_bool WsClient_ReceiveFrame(WsClient* ws) {
 	return false;
 }
 
-cs_bool WsClient_SendHeader(WsClient* ws, cs_uint8 opcode, cs_uint16 len) {
+cs_bool WsClient_SendHeader(WsClient *ws, cs_uint8 opcode, cs_uint16 len) {
 	cs_uint16 hdrlen = 2;
 	char hdr[4] = {0, 0, 0, 0};
 	hdr[0] = 0x80 | opcode;
@@ -138,7 +138,7 @@ cs_bool WsClient_SendHeader(WsClient* ws, cs_uint8 opcode, cs_uint16 len) {
 	} else if(len < 65535) {
 		hdrlen = 4;
 		hdr[1] = 126;
-		*(cs_uint16*)&hdr[2] = htons((cs_uint16)len);
+		*(cs_uint16 *)&hdr[2] = htons((cs_uint16)len);
 	} else
 		return false;
 

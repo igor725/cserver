@@ -83,41 +83,41 @@ typedef struct _World {
 	cs_uint32 size;
 	WorldInfo info;
 	cs_bool modified;
-	Waitable* wait;
+	Waitable *wait;
 	cs_bool loaded;
 	cs_bool saveUnload;
 	cs_int32 process;
-	BlockID* data;
+	BlockID *data;
 } World;
 
 API void Worlds_SaveAll(cs_bool join, cs_bool unload);
 
-API World* World_Create(cs_str name);
-API void World_AllocBlockArray(World* world);
-API void World_Free(World* world);
-API cs_bool World_Add(World* world);
-API void World_UpdateClients(World* world);
+API World *World_Create(cs_str name);
+API void World_AllocBlockArray(World *world);
+API void World_Free(World *world);
+API cs_bool World_Add(World *world);
+API void World_UpdateClients(World *world);
 
-API cs_bool World_Load(World* world);
-API void World_Unload(World* world);
-API cs_bool World_Save(World* world, cs_bool unload);
+API cs_bool World_Load(World *world);
+API void World_Unload(World *world);
+API cs_bool World_Save(World *world, cs_bool unload);
 
-API void World_SetDimensions(World* world, const SVec* dims);
-API cs_bool World_SetBlock(World* world, SVec* pos, BlockID id);
-API cs_bool World_SetBlockO(World* world, cs_uint32 offset, BlockID id);
-API cs_bool World_SetEnvColor(World* world, cs_uint8 type, Color3* color);
-API cs_bool World_SetProperty(World* world, cs_uint8 property, cs_int32 value);
-API cs_bool World_SetTexturePack(World* world, cs_str url);
-API cs_bool World_SetWeather(World* world, cs_int8 type);
+API void World_SetDimensions(World *world, const SVec *dims);
+API cs_bool World_SetBlock(World *world, SVec *pos, BlockID id);
+API cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id);
+API cs_bool World_SetEnvColor(World *world, cs_uint8 type, Color3* color);
+API cs_bool World_SetProperty(World *world, cs_uint8 property, cs_int32 value);
+API cs_bool World_SetTexturePack(World *world, cs_str url);
+API cs_bool World_SetWeather(World *world, cs_int8 type);
 
-API cs_uint32 World_GetOffset(World* world, SVec* pos);
-API BlockID World_GetBlock(World* world, SVec* pos);
-API cs_int32 World_GetProperty(World* world, cs_uint8 property);
-API Color3* World_GetEnvColor(World* world, cs_uint8 type);
-API cs_int8 World_GetWeather(World* world);
+API cs_uint32 World_GetOffset(World *world, SVec *pos);
+API BlockID World_GetBlock(World *world, SVec *pos);
+API cs_int32 World_GetProperty(World *world, cs_uint8 property);
+API Color3* World_GetEnvColor(World *world, cs_uint8 type);
+API cs_int8 World_GetWeather(World *world);
 
-API World* World_GetByName(cs_str name);
-API World* World_GetByID(WorldID id);
+API World *World_GetByName(cs_str name);
+API World *World_GetByID(WorldID id);
 
-VAR World* Worlds_List[MAX_WORLDS];
+VAR World *Worlds_List[MAX_WORLDS];
 #endif // WORLD_H

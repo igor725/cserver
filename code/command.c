@@ -12,40 +12,40 @@
 #include "lang.h"
 #include <zlib.h>
 
-KListField* headCmd = NULL;
+KListField *headCmd = NULL;
 
-Command* Command_Register(cs_str name, cmdFunc func, cs_uint8 flags) {
+Command *Command_Register(cs_str name, cmdFunc func, cs_uint8 flags) {
 	if(Command_GetByName(name)) return NULL;
-	Command* tmp = Memory_Alloc(1, sizeof(Command));
+	Command *tmp = Memory_Alloc(1, sizeof(Command));
 	tmp->flags = flags;
 	tmp->func = func;
-	KList_Add(&headCmd, (void*)String_AllocCopy(name), tmp);
+	KList_Add(&headCmd, (void *)String_AllocCopy(name), tmp);
 	return tmp;
 }
 
-void Command_SetAlias(Command* cmd, cs_str alias) {
-	if(cmd->alias) Memory_Free((void*)cmd->alias);
+void Command_SetAlias(Command *cmd, cs_str alias) {
+	if(cmd->alias) Memory_Free((void *)cmd->alias);
 	cmd->alias = String_AllocCopy(alias);
 }
 
-Command* Command_GetByName(cs_str name) {
-	KListField* field;
+Command *Command_GetByName(cs_str name) {
+	KListField *field;
 	List_Iter(field, headCmd) {
 		if(String_CaselessCompare(field->key.str, name))
 			return field->value.ptr;
 
-		Command* cmd = field->value.ptr;
+		Command *cmd = field->value.ptr;
 		if(cmd->alias && String_CaselessCompare(cmd->alias, name))
 			return field->value.ptr;
 	}
 	return NULL;
 }
 
-void Command_Unregister(Command* cmd) {
-	KListField* field;
+void Command_Unregister(Command *cmd) {
+	KListField *field;
 	List_Iter(field, headCmd) {
 		if(field->value.ptr == cmd) {
-			if(cmd->alias) Memory_Free((void*)cmd->alias);
+			if(cmd->alias) Memory_Free((void *)cmd->alias);
 			Memory_Free(field->key.ptr);
 			KList_Remove(&headCmd, field);
 			Memory_Free(cmd);
@@ -54,11 +54,11 @@ void Command_Unregister(Command* cmd) {
 }
 
 void Command_UnregisterByFunc(cmdFunc func) {
-	KListField* field;
+	KListField *field;
 	List_Iter(field, headCmd) {
-		Command* cmd = field->value.ptr;
+		Command *cmd = field->value.ptr;
 		if(cmd->func == func) {
-			if(cmd->alias) Memory_Free((void*)cmd->alias);
+			if(cmd->alias) Memory_Free((void *)cmd->alias);
 			Memory_Free(field->key.ptr);
 			KList_Remove(&headCmd, field);
 			Memory_Free(cmd);
@@ -91,9 +91,9 @@ COMMAND_FUNC(OP) {
 
 	char clientname[64];
 	if(COMMAND_GETARG(clientname, 64, 0)) {
-		Client* tg = Client_GetByName(clientname);
+		Client *tg = Client_GetByName(clientname);
 		if(tg) {
-			PlayerData* pd = tg->playerData;
+			PlayerData *pd = tg->playerData;
 			cs_str name = pd->name;
 			pd->isOP ^= 1;
 			COMMAND_PRINTF("Player %s %s", name, pd->isOP ? "opped" : "deopped");
@@ -127,7 +127,7 @@ COMMAND_FUNC(CFG) {
 			if(!COMMAND_GETARG(key, MAX_CFG_LEN, 1)) {
 				COMMAND_PRINTUSAGE;
 			}
-			CEntry* ent = Config_GetEntry(Server_Config, key);
+			CEntry *ent = Config_GetEntry(Server_Config, key);
 			if(!ent) {
 				COMMAND_PRINT("This entry not found in \"server.cfg\" store.");
 			}
@@ -160,7 +160,7 @@ COMMAND_FUNC(CFG) {
 				COMMAND_PRINTUSAGE;
 			}
 
-			CEntry* ent = Config_GetEntry(Server_Config, key);
+			CEntry *ent = Config_GetEntry(Server_Config, key);
 			if(ent) {
 				if(!Config_ToStr(ent, value, MAX_CFG_LEN)) {
 					COMMAND_PRINT("Can't detect entry type.");
@@ -169,7 +169,7 @@ COMMAND_FUNC(CFG) {
 			}
 			COMMAND_PRINT("This entry not found in \"server.cfg\" store.");
 		} else if(String_CaselessCompare(subcommand, "print")) {
-			CEntry* ent = Server_Config->firstCfgEntry;
+			CEntry *ent = Server_Config->firstCfgEntry;
 			COMMAND_APPEND("Server config entries:");
 
 			while(ent) {
@@ -199,7 +199,7 @@ if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) { \
 COMMAND_FUNC(Plugins) {
 	COMMAND_SETUSAGE("/plugins <load/unload/print> [pluginName]");
 	char subcommand[8], name[64];
-	Plugin* plugin;
+	Plugin *plugin;
 
 	if(COMMAND_GETARG(subcommand, 8, 0)) {
 		if(String_CaselessCompare(subcommand, "load")) {
@@ -284,7 +284,7 @@ COMMAND_FUNC(Kick) {
 
 	char playername[64];
 	if(COMMAND_GETARG(playername, 64, 0)) {
-		Client* tg = Client_GetByName(playername);
+		Client *tg = Client_GetByName(playername);
 		if(tg) {
 			cs_str reason = String_FromArgument(ccdata->args, 1);
 			Client_Kick(tg, reason);
@@ -316,7 +316,7 @@ COMMAND_FUNC(ChgWorld) {
 
 	char worldname[64];
 	COMMAND_ARG2WN(worldname, 0);
-	World* world = World_GetByName(worldname);
+	World *world = World_GetByName(worldname);
 	if(world) {
 		if(Client_IsInWorld(ccdata->caller, world)) {
 			COMMAND_PRINT("You already in this world.");
@@ -339,7 +339,7 @@ COMMAND_FUNC(GenWorld) {
 
 		if(_x > 0 && _y > 0 && _z > 0) {
 			COMMAND_ARG2WN(worldname, 0);
-			World* tmp = World_Create(worldname);
+			World *tmp = World_Create(worldname);
 			SVec vec;
 			Vec_Set(vec, _x, _y, _z);
 			World_SetDimensions(tmp, &vec);
@@ -363,13 +363,13 @@ COMMAND_FUNC(UnlWorld) {
 
 	char worldname[64];
 	COMMAND_ARG2WN(worldname, 0);
-	World* tmp = World_GetByName(worldname);
+	World *tmp = World_GetByName(worldname);
 	if(tmp) {
 		if(tmp->id == 0) {
 			COMMAND_PRINT("Can't unload world with id 0.");
 		}
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-			Client* c = Clients_List[i];
+			Client *c = Clients_List[i];
 			if(c && Client_IsInWorld(c, tmp)) Client_ChangeWorld(c, Worlds_List[0]);
 		}
 		if(World_Save(tmp, true)) {
@@ -386,7 +386,7 @@ COMMAND_FUNC(SavWorld) {
 
 	char worldname[64];
 	COMMAND_ARG2WN(worldname, 0);
-	World* tmp = World_GetByName(worldname);
+	World *tmp = World_GetByName(worldname);
 	if(tmp) {
 		if(World_Save(tmp, false)) {
 			COMMAND_PRINT("World saving scheduled.");
@@ -420,15 +420,15 @@ void Command_RegisterDefault(void) {
 ** на счёт надёжности данной функции.
 ** TODO: Разобраться, может ли здесь произойти краш.
 */
-static void SendOutput(Client* caller, cs_str ret) {
+static void SendOutput(Client *caller, cs_str ret) {
 	if(caller) {
 		while(*ret != '\0') {
-			char* nlptr = (char*)String_FirstChar(ret, '\r');
+			char *nlptr = (char *)String_FirstChar(ret, '\r');
 			if(nlptr)
 				*nlptr++ = '\0';
 			else
-				nlptr = (char*)ret;
-			nlptr = (char*)String_FirstChar(nlptr, '\n');
+				nlptr = (char *)ret;
+			nlptr = (char *)String_FirstChar(nlptr, '\n');
 			if(nlptr) *nlptr++ = '\0';
 			Client_Chat(caller, 0, ret);
 			if(!nlptr) break;
@@ -438,11 +438,11 @@ static void SendOutput(Client* caller, cs_str ret) {
 		Log_Info(ret);
 }
 
-cs_bool Command_Handle(char* str, Client* caller) {
+cs_bool Command_Handle(char *str, Client *caller) {
 	if(*str == '/') ++str;
 
 	char ret[MAX_CMD_OUT];
-	char* args = str;
+	char *args = str;
 
 	while(1) {
 		++args;
@@ -455,7 +455,7 @@ cs_bool Command_Handle(char* str, Client* caller) {
 		}
 	}
 
-	Command* cmd = Command_GetByName(str);
+	Command *cmd = Command_GetByName(str);
 	if(cmd) {
 		if(cmd->flags & CMDF_CLIENT && !caller) {
 			SendOutput(caller, Lang_Get(LANG_CMDONLYCL));

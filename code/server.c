@@ -27,12 +27,12 @@ static void AcceptFunc(void) {
 		}
 
 		cs_uint32 addr = ntohl(caddr.sin_addr.s_addr);
-	 	Client* tmp = Client_New(fd, addr);
+	 	Client *tmp = Client_New(fd, addr);
 		cs_int8 maxConnPerIP = Config_GetInt8ByKey(Server_Config, CFG_CONN_KEY),
 		sameAddrCount = 1;
 
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-			Client* other = Clients_List[i];
+			Client *other = Clients_List[i];
 			if(other && other->addr == addr)
 				++sameAddrCount;
 			else continue;
@@ -48,7 +48,7 @@ static void AcceptFunc(void) {
 		while(attempt++ < 5) {
 			if(Socket_Receive(fd, tmp->rdbuf, 5, MSG_PEEK) == 5) {
 				if(String_CaselessCompare(tmp->rdbuf, "GET /")) {
-					WsClient* wscl = Memory_Alloc(1, sizeof(WsClient));
+					WsClient *wscl = Memory_Alloc(1, sizeof(WsClient));
 					wscl->recvbuf = tmp->rdbuf;
 					wscl->sock = tmp->sock;
 					tmp->websock = wscl;
@@ -111,8 +111,8 @@ void Server_InitialWork(void) {
 	if(!Socket_Init()) return;
 
 	Log_Info(Lang_Get(LANG_SVLOADING), MAINCFG);
-	CStore* cfg = Config_NewStore(MAINCFG);
-	CEntry* ent;
+	CStore *cfg = Config_NewStore(MAINCFG);
+	CEntry *ent;
 
 	Server_StartTime = Time_GetMSec();
 	Server_Config = cfg;
@@ -183,7 +183,7 @@ void Server_InitialWork(void) {
 	if(Iter_Init(&wIter, "worlds", "cws")) {
 		do {
 			if(wIter.isDir || !wIter.cfile) continue;
-			World* tmp = World_Create(wIter.cfile);
+			World *tmp = World_Create(wIter.cfile);
 			tmp->id = wIndex++;
 			if(!World_Load(tmp) || !World_Add(tmp))
 				World_Free(tmp);
@@ -192,7 +192,7 @@ void Server_InitialWork(void) {
 	Iter_Close(&wIter);
 
 	if(wIndex < 1) {
-		World* tmp = World_Create("world.cws");
+		World *tmp = World_Create("world.cws");
 		SVec defdims = {256, 256, 256};
 		World_SetDimensions(tmp, &defdims);
 		World_AllocBlockArray(tmp);
@@ -218,7 +218,7 @@ void Server_DoStep(cs_int32 delta) {
 	Event_Call(EVT_ONTICK, &delta);
 	Timer_Update(delta);
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client* client = Clients_List[i];
+		Client *client = Clients_List[i];
 		if(client) Client_Tick(client, delta);
 	}
 }
