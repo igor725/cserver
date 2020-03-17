@@ -68,7 +68,7 @@ cs_bool WsClient_ReceiveFrame(WsClient* ws) {
 		if(len == 2) {
 			char plen = ws->header[1] & 0x7F;
 
-			if((ws->header[1] >> 0x07) & 1) {
+			if(ws->header[1] & 0x80) {
 				ws->opcode = ws->header[0] & 0x0F;
 				ws->done = (ws->header[0] >> 0x07) & 1;
 				ws->plen = plen;
@@ -130,9 +130,8 @@ cs_bool WsClient_ReceiveFrame(WsClient* ws) {
 
 cs_bool WsClient_SendHeader(WsClient* ws, cs_uint8 opcode, cs_uint16 len) {
 	cs_uint16 hdrlen = 2;
-	char hdr[4] = {0};
-
-	hdr[0] = 0x80 | (opcode & 0x0F);
+	char hdr[4] = {0, 0, 0, 0};
+	hdr[0] = 0x80 | opcode;
 
 	if(len < 126) {
 		hdr[1] = (char)len;

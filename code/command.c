@@ -12,7 +12,7 @@
 #include "lang.h"
 #include <zlib.h>
 
-KListField* headCmd;
+KListField* headCmd = NULL;
 
 Command* Command_Register(cs_str name, cmdFunc func, cs_uint8 flags) {
 	if(Command_GetByName(name)) return NULL;
