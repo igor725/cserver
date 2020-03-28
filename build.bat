@@ -95,7 +95,7 @@ IF "%BUILD_PLUGIN%"=="1" (
 		set OUTDIR=!PROJECT_ROOT!\out\%ARCH%
 	)
 	IF NOT EXIST !PROJECT_ROOT! goto notaplugin
-	IF NOT EXIST !PROJECT_ROOT!\code goto notaplugin
+	IF NOT EXIST !PROJECT_ROOT!\src goto notaplugin
 	echo Building plugin: %PLUGNAME%
 ) else (
 	set OUTDIR=%SVOUTDIR%
@@ -126,7 +126,7 @@ IF "%CLEAN%"=="0" (
 ) else (goto clean)
 
 IF "%BUILD_PLUGIN%"=="1" (
-  set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DPLUGIN_BUILD /I.\headers\
+  set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DPLUGIN_BUILD /I.\src\
   set MSVC_LIBS=server.lib %MSVC_LIBS%
 	set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%SVOUTDIR% /NOENTRY
 ) else (
@@ -142,7 +142,7 @@ IF EXIST %PROJECT_ROOT%\version.rc (
 	set MSVC_OPTS=%OBJDIR%\version.res %MSVC_OPTS%
 )
 
-%COMPILER% %PROJECT_ROOT%\code\*.c /I%PROJECT_ROOT%\headers %MSVC_OPTS% %MSVC_LIBS%
+%COMPILER% %PROJECT_ROOT%\src\*.c /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%
 
 IF "%BUILD_PLUGIN%"=="1" (
 	IF "%PLUGIN_INSTALL%"=="1" (
