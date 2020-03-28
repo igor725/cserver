@@ -5,7 +5,7 @@
 #include "lang.h"
 
 #define COMMAND_SETUSAGE(str) \
-static cs_str cmdUsage = str;
+cs_str cmdUsage = str;
 
 #define COMMAND_PRINT(str) \
 String_Copy(ccdata->out, MAX_CMD_OUT, str); \
@@ -26,7 +26,7 @@ String_Append(ccdata->out, MAX_CMD_OUT, buf);
 String_GetArgument(ccdata->args, a, s, n)
 
 #define COMMAND_PRINTUSAGE \
-COMMAND_PRINTF(Lang_Get(LANG_CMDUSAGE), cmdUsage);
+COMMAND_PRINTF(Lang_Get(Lang_CmdGrp, 0), cmdUsage);
 
 // TODO: Сделать это добро функцией
 #define COMMAND_ARG2WN(wn, idx) \

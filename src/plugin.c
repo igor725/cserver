@@ -28,9 +28,9 @@ cs_bool Plugin_Load(cs_str name) {
 		cs_int32 apiVer = *apiVerSym;
 		if(apiVer != PLUGIN_API_NUM) {
 			if(apiVer < PLUGIN_API_NUM)
-				Log_Error(Lang_Get(LANG_CPAPIOLD), name, PLUGIN_API_NUM, apiVer);
+				Log_Error(Lang_Get(Lang_ConGrp, 6), name, PLUGIN_API_NUM, apiVer);
 			else
-				Log_Error(Lang_Get(LANG_CPAPIUPG), name, apiVer, PLUGIN_API_NUM);
+				Log_Error(Lang_Get(Lang_ConGrp, 7), name, apiVer, PLUGIN_API_NUM);
 
 			DLib_Unload(lib);
 			return false;

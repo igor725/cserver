@@ -91,20 +91,17 @@ static void DoRequest() {
 			if(!PlayURL && resp.body && resp.code == 200) {
 				if(String_CaselessCompare2(resp.body, PLAY_URL, PLAY_URL_LEN)) {
 					PlayURL = String_AllocCopy(resp.body);
-					Log_Info(Lang_Get(LANG_HBPLAY), resp.body);
+					Log_Info(Lang_Get(Lang_ConGrp, 3), resp.body);
 				}
 			}
 			if(resp.code != 200)
-				Log_Error(Lang_Get(LANG_HBRESPERR), resp.code);
+				Log_Error(Lang_Get(Lang_ErrGrp, 4), resp.code);
 		} else {
-			if(req.error == HTTP_ERR_RESPONSE_READ)
-				Log_Error(Lang_Get(LANG_HBERR), Lang_Get(LANG_HBRR), resp.error);
-			else
-				Log_Error(Lang_Get(LANG_HBERR), Lang_Get(LANG_HBRSP), resp.error);
+			if(req.error != 0)
+				Log_Error(Lang_Get(Lang_ErrGrp, 5));
 		}
-	} else {
-		Log_Error(Lang_Get(LANG_HBADDRERR));
-	}
+	} else
+		Log_Error(Lang_Get(Lang_ErrGrp, 3));
 
 	Socket_Close(fd);
 	HttpRequest_Cleanup(&req);

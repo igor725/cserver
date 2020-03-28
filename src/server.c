@@ -38,7 +38,7 @@ static void AcceptFunc(void) {
 			else continue;
 
 			if(sameAddrCount > maxConnPerIP) {
-				Client_Kick(tmp, Lang_Get(LANG_KICKMANYCONN));
+				Client_Kick(tmp, Lang_Get(Lang_KickGrp, 10));
 				Client_Free(tmp);
 				return;
 			}
@@ -59,12 +59,12 @@ static void AcceptFunc(void) {
 			}
 			Sleep(100);
 		}
-		Client_Kick(tmp, Lang_Get(LANG_KICKPACKETREAD));
+		Client_Kick(tmp, Lang_Get(Lang_KickGrp, 7));
 		Client_Free(tmp);
 
 		client_ok:
 		if(!Client_Add(tmp)) {
-			Client_Kick(tmp, Lang_Get(LANG_KICKSVFULL));
+			Client_Kick(tmp, Lang_Get(Lang_KickGrp, 1));
 			Client_Free(tmp);
 		}
 	}
@@ -89,7 +89,7 @@ static void Bind(cs_str ip, cs_uint16 port) {
 	}
 
 	Client_Init();
-	Log_Info(Lang_Get(LANG_SVSTART), ip, port);
+	Log_Info(Lang_Get(Lang_ConGrp, 0), ip, port);
 	if(!Socket_Bind(Server_Socket, &ssa)) {
 		Error_PrintSys(true);
 	}
@@ -102,15 +102,15 @@ THREAD_FUNC(ConsoleThread) {
 	while(Server_Active) {
 		if(File_ReadLine(stdin, buf, 192))
 			if(!Command_Handle(buf, NULL))
-				Log_Info(Lang_Get(LANG_CMDUNK));
+				Log_Info(Lang_Get(Lang_CmdGrp, 3));
 	}
 	return 0;
 }
 
 void Server_InitialWork(void) {
 	if(!Socket_Init()) return;
+	Lang_Init();
 
-	Log_Info(Lang_Get(LANG_SVLOADING), MAINCFG);
 	CStore *cfg = Config_NewStore(MAINCFG);
 	CEntry *ent;
 
@@ -174,7 +174,6 @@ void Server_InitialWork(void) {
 	Packet_RegisterDefault();
 	Command_RegisterDefault();
 
-	Log_Info(Lang_Get(LANG_SVLOADING), "plugins");
 	Plugin_Start();
 
 	Directory_Ensure("worlds");
@@ -200,10 +199,8 @@ void Server_InitialWork(void) {
 		Worlds_List[0] = tmp;
 	}
 
-	if(Config_GetBoolByKey(cfg, CFG_HEARTBEAT_KEY)) {
-		Log_Info(Lang_Get(LANG_HBEAT));
+	if(Config_GetBoolByKey(cfg, CFG_HEARTBEAT_KEY))
 		Heartbeat_Start(Config_GetInt32ByKey(cfg, CFG_HEARTBEATDELAY_KEY));
-	}
 
 	Server_Active = true;
 	cs_str ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
@@ -232,11 +229,11 @@ void Server_StartLoop(void) {
 		curr = Time_GetMSec();
 		delta = (cs_int32)(curr - last);
 		if(delta < 0) {
-			Log_Warn(Lang_Get(LANG_SVDELTALT0));
+			Log_Warn(Lang_Get(Lang_ConGrp, 2));
 			delta = 0;
 		}
 		if(delta > 500) {
-			Log_Warn(Lang_Get(LANG_SVLONGTICK), delta);
+			Log_Warn(Lang_Get(Lang_ConGrp, 1), delta);
 			delta = 500;
 		}
 		Server_DoStep(delta);
@@ -246,16 +243,12 @@ void Server_StartLoop(void) {
 
 void Server_Stop(void) {
 	Event_Call(EVT_ONSTOP, NULL);
-	Log_Info(Lang_Get(LANG_SVSTOP0));
-	Clients_KickAll(Lang_Get(LANG_KICKSVSTOP));
-	Log_Info(Lang_Get(LANG_SVSTOP1));
+	Log_Info(Lang_Get(Lang_ConGrp, 4));
+	Clients_KickAll(Lang_Get(Lang_KickGrp, 5));
+	Log_Info(Lang_Get(Lang_ConGrp, 5));
 	Worlds_SaveAll(true, true);
-
 	Socket_Close(Server_Socket);
-	Log_Info(Lang_Get(LANG_SVSAVING), MAINCFG);
 	Config_Save(Server_Config);
 	Config_DestroyStore(Server_Config);
-
-	Log_Info(Lang_Get(LANG_SVSTOP2));
 	Plugin_Stop();
 }

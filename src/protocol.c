@@ -422,7 +422,7 @@ void Vanilla_WriteKick(Client *client, cs_str reason) {
 cs_bool Handler_Handshake(Client *client, cs_str data) {
 	if(client->playerData) return false;
 	if(*data++ != 0x07) {
-		Client_Kick(client, Lang_Get(LANG_KICKPROTOVER));
+		Client_Kick(client, Lang_Get(Lang_KickGrp, 2));
 		return true;
 	}
 
@@ -438,7 +438,7 @@ cs_bool Handler_Handshake(Client *client, cs_str data) {
 		Client *other = Clients_List[i];
 		if(!other || !other->playerData || other == client) continue;
 		if(String_CaselessCompare(client->playerData->name, other->playerData->name)) {
-			Client_Kick(client, Lang_Get(LANG_KICKNAMEUSED));
+			Client_Kick(client, Lang_Get(Lang_KickGrp, 3));
 			return true;
 		}
 	}
@@ -449,7 +449,7 @@ cs_bool Handler_Handshake(Client *client, cs_str data) {
 
 		Vanilla_WriteHandshake(client, name, motd);
 	} else {
-		Client_Kick(client, Lang_Get(LANG_KICKAUTHFAIL));
+		Client_Kick(client, Lang_Get(Lang_KickGrp, 4));
 		return true;
 	}
 
@@ -493,7 +493,7 @@ cs_bool Handler_SetBlock(Client *client, cs_str data) {
 	switch(mode) {
 		case 0x01:
 			if(!Block_IsValid(block)) {
-				Client_Kick(client, Lang_Get(LANG_KICKBLOCKID));
+				Client_Kick(client, Lang_Get(Lang_KickGrp, 8));
 				return false;
 			}
 			if(Event_OnBlockPlace(client, mode, &pos, &block)) {
@@ -563,7 +563,7 @@ cs_bool Handler_Message(Client *client, cs_str data) {
 
 		if(*messptr == '/') {
 			if(!Command_Handle(messptr, client))
-				Vanilla_WriteChat(client, type, Lang_Get(LANG_CMDUNK));
+				Vanilla_WriteChat(client, type, Lang_Get(Lang_CmdGrp, 3));
 		} else
 			Client_Chat(Broadcast, type, formatted);
 

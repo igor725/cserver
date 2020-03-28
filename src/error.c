@@ -34,12 +34,12 @@ void Error_CallStack(void) {
 	for(cs_int32 i = 0; i < frames; i++) {
 		SymFromAddr(process, (uintptr_t)stack[i], 0, &symbol);
 		if(i > 2) {
-			Log_Debug(Lang_Get(LANG_DBGSYM0), symbol.Name, symbol.Address);
+			Log_Debug(Lang_Get(Lang_DbgGrp, 0), symbol.Name, symbol.Address);
 #if _MSC_VER
 			IMAGEHLP_LINE line = {0};
 			line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
 			if(SymGetLineFromAddr(process, (uintptr_t)symbol.Address, NULL, &line)) {
-				Log_Debug(Lang_Get(LANG_DBGSYM1), line.FileName, line.LineNumber);
+				Log_Debug(Lang_Get(Lang_DbgGrp, 1), line.FileName, line.LineNumber);
 			}
 #endif
 		}
@@ -58,7 +58,7 @@ void Error_CallStack(void) {
 		Dl_info dli = {0};
 		dladdr(stack[i], &dli);
 		if(i > 2) {
-			Log_Debug(Lang_Get(LANG_DBGSYM0), dli.dli_sname, dli.dli_saddr);
+			Log_Debug(Lang_Get(Lang_DbgGrp, 0), dli.dli_sname, dli.dli_saddr);
 		}
 		if(dli.dli_sname && String_Compare(dli.dli_sname, "main")) break;
 	}
@@ -84,7 +84,7 @@ static void getErrorStr(cs_int32 type, cs_uint32 code, char *errbuf, cs_size sz,
 			break;
 		case ET_SYS:
 			if(!String_FormatError(code, errbuf, sz, args)) {
-				String_Copy(errbuf, sz, Lang_Get(LANG_UNKERR));
+				String_Copy(errbuf, sz, Lang_Get(Lang_ErrGrp, 0));
 			}
 			break;
 	}
@@ -103,7 +103,7 @@ void Error_Print(cs_int32 type, cs_uint32 code, cs_str file, cs_uint32 line, cs_
 	char errbuf[256] = {0};
 
 	getErrorStr(type, code, errbuf, 256, NULL);
-	if(String_FormatBuf(strbuf, 384, Lang_Get(LANG_ERRFMT), file, line, func, errbuf)) {
+	if(String_FormatBuf(strbuf, 384, Lang_Get(Lang_ErrGrp, 1), file, line, func, errbuf)) {
 		/*
 		** Избегаем краша, если в строке ошибки по какой-то
 		** причине остались форматируемые значения.
@@ -121,7 +121,7 @@ void Error_PrintF(cs_int32 type, cs_uint32 code, cs_str file, cs_uint32 line, cs
 	va_start(args, func);
 	getErrorStr(type, code, errbuf, 256, &args);
 	va_end(args);
-	if(String_FormatBuf(strbuf, 384, Lang_Get(LANG_ERRFMT), file, line, func, errbuf)) {
+	if(String_FormatBuf(strbuf, 384, Lang_Get(Lang_ErrGrp, 1), file, line, func, errbuf)) {
 		// См. комментарий в Error_Print
 		Log_Error("%s", strbuf);
 		Error_CallStack();

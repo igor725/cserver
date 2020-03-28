@@ -271,12 +271,12 @@ THREAD_FUNC(WorldSendThread) {
 	World *world = pd->world;
 
 	if(world->process == WP_LOADING) {
-		Client_Chat(client, MT_CHAT, Lang_Get(LANG_INFWWAIT));
+		Client_Chat(client, MT_CHAT, Lang_Get(Lang_MsgGrp, 0));
 		Waitable_Wait(world->wait);
 	}
 
 	if(!world->loaded) {
-		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
+		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
 		return 0;
 	}
 
@@ -349,7 +349,7 @@ THREAD_FUNC(WorldSendThread) {
 		Vanilla_WriteLvlFin(client, &world->info.dimensions);
 		Client_Spawn(client);
 	} else
-		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
+		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
 
 	return 0;
 }
@@ -359,7 +359,7 @@ cs_bool Client_ChangeWorld(Client *client, World *world) {
 	PlayerData *pd = client->playerData;
 
 	if(pd->state != STATE_INITIAL && pd->state != STATE_INGAME) {
-		Client_Kick(client, Lang_Get(LANG_KICKMAPFAIL));
+		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
 		return false;
 	}
 
@@ -486,8 +486,8 @@ static void HandlePacket(Client *client, char *data, Packet *packet, cs_bool ext
 			ret = packet->handler(client, data);
 
 	if(!ret) {
-		Log_Error(Lang_Get(LANG_ERRPACKETREAD), packet->id, client->id);
-		Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
+		Log_Error(Lang_Get(Lang_ErrGrp, 2), packet->id, client->id);
+		Client_Kick(client, Lang_Get(Lang_KickGrp, 7));
 	} else
 		client->pps += 1;
 }
@@ -829,8 +829,8 @@ static void PacketReceiverWs(Client *client) {
 		packetId = *data++;
 		packet = Packet_Get(packetId);
 		if(!packet) {
-			Log_Error(Lang_Get(LANG_ERRPACKETREAD), packetId, client->id);
-			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
+			Log_Error(Lang_Get(Lang_ErrGrp, 2), packetId, client->id);
+			Client_Kick(client, Lang_Get(Lang_KickGrp, 7));
 			return;
 		}
 
@@ -853,7 +853,7 @@ static void PacketReceiverWs(Client *client) {
 
 			return;
 		} else
-			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
+			Client_Kick(client, Lang_Get(Lang_KickGrp, 7));
 	} else
 		client->closed = true;
 }
@@ -867,8 +867,8 @@ static void PacketReceiverRaw(Client *client) {
 	if(Socket_Receive(client->sock, (char *)&packetId, 1, MSG_WAITALL) == 1) {
 		packet = Packet_Get(packetId);
 		if(!packet) {
-			Log_Error(Lang_Get(LANG_ERRPACKETREAD), packetId, client->id);
-			Client_Kick(client, Lang_Get(LANG_KICKPACKETREAD));
+			Log_Error(Lang_Get(Lang_ErrGrp, 2), packetId, client->id);
+			Client_Kick(client, Lang_Get(Lang_KickGrp, 7));
 			return;
 		}
 
@@ -961,7 +961,7 @@ cs_bool Client_Spawn(Client *client) {
 	if(pd->firstSpawn) { // TODO: Перенести это куда-нибудь
 		cs_str name = Client_GetName(client);
 		cs_str appname = Client_GetAppName(client);
-		Log_Info(Lang_Get(LANG_SVPLCONN), name, appname);
+		Log_Info(Lang_Get(Lang_MsgGrp, 1), name, appname);
 		pd->firstSpawn = false;
 	}
 	return true;
@@ -973,7 +973,7 @@ void Client_HandshakeStage2(Client *client) {
 
 void Client_Kick(Client *client, cs_str reason) {
 	if(client->closed) return;
-	if(!reason) reason = Lang_Get(LANG_KICKNOREASON);
+	if(!reason) reason = Lang_Get(Lang_KickGrp, 0);
 	Vanilla_WriteKick(client, reason);
 	client->closed = true;
 
@@ -995,7 +995,7 @@ void Client_Tick(Client *client, cs_int32 delta) {
 					CPE_WriteRemoveName(other, client);
 			}
 			Event_Call(EVT_ONDISCONNECT, client);
-			Log_Info(Lang_Get(LANG_SVPLDISCONN), Client_GetName(client));
+			Log_Info(Lang_Get(Lang_MsgGrp, 2), Client_GetName(client));
 		}
 		Client_Despawn(client);
 		Client_Free(client);
@@ -1005,7 +1005,7 @@ void Client_Tick(Client *client, cs_int32 delta) {
 	client->ppstm += delta;
 	if(client->ppstm > 1000) {
 		if(client->pps > MAX_CLIENT_PPS) {
-			Client_Kick(client, Lang_Get(LANG_KICKPACKETSPAM));
+			Client_Kick(client, Lang_Get(Lang_KickGrp, 9));
 			return;
 		}
 		client->pps = 0;

@@ -67,22 +67,11 @@ void Command_UnregisterByFunc(cmdFunc func) {
 }
 
 COMMAND_FUNC(Info) {
-	static cs_str format =
-	"== Some info about server ==\r\n"
-	"OS: "
-	#if defined(WINDOWS)
-	"Windows\r\n"
-	#elif defined(POSIX)
-	"Unix-like\r\n"
-	#endif
-	"Server core: %s\r\n"
-	"PluginAPI version: %d\r\n"
-	"zlib version: %s (build flags: %d)";
-	COMMAND_PRINTF(format,
+	COMMAND_PRINTF(
+		Lang_Get(Lang_CmdGrp, 5),
 		GIT_COMMIT_SHA,
 		PLUGIN_API_NUM,
-		zlibVersion(),
-		zlibCompileFlags()
+		zlibVersion()
 	);
 }
 
@@ -98,7 +87,7 @@ COMMAND_FUNC(OP) {
 			pd->isOP ^= 1;
 			COMMAND_PRINTF("Player %s %s", name, pd->isOP ? "opped" : "deopped");
 		} else {
-			COMMAND_PRINT(Lang_Get(LANG_CMDPLNF));
+			COMMAND_PRINT(Lang_Get(Lang_MsgGrp, 3));
 		}
 	}
 	COMMAND_PRINTUSAGE;
@@ -189,7 +178,7 @@ COMMAND_FUNC(CFG) {
 
 #define PLUGIN_NAME \
 if(!COMMAND_GETARG(name, 64, 1)) { \
-	COMMAND_PRINT(Lang_Get(LANG_CPINVNAME)); \
+	COMMAND_PRINTUSAGE; \
 } \
 cs_str lc = String_LastChar(name, '.'); \
 if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) { \
@@ -206,58 +195,40 @@ COMMAND_FUNC(Plugins) {
 			PLUGIN_NAME;
 			if(!Plugin_Get(name)) {
 				if(Plugin_Load(name)) {
-					COMMAND_PRINTF(
-						Lang_Get(LANG_CPINF0),
-						name,
-						Lang_Get(LANG_CPLD)
-					);
+					COMMAND_PRINTF(Lang_Get(Lang_CmdGrp, 7), name);
 				} else {
-					COMMAND_PRINT("Plugin_Init() = false, plugin unloaded.");
+					COMMAND_PRINT(Lang_Get(Lang_CmdGrp, 12));
 				}
 			}
-			COMMAND_PRINTF(
-				Lang_Get(LANG_CPINF0),
-				name,
-				Lang_Get(LANG_CPAL)
-			);
+			COMMAND_PRINTF(Lang_Get(Lang_CmdGrp, 9), name);
 		} else if(String_CaselessCompare(subcommand, "unload")) {
 			PLUGIN_NAME;
 			plugin = Plugin_Get(name);
 			if(!plugin) {
-				COMMAND_PRINTF(
-					Lang_Get(LANG_CPINF0),
-					name,
-					Lang_Get(LANG_CPNL)
-				);
+				COMMAND_PRINTF(Lang_Get(Lang_CmdGrp, 8), name);
 			}
 			if(Plugin_Unload(plugin)) {
-				COMMAND_PRINTF(
-					Lang_Get(LANG_CPINF0),
-					name,
-					Lang_Get(LANG_CPUNLD)
-				);
-			}
-			else {
-				COMMAND_PRINTF(
-					Lang_Get(LANG_CPINF1),
-					name,
-					Lang_Get(LANG_CPCB),
-					Lang_Get(LANG_CPUNLD)
-				);
+				COMMAND_PRINTF(Lang_Get(Lang_CmdGrp, 10), name);
+			} else {
+				COMMAND_PRINTF(Lang_Get(Lang_CmdGrp, 11), name);
 			}
 		} else if(String_CaselessCompare(subcommand, "list")) {
 			cs_int32 idx = 1;
 			char pluginfo[64];
-			COMMAND_APPEND("Plugins list:");
+			COMMAND_APPEND(Lang_Get(Lang_CmdGrp, 13));
 
 			for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
 				plugin = Plugins_List[i];
 				if(plugin) {
 					if(idx > 10) {
-						COMMAND_APPEND("\r\n(Can't show full plugins list)");
+						COMMAND_APPEND(Lang_Get(Lang_CmdGrp, 15));
 						break;
 					}
-					COMMAND_APPENDF(pluginfo, 64, "\r\n%d.%s v%d", idx++, plugin->name, plugin->version);
+					COMMAND_APPENDF(
+						pluginfo, 64,
+						Lang_Get(Lang_CmdGrp, 14), idx++,
+						plugin->name, plugin->version
+					);
 				}
 			}
 
@@ -274,17 +245,8 @@ COMMAND_FUNC(Stop) {
 	return false;
 }
 
-COMMAND_FUNC(Announce) {
-	Client_Chat(
-		!ccdata->caller ? Broadcast : ccdata->caller,
-		MT_ANNOUNCE,
-		!ccdata->args ? "Test announcement" : ccdata->args
-	);
-	return false;
-}
-
 COMMAND_FUNC(Kick) {
-	COMMAND_SETUSAGE("/kick <player> [reason]");
+	COMMAND_SETUSAGE(Lang_Get(Lang_CmdGrp, 16));
 
 	char playername[64];
 	if(COMMAND_GETARG(playername, 64, 0)) {
@@ -292,9 +254,9 @@ COMMAND_FUNC(Kick) {
 		if(tg) {
 			cs_str reason = String_FromArgument(ccdata->args, 1);
 			Client_Kick(tg, reason);
-			COMMAND_PRINTF("Player %s kicked", playername);
+			COMMAND_PRINTF(Lang_Get(Lang_CmdGrp, 17), playername);
 		} else {
-			COMMAND_PRINT(Lang_Get(LANG_CMDPLNF));
+			COMMAND_PRINTF(Lang_Get(Lang_MsgGrp, 3), playername);
 		}
 	}
 
@@ -408,7 +370,6 @@ void Command_RegisterDefault(void) {
 	COMMAND_ADD(CFG, CMDF_OP);
 	COMMAND_ADD(Plugins, CMDF_OP);
 	COMMAND_ADD(Stop, CMDF_OP);
-	COMMAND_ADD(Announce, CMDF_OP);
 	COMMAND_ADD(Kick, CMDF_OP);
 	COMMAND_ADD(SetModel, CMDF_OP | CMDF_CLIENT);
 	COMMAND_ADD(ChgWorld, CMDF_OP | CMDF_CLIENT);
@@ -462,11 +423,11 @@ cs_bool Command_Handle(char *str, Client *caller) {
 	Command *cmd = Command_GetByName(str);
 	if(cmd) {
 		if(cmd->flags & CMDF_CLIENT && !caller) {
-			SendOutput(caller, Lang_Get(LANG_CMDONLYCL));
+			SendOutput(caller, Lang_Get(Lang_CmdGrp, 4));
 			return true;
 		}
 		if(cmd->flags & CMDF_OP && (caller && !Client_IsOP(caller))) {
-			SendOutput(caller, Lang_Get(LANG_CMDAD));
+			SendOutput(caller, Lang_Get(Lang_CmdGrp, 1));
 			return true;
 		}
 
