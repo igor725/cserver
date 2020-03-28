@@ -215,7 +215,11 @@ COMMAND_FUNC(Plugins) {
 					COMMAND_PRINT("Plugin_Init() = false, plugin unloaded.");
 				}
 			}
-			COMMAND_PRINT("This plugin already loaded.");
+			COMMAND_PRINTF(
+				Lang_Get(LANG_CPINF0),
+				name,
+				Lang_Get(LANG_CPAL)
+			);
 		} else if(String_CaselessCompare(subcommand, "unload")) {
 			PLUGIN_NAME;
 			plugin = Plugin_Get(name);
@@ -350,7 +354,7 @@ COMMAND_FUNC(GenWorld) {
 				COMMAND_PRINTF("World \"%s\" created.", worldname);
 			} else {
 				World_Free(tmp);
-				COMMAND_PRINT("Too many worlds already loaded.");
+				COMMAND_PRINT("Worlds limit exceed.");
 			}
 		}
 	}

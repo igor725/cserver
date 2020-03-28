@@ -40,7 +40,7 @@ cs_str Lang_Get(LangID id) {
 		case LANG_KICKPROTOVER:
 			return "Invalid protocol version";
 		case LANG_KICKNAMEUSED:
-			return "This name already in use";
+			return "This name is already in use";
 		case LANG_KICKAUTHFAIL:
 			return "Auth failed";
 		case LANG_KICKSVSTOP:
@@ -75,6 +75,8 @@ cs_str Lang_Get(LangID id) {
 			return "can't be";
 		case LANG_CPNL:
 			return "is not loaded";
+		case LANG_CPAL:
+			return "is already loaded";
 		case LANG_CPINF0:
 			return "Plugin \"%s\" %s.";
 		case LANG_CPINF1:
