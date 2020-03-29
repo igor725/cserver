@@ -35,13 +35,13 @@ for a in "$@"
 do
 	if [ $PLUGIN_BUILD -eq 1 ]; then
 		if [ ! -n "$PLUGIN_NAME" ]; then
-			CFLAGS="$CFLAGS -DPLUGIN_BUILD -Iheaders"
+			CFLAGS="$CFLAGS -DPLUGIN_BUILD -Isrc"
 			LNK="$CC -shared"
 			PLUGIN_NAME="$a"
 			OUTBIN="$a.so"
 			ROOT="../cs-$a"
 			if [ ! -d $ROOT ]; then notaplugin; fi
-			if [ ! -d $ROOT/code ]; then notaplugin; fi
+			if [ ! -d $ROOT/src ]; then notaplugin; fi
 		else
 			if [ "$a" == "install" ]; then
 				PLUGIN_INSTALL=1
@@ -74,10 +74,10 @@ OBJS=""
 echo -n "" > $STDERR
 pids=()
 cnt=0
-for C in `find "$ROOT/code/" -type f -name *.c ! -name hash.c`; do
+for C in `find "$ROOT/src/" -type f -name *.c ! -name hash.c`; do
 	objpath="$OBJDIR/$(basename $C .c).o"
 	OBJS="$OBJS $objpath"
-	$CC -c $COMMIT_SHA $C -o $objpath -I"$ROOT/headers" $WARN $OPT $CFLAGS 2>> $STDERR &
+	$CC -c $COMMIT_SHA $C -o $objpath -I"$ROOT/src" $WARN $OPT $CFLAGS 2>> $STDERR &
 	pids+=($!)
 	((cnt++))
 	if [ $cnt -ge $MAX_WORKERS ]; then
