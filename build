@@ -34,7 +34,7 @@ dowait () {
 for a in "$@"
 do
 	if [ $PLUGIN_BUILD -eq 2 ]; then
-		pushd "../cs-$$a"
+		pushd "../cs-$a"
 		git pull
 		popd
 		PLUGIN_BUILD=1
