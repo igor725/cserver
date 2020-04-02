@@ -272,7 +272,7 @@ THREAD_FUNC(WorldSaveThread) {
 		goto world_save_end;
 	}
 
-	stream.avail_in = (uLongf)world->size + 4;
+	stream.avail_in = (uLongf)world->size;
 	stream.next_in = (Bytef *)world->data;
 
 	do {
@@ -398,7 +398,8 @@ cs_uint32 World_GetOffset(World *world, SVec *pos) {
 	SVec *dim = &world->info.dimensions;
 	cs_uint32 offset = pos->z * dim->z + pos->y * (dim->x * dim->y) + pos->x;
 	if(offset > world->size) return 0;
-	return offset + 4;
+	offset += 4;
+	return offset;
 }
 
 cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id) {
