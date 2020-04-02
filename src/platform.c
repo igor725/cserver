@@ -435,7 +435,7 @@ void Thread_Join(Thread th) {
 	if(ret) {
 		ERROR_PRINT(ET_SYS, ret, true);
 	}
-	Thread_Detach(th);
+	Memory_Free(th);
 }
 #endif
 
