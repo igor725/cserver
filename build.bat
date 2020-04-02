@@ -11,10 +11,6 @@ set BUILD_PLUGIN=0
 set SVOUTDIR=.\out\%ARCH%
 set BINNAME=server.exe
 
-set ZLIB_DIR=.\zlib\%ARCH%
-set ZLIB_DYNBINARY=zlib.dll
-set ZLIB_STBINARY=zlib.lib
-
 set WARN_LEVEL=/W3
 set OPT_LEVEL=/O2
 
@@ -76,8 +72,6 @@ echo Architecture: %ARCH%
 IF "%DEBUG%"=="0" (echo Debug: disabled) else (
 	set OPT_LEVEL=/Od
   set MSVC_OPTS=%MSVC_OPTS% /Z7
-	set ZLIB_DYNBINARY=zlibd.dll
-	set ZLIB_STBINARY=zlibd.lib
 	set SVOUTDIR=.\out\%ARCH%dbg
   set MSVC_LINKER=%MSVC_LINKER% /DEBUG
   echo Debug: enabled
@@ -97,44 +91,25 @@ IF "%BUILD_PLUGIN%"=="1" (
 	IF NOT EXIST !PROJECT_ROOT! goto notaplugin
 	IF NOT EXIST !PROJECT_ROOT!\src goto notaplugin
 	echo Building plugin: %PLUGNAME%
-) else (
-	set OUTDIR=%SVOUTDIR%
-	set ZLIB_STATIC=%ZLIB_DIR%\lib
-	set ZLIB_DYNAMIC=%ZLIB_DIR%\bin
-	set ZLIB_INCLUDE=%ZLIB_DIR%\include
-
-	set SERVER_ZDLL=!OUTDIR!\%ZLIB_DYNBINARY%
-	set MSVC_LIBS=%MSVC_LIBS% %ZLIB_STBINARY%
-	set MSVC_OPTS=%MSVC_OPTS% /I!ZLIB_INCLUDE!
-	set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:!ZLIB_STATIC!
-)
+) else set OUTDIR=%SVOUTDIR%
 
 set BINPATH=%OUTDIR%\%BINNAME%
 
 IF "%CLEAN%"=="0" (
-	IF "%BUILD_PLUGIN%"=="0" (
-		set COPYERR_LIB=zlib
-		set COPYERR_PATH=%ZLIB_DIR%
-
-		IF NOT EXIST !ZLIB_DYNAMIC!\!ZLIB_DYNBINARY! goto copyerr
-		IF NOT EXIST !ZLIB_STATIC!\!ZLIB_STBINARY! goto copyerr
-		IF NOT EXIST !ZLIB_INCLUDE! goto copyerr
-	)
-
 	IF NOT EXIST !OBJDIR! MD !OBJDIR!
 	IF NOT EXIST !OUTDIR! MD !OUTDIR!
-) else (goto clean)
+) else goto clean
 
 IF "%BUILD_PLUGIN%"=="1" (
   set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DPLUGIN_BUILD /I.\src\
   set MSVC_LIBS=server.lib %MSVC_LIBS%
 	set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%SVOUTDIR% /NOENTRY
 ) else (
-  copy /Y !ZLIB_DYNAMIC!\!ZLIB_DYNBINARY! !SERVER_ZDLL! 2> nul > nul
 	set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH%
 )
 
 set MSVC_OPTS=%MSVC_OPTS% %WARN_LEVEL% %OPT_LEVEL% /Fo%OBJDIR%\
+set MSVC_OPTS=%MSVC_OPTS% /I.\miniz
 set MSVC_OPTS=%MSVC_OPTS% /link %MSVC_LINKER%
 
 IF EXIST %PROJECT_ROOT%\version.rc (
@@ -142,7 +117,7 @@ IF EXIST %PROJECT_ROOT%\version.rc (
 	set MSVC_OPTS=%OBJDIR%\version.res %MSVC_OPTS%
 )
 
-%COMPILER% %PROJECT_ROOT%\src\*.c /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%
+%COMPILER% .\miniz\miniz.c %PROJECT_ROOT%\src\*.c /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%
 
 IF "%BUILD_PLUGIN%"=="1" (
 	IF "%PLUGIN_INSTALL%"=="1" (
@@ -172,7 +147,7 @@ goto end
 :cloc
 set CLOCPATH=.
 IF "%2" == "full" set CLOCPATH=..
-cloc --exclude-dir=zlib !CLOCPATH!
+cloc !CLOCPATH!
 goto end
 
 :clean

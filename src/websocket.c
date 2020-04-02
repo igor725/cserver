@@ -63,7 +63,7 @@ cs_bool WsClient_ReceiveFrame(WsClient *ws) {
 		ws->state = WS_ST_HDR;
 
 	if(ws->state == WS_ST_HDR) {
-		cs_uint32 len = Socket_Receive(ws->sock, ws->header, 2, MSG_WAITALL);
+		cs_int32 len = Socket_Receive(ws->sock, ws->header, 2, MSG_WAITALL);
 
 		if(len == 2) {
 			char plen = ws->header[1] & 0x7F;
@@ -89,7 +89,7 @@ cs_bool WsClient_ReceiveFrame(WsClient *ws) {
 	}
 
 	if(ws->state == WS_ST_PLEN) {
-		cs_uint32 len = Socket_Receive(ws->sock, (char *)&ws->plen, 2, MSG_WAITALL);
+		cs_int32 len = Socket_Receive(ws->sock, (char *)&ws->plen, 2, MSG_WAITALL);
 
 		if(len == 2) {
 			ws->plen = ntohs(ws->plen);
@@ -108,10 +108,10 @@ cs_bool WsClient_ReceiveFrame(WsClient *ws) {
 
 	if(ws->state == WS_ST_RECVPL) {
 		if(ws->plen > 0) {
-			cs_uint32 len = Socket_Receive(ws->sock, ws->recvbuf, ws->plen, MSG_WAITALL);
+			cs_int32 len = Socket_Receive(ws->sock, ws->recvbuf, ws->plen, MSG_WAITALL);
 
 			if(len == ws->plen) {
-				for(cs_uint32 i = 0; i < len; i++) {
+				for(cs_int32 i = 0; i < len; i++) {
 					ws->recvbuf[i] ^= ws->mask[i % 4];
 				}
 			} else {

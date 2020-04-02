@@ -10,7 +10,7 @@
 #include "event.h"
 #include "heartbeat.h"
 #include "lang.h"
-#include <zlib.h>
+#include <miniz.h>
 
 AListField *headAssocType = NULL;
 AListField *headCGroup = NULL;
@@ -243,13 +243,13 @@ BlockID Client_GetHeldBlock(Client *client) {
 	return client->cpeData->heldBlock;
 }
 
-cs_int32 Client_GetExtVer(Client *client, cs_uint32 extCRC32) {
+cs_int32 Client_GetExtVer(Client *client, cs_uint32 exthash) {
 	CPEData *cpd = client->cpeData;
 	if(!cpd) return false;
 
 	CPEExt ptr = cpd->headExtension;
 	while(ptr) {
-		if(ptr->crc32 == extCRC32) return ptr->version;
+		if(ptr->hash == exthash) return ptr->version;
 		ptr = ptr->next;
 	}
 	return false;
@@ -263,6 +263,8 @@ cs_bool Client_Despawn(Client *client) {
 	Event_Call(EVT_ONDESPAWN, client);
 	return true;
 }
+
+#define CHUNK_SIZE 1024
 
 THREAD_FUNC(WorldSendThread) {
 	Client *client = param;
@@ -291,7 +293,7 @@ THREAD_FUNC(WorldSendThread) {
 	Bytef *out = ++data;
 
 	cs_int32 ret, windBits = 31;
-	z_stream stream;
+	z_stream stream = {0};
 	stream.zalloc = Z_NULL;
 	stream.zfree = Z_NULL;
 	stream.opaque = Z_NULL;
@@ -317,15 +319,15 @@ THREAD_FUNC(WorldSendThread) {
 
 	do {
 		stream.next_out = out;
-		stream.avail_out = 1024;
+		stream.avail_out = CHUNK_SIZE;
 
-		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
+		if((ret = deflate(&stream, Z_NO_FLUSH)) == Z_STREAM_ERROR) {
 			pd->state = STATE_WLOADERR;
 			goto world_send_end;
 		}
 
-		*len = htons(1024 - (cs_uint16)stream.avail_out);
-		if(client->closed || !Client_Send(client, 1028)) {
+		*len = htons(CHUNK_SIZE - (cs_uint16)stream.avail_out);
+		if(client->closed || !Client_Send(client, CHUNK_SIZE + 4)) {
 			pd->state = STATE_WLOADERR;
 			goto world_send_end;
 		}
@@ -495,7 +497,7 @@ static void HandlePacket(Client *client, char *data, Packet *packet, cs_bool ext
 static cs_uint16 GetPacketSizeFor(Packet *packet, Client *client, cs_bool *extended) {
 	cs_uint16 packetSize = packet->size;
 	if(packet->haveCPEImp) {
-		*extended = Client_GetExtVer(client, packet->extCRC32) == packet->extVersion;
+		*extended = Client_GetExtVer(client, packet->exthash) == packet->extVersion;
 		if(*extended) packetSize = packet->extSize;
 	}
 	return packetSize;

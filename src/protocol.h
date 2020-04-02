@@ -62,7 +62,7 @@ typedef struct {
 	cs_uint8 id;
 	cs_uint16 size;
 	cs_bool haveCPEImp;
-	cs_uint32 extCRC32;
+	cs_uint32 exthash;
 	cs_int32 extVersion;
 	cs_uint16 extSize;
 	packetHandler handler;
@@ -71,7 +71,7 @@ typedef struct {
 
 Packet *Packet_Get(cs_uint8 id);
 API void Packet_Register(cs_uint8 id, cs_uint16 size, packetHandler handler);
-API void Packet_RegisterCPE(cs_uint8 id, cs_uint32 crc32, cs_int32 ver, cs_uint16 size, packetHandler handler);
+API void Packet_RegisterCPE(cs_uint8 id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler);
 
 API cs_uint8 Proto_ReadString(cs_str *data, cs_str *dstptr);
 API cs_uint8 Proto_ReadStringNoAlloc(cs_str *data, char *dst);

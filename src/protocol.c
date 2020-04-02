@@ -9,6 +9,7 @@
 #include "platform.h"
 #include "command.h"
 #include "lang.h"
+#include <miniz.h>
 
 Packet *packetsList[MAX_PACKETS];
 cs_uint16 extensionsCount;
@@ -209,9 +210,9 @@ void Packet_Register(cs_uint8 id, cs_uint16 size, packetHandler handler) {
 	packetsList[id] = tmp;
 }
 
-void Packet_RegisterCPE(cs_uint8 id, cs_uint32 crc32, cs_int32 ver, cs_uint16 size, packetHandler handler) {
+void Packet_RegisterCPE(cs_uint8 id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler) {
 	Packet *tmp = packetsList[id];
-	tmp->extCRC32 = crc32;
+	tmp->exthash = hash;
 	tmp->extVersion = ver;
 	tmp->cpeHandler = handler;
 	tmp->extSize = size;
@@ -968,7 +969,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_str data) {
 		return false;
 	}
 
-	tmp->crc32 = String_CRC32((cs_uint8 *)tmp->name);
+	tmp->hash = crc32(0, (cs_uint8*)tmp->name, strlen(tmp->name));
 	tmp->next = cpd->headExtension;
 	cpd->headExtension = tmp;
 

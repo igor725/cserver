@@ -6,7 +6,7 @@
 #include "client.h"
 #include "world.h"
 #include "event.h"
-#include <zlib.h>
+#include <miniz.h>
 
 void Worlds_SaveAll(cs_bool join, cs_bool unload) {
 	for(cs_int32 i = 0; i < MAX_WORLDS; i++) {
@@ -241,6 +241,8 @@ static cs_bool ReadInfo(World *world, FILE *fp) {
 	return false;
 }
 
+#define CHUNK_SIZE 16384
+
 THREAD_FUNC(WorldSaveThread) {
 	World *world = param;
 	cs_bool succ = false;
@@ -252,22 +254,22 @@ THREAD_FUNC(WorldSaveThread) {
 	FILE *fp = File_Open(tmpname, "wb");
 	if(!fp) {
 		Error_PrintSys(false);
-		goto world_save_done;
+		goto world_save_end;
 	}
 
 	if(!WriteInfo(world, fp))
-		goto world_save_done;
+		goto world_save_end;
 
-	Bytef out[1024];
+	Bytef out[CHUNK_SIZE];
 	cs_int32 ret;
-	z_stream stream;
+	z_stream stream = {0};
 	stream.zalloc = Z_NULL;
 	stream.zfree = Z_NULL;
 	stream.opaque = Z_NULL;
 
 	if((ret = deflateInit(&stream, Z_BEST_COMPRESSION)) != Z_OK) {
 		ERROR_PRINT(ET_ZLIB, ret, false);
-		goto world_save_done;
+		goto world_save_end;
 	}
 
 	stream.avail_in = (uLongf)world->size + 4;
@@ -275,21 +277,21 @@ THREAD_FUNC(WorldSaveThread) {
 
 	do {
 		stream.next_out = out;
-		stream.avail_out = 1024;
+		stream.avail_out = CHUNK_SIZE;
 
 		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
 			ERROR_PRINT(ET_ZLIB, ret, false);
-			goto world_save_done;
+			goto world_save_end;
 		}
 
-		if(!File_Write(out, 1, 1024 - stream.avail_out, fp)) {
+		if(!File_Write(out, 1, CHUNK_SIZE - stream.avail_out, fp)) {
 			Error_PrintSys(false);
-			goto world_save_done;
+			goto world_save_end;
 		}
 	} while(stream.avail_out == 0);
-	succ = true;
+	succ = (stream.avail_in == 0);
 
-	world_save_done:
+	world_save_end:
 	File_Close(fp);
 	deflateEnd(&stream);
 	world->process = WP_NOPROC;
@@ -329,8 +331,8 @@ THREAD_FUNC(WorldLoadThread) {
 	World_AllocBlockArray(world);
 
 	cs_int32 ret;
-	Bytef in[1024];
-	z_stream stream;
+	Bytef in[CHUNK_SIZE];
+	z_stream stream = {0};
 	stream.zalloc = Z_NULL;
 	stream.zfree = Z_NULL;
 	stream.opaque = Z_NULL;
@@ -343,7 +345,7 @@ THREAD_FUNC(WorldLoadThread) {
 	stream.next_out = (Bytef *)world->data;
 
 	do {
-		stream.avail_in = (uLongf)File_Read(in, 1, 1024, fp);
+		stream.avail_in = (uLongf)File_Read(in, 1, CHUNK_SIZE, fp);
 		if(File_Error(fp)) {
 			Error_PrintSys(false);
 			goto world_load_done;
@@ -353,8 +355,8 @@ THREAD_FUNC(WorldLoadThread) {
 		stream.next_in = in;
 
 		do {
-			stream.avail_out = 1024;
-			if((ret = inflate(&stream, Z_FINISH)) == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
+			stream.avail_out = CHUNK_SIZE;
+			if((ret = inflate(&stream, Z_NO_FLUSH)) == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
 				ERROR_PRINT(ET_ZLIB, ret, false);
 				goto world_load_done;
 			}

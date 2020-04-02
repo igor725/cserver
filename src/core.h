@@ -2,7 +2,6 @@
 #define CORE_H
 #if defined(_WIN32)
 #define WINDOWS
-#define ZLIB_WINAPI
 #define PATH_DELIM "\\"
 #define DLIB_EXT "dll"
 #define _CRT_SECURE_NO_WARNINGS
@@ -85,7 +84,7 @@ typedef cs_int16 WorldID;
 typedef struct cpeExt {
 	cs_str name; // Название дополнения
 	cs_int32 version; // Его версия
-	cs_uint32 crc32; // crc32 хеш названия дополнения
+	cs_uint32 hash; // crc32 хеш названия дополнения
 	struct cpeExt *next; // Следующее дополнение
 } *CPEExt;
 

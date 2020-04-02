@@ -194,24 +194,3 @@ cs_size String_ToB64(const cs_uint8 *src, cs_size len, char *dst) {
 
 	return elen;
 }
-
-/*
-** Взято здеся:
-** https://stackoverflow.com/questions/21001659/crc32-algorithm-implementation-in-c-without-a-look-up-table-and-with-a-public-li
-*/
-cs_uint32 String_CRC32(const cs_uint8 *str) {
-	cs_int32 i = 0, j;
-	cs_uint32 crc = 0xFFFFFFFF, mask;
-
-	while (str[i] != 0) {
-		cs_uint8 byte = str[i];
-		crc = crc ^ byte;
-		for (j = 7; j >= 0; j--) {
-			mask = ~((crc & 1) - 1);
-			crc = (crc >> 1) ^ (0xEDB88320 & mask);
-		}
-		i = i + 1;
-	}
-	
-	return ~crc;
-}
