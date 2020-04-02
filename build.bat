@@ -105,6 +105,7 @@ IF "%BUILD_PLUGIN%"=="1" (
   set MSVC_LIBS=server.lib %MSVC_LIBS%
 	set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%SVOUTDIR% /NOENTRY
 ) else (
+	set "ADD_C=.\miniz\miniz.c "
 	set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH%
 )
 
@@ -117,7 +118,7 @@ IF EXIST %PROJECT_ROOT%\version.rc (
 	set MSVC_OPTS=%OBJDIR%\version.res %MSVC_OPTS%
 )
 
-%COMPILER% .\miniz\miniz.c %PROJECT_ROOT%\src\*.c /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%
+%COMPILER% %ADD_C%%PROJECT_ROOT%\src\*.c /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%
 
 IF "%BUILD_PLUGIN%"=="1" (
 	IF "%PLUGIN_INSTALL%"=="1" (
