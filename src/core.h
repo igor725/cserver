@@ -67,9 +67,6 @@ typedef __SIZE_TYPE__ cs_size;
 #error Unknown OS
 #endif // OS defines
 
-#define MINIZ_NO_STDIO
-#define MINIZ_NO_ARCHIVE_APIS
-
 #define true  1
 #define false 0
 
