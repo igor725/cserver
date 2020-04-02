@@ -165,11 +165,6 @@ goto end
 echo Looks like the specified directory is not a plugin.
 goto end
 
-:copyerr
-echo Please download %COPYERR_LIB% binaries for Microsoft Visual Studio %VisualStudioVersion% from this site: https://www.libs4win.com/lib%COPYERR_LIB%/.
-echo After downloading, unzip the archive to the "%COPYERR_PATH%" folder in the project root.
-goto end
-
 :compileerror
 echo Something went wrong :(
 goto end
