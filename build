@@ -33,6 +33,10 @@ dowait () {
 
 for a in "$@"
 do
+	if [ $PLUGIN_BUILD -ne 0 ]; then
+		if [ ! -d "../cs-$a" ]; then notaplugin; fi
+		if [ ! -d "../cs-$a/src" ]; then notaplugin; fi
+	fi
 	if [ $PLUGIN_BUILD -eq 2 ]; then
 		pushd "../cs-$a"
 		git pull
@@ -46,8 +50,6 @@ do
 			PLUGIN_NAME="$a"
 			OUTBIN="$a.so"
 			ROOT="../cs-$a"
-			if [ ! -d $ROOT ]; then notaplugin; fi
-			if [ ! -d $ROOT/src ]; then notaplugin; fi
 		else
 			if [ "$a" == "install" ]; then
 				PLUGIN_INSTALL=1
