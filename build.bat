@@ -23,7 +23,7 @@ FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --short HEAD`) DO (
 )
 
 :argloop
-IF "%1"=="" goto continue
+IF "%1"=="" goto argsdone
 IF "%1"=="cls" cls
 IF "%1"=="cloc" goto cloc
 IF "%1"=="debug" set DEBUG=1
@@ -38,33 +38,38 @@ IF "%1"=="wall" set WARN_LEVEL=/Wall
 IF "%1"=="w4" set WARN_LEVEL=/W4
 IF "%1"=="w0" set WARN_LEVEL=/W0
 IF "%1"=="wx" set MSVC_OPTS=%MSVC_OPTS% /WX
-IF "%1"=="pb" goto pluginbuild
+IF "%1"=="pb" set BUILD_PLUGIN=1
+IF "%1"=="pbu" set BUILD_PLUGIN=2
 SHIFT
+IF NOT "%BUILD_PLUGIN%"=="0" goto pluginbuild
 goto argloop
 
 :pluginbuild
-set BUILD_PLUGIN=1
-set MSVC_LIBS=kernel32.lib
-SHIFT
-
 set PLUGNAME=%1
 SHIFT
 
-IF NOT "%1"=="" (goto libloop) else (goto continue)
+IF "%BUILD_PLUGIN%"=="2" (
+	pushd ..\cs-%PLUGNAME%
+	git pull
+	popd
+	set BUILD_PLUGIN=1
+)
+
+IF "%1"=="" goto argsdone
 
 :libloop
 IF "%1"=="install" (
 	SET PLUGIN_INSTALL=1
 	SHIFT
 )
-IF "%1"=="" goto continue
+IF "%1"=="" goto argsdone
 set MSVC_LIBS=%MSVC_LIBS% %1.lib
 
 :libloop_shift
 SHIFT
 goto libloop
 
-:continue
+:argsdone
 IF "%ARCH%"=="" goto vcerror
 echo Build configuration:
 echo Architecture: %ARCH%
