@@ -388,7 +388,7 @@ cs_bool World_Load(World *world) {
 void World_Unload(World *world) {
 	if(world->process != WP_NOPROC)
 		Waitable_Wait(world->wait);
-	if(world->data) Memory_Free(world->data);
+	if(world->data) Memory_Free(world->data - 4);
 	world->loaded = false;
 	world->data = NULL;
 }
