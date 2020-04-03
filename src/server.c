@@ -16,6 +16,54 @@
 #include "lang.h"
 #include "timer.h"
 
+THREAD_FUNC(ClientInitThread) {
+	Client *tmp = (Client *)param;
+	cs_int8 maxConnPerIP = Config_GetInt8ByKey(Server_Config, CFG_CONN_KEY),
+	sameAddrCount = 1;
+
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		Client *other = Clients_List[i];
+		if(other && other->addr == tmp->addr)
+			++sameAddrCount;
+		else continue;
+
+		if(sameAddrCount > maxConnPerIP) {
+			Client_Kick(tmp, Lang_Get(Lang_KickGrp, 10));
+			Client_Free(tmp);
+			return 0;
+		}
+	}
+
+	cs_uint8 attempt = 0;
+	while(attempt < 5) {
+		if(Socket_Receive(tmp->sock, tmp->rdbuf, 5, MSG_PEEK) == 5) {
+			if(String_CaselessCompare(tmp->rdbuf, "GET /")) {
+				WsClient *wscl = Memory_Alloc(1, sizeof(WsClient));
+				wscl->recvbuf = tmp->rdbuf;
+				wscl->sock = tmp->sock;
+				tmp->websock = wscl;
+				if(WsClient_DoHandshake(wscl))
+					goto client_ok;
+				else break;
+			} else goto client_ok;
+		}
+		Sleep(100);
+		attempt++;
+	}
+
+	Client_Kick(tmp, Lang_Get(Lang_KickGrp, 7));
+	Client_Free(tmp);
+	return 0;
+
+	client_ok:
+	if(!Client_Add(tmp)) {
+		Client_Kick(tmp, Lang_Get(Lang_KickGrp, 1));
+		Client_Free(tmp);
+	}
+
+	return 0;
+}
+
 static void AcceptFunc(void) {
 	struct sockaddr_in caddr;
 	Socket fd = Socket_Accept(Server_Socket, &caddr);
@@ -25,48 +73,9 @@ static void AcceptFunc(void) {
 			Socket_Close(fd);
 			return;
 		}
-
 		cs_uint32 addr = ntohl(caddr.sin_addr.s_addr);
-	 	Client *tmp = Client_New(fd, addr);
-		cs_int8 maxConnPerIP = Config_GetInt8ByKey(Server_Config, CFG_CONN_KEY),
-		sameAddrCount = 1;
-
-		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-			Client *other = Clients_List[i];
-			if(other && other->addr == addr)
-				++sameAddrCount;
-			else continue;
-
-			if(sameAddrCount > maxConnPerIP) {
-				Client_Kick(tmp, Lang_Get(Lang_KickGrp, 10));
-				Client_Free(tmp);
-				return;
-			}
-		}
-
-		cs_uint8 attempt = 0;
-		while(attempt++ < 5) {
-			if(Socket_Receive(fd, tmp->rdbuf, 5, MSG_PEEK) == 5) {
-				if(String_CaselessCompare(tmp->rdbuf, "GET /")) {
-					WsClient *wscl = Memory_Alloc(1, sizeof(WsClient));
-					wscl->recvbuf = tmp->rdbuf;
-					wscl->sock = tmp->sock;
-					tmp->websock = wscl;
-					if(WsClient_DoHandshake(wscl))
-						goto client_ok;
-					else break;
-				} else goto client_ok;
-			}
-			Sleep(100);
-		}
-		Client_Kick(tmp, Lang_Get(Lang_KickGrp, 7));
-		Client_Free(tmp);
-
-		client_ok:
-		if(!Client_Add(tmp)) {
-			Client_Kick(tmp, Lang_Get(Lang_KickGrp, 1));
-			Client_Free(tmp);
-		}
+		Client *tmp = Client_New(fd, addr);
+		Thread_Create(ClientInitThread, tmp, true);
 	}
 }
 
