@@ -34,30 +34,28 @@ dowait () {
 for a in "$@"
 do
 	if [ $PLUGIN_BUILD -ne 0 ]; then
-		if [ ! -d "../cs-$a" ]; then notaplugin; fi
-		if [ ! -d "../cs-$a/src" ]; then notaplugin; fi
+		if [ -n "$PLUGIN_NAME" ]; then
+			if [ "$a" == "install" ]; then
+				PLUGIN_INSTALL=1
+			else
+				LIBS="$LIBS -l$a"
+			fi
+			continue
+		else
+			if [ ! -d "../cs-$a" ]; then notaplugin; fi
+			if [ ! -d "../cs-$a/src" ]; then notaplugin; fi
+			PLUGIN_NAME="$a"
+			CFLAGS="$CFLAGS -DPLUGIN_BUILD -Isrc"
+			LNK="$CC -shared"
+			OUTBIN="$a.so"
+			ROOT="../cs-$a"
+		fi
 	fi
 	if [ $PLUGIN_BUILD -eq 2 ]; then
 		pushd "../cs-$a"
 		git pull
 		popd
 		PLUGIN_BUILD=1
-	fi
-	if [ $PLUGIN_BUILD -eq 1 ]; then
-		if [ ! -n "$PLUGIN_NAME" ]; then
-			CFLAGS="$CFLAGS -DPLUGIN_BUILD -Isrc"
-			LNK="$CC -shared"
-			PLUGIN_NAME="$a"
-			OUTBIN="$a.so"
-			ROOT="../cs-$a"
-		else
-			if [ "$a" == "install" ]; then
-				PLUGIN_INSTALL=1
-			else
-				LIBS="$LIBS -l$a"
-			fi
-		fi
-		continue
 	fi
 	if [ "$a" == "pb" ]; then PLUGIN_BUILD=1; fi
 	if [ "$a" == "pbu" ]; then PLUGIN_BUILD=2; fi
