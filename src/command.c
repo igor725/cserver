@@ -10,7 +10,7 @@
 #include "config.h"
 #include "plugin.h"
 #include "lang.h"
-#include <miniz.h>
+#include <zlib.h>
 
 KListField *headCmd = NULL;
 

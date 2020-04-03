@@ -10,7 +10,7 @@
 #include "event.h"
 #include "heartbeat.h"
 #include "lang.h"
-#include <miniz.h>
+#include <zlib.h>
 
 AListField *headAssocType = NULL;
 AListField *headCGroup = NULL;

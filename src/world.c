@@ -6,7 +6,7 @@
 #include "client.h"
 #include "world.h"
 #include "event.h"
-#include <miniz.h>
+#include <zlib.h>
 
 void Worlds_SaveAll(cs_bool join, cs_bool unload) {
 	for(cs_int32 i = 0; i < MAX_WORLDS; i++) {

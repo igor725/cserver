@@ -9,7 +9,7 @@
 #include "platform.h"
 #include "command.h"
 #include "lang.h"
-#include <miniz.h>
+#include <zlib.h>
 
 Packet *packetsList[MAX_PACKETS];
 cs_uint16 extensionsCount;

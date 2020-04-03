@@ -10,8 +10,8 @@ WARN=""
 ROOT="."
 CC="$CC -fdiagnostics-color=always"
 LNK="$CC -rdynamic"
-CFLAGS="-pipe -fPIC -DMINIZ_NO_STDIO -DMINIZ_NO_ARCHIVE_APIS -DMINIZ_NO_TIME"
-LIBS="-lpthread -ldl -lcrypto"
+CFLAGS="-pipe -fPIC"
+LIBS="-lpthread -ldl -lcrypto -lz"
 OUTBIN="server"
 COMMIT_SHA="-DGIT_COMMIT_SHA=\"$(git rev-parse --short HEAD)\""
 PLUGIN_BUILD=0
@@ -77,19 +77,15 @@ if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
 if [ ! -d "$OBJDIR" ]; then mkdir $OBJDIR; fi
 
 echo -n "Compiling..."
-OBJS="$OBJDIR/miniz.o"
+OBJS=""
 echo -n "" > $STDERR
 pids=()
 cnt=0
 
-#Compiling miniz
-$CC -c ./miniz/miniz.c -o $OBJDIR/miniz.o -I"./miniz/" $WARN $OPT $CFLAGS 2>> $STDERR &
-dowait $!
-
 for C in `find "$ROOT/src/" -type f -name *.c ! -name hash.c`; do
 	objpath="$OBJDIR/$(basename $C .c).o"
 	OBJS="$OBJS $objpath"
-	$CC -c $COMMIT_SHA $C -o $objpath -I"./miniz/" -I"$ROOT/src" $WARN $OPT $CFLAGS 2>> $STDERR &
+	$CC -c $COMMIT_SHA $C -o $objpath -I"$ROOT/src" $WARN $OPT $CFLAGS 2>> $STDERR &
 	pids+=($!)
 	((cnt++))
 	if [ $cnt -ge $MAX_WORKERS ]; then

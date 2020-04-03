@@ -15,7 +15,7 @@ set WARN_LEVEL=/W3
 set OPT_LEVEL=/O2
 
 set MSVC_LINKER=/INCREMENTAL:NO /OPT:REF /SUBSYSTEM:CONSOLE
-set MSVC_OPTS=/MP /GL /Oi /Gy /fp:fast /DMINIZ_NO_STDIO /DMINIZ_NO_ARCHIVE_APIS /DMINIZ_NO_TIME
+set MSVC_OPTS=/MP /GL /Oi /Gy /fp:fast /DZLIB_WINAPI
 set OBJDIR=objs
 set MSVC_LIBS=ws2_32.lib kernel32.lib dbghelp.lib advapi32.lib
 FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --short HEAD`) DO (
@@ -110,12 +110,10 @@ IF "%BUILD_PLUGIN%"=="1" (
   set MSVC_LIBS=server.lib %MSVC_LIBS%
 	set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%SVOUTDIR% /NOENTRY
 ) else (
-	set "ADD_C=.\miniz\miniz.c "
 	set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH%
 )
 
 set MSVC_OPTS=%MSVC_OPTS% %WARN_LEVEL% %OPT_LEVEL% /Fo%OBJDIR%\
-set MSVC_OPTS=%MSVC_OPTS% /I.\miniz
 set MSVC_OPTS=%MSVC_OPTS% /link %MSVC_LINKER%
 
 IF EXIST %PROJECT_ROOT%\version.rc (

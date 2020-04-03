@@ -3,7 +3,7 @@
 #include "log.h"
 #include "lang.h"
 #include "error.h"
-#include <miniz.h>
+#include <zlib.h>
 
 cs_str const Strings[] = {
 	"All ok.",
