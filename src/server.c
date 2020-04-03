@@ -64,24 +64,24 @@ THREAD_FUNC(ClientInitThread) {
 	return 0;
 }
 
-static void AcceptFunc(void) {
-	struct sockaddr_in caddr;
-	Socket fd = Socket_Accept(Server_Socket, &caddr);
-
-	if(fd != INVALID_SOCKET) {
-		if(!Server_Active) {
-			Socket_Close(fd);
-			return;
-		}
-		cs_uint32 addr = ntohl(caddr.sin_addr.s_addr);
-		Client *tmp = Client_New(fd, addr);
-		Thread_Create(ClientInitThread, tmp, true);
-	}
-}
-
 THREAD_FUNC(AcceptThread) {
 	(void)param;
-	while(Server_Active) AcceptFunc();
+	struct sockaddr_in caddr;
+
+	while(Server_Active) {
+		Socket fd = Socket_Accept(Server_Socket, &caddr);
+
+		if(fd != INVALID_SOCKET) {
+			if(!Server_Active) {
+				Socket_Close(fd);
+				continue;
+			}
+			cs_uint32 addr = ntohl(caddr.sin_addr.s_addr);
+			Client *tmp = Client_New(fd, addr);
+			Thread_Create(ClientInitThread, tmp, true);
+		}
+	}
+
 	return 0;
 }
 
