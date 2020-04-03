@@ -158,9 +158,9 @@ cs_int8 World_GetWeather(World *world) {
 }
 
 void World_AllocBlockArray(World *world) {
-	BlockID *data = Memory_Alloc(world->size, sizeof(BlockID));
+	BlockID *data = Memory_Alloc(world->size + 4, sizeof(BlockID));
 	*(cs_uint32 *)data = htonl(world->size);
-	world->data = data;
+	world->data = data + 4;
 	world->loaded = true;
 }
 
@@ -398,7 +398,6 @@ cs_uint32 World_GetOffset(World *world, SVec *pos) {
 	SVec *dim = &world->info.dimensions;
 	cs_uint32 offset = pos->z * dim->z + pos->y * (dim->x * dim->y) + pos->x;
 	if(offset > world->size) return 0;
-	offset += 4;
 	return offset;
 }
 

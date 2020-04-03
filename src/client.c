@@ -292,24 +292,27 @@ THREAD_FUNC(WorldSendThread) {
 	cs_uint16 *len = (cs_uint16 *)data++;
 	Bytef *out = ++data;
 
-	cs_int32 ret, windBits = 31;
+	cs_int32 ret, wndBits = 31;
 	z_stream stream = {0};
 	stream.zalloc = Z_NULL;
 	stream.zfree = Z_NULL;
 	stream.opaque = Z_NULL;
 
-	if(Client_GetExtVer(client, EXT_FASTMAP)) {
-		windBits = -15;
-		worldData += 4;
-	} else worldSize += 4;
+	if(Client_GetExtVer(client, EXT_FASTMAP))
+		wndBits = -15;
+	else {
+		worldData -= 4;
+		worldSize += 4;
+	}
 
 	if((ret = deflateInit2(
 		&stream,
 		1,
 		Z_DEFLATED,
-		windBits,
+		wndBits,
 		8,
 		Z_RLE)) != Z_OK) {
+			Log_Error("deflateInit2 error: %s", zError(ret));
 		pd->state = STATE_WLOADERR;
 		return 0;
 	}
