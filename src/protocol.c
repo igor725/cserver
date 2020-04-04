@@ -969,7 +969,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_str data) {
 		return false;
 	}
 
-	tmp->hash = crc32(0, (cs_uint8*)tmp->name, strlen(tmp->name));
+	tmp->hash = crc32(0, (cs_uint8*)tmp->name, (cs_uint32)strlen(tmp->name));
 	tmp->next = cpd->headExtension;
 	cpd->headExtension = tmp;
 
@@ -985,8 +985,7 @@ cs_bool CPEHandler_PlayerClick(Client *client, cs_str data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_INGAME, false);
 
-	char button = *data++;
-	char action = *data++;
+	char button = *data++, action = *data++;
 	cs_int16 yaw = ntohs(*(cs_int16 *)data); data += 2;
 	cs_int16 pitch = ntohs(*(cs_int16 *)data); data += 2;
 	ClientID tgID = *data++;
@@ -1001,6 +1000,7 @@ cs_bool CPEHandler_PlayerClick(Client *client, cs_str data) {
 		&tgBlockPos,
 		tgBlockFace
 	);
+	
 	return true;
 }
 

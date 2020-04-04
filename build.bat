@@ -1,124 +1,125 @@
-@echo off
+@ECHO off
 setlocal enableextensions enabledelayedexpansion
 
-set ARCH=%VSCMD_ARG_TGT_ARCH%
-set CLEAN=0
-set DEBUG=0
-set PROJECT_ROOT=.
-set COMPILER=cl
-set BUILD_PLUGIN=0
+SET ARCH=%VSCMD_ARG_TGT_ARCH%
+SET CLEAN=0
+SET DEBUG=0
+SET PROJECT_ROOT=.
+SET COMPILER=cl
+SET BUILD_PLUGIN=0
 
-set SVOUTDIR=.\out\%ARCH%
-set BINNAME=server.exe
+SET SVOUTDIR=.\out\%ARCH%
+SET BINNAME=server.exe
 
-set WARN_LEVEL=/W3
-set OPT_LEVEL=/O2
+SET WARN_LEVEL=/W3
+SET OPT_LEVEL=/O2
 
-set MSVC_LINKER=/INCREMENTAL:NO /OPT:REF /SUBSYSTEM:CONSOLE
-set MSVC_OPTS=/MP /GL /Oi /Gy /fp:fast /DZLIB_WINAPI
-set OBJDIR=objs
-set MSVC_LIBS=ws2_32.lib kernel32.lib dbghelp.lib advapi32.lib
+SET MSVC_LINKER=/INCREMENTAL:NO /OPT:REF /SUBSYSTEM:CONSOLE
+SET MSVC_OPTS=/MP /GL /Oi /Gy /fp:fast /DZLIB_DLL /DZLIB_WINAPI
+SET OBJDIR=objs
+SET MSVC_LIBS=ws2_32.lib kernel32.lib dbghelp.lib advapi32.lib zdll.lib
 FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --short HEAD`) DO (
-	set MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_SHA#"\"%%F\""
+	SET MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_SHA#"\"%%F\""
 )
 
 :argloop
-IF "%1"=="" goto argsdone
+IF "%1"=="" GOTO argsdone
 IF "%1"=="cls" cls
-IF "%1"=="cloc" goto cloc
-IF "%1"=="debug" set DEBUG=1
-IF "%1"=="dbg" set DEBUG=1
-IF "%1"=="run" set RUNMODE=0
-IF "%1"=="onerun" set RUNMODE=1
-IF "%1"=="clean" set CLEAN=1
-IF "%1"=="o2" set OPT_LEVEL=/O2
-IF "%1"=="o1" set OPT_LEVEL=/O1
-IF "%1"=="o0" set OPT_LEVEL=/Od
-IF "%1"=="wall" set WARN_LEVEL=/Wall
-IF "%1"=="w4" set WARN_LEVEL=/W4
-IF "%1"=="w0" set WARN_LEVEL=/W0
-IF "%1"=="wx" set MSVC_OPTS=%MSVC_OPTS% /WX
-IF "%1"=="pb" set BUILD_PLUGIN=1
-IF "%1"=="pbu" set BUILD_PLUGIN=2
+IF "%1"=="cloc" GOTO cloc
+IF "%1"=="debug" SET DEBUG=1
+IF "%1"=="dbg" SET DEBUG=1
+IF "%1"=="run" SET RUNMODE=0
+IF "%1"=="onerun" SET RUNMODE=1
+IF "%1"=="clean" SET CLEAN=1
+IF "%1"=="o2" SET OPT_LEVEL=/O2
+IF "%1"=="o1" SET OPT_LEVEL=/O1
+IF "%1"=="o0" SET OPT_LEVEL=/Od
+IF "%1"=="wall" SET WARN_LEVEL=/Wall
+IF "%1"=="w4" SET WARN_LEVEL=/W4
+IF "%1"=="w0" SET WARN_LEVEL=/W0
+IF "%1"=="wx" SET MSVC_OPTS=%MSVC_OPTS% /WX
+IF "%1"=="pb" SET BUILD_PLUGIN=1
+IF "%1"=="pbu" SET BUILD_PLUGIN=2
 SHIFT
-IF NOT "%BUILD_PLUGIN%"=="0" goto pluginbuild
-goto argloop
+IF NOT "%BUILD_PLUGIN%"=="0" GOTO pluginbuild
+GOTO argloop
 
 :pluginbuild
-set PLUGNAME=%1
+SET PLUGNAME=%1
 SHIFT
 
 IF "%BUILD_PLUGIN%"=="2" (
-	pushd ..\cs-%PLUGNAME%
+	PUSHD ..\cs-%PLUGNAME%
 	git pull
-	popd
-	set BUILD_PLUGIN=1
+	POPD
+	SET BUILD_PLUGIN=1
 )
 
-IF "%1"=="" goto argsdone
+IF "%1"=="" GOTO argsdone
 
 :libloop
 IF "%1"=="install" (
 	SET PLUGIN_INSTALL=1
 	SHIFT
 )
-IF "%1"=="" goto argsdone
-set MSVC_LIBS=%MSVC_LIBS% %1.lib
+IF "%1"=="" GOTO argsdone
+SET MSVC_LIBS=%MSVC_LIBS% %1.lib
 
 :libloop_shift
 SHIFT
-goto libloop
+GOTO libloop
 
 :argsdone
-IF "%ARCH%"=="" goto vcerror
-echo Build configuration:
-echo Architecture: %ARCH%
+IF "%ARCH%"=="" GOTO vcerror
+ECHO Build configuration:
+ECHO Architecture: %ARCH%
 
-IF "%DEBUG%"=="0" (echo Debug: disabled) else (
-	set OPT_LEVEL=/Od
-  set MSVC_OPTS=%MSVC_OPTS% /Z7
-	set SVOUTDIR=.\out\%ARCH%dbg
-  set MSVC_LINKER=%MSVC_LINKER% /DEBUG
-  echo Debug: enabled
+IF "%DEBUG%"=="0" (ECHO Debug: disabled) else (
+	SET OPT_LEVEL=/Od
+  SET MSVC_OPTS=%MSVC_OPTS% /Z7
+	SET SVOUTDIR=.\out\%ARCH%dbg
+  SET MSVC_LINKER=%MSVC_LINKER% /DEBUG
+  ECHO Debug: enabled
 )
 
 IF "%BUILD_PLUGIN%"=="1" (
-  set COMPILER=cl /LD
-	set SVPLUGDIR=%SVOUTDIR%\plugins
-  set BINNAME=%PLUGNAME%
-	set PROJECT_ROOT=..\cs-%PLUGNAME%
-  set OBJDIR=!PROJECT_ROOT!\objs
+  SET COMPILER=cl /LD
+	SET SVPLUGDIR=%SVOUTDIR%\plugins
+  SET BINNAME=%PLUGNAME%
+	SET PROJECT_ROOT=..\cs-%PLUGNAME%
+  SET OBJDIR=!PROJECT_ROOT!\objs
 	IF "%DEBUG%"=="1" (
-		set OUTDIR=!PROJECT_ROOT!\out\%ARCH%dbg
+		SET OUTDIR=!PROJECT_ROOT!\out\%ARCH%dbg
 	) else (
-		set OUTDIR=!PROJECT_ROOT!\out\%ARCH%
+		SET OUTDIR=!PROJECT_ROOT!\out\%ARCH%
 	)
-	IF NOT EXIST !PROJECT_ROOT! goto notaplugin
-	IF NOT EXIST !PROJECT_ROOT!\src goto notaplugin
-	echo Building plugin: %PLUGNAME%
-) else set OUTDIR=%SVOUTDIR%
+	IF NOT EXIST !PROJECT_ROOT! GOTO notaplugin
+	IF NOT EXIST !PROJECT_ROOT!\src GOTO notaplugin
+	ECHO Building plugin: %PLUGNAME%
+) else SET OUTDIR=%SVOUTDIR%
 
-set BINPATH=%OUTDIR%\%BINNAME%
+SET BINPATH=%OUTDIR%\%BINNAME%
 
 IF "%CLEAN%"=="0" (
 	IF NOT EXIST !OBJDIR! MD !OBJDIR!
 	IF NOT EXIST !OUTDIR! MD !OUTDIR!
-) else goto clean
+) else GOTO clean
 
 IF "%BUILD_PLUGIN%"=="1" (
-  set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DPLUGIN_BUILD /I.\src\
-  set MSVC_LIBS=server.lib %MSVC_LIBS%
-	set MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%SVOUTDIR% /NOENTRY
+  SET MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DPLUGIN_BUILD /I.\src\
+  SET MSVC_LIBS=server.lib %MSVC_LIBS%
+	SET MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%SVOUTDIR% /NOENTRY
 ) else (
-	set MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH%
+	SET MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH%
 )
 
-set MSVC_OPTS=%MSVC_OPTS% %WARN_LEVEL% %OPT_LEVEL% /Fo%OBJDIR%\
-set MSVC_OPTS=%MSVC_OPTS% /link %MSVC_LINKER%
+SET MSVC_OPTS=%MSVC_OPTS% %WARN_LEVEL% %OPT_LEVEL% /Fo%OBJDIR%\
+set MSVC_OPTS=%MSVC_OPTS% /I.\zlib\include\
+SET MSVC_OPTS=%MSVC_OPTS% /link /LIBPATH:.\zlib\lib%ARCH%\ %MSVC_LINKER%
 
 IF EXIST %PROJECT_ROOT%\version.rc (
-	rc /nologo /fo%OBJDIR%\version.res %PROJECT_ROOT%\version.rc
-	set MSVC_OPTS=%OBJDIR%\version.res %MSVC_OPTS%
+	RC /nologo /fo%OBJDIR%\version.res %PROJECT_ROOT%\version.rc
+	SET MSVC_OPTS=%OBJDIR%\version.res %MSVC_OPTS%
 )
 
 %COMPILER% %ADD_C%%PROJECT_ROOT%\src\*.c /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%
@@ -132,45 +133,45 @@ IF "%BUILD_PLUGIN%"=="1" (
 			copy /y !OUTDIR!\%BINNAME%.dll !SVPLUGDIR!
 		)
 	)
-  goto end
+  GOTO end
 ) else (
-  IF "%ERRORLEVEL%"=="0" (goto binstart) else (goto compileerror)
+  IF "%ERRORLEVEL%"=="0" (GOTO binstart) else (GOTO compileerror)
 )
 
 :binstart
 IF "%RUNMODE%"=="0" start /D %OUTDIR% %BINNAME%
-IF "%RUNMODE%"=="1" goto onerun
-goto end
+IF "%RUNMODE%"=="1" GOTO onerun
+GOTO end
 
 :onerun
-pushd %OUTDIR%
+PUSHD %OUTDIR%
 %BINNAME%
-popd
-goto end
+POPD
+GOTO end
 
 :cloc
-set CLOCPATH=.
-IF "%2" == "full" set CLOCPATH=..
+SET CLOCPATH=.
+IF "%2" == "full" SET CLOCPATH=..
 cloc !CLOCPATH!
-goto end
+GOTO end
 
 :clean
 del %OBJDIR%\*.obj %OUTDIR%\*.exe %OUTDIR%\*.dll
 del %OUTDIR%\*.lib %OUTDIR%\*.pdb %OUTDIR%\*.exp
-goto end
+GOTO end
 
 :vcerror
-echo Error: Script must be runned from VS Native Tools Command Prompt.
-echo Note: Also you can call "vcvars64" or "vcvars32" to configure VS env.
-goto end
+ECHO Error: Script must be runned from VS Native Tools Command Prompt.
+ECHO Note: Also you can call "vcvars64" or "vcvars32" to configure VS env.
+GOTO end
 
 :notaplugin
-echo Looks like the specified directory is not a plugin.
-goto end
+ECHO Looks like the specified directory is not a plugin.
+GOTO end
 
 :compileerror
-echo Something went wrong :(
-goto end
+ECHO Something went wrong :(
+GOTO end
 
 :end
 endlocal
