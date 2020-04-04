@@ -11,7 +11,7 @@ VAR LGroup *Lang_SwGrp, *Lang_ErrGrp, *Lang_ConGrp,
 
 void Lang_Init(void);
 API LGroup *Lang_NewGroup(cs_uint32 size);
-API cs_bool Lang_ResizeGroup(LGroup *grp, cs_uint32 newsize);
+API cs_uint32 Lang_ResizeGroup(LGroup *grp, cs_uint32 newsize);
 API cs_bool Lang_Set(LGroup *grp, cs_uint32 id, cs_str str);
 API cs_str Lang_Get(LGroup *grp, cs_uint32 id);
 #endif // LANG_H

@@ -94,8 +94,9 @@ LGroup *Lang_NewGroup(cs_uint32 size) {
 	return grp;
 }
 
-cs_bool Lang_ResizeGroup(LGroup *grp, cs_uint32 newsize) {
+cs_uint32 Lang_ResizeGroup(LGroup *grp, cs_uint32 newsize) {
 	if(grp->size == newsize) return true;
+	cs_uint32 oldsize = grp->size;
 
 	cs_str *tmp = Memory_Realloc(
 		(void *)grp->strings,
@@ -106,10 +107,10 @@ cs_bool Lang_ResizeGroup(LGroup *grp, cs_uint32 newsize) {
 	if(tmp) {
 		grp->strings = tmp;
 		grp->size = newsize;
-		return true;
+		return oldsize;
 	}
 
-	return false;
+	return 0;
 }
 
 cs_str Lang_Get(LGroup *grp, cs_uint32 id) {

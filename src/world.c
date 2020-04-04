@@ -244,7 +244,7 @@ static cs_bool ReadInfo(World *world, FILE *fp) {
 #define CHUNK_SIZE 16384
 
 THREAD_FUNC(WorldSaveThread) {
-	World *world = param;
+	World *world = (World *)param;
 	cs_bool succ = false;
 	char path[256];
 	char tmpname[256];
@@ -314,7 +314,7 @@ cs_bool World_Save(World *world, cs_bool unload) {
 }
 
 THREAD_FUNC(WorldLoadThread) {
-	World *world = param;
+	World *world = (World *)param;
 	cs_bool error = true;
 	char path[256];
 	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);

@@ -267,7 +267,7 @@ cs_bool Client_Despawn(Client *client) {
 #define CHUNK_SIZE 1024
 
 THREAD_FUNC(WorldSendThread) {
-	Client *client = param;
+	Client *client = (Client *)param;
 	if(client->closed) return 0;
 	PlayerData *pd = client->playerData;
 	World *world = pd->world;
@@ -892,7 +892,7 @@ static void PacketReceiverRaw(Client *client) {
 }
 
 THREAD_FUNC(ClientThread) {
-	Client *client = param;
+	Client *client = (Client *)param;
 
 	while(!client->closed) {
 		if(client->websock)
