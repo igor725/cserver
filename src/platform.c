@@ -31,6 +31,8 @@ void Memory_Free(void *ptr) {
 	HeapFree(hHeap, 0, ptr);
 }
 #elif defined(POSIX)
+#include <stdlib.h>
+
 void Memory_Init(void) {}
 void Memory_Uninit(void) {}
 
@@ -636,7 +638,6 @@ void Process_Exit(cs_uint32 code) {
 	ExitProcess(code);
 }
 #elif defined(POSIX)
-#include <stdlib.h>
 void Process_Exit(cs_uint32 code) {
 	exit(code);
 }
