@@ -58,7 +58,7 @@ void Log_Print(cs_uint8 flag, cs_str str, va_list *args) {
 	else
 		String_Copy(buf, 8192, str);
 
-	printf("%s [%s] %s\n",
+	File_WriteFormat(stderr, "%s [%s] %s\n",
 		time,
 		getName(flag),
 		buf

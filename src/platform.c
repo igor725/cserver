@@ -381,7 +381,7 @@ cs_bool Directory_Ensure(cs_str path) {
 
 #if defined(WINDOWS)
 cs_bool DLib_Load(cs_str path, void **lib) {
-	return (*lib = LoadLibrary(path)) != NULL;
+	return (*lib = LoadLibraryA(path)) != NULL;
 }
 
 cs_bool DLib_Unload(void *lib) {
