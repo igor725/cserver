@@ -87,7 +87,7 @@ World *World_GetByID(WorldID id) {
 
 void World_SetDimensions(World *world, const SVec *dims) {
 	world->info.dimensions = *dims;
-	world->size = dims->x * dims->y * dims->z;
+	world->wdata.size = dims->x * dims->y * dims->z;
 }
 
 cs_bool World_SetProperty(World *world, cs_uint8 property, cs_int32 value) {
@@ -158,10 +158,25 @@ cs_int8 World_GetWeather(World *world) {
 }
 
 void World_AllocBlockArray(World *world) {
-	BlockID *data = Memory_Alloc(world->size + 4, sizeof(BlockID));
-	*(cs_uint32 *)data = htonl(world->size);
-	world->data = data + 4;
+	void *data = Memory_Alloc(world->wdata.size * sizeof(BlockID) + 4, 1);
+	*(cs_uint32 *)data = htonl(world->wdata.size);
+	world->wdata.ptr = data;
+	world->wdata.blocks = (BlockID *)data + 4;
 	world->loaded = true;
+}
+
+BlockID *World_GetBlockArray(World *world, cs_uint32 *size) {
+	if(size) *size = world->wdata.size;
+	return world->wdata.blocks;
+}
+
+void *World_GetData(World *world, cs_uint32 *size) {
+	if(size) *size = world->wdata.size + 4;
+	return world->wdata.ptr;
+}
+
+cs_uint32 World_GetBlockArraySize(World *world) {
+	return world->wdata.size;
 }
 
 void World_Free(World *world) {
@@ -272,8 +287,7 @@ THREAD_FUNC(WorldSaveThread) {
 		goto world_save_end;
 	}
 
-	stream.avail_in = (uLongf)world->size;
-	stream.next_in = (Bytef *)world->data;
+	stream.next_in = World_GetBlockArray(world, &stream.avail_in);
 
 	do {
 		stream.next_out = out;
@@ -342,7 +356,7 @@ THREAD_FUNC(WorldLoadThread) {
 		goto world_load_done;
 	}
 
-	stream.next_out = (Bytef *)world->data;
+	stream.next_out = World_GetBlockArray(world, NULL);
 
 	do {
 		stream.avail_in = (uLongf)File_Read(in, 1, CHUNK_SIZE, fp);
@@ -388,33 +402,37 @@ cs_bool World_Load(World *world) {
 void World_Unload(World *world) {
 	if(world->process != WP_NOPROC)
 		Waitable_Wait(world->wait);
-	if(world->data) Memory_Free(world->data - 4);
+	if(world->wdata.size) {
+		Memory_Free(world->wdata.ptr);
+		world->wdata.size = 0;
+		world->wdata.ptr = world->wdata.blocks = NULL;
+	}
 	world->loaded = false;
-	world->data = NULL;
 }
 
-cs_uint32 World_GetOffset(World *world, SVec *pos) {
+cs_int32 World_GetOffset(World *world, SVec *pos) {
 	if(pos->x < 0 || pos->y < 0 || pos->z < 0) return 0;
 	SVec *dim = &world->info.dimensions;
 	cs_uint32 offset = pos->z * dim->z + pos->y * (dim->x * dim->y) + pos->x;
-	if(offset > world->size) return 0;
-	return offset;
+	if(offset < 0 || offset > world->wdata.size) return -1;
+	return (cs_int32)offset;
 }
 
 cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id) {
-	if(offset == 0) return false;
-	world->data[offset] = id;
+	if(offset == -1) return false;
+	world->wdata.blocks[offset] = id;
 	world->modified = true;
 	return true;
 }
 
 cs_bool World_SetBlock(World *world, SVec *pos, BlockID id) {
-	cs_uint32 offset = World_GetOffset(world, pos);
+	cs_int32 offset = World_GetOffset(world, pos);
+	if(offset == -1) return false;
 	return World_SetBlockO(world, offset, id);
 }
 
 BlockID World_GetBlock(World *world, SVec *pos) {
-	cs_uint32 offset = World_GetOffset(world, pos);
-	if(offset == 0) return 0;
-	return world->data[offset];
+	cs_int32 offset = World_GetOffset(world, pos);
+	if(offset == -1) return BLOCK_AIR;
+	return world->wdata.blocks[offset];
 }

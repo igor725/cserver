@@ -313,7 +313,7 @@ void Vanilla_WriteLvlInit(Client *client) {
 
 	*data++ = 0x02;
 	if(Client_GetExtVer(client, EXT_FASTMAP)) {
-		*(cs_uint32 *)data = htonl(Client_GetWorld(client)->size);
+		*(cs_uint32 *)data = htonl(World_GetBlockArraySize(Client_GetWorld(client)));
 		PacketWriter_End(client, 5);
 	} else {
 		PacketWriter_End(client, 1);
@@ -1000,7 +1000,7 @@ cs_bool CPEHandler_PlayerClick(Client *client, cs_str data) {
 		&tgBlockPos,
 		tgBlockFace
 	);
-	
+
 	return true;
 }
 

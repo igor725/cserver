@@ -9,7 +9,7 @@ void Generator_Flat(World *world) {
 	WorldInfo *wi = &world->info;
 	SVec *dims = &wi->dimensions;
 
-	BlockID *data = world->data;
+	BlockID *data = World_GetBlockArray(world, NULL);
 	cs_int32 dirtEnd = dims->x * dims->z * (dims->y / 2 - 1);
 	for(cs_int32 i = 0; i < dirtEnd + dims->x * dims->z; i++) {
 		if(i < dirtEnd)

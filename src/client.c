@@ -285,24 +285,23 @@ THREAD_FUNC(WorldSendThread) {
 	Vanilla_WriteLvlInit(client);
 	Mutex_Lock(client->mutex);
 	cs_uint8 *data = (cs_uint8 *)client->wrbuf;
-	BlockID *worldData = world->data;
-	cs_int32 worldSize = world->size;
 
 	*data++ = 0x03;
 	cs_uint16 *len = (cs_uint16 *)data++;
 	Bytef *out = ++data;
 
-	cs_int32 ret, wndBits = 31;
+	cs_int32 ret, wndBits;
 	z_stream stream = {0};
 	stream.zalloc = Z_NULL;
 	stream.zfree = Z_NULL;
 	stream.opaque = Z_NULL;
 
-	if(Client_GetExtVer(client, EXT_FASTMAP))
+	if(Client_GetExtVer(client, EXT_FASTMAP)) {
+		stream.next_in = World_GetBlockArray(world, &stream.avail_in);
 		wndBits = -15;
-	else {
-		worldData -= 4;
-		worldSize += 4;
+	} else {
+		stream.next_in = World_GetData(world, &stream.avail_in);
+		wndBits = 31;
 	}
 
 	if((ret = deflateInit2(
@@ -316,9 +315,6 @@ THREAD_FUNC(WorldSendThread) {
 		pd->state = STATE_WLOADERR;
 		return 0;
 	}
-
-	stream.avail_in = (uLongf)worldSize;
-	stream.next_in = (Bytef *)worldData;
 
 	do {
 		stream.next_out = out;

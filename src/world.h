@@ -80,14 +80,17 @@ typedef struct _WorldInfo {
 typedef struct _World {
 	WorldID id;
 	cs_str name;
-	cs_uint32 size;
 	WorldInfo info;
 	cs_bool modified;
 	Waitable *wait;
 	cs_bool loaded;
 	cs_bool saveUnload;
 	cs_int32 process;
-	BlockID *data;
+	struct _WorldData {
+		cs_uint32 size;
+		void *ptr;
+		BlockID *blocks;
+	} wdata;
 } World;
 
 API void Worlds_SaveAll(cs_bool join, cs_bool unload);
@@ -110,7 +113,10 @@ API cs_bool World_SetProperty(World *world, cs_uint8 property, cs_int32 value);
 API cs_bool World_SetTexturePack(World *world, cs_str url);
 API cs_bool World_SetWeather(World *world, cs_int8 type);
 
-API cs_uint32 World_GetOffset(World *world, SVec *pos);
+API void *World_GetData(World *world, cs_uint32 *size);
+API BlockID *World_GetBlockArray(World *world, cs_uint32 *size);
+API cs_uint32 World_GetBlockArraySize(World *world);
+API cs_int32 World_GetOffset(World *world, SVec *pos);
 API BlockID World_GetBlock(World *world, SVec *pos);
 API cs_int32 World_GetProperty(World *world, cs_uint8 property);
 API Color3* World_GetEnvColor(World *world, cs_uint8 type);
