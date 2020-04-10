@@ -57,6 +57,9 @@ typedef struct {
   ITER_FILE fileHandle;
 } dirIter;
 
+void Memory_Init(void);
+void Memory_Uninit(void);
+
 API void *Memory_Alloc(cs_size num, cs_size size);
 API void *Memory_Realloc(void *buf, cs_size old, cs_size new);
 API void  Memory_Copy(void *dst, const void *src, cs_size count);

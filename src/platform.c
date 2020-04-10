@@ -6,6 +6,46 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#if defined(WINDOWS)
+HANDLE hHeap;
+
+void Memory_Init() {
+	hHeap = HeapCreate(
+		HEAP_GENERATE_EXCEPTIONS | HEAP_NO_SERIALIZE,
+		0x01000,
+		0x00000
+	);
+}
+
+void Memory_Uninit() {
+	HeapDestroy(hHeap);
+}
+
+void *Memory_Alloc(cs_size num, cs_size size) {
+	return HeapAlloc(
+		hHeap,
+		HEAP_GENERATE_EXCEPTIONS | HEAP_NO_SERIALIZE | HEAP_ZERO_MEMORY,
+		num * size
+	);
+}
+
+void *Memory_Realloc(void *buf, cs_size old, cs_size new) {
+	(void)old;
+	return HeapReAlloc(
+		hHeap,
+		HEAP_GENERATE_EXCEPTIONS | HEAP_NO_SERIALIZE | HEAP_ZERO_MEMORY,
+		buf,
+		new
+	);
+}
+
+void Memory_Free(void *ptr) {
+	HeapFree(hHeap, 0, ptr);
+}
+#elif define(POSIX)
+void Memory_Init(void) {}
+void Memory_Uninit(void) {}
+
 void *Memory_Alloc(cs_size num, cs_size size) {
 	void *ptr;
 	if((ptr = calloc(num, size)) == NULL) {
@@ -24,16 +64,17 @@ void *Memory_Realloc(void *buf, cs_size old, cs_size new) {
 	return pNew;
 }
 
+void Memory_Free(void *ptr) {
+	free(ptr);
+}
+#endif
+
 void Memory_Copy(void *dst, const void *src, cs_size count) {
 	memcpy(dst, src, count);
 }
 
 void Memory_Fill(void *dst, cs_size count, cs_int32 val) {
 	memset(dst, val, count);
-}
-
-void Memory_Free(void *ptr) {
-	free(ptr);
 }
 
 cs_bool File_Rename(cs_str path, cs_str newpath) {

@@ -4,6 +4,7 @@
 #include "server.h"
 
 cs_int32 main(cs_int32 argc, char **argv) {
+	Memory_Init();
 	if(argc < 2 || !String_CaselessCompare(argv[1], "nochdir")) {
 		cs_str path = String_AllocCopy(argv[0]);
 		char *lastSlash = (char *)String_LastChar(path, *PATH_DELIM);
@@ -17,5 +18,6 @@ cs_int32 main(cs_int32 argc, char **argv) {
 	Server_InitialWork();
 	Server_StartLoop();
 	Server_Stop();
+	Memory_Uninit();
 	return 0;
 }
