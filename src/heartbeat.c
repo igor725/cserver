@@ -13,7 +13,7 @@
 #define PLAY_URL "http://www.classicube.net/server/play/"
 #define PLAY_URL_LEN 38
 
-cs_str PlayURL = NULL;
+cs_bool PlayURL_OK = false;
 char Secret[17] = {0};
 cs_uint32 Delay = 5000;
 
@@ -59,9 +59,7 @@ static void TrimReserved(char *name, cs_int32 len) {
 
 static void DoRequest() {
 	if(*Secret == '\0') NewSecret();
-	HTTPRequest req = {0};
-	HTTPResponse resp = {0};
-	char reqstr[512], name[65];
+	char reqstr[512], name[65], rsp[1024];
 	String_Copy(name, 65, Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY));
 	TrimReserved(name, 65);
 
@@ -70,42 +68,59 @@ static void DoRequest() {
 	cs_uint8 max = Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
 	cs_uint8 count = Clients_GetCount(STATE_INGAME);
 	String_FormatBuf(reqstr, 512, HBEAT_URL,
-		name,
-		port,
-		count,
-		max,
-		Secret,
+		name, port, count,
+		max, Secret,
 		public ? "true" : "false",
 		SOFTWARE_NAME "%%47" GIT_COMMIT_SHA
 	);
 
-	Socket fd = Socket_New();
-	req.sock = fd;
+	Http h;
+	Memory_Zero(&h, sizeof(Http));
+	h.https = true;
 
-	if(HttpRequest_SetHost(&req, "classicube.net", 80, true)) {
-		HttpRequest_SetPath(&req, reqstr);
-		HttpRequest_SetHeaderStr(&req, "Pragma", "no-cache");
-		HttpRequest_SetHeaderStr(&req, "Connection", "close");
-
-		if(HttpRequest_Perform(&req, &resp)) {
-			if(!PlayURL && resp.body && resp.code == 200) {
-				if(String_CaselessCompare2(resp.body, PLAY_URL, PLAY_URL_LEN)) {
-					PlayURL = String_AllocCopy(resp.body);
-					Log_Info(Lang_Get(Lang_ConGrp, 3), resp.body);
-				}
-			}
-			if(resp.code != 200)
-				Log_Error(Lang_Get(Lang_ErrGrp, 4), resp.code);
-		} else {
-			if(req.error != 0)
-				Log_Error(Lang_Get(Lang_ErrGrp, 5));
+	if(Http_Open(&h, "classicube.net")) {
+		if(Http_Request(&h, "GET", reqstr)) {
+			if(Http_ReadResponse(&h, rsp, 1024)) {
+				if(String_CaselessCompare2(rsp, PLAY_URL, PLAY_URL_LEN)) {
+					if(!PlayURL_OK) {
+						Log_Info(Lang_Get(Lang_ConGrp, 3), rsp);
+						PlayURL_OK = true;
+					}
+				} else
+					Log_Error(Lang_Get(Lang_ErrGrp, 3), rsp);
+			} else
+				Log_Error(Lang_Get(Lang_ErrGrp, 3), "Empty server response");
 		}
-	} else
-		Log_Error(Lang_Get(Lang_ErrGrp, 3));
+		Http_Cleanup(&h);
+	}
 
-	Socket_Close(fd);
-	HttpRequest_Cleanup(&req);
-	HttpResponse_Cleanup(&resp);
+	// Socket fd = Socket_New();
+	// req.sock = fd;
+
+	// if(HttpRequest_SetHost(&req, "classicube.net", 80, true)) {
+	// 	HttpRequest_SetPath(&req, reqstr);
+	// 	HttpRequest_SetHeaderStr(&req, "Pragma", "no-cache");
+	// 	HttpRequest_SetHeaderStr(&req, "Connection", "close");
+	//
+	// 	if(HttpRequest_Perform(&req, &resp)) {
+	// 		if(!PlayURL && resp.body && resp.code == 200) {
+	// 			if(String_CaselessCompare2(resp.body, PLAY_URL, PLAY_URL_LEN)) {
+	// 				PlayURL = String_AllocCopy(resp.body);
+	// 				Log_Info(Lang_Get(Lang_ConGrp, 3), resp.body);
+	// 			}
+	// 		}
+	// 		if(resp.code != 200)
+	// 			Log_Error(Lang_Get(Lang_ErrGrp, 4), resp.code);
+	// 	} else {
+	// 		if(req.error != 0)
+	// 			Log_Error(Lang_Get(Lang_ErrGrp, 5));
+	// 	}
+	// } else
+	// 	Log_Error(Lang_Get(Lang_ErrGrp, 3));
+
+	// Socket_Close(fd);
+	// HttpRequest_Cleanup(&req);
+	// HttpResponse_Cleanup(&resp);
 }
 
 static const char hexchars[] = "0123456789abcdef";

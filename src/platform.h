@@ -57,6 +57,8 @@ typedef struct {
   ITER_FILE fileHandle;
 } dirIter;
 
+#define Memory_Zero(p, c) Memory_Fill(p, c, 0)
+
 void Memory_Init(void);
 void Memory_Uninit(void);
 

@@ -16,7 +16,7 @@ SET OPT_LEVEL=/O2
 SET MSVC_LINKER=/opt:ref /subsystem:console
 SET MSVC_OPTS=/MP /GL /Oi /Gy /fp:fast /DZLIB_DLL /DZLIB_WINAPI
 SET OBJDIR=objs
-SET MSVC_LIBS=ws2_32.lib kernel32.lib advapi32.lib zdll.lib
+SET MSVC_LIBS=kernel32.lib
 FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --short HEAD`) DO (
 	SET MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_SHA#\"%%F\"
 )
@@ -98,7 +98,10 @@ IF "%BUILD_PLUGIN%"=="1" (
 	IF NOT EXIST !PROJECT_ROOT! GOTO notaplugin
 	IF NOT EXIST !PROJECT_ROOT!\src GOTO notaplugin
 	ECHO Building plugin: %PLUGNAME%
-) else SET OUTDIR=%SVOUTDIR%
+) else (
+	SET MSVC_LIBS=%MSVC_LIBS% ws2_32.lib wininet.lib advapi32.lib zdll.lib
+	SET OUTDIR=%SVOUTDIR%
+)
 
 SET BINPATH=%OUTDIR%\%BINNAME%
 
@@ -110,14 +113,14 @@ IF "%CLEAN%"=="0" (
 IF "%BUILD_PLUGIN%"=="1" (
   SET MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DPLUGIN_BUILD /I.\src\
   SET MSVC_LIBS=server.lib %MSVC_LIBS%
-	SET MSVC_LINKER=%MSVC_LINKER% /LIBPATH:%SVOUTDIR% /NOENTRY
+	SET MSVC_LINKER=%MSVC_LINKER% /libpath:%SVOUTDIR% /noentry
 ) else (
 	SET MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH%
 )
 
 SET MSVC_OPTS=%MSVC_OPTS% %WARN_LEVEL% %OPT_LEVEL% /Fo%OBJDIR%\
 set MSVC_OPTS=%MSVC_OPTS% /I.\zlib\include\
-SET MSVC_OPTS=%MSVC_OPTS% /link /LIBPATH:.\zlib\lib%ARCH%\ %MSVC_LINKER%
+SET MSVC_OPTS=%MSVC_OPTS% /link /libpath:.\zlib\lib%ARCH%\ %MSVC_LINKER%
 
 IF EXIST %PROJECT_ROOT%\version.rc (
 	RC /nologo /fo%OBJDIR%\version.res %PROJECT_ROOT%\version.rc

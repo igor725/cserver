@@ -52,7 +52,7 @@ cs_bool WsClient_DoHandshake(WsClient *ws) {
 		return true;
 	}
 
-	cs_str str = Lang_Get(Lang_ErrGrp, 6);
+	cs_str str = Lang_Get(Lang_ErrGrp, 4);
 	String_FormatBuf(line, 1024, WS_ERRRESP, 400, "Bad request", String_Length(str), str);
 	Socket_Send(ws->sock, line, (cs_int32)String_Length(line));
 	return false;

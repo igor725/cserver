@@ -11,10 +11,8 @@ void Lang_Init(void) {
 	Lang_Set(Lang_ErrGrp, 0, "Unexpected error.");
 	Lang_Set(Lang_ErrGrp, 1, "%s:%d in function %s: %s");
 	Lang_Set(Lang_ErrGrp, 2, "Invalid packet 0x%02X from Client[%d]");
-	Lang_Set(Lang_ErrGrp, 3, "Can't send heartbeat request to this address.");
-	Lang_Set(Lang_ErrGrp, 4, "Heartbeat server responded with an error %d.");
-	Lang_Set(Lang_ErrGrp, 5, "Heartbeat HTTP protocol error.");
-	Lang_Set(Lang_ErrGrp, 6, "Not a websocket connection.");
+	Lang_Set(Lang_ErrGrp, 3, "Heartbeat server error: %s.");
+	Lang_Set(Lang_ErrGrp, 4, "Not a websocket connection.");
 
 	Lang_ConGrp = Lang_NewGroup(8);
 	Lang_Set(Lang_ConGrp, 0, "Server started on %s:%d.");
