@@ -263,7 +263,7 @@ cs_bool Iter_Init(dirIter *iter, cs_str dir, cs_str ext) {
 	iter->dirHandle = INVALID_HANDLE_VALUE;
 
 	String_FormatBuf(iter->fmt, 256, "%s\\*.%s", dir, ext);
-	if((iter->dirHandle = FindFirstFile(iter->fmt, &iter->fileHandle)) == INVALID_HANDLE_VALUE) {
+	if((iter->dirHandle = FindFirstFileA(iter->fmt, &iter->fileHandle)) == INVALID_HANDLE_VALUE) {
 		if(GetLastError() == ERROR_FILE_NOT_FOUND)
 			iter->state = ITER_DONE;
 		else
@@ -348,16 +348,16 @@ cs_bool Iter_Close(dirIter *iter) {
 
 #if defined(WINDOWS)
 cs_bool Directory_Exists(cs_str path) {
-	cs_uint32 attr = GetFileAttributes(path);
+	cs_uint32 attr = GetFileAttributesA(path);
 	return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
 cs_bool Directory_SetCurrentDir(cs_str path) {
-	return (cs_bool)SetCurrentDirectory(path);
+	return (cs_bool)SetCurrentDirectoryA(path);
 }
 
 cs_bool Directory_Create(cs_str path) {
-	return (cs_bool)CreateDirectory(path, NULL);
+	return (cs_bool)CreateDirectoryA(path, NULL);
 }
 #elif defined(POSIX)
 cs_bool Directory_Exists(cs_str path) {
@@ -505,7 +505,7 @@ void Mutex_Unlock(Mutex *handle) {
 }
 
 Waitable *Waitable_Create(void) {
-	Waitable *handle = CreateEvent(NULL, true, false, NULL);
+	Waitable *handle = CreateEventA(NULL, true, false, NULL);
 	if(!handle) {
 		Error_PrintSys(true);
 	}
@@ -633,12 +633,10 @@ cs_uint64 Time_GetMSec() {
 }
 #endif
 
+void Process_Exit(cs_uint32 code) {
 #if defined(WINDOWS)
-void Process_Exit(cs_uint32 code) {
 	ExitProcess(code);
-}
 #elif defined(POSIX)
-void Process_Exit(cs_uint32 code) {
 	exit(code);
-}
 #endif
+}

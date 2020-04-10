@@ -17,7 +17,7 @@ SET OPT_LEVEL=/O2
 SET MSVC_LINKER=/INCREMENTAL:NO /OPT:REF /SUBSYSTEM:CONSOLE
 SET MSVC_OPTS=/MP /GL /Oi /Gy /fp:fast /DZLIB_DLL /DZLIB_WINAPI
 SET OBJDIR=objs
-SET MSVC_LIBS=ws2_32.lib kernel32.lib dbghelp.lib advapi32.lib zdll.lib
+SET MSVC_LIBS=ws2_32.lib kernel32.lib advapi32.lib zdll.lib
 FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --short HEAD`) DO (
 	SET MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_SHA#"\"%%F\""
 )
@@ -74,9 +74,13 @@ IF "%ARCH%"=="" GOTO vcerror
 ECHO Build configuration:
 ECHO Architecture: %ARCH%
 
-IF "%DEBUG%"=="0" (ECHO Debug: disabled) else (
+IF "%DEBUG%"=="0" (
+	set MSVC_OPTS=%MSVC_OPTS% /DRELEASE_BUILD
+	ECHO Debug: disabled
+) else (
 	SET OPT_LEVEL=/Od
   SET MSVC_OPTS=%MSVC_OPTS% /Z7
+	SET MSVC_LIBS=%MSVC_LIBS% dbghelp.lib
 	SET SVOUTDIR=.\out\%ARCH%dbg
   SET MSVC_LINKER=%MSVC_LINKER% /DEBUG
   ECHO Debug: enabled

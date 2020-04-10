@@ -16,6 +16,7 @@ cs_str const Strings[] = {
 	"Invalid IPv4 address passed to Socket_SetAddr."
 };
 
+#ifndef RELEASE_BUILD
 #if defined(WINDOWS)
 #include <dbghelp.h>
 
@@ -67,9 +68,11 @@ void Error_CallStack(void) {
 void Error_CallStack(void) {
 	Log_Error("Error_CallStack not implemented.");
 }
+#endif // __ANDROID__
 #endif
-
-#endif
+#else
+void Error_CallStack(void) {}
+#endif // RELEASE_BUILD
 
 static void getErrorStr(cs_int32 type, cs_uint32 code, char *errbuf, cs_size sz, va_list *args) {
 	switch(type) {
