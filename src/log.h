@@ -1,11 +1,13 @@
 #ifndef LOG_H
 #define LOG_H
 enum {
+	LOG_QUIET,
 	LOG_ERROR = BIT(0),
 	LOG_INFO = BIT(1),
 	LOG_CHAT = BIT(2),
 	LOG_WARN = BIT(3),
-	LOG_DEBUG = BIT(4)
+	LOG_DEBUG = BIT(4),
+	LOG_ALL = 0x0F
 };
 
 void Log_Print(cs_uint8 flag, cs_str str, va_list *args);

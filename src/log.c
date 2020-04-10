@@ -3,7 +3,7 @@
 #include "str.h"
 #include "log.h"
 
-cs_uint8 Log_Level = LOG_ERROR | LOG_INFO | LOG_CHAT | LOG_WARN | LOG_DEBUG;
+cs_uint8 Log_Level = LOG_ALL;
 
 static cs_str getName(cs_uint8 flag) {
 	switch(flag) {
@@ -39,8 +39,8 @@ void Log_SetLevelStr(cs_str str) {
 				level |= LOG_DEBUG;
 				break;
 			case 'Q':
-				Log_Level = 0;
-				return;
+				level = LOG_QUIET;
+				break;
 		}
 	} while(*str++ != '\0');
 
