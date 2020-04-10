@@ -2,21 +2,19 @@
 #include "platform.h"
 #include "str.h"
 #include "error.h"
-#include <memory.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 #if defined(WINDOWS)
 HANDLE hHeap;
 
-void Memory_Init() {
+void Memory_Init(void) {
 	hHeap = HeapCreate(
 		HEAP_GENERATE_EXCEPTIONS | HEAP_NO_SERIALIZE,
 		0x01000, 0x00000
 	);
 }
 
-void Memory_Uninit() {
+void Memory_Uninit(void) {
 	HeapDestroy(hHeap);
 }
 
@@ -633,6 +631,13 @@ cs_uint64 Time_GetMSec() {
 }
 #endif
 
+#if defined(WINDOWS)
 void Process_Exit(cs_uint32 code) {
 	ExitProcess(code);
 }
+#elif defined(POSIX)
+#include <stdlib.h>
+void Process_Exit(cs_uint32 code) {
+	exit(code);
+}
+#endif
