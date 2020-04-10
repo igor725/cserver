@@ -107,7 +107,7 @@ cs_bool Block_BulkUpdateAdd(BulkBlockUpdate *bbu, cs_uint32 offset, BlockID id) 
 		} else return false;
 	}
 	cs_uint8 bcount = bbu->data.count++;
-	((cs_uint32 *)bbu->data.offsets)[bcount] = htonl(offset - 4);
+	((cs_uint32 *)bbu->data.offsets)[bcount] = htonl(offset);
 	bbu->data.ids[bcount] = id;
 	return true;
 }

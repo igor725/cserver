@@ -412,8 +412,8 @@ void World_Unload(World *world) {
 
 cs_int32 World_GetOffset(World *world, SVec *pos) {
 	if(pos->x < 0 || pos->y < 0 || pos->z < 0) return 0;
-	SVec *dim = &world->info.dimensions;
-	cs_uint32 offset = pos->z * dim->z + pos->y * (dim->x * dim->y) + pos->x;
+	cs_uint32 offset = pos->z * world->info.dimensions.z +
+	pos->y * (world->info.dimensions.x * world->info.dimensions.y) + pos->x;
 	if(offset < 0 || offset > world->wdata.size) return -1;
 	return (cs_int32)offset;
 }
