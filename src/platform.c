@@ -12,8 +12,7 @@ HANDLE hHeap;
 void Memory_Init() {
 	hHeap = HeapCreate(
 		HEAP_GENERATE_EXCEPTIONS | HEAP_NO_SERIALIZE,
-		0x01000,
-		0x00000
+		0x01000, 0x00000
 	);
 }
 
@@ -22,21 +21,12 @@ void Memory_Uninit() {
 }
 
 void *Memory_Alloc(cs_size num, cs_size size) {
-	return HeapAlloc(
-		hHeap,
-		HEAP_GENERATE_EXCEPTIONS | HEAP_NO_SERIALIZE | HEAP_ZERO_MEMORY,
-		num * size
-	);
+	return HeapAlloc(hHeap, HEAP_ZERO_MEMORY, num * size);
 }
 
 void *Memory_Realloc(void *buf, cs_size old, cs_size new) {
 	(void)old;
-	return HeapReAlloc(
-		hHeap,
-		HEAP_GENERATE_EXCEPTIONS | HEAP_NO_SERIALIZE | HEAP_ZERO_MEMORY,
-		buf,
-		new
-	);
+	return HeapReAlloc(hHeap, HEAP_ZERO_MEMORY, buf, new);
 }
 
 void Memory_Free(void *ptr) {
