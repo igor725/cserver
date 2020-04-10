@@ -40,7 +40,14 @@ cs_ulong Http_ReadResponse(Http *http, char *buf, cs_ulong sz) {
 
 void Http_Cleanup(Http *http) {
 	InternetCloseHandle(http->conn);
+	InternetCloseHandle(http->req);
 }
 #elif defined(POSIX)
-// TODO: Реализовать curl запросы
+void Http_Init(void) {}
+void Http_Uninit(void) {}
+
+cs_bool Http_Open(Http *http, cs_str domain) {return false;}
+cs_bool Http_Request(Http *http, cs_str method, cs_str url) {return false;}
+cs_ulong Http_ReadResponse(Http *http, char *buf, cs_ulong sz) {return 0;}
+void Http_Cleanup(Http *http) {}
 #endif
