@@ -90,9 +90,11 @@ static void DoRequest() {
 					Log_Error(Lang_Get(Lang_ErrGrp, 3), rsp);
 			} else
 				Log_Error(Lang_Get(Lang_ErrGrp, 3), "Empty server response");
-		}
+		} else
+			Log_Error(Lang_Get(Lang_ErrGrp, 3), "HTTP request failed");
 		Http_Cleanup(&h);
-	}
+	} else
+		Log_Error(Lang_Get(Lang_ErrGrp, 3), "Can't open HTTP connection");
 
 	// Socket fd = Socket_New();
 	// req.sock = fd;
