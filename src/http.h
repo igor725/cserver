@@ -6,11 +6,15 @@
 HINTERNET hInternet;
 
 typedef struct Http {
-	HINTERNET conn, req;
 	cs_bool https;
+	HINTERNET conn, req;
 } Http;
 #elif defined(POSIX)
+#include <curl/curl.h>
 
+typedef struct Http {
+	cs_bool https;
+} Http;
 #endif
 
 void Http_Init(void);
