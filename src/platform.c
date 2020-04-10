@@ -42,7 +42,7 @@ void *Memory_Realloc(void *buf, cs_size old, cs_size new) {
 void Memory_Free(void *ptr) {
 	HeapFree(hHeap, 0, ptr);
 }
-#elif define(POSIX)
+#elif defined(POSIX)
 void Memory_Init(void) {}
 void Memory_Uninit(void) {}
 
