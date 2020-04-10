@@ -48,21 +48,21 @@ void Log_SetLevelStr(cs_str str) {
 }
 
 void Log_Print(cs_uint8 flag, cs_str str, va_list *args) {
-	if((Log_Level & flag) == 0) return;
+	if(Log_Level & flag) {
+		char time[13], buf[8192];
+		Time_Format(time, 13);
 
-	char time[13], buf[8192];
-	Time_Format(time, 13);
+		if(args)
+			String_FormatBufVararg(buf, 8192, str, args);
+		else
+			String_Copy(buf, 8192, str);
 
-	if(args)
-		String_FormatBufVararg(buf, 8192, str, args);
-	else
-		String_Copy(buf, 8192, str);
-
-	File_WriteFormat(stderr, "%s [%s] %s\n",
-		time,
-		getName(flag),
-		buf
-	);
+		File_WriteFormat(stderr, "%s [%s] %s\n",
+			time,
+			getName(flag),
+			buf
+		);	
+	}
 }
 
 void Log_Error(cs_str str, ...) {
