@@ -70,11 +70,22 @@ void Memory_Free(void *ptr) {
 #endif
 
 void Memory_Copy(void *dst, const void *src, cs_size count) {
-	memcpy(dst, src, count);
+	cs_uint8 *u8dst = (cs_uint8 *)dst;
+	cs_uint8 *u8src = (cs_uint8 *)src;
+
+	while(count > 0) {
+		*u8dst++ = *u8src++;
+		count--;
+	}
 }
 
-void Memory_Fill(void *dst, cs_size count, cs_int32 val) {
-	memset(dst, val, count);
+void Memory_Fill(void *dst, cs_size count, cs_uint8 val) {
+	cs_uint8 *u8dst = (cs_uint8 *)dst;
+
+	while(count > 0) {
+		*u8dst++ = val;
+		count--;
+	}
 }
 
 cs_bool File_Rename(cs_str path, cs_str newpath) {
