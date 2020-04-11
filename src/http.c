@@ -2,7 +2,6 @@
 #include "platform.h"
 #include "str.h"
 #include "http.h"
-#include "log.h"
 
 #if defined(WINDOWS)
 void Http_Init(void) {
