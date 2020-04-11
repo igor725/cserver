@@ -969,7 +969,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_str data) {
 		return false;
 	}
 
-	tmp->hash = crc32(0, (cs_uint8*)tmp->name, (cs_uint32)strlen(tmp->name));
+	tmp->hash = crc32(0, (cs_uint8*)tmp->name, (cs_uint32)String_Length(tmp->name));
 	tmp->next = cpd->headExtension;
 	cpd->headExtension = tmp;
 

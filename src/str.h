@@ -8,6 +8,7 @@ API cs_bool String_CaselessCompare(cs_str str1, cs_str str2);
 API cs_bool String_CaselessCompare2(cs_str str1, cs_str str2, cs_size len);
 API cs_size String_Length(cs_str str);
 API cs_size String_Append(char *dst, cs_size len, cs_str src);
+API char *String_Grow(char *src, cs_size add, cs_size *new);
 API cs_size String_Copy(char *dst, cs_size len, cs_str src);
 API cs_uint32 String_FormatError(cs_uint32 code, char *buf, cs_size buflen, va_list *args);
 API cs_int32 String_FormatBufVararg(char *buf, cs_size len, cs_str str, va_list *args);

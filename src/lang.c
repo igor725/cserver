@@ -11,7 +11,7 @@ void Lang_Init(void) {
 	Lang_Set(Lang_ErrGrp, 0, "Unexpected error.");
 	Lang_Set(Lang_ErrGrp, 1, "%s:%d in function %s: %s");
 	Lang_Set(Lang_ErrGrp, 2, "Invalid packet 0x%02X from Client[%d]");
-	Lang_Set(Lang_ErrGrp, 3, "Heartbeat server error: %s.");
+	Lang_Set(Lang_ErrGrp, 3, "Heartbeat error: %s.");
 	Lang_Set(Lang_ErrGrp, 4, "Not a websocket connection.");
 
 	Lang_ConGrp = Lang_NewGroup(8);

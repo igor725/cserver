@@ -11,7 +11,7 @@ ROOT="."
 CC="$CC -fdiagnostics-color=always"
 LNK="$CC -rdynamic"
 CFLAGS="-pipe -fPIC"
-LIBS="-lpthread -ldl -lcrypto -lz"
+LIBS="-lpthread -ldl -lcrypto -lcurl -lz -lm"
 OUTBIN="server"
 COMMIT_SHA="-DGIT_COMMIT_SHA=\"$(git rev-parse --short HEAD)\""
 PLUGIN_BUILD=0
@@ -57,6 +57,7 @@ do
 		popd
 		PLUGIN_BUILD=1
 	fi
+	if [ "$a" == "cls" ]; then clear; fi
 	if [ "$a" == "pb" ]; then PLUGIN_BUILD=1; fi
 	if [ "$a" == "pbu" ]; then PLUGIN_BUILD=2; fi
 	if [ "$a" == "wall" ]; then WARN="-Wall -Wextra -pedantic-errors"; fi

@@ -76,10 +76,10 @@ static void DoRequest() {
 
 	Http h;
 	Memory_Zero(&h, sizeof(Http));
-	h.https = true;
+	h.secure = true;
 
 	if(Http_Open(&h, "classicube.net")) {
-		if(Http_Request(&h, "GET", reqstr)) {
+		if(Http_Request(&h, reqstr)) {
 			if(Http_ReadResponse(&h, rsp, 1024)) {
 				if(String_CaselessCompare2(rsp, PLAY_URL, PLAY_URL_LEN)) {
 					if(!PlayURL_OK) {
@@ -92,37 +92,9 @@ static void DoRequest() {
 				Log_Error(Lang_Get(Lang_ErrGrp, 3), "Empty server response");
 		} else
 			Log_Error(Lang_Get(Lang_ErrGrp, 3), "HTTP request failed");
-		Http_Cleanup(&h);
 	} else
 		Log_Error(Lang_Get(Lang_ErrGrp, 3), "Can't open HTTP connection");
-
-	// Socket fd = Socket_New();
-	// req.sock = fd;
-
-	// if(HttpRequest_SetHost(&req, "classicube.net", 80, true)) {
-	// 	HttpRequest_SetPath(&req, reqstr);
-	// 	HttpRequest_SetHeaderStr(&req, "Pragma", "no-cache");
-	// 	HttpRequest_SetHeaderStr(&req, "Connection", "close");
-	//
-	// 	if(HttpRequest_Perform(&req, &resp)) {
-	// 		if(!PlayURL && resp.body && resp.code == 200) {
-	// 			if(String_CaselessCompare2(resp.body, PLAY_URL, PLAY_URL_LEN)) {
-	// 				PlayURL = String_AllocCopy(resp.body);
-	// 				Log_Info(Lang_Get(Lang_ConGrp, 3), resp.body);
-	// 			}
-	// 		}
-	// 		if(resp.code != 200)
-	// 			Log_Error(Lang_Get(Lang_ErrGrp, 4), resp.code);
-	// 	} else {
-	// 		if(req.error != 0)
-	// 			Log_Error(Lang_Get(Lang_ErrGrp, 5));
-	// 	}
-	// } else
-	// 	Log_Error(Lang_Get(Lang_ErrGrp, 3));
-
-	// Socket_Close(fd);
-	// HttpRequest_Cleanup(&req);
-	// HttpResponse_Cleanup(&resp);
+	Http_Cleanup(&h);
 }
 
 static const char hexchars[] = "0123456789abcdef";
