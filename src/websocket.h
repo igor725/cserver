@@ -28,7 +28,7 @@ typedef struct {
 	cs_bool done;
 } WsClient;
 
-cs_bool WsClient_DoHandshake(WsClient *ws);
-cs_bool WsClient_ReceiveFrame(WsClient *ws);
-cs_bool WsClient_SendHeader(WsClient *ws, cs_uint8 opcode, cs_uint16 len);
+API cs_bool WsClient_DoHandshake(WsClient *ws);
+API cs_bool WsClient_ReceiveFrame(WsClient *ws);
+API cs_bool WsClient_SendFrame(WsClient *ws, cs_uint8 opcode, const char *buf, cs_uint16 len);
 #endif // WEBSOCKET_H

@@ -798,8 +798,9 @@ cs_int32 Client_Send(Client *client, cs_int32 len) {
 			if(bClient && !bClient->closed) {
 				Mutex_Lock(bClient->mutex);
 				if(bClient->websock)
-					WsClient_SendHeader(bClient->websock, 0x02, (cs_uint16)len);
-				Socket_Send(bClient->sock, client->wrbuf, len);
+					WsClient_SendFrame(bClient->websock, 0x02, client->wrbuf, (cs_uint16)len);
+				else
+					Socket_Send(client->sock, client->wrbuf, len);
 				Mutex_Unlock(bClient->mutex);
 			}
 		}
@@ -807,8 +808,9 @@ cs_int32 Client_Send(Client *client, cs_int32 len) {
 	}
 
 	if(client->websock)
-		WsClient_SendHeader(client->websock, 0x02, (cs_uint16)len);
-	return Socket_Send(client->sock, client->wrbuf, len);
+		return WsClient_SendFrame(client->websock, 0x02, client->wrbuf, (cs_uint16)len);
+	else
+		return Socket_Send(client->sock, client->wrbuf, len);
 }
 
 static void PacketReceiverWs(Client *client) {

@@ -12,13 +12,13 @@ cs_bool WsClient_DoHandshake(WsClient *ws) {
 	char line[1024], wskey[32], b64[30];
 	cs_uint8 hash[20];
 	cs_bool haveUpgrade = false;
-	cs_int32 wskeylen = 0;
+	cs_int32 wskeylen = 0, rsplen = 0;
 
 	if(Socket_ReceiveLine(ws->sock, line, 1024)) {
 		cs_str httpver = String_LastChar(line, 'H');
 		if(!httpver || !String_CaselessCompare(httpver, "HTTP/1.1")) {
-			String_FormatBuf(line, 1024, WS_ERRRESP, 505, "HTTP Version Not Supported", 0, "");
-			Socket_Send(ws->sock, line, (cs_int32)String_Length(line));
+			rsplen = String_FormatBuf(line, 1024, WS_ERRRESP, 505, "HTTP Version Not Supported", 0, "");
+			Socket_Send(ws->sock, line, rsplen);
 			return false;
 		}
 	}
@@ -47,14 +47,13 @@ cs_bool WsClient_DoHandshake(WsClient *ws) {
 		SHA1_Final(hash, &ctx);
 		String_ToB64(hash, 20, b64);
 
-		String_FormatBuf(line, 1024, WS_RESP, b64);
-		Socket_Send(ws->sock, line, (cs_int32)String_Length(line));
-		return true;
+		rsplen = String_FormatBuf(line, 1024, WS_RESP, b64);
+		return Socket_Send(ws->sock, line, rsplen) == rsplen;
 	}
 
 	cs_str str = Lang_Get(Lang_ErrGrp, 4);
-	String_FormatBuf(line, 1024, WS_ERRRESP, 400, "Bad request", String_Length(str), str);
-	Socket_Send(ws->sock, line, (cs_int32)String_Length(line));
+	rsplen = String_FormatBuf(line, 1024, WS_ERRRESP, 400, "Bad request", String_Length(str), str);
+	Socket_Send(ws->sock, line, rsplen);
 	return false;
 }
 
@@ -128,19 +127,19 @@ cs_bool WsClient_ReceiveFrame(WsClient *ws) {
 	return false;
 }
 
-cs_bool WsClient_SendHeader(WsClient *ws, cs_uint8 opcode, cs_uint16 len) {
-	cs_uint16 hdrlen = 2;
+cs_bool WsClient_SendFrame(WsClient *ws, cs_uint8 opcode, const char *buf, cs_uint16 len) {
+	cs_uint8 hdrlen = 2;
 	char hdr[4] = {0, 0, 0, 0};
 	hdr[0] = 0x80 | opcode;
 
 	if(len < 126) {
 		hdr[1] = (char)len;
-	} else if(len < 65535) {
+	} else if(len < 65536) {
 		hdrlen = 4;
 		hdr[1] = 126;
 		*(cs_uint16 *)&hdr[2] = htons((cs_uint16)len);
-	} else
-		return false;
+	} else return false;
 
-	return Socket_Send(ws->sock, hdr, hdrlen) == hdrlen;
+	return Socket_Send(ws->sock, hdr, hdrlen) == hdrlen &&
+	Socket_Send(ws->sock, buf, len) == len;
 }

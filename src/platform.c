@@ -240,7 +240,7 @@ cs_int32 Socket_ReceiveLine(Socket sock, char *line, cs_int32 len) {
 	return start_len - len;
 }
 
-cs_int32 Socket_Send(Socket sock, char *buf, cs_int32 len) {
+cs_int32 Socket_Send(Socket sock, const char *buf, cs_int32 len) {
 	return send(sock, buf, len, 0);
 }
 
