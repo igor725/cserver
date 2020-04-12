@@ -1,27 +1,31 @@
 #include "core.h"
 #include "platform.h"
 #include "timer.h"
-
-typedef struct Timer {
-	cs_int32 delay, nexttick, ticks, left;
-	TimerCallback callback;
-	void *userdata;
-} Timer;
+#include "list.h"
 
 static AListField *headTimer;
 
-AListField *Timer_Add(cs_int32 ticks, cs_uint32 delay, TimerCallback callback, void *ud) {
+Timer *Timer_Add(cs_int32 ticks, cs_uint32 delay, TimerCallback callback, void *ud) {
 	Timer *timer = Memory_Alloc(1, sizeof(Timer));
 	timer->left = ticks;
 	timer->delay = delay;
 	timer->callback = callback;
 	timer->userdata = ud;
-	return AList_AddField(&headTimer, timer);
+	AList_AddField(&headTimer, timer);
+	return timer;
 }
 
-void Timer_Remove(AListField *timer) {
-	Memory_Free(timer->value.ptr);
-	AList_Remove(&headTimer, timer);
+static void removeTimerByField(AListField *field) {
+	Memory_Free(field->value.ptr);
+	AList_Remove(&headTimer, field);
+}
+
+void Timer_Remove(Timer *timer) {
+	AListField *field;
+	List_Iter(field, headTimer) {
+		if(timer == field->value.ptr)
+			removeTimerByField(field);
+	}
 }
 
 void Timer_Update(cs_int32 delta) {
@@ -34,7 +38,7 @@ void Timer_Update(cs_int32 delta) {
 			if(timer->left != -1) --timer->left;
 			timer->callback(++timer->ticks, timer->left, timer->userdata);
 			if(timer->left == 0)
-				Timer_Remove(field);
+				removeTimerByField(field);;
 		}
 	}
 }

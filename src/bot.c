@@ -23,7 +23,7 @@ Client *Bot_New(cs_str name, World *world, cs_bool hideName) {
 	bot->cpeData->model = 256;
 	bot->closed = true;
 	bot->id = id;
-	Bots_List[id] = bot;
+	Bots_List[-id] = bot;
 
 	WorldInfo *wi = &world->info;
 	Bot_SetPosition(bot, &wi->spawnVec, &wi->spawnAng);
