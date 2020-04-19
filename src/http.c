@@ -35,7 +35,7 @@ cs_ulong Http_ReadResponse(Http *http, char *buf, cs_ulong sz) {
 		buf[readed] = '\0';
 		return readed;
 	}
-	return 0;
+	return 0L;
 }
 
 void Http_Cleanup(Http *http) {

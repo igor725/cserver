@@ -6,7 +6,7 @@
 typedef struct {
 	HCRYPTPROV provider;
 	HCRYPTHASH hash;
-	unsigned long hashLen;
+	cs_ulong hashLen;
 } SHA_CTX, MD5_CTX, HASH_CTX;
 
 cs_bool SHA1_Init(SHA_CTX *ctx);

@@ -1,20 +1,19 @@
 #ifndef HTTP_H
 #define HTTP_H
-
 #define HTTP_USERAGENT "CServer/1.0"
 
 #if defined(WINDOWS)
 #include <wininet.h>
 HINTERNET hInternet;
 
-typedef struct Http {
+typedef struct {
 	cs_bool secure;
 	HINTERNET conn, req;
 } Http;
 #elif defined(POSIX)
 #include <curl/curl.h>
 
-typedef struct Http {
+typedef struct {
 	cs_bool secure;
 	cs_str domain;
 	size_t buflen, rsplen;
