@@ -42,7 +42,7 @@ enum {
 typedef struct _CGroup {
 	cs_int16 id;
 	cs_str name;
-	cs_uint8 rank;
+	cs_byte rank;
 	AListField *field;
 } CGroup;
 
@@ -117,22 +117,22 @@ API cs_bool Assoc_Set(Client *client, cs_uint16 type, void *ptr);
 API void *Assoc_GetPtr(Client *client, cs_uint16 type);
 API cs_bool Assoc_Remove(Client *client, cs_uint16 type, cs_bool freeData);
 
-API CGroup *Group_Add(cs_int16 gid, cs_str gname, cs_uint8 grank);
+API CGroup *Group_Add(cs_int16 gid, cs_str gname, cs_byte grank);
 API CGroup *Group_GetByID(cs_int16 gid);
 API cs_bool Group_Remove(cs_int16 gid);
 
-API cs_uint8 Clients_GetCount(cs_int32 state);
+API cs_byte Clients_GetCount(cs_int32 state);
 API void Clients_KickAll(cs_str reason);
 API void Clients_UpdateWorldInfo(World *world);
 
 API cs_bool Client_ChangeWorld(Client *client, World *world);
-API void Client_Chat(Client *client, cs_uint8 type, cs_str message);
+API void Client_Chat(Client *client, cs_byte type, cs_str message);
 API void Client_Kick(Client *client, cs_str reason);
 API void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll);
 API cs_bool Client_Update(Client *client);
 API cs_bool Client_SendHacks(Client *client, CPEHacks *hacks);
-API cs_bool Client_MakeSelection(Client *client, cs_uint8 id, SVec *start, SVec *end, Color4* color);
-API cs_bool Client_RemoveSelection(Client *client, cs_uint8 id);
+API cs_bool Client_MakeSelection(Client *client, cs_byte id, SVec *start, SVec *end, Color4* color);
+API cs_bool Client_RemoveSelection(Client *client, cs_byte id);
 API cs_bool Client_TeleportTo(Client *client, Vec *pos, Ang *ang);
 
 API cs_bool Client_IsInSameWorld(Client *client, Client *other);
@@ -142,8 +142,8 @@ API cs_bool Client_IsOP(Client *client);
 
 API cs_bool Client_SetWeather(Client *client, cs_int8 type);
 API cs_bool Client_SetInvOrder(Client *client, Order order, BlockID block);
-API cs_bool Client_SetEnvProperty(Client *client, cs_uint8 property, cs_int32 value);
-API cs_bool Client_SetEnvColor(Client *client, cs_uint8 type, Color3* color);
+API cs_bool Client_SetEnvProperty(Client *client, cs_byte property, cs_int32 value);
+API cs_bool Client_SetEnvColor(Client *client, cs_byte type, Color3* color);
 API cs_bool Client_SetTexturePack(Client *client, cs_str url);
 API cs_bool Client_AddTextColor(Client *client, Color4* color, char code);
 API cs_bool Client_SetBlock(Client *client, SVec *pos, BlockID id);
@@ -156,7 +156,7 @@ API cs_bool Client_SetHotbar(Client *client, Order pos, BlockID block);
 API cs_bool Client_SetSkin(Client *client, cs_str skin);
 API cs_bool Client_SetSpawn(Client *client, Vec *pos, Ang *ang);
 API cs_bool Client_SetVelocity(Client *client, Vec *velocity, cs_bool mode);
-API cs_bool Client_SetRotation(Client *client, cs_uint8 axis, cs_int32 value);
+API cs_bool Client_SetRotation(Client *client, cs_byte axis, cs_int32 value);
 API cs_bool Client_SetGroup(Client *client, cs_int16 gid);
 
 API cs_str Client_GetName(Client *client);

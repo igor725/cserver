@@ -24,11 +24,11 @@ typedef struct {
 	char header[2];
 	char mask[4];
 	cs_uint16 plen;
-	cs_uint8 opcode;
+	cs_byte opcode;
 	cs_bool done;
 } WsClient;
 
 API cs_bool WsClient_DoHandshake(WsClient *ws);
 API cs_bool WsClient_ReceiveFrame(WsClient *ws);
-API cs_bool WsClient_SendFrame(WsClient *ws, cs_uint8 opcode, const char *buf, cs_uint16 len);
+API cs_bool WsClient_SendFrame(WsClient *ws, cs_byte opcode, const char *buf, cs_uint16 len);
 #endif // WEBSOCKET_H

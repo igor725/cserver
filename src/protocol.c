@@ -53,8 +53,8 @@ void Proto_WriteSVec(char **dataptr, const SVec *vec) {
 
 void Proto_WriteAng(char **dataptr, const Ang *ang) {
 	char *data = *dataptr;
-	*(cs_uint8 *)data++ = (cs_uint8)((ang->yaw / 360) * 256);
-	*(cs_uint8 *)data++ = (cs_uint8)((ang->pitch / 360) * 256);
+	*(cs_byte *)data++ = (cs_byte)((ang->yaw / 360) * 256);
+	*(cs_byte *)data++ = (cs_byte)((ang->pitch / 360) * 256);
 	*dataptr = data;
 }
 
@@ -106,10 +106,10 @@ cs_uint32 Proto_WriteClientPos(char *data, Client *client, cs_bool extended) {
 	return Proto_WriteVecAng(&data, &pd->position, &pd->angle, extended);
 }
 
-cs_uint8 Proto_ReadString(cs_str *dataptr, cs_str *dstptr) {
+cs_byte Proto_ReadString(cs_str *dataptr, cs_str *dstptr) {
 	cs_str data = *dataptr;
 	*dataptr += 64;
-	cs_uint8 end;
+	cs_byte end;
 
 	for(end = 64; end > 0; end--)
 		if(data[end - 1] != ' ') break;
@@ -125,10 +125,10 @@ cs_uint8 Proto_ReadString(cs_str *dataptr, cs_str *dstptr) {
 	return end;
 }
 
-cs_uint8 Proto_ReadStringNoAlloc(cs_str *dataptr, char *dst) {
+cs_byte Proto_ReadStringNoAlloc(cs_str *dataptr, char *dst) {
 	cs_str data = *dataptr;
 	*dataptr += 64;
-	cs_uint8 end;
+	cs_byte end;
 
 	for(end = 64; end > 0; end--)
 		if(data[end - 1] != ' ') break;
@@ -151,8 +151,8 @@ void Proto_ReadSVec(cs_str *dataptr, SVec *vec) {
 
 void Proto_ReadAng(cs_str *dataptr, Ang *ang) {
 	cs_str data = *dataptr;
-	ang->yaw = (((float)(cs_uint8)*data++) / 256) * 360;
-	ang->pitch = (((float)(cs_uint8)*data++) / 256) * 360;
+	ang->yaw = (((float)(cs_byte)*data++) / 256) * 360;
+	ang->pitch = (((float)(cs_byte)*data++) / 256) * 360;
 	*dataptr = data;
 }
 
@@ -202,7 +202,7 @@ cs_bool Proto_ReadClientPos(Client *client, cs_str data) {
 	return changed;
 }
 
-void Packet_Register(cs_uint8 id, cs_uint16 size, packetHandler handler) {
+void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler) {
 	Packet *tmp = Memory_Alloc(1, sizeof(Packet));
 	tmp->id = id;
 	tmp->size = size;
@@ -210,7 +210,7 @@ void Packet_Register(cs_uint8 id, cs_uint16 size, packetHandler handler) {
 	packetsList[id] = tmp;
 }
 
-void Packet_RegisterCPE(cs_uint8 id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler) {
+void Packet_RegisterCPE(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler) {
 	Packet *tmp = packetsList[id];
 	tmp->exthash = hash;
 	tmp->extVersion = ver;
@@ -287,7 +287,7 @@ void Packet_RegisterDefault(void) {
 	Packet_RegisterCPE(0x08, EXT_ENTPOS, 1, 15, NULL);
 }
 
-Packet *Packet_Get(cs_uint8 id) {
+Packet *Packet_Get(cs_byte id) {
 	return packetsList[id];
 }
 
@@ -382,7 +382,7 @@ void Vanilla_WriteDespawn(Client *client, Client *other) {
 	PacketWriter_End(client, 2);
 }
 
-void Vanilla_WriteChat(Client *client, cs_uint8 type, cs_str mesg) {
+void Vanilla_WriteChat(Client *client, cs_byte type, cs_str mesg) {
 	PacketWriter_Start(client);
 	if(client == Broadcast) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
@@ -488,7 +488,7 @@ cs_bool Handler_SetBlock(Client *client, cs_str data) {
 
 	SVec pos;
 	Proto_ReadSVec(&data, &pos);
-	cs_uint8 mode = *data++;
+	cs_byte mode = *data++;
 	BlockID block = *data;
 
 	switch(mode) {
@@ -539,14 +539,14 @@ cs_bool Handler_PosAndOrient(Client *client, cs_str data) {
 cs_bool Handler_Message(Client *client, cs_str data) {
 	ValidateClientState(client, STATE_INGAME, true);
 
-	cs_uint8 type = 0;
+	cs_byte type = 0;
 	char message[65];
 	char *messptr = message;
-	cs_uint8 partial = *data++;
-	cs_uint8 len = Proto_ReadStringNoAlloc(&data, message);
+	cs_byte partial = *data++;
+	cs_byte len = Proto_ReadStringNoAlloc(&data, message);
 	if(len == 0) return false;
 
-	for(cs_uint8 i = 0; i < len; i++) {
+	for(cs_byte i = 0; i < len; i++) {
 		if(message[i] == '%' && ISHEX(message[i + 1]))
 			message[i] = '&';
 	}
@@ -723,7 +723,7 @@ void CPE_WriteRemoveName(Client *client, Client *other) {
 	PacketWriter_End(client, 3);
 }
 
-void CPE_WriteEnvColor(Client *client, cs_uint8 type, Color3* col) {
+void CPE_WriteEnvColor(Client *client, cs_byte type, Color3* col) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x19;
@@ -733,7 +733,7 @@ void CPE_WriteEnvColor(Client *client, cs_uint8 type, Color3* col) {
 	PacketWriter_End(client, 8);
 }
 
-void CPE_WriteMakeSelection(Client *client, cs_uint8 id, SVec *start, SVec *end, Color4* color) {
+void CPE_WriteMakeSelection(Client *client, cs_byte id, SVec *start, SVec *end, Color4* color) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1A;
@@ -746,7 +746,7 @@ void CPE_WriteMakeSelection(Client *client, cs_uint8 id, SVec *start, SVec *end,
 	PacketWriter_End(client, 86);
 }
 
-void CPE_WriteRemoveSelection(Client *client, cs_uint8 id) {
+void CPE_WriteRemoveSelection(Client *client, cs_byte id) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1B;
@@ -864,7 +864,7 @@ void CPE_WriteTexturePack(Client *client, cs_str url) {
 	PacketWriter_End(client, 65);
 }
 
-void CPE_WriteMapProperty(Client *client, cs_uint8 property, cs_int32 value) {
+void CPE_WriteMapProperty(Client *client, cs_byte property, cs_int32 value) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x29;
@@ -885,7 +885,7 @@ void CPE_WriteSetEntityProperty(Client *client, Client *other, cs_int8 type, cs_
 	PacketWriter_End(client, 7);
 }
 
-void CPE_WriteTwoWayPing(Client *client, cs_uint8 direction, cs_int16 num) {
+void CPE_WriteTwoWayPing(Client *client, cs_byte direction, cs_int16 num) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x2B;
@@ -969,7 +969,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_str data) {
 		return false;
 	}
 
-	tmp->hash = crc32(0, (cs_uint8*)tmp->name, (cs_uint32)String_Length(tmp->name));
+	tmp->hash = crc32(0, (cs_byte*)tmp->name, (cs_uint32)String_Length(tmp->name));
 	tmp->next = cpd->headExtension;
 	cpd->headExtension = tmp;
 
@@ -1007,7 +1007,7 @@ cs_bool CPEHandler_PlayerClick(Client *client, cs_str data) {
 cs_bool CPEHandler_TwoWayPing(Client *client, cs_str data) {
 	ValidateCpeClient(client, false);
 	CPEData *cpd = client->cpeData;
-	cs_uint8 pingDirection = *data++;
+	cs_byte pingDirection = *data++;
 	cs_uint16 pingData = *(cs_uint16 *)data;
 
 	if(pingDirection == 0) {

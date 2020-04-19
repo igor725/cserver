@@ -3,10 +3,6 @@
 #include "csmath.h"
 #include <math.h>
 
-#ifndef __GNUC__
-float Math_SqrtF(float x) { return sqrtf(x); }
-#endif
-
 float Math_Distance(Vec *v1, Vec *v2) {
 	float dx = (v1->x - v2->x),
 	dy = (v1->y - v2->y),

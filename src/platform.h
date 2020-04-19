@@ -49,7 +49,7 @@ enum {
 };
 
 typedef struct {
-	cs_uint8 state;
+	cs_byte state;
   char fmt[256];
   cs_str cfile;
   cs_bool isDir;
@@ -65,7 +65,7 @@ void Memory_Uninit(void);
 API void *Memory_Alloc(cs_size num, cs_size size);
 API void *Memory_Realloc(void *buf, cs_size old, cs_size new);
 API void  Memory_Copy(void *dst, const void *src, cs_size count);
-API void  Memory_Fill(void *dst, cs_size count, cs_uint8 val);
+API void  Memory_Fill(void *dst, cs_size count, cs_byte val);
 API void  Memory_Free(void *ptr);
 
 API cs_bool Iter_Init(dirIter *iter, cs_str path, cs_str ext);

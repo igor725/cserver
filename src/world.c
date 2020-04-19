@@ -90,7 +90,7 @@ void World_SetDimensions(World *world, const SVec *dims) {
 	world->wdata.size = dims->x * dims->y * dims->z;
 }
 
-cs_bool World_SetProperty(World *world, cs_uint8 property, cs_int32 value) {
+cs_bool World_SetProperty(World *world, cs_byte property, cs_int32 value) {
 	if(property > WORLD_PROPS_COUNT) return false;
 
 	world->modified = true;
@@ -100,7 +100,7 @@ cs_bool World_SetProperty(World *world, cs_uint8 property, cs_int32 value) {
 	return true;
 }
 
-cs_int32 World_GetProperty(World *world, cs_uint8 property) {
+cs_int32 World_GetProperty(World *world, cs_byte property) {
 	if(property > WORLD_PROPS_COUNT) return 0;
 	return world->info.props[property];
 }
@@ -134,7 +134,7 @@ cs_bool World_SetWeather(World *world, cs_int8 type) {
 	return true;
 }
 
-cs_bool World_SetEnvColor(World *world, cs_uint8 type, Color3* color) {
+cs_bool World_SetEnvColor(World *world, cs_byte type, Color3* color) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	world->info.modval |= MV_COLORS;
 	world->modified = true;
@@ -143,7 +143,7 @@ cs_bool World_SetEnvColor(World *world, cs_uint8 type, Color3* color) {
 	return true;
 }
 
-Color3* World_GetEnvColor(World *world, cs_uint8 type) {
+Color3* World_GetEnvColor(World *world, cs_byte type) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	return &world->info.colors[type];
 }
@@ -185,7 +185,7 @@ void World_Free(World *world) {
 	Memory_Free(world);
 }
 
-static cs_bool WriteWData(FILE *fp, cs_uint8 dataType, void *ptr, cs_int32 size) {
+static cs_bool WriteWData(FILE *fp, cs_byte dataType, void *ptr, cs_int32 size) {
 	return File_Write(&dataType, 1, 1, fp) && (size > 0 ? File_Write(ptr, size, 1, fp) : true);
 }
 
@@ -206,7 +206,7 @@ static cs_bool WriteInfo(World *world, FILE *fp) {
 }
 
 static cs_bool ReadInfo(World *world, FILE *fp) {
-	cs_uint8 id = 0;
+	cs_byte id = 0;
 	cs_uint32 magic = 0;
 	if(!File_Read(&magic, 4, 1, fp))
 		return false;

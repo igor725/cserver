@@ -118,7 +118,7 @@ cs_int32 Config_TypeNameToInt(cs_str name) {
 	return CFG_INVTYPE;
 }
 
-cs_bool Config_ToStr(CEntry *ent, char *value, cs_uint8 len) {
+cs_bool Config_ToStr(CEntry *ent, char *value, cs_byte len) {
 	switch (ent->type) {
 		case CFG_INT32:
 			String_FormatBuf(value, len, "%d", Config_GetInt32(ent));

@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 cs_bool String_CaselessCompare(cs_str str1, cs_str str2) {
-	cs_uint8 c1, c2;
+	cs_byte c1, c2;
 
 	while(true) {
 		c1 = *str1++, c2 = *str2++;
@@ -17,7 +17,7 @@ cs_bool String_CaselessCompare(cs_str str1, cs_str str2) {
 }
 
 cs_bool String_CaselessCompare2(cs_str str1, cs_str str2, cs_size len) {
-	cs_uint8 c1, c2;
+	cs_byte c1, c2;
 
 	while(len--) {
 		c1 = *str1++, c2 = *str2++;
@@ -30,7 +30,7 @@ cs_bool String_CaselessCompare2(cs_str str1, cs_str str2, cs_size len) {
 }
 
 cs_bool String_Compare(cs_str str1, cs_str str2) {
-	cs_uint8 c1, c2;
+	cs_byte c1, c2;
 
 	while(true) {
 		c1 = *str1++, c2 = *str2++;
@@ -176,7 +176,7 @@ size_t String_SizeOfB64(size_t inlen) {
 
 const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-cs_size String_ToB64(const cs_uint8 *src, cs_size len, char *dst) {
+cs_size String_ToB64(const cs_byte *src, cs_size len, char *dst) {
 	cs_size elen = String_SizeOfB64(len);
 	dst[elen] = '\0';
 

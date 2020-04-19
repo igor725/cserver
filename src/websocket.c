@@ -10,7 +10,7 @@
 
 cs_bool WsClient_DoHandshake(WsClient *ws) {
 	char line[1024], wskey[32], b64[30];
-	cs_uint8 hash[20];
+	cs_byte hash[20];
 	cs_bool haveUpgrade = false;
 	cs_int32 wskeylen = 0, rsplen = 0;
 
@@ -127,8 +127,8 @@ cs_bool WsClient_ReceiveFrame(WsClient *ws) {
 	return false;
 }
 
-cs_bool WsClient_SendFrame(WsClient *ws, cs_uint8 opcode, const char *buf, cs_uint16 len) {
-	cs_uint8 hdrlen = 2;
+cs_bool WsClient_SendFrame(WsClient *ws, cs_byte opcode, const char *buf, cs_uint16 len) {
+	cs_byte hdrlen = 2;
 	char hdr[4] = {0, 0, 0, 0};
 	hdr[0] = 0x80 | opcode;
 

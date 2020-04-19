@@ -3,9 +3,9 @@
 #include "str.h"
 #include "log.h"
 
-cs_uint8 Log_Level = LOG_ALL;
+cs_byte Log_Level = LOG_ALL;
 
-static cs_str getName(cs_uint8 flag) {
+static cs_str getName(cs_byte flag) {
 	switch(flag) {
 		case LOG_ERROR:
 			return "ERROR";
@@ -22,7 +22,7 @@ static cs_str getName(cs_uint8 flag) {
 }
 
 void Log_SetLevelStr(cs_str str) {
-	cs_uint8 level = LOG_ERROR;
+	cs_byte level = LOG_ERROR;
 
 	do {
 		switch (*str) {
@@ -47,7 +47,7 @@ void Log_SetLevelStr(cs_str str) {
 	Log_Level = level;
 }
 
-void Log_Print(cs_uint8 flag, cs_str str, va_list *args) {
+void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 	if(Log_Level & flag) {
 		char time[13], buf[8192];
 		Time_Format(time, 13);

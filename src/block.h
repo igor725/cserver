@@ -92,34 +92,34 @@ enum {
 typedef struct {
 	BlockID id;
 	cs_str name;
-	cs_uint8 flags;
+	cs_byte flags;
 	union {
 		struct _BlockParamsExt {
-			cs_uint8 solidity;
-			cs_uint8 moveSpeed;
-			cs_uint8 topTex, leftTex;
-			cs_uint8 rightTex, frontTex;
-			cs_uint8 backTex, bottomTex;
-			cs_uint8 transmitsLight;
-			cs_uint8 walkSound;
-			cs_uint8 fullBright;
-			cs_uint8 minX, minY, minZ;
-			cs_uint8 maxX, maxY, maxZ;
-			cs_uint8 blockDraw;
-			cs_uint8 fogDensity;
-			cs_uint8 fogR, fogG, fogB;
+			cs_byte solidity;
+			cs_byte moveSpeed;
+			cs_byte topTex, leftTex;
+			cs_byte rightTex, frontTex;
+			cs_byte backTex, bottomTex;
+			cs_byte transmitsLight;
+			cs_byte walkSound;
+			cs_byte fullBright;
+			cs_byte minX, minY, minZ;
+			cs_byte maxX, maxY, maxZ;
+			cs_byte blockDraw;
+			cs_byte fogDensity;
+			cs_byte fogR, fogG, fogB;
 		} ext;
 		struct _BlockParams {
-			cs_uint8 solidity;
-			cs_uint8 moveSpeed;
-			cs_uint8 topTex, sideTex, bottomTex;
-			cs_uint8 transmitsLight;
-			cs_uint8 walkSound;
-			cs_uint8 fullBright;
-			cs_uint8 shape;
-			cs_uint8 blockDraw;
-			cs_uint8 fogDensity;
-			cs_uint8 fogR, fogG, fogB;
+			cs_byte solidity;
+			cs_byte moveSpeed;
+			cs_byte topTex, sideTex, bottomTex;
+			cs_byte transmitsLight;
+			cs_byte walkSound;
+			cs_byte fullBright;
+			cs_byte shape;
+			cs_byte blockDraw;
+			cs_byte fogDensity;
+			cs_byte fogR, fogG, fogB;
 		} nonext;
 	} params;
 } BlockDef;
@@ -128,8 +128,8 @@ typedef struct {
 	World *world;
 	cs_bool autosend;
 	struct _BBUData {
-		cs_uint8 count;
-		cs_uint8 offsets[1024];
+		cs_byte count;
+		cs_byte offsets[1024];
 		BlockID ids[256];
 	} data;
 } BulkBlockUpdate;
@@ -138,7 +138,7 @@ BlockDef *Block_DefinitionsList[255];
 API cs_bool Block_IsValid(BlockID id);
 API cs_str Block_GetName(BlockID id);
 
-API BlockDef *Block_New(BlockID id, cs_str name, cs_uint8 flags);
+API BlockDef *Block_New(BlockID id, cs_str name, cs_byte flags);
 API cs_bool Block_Define(BlockDef *bdef);
 API cs_bool Block_Undefine(BlockID id);
 API void Block_UpdateDefinitions();

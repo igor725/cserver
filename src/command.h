@@ -78,13 +78,13 @@ typedef struct {
 typedef cs_bool(*cmdFunc)(CommandCallData *cdata);
 
 typedef struct _Command {
-	const char *alias;
-	cs_uint8 flags;
+	cs_str alias;
 	cmdFunc func;
 	void *data;
+	cs_byte flags;
 } Command;
 
-API Command *Command_Register(cs_str name, cmdFunc func, cs_uint8 flags);
+API Command *Command_Register(cs_str name, cmdFunc func, cs_byte flags);
 API void Command_SetAlias(Command *cmd, cs_str alias);
 API Command *Command_GetByName(cs_str name);
 API void Command_Unregister(Command *cmd);

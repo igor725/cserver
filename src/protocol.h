@@ -59,7 +59,7 @@ return;
 typedef cs_bool(*packetHandler)(Client *client, cs_str data);
 
 typedef struct {
-	cs_uint8 id;
+	cs_byte id;
 	cs_uint16 size;
 	cs_bool haveCPEImp;
 	cs_uint32 exthash;
@@ -69,12 +69,12 @@ typedef struct {
 	packetHandler cpeHandler;
 } Packet;
 
-Packet *Packet_Get(cs_uint8 id);
-API void Packet_Register(cs_uint8 id, cs_uint16 size, packetHandler handler);
-API void Packet_RegisterCPE(cs_uint8 id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler);
+Packet *Packet_Get(cs_byte id);
+API void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler);
+API void Packet_RegisterCPE(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler);
 
-API cs_uint8 Proto_ReadString(cs_str *data, cs_str *dstptr);
-API cs_uint8 Proto_ReadStringNoAlloc(cs_str *data, char *dst);
+API cs_byte Proto_ReadString(cs_str *data, cs_str *dstptr);
+API cs_byte Proto_ReadStringNoAlloc(cs_str *data, char *dst);
 API void Proto_ReadSVec(cs_str *dataptr, SVec *vec);
 API void Proto_ReadAng(cs_str *dataptr, Ang *ang);
 API void Proto_ReadFlSVec(cs_str *dataptr, Vec *vec);
@@ -107,7 +107,7 @@ void Vanilla_WriteSpawn(Client *client, Client *other);
 void Vanilla_WriteTeleport(Client *client, Vec *pos, Ang *ang);
 void Vanilla_WritePosAndOrient(Client *client, Client *other);
 void Vanilla_WriteDespawn(Client *client, Client *other);
-void Vanilla_WriteChat(Client *client, cs_uint8 type, cs_str mesg);
+void Vanilla_WriteChat(Client *client, cs_byte type, cs_str mesg);
 void Vanilla_WriteKick(Client *client, cs_str reason);
 
 cs_bool Handler_Handshake(Client *client, cs_str data);
@@ -139,9 +139,9 @@ void CPE_WriteSetHotKey(Client *client, cs_str action, cs_int32 keycode, cs_int8
 void CPE_WriteAddName(Client *client, Client *other);
 void CPE_WriteAddEntity2(Client *client, Client *other);
 void CPE_WriteRemoveName(Client *client, Client *other);
-void CPE_WriteEnvColor(Client *client, cs_uint8 type, Color3* col);
-void CPE_WriteMakeSelection(Client *client, cs_uint8 id, SVec *start, SVec *end, Color4* color);
-void CPE_WriteRemoveSelection(Client *client, cs_uint8 id);
+void CPE_WriteEnvColor(Client *client, cs_byte type, Color3* col);
+void CPE_WriteMakeSelection(Client *client, cs_byte id, SVec *start, SVec *end, Color4* color);
+void CPE_WriteRemoveSelection(Client *client, cs_byte id);
 void CPE_WriteHackControl(Client *client, CPEHacks *hacks);
 void CPE_WriteDefineBlock(Client *client, BlockDef *block);
 void CPE_WriteUndefineBlock(Client *client, BlockID id);
@@ -153,9 +153,9 @@ void CPE_WriteSetSpawnPoint(Client *client, Vec *pos, Ang *ang);
 void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_bool mode);
 void CPE_WriteWeatherType(Client *client, cs_int8 type);
 void CPE_WriteTexturePack(Client *client, cs_str url);
-void CPE_WriteMapProperty(Client *client, cs_uint8 property, cs_int32 value);
+void CPE_WriteMapProperty(Client *client, cs_byte property, cs_int32 value);
 void CPE_WriteSetEntityProperty(Client *client, Client *other, cs_int8 type, cs_int32 value);
-void CPE_WriteTwoWayPing(Client *client, cs_uint8 direction, cs_int16 num);
+void CPE_WriteTwoWayPing(Client *client, cs_byte direction, cs_int16 num);
 void CPE_WriteSetModel(Client *client, Client *other);
 void CPE_WriteBlockPerm(Client *client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy);
 #endif // PROTOCOL_H

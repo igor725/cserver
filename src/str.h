@@ -22,5 +22,5 @@ API cs_int32 String_ToInt(cs_str str);
 API cs_int32 String_HexToInt(cs_str str);
 API float String_ToFloat(cs_str str);
 API cs_size String_SizeOfB64(cs_size inlen);
-API cs_size String_ToB64(const cs_uint8 *src, cs_size len, char *dst);
+API cs_size String_ToB64(const cs_byte *src, cs_size len, char *dst);
 #endif // STR_H

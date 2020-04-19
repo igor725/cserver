@@ -45,7 +45,7 @@ cs_str Block_GetName(BlockID id) {
 		return defaultBlockNames[id];
 }
 
-BlockDef *Block_New(BlockID id, cs_str name, cs_uint8 flags) {
+BlockDef *Block_New(BlockID id, cs_str name, cs_byte flags) {
 	BlockDef *bdef = Memory_Alloc(1, sizeof(BlockDef));
 	bdef->name = String_AllocCopy(name);
 	bdef->flags = BDF_DYNALLOCED | flags;
@@ -106,7 +106,7 @@ cs_bool Block_BulkUpdateAdd(BulkBlockUpdate *bbu, cs_uint32 offset, BlockID id) 
 			Block_BulkUpdateClean(bbu);
 		} else return false;
 	}
-	cs_uint8 bcount = bbu->data.count++;
+	cs_byte bcount = bbu->data.count++;
 	((cs_uint32 *)bbu->data.offsets)[bcount] = htonl(offset);
 	bbu->data.ids[bcount] = id;
 	return true;

@@ -60,8 +60,8 @@ void Memory_Free(void *ptr) {
 #endif
 
 void Memory_Copy(void *dst, const void *src, cs_size count) {
-	cs_uint8 *u8dst = (cs_uint8 *)dst;
-	cs_uint8 *u8src = (cs_uint8 *)src;
+	cs_byte *u8dst = (cs_byte *)dst;
+	cs_byte *u8src = (cs_byte *)src;
 
 	while(count > 0) {
 		*u8dst++ = *u8src++;
@@ -69,8 +69,8 @@ void Memory_Copy(void *dst, const void *src, cs_size count) {
 	}
 }
 
-void Memory_Fill(void *dst, cs_size count, cs_uint8 val) {
-	cs_uint8 *u8dst = (cs_uint8 *)dst;
+void Memory_Fill(void *dst, cs_size count, cs_byte val) {
+	cs_byte *u8dst = (cs_byte *)dst;
 
 	while(count > 0) {
 		*u8dst++ = val;

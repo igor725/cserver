@@ -14,7 +14,7 @@
 
 KListField *headCmd = NULL;
 
-Command *Command_Register(cs_str name, cmdFunc func, cs_uint8 flags) {
+Command *Command_Register(cs_str name, cmdFunc func, cs_byte flags) {
 	if(Command_GetByName(name)) return NULL;
 	Command *tmp = Memory_Alloc(1, sizeof(Command));
 	tmp->flags = flags;

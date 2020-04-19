@@ -65,8 +65,8 @@ static void DoRequest() {
 
 	cs_uint16 port = Config_GetInt16ByKey(Server_Config, CFG_SERVERPORT_KEY);
 	cs_bool public = Config_GetBoolByKey(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
-	cs_uint8 max = Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
-	cs_uint8 count = Clients_GetCount(STATE_INGAME);
+	cs_byte max = Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
+	cs_byte count = Clients_GetCount(STATE_INGAME);
 	String_FormatBuf(reqstr, 512, HBEAT_URL,
 		name, port, count,
 		max, Secret,
@@ -105,7 +105,7 @@ cs_bool Heartbeat_CheckKey(Client *client) {
 	cs_str name =  client->playerData->name;
 
 	MD5_CTX ctx;
-	cs_uint8 hash[16];
+	cs_byte hash[16];
 	char hash_hex[16 * 2 + 1];
 
 	MD5_Init(&ctx);
@@ -114,7 +114,7 @@ cs_bool Heartbeat_CheckKey(Client *client) {
 	MD5_Final(hash, &ctx);
 
 	for(cs_int32 i = 0; i < 16; i++) {
-		cs_uint8 b = hash[i];
+		cs_byte b = hash[i];
 		hash_hex[i * 2] = hexchars[b >> 4];
 		hash_hex[i * 2 + 1] = hexchars[b & 0xF];
 	}

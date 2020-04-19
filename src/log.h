@@ -10,7 +10,7 @@ enum {
 	LOG_ALL = 0x0F
 };
 
-void Log_Print(cs_uint8 flag, cs_str str, va_list *args);
+void Log_Print(cs_byte flag, cs_str str, va_list *args);
 
 API void Log_Error(cs_str str, ...);
 API void Log_Info(cs_str str, ...);
@@ -19,5 +19,5 @@ API void Log_Warn(cs_str str, ...);
 API void Log_Debug(cs_str str, ...);
 
 API void Log_SetLevelStr(cs_str str);
-VAR cs_uint8 Log_Level;
+VAR cs_byte Log_Level;
 #endif // LOG_H

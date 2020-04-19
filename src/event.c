@@ -70,7 +70,7 @@ cs_bool Event_Call(cs_uint32 type, void *param) {
 	return ret;
 }
 
-cs_bool Event_OnMessage(Client *client, char *message, cs_uint8 *type) {
+cs_bool Event_OnMessage(Client *client, char *message, cs_byte *type) {
 	onMessage params;
 	params.client = client;
 	params.message = message;
@@ -78,7 +78,7 @@ cs_bool Event_OnMessage(Client *client, char *message, cs_uint8 *type) {
 	return Event_Call(EVT_ONMESSAGE, &params);
 }
 
-cs_bool Event_OnBlockPlace(Client *client, cs_uint8 mode, SVec *pos, BlockID *id) {
+cs_bool Event_OnBlockPlace(Client *client, cs_byte mode, SVec *pos, BlockID *id) {
 	onBlockPlace params;
 	params.client = client;
 	params.mode = mode;

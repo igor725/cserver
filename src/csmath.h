@@ -5,7 +5,7 @@
 #ifdef __GNUC__
 #define Math_SqrtF(x) __builtin_sqrtf(x)
 #else
-API float Math_SqrtF(float x);
+#define Math_SqrtF(x) sqrtf(x)
 #endif
 
 API float Math_Distance(Vec *v1, Vec *v2);

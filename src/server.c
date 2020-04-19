@@ -34,7 +34,7 @@ THREAD_FUNC(ClientInitThread) {
 		}
 	}
 
-	cs_uint8 attempt = 0;
+	cs_byte attempt = 0;
 	while(attempt < 5) {
 		if(Socket_Receive(tmp->sock, tmp->rdbuf, 5, MSG_PEEK) == 5) {
 			if(String_CaselessCompare(tmp->rdbuf, "GET /")) {

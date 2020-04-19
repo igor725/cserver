@@ -12,8 +12,8 @@
 #include "lang.h"
 #include <zlib.h>
 
-AListField *headAssocType = NULL;
-AListField *headCGroup = NULL;
+AListField *headAssocType = NULL,
+*headCGroup = NULL;
 
 AListField *AGetType(cs_uint16 type) {
 	AListField *ptr = NULL;
@@ -77,7 +77,7 @@ cs_bool Assoc_Remove(Client *client, cs_uint16 type, cs_bool freeData) {
 	return true;
 }
 
-CGroup *Group_Add(cs_int16 gid, cs_str gname, cs_uint8 grank) {
+CGroup *Group_Add(cs_int16 gid, cs_str gname, cs_byte grank) {
 	CGroup *gptr = Group_GetByID(gid);
 	if(!gptr) {
 		gptr = Memory_Alloc(1, sizeof(CGroup));
@@ -123,8 +123,8 @@ cs_bool Group_Remove(cs_int16 gid) {
 	return true;
 }
 
-cs_uint8 Clients_GetCount(cs_int32 state) {
-	cs_uint8 count = 0;
+cs_byte Clients_GetCount(cs_int32 state) {
+	cs_byte count = 0;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
 		if(!client) continue;
@@ -284,7 +284,7 @@ THREAD_FUNC(WorldSendThread) {
 
 	Vanilla_WriteLvlInit(client);
 	Mutex_Lock(client->mutex);
-	cs_uint8 *data = (cs_uint8 *)client->wrbuf;
+	cs_byte *data = (cs_byte *)client->wrbuf;
 
 	*data++ = 0x03;
 	cs_uint16 *len = (cs_uint16 *)data++;
@@ -380,12 +380,12 @@ void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 	*/
 	if(!client->cpeData) return;
 	WorldInfo *wi = &world->info;
-	cs_uint8 modval = wi->modval;
+	cs_byte modval = wi->modval;
 	cs_uint16 modprop = wi->modprop;
-	cs_uint8 modclr = wi->modclr;
+	cs_byte modclr = wi->modclr;
 
 	if(updateAll || modval & MV_COLORS) {
-		for(cs_uint8 color = 0; color < WORLD_COLORS_COUNT; color++) {
+		for(cs_byte color = 0; color < WORLD_COLORS_COUNT; color++) {
 			if(updateAll || modclr & (2 ^ color))
 				Client_SetEnvColor(client, color, World_GetEnvColor(world, color));
 		}
@@ -393,7 +393,7 @@ void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 	if(updateAll || modval & MV_TEXPACK)
 		Client_SetTexturePack(client, wi->texturepack);
 	if(updateAll || modval & MV_PROPS) {
-		for(cs_uint8 prop = 0; prop < WORLD_PROPS_COUNT; prop++) {
+		for(cs_byte prop = 0; prop < WORLD_PROPS_COUNT; prop++) {
 			if(updateAll || modprop & (2 ^ prop))
 				Client_SetEnvProperty(client, prop, World_GetProperty(world, prop));
 		}
@@ -402,7 +402,7 @@ void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 		Client_SetWeather(client, wi->weatherType);
 }
 
-cs_bool Client_MakeSelection(Client *client, cs_uint8 id, SVec *start, SVec *end, Color4* color) {
+cs_bool Client_MakeSelection(Client *client, cs_byte id, SVec *start, SVec *end, Color4* color) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
 		CPE_WriteMakeSelection(client, id, start, end, color);
 		return true;
@@ -410,7 +410,7 @@ cs_bool Client_MakeSelection(Client *client, cs_uint8 id, SVec *start, SVec *end
 	return false;
 }
 
-cs_bool Client_RemoveSelection(Client *client, cs_uint8 id) {
+cs_bool Client_RemoveSelection(Client *client, cs_byte id) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
 		CPE_WriteRemoveSelection(client, id);
 		return true;
@@ -455,7 +455,7 @@ static cs_uint32 copyMessagePart(cs_str msg, char *part, cs_uint32 i, char *colo
 	return len;
 }
 
-void Client_Chat(Client *client, cs_uint8 type, cs_str message) {
+void Client_Chat(Client *client, cs_byte type, cs_str message) {
 	cs_uint32 msgLen = (cs_uint32)String_Length(message);
 
 	if(msgLen > 62 && type == MT_CHAT) {
@@ -536,7 +536,7 @@ cs_bool Client_SetBlock(Client *client, SVec *pos, BlockID id) {
 	return true;
 }
 
-cs_bool Client_SetEnvProperty(Client *client, cs_uint8 property, cs_int32 value) {
+cs_bool Client_SetEnvProperty(Client *client, cs_byte property, cs_int32 value) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
 		CPE_WriteMapProperty(client, property, value);
 		return true;
@@ -544,7 +544,7 @@ cs_bool Client_SetEnvProperty(Client *client, cs_uint8 property, cs_int32 value)
 	return false;
 }
 
-cs_bool Client_SetEnvColor(Client *client, cs_uint8 type, Color3* color) {
+cs_bool Client_SetEnvColor(Client *client, cs_byte type, Color3* color) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
 		CPE_WriteEnvColor(client, type, color);
 		return true;
@@ -648,7 +648,7 @@ cs_bool Client_SetVelocity(Client *client, Vec *velocity, cs_bool mode) {
 	return false;
 }
 
-cs_bool Client_SetRotation(Client *client, cs_uint8 axis, cs_int32 value) {
+cs_bool Client_SetRotation(Client *client, cs_byte axis, cs_int32 value) {
 	if(axis > 2) return false;
 	CPEData *cpd = client->cpeData;
 	if(!cpd) return false;
@@ -723,7 +723,7 @@ cs_bool Client_AddTextColor(Client *client, Color4* color, char code) {
 cs_bool Client_Update(Client *client) {
 	CPEData *cpd = client->cpeData;
 	if(!cpd) return false;
-	cs_uint8 updates = cpd->updates;
+	cs_byte updates = cpd->updates;
 	if(updates == PCU_NONE) return false;
 	cpd->updates = PCU_NONE;
 
@@ -814,7 +814,7 @@ cs_int32 Client_Send(Client *client, cs_int32 len) {
 }
 
 static void PacketReceiverWs(Client *client) {
-	cs_uint8 packetId;
+	cs_byte packetId;
 	Packet *packet;
 	cs_bool extended;
 	cs_uint16 packetSize, recvSize;
@@ -865,7 +865,7 @@ static void PacketReceiverRaw(Client *client) {
 	Packet *packet;
 	cs_bool extended;
 	cs_uint16 packetSize;
-	cs_uint8 packetId;
+	cs_byte packetId;
 
 	if(Socket_Receive(client->sock, (char *)&packetId, 1, MSG_WAITALL) == 1) {
 		packet = Packet_Get(packetId);
