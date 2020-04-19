@@ -38,11 +38,11 @@ THREAD_FUNC(ClientInitThread) {
 	while(attempt < 5) {
 		if(Socket_Receive(tmp->sock, tmp->rdbuf, 5, MSG_PEEK) == 5) {
 			if(String_CaselessCompare(tmp->rdbuf, "GET /")) {
-				WsClient *wscl = Memory_Alloc(1, sizeof(WsClient));
+				WebSock *wscl = Memory_Alloc(1, sizeof(WebSock));
 				wscl->recvbuf = tmp->rdbuf;
 				wscl->sock = tmp->sock;
 				tmp->websock = wscl;
-				if(WsClient_DoHandshake(wscl))
+				if(WebSock_DoHandshake(wscl))
 					goto client_ok;
 				else break;
 			} else goto client_ok;

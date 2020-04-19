@@ -164,14 +164,11 @@ cs_size String_GetArgument(cs_str args, char *arg, cs_size len, cs_int32 index) 
 }
 
 size_t String_SizeOfB64(size_t inlen) {
-	size_t ret = inlen;
-
 	if (inlen % 3 != 0)
-		ret += 3 - (inlen % 3);
-	ret /= 3;
-	ret *= 4;
-
-	return ret;
+		inlen += 3 - (inlen % 3);
+	inlen /= 3;
+	inlen *= 4;
+	return inlen;
 }
 
 const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

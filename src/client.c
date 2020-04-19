@@ -220,7 +220,7 @@ cs_int8 Client_GetFluidLevel(Client *client) {
 	return 0;
 }
 
-static CGroup dgroup = {-1, "", 0, NULL};
+static CGroup dgroup = {-1, 0, "", NULL};
 
 CGroup *Client_GetGroup(Client *client) {
 	if(!client->cpeData) return &dgroup;
@@ -798,7 +798,7 @@ cs_int32 Client_Send(Client *client, cs_int32 len) {
 			if(bClient && !bClient->closed) {
 				Mutex_Lock(bClient->mutex);
 				if(bClient->websock)
-					WsClient_SendFrame(bClient->websock, 0x02, client->wrbuf, (cs_uint16)len);
+					WebSock_SendFrame(bClient->websock, 0x02, client->wrbuf, (cs_uint16)len);
 				else
 					Socket_Send(client->sock, client->wrbuf, len);
 				Mutex_Unlock(bClient->mutex);
@@ -808,7 +808,7 @@ cs_int32 Client_Send(Client *client, cs_int32 len) {
 	}
 
 	if(client->websock)
-		return WsClient_SendFrame(client->websock, 0x02, client->wrbuf, (cs_uint16)len);
+		return WebSock_SendFrame(client->websock, 0x02, client->wrbuf, (cs_uint16)len);
 	else
 		return Socket_Send(client->sock, client->wrbuf, len);
 }
@@ -818,10 +818,10 @@ static void PacketReceiverWs(Client *client) {
 	Packet *packet;
 	cs_bool extended;
 	cs_uint16 packetSize, recvSize;
-	WsClient *ws = client->websock;
+	WebSock *ws = client->websock;
 	char *data = client->rdbuf;
 
-	if(WsClient_ReceiveFrame(ws)) {
+	if(WebSock_ReceiveFrame(ws)) {
 		if(ws->opcode == 0x08) {
 			client->closed = true;
 			return;

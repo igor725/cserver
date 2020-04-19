@@ -18,17 +18,17 @@ enum {
 
 typedef struct {
 	Socket sock;
-	cs_int32 state;
-	cs_int32 error;
-	char *recvbuf;
-	char header[2];
-	char mask[4];
+	char *recvbuf,
+	header[2],
+	mask[4];
+	cs_int32 state,
+	error;
 	cs_uint16 plen;
 	cs_byte opcode;
 	cs_bool done;
-} WsClient;
+} WebSock;
 
-API cs_bool WsClient_DoHandshake(WsClient *ws);
-API cs_bool WsClient_ReceiveFrame(WsClient *ws);
-API cs_bool WsClient_SendFrame(WsClient *ws, cs_byte opcode, const char *buf, cs_uint16 len);
+cs_bool WebSock_DoHandshake(WebSock *ws);
+cs_bool WebSock_ReceiveFrame(WebSock *ws);
+cs_bool WebSock_SendFrame(WebSock *ws, cs_byte opcode, const char *buf, cs_uint16 len);
 #endif // WEBSOCKET_H

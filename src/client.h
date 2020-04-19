@@ -41,62 +41,62 @@ enum {
 
 typedef struct _CGroup {
 	cs_int16 id;
-	cs_str name;
 	cs_byte rank;
+	cs_str name;
 	AListField *field;
 } CGroup;
 
 typedef struct {
-	cs_bool flying, noclip, speeding;
-	cs_bool spawnControl, tpv;
+	cs_bool flying, noclip, speeding,
+	spawnControl, tpv;
 	cs_int16 jumpHeight;
 } CPEHacks;
 
 typedef struct {
 	CPEExt headExtension; // Список дополнений клиента
-	cs_str appName; // Название игрового клиента
-	cs_str skin; // Скин игрока, может быть NULL [ExtPlayerList]
-	cs_bool hideDisplayName; // Будет ли ник игрока скрыт [ExtPlayerList]
-	cs_int32 rotation[3]; // Вращение модели игрока в градусах [EntityProperty]
+	cs_str appName, // Название игрового клиента
+	skin; // Скин игрока, может быть NULL [ExtPlayerList]
 	char *message; // Используется для получения длинных сообщений [LongerMessages]
 	BlockID heldBlock; // Выбранный игроком блок в данный момент [HeldBlock]
-	cs_int16 _extCount; // Переменная используется при получении списка дополнений
-	cs_int16 model; // Текущая модель игрока [ChangeModel]
-	cs_int16 group; // Текущая группа игрока [ExtPlayerList]
-	cs_bool pingStarted; // Начат ли процесс пингования [TwoWayPing]
-	cs_uint16 pingData; // Данные, цепляемые к пинг-запросу
-	cs_uint64 pingStart; // Время начала пинг-запроса
-	cs_uint32 pingTime; // Сам пинг, в миллисекундах
 	cs_int8 updates; // Обновлённые значения игрока
+	cs_bool hideDisplayName, // Будет ли ник игрока скрыт [ExtPlayerList]
+	pingStarted; // Начат ли процесс пингования [TwoWayPing]
+	cs_int16 _extCount, // Переменная используется при получении списка дополнений
+	model, // Текущая модель игрока [ChangeModel]
+	group; // Текущая группа игрока [ExtPlayerList]
+	cs_uint16 pingData; // Данные, цепляемые к пинг-запросу
+	cs_uint32 pingTime; // Сам пинг, в миллисекундах
+	cs_int32 rotation[3]; // Вращение модели игрока в градусах [EntityProperty]
+	cs_uint64 pingStart; // Время начала пинг-запроса
 } CPEData;
 
 typedef struct {
 	cs_int32 state; // Текущее состояние игрока
-	cs_str key; // Ключ, полученный от игрока
-	cs_str name; // Имя игрока
+	cs_str key, // Ключ, полученный от игрока
+	name; // Имя игрока
 	World *world; // Мир, в котором игрок обитает
 	Vec position; // Позиция игрока
 	Ang angle; // Угол вращения игрока
-	cs_bool isOP; // Является ли игрок оператором
-	cs_bool spawned; // Заспавнен ли игрок
-	cs_bool firstSpawn; // Был лы этот спавн первым с момента захода на сервер
+	cs_bool isOP, // Является ли игрок оператором
+	spawned, // Заспавнен ли игрок
+	firstSpawn; // Был лы этот спавн первым с момента захода на сервер
 } PlayerData;
 
 typedef struct {
+	cs_bool closed; // В случае значения true сервер прекращает общение с клиентом и удаляет его
+	Socket sock; // Файловый дескриптор сокета клиента
 	ClientID id; // Используется в качестве entityid
 	void *thread[2]; // Потоки клиента
 	CPEData *cpeData; // В случае vanilla клиента эта структура не создаётся
 	PlayerData *playerData; // Создаётся при получении hanshake пакета
 	KListField *headNode; // Последняя созданная ассоциативная нода у клиента
-	WsClient *websock; // Создаётся, если клиент был определён как браузерный
+	WebSock *websock; // Создаётся, если клиент был определён как браузерный
 	Mutex *mutex; // Мьютекс записи, на время отправки пакета клиенту он лочится
-	cs_bool closed; // В случае значения true сервер прекращает общение с клиентом и удаляет его
-	cs_uint32 addr; // ipv4 адрес клиента
-	Socket sock; // Файловый дескриптор сокета клиента
-	char *rdbuf; // Буфер для получения пакетов от клиента
-	char *wrbuf; // Буфер для отправки пакетов клиенту
-	cs_uint32 pps; // Количество пакетов, отправленных игроком за секунду
-	cs_uint32 ppstm; // Таймер для счётчика пакетов
+	char *rdbuf, // Буфер для получения пакетов от клиента
+	*wrbuf; // Буфер для отправки пакетов клиенту
+	cs_uint32 pps, // Количество пакетов, отправленных игроком за секунду
+	ppstm, // Таймер для счётчика пакетов
+	addr; // ipv4 адрес клиента
 } Client;
 
 cs_int32 Client_Send(Client *client, cs_int32 len);

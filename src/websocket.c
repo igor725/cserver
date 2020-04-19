@@ -8,7 +8,7 @@
 #define WS_RESP "HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Protocol: ClassiCube\r\nSec-WebSocket-Accept: %s\r\n\r\n"
 #define WS_ERRRESP "HTTP/1.1 %d %s\r\nConnection: Close\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s"
 
-cs_bool WsClient_DoHandshake(WsClient *ws) {
+cs_bool WebSock_DoHandshake(WebSock *ws) {
 	char line[1024], wskey[32], b64[30];
 	cs_byte hash[20];
 	cs_bool haveUpgrade = false;
@@ -57,7 +57,7 @@ cs_bool WsClient_DoHandshake(WsClient *ws) {
 	return false;
 }
 
-cs_bool WsClient_ReceiveFrame(WsClient *ws) {
+cs_bool WebSock_ReceiveFrame(WebSock *ws) {
 	if(ws->state == WS_ST_DONE)
 		ws->state = WS_ST_HDR;
 
@@ -127,7 +127,7 @@ cs_bool WsClient_ReceiveFrame(WsClient *ws) {
 	return false;
 }
 
-cs_bool WsClient_SendFrame(WsClient *ws, cs_byte opcode, const char *buf, cs_uint16 len) {
+cs_bool WebSock_SendFrame(WebSock *ws, cs_byte opcode, const char *buf, cs_uint16 len) {
 	cs_byte hdrlen = 2;
 	char hdr[4] = {0, 0, 0, 0};
 	hdr[0] = 0x80 | opcode;
