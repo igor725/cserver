@@ -11,7 +11,7 @@ ROOT="."
 CC="$CC -fdiagnostics-color=always"
 LNK="$CC -rdynamic"
 CFLAGS="-pipe -fPIC"
-LIBS="-lpthread -ldl -lcrypto -lcurl -lz -lm"
+LIBS="-lm"
 OUTBIN="server"
 COMMIT_SHA="-DGIT_COMMIT_SHA=\"$(git rev-parse --short HEAD)\""
 PLUGIN_BUILD=0
@@ -100,6 +100,10 @@ done
 for pid in ${pids[@]}; do
 	dowait $pid
 done
+
+if [ $PLUGIN_BUILD -eq 0 ]; then
+	LIBS="$LIBS -lpthread -ldl -lcrypto -lcurl -lz"
+fi
 
 echo -ne "done\nLinking..."
 $LNK -o "$OUTDIR/$OUTBIN" $LIBS $OBJS 2>> $STDERR
