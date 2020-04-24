@@ -1,6 +1,6 @@
 #ifndef LIST_H
 #define LIST_H
-typedef struct AListField {
+typedef struct _AListField {
 	union {
 		cs_byte num8;
 		cs_uint16 num16;
@@ -9,11 +9,10 @@ typedef struct AListField {
 		cs_str str;
 		void *ptr;
 	} value;
-	struct AListField *next;
-	struct AListField *prev;
+	struct _AListField *next, *prev;
 } AListField;
 
-typedef struct KListField {
+typedef struct _KListField {
 	union {
 		cs_byte num8;
 		cs_uint16 num16;
@@ -30,8 +29,7 @@ typedef struct KListField {
 		cs_str str;
 		void *ptr;
 	} value;
-	struct KListField *next;
-	struct KListField *prev;
+	struct _KListField *next, *prev;
 } KListField;
 
 #define List_Iter(field, head) \

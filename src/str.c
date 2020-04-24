@@ -57,19 +57,19 @@ cs_size String_Length(cs_str str) {
 	return s - str;
 }
 
-cs_size String_Append(char *dst, cs_size len, cs_str src) {
+cs_size String_Append(cs_char *dst, cs_size len, cs_str src) {
 	cs_size curr_len = String_Length(dst);
 	return String_Copy(dst + curr_len, len - curr_len, src);
 }
 
-char *String_Grow(char *src, cs_size add, cs_size *new) {
+cs_char *String_Grow(cs_char *src, cs_size add, cs_size *new) {
 	cs_size curr = String_Length(src),
 	newp = curr + add + 1;
 	if(new) *new = newp;
 	return Memory_Realloc(src, curr, newp);
 }
 
-cs_size String_Copy(char *dst, cs_size len, cs_str src) {
+cs_size String_Copy(cs_char *dst, cs_size len, cs_str src) {
 	cs_size avail = len;
 
 	while(avail > 1 && (*dst++ = *src++) != '\0') avail--;
@@ -78,7 +78,7 @@ cs_size String_Copy(char *dst, cs_size len, cs_str src) {
 	return len - avail;
 }
 
-cs_uint32 String_FormatError(cs_uint32 code, char *buf, cs_size buflen, va_list *args) {
+cs_uint32 String_FormatError(cs_uint32 code, cs_char *buf, cs_size buflen, va_list *args) {
 #if defined(WINDOWS)
 	cs_int32 len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, (cs_uint32)buflen, args);
 	if(len > 0) {
@@ -96,7 +96,7 @@ cs_uint32 String_FormatError(cs_uint32 code, char *buf, cs_size buflen, va_list 
 #endif
 }
 
-cs_int32 String_FormatBufVararg(char *buf, cs_size len, cs_str str, va_list *args) {
+cs_int32 String_FormatBufVararg(cs_char *buf, cs_size len, cs_str str, va_list *args) {
 #if defined(WINDOWS)
 	return vsprintf_s(buf, len, str, *args);
 #elif defined(POSIX)
@@ -104,7 +104,7 @@ cs_int32 String_FormatBufVararg(char *buf, cs_size len, cs_str str, va_list *arg
 #endif
 }
 
-cs_int32 String_FormatBuf(char *buf, cs_size len, cs_str str, ...) {
+cs_int32 String_FormatBuf(cs_char *buf, cs_size len, cs_str str, ...) {
 	cs_int32 wrlen;
 	va_list args;
 	va_start(args, str);
@@ -113,21 +113,21 @@ cs_int32 String_FormatBuf(char *buf, cs_size len, cs_str str, ...) {
 	return wrlen;
 }
 
-cs_str String_LastChar(cs_str str, char sym) {
+cs_str String_LastChar(cs_str str, cs_char sym) {
 	return strrchr(str, sym);
 }
 
-cs_str String_FirstChar(cs_str str, char sym) {
+cs_str String_FirstChar(cs_str str, cs_char sym) {
 	return strchr(str, sym);
 }
 
-char *String_FindSubstr(cs_str str, cs_str strsrch) {
+cs_char *String_FindSubstr(cs_str str, cs_str strsrch) {
 	return strstr(str, strsrch);
 }
 
 cs_str String_AllocCopy(cs_str str) {
 	cs_size len = String_Length(str) + 1;
-	char *ptr = Memory_Alloc(1, len);
+	cs_char *ptr = Memory_Alloc(1, len);
 	String_Copy(ptr, len, str);
 	return (cs_str)ptr;
 }
@@ -143,7 +143,7 @@ cs_str String_FromArgument(cs_str args, cs_int32 index) {
 	return NULL;
 }
 
-cs_size String_GetArgument(cs_str args, char *arg, cs_size len, cs_int32 index) {
+cs_size String_GetArgument(cs_str args, cs_char *arg, cs_size len, cs_int32 index) {
 	if(len == 0 || args == NULL) return 0;
 	cs_size avail = len;
 
@@ -171,9 +171,9 @@ size_t String_SizeOfB64(size_t inlen) {
 	return inlen;
 }
 
-const char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+const cs_char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-cs_size String_ToB64(const cs_byte *src, cs_size len, char *dst) {
+cs_size String_ToB64(const cs_byte *src, cs_size len, cs_char *dst) {
 	cs_size elen = String_SizeOfB64(len);
 	dst[elen] = '\0';
 

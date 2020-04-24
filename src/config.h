@@ -48,7 +48,7 @@ typedef struct _CStore {
 
 API cs_str Config_TypeName(cs_int32 type);
 API cs_int32 Config_TypeNameToInt(cs_str name);
-API cs_bool Config_ToStr(CEntry *ent, char *value, cs_byte len);
+API cs_bool Config_ToStr(CEntry *ent, cs_char *value, cs_byte len);
 API void Config_PrintError(CStore *store);
 
 API CStore *Config_NewStore(cs_str path);

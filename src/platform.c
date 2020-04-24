@@ -45,12 +45,9 @@ void *Memory_Alloc(cs_size num, cs_size size) {
 }
 
 void *Memory_Realloc(void *buf, cs_size old, cs_size new) {
-	void *pNew = realloc(buf, new);
-	if(new > old) {
-		cs_size diff = new - old;
-		void *pStart = ((char *)pNew) + old;
-		Memory_Fill(pStart, diff, 0);
-	}
+	cs_char *pNew = realloc(buf, new);
+	if(new > old)
+		Memory_Zero(pNew + old, new - old);
 	return pNew;
 }
 
@@ -94,7 +91,7 @@ cs_size File_Read(void *ptr, cs_size size, cs_size count, FILE *fp) {
 	return fread(ptr, size, count, fp);
 }
 
-cs_int32 File_ReadLine(FILE *fp, char *line, cs_int32 len) {
+cs_int32 File_ReadLine(FILE *fp, cs_char *line, cs_int32 len) {
 	cs_int32 bleft = len;
 
 	while(bleft > 1) {
@@ -167,7 +164,7 @@ cs_bool Socket_SetAddrGuess(struct sockaddr_in *ssa, cs_str host, cs_uint16 port
 		hints.ai_socktype = 0;
 		hints.ai_protocol = 0;
 
-		char strport[6];
+		cs_char strport[6];
 		String_FormatBuf(strport, 6, "%d", port);
 		if((ret = getaddrinfo(host, strport, &hints, &addr)) == 0) {
 			*ssa = *(struct sockaddr_in *)addr->ai_addr;
@@ -216,13 +213,13 @@ Socket Socket_Accept(Socket sock, struct sockaddr_in *addr) {
 #define SOCK_DFLAGS MSG_NOSIGNAL
 #endif
 
-cs_int32 Socket_Receive(Socket sock, char *buf, cs_int32 len, cs_int32 flags) {
+cs_int32 Socket_Receive(Socket sock, cs_char *buf, cs_int32 len, cs_int32 flags) {
 	return recv(sock, buf, len, SOCK_DFLAGS | flags);
 }
 
-cs_int32 Socket_ReceiveLine(Socket sock, char *line, cs_int32 len) {
+cs_int32 Socket_ReceiveLine(Socket sock, cs_char *line, cs_int32 len) {
 	cs_int32 start_len = len;
-	char sym;
+	cs_char sym;
 
 	while(len > 1) {
 		if(Socket_Receive(sock, &sym, 1, MSG_WAITALL) == 1) {
@@ -240,7 +237,7 @@ cs_int32 Socket_ReceiveLine(Socket sock, char *line, cs_int32 len) {
 	return start_len - len;
 }
 
-cs_int32 Socket_Send(Socket sock, const char *buf, cs_int32 len) {
+cs_int32 Socket_Send(Socket sock, const cs_char *buf, cs_int32 len) {
 	return send(sock, buf, len, 0);
 }
 
@@ -258,7 +255,7 @@ void Socket_Close(Socket sock) {
 
 #if defined(WINDOWS)
 #define ISDIR(h) (h.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-cs_bool Iter_Init(dirIter *iter, cs_str dir, cs_str ext) {
+cs_bool Iter_Init(DirIter *iter, cs_str dir, cs_str ext) {
 	iter->state = ITER_INITIAL;
 	iter->dirHandle = INVALID_HANDLE_VALUE;
 
@@ -277,7 +274,7 @@ cs_bool Iter_Init(dirIter *iter, cs_str dir, cs_str ext) {
 	return true;
 }
 
-cs_bool Iter_Next(dirIter *iter) {
+cs_bool Iter_Next(DirIter *iter) {
 	if(iter->state != ITER_READY)
 		return false;
 
@@ -291,7 +288,7 @@ cs_bool Iter_Next(dirIter *iter) {
 	return false;
 }
 
-cs_bool Iter_Close(dirIter *iter) {
+cs_bool Iter_Close(DirIter *iter) {
 	if(iter->state == ITER_INITIAL)
 		return false;
 	FindClose(iter->dirHandle);
@@ -306,7 +303,7 @@ static cs_bool checkExtension(cs_str filename, cs_str ext) {
 	return String_Compare(++_ext, ext);
 }
 
-cs_bool Iter_Init(dirIter *iter, cs_str dir, cs_str ext) {
+cs_bool Iter_Init(DirIter *iter, cs_str dir, cs_str ext) {
 	iter->state = ITER_INITIAL;
 	iter->fileHandle = NULL;
 	iter->dirHandle = opendir(dir);
@@ -320,7 +317,7 @@ cs_bool Iter_Init(dirIter *iter, cs_str dir, cs_str ext) {
 	return Iter_Next(iter);
 }
 
-cs_bool Iter_Next(dirIter *iter) {
+cs_bool Iter_Next(DirIter *iter) {
 	if(iter->state != ITER_READY)
 		return false;
 
@@ -337,7 +334,7 @@ cs_bool Iter_Next(dirIter *iter) {
 	return true;
 }
 
-cs_bool Iter_Close(dirIter *iter) {
+cs_bool Iter_Close(DirIter *iter) {
 	if(iter->state == ITER_INITIAL)
 		return false;
 	if(iter->dirHandle)
@@ -388,7 +385,7 @@ cs_bool DLib_Unload(void *lib) {
 	return (cs_bool)FreeLibrary(lib);
 }
 
-char *DLib_GetError(char *buf, cs_size len) {
+cs_char *DLib_GetError(cs_char *buf, cs_size len) {
 	String_FormatError(GetLastError(), buf, len, NULL);
 	return buf;
 }
@@ -405,7 +402,7 @@ cs_bool DLib_Unload(void *lib) {
 	return dlclose(lib) == 0;
 }
 
-char *DLib_GetError(char *buf, cs_size len) {
+cs_char *DLib_GetError(cs_char *buf, cs_size len) {
 	String_Copy(buf, len, dlerror());
 	return buf;
 }
@@ -594,7 +591,7 @@ void Waitable_Wait(Waitable *handle) {
 #endif
 
 #if defined(WINDOWS)
-void Time_Format(char *buf, cs_size buflen) {
+void Time_Format(cs_char *buf, cs_size buflen) {
 	SYSTEMTIME time;
 	GetSystemTime(&time);
 	sprintf_s(buf, buflen, "%02d:%02d:%02d.%03d",
@@ -611,7 +608,7 @@ cs_uint64 Time_GetMSec(void) {
 	return (time / 10000) + 50491123200000ULL;
 }
 #elif defined(POSIX)
-void Time_Format(char *buf, cs_size buflen) {
+void Time_Format(cs_char *buf, cs_size buflen) {
 	struct timeval tv;
 	struct tm *tm;
 	gettimeofday(&tv, NULL);

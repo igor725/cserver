@@ -29,7 +29,7 @@ cs_bool Http_Request(Http *http, cs_str url) {
 	return HttpSendRequest(http->req, NULL, 0, NULL, 0) == true;
 }
 
-cs_ulong Http_ReadResponse(Http *http, char *buf, cs_ulong sz) {
+cs_ulong Http_ReadResponse(Http *http, cs_char *buf, cs_ulong sz) {
 	cs_ulong readed;
 	if(InternetReadFile(http->req, buf, sz - 1, &readed)) {
 		buf[readed] = '\0';
@@ -58,7 +58,7 @@ cs_bool Http_Open(Http *http, cs_str domain) {
 }
 
 cs_bool Http_Request(Http *http, cs_str url) {
-	http->path = (char *)(http->secure ? String_AllocCopy("https://") : String_AllocCopy("http://"));
+	http->path = (cs_char *)(http->secure ? String_AllocCopy("https://") : String_AllocCopy("http://"));
 	cs_size memsize;
 	http->path = String_Grow(http->path, String_Length(http->domain) + String_Length(url), &memsize);
 	String_Append(http->path, memsize, http->domain);
@@ -66,7 +66,7 @@ cs_bool Http_Request(Http *http, cs_str url) {
 	return curl_easy_setopt(http->handle, CURLOPT_URL, http->path) == CURLE_OK;
 }
 
-static cs_size writefunc(char *ptr, cs_size sz, cs_size num, void *ud) {
+static cs_size writefunc(cs_char *ptr, cs_size sz, cs_size num, void *ud) {
 	Http *http = (Http *)ud;
 	cs_size full = sz * num,
 	newlen = min(http->rsplen + full, http->buflen);
@@ -79,7 +79,7 @@ static cs_size writefunc(char *ptr, cs_size sz, cs_size num, void *ud) {
 	return full;
 }
 
-cs_ulong Http_ReadResponse(Http *http, char *buf, cs_ulong sz) {
+cs_ulong Http_ReadResponse(Http *http, cs_char *buf, cs_ulong sz) {
 	http->buf = buf;
 	http->buflen = sz;
 	curl_easy_setopt(http->handle, CURLOPT_WRITEFUNCTION, writefunc);

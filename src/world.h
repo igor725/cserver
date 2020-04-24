@@ -68,7 +68,7 @@ typedef struct _WorldInfo {
 	SVec dimensions;
 	Color3 colors[WORLD_COLORS_COUNT];
 	cs_int32 props[WORLD_PROPS_COUNT];
-	char texturepack[65];
+	cs_char texturepack[65];
 	Vec spawnVec;
 	Ang spawnAng;
 	cs_int8 weatherType;

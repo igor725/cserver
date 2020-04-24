@@ -191,7 +191,7 @@ static cs_bool WriteWData(FILE *fp, cs_byte dataType, void *ptr, cs_int32 size) 
 
 static cs_bool WriteInfo(World *world, FILE *fp) {
 	cs_int32 magic = WORLD_MAGIC;
-	if(!File_Write((char *)&magic, 4, 1, fp)) {
+	if(!File_Write((cs_char *)&magic, 4, 1, fp)) {
 		Error_PrintSys(false);
 		return false;
 	}
@@ -261,8 +261,8 @@ static cs_bool ReadInfo(World *world, FILE *fp) {
 THREAD_FUNC(WorldSaveThread) {
 	World *world = (World *)param;
 	cs_bool succ = false;
-	char path[256];
-	char tmpname[256];
+	cs_char path[256];
+	cs_char tmpname[256];
 	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
 	String_FormatBuf(tmpname, 256, "worlds" PATH_DELIM "%s.tmp", world->name);
 
@@ -330,7 +330,7 @@ cs_bool World_Save(World *world, cs_bool unload) {
 THREAD_FUNC(WorldLoadThread) {
 	World *world = (World *)param;
 	cs_bool error = true;
-	char path[256];
+	cs_char path[256];
 	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
 
 	FILE *fp = File_Open(path, "rb");

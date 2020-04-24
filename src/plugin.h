@@ -1,7 +1,7 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 typedef cs_bool(*pluginFunc)(void);
-typedef struct {
+typedef struct _Plugin {
 	cs_int8 id;
 	cs_str name;
 	cs_int32 version;

@@ -14,7 +14,7 @@
 #define PLAY_URL_LEN 38
 
 cs_bool PlayURL_OK = false;
-char Secret[17] = {0};
+cs_char Secret[17] = {0};
 cs_uint32 Delay = 5000;
 
 static void NewSecret(void) {
@@ -48,9 +48,9 @@ static void NewSecret(void) {
 }
 
 cs_str reserved = "!*'();:@&=+$,/?#[]%";
-static void TrimReserved(char *name, cs_int32 len) {
+static void TrimReserved(cs_char *name, cs_int32 len) {
 	for(cs_int32 i = 0; i < len; i++) {
-		char sym = name[i];
+		cs_char sym = name[i];
 		if(sym == '\0') break;
 		if(sym == ' ') name[i] = '+';
 		if(String_LastChar(reserved, sym)) name[i] = '.';
@@ -59,7 +59,7 @@ static void TrimReserved(char *name, cs_int32 len) {
 
 static void DoRequest() {
 	if(*Secret == '\0') NewSecret();
-	char reqstr[512], name[65], rsp[1024];
+	cs_char reqstr[512], name[65], rsp[1024];
 	String_Copy(name, 65, Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY));
 	TrimReserved(name, 65);
 
@@ -97,7 +97,7 @@ static void DoRequest() {
 	Http_Cleanup(&h);
 }
 
-static const char hexchars[] = "0123456789abcdef";
+static const cs_char hexchars[] = "0123456789abcdef";
 
 cs_bool Heartbeat_CheckKey(Client *client) {
 	if(*Secret == '\0') return true;
@@ -106,7 +106,7 @@ cs_bool Heartbeat_CheckKey(Client *client) {
 
 	MD5_CTX ctx;
 	cs_byte hash[16];
-	char hash_hex[16 * 2 + 1];
+	cs_char hash_hex[16 * 2 + 1];
 
 	MD5_Init(&ctx);
 	MD5_Update(&ctx, Secret, String_Length(Secret));

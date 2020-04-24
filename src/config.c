@@ -118,7 +118,7 @@ cs_int32 Config_TypeNameToInt(cs_str name) {
 	return CFG_INVTYPE;
 }
 
-cs_bool Config_ToStr(CEntry *ent, char *value, cs_byte len) {
+cs_bool Config_ToStr(CEntry *ent, cs_char *value, cs_byte len) {
 	switch (ent->type) {
 		case CFG_INT32:
 			String_FormatBuf(value, len, "%d", Config_GetInt32(ent));
@@ -165,8 +165,8 @@ cs_bool Config_Load(CStore *store) {
 	}
 
 	cs_bool haveComment = false;
-	char line[MAX_CFG_LEN * 2 + 2];
-	char comment[MAX_CFG_LEN];
+	cs_char line[MAX_CFG_LEN * 2 + 2];
+	cs_char comment[MAX_CFG_LEN];
 	cs_int32 lnret = 0, linenum = 0;
 
 	while((lnret = File_ReadLine(fp, line, 256)) > 0 && ++linenum) {
@@ -175,7 +175,7 @@ cs_bool Config_Load(CStore *store) {
 			String_Copy(comment, MAX_CFG_LEN, line);
 			continue;
 		}
-		char *value = (char *)String_FirstChar(line, '=');
+		cs_char *value = (cs_char *)String_FirstChar(line, '=');
 		if(!value) {
 			CFG_SETERROR(ET_SERVER, EC_CFGLINEPARSE, linenum);
 			return false;
@@ -226,7 +226,7 @@ cs_bool Config_Load(CStore *store) {
 cs_bool Config_Save(CStore *store) {
 	if(!store->modified) return true;
 
-	char tmpname[256];
+	cs_char tmpname[256];
 	String_FormatBuf(tmpname, 256, "%s.tmp", store->path);
 
 	FILE *fp = File_Open(tmpname, "w");
@@ -248,13 +248,13 @@ cs_bool Config_Save(CStore *store) {
 			return false;
 		}
 
-		char *vchar;
+		cs_char *vchar;
 		cs_int32 vint;
 		cs_bool vbool;
 
 		switch (ptr->type) {
 			case CFG_STR:
-				vchar = (char *)Config_GetStr(ptr);
+				vchar = (cs_char *)Config_GetStr(ptr);
 				if(!File_WriteFormat(fp, "=%s\n", vchar)) {
 					CFG_SYSERROR;
 					return false;
@@ -400,8 +400,8 @@ void Config_SetStr(CEntry *ent, cs_str value) {
 	if(!value) {
 		EmptyEntry(ent);
 		ent->store->modified = true;
-	}else if(!ent->defvalue.vchar || !String_Compare(value, ent->defvalue.vchar)) {
-		if(ent->value.vchar && String_Compare(value, ent->value.vchar))
+	}else if(!ent->defvalue.vchar|| !String_Compare(value, ent->defvalue.vchar)) {
+		if(ent->value.vchar&& String_Compare(value, ent->value.vchar))
 			return;
 		EmptyEntry(ent);
 		ent->changed = true;
@@ -412,7 +412,7 @@ void Config_SetStr(CEntry *ent, cs_str value) {
 
 cs_str Config_GetStr(CEntry *ent) {
 	CFG_TYPE(CFG_STR);
-	return ent->changed ? ent->value.vchar : ent->defvalue.vchar;
+	return ent->changed ? ent->value.vchar: ent->defvalue.vchar;
 }
 
 cs_str Config_GetStrByKey(CStore *store, cs_str key) {

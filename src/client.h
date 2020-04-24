@@ -53,10 +53,10 @@ typedef struct {
 } CPEHacks;
 
 typedef struct {
-	CPEExt headExtension; // Список дополнений клиента
+	CPEExt *headExtension; // Список дополнений клиента
 	cs_str appName, // Название игрового клиента
 	skin; // Скин игрока, может быть NULL [ExtPlayerList]
-	char *message; // Используется для получения длинных сообщений [LongerMessages]
+	cs_char *message; // Используется для получения длинных сообщений [LongerMessages]
 	BlockID heldBlock; // Выбранный игроком блок в данный момент [HeldBlock]
 	cs_int8 updates; // Обновлённые значения игрока
 	cs_bool hideDisplayName, // Будет ли ник игрока скрыт [ExtPlayerList]
@@ -92,7 +92,7 @@ typedef struct {
 	KListField *headNode; // Последняя созданная ассоциативная нода у клиента
 	WebSock *websock; // Создаётся, если клиент был определён как браузерный
 	Mutex *mutex; // Мьютекс записи, на время отправки пакета клиенту он лочится
-	char *rdbuf, // Буфер для получения пакетов от клиента
+	cs_char *rdbuf, // Буфер для получения пакетов от клиента
 	*wrbuf; // Буфер для отправки пакетов клиенту
 	cs_uint32 pps, // Количество пакетов, отправленных игроком за секунду
 	ppstm, // Таймер для счётчика пакетов
@@ -145,7 +145,7 @@ API cs_bool Client_SetInvOrder(Client *client, Order order, BlockID block);
 API cs_bool Client_SetEnvProperty(Client *client, cs_byte property, cs_int32 value);
 API cs_bool Client_SetEnvColor(Client *client, cs_byte type, Color3* color);
 API cs_bool Client_SetTexturePack(Client *client, cs_str url);
-API cs_bool Client_AddTextColor(Client *client, Color4* color, char code);
+API cs_bool Client_AddTextColor(Client *client, Color4* color, cs_char code);
 API cs_bool Client_SetBlock(Client *client, SVec *pos, BlockID id);
 API cs_bool Client_SetModel(Client *client, cs_int16 model);
 API cs_bool Client_SetModelStr(Client *client, cs_str model);

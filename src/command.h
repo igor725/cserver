@@ -72,7 +72,7 @@ typedef struct {
 	struct _Command *command;
 	cs_str args;
 	Client *caller;
-	char *out;
+	cs_char *out;
 } CommandCallData;
 
 typedef cs_bool(*cmdFunc)(CommandCallData *cdata);
@@ -91,5 +91,5 @@ API void Command_Unregister(Command *cmd);
 API void Command_UnregisterByFunc(cmdFunc func);
 
 void Command_RegisterDefault(void);
-cs_bool Command_Handle(char *cmd, Client *caller);
+cs_bool Command_Handle(cs_char *cmd, Client *caller);
 #endif // COMMAND_H

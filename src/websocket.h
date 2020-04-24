@@ -16,9 +16,9 @@ enum {
 	WS_ERR_PAYLOAD_LEN_MISMATCH,
 };
 
-typedef struct {
+typedef struct _WebSock {
 	Socket sock;
-	char *recvbuf,
+	cs_char *recvbuf,
 	header[2],
 	mask[4];
 	cs_int32 state,
@@ -30,5 +30,5 @@ typedef struct {
 
 cs_bool WebSock_DoHandshake(WebSock *ws);
 cs_bool WebSock_ReceiveFrame(WebSock *ws);
-cs_bool WebSock_SendFrame(WebSock *ws, cs_byte opcode, const char *buf, cs_uint16 len);
+cs_bool WebSock_SendFrame(WebSock *ws, cs_byte opcode, const cs_char *buf, cs_uint16 len);
 #endif // WEBSOCKET_H

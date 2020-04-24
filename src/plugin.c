@@ -9,7 +9,7 @@
 Plugin *pluginsList[MAX_PLUGINS];
 
 cs_bool Plugin_Load(cs_str name) {
-	char path[256], error[512];
+	cs_char path[256], error[512];
 	void *lib;
 	pluginFunc initSym;
 	cs_int32 *apiVerSym;
@@ -88,7 +88,7 @@ cs_bool Plugin_Unload(Plugin *plugin) {
 void Plugin_Start(void) {
 	Directory_Ensure("plugins");
 
-	dirIter pIter;
+	DirIter pIter;
 	if(Iter_Init(&pIter, "plugins", DLIB_EXT)) {
 		do {
 			if(!pIter.isDir && pIter.cfile)

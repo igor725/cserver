@@ -70,7 +70,7 @@ cs_bool Event_Call(cs_uint32 type, void *param) {
 	return ret;
 }
 
-cs_bool Event_OnMessage(Client *client, char *message, cs_byte *type) {
+cs_bool Event_OnMessage(Client *client, cs_char *message, cs_byte *type) {
 	onMessage params;
 	params.client = client;
 	params.message = message;
@@ -95,7 +95,7 @@ void Event_OnHeldBlockChange(Client *client, BlockID prev, BlockID curr) {
 	Event_Call(EVT_ONHELDBLOCKCHNG, &params);
 }
 
-void Event_OnClick(Client *client, char btn, char act, cs_int16 yaw, cs_int16 pitch, ClientID id, SVec *pos, char face) {
+void Event_OnClick(Client *client, cs_char btn, cs_char act, cs_int16 yaw, cs_int16 pitch, ClientID id, SVec *pos, cs_char face) {
 	onPlayerClick params;
 	params.client = client;
 	params.button = btn;

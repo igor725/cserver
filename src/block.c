@@ -121,5 +121,5 @@ void Block_BulkUpdateSend(BulkBlockUpdate *bbu) {
 }
 
 void Block_BulkUpdateClean(BulkBlockUpdate *bbu) {
-	Memory_Fill(&bbu->data, sizeof(struct _BBUData), 0);
+	Memory_Zero(&bbu->data, sizeof(struct _BBUData));
 }

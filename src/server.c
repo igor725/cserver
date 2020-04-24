@@ -106,7 +106,7 @@ static void Bind(cs_str ip, cs_uint16 port) {
 
 THREAD_FUNC(ConsoleThread) {
 	(void)param;
-	char buf[192];
+	cs_char buf[192];
 
 	while(Server_Active) {
 		if(File_ReadLine(stdin, buf, 192))
@@ -187,7 +187,7 @@ void Server_InitialWork(void) {
 
 	Directory_Ensure("worlds");
 	WorldID wIndex = 0;
-	dirIter wIter;
+	DirIter wIter;
 	if(Iter_Init(&wIter, "worlds", "cws")) {
 		do {
 			if(wIter.isDir || !wIter.cfile) continue;

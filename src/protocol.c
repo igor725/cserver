@@ -13,10 +13,10 @@
 
 Packet *packetsList[MAX_PACKETS];
 cs_uint16 extensionsCount;
-CPEExt headExtension;
+CPEExt *headExtension;
 
-void Proto_WriteString(char **dataptr, cs_str string) {
-	char *data = *dataptr;
+void Proto_WriteString(cs_char **dataptr, cs_str string) {
+	cs_char *data = *dataptr;
 	cs_size size = 0;
 	if(string) {
 		size = min(String_Length(string), 64);
@@ -27,47 +27,47 @@ void Proto_WriteString(char **dataptr, cs_str string) {
 	*dataptr += 64;
 }
 
-void Proto_WriteFlVec(char **dataptr, const Vec *vec) {
-	char *data = *dataptr;
+void Proto_WriteFlVec(cs_char **dataptr, const Vec *vec) {
+	cs_char *data = *dataptr;
 	*(cs_int32 *)data = htonl((cs_int32)(vec->x * 32)); data += 4;
 	*(cs_int32 *)data = htonl((cs_int32)(vec->y * 32)); data += 4;
 	*(cs_int32 *)data = htonl((cs_int32)(vec->z * 32)); data += 4;
 	*dataptr = data;
 }
 
-void Proto_WriteFlSVec(char **dataptr, const Vec *vec) {
-	char *data = *dataptr;
+void Proto_WriteFlSVec(cs_char **dataptr, const Vec *vec) {
+	cs_char *data = *dataptr;
 	*(cs_int16 *)data = htons((cs_int16)(vec->x * 32)); data += 2;
 	*(cs_int16 *)data = htons((cs_int16)(vec->y * 32)); data += 2;
 	*(cs_int16 *)data = htons((cs_int16)(vec->z * 32)); data += 2;
 	*dataptr = data;
 }
 
-void Proto_WriteSVec(char **dataptr, const SVec *vec) {
-	char *data = *dataptr;
+void Proto_WriteSVec(cs_char **dataptr, const SVec *vec) {
+	cs_char *data = *dataptr;
 	*(cs_int16 *)data = htons(vec->x); data += 2;
 	*(cs_int16 *)data = htons(vec->y); data += 2;
 	*(cs_int16 *)data = htons(vec->z); data += 2;
 	*dataptr = data;
 }
 
-void Proto_WriteAng(char **dataptr, const Ang *ang) {
-	char *data = *dataptr;
+void Proto_WriteAng(cs_char **dataptr, const Ang *ang) {
+	cs_char *data = *dataptr;
 	*(cs_byte *)data++ = (cs_byte)((ang->yaw / 360) * 256);
 	*(cs_byte *)data++ = (cs_byte)((ang->pitch / 360) * 256);
 	*dataptr = data;
 }
 
-void Proto_WriteColor3(char **dataptr, const Color3* color) {
-	char *data = *dataptr;
+void Proto_WriteColor3(cs_char **dataptr, const Color3* color) {
+	cs_char *data = *dataptr;
 	*(cs_int16 *)data = htons(color->r); data += 2;
 	*(cs_int16 *)data = htons(color->g); data += 2;
 	*(cs_int16 *)data = htons(color->b); data += 2;
 	*dataptr = data;
 }
 
-void Proto_WriteColor4(char **dataptr, const Color4* color) {
-	char *data = *dataptr;
+void Proto_WriteColor4(cs_char **dataptr, const Color4* color) {
+	cs_char *data = *dataptr;
 	*(cs_int16 *)data = htons(color->r); data += 2;
 	*(cs_int16 *)data = htons(color->g); data += 2;
 	*(cs_int16 *)data = htons(color->b); data += 2;
@@ -75,16 +75,16 @@ void Proto_WriteColor4(char **dataptr, const Color4* color) {
 	*dataptr = data;
 }
 
-void Proto_WriteByteColor3(char **dataptr, const Color3* color) {
-	char *data = *dataptr;
+void Proto_WriteByteColor3(cs_char **dataptr, const Color3* color) {
+	cs_char *data = *dataptr;
 	*data++ = (cs_int8)color->r;
 	*data++ = (cs_int8)color->g;
 	*data++ = (cs_int8)color->b;
 	*dataptr = data;
 }
 
-void Proto_WriteByteColor4(char **dataptr, const Color4* color) {
-	char *data = *dataptr;
+void Proto_WriteByteColor4(cs_char **dataptr, const Color4* color) {
+	cs_char *data = *dataptr;
 	*data++ = (cs_int8)color->r;
 	*data++ = (cs_int8)color->g;
 	*data++ = (cs_int8)color->b;
@@ -92,7 +92,7 @@ void Proto_WriteByteColor4(char **dataptr, const Color4* color) {
 	*dataptr = data;
 }
 
-cs_uint32 Proto_WriteVecAng(char **dataptr, Vec *vec, Ang *ang, cs_bool extended) {
+cs_uint32 Proto_WriteVecAng(cs_char **dataptr, Vec *vec, Ang *ang, cs_bool extended) {
 	if(extended)
 		Proto_WriteFlVec(dataptr, vec);
 	else
@@ -101,7 +101,7 @@ cs_uint32 Proto_WriteVecAng(char **dataptr, Vec *vec, Ang *ang, cs_bool extended
 	return extended ? 12 : 6;
 }
 
-cs_uint32 Proto_WriteClientPos(char *data, Client *client, cs_bool extended) {
+cs_uint32 Proto_WriteClientPos(cs_char *data, Client *client, cs_bool extended) {
 	PlayerData *pd = client->playerData;
 	return Proto_WriteVecAng(&data, &pd->position, &pd->angle, extended);
 }
@@ -115,7 +115,7 @@ cs_byte Proto_ReadString(cs_str *dataptr, cs_str *dstptr) {
 		if(data[end - 1] != ' ') break;
 
 	if(end > 0) {
-		char *str = Memory_Alloc(end + 1, 1);
+		cs_char *str = Memory_Alloc(end + 1, 1);
 		Memory_Copy(str, data, end);
 		str[end] = '\0';
 		if(*dstptr) Memory_Free((void *)*dstptr);
@@ -125,7 +125,7 @@ cs_byte Proto_ReadString(cs_str *dataptr, cs_str *dstptr) {
 	return end;
 }
 
-cs_byte Proto_ReadStringNoAlloc(cs_str *dataptr, char *dst) {
+cs_byte Proto_ReadStringNoAlloc(cs_str *dataptr, cs_char *dst) {
 	cs_str data = *dataptr;
 	*dataptr += 64;
 	cs_byte end;
@@ -220,8 +220,7 @@ void Packet_RegisterCPE(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size
 }
 
 void Packet_RegisterExtension(cs_str name, cs_int32 version) {
-	CPEExt tmp = Memory_Alloc(1, sizeof(struct cpeExt));
-
+	CPEExt *tmp = Memory_Alloc(1, sizeof(struct _CPEExt));
 	tmp->name = name;
 	tmp->version = version;
 	tmp->next = headExtension;
@@ -393,7 +392,7 @@ void Vanilla_WriteChat(Client *client, cs_byte type, cs_str mesg) {
 		return;
 	}
 
-	char mesg_out[64] = {0};
+	cs_char mesg_out[64] = {0};
 	String_Copy(mesg_out, 64, mesg);
 
 	if(!Client_GetExtVer(client, EXT_CP437)) {
@@ -459,7 +458,7 @@ cs_bool Handler_Handshake(Client *client, cs_str data) {
 		client->cpeData->model = 256; // Humanoid model id
 
 		CPE_WriteInfo(client);
-		CPEExt ptr = headExtension;
+		CPEExt *ptr = headExtension;
 		while(ptr) {
 			CPE_WriteExtEntry(client, ptr);
 			ptr = ptr->next;
@@ -540,8 +539,8 @@ cs_bool Handler_Message(Client *client, cs_str data) {
 	ValidateClientState(client, STATE_INGAME, true);
 
 	cs_byte type = 0;
-	char message[65];
-	char *messptr = message;
+	cs_char message[65];
+	cs_char *messptr = message;
 	cs_byte partial = *data++;
 	cs_byte len = Proto_ReadStringNoAlloc(&data, message);
 	if(len == 0) return false;
@@ -559,7 +558,7 @@ cs_bool Handler_Message(Client *client, cs_str data) {
 	}
 
 	if(Event_OnMessage(client, messptr, &type)) {
-		char formatted[320] = {0};
+		cs_char formatted[320] = {0};
 		String_FormatBuf(formatted, 320, CHATLINE, client->playerData->name, messptr);
 
 		if(*messptr == '/') {
@@ -639,7 +638,7 @@ void CPE_WriteInfo(Client *client) {
 	PacketWriter_End(client, 67);
 }
 
-void CPE_WriteExtEntry(Client *client, CPEExt ext) {
+void CPE_WriteExtEntry(Client *client, CPEExt *ext) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x11;
@@ -773,7 +772,7 @@ void CPE_WriteSetModel(Client *client, Client *other) {
 	*data++ = client == other ? CLIENT_SELF : other->id;
 	cs_int16 model = Client_GetModel(other);
 	if(model < 256) {
-		char modelname[4];
+		cs_char modelname[4];
 		String_FormatBuf(modelname, 4, "%d", model);
 		Proto_WriteString(&data, modelname);
 	} else
@@ -845,7 +844,7 @@ void CPE_WriteBulkBlockUpdate(Client *client, BulkBlockUpdate *bbu) {
 	PacketWriter_End(client, 1282);
 }
 
-void CPE_WriteSetTextColor(Client *client, Color4* color, char code) {
+void CPE_WriteSetTextColor(Client *client, Color4* color, cs_char code) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x27;
@@ -957,7 +956,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_str data) {
 	ValidateClientState(client, STATE_INITIAL, false);
 
 	CPEData *cpd = client->cpeData;
-	CPEExt tmp = Memory_Alloc(1, sizeof(struct cpeExt));
+	CPEExt *tmp = Memory_Alloc(1, sizeof(struct _CPEExt));
 	if(!Proto_ReadString(&data, &tmp->name)) {
 		Memory_Free(tmp);
 		return false;
@@ -985,13 +984,13 @@ cs_bool CPEHandler_PlayerClick(Client *client, cs_str data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, STATE_INGAME, false);
 
-	char button = *data++, action = *data++;
+	cs_char button = *data++, action = *data++;
 	cs_int16 yaw = ntohs(*(cs_int16 *)data); data += 2;
 	cs_int16 pitch = ntohs(*(cs_int16 *)data); data += 2;
 	ClientID tgID = *data++;
 	SVec tgBlockPos;
 	Proto_ReadSVec(&data, &tgBlockPos);
-	char tgBlockFace = *data;
+	cs_char tgBlockFace = *data;
 
 	Event_OnClick(
 		client, button,

@@ -4,7 +4,7 @@ typedef void(*TimerCallback)(cs_int32 ticks, cs_int32 left, void *ud);
 #define TIMER_FUNC(N) \
 static void N(cs_int32 ticks, cs_int32 left, void *ud)
 
-typedef struct Timer {
+typedef struct _Timer {
 	cs_int32 delay, nexttick, ticks, left;
 	TimerCallback callback;
 	void *userdata;

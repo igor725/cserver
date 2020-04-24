@@ -9,7 +9,7 @@
 #define WS_ERRRESP "HTTP/1.1 %d %s\r\nConnection: Close\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s"
 
 cs_bool WebSock_DoHandshake(WebSock *ws) {
-	char line[1024], wskey[32], b64[30];
+	cs_char line[1024], wskey[32], b64[30];
 	cs_byte hash[20];
 	cs_bool haveUpgrade = false;
 	cs_int32 wskeylen = 0, rsplen = 0;
@@ -26,7 +26,7 @@ cs_bool WebSock_DoHandshake(WebSock *ws) {
 	while(Socket_ReceiveLine(ws->sock, line, 1024)) {
 		if(*line == '\0') break;
 
-		char *value = (char *)String_FirstChar(line, ':');
+		cs_char *value = (cs_char *)String_FirstChar(line, ':');
 		if(!value) break;
 		*value = '\0';value += 2;
 
@@ -65,7 +65,7 @@ cs_bool WebSock_ReceiveFrame(WebSock *ws) {
 		cs_int32 len = Socket_Receive(ws->sock, ws->header, 2, MSG_WAITALL);
 
 		if(len == 2) {
-			char plen = ws->header[1] & 0x7F;
+			cs_char plen = ws->header[1] & 0x7F;
 
 			if(ws->header[1] & 0x80) {
 				ws->opcode = ws->header[0] & 0x0F;
@@ -88,7 +88,7 @@ cs_bool WebSock_ReceiveFrame(WebSock *ws) {
 	}
 
 	if(ws->state == WS_ST_PLEN) {
-		cs_int32 len = Socket_Receive(ws->sock, (char *)&ws->plen, 2, MSG_WAITALL);
+		cs_int32 len = Socket_Receive(ws->sock, (cs_char *)&ws->plen, 2, MSG_WAITALL);
 
 		if(len == 2) {
 			ws->plen = ntohs(ws->plen);
@@ -127,9 +127,9 @@ cs_bool WebSock_ReceiveFrame(WebSock *ws) {
 	return false;
 }
 
-cs_bool WebSock_SendFrame(WebSock *ws, cs_byte opcode, const char *buf, cs_uint16 len) {
+cs_bool WebSock_SendFrame(WebSock *ws, cs_byte opcode, const cs_char *buf, cs_uint16 len) {
 	cs_byte hdrlen = 2;
-	char hdr[4] = {0, 0, 0, 0};
+	cs_char hdr[4] = {0, 0, 0, 0};
 	hdr[0] = 0x80 | opcode;
 
 	if(len < 126) {

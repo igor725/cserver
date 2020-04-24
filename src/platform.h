@@ -30,7 +30,7 @@ typedef pthread_t *Thread;
 typedef pthread_mutex_t Mutex;
 typedef struct {
 	cs_int32 pipefd[2];
-	char buf[2];
+	cs_char buf[2];
 } Waitable;
 typedef cs_int32 Socket;
 #endif
@@ -48,14 +48,14 @@ enum {
 	ITER_ERROR
 };
 
-typedef struct {
+typedef struct _DirIter {
 	cs_byte state;
-  char fmt[256];
+  cs_char fmt[256];
   cs_str cfile;
   cs_bool isDir;
   ITER_DIR dirHandle;
   ITER_FILE fileHandle;
-} dirIter;
+} DirIter;
 
 #define Memory_Zero(p, c) Memory_Fill(p, c, 0)
 
@@ -68,14 +68,14 @@ API void  Memory_Copy(void *dst, const void *src, cs_size count);
 API void  Memory_Fill(void *dst, cs_size count, cs_byte val);
 API void  Memory_Free(void *ptr);
 
-API cs_bool Iter_Init(dirIter *iter, cs_str path, cs_str ext);
-API cs_bool Iter_Next(dirIter *iter);
-API cs_bool Iter_Close(dirIter *iter);
+API cs_bool Iter_Init(DirIter *iter, cs_str path, cs_str ext);
+API cs_bool Iter_Next(DirIter *iter);
+API cs_bool Iter_Close(DirIter *iter);
 
 API cs_bool File_Rename(cs_str path, cs_str newpath);
 API FILE *File_Open(cs_str path, cs_str mode);
 API cs_size File_Read(void *ptr, cs_size size, cs_size count, FILE *fp);
-API cs_int32 File_ReadLine(FILE *fp, char *line, cs_int32 len);
+API cs_int32 File_ReadLine(FILE *fp, cs_char *line, cs_int32 len);
 API cs_size File_Write(const void *ptr, cs_size size, cs_size count, FILE *fp);
 API cs_int32 File_GetChar(FILE *fp);
 API cs_bool File_Error(FILE *fp);
@@ -91,7 +91,7 @@ API cs_bool Directory_SetCurrentDir(cs_str path);
 
 cs_bool DLib_Load(cs_str path, void **lib);
 cs_bool DLib_Unload(void *lib);
-char *DLib_GetError(char *buf, cs_size len);
+cs_char *DLib_GetError(cs_char *buf, cs_size len);
 cs_bool DLib_GetSym(void *lib, cs_str sname, void *sym);
 
 cs_bool Socket_Init(void);
@@ -101,9 +101,9 @@ API cs_bool Socket_SetAddrGuess(struct sockaddr_in *ssa, cs_str host, cs_uint16 
 API cs_bool Socket_Bind(Socket sock, struct sockaddr_in *ssa);
 API cs_bool Socket_Connect(Socket sock, struct sockaddr_in *ssa);
 API Socket Socket_Accept(Socket sock, struct sockaddr_in *addr);
-API cs_int32 Socket_Receive(Socket sock, char *buf, cs_int32 len, cs_int32 flags);
-API cs_int32 Socket_ReceiveLine(Socket sock, char *line, cs_int32 len);
-API cs_int32 Socket_Send(Socket sock, const char *buf, cs_int32 len);
+API cs_int32 Socket_Receive(Socket sock, cs_char *buf, cs_int32 len, cs_int32 flags);
+API cs_int32 Socket_ReceiveLine(Socket sock, cs_char *line, cs_int32 len);
+API cs_int32 Socket_Send(Socket sock, const cs_char *buf, cs_int32 len);
 API void Socket_Shutdown(Socket sock, cs_int32 how);
 API void Socket_Close(Socket sock);
 
@@ -123,7 +123,7 @@ API void Waitable_Signal(Waitable *handle);
 API void Waitable_Wait(Waitable *handle);
 API void Waitable_Reset(Waitable *handle);
 
-API void Time_Format(char *buf, cs_size len);
+API void Time_Format(cs_char *buf, cs_size len);
 API cs_uint64 Time_GetMSec(void);
 
 API void Process_Exit(cs_uint32 ecode);

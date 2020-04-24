@@ -1,5 +1,7 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
+#include "client.h"
+
 #define ValidateClientState(client, st, ret) \
 if(!client->playerData || client->playerData->state != st) \
 	return ret;
@@ -9,7 +11,7 @@ if(!client->cpeData) return ret;
 
 #define PacketWriter_Start(client) \
 if(client->closed) return; \
-char *data = client->wrbuf; \
+cs_char *data = client->wrbuf; \
 Mutex_Lock(client->mutex);
 
 #define PacketWriter_End(client, size) \
@@ -58,7 +60,7 @@ return;
 
 typedef cs_bool(*packetHandler)(Client *client, cs_str data);
 
-typedef struct {
+typedef struct _Packet {
 	cs_byte id;
 	cs_uint16 size;
 	cs_bool haveCPEImp;
@@ -74,23 +76,23 @@ API void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler);
 API void Packet_RegisterCPE(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler);
 
 API cs_byte Proto_ReadString(cs_str *data, cs_str *dstptr);
-API cs_byte Proto_ReadStringNoAlloc(cs_str *data, char *dst);
+API cs_byte Proto_ReadStringNoAlloc(cs_str *data, cs_char *dst);
 API void Proto_ReadSVec(cs_str *dataptr, SVec *vec);
 API void Proto_ReadAng(cs_str *dataptr, Ang *ang);
 API void Proto_ReadFlSVec(cs_str *dataptr, Vec *vec);
 API void Proto_ReadFlVec(cs_str *dataptr, Vec *vec);
 API cs_bool Proto_ReadClientPos(Client *client, cs_str data);
 
-API void Proto_WriteString(char **dataptr, cs_str string);
-API void Proto_WriteFlVec(char **dataptr, const Vec *vec);
-API void Proto_WriteFlSVec(char **dataptr, const Vec *vec);
-API void Proto_WriteSVec(char **dataptr, const SVec *vec);
-API void Proto_WriteAng(char **dataptr, const Ang *ang);
-API void Proto_WriteColor3(char **dataptr, const Color3* color);
-API void Proto_WriteColor4(char **dataptr, const Color4* color);
-API void Proto_WriteByteColor3(char **dataptr, const Color3* color);
-API void Proto_WriteByteColor4(char **dataptr, const Color4* color);
-API cs_uint32 Proto_WriteClientPos(char *data, Client *client, cs_bool extended);
+API void Proto_WriteString(cs_char **dataptr, cs_str string);
+API void Proto_WriteFlVec(cs_char **dataptr, const Vec *vec);
+API void Proto_WriteFlSVec(cs_char **dataptr, const Vec *vec);
+API void Proto_WriteSVec(cs_char **dataptr, const SVec *vec);
+API void Proto_WriteAng(cs_char **dataptr, const Ang *ang);
+API void Proto_WriteColor3(cs_char **dataptr, const Color3* color);
+API void Proto_WriteColor4(cs_char **dataptr, const Color4* color);
+API void Proto_WriteByteColor3(cs_char **dataptr, const Color3* color);
+API void Proto_WriteByteColor4(cs_char **dataptr, const Color4* color);
+API cs_uint32 Proto_WriteClientPos(cs_char *data, Client *client, cs_bool extended);
 
 void Packet_RegisterDefault(void);
 
@@ -131,7 +133,7 @@ cs_bool CPEHandler_TwoWayPing(Client *client, cs_str data);
 cs_bool CPEHandler_PlayerClick(Client *client, cs_str data);
 
 void CPE_WriteInfo(Client *client);
-void CPE_WriteExtEntry(Client *client, CPEExt ext);
+void CPE_WriteExtEntry(Client *client, CPEExt *ext);
 void CPE_WriteClickDistance(Client *client, cs_int16 dist);
 void CPE_WriteInventoryOrder(Client *client, Order order, BlockID block);
 void CPE_WriteHoldThis(Client *client, BlockID block, cs_bool preventChange);
@@ -147,7 +149,7 @@ void CPE_WriteDefineBlock(Client *client, BlockDef *block);
 void CPE_WriteUndefineBlock(Client *client, BlockID id);
 void CPE_WriteDefineExBlock(Client *client, BlockDef *block);
 void CPE_WriteBulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
-void CPE_WriteSetTextColor(Client *client, Color4* color, char code);
+void CPE_WriteSetTextColor(Client *client, Color4* color, cs_char code);
 void CPE_WriteSetHotBar(Client *client, Order order, BlockID block);
 void CPE_WriteSetSpawnPoint(Client *client, Vec *pos, Ang *ang);
 void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_bool mode);

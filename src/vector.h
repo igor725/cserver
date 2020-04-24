@@ -1,14 +1,14 @@
 #ifndef VECTOR_H
 #define VECTOR_H
-typedef struct {
+typedef struct _SVec {
 	cs_int16 x, y, z;
 } SVec;
 
-typedef struct {
+typedef struct _Vec {
 	float x, y, z;
 } Vec;
 
-typedef struct {
+typedef struct _Ang {
 	float yaw, pitch;
 } Ang;
 

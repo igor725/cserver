@@ -73,20 +73,21 @@ typedef __SIZE_TYPE__ cs_size;
 #define NULL ((void *)0)
 #endif
 
+typedef cs_int8 cs_char;
 typedef unsigned long cs_ulong;
-typedef const char *cs_str;
+typedef const cs_char *cs_str;
 typedef cs_byte cs_bool;
 typedef cs_byte Order;
 typedef cs_byte BlockID;
 typedef cs_int8 ClientID;
 typedef cs_int16 WorldID;
 // TODO: Придумать, как пернести это чудо в protocol.h
-typedef struct cpeExt {
+typedef struct _CPEExt {
 	cs_str name; // Название дополнения
 	cs_int32 version; // Его версия
 	cs_uint32 hash; // crc32 хеш названия дополнения
-	struct cpeExt *next; // Следующее дополнение
-} *CPEExt;
+	struct _CPEExt *next; // Следующее дополнение
+} CPEExt;
 
 #ifdef PLUGIN_BUILD
 EXP cs_bool Plugin_Load();

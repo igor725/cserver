@@ -4,9 +4,9 @@
 #include "list.h"
 #include "platform.h"
 #include "block.h"
-#include "client.h"
 #include "server.h"
 #include "protocol.h"
+#include "client.h"
 #include "event.h"
 #include "heartbeat.h"
 #include "lang.h"
@@ -247,7 +247,7 @@ cs_int32 Client_GetExtVer(Client *client, cs_uint32 exthash) {
 	CPEData *cpd = client->cpeData;
 	if(!cpd) return false;
 
-	CPEExt ptr = cpd->headExtension;
+	CPEExt *ptr = cpd->headExtension;
 	while(ptr) {
 		if(ptr->hash == exthash) return ptr->version;
 		ptr = ptr->next;
@@ -426,7 +426,7 @@ cs_bool Client_TeleportTo(Client *client, Vec *pos, Ang *ang) {
 	return false;
 }
 
-static cs_uint32 copyMessagePart(cs_str msg, char *part, cs_uint32 i, char *color) {
+static cs_uint32 copyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_char *color) {
 	if(*msg == '\0') return 0;
 
 	if(i > 0) {
@@ -443,8 +443,8 @@ static cs_uint32 copyMessagePart(cs_str msg, char *part, cs_uint32 i, char *colo
 	if(msg[len - 1] == '&' && ISHEX(msg[len])) --len;
 
 	for(cs_uint32 j = 0; j < len; j++) {
-		char prevsym = *msg++;
-		char nextsym = *msg;
+		cs_char prevsym = *msg++;
+		cs_char nextsym = *msg;
 
 		if(prevsym != '\r') *part++ = prevsym;
 		if(nextsym == '\0' || nextsym == '\n') break;
@@ -459,7 +459,7 @@ void Client_Chat(Client *client, cs_byte type, cs_str message) {
 	cs_uint32 msgLen = (cs_uint32)String_Length(message);
 
 	if(msgLen > 62 && type == MT_CHAT) {
-		char color = 0, part[65] = {0};
+		cs_char color = 0, part[65] = {0};
 		cs_uint32 parts = (msgLen / 60) + 1;
 		for(cs_uint32 i = 0; i < parts; i++) {
 			cs_uint32 len = copyMessagePart(message, part, i, &color);
@@ -474,7 +474,7 @@ void Client_Chat(Client *client, cs_byte type, cs_str message) {
 	Vanilla_WriteChat(client, type, message);
 }
 
-static void HandlePacket(Client *client, char *data, Packet *packet, cs_bool extended) {
+static void HandlePacket(Client *client, cs_char *data, Packet *packet, cs_bool extended) {
 	cs_bool ret = false;
 
 	if(extended)
@@ -712,7 +712,7 @@ cs_bool Client_UndefineBlock(Client *client, BlockID id) {
 	return false;
 }
 
-cs_bool Client_AddTextColor(Client *client, Color4* color, char code) {
+cs_bool Client_AddTextColor(Client *client, Color4* color, cs_char code) {
 	if(Client_GetExtVer(client, EXT_TEXTCOLORS)) {
 		CPE_WriteSetTextColor(client, color, code);
 		return true;
@@ -769,7 +769,7 @@ void Client_Free(Client *client) {
 	CPEData *cpd = client->cpeData;
 
 	if(cpd) {
-		CPEExt prev, ptr = cpd->headExtension;
+		CPEExt *prev, *ptr = cpd->headExtension;
 
 		while(ptr) {
 			prev = ptr;
@@ -819,7 +819,7 @@ static void PacketReceiverWs(Client *client) {
 	cs_bool extended;
 	cs_uint16 packetSize, recvSize;
 	WebSock *ws = client->websock;
-	char *data = client->rdbuf;
+	cs_char *data = client->rdbuf;
 
 	if(WebSock_ReceiveFrame(ws)) {
 		if(ws->opcode == 0x08) {
@@ -867,7 +867,7 @@ static void PacketReceiverRaw(Client *client) {
 	cs_uint16 packetSize;
 	cs_byte packetId;
 
-	if(Socket_Receive(client->sock, (char *)&packetId, 1, MSG_WAITALL) == 1) {
+	if(Socket_Receive(client->sock, (cs_char *)&packetId, 1, MSG_WAITALL) == 1) {
 		packet = Packet_Get(packetId);
 		if(!packet) {
 			Log_Error(Lang_Get(Lang_ErrGrp, 2), packetId, client->id);

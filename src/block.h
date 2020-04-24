@@ -89,10 +89,10 @@ enum {
 	BDDRW_GAS
 };
 
-typedef struct {
+typedef struct _BlockDef {
 	BlockID id;
-	cs_str name;
 	cs_byte flags;
+	cs_str name;
 	union {
 		struct _BlockParamsExt {
 			cs_byte solidity;
@@ -124,7 +124,7 @@ typedef struct {
 	} params;
 } BlockDef;
 
-typedef struct {
+typedef struct _BulkBlockUpdate {
 	World *world;
 	cs_bool autosend;
 	struct _BBUData {

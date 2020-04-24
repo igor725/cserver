@@ -49,7 +49,7 @@ void Log_SetLevelStr(cs_str str) {
 
 void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 	if(Log_Level & flag) {
-		char time[13], buf[8192];
+		cs_char time[13], buf[8192];
 		Time_Format(time, 13);
 
 		if(args)

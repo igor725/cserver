@@ -3,7 +3,7 @@
 #if defined(WINDOWS)
 #include <wincrypt.h>
 
-typedef struct {
+typedef struct _WinHash {
 	HCRYPTPROV provider;
 	HCRYPTHASH hash;
 	cs_ulong hashLen;

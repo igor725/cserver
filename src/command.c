@@ -78,7 +78,7 @@ COMMAND_FUNC(Info) {
 COMMAND_FUNC(OP) {
 	COMMAND_SETUSAGE("/op <playername>");
 
-	char clientname[64];
+	cs_char clientname[64];
 	if(COMMAND_GETARG(clientname, 64, 0)) {
 		Client *tg = Client_GetByName(clientname);
 		if(tg) {
@@ -109,7 +109,7 @@ COMMAND_FUNC(Uptime) {
 
 COMMAND_FUNC(CFG) {
 	COMMAND_SETUSAGE("/cfg <set/get/print> [key] [value]");
-	char subcommand[8], key[MAX_CFG_LEN], value[MAX_CFG_LEN];
+	cs_char subcommand[8], key[MAX_CFG_LEN], value[MAX_CFG_LEN];
 
 	if(COMMAND_GETARG(subcommand, 8, 0)) {
 		if(String_CaselessCompare(subcommand, "set")) {
@@ -187,7 +187,7 @@ if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) { \
 
 COMMAND_FUNC(Plugins) {
 	COMMAND_SETUSAGE("/plugins <load/unload/print> [pluginName]");
-	char subcommand[8], name[64];
+	cs_char subcommand[8], name[64];
 	Plugin *plugin;
 
 	if(COMMAND_GETARG(subcommand, 8, 0)) {
@@ -214,7 +214,7 @@ COMMAND_FUNC(Plugins) {
 			}
 		} else if(String_CaselessCompare(subcommand, "list")) {
 			cs_int32 idx = 1;
-			char pluginfo[64];
+			cs_char pluginfo[64];
 			COMMAND_APPEND(Lang_Get(Lang_CmdGrp, 13));
 
 			for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
@@ -248,7 +248,7 @@ COMMAND_FUNC(Stop) {
 COMMAND_FUNC(Kick) {
 	COMMAND_SETUSAGE(Lang_Get(Lang_CmdGrp, 16));
 
-	char playername[64];
+	cs_char playername[64];
 	if(COMMAND_GETARG(playername, 64, 0)) {
 		Client *tg = Client_GetByName(playername);
 		if(tg) {
@@ -266,7 +266,7 @@ COMMAND_FUNC(Kick) {
 COMMAND_FUNC(SetModel) {
 	COMMAND_SETUSAGE("/model <modelname/blockid>");
 
-	char modelname[64];
+	cs_char modelname[64];
 	if(COMMAND_GETARG(modelname, 64, 0)) {
 		if(!Client_SetModelStr(ccdata->caller, modelname)) {
 			COMMAND_PRINT("Invalid model name.");
@@ -280,7 +280,7 @@ COMMAND_FUNC(SetModel) {
 COMMAND_FUNC(ChgWorld) {
 	COMMAND_SETUSAGE("/chgworld <worldname>");
 
-	char worldname[64];
+	cs_char worldname[64];
 	COMMAND_ARG2WN(worldname, 0);
 	World *world = World_GetByName(worldname);
 	if(world) {
@@ -295,7 +295,7 @@ COMMAND_FUNC(ChgWorld) {
 COMMAND_FUNC(GenWorld) {
 	COMMAND_SETUSAGE("/genworld <name> <x> <y> <z>");
 
-	char worldname[64], x[6], y[6], z[6];
+	cs_char worldname[64], x[6], y[6], z[6];
 	if(COMMAND_GETARG(x, 6, 1) &&
 	COMMAND_GETARG(y, 6, 2) &&
 	COMMAND_GETARG(z, 6, 3)) {
@@ -327,7 +327,7 @@ COMMAND_FUNC(GenWorld) {
 COMMAND_FUNC(UnlWorld) {
 	COMMAND_SETUSAGE("/unlworld <worldname>");
 
-	char worldname[64];
+	cs_char worldname[64];
 	COMMAND_ARG2WN(worldname, 0);
 	World *tmp = World_GetByName(worldname);
 	if(tmp) {
@@ -350,7 +350,7 @@ COMMAND_FUNC(UnlWorld) {
 COMMAND_FUNC(SavWorld) {
 	COMMAND_SETUSAGE("/savworld <worldname>");
 
-	char worldname[64];
+	cs_char worldname[64];
 	COMMAND_ARG2WN(worldname, 0);
 	World *tmp = World_GetByName(worldname);
 	if(tmp) {
@@ -388,12 +388,12 @@ void Command_RegisterDefault(void) {
 static void SendOutput(Client *caller, cs_str ret) {
 	if(caller) {
 		while(*ret != '\0') {
-			char *nlptr = (char *)String_FirstChar(ret, '\r');
+			cs_char *nlptr = (cs_char *)String_FirstChar(ret, '\r');
 			if(nlptr)
 				*nlptr++ = '\0';
 			else
-				nlptr = (char *)ret;
-			nlptr = (char *)String_FirstChar(nlptr, '\n');
+				nlptr = (cs_char *)ret;
+			nlptr = (cs_char *)String_FirstChar(nlptr, '\n');
 			if(nlptr) *nlptr++ = '\0';
 			Client_Chat(caller, 0, ret);
 			if(!nlptr) break;
@@ -403,11 +403,11 @@ static void SendOutput(Client *caller, cs_str ret) {
 		Log_Info(ret);
 }
 
-cs_bool Command_Handle(char *str, Client *caller) {
+cs_bool Command_Handle(cs_char *str, Client *caller) {
 	if(*str == '/') ++str;
 
-	char ret[MAX_CMD_OUT];
-	char *args = str;
+	cs_char ret[MAX_CMD_OUT];
+	cs_char *args = str;
 
 	while(1) {
 		++args;
