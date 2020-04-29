@@ -166,7 +166,7 @@ void World_AllocBlockArray(World *world) {
 }
 
 BlockID *World_GetBlockArray(World *world, cs_uint32 *size) {
-	if(size) *size = world->wdata.size;
+	if(size) *size = World_GetBlockArraySize(world);
 	return world->wdata.blocks;
 }
 

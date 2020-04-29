@@ -380,9 +380,9 @@ void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 	*/
 	if(!client->cpeData) return;
 	WorldInfo *wi = &world->info;
-	cs_byte modval = wi->modval;
+	cs_byte modval = wi->modval,
+	modclr = wi->modclr;
 	cs_uint16 modprop = wi->modprop;
-	cs_byte modclr = wi->modclr;
 
 	if(updateAll || modval & MV_COLORS) {
 		for(cs_byte color = 0; color < WORLD_COLORS_COUNT; color++) {
@@ -443,8 +443,8 @@ static cs_uint32 copyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_char
 	if(msg[len - 1] == '&' && ISHEX(msg[len])) --len;
 
 	for(cs_uint32 j = 0; j < len; j++) {
-		cs_char prevsym = *msg++;
-		cs_char nextsym = *msg;
+		cs_char prevsym = *msg++,
+		nextsym = *msg;
 
 		if(prevsym != '\r') *part++ = prevsym;
 		if(nextsym == '\0' || nextsym == '\n') break;
