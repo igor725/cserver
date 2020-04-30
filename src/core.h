@@ -73,7 +73,7 @@ typedef __SIZE_TYPE__ cs_size;
 #define NULL ((void *)0)
 #endif
 
-typedef cs_int8 cs_char;
+typedef char cs_char;
 typedef unsigned long cs_ulong;
 typedef const cs_char *cs_str;
 typedef cs_byte cs_bool;
