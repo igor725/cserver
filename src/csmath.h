@@ -8,6 +8,6 @@
 #define Math_SqrtF(x) sqrtf(x)
 #endif
 
-API float Math_Distance(Vec *v1, Vec *v2);
+API cs_float Math_Distance(Vec *v1, Vec *v2);
 API void Math_Normalize(Vec *src, Vec *dst);
 #endif

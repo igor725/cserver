@@ -75,6 +75,7 @@ typedef __SIZE_TYPE__ cs_size;
 
 typedef char cs_char;
 typedef unsigned long cs_ulong;
+typedef float cs_float;
 typedef const cs_char *cs_str;
 typedef cs_byte cs_bool;
 typedef cs_byte Order;

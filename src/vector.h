@@ -5,11 +5,11 @@ typedef struct _SVec {
 } SVec;
 
 typedef struct _Vec {
-	float x, y, z;
+	cs_float x, y, z;
 } Vec;
 
 typedef struct _Ang {
-	float yaw, pitch;
+	cs_float yaw, pitch;
 } Ang;
 
 static inline cs_bool SVec_Compare(const SVec *a, const SVec *b) {

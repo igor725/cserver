@@ -151,24 +151,24 @@ void Proto_ReadSVec(cs_str *dataptr, SVec *vec) {
 
 void Proto_ReadAng(cs_str *dataptr, Ang *ang) {
 	cs_str data = *dataptr;
-	ang->yaw = (((float)(cs_byte)*data++) / 256) * 360;
-	ang->pitch = (((float)(cs_byte)*data++) / 256) * 360;
+	ang->yaw = (((cs_float)(cs_byte)*data++) / 256) * 360;
+	ang->pitch = (((cs_float)(cs_byte)*data++) / 256) * 360;
 	*dataptr = data;
 }
 
 void Proto_ReadFlSVec(cs_str *dataptr, Vec *vec) {
 	cs_str data = *dataptr;
-	vec->x = (float)ntohs(*(cs_int16 *)data) / 32; data += 2;
-	vec->y = (float)ntohs(*(cs_int16 *)data) / 32; data += 2;
-	vec->z = (float)ntohs(*(cs_int16 *)data) / 32; data += 2;
+	vec->x = (cs_float)ntohs(*(cs_int16 *)data) / 32; data += 2;
+	vec->y = (cs_float)ntohs(*(cs_int16 *)data) / 32; data += 2;
+	vec->z = (cs_float)ntohs(*(cs_int16 *)data) / 32; data += 2;
 	*dataptr = data;
 }
 
 void Proto_ReadFlVec(cs_str *dataptr, Vec *vec) {
 	cs_str data = *dataptr;
-	vec->x = (float)ntohl(*(cs_int32 *)data) / 32; data += 4;
-	vec->y = (float)ntohl(*(cs_int32 *)data) / 32; data += 4;
-	vec->z = (float)ntohl(*(cs_int32 *)data) / 32; data += 4;
+	vec->x = (cs_float)ntohl(*(cs_int32 *)data) / 32; data += 4;
+	vec->y = (cs_float)ntohl(*(cs_int32 *)data) / 32; data += 4;
+	vec->z = (cs_float)ntohl(*(cs_int32 *)data) / 32; data += 4;
 	*dataptr = data;
 }
 

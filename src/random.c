@@ -31,12 +31,12 @@ cs_int32 Random_Next(RNGState *seed, cs_int32 n) {
 	return val;
 }
 
-float Random_Float(RNGState *seed) {
+cs_float Random_Float(RNGState *seed) {
 	cs_int32 raw;
 
 	*seed = (*seed * RND_VALUE + 0xBLL) & RND_MASK;
 	raw   = (cs_int32)(*seed >> (48 - 24));
-	return raw / ((float)(1 << 24));
+	return raw / ((cs_float)(1 << 24));
 }
 
 cs_int32 Random_Range(RNGState *rnd, cs_int32 min, cs_int32 max) {
