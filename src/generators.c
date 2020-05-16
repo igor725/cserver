@@ -1,4 +1,5 @@
 #include "core.h"
+#include "block.h"
 #include "world.h"
 #include "generators.h"
 #include "random.h"
@@ -61,12 +62,11 @@ static struct DefGenContext {
 	BlockID *data;
 	SVec *dims;
 	Thread threads[MAX_THREADS];
-	cs_uint32 wsize;
+	cs_uint32 wsize, lvlSize;
 	cs_uint16 *biomes, *heightMap,
 	biomeSizeX, biomeSizeZ, biomesNum,
-	heightGrass, heightStone,
-	heightLava, gravelVeinSize,
-	lvlSize, biomeSize;
+	heightGrass, heightWater, heightStone,
+	heightLava, gravelVeinSize, biomeSize;
 } ctx;
 
 enum gen_biomes {
@@ -101,6 +101,12 @@ static void waitAll(void) {
 		if(Thread_IsValid(ctx.threads[i]))
 			Thread_Join(ctx.threads[i]);
 	}
+}
+
+static void doCleanUp(void) {
+	Memory_Free(ctx.biomes);
+	Memory_Free(ctx.heightMap);
+	Memory_Fill(&ctx, sizeof(ctx), 0);
 }
 
 static void genBiomes(void) {
@@ -184,10 +190,116 @@ ctx.data[(y * ctx.dims->z + z) * ctx.dims->x + x]
 THREAD_FUNC(terrainThread) {
 	(void)param;
 
-	cs_uint16 height1, heightStone1, biome;
+	cs_uint16 height1, heightStone1;
+	enum gen_biomes biome;
 	for(cs_uint16 x = 0; x < ctx.dims->x; x++) {
+		cs_uint16 hx = x / gen_biome_step,
+		biomePosZOld = (cs_uint16)-1,
+		b0 = hx,
+		b1 = b0 + 1,
+		b00 = 0,
+		b01 = ctx.biomes[b0],
+		b10 = 0,
+		b11 = ctx.biomes[b1];
+		cs_float percentPosX = (cs_float)x / (float)gen_biome_step - (float)hx,
+		percentNegX = 1.0f - percentPosX;
 		for(cs_uint16 z = 0; z < ctx.dims->z; z++) {
+			cs_uint16 hz = z / gen_biome_step;
+			cs_float percentZ = (cs_float)z / (cs_float)gen_biome_step - (float)hz,
+			percentZOp = 1.0f - percentZ;
+			height1 = (cs_uint16)(((cs_float)ctx.heightMap[hx + hz * ctx.biomeSizeX] * percentNegX +
+			(cs_float)ctx.heightMap[(hx + 1) + hz * ctx.biomeSizeX] * percentPosX) * (1 - percentZ) +
+			((cs_float)ctx.heightMap[hx + (hz + 1) * ctx.biomeSizeX] * percentNegX +
+			(cs_float)ctx.heightMap[(hx + 1) + (hz + 1) * ctx.biomeSizeX] * percentPosX) *
+			percentZ + 0.5f);
+			heightStone1 = max(height1 - (cs_uint16)Random_Range(&ctx.rnd, 4, 6), 1);
 
+			if(hz != biomePosZOld) {
+				biomePosZOld = hz;
+				b00 = b01;
+				b01 = ctx.biomes[b0 + (hz + 1) * ctx.biomeSizeX];
+				b10 = b11;
+				b11 = ctx.biomes[b1 + (hz + 1) * ctx.biomeSizeX];
+				if(b01 == BIOME_TREES) b01 = BIOME_NORMAL;
+				if(b11 == BIOME_TREES) b11 = BIOME_NORMAL;
+			}
+
+			if(b11 == b01 && b11 == b10) {
+				if(percentPosX * percentPosX + percentZ * percentZ > 0.25f)
+					biome = b11;
+				else
+					biome = b00;
+			} else if(b00 == b11 && b00 == b10) {
+				if(percentPosX * percentPosX + percentZOp * percentZOp > 0.25f)
+					biome = b00;
+				else
+					biome = b01;
+			} else if(b00 == b01 && b00 == b11) {
+				if(percentNegX * percentNegX + percentZ * percentZ > 0.25f)
+					biome = b00;
+				else
+					biome = b10;
+			} else if(b00 == b01 && b00 == b10) {
+				if(percentNegX * percentNegX + percentZOp * percentZOp > 0.25f)
+					biome = b00;
+				else
+					biome = b11;
+			} else {
+				cs_uint16 bx = (cs_uint16)((cs_float)hx + 0.5f),
+				bz = (cs_uint16)((cs_float)hz + 0.5f);
+				biome = ctx.biomes[bx + bz * ctx.biomeSizeX];
+			}
+
+			cs_uint32 offset = z * ctx.dims->x + x;
+			cs_uint16 y; // For iterators
+
+			for(y = ctx.heightStone; y < heightStone1; y++)
+				ctx.data[offset + y * ctx.lvlSize] = BLOCK_STONE;
+
+			switch (biome) {
+				case BIOME_NORMAL:
+				case BIOME_TREES:
+					for(y = heightStone1; y < height1 - 1; y++)
+						ctx.data[offset + y * ctx.lvlSize] = BLOCK_DIRT;
+
+					if(height1 > ctx.heightWater) {
+						ctx.data[offset + (height1 - 1) * ctx.lvlSize] = BLOCK_DIRT;
+						ctx.data[offset + height1 * ctx.lvlSize] = BLOCK_GRASS;
+					} else {
+						ctx.data[offset + (height1 - 1) * ctx.lvlSize] = BLOCK_DIRT;
+						ctx.data[offset + height1 * ctx.lvlSize] = BLOCK_SAND;
+					}
+
+					for(y = height1 + 1; y <= ctx.heightWater; y++)
+						ctx.data[offset + y * ctx.lvlSize] = BLOCK_WATER;
+					break;
+				case BIOME_HIGH:
+					for(y = heightStone1; y <= height1; y++)
+						ctx.data[offset + y * ctx.lvlSize] = BLOCK_STONE;
+					for(y = height1 + 1; y <= ctx.heightWater; y++)
+						ctx.data[offset + y * ctx.lvlSize] = BLOCK_WATER;
+					break;
+				case BIOME_SAND:
+					for(y = heightStone1; y <= height1; y++)
+						ctx.data[offset + y * ctx.lvlSize] = BLOCK_SAND;
+					for(y = height1 + 1; y <= ctx.heightWater; y++)
+						ctx.data[offset + y * ctx.lvlSize] = BLOCK_WATER;
+					break;
+				case BIOME_WATER:
+					for(y = heightStone1; y <= min(height1, ctx.heightGrass - 2); y++)
+						ctx.data[offset + y * ctx.lvlSize] = BLOCK_DIRT;
+					for(y = max(heightStone1, ctx.heightGrass - 2); y <= height1; y++)
+						ctx.data[offset + y * ctx.lvlSize] = BLOCK_SAND;
+					for(y = height1 + 1; y <= ctx.heightWater; y++)
+						ctx.data[offset + y * ctx.lvlSize] = BLOCK_WATER;
+					break;
+				default:
+					ctx.data[offset + (height1 - 1) * ctx.lvlSize] =
+					(BlockID)Random_Range(&ctx.rnd, BLOCK_RED, BLOCK_BLACK);
+					ctx.data[offset + height1 * ctx.lvlSize] =
+					(BlockID)Random_Range(&ctx.rnd, BLOCK_RED, BLOCK_BLACK);
+					break;
+			}
 		}
 	}
 
@@ -199,13 +311,16 @@ void Generator_Default(World *world) {
 	ctx.dims = &world->info.dimensions;
 	ctx.lvlSize = ctx.dims->x * ctx.dims->z;
 	ctx.heightGrass = ctx.dims->y / 2;
+	ctx.heightWater = ctx.heightGrass;
 	ctx.heightStone = ctx.heightGrass - 3;
 	ctx.data = World_GetBlockArray(world, &ctx.wsize);
 	ctx.gravelVeinSize = min(gen_gravel_vein_size, ctx.heightGrass / 3);
 	Random_Seed(&ctx.rnd, 1337);
 	genBiomes();
 	genHeightMap();
-	Memory_Fill(ctx.data, ctx.lvlSize, 7);
-	Memory_Fill(ctx.data + ctx.lvlSize, ctx.lvlSize * (ctx.heightStone - 1), 1);
+	Memory_Fill(ctx.data, ctx.lvlSize, BLOCK_BEDROCK);
+	Memory_Fill(ctx.data + ctx.lvlSize, ctx.lvlSize * (ctx.heightStone - 1), BLOCK_STONE);
 	addThread(terrainThread, NULL);
+	waitAll();
+	doCleanUp();
 }
