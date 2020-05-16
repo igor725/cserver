@@ -21,7 +21,6 @@ void Generator_Flat(World *world) {
 
 	World_SetProperty(world, PROP_CLOUDSLEVEL, dims->y + 2);
 	World_SetProperty(world, PROP_EDGELEVEL, dims->y / 2);
-
 	wi->spawnVec.x = (cs_float)dims->x / 2;
 	wi->spawnVec.y = (cs_float)(dims->y / 2) + 1.59375f;
 	wi->spawnVec.z = (cs_float)dims->z / 2;
@@ -69,7 +68,7 @@ static struct DefGenContext {
 	heightLava, gravelVeinSize, biomeSize;
 } ctx;
 
-enum gen_biomes {
+enum DefGenBiomes {
 	BIOME_NORMAL,
 	BIOME_HIGH,
 	BIOME_TREES,
@@ -191,7 +190,7 @@ THREAD_FUNC(terrainThread) {
 	(void)param;
 
 	cs_uint16 height1, heightStone1;
-	enum gen_biomes biome;
+	enum DefGenBiomes biome;
 	for(cs_uint16 x = 0; x < ctx.dims->x; x++) {
 		cs_uint16 hx = x / gen_biome_step,
 		biomePosZOld = (cs_uint16)-1,
