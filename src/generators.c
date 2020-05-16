@@ -1,4 +1,5 @@
 #include "core.h"
+#include "log.h"
 #include "block.h"
 #include "world.h"
 #include "generators.h"
@@ -69,12 +70,12 @@ static struct DefGenContext {
 } ctx;
 
 enum DefGenBiomes {
+	BIOME_INVALID,
 	BIOME_NORMAL,
 	BIOME_HIGH,
 	BIOME_TREES,
 	BIOME_SAND,
-	BIOME_WATER,
-	BIOMES_COUNT
+	BIOME_WATER
 };
 
 static cs_int32 addThread(TFUNC func, TARG arg) {
@@ -115,10 +116,10 @@ static void genBiomes(void) {
 	ctx.biomesNum = ctx.dims->x * ctx.dims->z / gen_biome_step / gen_biome_radius / 64 + 1;
 
 	ctx.biomes = Memory_Alloc(2, ctx.biomeSize);
-	for(cs_int16 i = 0; i < ctx.biomesNum; i++) {
+	for(cs_int16 i = 0; i <= ctx.biomesNum; i++) {
 		cs_uint16 x = (cs_uint16)Random_Range(&ctx.rnd, 0, ctx.biomeSizeX),
 		z = (cs_uint16)Random_Range(&ctx.rnd, 0, ctx.biomeSizeZ),
-		biome = (cs_uint16)Random_Range(&ctx.rnd, 0, BIOMES_COUNT);
+		biome = (cs_uint16)Random_Range(&ctx.rnd, BIOME_NORMAL, BIOME_WATER);
 
 		for(cs_int16 dx = -gen_biome_radius; dx < gen_biome_radius; dx++) {
 			for(cs_int16 dz = -gen_biome_radius; dz < gen_biome_radius; dz++) {
@@ -126,10 +127,10 @@ static void genBiomes(void) {
 				nz = z + dz;
 
 				if(dx * dx + dz * dz < gen_biome_radius2 &&
-				0 <= nx && nx < ctx.biomeSizeX &&
-				0 <= nz && nz < ctx.biomeSizeZ) {
+				0 <= nx && nx <= ctx.biomeSizeX &&
+				0 <= nz && nz <= ctx.biomeSizeZ) {
 					cs_uint16 offset = nx + nz * ctx.biomeSizeX;
-					if(offset >= 0 && offset <= ctx.biomeSize)
+					if(offset <= ctx.biomeSize)
 						ctx.biomes[offset] = biome;
 				}
 			}
@@ -138,9 +139,9 @@ static void genBiomes(void) {
 }
 
 static void genHeightMap(void) {
-	ctx.heightMap = Memory_Alloc(2, ctx.biomeSizeX * ctx.biomeSizeZ);
+	ctx.heightMap = Memory_Alloc(2, ctx.biomeSize);
 
-	for(cs_uint16 x = 0; x < ctx.biomeSizeX; x++) {
+	for(cs_uint16 x = 0; x < ctx.biomeSizeX + 1; x++) {
 		for(cs_uint16 z = 0; z < ctx.biomeSizeZ; z++) {
 			cs_uint16 offset = x + z * ctx.biomeSizeX,
 			biome = ctx.biomes[offset];
@@ -196,15 +197,15 @@ THREAD_FUNC(terrainThread) {
 		biomePosZOld = (cs_uint16)-1,
 		b0 = hx,
 		b1 = b0 + 1,
-		b00 = 0,
+		b00 = BIOME_INVALID,
 		b01 = ctx.biomes[b0],
-		b10 = 0,
+		b10 = BIOME_INVALID,
 		b11 = ctx.biomes[b1];
-		cs_float percentPosX = (cs_float)x / (float)gen_biome_step - (float)hx,
+		cs_float percentPosX = (cs_float)x / (cs_float)gen_biome_step - (cs_float)hx,
 		percentNegX = 1.0f - percentPosX;
 		for(cs_uint16 z = 0; z < ctx.dims->z; z++) {
 			cs_uint16 hz = z / gen_biome_step;
-			cs_float percentZ = (cs_float)z / (cs_float)gen_biome_step - (float)hz,
+			cs_float percentZ = (cs_float)z / (cs_float)gen_biome_step - (cs_float)hz,
 			percentZOp = 1.0f - percentZ;
 			height1 = (cs_uint16)(((cs_float)ctx.heightMap[hx + hz * ctx.biomeSizeX] * percentNegX +
 			(cs_float)ctx.heightMap[(hx + 1) + hz * ctx.biomeSizeX] * percentPosX) * (1 - percentZ) +
@@ -293,6 +294,7 @@ THREAD_FUNC(terrainThread) {
 						ctx.data[offset + y * ctx.lvlSize] = BLOCK_WATER;
 					break;
 				default:
+					Log_Warn("Invalid biome %d on (%d,%d)", biome, hx, hz);
 					ctx.data[offset + (height1 - 1) * ctx.lvlSize] =
 					(BlockID)Random_Range(&ctx.rnd, BLOCK_RED, BLOCK_BLACK);
 					ctx.data[offset + height1 * ctx.lvlSize] =
@@ -321,5 +323,11 @@ void Generator_Default(World *world) {
 	Memory_Fill(ctx.data + ctx.lvlSize, ctx.lvlSize * (ctx.heightStone - 1), BLOCK_STONE);
 	addThread(terrainThread, NULL);
 	waitAll();
+	WorldInfo *wi = &world->info;
+	cs_uint16 x = ctx.dims->x / 2, z = ctx.dims->z / 2;
+	wi->spawnVec.x = (cs_float)x;
+	wi->spawnVec.y = (cs_float)ctx.heightMap[ctx.biomeSizeX / 2 + ctx.biomeSizeZ / 2 * ctx.biomeSizeX] +
+	(1.59375f * 4);
+	wi->spawnVec.z = (cs_float)z;
 	doCleanUp();
 }
