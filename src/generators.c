@@ -115,12 +115,12 @@ static void genBiomes(void) {
 	ctx.biomeSizeX = ((cs_uint16)ctx.dims->x / gen_biome_step) + 1,
 	ctx.biomeSizeZ = ((cs_uint16)ctx.dims->z / gen_biome_step) + 2,
 	ctx.biomeSize = ctx.biomeSizeX * ctx.biomeSizeZ,
-	ctx.biomesNum = ctx.dims->x * ctx.dims->z / gen_biome_step / gen_biome_radius / 64 + 1;
+	ctx.biomesNum = ctx.dims->x * ctx.dims->z / gen_biome_step / gen_biome_radius / 64 + 2;
 
 	ctx.biomes = Memory_Alloc(2, ctx.biomeSize);
-	for(cs_int16 i = 0; i <= ctx.biomesNum; i++) {
-		cs_uint16 x = (cs_uint16)Random_Range(&ctx.rnd, 0, ctx.biomeSizeX),
-		z = (cs_uint16)Random_Range(&ctx.rnd, 0, ctx.biomeSizeZ),
+	for(cs_int16 i = 0; i < ctx.biomesNum; i++) {
+		cs_uint16 x = (cs_uint16)Random_Range(&ctx.rnd, 0, ctx.biomeSizeX) - 1,
+		z = (cs_uint16)Random_Range(&ctx.rnd, 0, ctx.biomeSizeZ) - 1,
 		biome = (cs_uint16)Random_Range(&ctx.rnd, BIOME_NORMAL, BIOME_WATER);
 
 		for(cs_int16 dx = -gen_biome_radius; dx < gen_biome_radius; dx++) {
@@ -132,7 +132,7 @@ static void genBiomes(void) {
 				0 <= nx && nx <= ctx.biomeSizeX &&
 				0 <= nz && nz <= ctx.biomeSizeZ) {
 					cs_uint16 offset = nx + nz * ctx.biomeSizeX;
-					if(offset <= ctx.biomeSize)
+					if(offset < ctx.biomeSize)
 						ctx.biomes[offset] = biome;
 				}
 			}
