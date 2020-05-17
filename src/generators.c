@@ -1,9 +1,11 @@
 #include "core.h"
+#include "platform.h"
 #include "log.h"
 #include "block.h"
 #include "world.h"
 #include "generators.h"
 #include "random.h"
+#include "csmath.h"
 
 // Генератор плоского мира
 
@@ -39,13 +41,14 @@ gen_enable_ores = true,
 gen_enable_houses = true;
 
 static cs_uint16 gen_cave_radius = 3,
+gen_cave_radius2 = 0, // Значение вычисляется само при инициализации генератора
 gen_cave_min_length = 100,
 gen_cave_max_length = 500,
 gen_ore_vein_size = 3,
 gen_gravel_vein_size = 14,
 gen_biome_step = 20,
 gen_biome_radius = 5,
-gen_biome_radius2 = 25; // Менять в зависимости от предыдущего значения
+gen_biome_radius2 = 0; // Аналогично gen_cave_radius2
 
 static cs_float gen_trees_count_mult = 0.007f,
 gen_ores_count_mult = 1.0f / 2000.0f,
@@ -78,7 +81,7 @@ enum DefGenBiomes {
 	BIOME_WATER
 };
 
-static cs_int32 addThread(TFUNC func, TARG arg) {
+static cs_int32 newGenThread(TFUNC func) {
 	for(cs_int32 i = 0; i < MAX_THREADS; i++) {
 		if(i > cfgMaxThreads) {
 			i = 0;
@@ -88,7 +91,7 @@ static cs_int32 addThread(TFUNC func, TARG arg) {
 			}
 		}
 		if(!Thread_IsValid(ctx.threads[i])) {
-			ctx.threads[i] = Thread_Create(func, arg, false);
+			ctx.threads[i] = Thread_Create(func, NULL, false);
 			return i;
 		}
 	}
@@ -181,11 +184,9 @@ static void genHeightMap(void) {
 	}
 }
 
-#define setBlock(x, y, z, id) \
-ctx.data[(y * ctx.dims->z + z) * ctx.dims->x + x] = id
+#define setBlock(vec, id) ctx.data[(vec.y * ctx.dims->z + vec.z) * ctx.dims->x + vec.x] = id
 
-#define getBlock(x, y, z) \
-ctx.data[(y * ctx.dims->z + z) * ctx.dims->x + x]
+#define getBlock(vec) ctx.data[(vec.y * ctx.dims->z + vec.z) * ctx.dims->x + vec.x]
 
 THREAD_FUNC(terrainThread) {
 	(void)param;
@@ -307,7 +308,71 @@ THREAD_FUNC(terrainThread) {
 	return 0;
 }
 
+THREAD_FUNC(cavesThread) {
+	(void)param;
+
+	cs_uint16 caveLength = (cs_uint16)Random_Range(&ctx.rnd, gen_cave_min_length, gen_cave_max_length);
+	cs_uint16 caveChangeDir = caveLength / 3;
+
+	SVec pos;
+	Vec delta, direction;
+
+	pos.x = (cs_int16)Random_Range(&ctx.rnd, gen_cave_radius, ctx.dims->x - gen_cave_radius);
+	pos.y = (cs_int16)Random_Range(&ctx.rnd, 10, ctx.heightGrass - 20);
+	pos.z = (cs_int16)Random_Range(&ctx.rnd, gen_cave_radius, ctx.dims->z - gen_cave_radius);
+
+	direction.x = (Random_Float(&ctx.rnd) - 0.5f) * 0.6f;
+	direction.y = -Random_Float(&ctx.rnd) * 0.1f;
+	direction.z = (Random_Float(&ctx.rnd) - 0.5f) * 0.6f;
+
+	for(cs_uint16 j = 1; j <= caveLength; j++) {
+		if(j % caveChangeDir == 0) {
+			direction.x = (Random_Float(&ctx.rnd) - 0.5f) * 0.6f;
+			direction.y = (Random_Float(&ctx.rnd) - 0.5f) * 0.2f;
+			direction.z = (Random_Float(&ctx.rnd) - 0.5f) * 0.6f;
+		}
+
+		delta.x = Random_Float(&ctx.rnd) - 0.5f + direction.x;
+		delta.y = (Random_Float(&ctx.rnd) - 0.5f) * 0.4f + direction.y;
+		delta.z = Random_Float(&ctx.rnd) - 0.5f + direction.z;
+
+		cs_float length = Math_SqrtF(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
+		pos.x = (cs_int16)((cs_float)pos.x + delta.x * gen_cave_radius / length + 0.5f);
+		pos.y = (cs_int16)((cs_float)pos.y + delta.y * gen_cave_radius / length + 0.5f);
+		pos.z = (cs_int16)((cs_float)pos.z + delta.z * gen_cave_radius / length + 0.5f);
+
+		SVec bpos;
+		for(cs_int16 dx = -gen_cave_radius; dx <= gen_cave_radius; dx++) {
+			for(cs_int16 dz = -gen_cave_radius; dz <= gen_cave_radius; dz++) {
+				for(cs_int16 dy = -gen_cave_radius; dy <= gen_cave_radius; dy++) {
+					bpos.x = pos.x + dx;
+					bpos.y = pos.y + dy;
+					bpos.z = pos.z + dz;
+
+					if(dx * dx + dz * dz + dy * dy < gen_cave_radius2
+					&& 1 < bpos.y && bpos.y < ctx.dims->y - 2
+					&& 1 < bpos.x && bpos.x < ctx.dims->x - 2
+					&& 1 < bpos.z && bpos.z < ctx.dims->z - 2) {
+						BlockID curr = getBlock(bpos);
+						if(curr < BLOCK_WATER || curr > BLOCK_WATER_STILL) {
+							setBlock(bpos, bpos.y > ctx.heightLava ? BLOCK_AIR : BLOCK_LAVA);
+						} else {
+							bpos.y -= 1;
+							setBlock(bpos, 8);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
 void Generator_Default(World *world) {
+	gen_cave_radius2 = gen_cave_radius * gen_cave_radius;
+	gen_biome_radius2 = gen_biome_radius * gen_biome_radius;
+
 	ctx.world = world;
 	ctx.dims = &world->info.dimensions;
 	ctx.lvlSize = ctx.dims->x * ctx.dims->z;
@@ -321,7 +386,8 @@ void Generator_Default(World *world) {
 	genHeightMap();
 	Memory_Fill(ctx.data, ctx.lvlSize, BLOCK_BEDROCK);
 	Memory_Fill(ctx.data + ctx.lvlSize, ctx.lvlSize * (ctx.heightStone - 1), BLOCK_STONE);
-	addThread(terrainThread, NULL);
+	newGenThread(terrainThread);
+	newGenThread(cavesThread);
 	waitAll();
 	WorldInfo *wi = &world->info;
 	cs_uint16 x = ctx.dims->x / 2, z = ctx.dims->z / 2;
