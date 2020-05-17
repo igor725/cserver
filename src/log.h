@@ -1,5 +1,7 @@
 #ifndef LOG_H
 #define LOG_H
+#include "platform.h"
+
 enum {
 	LOG_QUIET,
 	LOG_ERROR = BIT(0),
@@ -10,6 +12,8 @@ enum {
 	LOG_ALL = 0x0F
 };
 
+void Log_Init(void);
+void Log_Uninit(void);
 void Log_Print(cs_byte flag, cs_str str, va_list *args);
 
 API void Log_Error(cs_str str, ...);
