@@ -1,9 +1,9 @@
 #include "core.h"
-#include "platform.h"
 #include "str.h"
 #include "log.h"
 
 cs_byte Log_Level = LOG_ALL;
+Mutex *Log_Mutex;
 
 static cs_str getName(cs_byte flag) {
 	switch(flag) {
@@ -19,6 +19,14 @@ static cs_str getName(cs_byte flag) {
 			return "DEBUG";
 	}
 	return NULL;
+}
+
+void Log_Init(void) {
+	Log_Mutex = Mutex_Create();
+}
+
+void Log_Uninit(void) {
+	if(Log_Mutex) Mutex_Free(Log_Mutex);
 }
 
 void Log_SetLevelStr(cs_str str) {
@@ -49,6 +57,7 @@ void Log_SetLevelStr(cs_str str) {
 
 void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 	if(Log_Level & flag) {
+		Mutex_Lock(Log_Mutex);
 		cs_char time[13], buf[8192];
 		Time_Format(time, 13);
 
@@ -61,7 +70,8 @@ void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 			time,
 			getName(flag),
 			buf
-		);	
+		);
+		Mutex_Unlock(Log_Mutex);
 	}
 }
 
