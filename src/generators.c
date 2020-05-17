@@ -56,8 +56,8 @@ gen_caves_count_mult = 2.0f / 700000.0f,
 gen_houses_count_mult = 1.0f / 70000.0f,
 gen_gravel_count_mult = 1.0f / 500000;
 
-#define MAX_THREADS 16
-cs_int32 cfgMaxThreads = 2;
+#define MAX_THREADS 64
+cs_int32 cfgMaxThreads = 8;
 
 static struct DefGenContext {
 	RNGState rnd;
@@ -69,7 +69,8 @@ static struct DefGenContext {
 	cs_uint16 *biomes, *heightMap,
 	biomeSizeX, biomeSizeZ, biomesNum,
 	heightGrass, heightWater, heightStone,
-	heightLava, gravelVeinSize, biomeSize;
+	heightLava, gravelVeinSize, biomeSize,
+	numCaves;
 } ctx;
 
 enum DefGenBiomes {
@@ -185,7 +186,6 @@ static void genHeightMap(void) {
 }
 
 #define setBlock(vec, id) ctx.data[(vec.y * ctx.dims->z + vec.z) * ctx.dims->x + vec.x] = id
-
 #define getBlock(vec) ctx.data[(vec.y * ctx.dims->z + vec.z) * ctx.dims->x + vec.x]
 
 THREAD_FUNC(terrainThread) {
@@ -376,18 +376,23 @@ void Generator_Default(World *world) {
 	ctx.world = world;
 	ctx.dims = &world->info.dimensions;
 	ctx.lvlSize = ctx.dims->x * ctx.dims->z;
+	ctx.data = World_GetBlockArray(world, &ctx.wsize);
+
 	ctx.heightGrass = ctx.dims->y / 2;
 	ctx.heightWater = ctx.heightGrass;
 	ctx.heightStone = ctx.heightGrass - 3;
-	ctx.data = World_GetBlockArray(world, &ctx.wsize);
+
 	ctx.gravelVeinSize = min(gen_gravel_vein_size, ctx.heightGrass / 3);
+	ctx.numCaves = (cs_uint16)((cs_float)(ctx.dims->x * ctx.heightGrass * ctx.dims->z) * gen_caves_count_mult);
+
 	Random_Seed(&ctx.rnd, 1337);
 	genBiomes();
 	genHeightMap();
 	Memory_Fill(ctx.data, ctx.lvlSize, BLOCK_BEDROCK);
 	Memory_Fill(ctx.data + ctx.lvlSize, ctx.lvlSize * (ctx.heightStone - 1), BLOCK_STONE);
 	newGenThread(terrainThread);
-	newGenThread(cavesThread);
+	for(cs_uint16 i = 0; i < ctx.numCaves; i++)
+		newGenThread(cavesThread);
 	waitAll();
 	WorldInfo *wi = &world->info;
 	cs_uint16 x = ctx.dims->x / 2, z = ctx.dims->z / 2;
