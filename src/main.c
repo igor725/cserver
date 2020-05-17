@@ -22,8 +22,8 @@ cs_int32 main(cs_int32 argc, cs_char **argv) {
 	Server_InitialWork();
 	Server_StartLoop();
 	Server_Stop();
-	Memory_Uninit();
 	Http_Uninit();
 	Log_Uninit();
+	Memory_Uninit();
 	return 0;
 }
