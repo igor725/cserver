@@ -1,6 +1,4 @@
 #include "core.h"
-#include "platform.h"
-#include "log.h"
 #include "block.h"
 #include "world.h"
 #include "generators.h"
@@ -295,7 +293,6 @@ THREAD_FUNC(terrainThread) {
 						ctx.data[offset + y * ctx.lvlSize] = BLOCK_WATER;
 					break;
 				default:
-					Log_Warn("Invalid biome %d on (%d,%d)", biome, hx, hz);
 					ctx.data[offset + (height1 - 1) * ctx.lvlSize] =
 					(BlockID)Random_Range(&ctx.rnd, BLOCK_RED, BLOCK_BLACK);
 					ctx.data[offset + height1 * ctx.lvlSize] =
@@ -394,11 +391,17 @@ void Generator_Default(World *world) {
 	for(cs_uint16 i = 0; i < ctx.numCaves; i++)
 		newGenThread(cavesThread);
 	waitAll();
+
 	WorldInfo *wi = &world->info;
 	cs_uint16 x = ctx.dims->x / 2, z = ctx.dims->z / 2;
 	wi->spawnVec.x = (cs_float)x;
 	wi->spawnVec.y = (cs_float)ctx.heightMap[ctx.biomeSizeX / 2 + ctx.biomeSizeZ / 2 * ctx.biomeSizeX] +
 	(1.59375f * 4);
 	wi->spawnVec.z = (cs_float)z;
+	World_SetProperty(world, PROP_SIDEBLOCK, 0);
+	World_SetProperty(world, PROP_EDGEBLOCK, 8);
+	World_SetProperty(world, PROP_EDGELEVEL, ctx.heightWater + 1);
+	World_SetProperty(world, PROP_SIDEOFFSET, 0);
+
 	doCleanUp();
 }
