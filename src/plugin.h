@@ -11,6 +11,7 @@ typedef struct _Plugin {
 
 void Plugin_Start(void);
 void Plugin_Stop(void);
+
 cs_bool Plugin_Load(cs_str name);
 cs_bool Plugin_Unload(Plugin *plugin);
 Plugin *Plugin_Get(cs_str name);

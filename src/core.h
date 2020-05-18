@@ -65,8 +65,6 @@ typedef __SIZE_TYPE__ cs_size;
 #error Unknown OS
 #endif // OS defines
 
-#define INT extern
-
 #define true  1
 #define false 0
 

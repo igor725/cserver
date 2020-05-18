@@ -10,6 +10,7 @@ VAR LGroup *Lang_SwGrp, *Lang_ErrGrp, *Lang_ConGrp,
 *Lang_DbgGrp;
 
 void Lang_Init(void);
+
 API LGroup *Lang_NewGroup(cs_uint32 size);
 API cs_uint32 Lang_ResizeGroup(LGroup *grp, cs_uint32 newsize);
 API cs_bool Lang_Set(LGroup *grp, cs_uint32 id, cs_str str);
