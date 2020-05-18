@@ -35,7 +35,7 @@ static KListField *AGetNode(Client *client, cs_uint16 type) {
 	return NULL;
 }
 
-cs_uint16 Assoc_NewType() {
+cs_uint16 Assoc_NewType(void) {
 	cs_uint16 next_id = headAssocType ? headAssocType->value.num16 + 1 : 0;
 	AList_AddField(&headAssocType, NULL)->value.num16 = next_id;
 	return next_id;
