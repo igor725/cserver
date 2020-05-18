@@ -68,10 +68,10 @@ void Proto_WriteColor3(cs_char **dataptr, const Color3* color) {
 
 void Proto_WriteColor4(cs_char **dataptr, const Color4* color) {
 	cs_char *data = *dataptr;
-	*(cs_int16 *)data = htons(color->r); data += 2;
-	*(cs_int16 *)data = htons(color->g); data += 2;
-	*(cs_int16 *)data = htons(color->b); data += 2;
-	*(cs_int16 *)data = htons(color->a); data += 2;
+	*(cs_int16 *)data = (cs_int16)htons(color->r); data += 2;
+	*(cs_int16 *)data = (cs_int16)htons(color->g); data += 2;
+	*(cs_int16 *)data = (cs_int16)htons(color->b); data += 2;
+	*(cs_int16 *)data = (cs_int16)htons(color->a); data += 2;
 	*dataptr = data;
 }
 
@@ -85,10 +85,10 @@ void Proto_WriteByteColor3(cs_char **dataptr, const Color3* color) {
 
 void Proto_WriteByteColor4(cs_char **dataptr, const Color4* color) {
 	cs_char *data = *dataptr;
-	*data++ = (cs_int8)color->r;
-	*data++ = (cs_int8)color->g;
-	*data++ = (cs_int8)color->b;
-	*data++ = (cs_int8)color->a;
+	*data++ = (cs_char)color->r;
+	*data++ = (cs_char)color->g;
+	*data++ = (cs_char)color->b;
+	*data++ = (cs_char)color->a;
 	*dataptr = data;
 }
 
@@ -480,7 +480,7 @@ static void UpdateBlock(World *world, SVec *pos, BlockID block) {
 }
 
 cs_bool Handler_SetBlock(Client *client, cs_str data) {
-	ValidateClientState(client, STATE_INGAME, false);
+	ValidateClientState(client, STATE_INGAME, false)
 
 	World *world = Client_GetWorld(client);
 	if(!world) return false;
@@ -516,7 +516,8 @@ cs_bool Handler_SetBlock(Client *client, cs_str data) {
 }
 
 cs_bool Handler_PosAndOrient(Client *client, cs_str data) {
-	ValidateClientState(client, STATE_INGAME, false);
+	ValidateClientState(client, STATE_INGAME, false)
+
 	CPEData *cpd = client->cpeData;
 	BlockID cb = *data++;
 
@@ -536,7 +537,7 @@ cs_bool Handler_PosAndOrient(Client *client, cs_str data) {
 }
 
 cs_bool Handler_Message(Client *client, cs_str data) {
-	ValidateClientState(client, STATE_INGAME, true);
+	ValidateClientState(client, STATE_INGAME, true)
 
 	cs_byte type = 0;
 	cs_char message[65];
@@ -943,8 +944,8 @@ void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_bool mode) {
 }
 
 cs_bool CPEHandler_ExtInfo(Client *client, cs_str data) {
-	ValidateCpeClient(client, false);
-	ValidateClientState(client, STATE_INITIAL, false);
+	ValidateCpeClient(client, false)
+	ValidateClientState(client, STATE_INITIAL, false)
 
 	if(!Proto_ReadString(&data, &client->cpeData->appName)) return false;
 	client->cpeData->_extCount = ntohs(*(cs_uint16 *)data);
@@ -952,8 +953,8 @@ cs_bool CPEHandler_ExtInfo(Client *client, cs_str data) {
 }
 
 cs_bool CPEHandler_ExtEntry(Client *client, cs_str data) {
-	ValidateCpeClient(client, false);
-	ValidateClientState(client, STATE_INITIAL, false);
+	ValidateCpeClient(client, false)
+	ValidateClientState(client, STATE_INITIAL, false)
 
 	CPEData *cpd = client->cpeData;
 	CPEExt *tmp = Memory_Alloc(1, sizeof(struct _CPEExt));
@@ -981,8 +982,8 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_str data) {
 }
 
 cs_bool CPEHandler_PlayerClick(Client *client, cs_str data) {
-	ValidateCpeClient(client, false);
-	ValidateClientState(client, STATE_INGAME, false);
+	ValidateCpeClient(client, false)
+	ValidateClientState(client, STATE_INGAME, false)
 
 	cs_char button = *data++, action = *data++;
 	cs_int16 yaw = ntohs(*(cs_int16 *)data); data += 2;
@@ -1004,7 +1005,8 @@ cs_bool CPEHandler_PlayerClick(Client *client, cs_str data) {
 }
 
 cs_bool CPEHandler_TwoWayPing(Client *client, cs_str data) {
-	ValidateCpeClient(client, false);
+	ValidateCpeClient(client, false)
+
 	CPEData *cpd = client->cpeData;
 	cs_byte pingDirection = *data++;
 	cs_uint16 pingData = *(cs_uint16 *)data;

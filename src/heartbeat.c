@@ -63,9 +63,9 @@ static void DoRequest() {
 	String_Copy(name, 65, Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY));
 	TrimReserved(name, 65);
 
-	cs_uint16 port = Config_GetInt16ByKey(Server_Config, CFG_SERVERPORT_KEY);
+	cs_uint16 port = (cs_uint16)Config_GetInt16ByKey(Server_Config, CFG_SERVERPORT_KEY);
 	cs_bool public = Config_GetBoolByKey(Server_Config, CFG_HEARTBEAT_PUBLIC_KEY);
-	cs_byte max = Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
+	cs_byte max = (cs_byte)Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
 	cs_byte count = Clients_GetCount(STATE_INGAME);
 	String_FormatBuf(reqstr, 512, HBEAT_URL,
 		name, port, count,

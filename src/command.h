@@ -84,12 +84,12 @@ typedef struct _Command {
 	cs_byte flags;
 } Command;
 
+void Command_RegisterDefault(void);
+cs_bool Command_Handle(cs_char *cmd, Client *caller);
+
 API Command *Command_Register(cs_str name, cmdFunc func, cs_byte flags);
 API void Command_SetAlias(Command *cmd, cs_str alias);
 API Command *Command_GetByName(cs_str name);
 API void Command_Unregister(Command *cmd);
 API void Command_UnregisterByFunc(cmdFunc func);
-
-void Command_RegisterDefault(void);
-cs_bool Command_Handle(cs_char *cmd, Client *caller);
 #endif // COMMAND_H

@@ -126,5 +126,5 @@ API void Waitable_Reset(Waitable *handle);
 API void Time_Format(cs_char *buf, cs_size len);
 API cs_uint64 Time_GetMSec(void);
 
-API void Process_Exit(cs_uint32 ecode);
+API void Process_Exit(cs_int32 ecode);
 #endif // PLATFORM_H

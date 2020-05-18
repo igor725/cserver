@@ -39,7 +39,7 @@ void Memory_Uninit(void) {}
 void *Memory_Alloc(cs_size num, cs_size size) {
 	void *ptr;
 	if((ptr = calloc(num, size)) == NULL) {
-		Error_PrintSys(true);
+		Error_PrintSys(true)
 	}
 	return ptr;
 }
@@ -424,7 +424,7 @@ Thread Thread_Create(TFUNC func, TARG param, cs_bool detach) {
 	);
 
 	if(!th) {
-		ERROR_PRINT(ET_SYS, GetLastError(), true);
+		ERROR_PRINT(ET_SYS, GetLastError(), true)
 	}
 
 	if(detach) {
@@ -440,7 +440,7 @@ cs_bool Thread_IsValid(Thread th) {
 
 void Thread_Detach(Thread th) {
 	if(!CloseHandle(th)) {
-		Error_PrintSys(true);
+		Error_PrintSys(true)
 	}
 }
 
@@ -452,7 +452,7 @@ void Thread_Join(Thread th) {
 Thread Thread_Create(TFUNC func, TARG arg, cs_bool detach) {
 	Thread th = Memory_Alloc(1, sizeof(Thread));
 	if(pthread_create(th, NULL, func, arg) != 0) {
-		ERROR_PRINT(ET_SYS, errno, true);
+		ERROR_PRINT(ET_SYS, errno, true)
 		return NULL;
 	}
 
@@ -472,7 +472,7 @@ void Thread_Detach(Thread th) {
 void Thread_Join(Thread th) {
 	cs_int32 ret = pthread_join(*th, NULL);
 	if(ret) {
-		ERROR_PRINT(ET_SYS, ret, true);
+		ERROR_PRINT(ET_SYS, ret, true)
 	}
 	Memory_Free(th);
 }
@@ -482,7 +482,7 @@ void Thread_Join(Thread th) {
 Mutex *Mutex_Create(void) {
 	Mutex *ptr = Memory_Alloc(1, sizeof(Mutex));
 	if(!ptr) {
-		ERROR_PRINT(ET_SYS, GetLastError(), true);
+		ERROR_PRINT(ET_SYS, GetLastError(), true)
 	}
 	InitializeCriticalSection(ptr);
 	return ptr;
@@ -504,14 +504,14 @@ void Mutex_Unlock(Mutex *handle) {
 Waitable *Waitable_Create(void) {
 	Waitable *handle = CreateEventA(NULL, true, false, NULL);
 	if(!handle) {
-		Error_PrintSys(true);
+		Error_PrintSys(true)
 	}
 	return handle;
 }
 
 void Waitable_Free(Waitable *handle) {
 	if(!CloseHandle(handle)) {
-		Error_PrintSys(true);
+		Error_PrintSys(true)
 	}
 }
 
@@ -534,7 +534,7 @@ Mutex *Mutex_Create(void) {
 	Mutex *ptr = Memory_Alloc(1, sizeof(Mutex));
 	cs_int32 ret = pthread_mutex_init(ptr, NULL);
 	if(ret) {
-		ERROR_PRINT(ET_SYS, ret, true);
+		ERROR_PRINT(ET_SYS, ret, true)
 		return NULL;
 	}
 	return ptr;
@@ -543,7 +543,7 @@ Mutex *Mutex_Create(void) {
 void Mutex_Free(Mutex *handle) {
 	cs_int32 ret = pthread_mutex_destroy(handle);
 	if(ret) {
-		ERROR_PRINT(ET_SYS, ret, true);
+		ERROR_PRINT(ET_SYS, ret, true)
 	}
 	Memory_Free(handle);
 }
@@ -551,21 +551,27 @@ void Mutex_Free(Mutex *handle) {
 void Mutex_Lock(Mutex *handle) {
 	cs_int32 ret = pthread_mutex_lock(handle);
 	if(ret) {
-		ERROR_PRINT(ET_SYS, ret, true);
+		ERROR_PRINT(ET_SYS, ret, true)
 	}
 }
 
 void Mutex_Unlock(Mutex *handle) {
 	cs_int32 ret = pthread_mutex_unlock(handle);
 	if(ret) {
-		ERROR_PRINT(ET_SYS, ret, true);
+		ERROR_PRINT(ET_SYS, ret, true)
 	}
 }
 
 Waitable *Waitable_Create(void) {
 	Waitable *handle = Memory_Alloc(1, sizeof(Waitable));
-	pipe2(handle->pipefd, O_NONBLOCK);
-	return handle;
+	if(pipe(handle->pipefd) == 0) {
+		if(fcntl(handle->pipefd[0], F_SETFL, O_NONBLOCK) != 0) {
+			Waitable_Free(handle);
+			return NULL;
+		}
+		return handle;
+	}
+	return NULL;
 }
 
 void Waitable_Free(Waitable *handle) {
@@ -630,7 +636,7 @@ cs_uint64 Time_GetMSec() {
 }
 #endif
 
-void Process_Exit(cs_uint32 code) {
+void Process_Exit(cs_int32 code) {
 #if defined(WINDOWS)
 	ExitProcess(code);
 #elif defined(POSIX)

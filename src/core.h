@@ -34,7 +34,6 @@ typedef unsigned int cs_size;
 #define POSIX
 #define PATH_DELIM "/"
 #define DLIB_EXT "so"
-#define _GNU_SOURCE
 
 #ifndef PLUGIN_BUILD
 #define API __attribute__((visibility("default"), noinline))
