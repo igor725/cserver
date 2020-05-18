@@ -43,7 +43,7 @@ CEntry *Config_GetEntry(CStore *store, cs_str key) {
 CEntry *Config_CheckEntry(CStore *store, cs_str key) {
 	CEntry *ent = Config_GetEntry(store, key);
 	if(!ent) {
-		Error_PrintF2(ET_SERVER, EC_CFGUNK, true, key, store->path);
+		Error_PrintF2(ET_SERVER, EC_CFGUNK, true, key, store->path)
 	}
 	return ent;
 }
@@ -145,13 +145,13 @@ void Config_PrintError(CStore *store) {
 	switch (store->etype) {
 		case ET_SERVER:
 			if(store->eline > 0) {
-				Error_PrintF2(store->etype, store->ecode, false, store->eline, store->path);
+				Error_PrintF2(store->etype, store->ecode, false, store->eline, store->path)
 			} else {
-				Error_PrintF2(store->etype, store->ecode, false, store->path);
+				Error_PrintF2(store->etype, store->ecode, false, store->path)
 			}
 			break;
 		case ET_SYS:
-			Error_PrintSys(false);
+			Error_PrintSys(false)
 			break;
 	}
 }
@@ -160,7 +160,7 @@ cs_bool Config_Load(CStore *store) {
 	FILE *fp = File_Open(store->path, "r");
 	if(!fp) {
 		if(errno == ENOENT) return true;
-		CFG_SYSERROR;
+		CFG_SYSERROR
 		return false;
 	}
 
@@ -177,7 +177,7 @@ cs_bool Config_Load(CStore *store) {
 		}
 		cs_char *value = (cs_char *)String_FirstChar(line, '=');
 		if(!value) {
-			CFG_SETERROR(ET_SERVER, EC_CFGLINEPARSE, linenum);
+			CFG_SETERROR(ET_SERVER, EC_CFGLINEPARSE, linenum)
 			return false;
 		}
 		*value++ = '\0';
@@ -194,15 +194,15 @@ cs_bool Config_Load(CStore *store) {
 				Config_SetStr(ent, value);
 				break;
 			case CFG_INT32:
-				CFG_LOADCHECKINT;
+				CFG_LOADCHECKINT
 				Config_SetInt32(ent, String_ToInt(value));
 				break;
 			case CFG_INT8:
-				CFG_LOADCHECKINT;
+				CFG_LOADCHECKINT
 				Config_SetInt8(ent, (cs_int8)String_ToInt(value));
 				break;
 			case CFG_INT16:
-				CFG_LOADCHECKINT;
+				CFG_LOADCHECKINT
 				Config_SetInt16(ent, (cs_int16)String_ToInt(value));
 				break;
 			case CFG_BOOL:
@@ -212,14 +212,14 @@ cs_bool Config_Load(CStore *store) {
 	}
 
 	if(lnret == -1) {
-		CFG_SETERROR(ET_SERVER, EC_CFGEND, 0);
+		CFG_SETERROR(ET_SERVER, EC_CFGEND, 0)
 		return false;
 	}
 
 	store->modified = !AllCfgEntriesParsed(store);
 	File_Close(fp);
 
-	CFG_SETERROR(ET_NOERR, 0, 0);
+	CFG_SETERROR(ET_NOERR, 0, 0)
 	return true;
 }
 
@@ -231,7 +231,7 @@ cs_bool Config_Save(CStore *store) {
 
 	FILE *fp = File_Open(tmpname, "w");
 	if(!fp) {
-		CFG_SYSERROR;
+		CFG_SYSERROR
 		return false;
 	}
 
@@ -240,11 +240,11 @@ cs_bool Config_Save(CStore *store) {
 	while(ptr) {
 		if(ptr->commentary)
 			if(!File_WriteFormat(fp, "#%s\n", ptr->commentary)) {
-				CFG_SYSERROR;
+				CFG_SYSERROR
 				return false;
 			}
 		if(!File_Write(ptr->key, String_Length(ptr->key), 1, fp)) {
-			CFG_SYSERROR;
+			CFG_SYSERROR
 			return false;
 		}
 
@@ -256,7 +256,7 @@ cs_bool Config_Save(CStore *store) {
 			case CFG_STR:
 				vchar = (cs_char *)Config_GetStr(ptr);
 				if(!File_WriteFormat(fp, "=%s\n", vchar)) {
-					CFG_SYSERROR;
+					CFG_SYSERROR
 					return false;
 				}
 				break;
@@ -270,20 +270,20 @@ cs_bool Config_Save(CStore *store) {
 				vint = Config_GetInt8(ptr);
 				cfg_write_int:
 				if(!File_WriteFormat(fp, "=%d\n", vint)) {
-					CFG_SYSERROR;
+					CFG_SYSERROR
 					return false;
 				}
 				break;
 			case CFG_BOOL:
 				vbool = Config_GetBool(ptr);
 				if(!File_WriteFormat(fp, "=%s\n", vbool ? "True" : "False")) {
-					CFG_SYSERROR;
+					CFG_SYSERROR
 					return false;
 				}
 				break;
 			default:
 				if(!File_Write("=Unknown value\n", 16, 1, fp)) {
-					CFG_SYSERROR;
+					CFG_SYSERROR
 					return false;
 				}
 				break;
@@ -294,11 +294,11 @@ cs_bool Config_Save(CStore *store) {
 	File_Close(fp);
 	store->modified = false;
 	if(!File_Rename(tmpname, store->path)) {
-		CFG_SYSERROR;
+		CFG_SYSERROR
 		return false;
 	}
 
-	CFG_SETERROR(ET_NOERR, 0, 0);
+	CFG_SETERROR(ET_NOERR, 0, 0)
 	return true;
 }
 
@@ -315,22 +315,22 @@ void Config_SetLimit(CEntry *ent, cs_int32 min, cs_int32 max) {
 }
 
 void Config_SetDefaultInt32(CEntry *ent, cs_int32 value) {
-	CFG_TYPE(CFG_INT32);
+	CFG_TYPE(CFG_INT32)
 	ent->defvalue.vint = value;
 }
 
 void Config_SetDefaultInt8(CEntry *ent, cs_int8 value) {
-	CFG_TYPE(CFG_INT8);
+	CFG_TYPE(CFG_INT8)
 	ent->defvalue.vint8 = value;
 }
 
 void Config_SetDefaultInt16(CEntry *ent, cs_int16 value) {
-	CFG_TYPE(CFG_INT16);
+	CFG_TYPE(CFG_INT16)
 	ent->defvalue.vint16 = value;
 }
 
 void Config_SetInt32(CEntry *ent, cs_int32 value) {
-	CFG_TYPE(CFG_INT32);
+	CFG_TYPE(CFG_INT32)
 	if(ent->defvalue.vint != value) {
 		ent->changed = true;
 		if(ent->haveLimits)
@@ -340,7 +340,7 @@ void Config_SetInt32(CEntry *ent, cs_int32 value) {
 }
 
 void Config_SetInt16(CEntry *ent, cs_int16 value) {
-	CFG_TYPE(CFG_INT16);
+	CFG_TYPE(CFG_INT16)
 	if(ent->defvalue.vint16 != value) {
 		ent->changed = true;
 		if(ent->haveLimits)
@@ -351,7 +351,7 @@ void Config_SetInt16(CEntry *ent, cs_int16 value) {
 }
 
 void Config_SetInt8(CEntry *ent, cs_int8 value) {
-	CFG_TYPE(CFG_INT8);
+	CFG_TYPE(CFG_INT8)
 	if(ent->defvalue.vint8 != value) {
 		ent->changed = true;
 		if(ent->haveLimits)
@@ -362,7 +362,7 @@ void Config_SetInt8(CEntry *ent, cs_int8 value) {
 }
 
 cs_int32 Config_GetInt32(CEntry *ent) {
-	CFG_TYPE(CFG_INT32);
+	CFG_TYPE(CFG_INT32)
 	return ent->changed ? ent->value.vint : ent->defvalue.vint;
 }
 
@@ -371,7 +371,7 @@ cs_int32 Config_GetInt32ByKey(CStore *store, cs_str key) {
 }
 
 cs_int8 Config_GetInt8(CEntry *ent) {
-	CFG_TYPE(CFG_INT8);
+	CFG_TYPE(CFG_INT8)
 	return ent->changed ? ent->value.vint8 : ent->defvalue.vint8;
 }
 
@@ -380,7 +380,7 @@ cs_int8 Config_GetInt8ByKey(CStore *store, cs_str key) {
 }
 
 cs_int16 Config_GetInt16(CEntry *ent) {
-	CFG_TYPE(CFG_INT16);
+	CFG_TYPE(CFG_INT16)
 	return ent->changed ? ent->value.vint16 : ent->defvalue.vint16;
 }
 
@@ -389,14 +389,14 @@ cs_int16 Config_GetInt16ByKey(CStore *store, cs_str key) {
 }
 
 void Config_SetDefaultStr(CEntry *ent, cs_str value) {
-	CFG_TYPE(CFG_STR);
+	CFG_TYPE(CFG_STR)
 	if(ent->defvalue.vchar)
 		Memory_Free((void *)ent->defvalue.vchar);
 	ent->defvalue.vchar = String_AllocCopy(value);
 }
 
 void Config_SetStr(CEntry *ent, cs_str value) {
-	CFG_TYPE(CFG_STR);
+	CFG_TYPE(CFG_STR)
 	if(!value) {
 		EmptyEntry(ent);
 		ent->store->modified = true;
@@ -411,7 +411,7 @@ void Config_SetStr(CEntry *ent, cs_str value) {
 }
 
 cs_str Config_GetStr(CEntry *ent) {
-	CFG_TYPE(CFG_STR);
+	CFG_TYPE(CFG_STR)
 	return ent->changed ? ent->value.vchar: ent->defvalue.vchar;
 }
 
@@ -420,12 +420,12 @@ cs_str Config_GetStrByKey(CStore *store, cs_str key) {
 }
 
 void Config_SetDefaultBool(CEntry *ent, cs_bool value) {
-	CFG_TYPE(CFG_BOOL);
+	CFG_TYPE(CFG_BOOL)
 	ent->defvalue.vbool = value;
 }
 
 void Config_SetBool(CEntry *ent, cs_bool value) {
-	CFG_TYPE(CFG_BOOL);
+	CFG_TYPE(CFG_BOOL)
 	if(ent->defvalue.vbool != value) {
 		ent->changed = true;
 		ent->value.vbool = value;
@@ -434,7 +434,7 @@ void Config_SetBool(CEntry *ent, cs_bool value) {
 }
 
 cs_bool Config_GetBool(CEntry *ent) {
-	CFG_TYPE(CFG_BOOL);
+	CFG_TYPE(CFG_BOOL)
 	return ent->changed ? ent->value.vbool : ent->defvalue.vbool;
 }
 

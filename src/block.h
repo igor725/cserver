@@ -134,14 +134,15 @@ typedef struct _BulkBlockUpdate {
 	} data;
 } BulkBlockUpdate;
 
-BlockDef *Block_DefinitionsList[255];
 API cs_bool Block_IsValid(BlockID id);
 API cs_str Block_GetName(BlockID id);
 
 API BlockDef *Block_New(BlockID id, cs_str name, cs_byte flags);
+API void Block_Free(BlockDef *bdef);
 API cs_bool Block_Define(BlockDef *bdef);
+API BlockDef *Block_GetDefinition(BlockID id);
 API cs_bool Block_Undefine(BlockID id);
-API void Block_UpdateDefinitions();
+API void Block_UpdateDefinitions(void);
 
 API cs_bool Block_BulkUpdateAdd(BulkBlockUpdate *bbu, cs_uint32 offset, BlockID id);
 API void Block_BulkUpdateSend(BulkBlockUpdate *bbu);

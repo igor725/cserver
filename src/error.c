@@ -74,7 +74,7 @@ void Error_CallStack(void) {
 void Error_CallStack(void) {}
 #endif // RELEASE_BUILD
 
-static void getErrorStr(cs_int32 type, cs_uint32 code, cs_char *errbuf, cs_size sz, va_list *args) {
+static void getErrorStr(cs_int32 type, cs_int32 code, cs_char *errbuf, cs_size sz, va_list *args) {
 	switch(type) {
 		case ET_SERVER:
 			if(!args)
@@ -101,7 +101,7 @@ cs_int32 Error_GetSysCode(void) {
 #endif
 }
 
-void Error_Print(cs_int32 type, cs_uint32 code, cs_str file, cs_uint32 line, cs_str func) {
+void Error_Print(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_str func) {
 	cs_char strbuf[384] = {0};
 	cs_char errbuf[256] = {0};
 
@@ -116,7 +116,7 @@ void Error_Print(cs_int32 type, cs_uint32 code, cs_str file, cs_uint32 line, cs_
 	}
 }
 
-void Error_PrintF(cs_int32 type, cs_uint32 code, cs_str file, cs_uint32 line, cs_str func, ...) {
+void Error_PrintF(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_str func, ...) {
 	cs_char strbuf[384] = {0};
 	cs_char errbuf[256] = {0};
 

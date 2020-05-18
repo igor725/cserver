@@ -15,7 +15,7 @@
 AListField *headAssocType = NULL,
 *headCGroup = NULL;
 
-AListField *AGetType(cs_uint16 type) {
+static AListField *AGetType(cs_uint16 type) {
 	AListField *ptr = NULL;
 
 	List_Iter(ptr, headAssocType) {
@@ -25,7 +25,7 @@ AListField *AGetType(cs_uint16 type) {
 	return NULL;
 }
 
-KListField *AGetNode(Client *client, cs_uint16 type) {
+static KListField *AGetNode(Client *client, cs_uint16 type) {
 	KListField *ptr = NULL;
 
 	List_Iter(ptr, client->headNode) {
@@ -201,7 +201,7 @@ World *Client_GetWorld(Client *client) {
 cs_int8 Client_GetFluidLevel(Client *client) {
 	PlayerData *pd = client->playerData;
 	World *world = pd->world;
-	SVec tpos; SVec_Copy(tpos, pd->position);
+	SVec tpos; SVec_Copy(tpos, pd->position)
 
 	BlockID id;
 	cs_int8 level = 2;
@@ -343,7 +343,7 @@ THREAD_FUNC(WorldSendThread) {
 		Event_Call(EVT_PRELVLFIN, client);
 		if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
 			for(BlockID id = 0; id < 255; id++) {
-				BlockDef *bdef = Block_DefinitionsList[id];
+				BlockDef *bdef = Block_GetDefinition(id);
 				if(bdef) Client_DefineBlock(client, bdef);
 			}
 		}

@@ -111,7 +111,7 @@ cs_bool Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
 cs_bool Client_DefineBlock(Client *client, BlockDef *block);
 cs_bool Client_UndefineBlock(Client *client, BlockID id);
 
-API cs_uint16 Assoc_NewType();
+API cs_uint16 Assoc_NewType(void);
 API cs_bool Assoc_DelType(cs_uint16 type, cs_bool freeData);
 API cs_bool Assoc_Set(Client *client, cs_uint16 type, void *ptr);
 API void *Assoc_GetPtr(Client *client, cs_uint16 type);

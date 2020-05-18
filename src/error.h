@@ -37,6 +37,6 @@ if(abort) { \
 #endif
 
 API cs_int32 Error_GetSysCode(void);
-API void Error_Print(cs_int32 type, cs_uint32 code, cs_str file, cs_uint32 line, cs_str func);
-API void Error_PrintF(cs_int32 type, cs_uint32 code, cs_str file, cs_uint32 line, cs_str func, ...);
+API void Error_Print(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_str func);
+API void Error_PrintF(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_str func, ...);
 #endif // ERROR_H

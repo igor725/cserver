@@ -32,13 +32,15 @@ static cs_str defaultBlockNames[] = {
 	"Stone Brick"
 };
 
+static BlockDef *definitionsList[255] = {0};
+
 cs_bool Block_IsValid(BlockID id) {
-	return id < 50 || Block_DefinitionsList[id] != NULL;
+	return id < 50 || definitionsList[id] != NULL;
 }
 
 cs_str Block_GetName(BlockID id) {
 	if(!Block_IsValid(id)) return "Unknown block";
-	BlockDef *bdef = Block_DefinitionsList[id];
+	BlockDef *bdef = definitionsList[id];
 	if(bdef)
 		return bdef->name;
 	else
@@ -61,14 +63,18 @@ void Block_Free(BlockDef *bdef) {
 }
 
 cs_bool Block_Define(BlockDef *bdef) {
-	if(Block_DefinitionsList[bdef->id]) return false;
+	if(definitionsList[bdef->id]) return false;
 	bdef->flags &= ~(BDF_UPDATED | BDF_UNDEFINED);
-	Block_DefinitionsList[bdef->id] = bdef;
+	definitionsList[bdef->id] = bdef;
 	return true;
 }
 
+BlockDef *Block_GetDefinition(BlockID id) {
+	return definitionsList[id];
+}
+
 cs_bool Block_Undefine(BlockID id) {
-	BlockDef *bdef = Block_DefinitionsList[id];
+	BlockDef *bdef = definitionsList[id];
 	if(bdef) {
 		bdef->flags |= BDF_UNDEFINED;
 		bdef->flags &= ~BDF_UPDATED;
@@ -77,9 +83,9 @@ cs_bool Block_Undefine(BlockID id) {
 	return false;
 }
 
-void Block_UpdateDefinitions() {
+void Block_UpdateDefinitions(void) {
 	for(BlockID id = 0; id < 255; id++) {
-		BlockDef *bdef = Block_DefinitionsList[id];
+		BlockDef *bdef = definitionsList[id];
 		if(bdef && (bdef->flags & BDF_UPDATED) != BDF_UPDATED) {
 			bdef->flags |= BDF_UPDATED;
 			if(bdef->flags & BDF_UNDEFINED) {
@@ -87,7 +93,7 @@ void Block_UpdateDefinitions() {
 					Client *client = Clients_List[cid];
 					if(client) Client_UndefineBlock(client, bdef->id);
 				}
-				Block_DefinitionsList[id] = NULL;
+				definitionsList[id] = NULL;
 				Block_Free(bdef);
 			} else {
 				for(ClientID cid = 0; cid < MAX_CLIENTS; cid++) {

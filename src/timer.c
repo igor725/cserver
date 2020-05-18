@@ -38,7 +38,7 @@ void Timer_Update(cs_int32 delta) {
 			if(timer->left != -1) --timer->left;
 			timer->callback(++timer->ticks, timer->left, timer->userdata);
 			if(timer->left == 0)
-				removeTimerByField(field);;
+				removeTimerByField(field);
 		}
 	}
 }

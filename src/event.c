@@ -27,17 +27,17 @@ for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) { \
 return false;
 
 cs_bool Event_RegisterVoid(cs_uint32 type, evtVoidCallback func) {
-	rgPart1;
+	rgPart1
 	evt->rtype = 0;
 	evt->func.fvoid = func;
-	rgPart2;
+	rgPart2
 }
 
 cs_bool Event_RegisterBool(cs_uint32 type, evtBoolCallback func) {
-	rgPart1;
+	rgPart1
 	evt->rtype = 1;
 	evt->func.fbool = func;
-	rgPart2;
+	rgPart2
 }
 
 cs_bool Event_Unregister(cs_uint32 type, cs_uintptr evtFuncPtr) {
