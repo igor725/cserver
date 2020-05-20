@@ -2,7 +2,6 @@
 #include "block.h"
 #include "world.h"
 #include "generators.h"
-#include "random.h"
 #include "csmath.h"
 
 // Генератор плоского мира
@@ -115,20 +114,20 @@ static void genBiomes(void) {
 	ctx.biomeSizeX = ((cs_uint16)ctx.dims->x / gen_biome_step) + 1,
 	ctx.biomeSizeZ = ((cs_uint16)ctx.dims->z / gen_biome_step) + 2,
 	ctx.biomeSize = ctx.biomeSizeX * ctx.biomeSizeZ,
-	ctx.biomesNum = ctx.dims->x * ctx.dims->z / gen_biome_step / gen_biome_radius / 64 + 2;
+	ctx.biomesNum = ctx.dims->x * ctx.dims->z / gen_biome_step / gen_biome_radius / 64 + 1;
 
 	ctx.biomes = Memory_Alloc(2, ctx.biomeSize);
 	for(cs_int16 i = 0; i < ctx.biomesNum; i++) {
-		cs_uint16 x = (cs_uint16)Random_Range(&ctx.rnd, 0, ctx.biomeSizeX) - 1,
-		z = (cs_uint16)Random_Range(&ctx.rnd, 0, ctx.biomeSizeZ) - 1,
-		biome = (cs_uint16)Random_Range(&ctx.rnd, BIOME_NORMAL, BIOME_WATER);
+		cs_int16 x = (cs_uint16)Random_Next(&ctx.rnd, ctx.biomeSizeX),
+		z = (cs_int16)Random_Next(&ctx.rnd, ctx.biomeSizeZ),
+		biome = (cs_int16)Random_Range(&ctx.rnd, BIOME_NORMAL, BIOME_WATER);
 
-		for(cs_int16 dx = -gen_biome_radius; dx < gen_biome_radius; dx++) {
-			for(cs_int16 dz = -gen_biome_radius; dz < gen_biome_radius; dz++) {
+		for(cs_int16 dx = -gen_biome_radius; dx <= gen_biome_radius; dx++) {
+			for(cs_int16 dz = -gen_biome_radius; dz <= gen_biome_radius; dz++) {
 				cs_int16 nx = x + dx,
 				nz = z + dz;
 
-				if(dx * dx + dz * dz < gen_biome_radius2 &&
+				if(dx * dx + dz * dz <= gen_biome_radius2 &&
 				0 <= nx && nx <= ctx.biomeSizeX &&
 				0 <= nz && nz <= ctx.biomeSizeZ) {
 					cs_uint16 offset = nx + nz * ctx.biomeSizeX;
@@ -143,7 +142,7 @@ static void genBiomes(void) {
 static void genHeightMap(void) {
 	ctx.heightMap = Memory_Alloc(2, ctx.biomeSize);
 
-	for(cs_uint16 x = 0; x < ctx.biomeSizeX + 1; x++) {
+	for(cs_uint16 x = 0; x <= ctx.biomeSizeX; x++) {
 		for(cs_uint16 z = 0; z < ctx.biomeSizeZ; z++) {
 			cs_uint16 offset = x + z * ctx.biomeSizeX,
 			biome = ctx.biomes[offset];
