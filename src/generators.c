@@ -1,7 +1,7 @@
 #include "core.h"
 #include "world.h"
 #include "generators.h"
-#include "random.h"
+#include "csmath.h"
 
 // Генератор плоского мира
 

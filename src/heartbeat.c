@@ -3,7 +3,7 @@
 #include "log.h"
 #include "platform.h"
 #include "server.h"
-#include "random.h"
+#include "csmath.h"
 #include "heartbeat.h"
 #include "http.h"
 #include "lang.h"
