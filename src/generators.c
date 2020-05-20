@@ -354,7 +354,7 @@ THREAD_FUNC(cavesThread) {
 							setBlock(bpos, bpos.y > ctx.heightLava ? BLOCK_AIR : BLOCK_LAVA);
 						} else {
 							bpos.y -= 1;
-							setBlock(bpos, 8);
+							setBlock(bpos, BLOCK_WATER);
 						}
 					}
 				}
@@ -397,8 +397,8 @@ void Generator_Default(World *world) {
 	wi->spawnVec.y = (cs_float)ctx.heightMap[ctx.biomeSizeX / 2 + ctx.biomeSizeZ / 2 * ctx.biomeSizeX] +
 	(1.59375f * 4);
 	wi->spawnVec.z = (cs_float)z;
-	World_SetProperty(world, PROP_SIDEBLOCK, 0);
-	World_SetProperty(world, PROP_EDGEBLOCK, 8);
+	World_SetProperty(world, PROP_SIDEBLOCK, BLOCK_AIR);
+	World_SetProperty(world, PROP_EDGEBLOCK, BLOCK_WATER);
 	World_SetProperty(world, PROP_EDGELEVEL, ctx.heightWater + 1);
 	World_SetProperty(world, PROP_SIDEOFFSET, 0);
 
