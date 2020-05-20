@@ -23,6 +23,10 @@ void Random_Seed(RNGState *seed, cs_int32 seedInit) {
 	*seed = (seedInit ^ RND_VALUE) & RND_MASK;
 }
 
+void Random_SeedFromTime(RNGState *secrnd) {
+	Random_Seed(secrnd, (cs_int32)Time_GetMSec());
+}
+
 cs_int32 Random_Next(RNGState *seed, cs_int32 n) {
 	cs_int64 raw;
 	cs_int32 bits, val;
