@@ -175,7 +175,7 @@ cs_bool Socket_SetAddrGuess(struct sockaddr_in *ssa, cs_str host, cs_uint16 port
 	return ret == 1;
 }
 
-Socket Socket_New() {
+Socket Socket_New(void) {
 	return socket(AF_INET, SOCK_STREAM, 0);
 }
 

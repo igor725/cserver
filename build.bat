@@ -33,7 +33,7 @@ IF "%1"=="clean" SET CLEAN=1
 IF "%1"=="o2" SET OPT_LEVEL=/O2
 IF "%1"=="o1" SET OPT_LEVEL=/O1
 IF "%1"=="o0" SET OPT_LEVEL=/Od
-IF "%1"=="wall" SET WARN_LEVEL=/Wall
+IF "%1"=="wall" SET WARN_LEVEL=/Wall /wd4820 /wd5045 /wd4710
 IF "%1"=="w4" SET WARN_LEVEL=/W4
 IF "%1"=="w0" SET WARN_LEVEL=/W0
 IF "%1"=="wx" SET MSVC_OPTS=%MSVC_OPTS% /WX

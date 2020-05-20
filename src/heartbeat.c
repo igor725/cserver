@@ -3,7 +3,7 @@
 #include "log.h"
 #include "platform.h"
 #include "server.h"
-#include "random.h"
+#include "csmath.h"
 #include "heartbeat.h"
 #include "http.h"
 #include "lang.h"
@@ -57,7 +57,7 @@ static void TrimReserved(cs_char *name, cs_int32 len) {
 	}
 }
 
-static void DoRequest() {
+static void DoRequest(void) {
 	if(*Secret == '\0') NewSecret();
 	cs_char reqstr[512], name[65], rsp[1024];
 	String_Copy(name, 65, Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY));
