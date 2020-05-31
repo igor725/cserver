@@ -39,6 +39,7 @@ THREAD_FUNC(ClientInitThread) {
 		if(Socket_Receive(tmp->sock, tmp->rdbuf, 5, MSG_PEEK) == 5) {
 			if(String_CaselessCompare(tmp->rdbuf, "GET /")) {
 				WebSock *wscl = Memory_Alloc(1, sizeof(WebSock));
+				wscl->proto = "ClassiCube";
 				wscl->recvbuf = tmp->rdbuf;
 				wscl->sock = tmp->sock;
 				tmp->websock = wscl;

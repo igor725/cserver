@@ -5,13 +5,14 @@
 #include "lang.h"
 #include "hash.h"
 
-#define WS_RESP "HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Protocol: ClassiCube\r\nSec-WebSocket-Accept: %s\r\n\r\n"
+#define WS_RESP "HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Protocol: %s\r\nSec-WebSocket-Accept: %s\r\n\r\n"
 #define WS_ERRRESP "HTTP/1.1 %d %s\r\nConnection: Close\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s"
 
 cs_bool WebSock_DoHandshake(WebSock *ws) {
+	if(!ws->proto) return false;
 	cs_char line[1024], wskey[32], b64[30];
 	cs_byte hash[20];
-	cs_bool haveUpgrade = false;
+	cs_bool validConnection = false;
 	cs_int32 wskeylen = 0, rsplen = 0;
 
 	if(Socket_ReceiveLine(ws->sock, line, 1024)) {
@@ -34,12 +35,18 @@ cs_bool WebSock_DoHandshake(WebSock *ws) {
 			wskeylen = (cs_int32)String_Copy(wskey, 32, value);
 		} else if(String_CaselessCompare(line, "Sec-WebSocket-Version")) {
 			if(String_ToInt(value) != 13) break;
+		} else if(String_CaselessCompare(line, "Sec-WebSocket-Protocol")) {
+			if(!String_FindSubstr(value, ws->proto)) {
+				validConnection = false;
+				break;
+			}
 		} else if(String_CaselessCompare(line, "Upgrade")) {
-			haveUpgrade = String_CaselessCompare(value, "websocket");
+			validConnection = String_CaselessCompare(value, "websocket");
+			if(!validConnection) break;
 		}
 	}
 
-	if(haveUpgrade && wskeylen > 0) {
+	if(validConnection && wskeylen > 0) {
 		SHA_CTX ctx;
 		SHA1_Init(&ctx);
 		SHA1_Update(&ctx, wskey, wskeylen);
@@ -47,7 +54,7 @@ cs_bool WebSock_DoHandshake(WebSock *ws) {
 		SHA1_Final(hash, &ctx);
 		String_ToB64(hash, 20, b64);
 
-		rsplen = String_FormatBuf(line, 1024, WS_RESP, b64);
+		rsplen = String_FormatBuf(line, 1024, WS_RESP, ws->proto, b64);
 		return Socket_Send(ws->sock, line, rsplen) == rsplen;
 	}
 
