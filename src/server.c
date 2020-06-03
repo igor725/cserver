@@ -183,8 +183,7 @@ void Server_InitialWork(void) {
 
 	Packet_RegisterDefault();
 	Command_RegisterDefault();
-
-	Plugin_Start();
+	Plugin_LoadAll();
 
 	Directory_Ensure("worlds");
 	WorldID wIndex = 0;
@@ -260,5 +259,5 @@ void Server_Stop(void) {
 	Socket_Close(Server_Socket);
 	Config_Save(Server_Config);
 	Config_DestroyStore(Server_Config);
-	Plugin_Stop();
+	Plugin_UnloadAll();
 }
