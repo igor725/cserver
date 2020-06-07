@@ -11,7 +11,7 @@ ROOT="."
 CC="$CC -fdiagnostics-color=always"
 LNK="$CC -rdynamic"
 CFLAGS="-pipe -fPIC"
-LIBS="-lm"
+LIBS=""
 OUTBIN="server"
 COMMIT_SHA="-DGIT_COMMIT_SHA=\"$(git rev-parse --short HEAD)\""
 PLUGIN_BUILD=0

@@ -78,7 +78,7 @@ static cs_bool AllCfgEntriesParsed(CStore *store) {
 	CEntry *ent = store->firstCfgEntry;
 
 	while(ent) {
-		if(!ent->flags & CFG_FREADED)
+		if((ent->flags & CFG_FREADED) == 0)
 			return false;
 		ent = ent->next;
 	}
