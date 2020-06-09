@@ -125,19 +125,19 @@ COMMAND_FUNC(CFG) {
 			}
 
 			switch (ent->type) {
-				case CFG_INT32:
+				case CFG_TINT32:
 					Config_SetInt32(ent, String_ToInt(value));
 					break;
-				case CFG_INT16:
+				case CFG_TINT16:
 					Config_SetInt16(ent, (cs_int16)String_ToInt(value));
 					break;
-				case CFG_INT8:
+				case CFG_TINT8:
 					Config_SetInt8(ent, (cs_int8)String_ToInt(value));
 					break;
-				case CFG_BOOL:
+				case CFG_TBOOL:
 					Config_SetBool(ent, String_CaselessCompare(value, "True"));
 					break;
-				case CFG_STR:
+				case CFG_TSTR:
 					Config_SetStr(ent, value);
 					break;
 				default:

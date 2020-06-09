@@ -962,6 +962,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_str data) {
 		Memory_Free(tmp);
 		return false;
 	}
+	
 	tmp->version = ntohl(*(cs_int32 *)data);
 	if(tmp->version < 1) {
 		Memory_Free((void *)tmp->name);

@@ -1,20 +1,25 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 enum {
-	CFG_INVTYPE,
-	CFG_BOOL,
-	CFG_INT32,
-	CFG_INT16,
-	CFG_INT8,
-	CFG_STR
+	CFG_TINVALID,
+	CFG_TBOOL,
+	CFG_TINT32,
+	CFG_TINT16,
+	CFG_TINT8,
+	CFG_TSTR
+};
+
+enum {
+	CFG_FINVALID,
+	CFG_FREADED = BIT(0), // Была ли осуществленна попытка чтения значения из cfg файла
+	CFG_FCHANGED = BIT(1), // Отличается ли текущее значение записи от заданного стандартного
+	CFG_FHAVELIMITS = BIT(2) // Применимо только для integer типов
 };
 
 typedef struct _CEntry {
+	cs_byte flags; // Флаги cfg-записи
 	cs_str key; // Ключ, присваиваемый записи при создании
 	cs_int32 type; // Тип cfg-записи
-	cs_bool readed; // Была ли осуществленна попытка чтения значения из cfg файла
-	cs_bool changed; // Отличается ли текущее значение записи от заданного стандартного
-	cs_bool haveLimits; // Применимо только для integer типов
 	cs_int32 limits[2]; // Минимальный и максимальный предел значений записи
 	union {
 		cs_bool vbool;
@@ -44,7 +49,6 @@ typedef struct _CStore {
 	CEntry *firstCfgEntry; // Первая запись в хранилище
 	CEntry *lastCfgEntry; // Последняя запись в хранилище
 } CStore;
-
 
 API cs_str Config_TypeName(cs_int32 type);
 API cs_int32 Config_TypeNameToInt(cs_str name);

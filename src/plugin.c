@@ -85,7 +85,7 @@ cs_bool Plugin_Unload(Plugin *plugin) {
 	return true;
 }
 
-void Plugin_Start(void) {
+void Plugin_LoadAll(void) {
 	Directory_Ensure("plugins");
 
 	DirIter pIter;
@@ -98,7 +98,7 @@ void Plugin_Start(void) {
 	Iter_Close(&pIter);
 }
 
-void Plugin_Stop(void) {
+void Plugin_UnloadAll(void) {
 	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
 		Plugin *plugin = pluginsList[i];
 		if(plugin && plugin->unload)

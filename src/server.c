@@ -39,6 +39,7 @@ THREAD_FUNC(ClientInitThread) {
 		if(Socket_Receive(tmp->sock, tmp->rdbuf, 5, MSG_PEEK) == 5) {
 			if(String_CaselessCompare(tmp->rdbuf, "GET /")) {
 				WebSock *wscl = Memory_Alloc(1, sizeof(WebSock));
+				wscl->proto = "ClassiCube";
 				wscl->recvbuf = tmp->rdbuf;
 				wscl->sock = tmp->sock;
 				tmp->websock = wscl;
@@ -126,50 +127,50 @@ void Server_InitialWork(void) {
 	Server_StartTime = Time_GetMSec();
 	Server_Config = cfg;
 
-	ent = Config_NewEntry(cfg, CFG_SERVERIP_KEY, CFG_STR);
+	ent = Config_NewEntry(cfg, CFG_SERVERIP_KEY, CFG_TSTR);
 	Config_SetComment(ent, "Bind server to specified IP address. \"0.0.0.0\" - means \"all available network adapters\".");
 	Config_SetDefaultStr(ent, "0.0.0.0");
 
-	ent = Config_NewEntry(cfg, CFG_SERVERPORT_KEY, CFG_INT16);
+	ent = Config_NewEntry(cfg, CFG_SERVERPORT_KEY, CFG_TINT16);
 	Config_SetComment(ent, "Use specified port to accept clients. [1-65535]");
 	Config_SetLimit(ent, 1, 65535);
 	Config_SetDefaultInt16(ent, 25565);
 
-	ent = Config_NewEntry(cfg, CFG_SERVERNAME_KEY, CFG_STR);
+	ent = Config_NewEntry(cfg, CFG_SERVERNAME_KEY, CFG_TSTR);
 	Config_SetComment(ent, "Server name and MOTD will be shown to the player during map loading.");
 	Config_SetDefaultStr(ent, "Server name");
 
-	ent = Config_NewEntry(cfg, CFG_SERVERMOTD_KEY, CFG_STR);
+	ent = Config_NewEntry(cfg, CFG_SERVERMOTD_KEY, CFG_TSTR);
 	Config_SetDefaultStr(ent, "Server MOTD");
 
-	ent = Config_NewEntry(cfg, CFG_LOGLEVEL_KEY, CFG_STR);
+	ent = Config_NewEntry(cfg, CFG_LOGLEVEL_KEY, CFG_TSTR);
 	Config_SetComment(ent, "I - Info, C - Chat, W - Warnings, D - Debug.");
 	Config_SetDefaultStr(ent, "ICWD");
 
-	ent = Config_NewEntry(cfg, CFG_LOCALOP_KEY, CFG_BOOL);
+	ent = Config_NewEntry(cfg, CFG_LOCALOP_KEY, CFG_TBOOL);
 	Config_SetComment(ent, "Any player with ip address \"127.0.0.1\" will automatically become an operator.");
 	Config_SetDefaultBool(ent, false);
 
-	ent = Config_NewEntry(cfg, CFG_MAXPLAYERS_KEY, CFG_INT8);
+	ent = Config_NewEntry(cfg, CFG_MAXPLAYERS_KEY, CFG_TINT8);
 	Config_SetComment(ent, "Max players on server. [1-127]");
 	Config_SetLimit(ent, 1, 127);
 	Config_SetDefaultInt8(ent, 10);
 
-	ent = Config_NewEntry(cfg, CFG_CONN_KEY, CFG_INT8);
+	ent = Config_NewEntry(cfg, CFG_CONN_KEY, CFG_TINT8);
 	Config_SetComment(ent, "Max connections per one IP. [1-5]");
 	Config_SetLimit(ent, 1, 5);
 	Config_SetDefaultInt8(ent, 5);
 
-	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_KEY, CFG_BOOL);
+	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_KEY, CFG_TBOOL);
 	Config_SetComment(ent, "Enable ClassiCube heartbeat.");
 	Config_SetDefaultBool(ent, false);
 
-	ent = Config_NewEntry(cfg, CFG_HEARTBEATDELAY_KEY, CFG_INT32);
+	ent = Config_NewEntry(cfg, CFG_HEARTBEATDELAY_KEY, CFG_TINT32);
 	Config_SetComment(ent, "Heartbeat request delay. [1-60]");
 	Config_SetLimit(ent, 1, 60);
 	Config_SetDefaultInt32(ent, 10);
 
-	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_PUBLIC_KEY, CFG_BOOL);
+	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_PUBLIC_KEY, CFG_TBOOL);
 	Config_SetComment(ent, "Show server in the ClassiCube server list.");
 	Config_SetDefaultBool(ent, false);
 
@@ -182,8 +183,7 @@ void Server_InitialWork(void) {
 
 	Packet_RegisterDefault();
 	Command_RegisterDefault();
-
-	Plugin_Start();
+	Plugin_LoadAll();
 
 	Directory_Ensure("worlds");
 	WorldID wIndex = 0;
@@ -259,5 +259,5 @@ void Server_Stop(void) {
 	Socket_Close(Server_Socket);
 	Config_Save(Server_Config);
 	Config_DestroyStore(Server_Config);
-	Plugin_Stop();
+	Plugin_UnloadAll();
 }

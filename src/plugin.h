@@ -9,8 +9,8 @@ typedef struct _Plugin {
 	pluginFunc unload;
 } Plugin;
 
-void Plugin_Start(void);
-void Plugin_Stop(void);
+void Plugin_LoadAll(void);
+void Plugin_UnloadAll(void);
 
 cs_bool Plugin_Load(cs_str name);
 cs_bool Plugin_Unload(Plugin *plugin);
