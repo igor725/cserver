@@ -140,7 +140,7 @@ cs_bool WebSock_SendFrame(WebSock *ws, cs_byte opcode, const cs_char *buf, cs_ui
 	hdr[0] = 0x80 | opcode;
 
 	if(len < 126) {
-		hdr[1] = (char)len;
+		hdr[1] = (cs_char)len;
 	} else if(len < 65535) {
 		hdrlen = 4;
 		hdr[1] = 126;

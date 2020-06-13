@@ -43,7 +43,7 @@ CEntry *Config_GetEntry(CStore *store, cs_str key) {
 CEntry *Config_CheckEntry(CStore *store, cs_str key) {
 	CEntry *ent = Config_GetEntry(store, key);
 	if(!ent) {
-		Error_PrintF2(ET_SERVER, EC_CFGUNK, true, key, store->path)
+		Error_PrintF2(ET_SERVER, EC_CFGUNK, true, key, store->path);
 	}
 	return ent;
 }
@@ -145,13 +145,13 @@ void Config_PrintError(CStore *store) {
 	switch (store->etype) {
 		case ET_SERVER:
 			if(store->eline > 0) {
-				Error_PrintF2(store->etype, store->ecode, false, store->eline, store->path)
+				Error_PrintF2(store->etype, store->ecode, false, store->eline, store->path);
 			} else {
-				Error_PrintF2(store->etype, store->ecode, false, store->path)
+				Error_PrintF2(store->etype, store->ecode, false, store->path);
 			}
 			break;
 		case ET_SYS:
-			Error_PrintSys(false)
+			Error_PrintSys(false);
 			break;
 	}
 }
@@ -219,7 +219,7 @@ cs_bool Config_Load(CStore *store) {
 	store->modified = !AllCfgEntriesParsed(store);
 	File_Close(fp);
 
-	CFG_SETERROR(ET_NOERR, 0, 0)
+	CFG_SETERROR(ET_NOERR, 0, 0);
 	return true;
 }
 
@@ -298,7 +298,7 @@ cs_bool Config_Save(CStore *store) {
 		return false;
 	}
 
-	CFG_SETERROR(ET_NOERR, 0, 0)
+	CFG_SETERROR(ET_NOERR, 0, 0);
 	return true;
 }
 

@@ -36,7 +36,7 @@ static void NewSecret(void) {
 				max = 122;
 				break;
 		}
-		Secret[i] = (char)Random_Range(&secrnd, min, max);
+		Secret[i] = (cs_char)Random_Range(&secrnd, min, max);
 	}
 
 	FILE *sfile = File_Open("secret.txt", "w");

@@ -665,7 +665,7 @@ void CPE_WriteHoldThis(Client *client, BlockID block, cs_bool preventChange) {
 
 	*data++ = 0x14;
 	*data++ = block;
-	*data = (char)preventChange;
+	*data = (cs_char)preventChange;
 
 	PacketWriter_End(client, 3);
 }
@@ -760,8 +760,8 @@ void CPE_WriteBlockPerm(Client *client, BlockID id, cs_bool allowPlace, cs_bool 
 
 	*data++ = 0x1C;
 	*data++ = id;
-	*data++ = (char)allowPlace;
-	*data = (char)allowDestroy;
+	*data++ = (cs_char)allowPlace;
+	*data = (cs_char)allowDestroy;
 
 	PacketWriter_End(client, 4);
 }
@@ -795,11 +795,11 @@ void CPE_WriteHackControl(Client *client, CPEHacks *hacks) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x20;
-	*data++ = (char)hacks->flying;
-	*data++ = (char)hacks->noclip;
-	*data++ = (char)hacks->speeding;
-	*data++ = (char)hacks->spawnControl;
-	*data++ = (char)hacks->tpv;
+	*data++ = (cs_char)hacks->flying;
+	*data++ = (cs_char)hacks->noclip;
+	*data++ = (cs_char)hacks->speeding;
+	*data++ = (cs_char)hacks->spawnControl;
+	*data++ = (cs_char)hacks->tpv;
 	*(cs_int16 *)data = htons(hacks->jumpHeight);
 
 	PacketWriter_End(client, 8);
