@@ -20,8 +20,6 @@ typedef SOCKET Socket;
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <dirent.h>
-#include <dlfcn.h>
-#include <unistd.h>
 
 typedef DIR *ITER_DIR;
 typedef struct dirent *ITER_FILE;
@@ -111,6 +109,7 @@ API Thread Thread_Create(TFUNC func, const TARG param, cs_bool detach);
 API cs_bool Thread_IsValid(Thread th);
 API void Thread_Detach(Thread th);
 API void Thread_Join(Thread th);
+API void Thread_Sleep(cs_uint32 ms);
 
 API Mutex *Mutex_Create(void);
 API void Mutex_Free(Mutex *handle);

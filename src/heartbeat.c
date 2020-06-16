@@ -127,7 +127,7 @@ THREAD_FUNC(HeartbeatThread) {
 	(void)param;
 	while(true) {
 		DoRequest();
-		Sleep(Delay);
+		Thread_Sleep(Delay);
 		if(!Server_Active) break;
 	}
 	return 0;

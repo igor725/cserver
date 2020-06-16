@@ -199,6 +199,7 @@ Socket Socket_Accept(Socket sock, struct sockaddr_in *addr) {
 #if defined(WINDOWS)
 #define SOCK_DFLAGS 0
 #elif defined(POSIX)
+#include <unistd.h>
 #define SOCK_DFLAGS MSG_NOSIGNAL
 #endif
 
@@ -383,6 +384,8 @@ cs_bool DLib_GetSym(void *lib, cs_str sname, void *sym) {
 	return (*(void **)sym = (void *)GetProcAddress(lib, sname)) != NULL;
 }
 #elif defined(POSIX)
+#include <dlfcn.h>
+
 cs_bool DLib_Load(cs_str path, void **lib) {
 	return (*lib = dlopen(path, RTLD_NOW)) != NULL;
 }
@@ -437,6 +440,10 @@ void Thread_Join(Thread th) {
 	WaitForSingleObject(th, INFINITE);
 	Thread_Detach(th);
 }
+
+void Thread_Sleep(cs_uint32 ms) {
+	Sleep(ms);
+}
 #elif defined(POSIX)
 Thread Thread_Create(TFUNC func, TARG arg, cs_bool detach) {
 	Thread th = Memory_Alloc(1, sizeof(Thread));
@@ -464,6 +471,10 @@ void Thread_Join(Thread th) {
 		ERROR_PRINT(ET_SYS, ret, true);
 	}
 	Memory_Free(th);
+}
+
+void Thread_Sleep(cs_uint32 ms) {
+	usleep(ms * 1000);
 }
 #endif
 
