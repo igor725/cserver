@@ -2,7 +2,7 @@
 #define BLOCK_H
 #include "world.h"
 
-enum {
+typedef enum {
 	BLOCK_AIR = 0,
 	BLOCK_STONE = 1,
 	BLOCK_GRASS = 2,
@@ -53,7 +53,7 @@ enum {
 	BLOCK_BOOKSHELF = 47,
 	BLOCK_MOSSY_ROCKS = 48,
 	BLOCK_OBSIDIAN = 49,
-};
+} BEBlocks;
 
 enum {
 	BDF_EXTENDED = BIT(0),
@@ -62,13 +62,13 @@ enum {
 	BDF_UNDEFINED = BIT(3)
 };
 
-enum {
+typedef enum {
 	BDSOL_WALK,
 	BDSOL_SWIM,
 	BDSOL_SOLID
-};
+} BEBlockSol;
 
-enum {
+typedef enum {
 	BDSND_NONE,
 	BDSND_WOOD,
 	BDSND_GRAVEL,
@@ -79,15 +79,15 @@ enum {
 	BDSND_WOOL,
 	BDSND_SAND,
 	BDSND_SNOW
-};
+} BEBlockSounds;
 
-enum {
+typedef enum {
 	BDDRW_OPAQUE,
 	BDDRW_TRANSPARENT,
 	BDDRW_TRANSPARENT2,
 	BDDRW_TRANSLUCENT,
 	BDDRW_GAS
-};
+} BEBlockDrawTypes;
 
 typedef struct _BlockDef {
 	BlockID id;

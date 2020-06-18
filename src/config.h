@@ -1,13 +1,13 @@
 #ifndef CONFIG_H
 #define CONFIG_H
-enum {
+typedef enum {
 	CFG_TINVALID,
 	CFG_TBOOL,
 	CFG_TINT32,
 	CFG_TINT16,
 	CFG_TINT8,
 	CFG_TSTR
-};
+} CETypes;
 
 enum {
 	CFG_FINVALID,
@@ -19,7 +19,7 @@ enum {
 typedef struct _CEntry {
 	cs_byte flags; // Флаги cfg-записи
 	cs_str key; // Ключ, присваиваемый записи при создании
-	cs_int32 type; // Тип cfg-записи
+	CETypes type; // Тип cfg-записи
 	cs_int32 limits[2]; // Минимальный и максимальный предел значений записи
 	union {
 		cs_bool vbool;
@@ -50,8 +50,8 @@ typedef struct _CStore {
 	CEntry *lastCfgEntry; // Последняя запись в хранилище
 } CStore;
 
-API cs_str Config_TypeName(cs_int32 type);
-API cs_int32 Config_TypeNameToInt(cs_str name);
+API cs_str Config_TypeName(CETypes type);
+API CETypes Config_TypeNameToEnum(cs_str name);
 API cs_bool Config_ToStr(CEntry *ent, cs_char *value, cs_byte len);
 API void Config_PrintError(CStore *store);
 

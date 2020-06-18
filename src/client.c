@@ -151,9 +151,9 @@ void Clients_KickAll(cs_str reason) {
 
 Client *Client_New(Socket fd, cs_uint32 addr) {
 	Client *tmp = Memory_Alloc(1, sizeof(Client));
-	tmp->id = CLIENT_SELF;
 	tmp->sock = fd;
 	tmp->addr = addr;
+	tmp->id = CLIENT_SELF;
 	tmp->mutex = Mutex_Create();
 	tmp->rdbuf = Memory_Alloc(134, 1);
 	tmp->wrbuf = Memory_Alloc(2048, 1);
@@ -204,7 +204,7 @@ cs_int8 Client_GetFluidLevel(Client *client) {
 	SVec tpos; SVec_Copy(tpos, pd->position)
 
 	BlockID id;
-	cs_int8 level = 2;
+	cs_byte level = 2;
 
 	test_wtrlevel:
 	if((id = World_GetBlock(world, &tpos)) > 7 && id < 12) {
