@@ -36,7 +36,7 @@ static void NewSecret(void) {
 				max = 122;
 				break;
 		}
-		Secret[i] = (char)Random_Range(&secrnd, min, max);
+		Secret[i] = (cs_char)Random_Range(&secrnd, min, max);
 	}
 
 	FILE *sfile = File_Open("secret.txt", "w");
@@ -127,7 +127,7 @@ THREAD_FUNC(HeartbeatThread) {
 	(void)param;
 	while(true) {
 		DoRequest();
-		Sleep(Delay);
+		Thread_Sleep(Delay);
 		if(!Server_Active) break;
 	}
 	return 0;

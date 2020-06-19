@@ -112,9 +112,8 @@ cs_bool Block_BulkUpdateAdd(BulkBlockUpdate *bbu, cs_uint32 offset, BlockID id) 
 			Block_BulkUpdateClean(bbu);
 		} else return false;
 	}
-	cs_byte bcount = bbu->data.count++;
-	((cs_uint32 *)bbu->data.offsets)[bcount] = htonl(offset);
-	bbu->data.ids[bcount] = id;
+	((cs_uint32 *)bbu->data.offsets)[bbu->data.count++] = htonl(offset);
+	bbu->data.ids[bbu->data.count] = id;
 	return true;
 }
 

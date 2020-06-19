@@ -43,7 +43,7 @@ CEntry *Config_GetEntry(CStore *store, cs_str key) {
 CEntry *Config_CheckEntry(CStore *store, cs_str key) {
 	CEntry *ent = Config_GetEntry(store, key);
 	if(!ent) {
-		Error_PrintF2(ET_SERVER, EC_CFGUNK, true, key, store->path)
+		Error_PrintF2(ET_SERVER, EC_CFGUNK, true, key, store->path);
 	}
 	return ent;
 }
@@ -86,7 +86,7 @@ static cs_bool AllCfgEntriesParsed(CStore *store) {
 	return true;
 }
 
-cs_str Config_TypeName(cs_int32 type) {
+cs_str Config_TypeName(CETypes type) {
 	switch (type) {
 		case CFG_TSTR:
 			return "string";
@@ -103,7 +103,7 @@ cs_str Config_TypeName(cs_int32 type) {
 	}
 }
 
-cs_int32 Config_TypeNameToInt(cs_str name) {
+CETypes Config_TypeNameToEnum(cs_str name) {
 	if(String_CaselessCompare(name, "string")) {
 		return CFG_TSTR;
 	} else if(String_CaselessCompare(name, "int32")) {
@@ -145,13 +145,13 @@ void Config_PrintError(CStore *store) {
 	switch (store->etype) {
 		case ET_SERVER:
 			if(store->eline > 0) {
-				Error_PrintF2(store->etype, store->ecode, false, store->eline, store->path)
+				Error_PrintF2(store->etype, store->ecode, false, store->eline, store->path);
 			} else {
-				Error_PrintF2(store->etype, store->ecode, false, store->path)
+				Error_PrintF2(store->etype, store->ecode, false, store->path);
 			}
 			break;
 		case ET_SYS:
-			Error_PrintSys(false)
+			Error_PrintSys(false);
 			break;
 	}
 }
@@ -194,15 +194,15 @@ cs_bool Config_Load(CStore *store) {
 				Config_SetStr(ent, value);
 				break;
 			case CFG_TINT32:
-				CFG_LOADCHECKINT
+				CFG_LOADCHECKINT;
 				Config_SetInt32(ent, String_ToInt(value));
 				break;
 			case CFG_TINT8:
-				CFG_LOADCHECKINT
+				CFG_LOADCHECKINT;
 				Config_SetInt8(ent, (cs_int8)String_ToInt(value));
 				break;
 			case CFG_TINT16:
-				CFG_LOADCHECKINT
+				CFG_LOADCHECKINT;
 				Config_SetInt16(ent, (cs_int16)String_ToInt(value));
 				break;
 			case CFG_TBOOL:
@@ -219,7 +219,7 @@ cs_bool Config_Load(CStore *store) {
 	store->modified = !AllCfgEntriesParsed(store);
 	File_Close(fp);
 
-	CFG_SETERROR(ET_NOERR, 0, 0)
+	CFG_SETERROR(ET_NOERR, 0, 0);
 	return true;
 }
 
@@ -240,11 +240,11 @@ cs_bool Config_Save(CStore *store) {
 	while(ptr) {
 		if(ptr->commentary)
 			if(!File_WriteFormat(fp, "#%s\n", ptr->commentary)) {
-				CFG_SYSERROR
+				CFG_SYSERROR;
 				return false;
 			}
 		if(!File_Write(ptr->key, String_Length(ptr->key), 1, fp)) {
-			CFG_SYSERROR
+			CFG_SYSERROR;
 			return false;
 		}
 
@@ -256,7 +256,7 @@ cs_bool Config_Save(CStore *store) {
 			case CFG_TSTR:
 				vchar = (cs_char *)Config_GetStr(ptr);
 				if(!File_WriteFormat(fp, "=%s\n", vchar)) {
-					CFG_SYSERROR
+					CFG_SYSERROR;
 					return false;
 				}
 				break;
@@ -270,20 +270,20 @@ cs_bool Config_Save(CStore *store) {
 				vint = Config_GetInt8(ptr);
 				cfg_write_int:
 				if(!File_WriteFormat(fp, "=%d\n", vint)) {
-					CFG_SYSERROR
+					CFG_SYSERROR;
 					return false;
 				}
 				break;
 			case CFG_TBOOL:
 				vbool = Config_GetBool(ptr);
 				if(!File_WriteFormat(fp, "=%s\n", vbool ? "True" : "False")) {
-					CFG_SYSERROR
+					CFG_SYSERROR;
 					return false;
 				}
 				break;
 			default:
 				if(!File_Write("=Unknown value\n", 16, 1, fp)) {
-					CFG_SYSERROR
+					CFG_SYSERROR;
 					return false;
 				}
 				break;
@@ -294,11 +294,11 @@ cs_bool Config_Save(CStore *store) {
 	File_Close(fp);
 	store->modified = false;
 	if(!File_Rename(tmpname, store->path)) {
-		CFG_SYSERROR
+		CFG_SYSERROR;
 		return false;
 	}
 
-	CFG_SETERROR(ET_NOERR, 0, 0)
+	CFG_SETERROR(ET_NOERR, 0, 0);
 	return true;
 }
 

@@ -49,19 +49,18 @@ void Error_CallStack(void) {
 }
 #elif defined(POSIX)
 #ifndef __ANDROID__
-#include <execinfo.h>
-
 void Error_CallStack(void) {
 	void *stack[16];
 	cs_int32 frames = backtrace(stack, 16);
 
 	for(cs_int32 i = 0; i < frames; i++) {
-		Dl_info dli = {0};
-		dladdr(stack[i], &dli);
-		if(i > 2) {
-			Log_Debug(Lang_Get(Lang_DbgGrp, 0), dli.dli_sname, dli.dli_saddr);
+		Dl_info dli;
+		if(dladdr(stack[i], &dli)) {
+			if(i > 2) {
+				Log_Debug(Lang_Get(Lang_DbgGrp, 0), dli.dli_sname, dli.dli_saddr);
+			}
+			if(dli.dli_sname && String_Compare(dli.dli_sname, "main")) break;
 		}
-		if(dli.dli_sname && String_Compare(dli.dli_sname, "main")) break;
 	}
 }
 #else

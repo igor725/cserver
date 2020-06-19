@@ -39,7 +39,7 @@ void Memory_Uninit(void) {}
 void *Memory_Alloc(cs_size num, cs_size size) {
 	void *ptr;
 	if((ptr = calloc(num, size)) == NULL) {
-		Error_PrintSys(true)
+		Error_PrintSys(true);
 	}
 	return ptr;
 }
@@ -57,22 +57,14 @@ void Memory_Free(void *ptr) {
 #endif
 
 void Memory_Copy(void *dst, const void *src, cs_size count) {
-	cs_byte *u8dst = (cs_byte *)dst;
-	cs_byte *u8src = (cs_byte *)src;
-
-	while(count > 0) {
-		*u8dst++ = *u8src++;
-		count--;
-	}
+	cs_byte *u8dst = (cs_byte *)dst,
+	*u8src = (cs_byte *)src;
+	while(count--) *u8dst++ = *u8src++;
 }
 
 void Memory_Fill(void *dst, cs_size count, cs_byte val) {
 	cs_byte *u8dst = (cs_byte *)dst;
-
-	while(count > 0) {
-		*u8dst++ = val;
-		count--;
-	}
+	while(count--) *u8dst++ = val;
 }
 
 cs_bool File_Rename(cs_str path, cs_str newpath) {
@@ -92,15 +84,12 @@ cs_size File_Read(void *ptr, cs_size size, cs_size count, FILE *fp) {
 }
 
 cs_int32 File_ReadLine(FILE *fp, cs_char *line, cs_int32 len) {
-	cs_int32 bleft = len;
+	cs_int32 bleft = len + 1;
 
-	while(bleft > 1) {
+	while(--bleft) {
 		cs_int32 ch = File_GetChar(fp);
 		if(ch == '\n' || ch == EOF) break;
-		if(ch != '\r') {
-			*line++ = (char)ch;
-			bleft--;
-		}
+		if(ch != '\r') *line++ = (cs_char)ch;
 	}
 
 	*line = '\0';
@@ -210,6 +199,7 @@ Socket Socket_Accept(Socket sock, struct sockaddr_in *addr) {
 #if defined(WINDOWS)
 #define SOCK_DFLAGS 0
 #elif defined(POSIX)
+#include <unistd.h>
 #define SOCK_DFLAGS MSG_NOSIGNAL
 #endif
 
@@ -394,6 +384,8 @@ cs_bool DLib_GetSym(void *lib, cs_str sname, void *sym) {
 	return (*(void **)sym = (void *)GetProcAddress(lib, sname)) != NULL;
 }
 #elif defined(POSIX)
+#include <dlfcn.h>
+
 cs_bool DLib_Load(cs_str path, void **lib) {
 	return (*lib = dlopen(path, RTLD_NOW)) != NULL;
 }
@@ -424,7 +416,7 @@ Thread Thread_Create(TFUNC func, TARG param, cs_bool detach) {
 	);
 
 	if(!th) {
-		ERROR_PRINT(ET_SYS, GetLastError(), true)
+		ERROR_PRINT(ET_SYS, GetLastError(), true);
 	}
 
 	if(detach) {
@@ -440,7 +432,7 @@ cs_bool Thread_IsValid(Thread th) {
 
 void Thread_Detach(Thread th) {
 	if(!CloseHandle(th)) {
-		Error_PrintSys(true)
+		Error_PrintSys(true);
 	}
 }
 
@@ -448,11 +440,15 @@ void Thread_Join(Thread th) {
 	WaitForSingleObject(th, INFINITE);
 	Thread_Detach(th);
 }
+
+void Thread_Sleep(cs_uint32 ms) {
+	Sleep(ms);
+}
 #elif defined(POSIX)
 Thread Thread_Create(TFUNC func, TARG arg, cs_bool detach) {
 	Thread th = Memory_Alloc(1, sizeof(Thread));
 	if(pthread_create(th, NULL, func, arg) != 0) {
-		ERROR_PRINT(ET_SYS, errno, true)
+		ERROR_PRINT(ET_SYS, errno, true);
 		return NULL;
 	}
 
@@ -472,9 +468,13 @@ void Thread_Detach(Thread th) {
 void Thread_Join(Thread th) {
 	cs_int32 ret = pthread_join(*th, NULL);
 	if(ret) {
-		ERROR_PRINT(ET_SYS, ret, true)
+		ERROR_PRINT(ET_SYS, ret, true);
 	}
 	Memory_Free(th);
+}
+
+void Thread_Sleep(cs_uint32 ms) {
+	usleep(ms * 1000);
 }
 #endif
 
@@ -482,7 +482,7 @@ void Thread_Join(Thread th) {
 Mutex *Mutex_Create(void) {
 	Mutex *ptr = Memory_Alloc(1, sizeof(Mutex));
 	if(!ptr) {
-		ERROR_PRINT(ET_SYS, GetLastError(), true)
+		ERROR_PRINT(ET_SYS, GetLastError(), true);
 	}
 	InitializeCriticalSection(ptr);
 	return ptr;
@@ -504,14 +504,14 @@ void Mutex_Unlock(Mutex *handle) {
 Waitable *Waitable_Create(void) {
 	Waitable *handle = CreateEventA(NULL, true, false, NULL);
 	if(!handle) {
-		Error_PrintSys(true)
+		Error_PrintSys(true);
 	}
 	return handle;
 }
 
 void Waitable_Free(Waitable *handle) {
 	if(!CloseHandle(handle)) {
-		Error_PrintSys(true)
+		Error_PrintSys(true);
 	}
 }
 
@@ -534,7 +534,7 @@ Mutex *Mutex_Create(void) {
 	Mutex *ptr = Memory_Alloc(1, sizeof(Mutex));
 	cs_int32 ret = pthread_mutex_init(ptr, NULL);
 	if(ret) {
-		ERROR_PRINT(ET_SYS, ret, true)
+		ERROR_PRINT(ET_SYS, ret, true);
 		return NULL;
 	}
 	return ptr;
@@ -543,7 +543,7 @@ Mutex *Mutex_Create(void) {
 void Mutex_Free(Mutex *handle) {
 	cs_int32 ret = pthread_mutex_destroy(handle);
 	if(ret) {
-		ERROR_PRINT(ET_SYS, ret, true)
+		ERROR_PRINT(ET_SYS, ret, true);
 	}
 	Memory_Free(handle);
 }
@@ -551,14 +551,14 @@ void Mutex_Free(Mutex *handle) {
 void Mutex_Lock(Mutex *handle) {
 	cs_int32 ret = pthread_mutex_lock(handle);
 	if(ret) {
-		ERROR_PRINT(ET_SYS, ret, true)
+		ERROR_PRINT(ET_SYS, ret, true);
 	}
 }
 
 void Mutex_Unlock(Mutex *handle) {
 	cs_int32 ret = pthread_mutex_unlock(handle);
 	if(ret) {
-		ERROR_PRINT(ET_SYS, ret, true)
+		ERROR_PRINT(ET_SYS, ret, true);
 	}
 }
 

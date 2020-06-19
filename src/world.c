@@ -192,7 +192,7 @@ static cs_bool WriteWData(FILE *fp, cs_byte dataType, void *ptr, cs_int32 size) 
 static cs_bool WriteInfo(World *world, FILE *fp) {
 	cs_int32 magic = WORLD_MAGIC;
 	if(!File_Write((cs_char *)&magic, 4, 1, fp)) {
-		Error_PrintSys(false)
+		Error_PrintSys(false);
 		return false;
 	}
 	WorldInfo *wi = &world->info;
@@ -212,7 +212,7 @@ static cs_bool ReadInfo(World *world, FILE *fp) {
 		return false;
 
 	if(WORLD_MAGIC != magic) {
-		ERROR_PRINT(ET_SERVER, EC_MAGIC, true)
+		ERROR_PRINT(ET_SERVER, EC_MAGIC, true);
 		return false;
 	}
 
@@ -248,7 +248,7 @@ static cs_bool ReadInfo(World *world, FILE *fp) {
 			case DT_END:
 				return true;
 			default:
-				Error_PrintF2(ET_SERVER, EC_FILECORR, false, world->name)
+				Error_PrintF2(ET_SERVER, EC_FILECORR, false, world->name);
 				return false;
 		}
 	}
@@ -268,7 +268,7 @@ THREAD_FUNC(WorldSaveThread) {
 
 	FILE *fp = File_Open(tmpname, "wb");
 	if(!fp) {
-		Error_PrintSys(false)
+		Error_PrintSys(false);
 		goto world_save_end;
 	}
 
@@ -283,7 +283,7 @@ THREAD_FUNC(WorldSaveThread) {
 	stream.opaque = Z_NULL;
 
 	if((ret = deflateInit(&stream, Z_BEST_COMPRESSION)) != Z_OK) {
-		ERROR_PRINT(ET_ZLIB, ret, false)
+		ERROR_PRINT(ET_ZLIB, ret, false);
 		goto world_save_end;
 	}
 
@@ -294,12 +294,12 @@ THREAD_FUNC(WorldSaveThread) {
 		stream.avail_out = CHUNK_SIZE;
 
 		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
-			ERROR_PRINT(ET_ZLIB, ret, false)
+			ERROR_PRINT(ET_ZLIB, ret, false);
 			goto world_save_end;
 		}
 
 		if(!File_Write(out, 1, CHUNK_SIZE - stream.avail_out, fp)) {
-			Error_PrintSys(false)
+			Error_PrintSys(false);
 			goto world_save_end;
 		}
 	} while(stream.avail_out == 0);
@@ -335,7 +335,7 @@ THREAD_FUNC(WorldLoadThread) {
 
 	FILE *fp = File_Open(path, "rb");
 	if(!fp) {
-		Error_PrintSys(false)
+		Error_PrintSys(false);
 		goto world_load_done;
 	}
 
@@ -352,7 +352,7 @@ THREAD_FUNC(WorldLoadThread) {
 	stream.opaque = Z_NULL;
 
 	if((ret = inflateInit(&stream)) != Z_OK) {
-		ERROR_PRINT(ET_ZLIB, ret, false)
+		ERROR_PRINT(ET_ZLIB, ret, false);
 		goto world_load_done;
 	}
 
@@ -361,7 +361,7 @@ THREAD_FUNC(WorldLoadThread) {
 	do {
 		stream.avail_in = (uLongf)File_Read(in, 1, CHUNK_SIZE, fp);
 		if(File_Error(fp)) {
-			Error_PrintSys(false)
+			Error_PrintSys(false);
 			goto world_load_done;
 		}
 
@@ -371,7 +371,7 @@ THREAD_FUNC(WorldLoadThread) {
 		do {
 			stream.avail_out = CHUNK_SIZE;
 			if((ret = inflate(&stream, Z_NO_FLUSH)) == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
-				ERROR_PRINT(ET_ZLIB, ret, false)
+				ERROR_PRINT(ET_ZLIB, ret, false);
 				goto world_load_done;
 			}
 		} while(stream.avail_out == 0);

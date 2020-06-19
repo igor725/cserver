@@ -48,7 +48,7 @@ THREAD_FUNC(ClientInitThread) {
 				else break;
 			} else goto client_ok;
 		}
-		Sleep(100);
+		Thread_Sleep(100);
 		attempt++;
 	}
 
@@ -246,7 +246,7 @@ void Server_StartLoop(void) {
 			delta = 500;
 		}
 		Server_DoStep(delta);
-		Sleep(10);
+		Thread_Sleep(10);
 	}
 }
 
