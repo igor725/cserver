@@ -111,25 +111,27 @@ static void doCleanUp(void) {
 }
 
 static void genBiomes(void) {
-	ctx.biomeSizeX = ((cs_uint16)ctx.dims->x / gen_biome_step) + 1,
-	ctx.biomeSizeZ = ((cs_uint16)ctx.dims->z / gen_biome_step) + 2,
+	ctx.biomeSizeX = (ctx.dims->x / gen_biome_step) + 1,
+	ctx.biomeSizeZ = (ctx.dims->z / gen_biome_step) + 1,
 	ctx.biomeSize = ctx.biomeSizeX * ctx.biomeSizeZ,
 	ctx.biomesNum = ctx.dims->x * ctx.dims->z / gen_biome_step / gen_biome_radius / 64 + 1;
-
 	ctx.biomes = Memory_Alloc(2, ctx.biomeSize);
-	for(cs_int16 i = 0; i < ctx.biomesNum; i++) {
-		cs_int16 x = (cs_uint16)Random_Next(&ctx.rnd, ctx.biomeSizeX),
-		z = (cs_int16)Random_Next(&ctx.rnd, ctx.biomeSizeZ),
-		biome = (cs_int16)Random_Range(&ctx.rnd, BIOME_NORMAL, BIOME_WATER);
+	for(cs_uint16 i = 0; i < ctx.biomeSize; i++)
+		ctx.biomes[i] = BIOME_NORMAL;
+
+	for(cs_uint16 i = 0; i <= ctx.biomesNum; i++) {
+		cs_uint16 x = (cs_uint16)Random_Next(&ctx.rnd, ctx.biomeSizeX - 1),
+		z = (cs_uint16)Random_Next(&ctx.rnd, ctx.biomeSizeZ - 1),
+		biome = (cs_uint16)Random_Range(&ctx.rnd, BIOME_NORMAL, BIOME_WATER);
 
 		for(cs_int16 dx = -gen_biome_radius; dx <= gen_biome_radius; dx++) {
 			for(cs_int16 dz = -gen_biome_radius; dz <= gen_biome_radius; dz++) {
 				cs_int16 nx = x + dx,
 				nz = z + dz;
 
-				if(dx * dx + dz * dz <= gen_biome_radius2 &&
-				0 <= nx && nx <= ctx.biomeSizeX &&
-				0 <= nz && nz <= ctx.biomeSizeZ) {
+				if(dx * dx + dz * dz < gen_biome_radius2 &&
+				0 <= nx && nx < ctx.biomeSizeX &&
+				0 <= nz && nz < ctx.biomeSizeZ) {
 					cs_uint16 offset = nx + nz * ctx.biomeSizeX;
 					if(offset < ctx.biomeSize)
 						ctx.biomes[offset] = biome;
@@ -142,20 +144,20 @@ static void genBiomes(void) {
 static void genHeightMap(void) {
 	ctx.heightMap = Memory_Alloc(2, ctx.biomeSize);
 
-	for(cs_uint16 x = 0; x <= ctx.biomeSizeX; x++) {
+	for(cs_uint16 x = 0; x < ctx.biomeSizeX; x++) {
 		for(cs_uint16 z = 0; z < ctx.biomeSizeZ; z++) {
 			cs_uint16 offset = x + z * ctx.biomeSizeX,
 			biome = ctx.biomes[offset];
 
 			switch (biome) {
 				case BIOME_NORMAL:
-					if(Random_Range(&ctx.rnd, 0, 6) == 0)
+					if(Random_Next(&ctx.rnd, 6) == 0)
 						ctx.heightMap[offset] = ctx.heightGrass + (cs_uint16)Random_Range(&ctx.rnd, -3, -1);
 					else
 						ctx.heightMap[offset] = ctx.heightGrass + (cs_uint16)Random_Range(&ctx.rnd, 1, 3);
 					break;
 				case BIOME_HIGH:
-					if(Random_Range(&ctx.rnd, 0, 30) == 0)
+					if(Random_Next(&ctx.rnd, 30) == 0)
 						ctx.heightMap[offset] = ctx.heightGrass +
 						(cs_uint16)Random_Range(&ctx.rnd, 20, min(ctx.dims->y - ctx.heightGrass - 1, 40));
 					else
@@ -168,7 +170,7 @@ static void genHeightMap(void) {
 					ctx.heightMap[offset] = ctx.heightGrass + (cs_uint16)Random_Range(&ctx.rnd, 1, 4);
 					break;
 				case BIOME_WATER:
-					if(Random_Range(&ctx.rnd, 0, 10) == 0)
+					if(Random_Next(&ctx.rnd, 10) == 0)
 						ctx.heightMap[offset] = ctx.heightGrass + (cs_int16)Random_Range(&ctx.rnd, -20, -3);
 					else
 						ctx.heightMap[offset] = ctx.heightGrass + (cs_int16)Random_Range(&ctx.rnd, -10, -3);
@@ -206,7 +208,7 @@ THREAD_FUNC(terrainThread) {
 			cs_float percentZ = (cs_float)z / (cs_float)gen_biome_step - (cs_float)hz,
 			percentZOp = 1.0f - percentZ;
 			height1 = (cs_uint16)(((cs_float)ctx.heightMap[hx + hz * ctx.biomeSizeX] * percentNegX +
-			(cs_float)ctx.heightMap[(hx + 1) + hz * ctx.biomeSizeX] * percentPosX) * (1 - percentZ) +
+			(cs_float)ctx.heightMap[(hx + 1) + hz * ctx.biomeSizeX] * percentPosX) * percentZOp +
 			((cs_float)ctx.heightMap[hx + (hz + 1) * ctx.biomeSizeX] * percentNegX +
 			(cs_float)ctx.heightMap[(hx + 1) + (hz + 1) * ctx.biomeSizeX] * percentPosX) *
 			percentZ + 0.5f);
@@ -243,8 +245,10 @@ THREAD_FUNC(terrainThread) {
 				else
 					biome = b11;
 			} else {
-				cs_uint16 bx = (cs_uint16)((cs_float)hx + 0.5f),
-				bz = (cs_uint16)((cs_float)hz + 0.5f);
+				cs_uint16 bx = (cs_uint16)(hx + 0.5f),
+				bz = (cs_uint16)(hz + 0.5f);
+				bx = min(bx, ctx.biomeSizeX);
+				bz = min(bz, ctx.biomeSizeZ);
 				biome = ctx.biomes[bx + bz * ctx.biomeSizeX];
 			}
 
@@ -332,7 +336,7 @@ THREAD_FUNC(cavesThread) {
 		delta.y = (Random_Float(&ctx.rnd) - 0.5f) * 0.4f + direction.y;
 		delta.z = Random_Float(&ctx.rnd) - 0.5f + direction.z;
 
-		cs_float length = Math_SqrtF(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
+		cs_float length = Math_Sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
 		pos.x = (cs_int16)((cs_float)pos.x + delta.x * gen_cave_radius / length + 0.5f);
 		pos.y = (cs_int16)((cs_float)pos.y + delta.y * gen_cave_radius / length + 0.5f);
 		pos.z = (cs_int16)((cs_float)pos.z + delta.z * gen_cave_radius / length + 0.5f);
