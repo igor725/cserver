@@ -1,6 +1,5 @@
 # cserver
-Another Minecraft Classic server written in C
-Very buggy and dirty, but it may be useful for someone.
+Another Minecraft Classic server written in C. Very buggy and dirty, but it may be useful for someone.
 
 ## Dependencies
 
@@ -11,18 +10,20 @@ Very buggy and dirty, but it may be useful for someone.
 4. zlib
 
 ### On windows
-1. zlib
-2. ws2_32
-3. wininet
-4. advapi32
+2. zlib
+3. ws2_32
+4. wininet
+5. advapi32
 
 ## Building
 
 ### On linux
 ``./build [flags ...]``
+NOTE: This script uses gcc, but you can change this to any gcc-like compiler by setting CC environment variable (``CC=clang ./build [flags ...]``).
 
 ### On Windows
 ``.\build.bat [flags ...]``
+NOTE: This script uses Microsoft Visual Studio to compile the project
 
 ### Build script flags
 * ``cls`` - Clear console window before compilation
