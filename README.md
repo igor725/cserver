@@ -19,10 +19,12 @@ Another Minecraft Classic server written in C. Very buggy and dirty, but it may 
 
 ### On linux
 ``./build [flags ...]``
+
 NOTE: This script uses gcc, but you can change this to any gcc-like compiler by setting CC environment variable (``CC=clang ./build [flags ...]``).
 
 ### On Windows
 ``.\build.bat [flags ...]``
+
 NOTE: This script uses Microsoft Visual Studio to compile the project
 
 ### Build script flags
