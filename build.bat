@@ -17,8 +17,14 @@ SET MSVC_LINKER=/opt:ref /subsystem:console
 SET MSVC_OPTS=/MP /GL /Oi /Gy /fp:fast /DZLIB_DLL /DZLIB_WINAPI
 SET OBJDIR=objs
 SET MSVC_LIBS=kernel32.lib
-FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --short HEAD`) DO (
-	SET MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_SHA#\"%%F\"
+
+git --version
+IF %ERRORLEVEL% NEQ 0 (
+	SET MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_SHA#\"0000000\"
+) ELSE (
+	FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --short HEAD`) DO (
+		SET MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_SHA#\"%%F\"
+	)
 )
 
 :argloop

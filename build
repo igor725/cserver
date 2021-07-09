@@ -13,7 +13,11 @@ LNK="$CC -rdynamic"
 CFLAGS="-pipe -fPIC"
 LIBS=""
 OUTBIN="server"
-COMMIT_SHA="-DGIT_COMMIT_SHA=\"$(git rev-parse --short HEAD)\""
+if which git >/dev/null; then
+	COMMIT_SHA="-DGIT_COMMIT_SHA=\"$(git rev-parse --short HEAD)\""
+else
+	COMMIT_SHA="-DGIT_COMMIT_SHA=\"0000000\""
+fi
 PLUGIN_BUILD=0
 PLUGIN_INSTALL=0
 PLUGINS_DIR="$ROOT/out/plugins"
