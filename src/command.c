@@ -140,7 +140,7 @@ COMMAND_FUNC(CFG) {
 				case CFG_TSTR:
 					Config_SetStr(ent, value);
 					break;
-				default:
+				case CFG_TINVALID:
 					COMMAND_PRINT("Can't detect entry type.");
 			}
 			COMMAND_PRINT("Entry value changed successfully.");
