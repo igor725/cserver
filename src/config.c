@@ -98,6 +98,7 @@ cs_str Config_TypeName(CETypes type) {
 			return "int8";
 		case CFG_TBOOL:
 			return "boolean";
+		case CFG_TINVALID:
 		default:
 			return "unknownType";
 	}
@@ -135,7 +136,7 @@ cs_bool Config_ToStr(CEntry *ent, cs_char *value, cs_byte len) {
 		case CFG_TSTR:
 			String_Copy(value, len, Config_GetStr(ent));
 			break;
-		default:
+		case CFG_TINVALID:
 			return false;
 	}
 	return true;
@@ -207,6 +208,8 @@ cs_bool Config_Load(CStore *store) {
 				break;
 			case CFG_TBOOL:
 				Config_SetBool(ent, String_Compare(value, "True"));
+				break;
+			case CFG_TINVALID: // Eh??
 				break;
 		}
 	}
@@ -281,7 +284,7 @@ cs_bool Config_Save(CStore *store) {
 					return false;
 				}
 				break;
-			default:
+			case CFG_TINVALID:
 				if(!File_Write("=Unknown value\n", 16, 1, fp)) {
 					CFG_SYSERROR;
 					return false;

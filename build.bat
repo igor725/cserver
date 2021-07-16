@@ -17,8 +17,14 @@ SET MSVC_LINKER=/opt:ref /subsystem:console
 SET MSVC_OPTS=/MP /GL /Oi /Gy /fp:fast /DZLIB_DLL /DZLIB_WINAPI
 SET OBJDIR=objs
 SET MSVC_LIBS=kernel32.lib
-FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --short HEAD`) DO (
-	SET MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_SHA#\"%%F\"
+
+git --version
+IF %ERRORLEVEL% NEQ 0 (
+	SET MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_SHA#\"0000000\"
+) ELSE (
+	FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --short HEAD`) DO (
+		SET MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_SHA#\"%%F\"
+	)
 )
 
 :argloop
@@ -127,7 +133,11 @@ IF EXIST %PROJECT_ROOT%\version.rc (
 	SET MSVC_OPTS=%OBJDIR%\version.res %MSVC_OPTS%
 )
 
-CL %ADD_C%%PROJECT_ROOT%\src\*.c /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%
+set SRC_LIST=
+FOR /F "tokens=* USEBACKQ" %%A IN (`dir /b /a-d %PROJECT_ROOT%\src\*.c %PROJECT_ROOT%\src\*.cpp`) DO (
+	set SRC_LIST=!SRC_LIST! %PROJECT_ROOT%\src\%%A
+)
+CL%SRC_LIST% /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%
 
 IF "%BUILD_PLUGIN%"=="1" (
 	IF "%PLUGIN_INSTALL%"=="1" (

@@ -13,7 +13,11 @@ LNK="$CC -rdynamic"
 CFLAGS="-pipe -fPIC"
 LIBS=""
 OUTBIN="server"
-COMMIT_SHA="-DGIT_COMMIT_SHA=\"$(git rev-parse --short HEAD)\""
+if which git >/dev/null; then
+	COMMIT_SHA="-DGIT_COMMIT_SHA=\"$(git rev-parse --short HEAD)\""
+else
+	COMMIT_SHA="-DGIT_COMMIT_SHA=\"0000000\""
+fi
 PLUGIN_BUILD=0
 PLUGIN_INSTALL=0
 PLUGINS_DIR="$ROOT/out/plugins"
@@ -84,7 +88,7 @@ echo -n "" > $STDERR
 pids=()
 cnt=0
 
-for C in `find "$ROOT/src/" -type f -name *.c ! -name hash.c`; do
+for C in `find "$ROOT/src/" -type f -name "*.c" -o -name "*.cpp"`; do
 	objpath="$OBJDIR/$(basename $C .c).o"
 	OBJS="$OBJS $objpath"
 	$CC -c $COMMIT_SHA $C -o $objpath -I"$ROOT/src" $WARN $OPT $CFLAGS 2>> $STDERR &

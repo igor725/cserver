@@ -960,7 +960,7 @@ cs_bool Client_Spawn(Client *client) {
 	}
 
 	pd->spawned = true;
-	Event_Call(EVT_ONSPAWN, client);
+	Event_Call(EVT_ONSPAWN);
 	if(pd->firstSpawn) { // TODO: Перенести это куда-нибудь
 		cs_str name = Client_GetName(client);
 		cs_str appname = Client_GetAppName(client);
@@ -968,10 +968,6 @@ cs_bool Client_Spawn(Client *client) {
 		pd->firstSpawn = false;
 	}
 	return true;
-}
-
-void Client_HandshakeStage2(Client *client) {
-	Client_ChangeWorld(client, Worlds_List[0]);
 }
 
 void Client_Kick(Client *client, cs_str reason) {

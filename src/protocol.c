@@ -151,8 +151,8 @@ void Proto_ReadSVec(cs_str *dataptr, SVec *vec) {
 
 void Proto_ReadAng(cs_str *dataptr, Ang *ang) {
 	cs_str data = *dataptr;
-	ang->yaw = (((cs_float)(cs_byte)*data++) / 256) * 360;
-	ang->pitch = (((cs_float)(cs_byte)*data++) / 256) * 360;
+	ang->yaw = (((cs_float)*data++) / 256) * 360;
+	ang->pitch = (((cs_float)*data++) / 256) * 360;
 	*dataptr = data;
 }
 
@@ -174,10 +174,8 @@ void Proto_ReadFlVec(cs_str *dataptr, Vec *vec) {
 
 cs_bool Proto_ReadClientPos(Client *client, cs_str data) {
 	PlayerData *cpd = client->playerData;
-	Vec *vec = &cpd->position;
-	Ang *ang = &cpd->angle;
-	Vec newVec;
-	Ang newAng;
+	Vec *vec = &cpd->position, newVec;
+	Ang *ang = &cpd->angle, newAng;
 	cs_bool changed = false;
 
 	if(Client_GetExtVer(client, EXT_ENTPOS))
@@ -444,8 +442,8 @@ cs_bool Handler_Handshake(Client *client, cs_str data) {
 	}
 
 	if(Client_CheckAuth(client)) {
-		cs_str name = Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY);
-		cs_str motd = Config_GetStrByKey(Server_Config, CFG_SERVERMOTD_KEY);
+		cs_str name = Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY),
+		motd = Config_GetStrByKey(Server_Config, CFG_SERVERMOTD_KEY);
 
 		Vanilla_WriteHandshake(client, name, motd);
 	} else {
@@ -465,7 +463,7 @@ cs_bool Handler_Handshake(Client *client, cs_str data) {
 		}
 	} else {
 		Event_Call(EVT_ONHANDSHAKEDONE, client);
-		Client_HandshakeStage2(client);
+		Client_ChangeWorld(client, Worlds_List[0]);
 	}
 
 	return true;
@@ -539,11 +537,11 @@ cs_bool Handler_PosAndOrient(Client *client, cs_str data) {
 cs_bool Handler_Message(Client *client, cs_str data) {
 	ValidateClientState(client, STATE_INGAME, true)
 
-	cs_byte type = 0;
-	cs_char message[65];
-	cs_char *messptr = message;
-	cs_byte partial = *data++;
-	cs_byte len = Proto_ReadStringNoAlloc(&data, message);
+	cs_char message[65],
+	*messptr = message;
+	cs_byte type = 0,
+	partial = *data++,
+	len = Proto_ReadStringNoAlloc(&data, message);
 	if(len == 0) return false;
 
 	for(cs_byte i = 0; i < len; i++) {
@@ -962,7 +960,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_str data) {
 		Memory_Free(tmp);
 		return false;
 	}
-	
+
 	tmp->version = ntohl(*(cs_int32 *)data);
 	if(tmp->version < 1) {
 		Memory_Free((void *)tmp->name);
@@ -976,7 +974,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_str data) {
 
 	if(--cpd->_extCount == 0) {
 		Event_Call(EVT_ONHANDSHAKEDONE, client);
-		Client_HandshakeStage2(client);
+		Client_ChangeWorld(client, Worlds_List[0]);
 	}
 
 	return true;

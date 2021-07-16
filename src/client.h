@@ -100,7 +100,6 @@ typedef struct {
 } Client;
 
 cs_int32 Client_Send(Client *client, cs_int32 len);
-void Client_HandshakeStage2(Client *client);
 cs_bool Client_CheckAuth(Client *client);
 void Client_Free(Client *client);
 void Client_Tick(Client *client, cs_int32 delta);

@@ -75,8 +75,8 @@ COMMAND_FUNC(Info) {
 	);
 }
 
-COMMAND_FUNC(OP) {
-	COMMAND_SETUSAGE("/op <playername>");
+COMMAND_FUNC(MakeOp) {
+	COMMAND_SETUSAGE("/makeop <playername>");
 
 	cs_char clientname[64];
 	if(COMMAND_GETARG(clientname, 64, 0)) {
@@ -140,7 +140,7 @@ COMMAND_FUNC(CFG) {
 				case CFG_TSTR:
 					Config_SetStr(ent, value);
 					break;
-				default:
+				case CFG_TINVALID:
 					COMMAND_PRINT("Can't detect entry type.");
 			}
 			COMMAND_PRINT("Entry value changed successfully.");
@@ -365,7 +365,7 @@ COMMAND_FUNC(SavWorld) {
 
 void Command_RegisterDefault(void) {
 	COMMAND_ADD(Info, CMDF_OP);
-	COMMAND_ADD(OP, CMDF_OP);
+	COMMAND_ADD(MakeOp, CMDF_OP);
 	COMMAND_ADD(Uptime, CMDF_NONE);
 	COMMAND_ADD(CFG, CMDF_OP);
 	COMMAND_ADD(Plugins, CMDF_OP);
