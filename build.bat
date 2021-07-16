@@ -133,7 +133,11 @@ IF EXIST %PROJECT_ROOT%\version.rc (
 	SET MSVC_OPTS=%OBJDIR%\version.res %MSVC_OPTS%
 )
 
-CL %ADD_C%%PROJECT_ROOT%\src\*.c /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%
+set SRC_LIST=
+FOR /F "tokens=* USEBACKQ" %%A IN (`dir /b /a-d %PROJECT_ROOT%\src\*.c %PROJECT_ROOT%\src\*.cpp`) DO (
+	set SRC_LIST=!SRC_LIST! %PROJECT_ROOT%\src\%%A
+)
+CL%SRC_LIST% /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%
 
 IF "%BUILD_PLUGIN%"=="1" (
 	IF "%PLUGIN_INSTALL%"=="1" (

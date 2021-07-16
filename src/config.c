@@ -99,6 +99,7 @@ cs_str Config_TypeName(CETypes type) {
 		case CFG_TBOOL:
 			return "boolean";
 		case CFG_TINVALID:
+		default:
 			return "unknownType";
 	}
 }
