@@ -960,7 +960,7 @@ cs_bool Client_Spawn(Client *client) {
 	}
 
 	pd->spawned = true;
-	Event_Call(EVT_ONSPAWN);
+	Event_Call(EVT_ONSPAWN, client);
 	if(pd->firstSpawn) { // TODO: Перенести это куда-нибудь
 		cs_str name = Client_GetName(client);
 		cs_str appname = Client_GetAppName(client);
