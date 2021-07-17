@@ -3,6 +3,7 @@
 #include "str.h"
 #include "error.h"
 #include <stdio.h>
+#include <signal.h>
 
 #if defined(WINDOWS)
 HANDLE hHeap;
@@ -633,6 +634,16 @@ void Time_Format(cs_char *buf, cs_size buflen) {
 cs_uint64 Time_GetMSec() {
 	struct timeval cur; gettimeofday(&cur, NULL);
 	return (cs_uint64)cur.tv_sec * 1000 + 62135596800000ULL + (cur.tv_usec / 1000);
+}
+#endif
+
+#if defined(WINDOWS)
+cs_bool Console_BindSignalHandler(TSHND handler) {
+	return (cs_bool)SetConsoleCtrlHandler((PHANDLER_ROUTINE)handler, TRUE);
+}
+#elif defined(POSIX)
+cs_bool Console_BindSignalHandler(TSHND handler) {
+	return signal(SIGINT, handler) != SIG_ERR;
 }
 #endif
 

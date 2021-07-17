@@ -35,7 +35,7 @@ typedef cs_int32 Socket;
 
 typedef void *TARG;
 typedef TRET(*TFUNC)(TARG);
-
+typedef cs_bool(*TSHND)(cs_uint32);
 #define THREAD_FUNC(N) \
 static TRET N(TARG param)
 
@@ -124,6 +124,8 @@ API void Waitable_Reset(Waitable *handle);
 
 API void Time_Format(cs_char *buf, cs_size len);
 API cs_uint64 Time_GetMSec(void);
+
+API cs_bool Console_BindSignalHandler(TSHND handler);
 
 API void Process_Exit(cs_int32 ecode);
 #endif // PLATFORM_H

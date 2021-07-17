@@ -15,6 +15,7 @@
 #include "plugin.h"
 #include "lang.h"
 #include "timer.h"
+#include "consoleio.h"
 
 THREAD_FUNC(ClientInitThread) {
 	Client *tmp = (Client *)param;
@@ -103,18 +104,6 @@ static void Bind(cs_str ip, cs_uint16 port) {
 	if(!Socket_Bind(Server_Socket, &ssa)) {
 		Error_PrintSys(true);
 	}
-}
-
-THREAD_FUNC(ConsoleThread) {
-	(void)param;
-	cs_char buf[192];
-
-	while(Server_Active) {
-		if(File_ReadLine(stdin, buf, 192))
-			if(!Command_Handle(buf, NULL))
-				Log_Info(Lang_Get(Lang_CmdGrp, 3));
-	}
-	return 0;
 }
 
 void Server_InitialWork(void) {
@@ -216,7 +205,7 @@ void Server_InitialWork(void) {
 	Thread_Create(AcceptThread, NULL, true);
 	Bind(ip, port);
 	Event_Call(EVT_POSTSTART, NULL);
-	Thread_Create(ConsoleThread, NULL, true);
+	ConsoleIO_Init();
 }
 
 void Server_DoStep(cs_int32 delta) {
