@@ -643,7 +643,7 @@ cs_bool Console_BindSignalHandler(TSHND handler) {
 }
 #elif defined(POSIX)
 cs_bool Console_BindSignalHandler(TSHND handler) {
-	return signal(SIGINT, handler) != SIG_ERR;
+	return signal(SIGINT, (void(*)(int))handler) != SIG_ERR;
 }
 #endif
 
