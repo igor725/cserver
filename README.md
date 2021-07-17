@@ -18,18 +18,19 @@ Another Minecraft Classic server written in C. Very buggy and dirty, but it may 
 ## Building
 
 ### On linux
-``./build [flags ...]``
+``./build [args ...]``
 
-NOTE: This script uses gcc, but you can change this to any gcc-like compiler by setting CC environment variable (``CC=clang ./build [flags ...]``).
+NOTE: This script uses gcc, but you can change this to any gcc-like compiler by setting CC environment variable (``CC=clang ./build [args ...]``).
 
 ### On Windows
-``.\build.bat [flags ...]``
+``.\build.bat [args ...]``
 
 NOTE: This script uses Microsoft Visual Studio to compile the project
 
-### Build script flags
+### Build script arguments
 * ``cls`` - Clear console window before compilation
-* ``pb`` - Build plugin (next argument must be a plugin name, without the "cs-" prefix)'
+* ``pb`` - Build a plugin (next argument must be a plugin name, without the "cs-" prefix)
+* ``pbu`` - Pull plugin repository and build it (This argument is used instead of ``pb``)
 * ``dbg`` - Build with debug symbols
 * ``wall`` - Enable all possible warnings
 * ``install`` - Copy plugin binary to the ``plugins`` directory after compilation (Can be used only with ``pb``)
