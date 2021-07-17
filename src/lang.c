@@ -44,42 +44,6 @@ void Lang_Init(void) {
 	Lang_Set(Lang_CmdGrp, 3, "Unknown command.");
 	Lang_Set(Lang_CmdGrp, 4, "This command can't be called from console.");
 
-	// "Info" command
-	Lang_Set(Lang_CmdGrp, 5,
-		"== Some info about server ==\r\n"
-		"OS: "
-		#if defined(WINDOWS)
-		"Windows\r\n"
-		#elif defined(POSIX)
-		"Unix-like\r\n"
-		#endif
-		"Server core: %s\r\n"
-		"PluginAPI version: %d\r\n"
-		"zlib version: %s"
-	);
-
-	// "Plugin" command
-	Lang_Set(Lang_CmdGrp, 6, "/plugins <load/unload/print> [pluginName]");
-	Lang_Set(Lang_CmdGrp, 7, "Plugin \"%s\" loaded.");
-	Lang_Set(Lang_CmdGrp, 8, "Plugin \"%s\" not loaded.");
-	Lang_Set(Lang_CmdGrp, 9, "Plugin \"%s\" is already loaded.");
-	Lang_Set(Lang_CmdGrp, 10, "Plugin \"%s\" successfully unloaded.");
-	Lang_Set(Lang_CmdGrp, 11, "Plugin \"%s\" cannot be unloaded.");
-	Lang_Set(Lang_CmdGrp, 12, "Plugin_Init() == false, something went wrong.");
-	Lang_Set(Lang_CmdGrp, 13, "Loaded plugins list:");
-	Lang_Set(Lang_CmdGrp, 14, "\r\n%d.%s v%d");
-	Lang_Set(Lang_CmdGrp, 15, "\r\n(Can't show full plugins list)");
-
-	// "Kick" command
-	Lang_Set(Lang_CmdGrp, 16, "/kick <player> [reason]");
-	Lang_Set(Lang_CmdGrp, 17, "Player %s kicked");
-
-	Lang_MsgGrp = Lang_NewGroup(4);
-	Lang_Set(Lang_MsgGrp, 0, "Server is loading the world, please wait...");
-	Lang_Set(Lang_MsgGrp, 1, "Player %s connected with %s.");
-	Lang_Set(Lang_MsgGrp, 2, "Player %s disconnected.");
-	Lang_Set(Lang_MsgGrp, 3, "Player %s not found.");
-
 	Lang_DbgGrp = Lang_NewGroup(2);
 	Lang_Set(Lang_DbgGrp, 0, "Symbol: %s - 0x%0X");
 	Lang_Set(Lang_DbgGrp, 1, "\tFile: %s: %d");

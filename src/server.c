@@ -182,7 +182,6 @@ void Server_InitialWork(void) {
 	Log_SetLevelStr(Config_GetStrByKey(cfg, CFG_LOGLEVEL_KEY));
 
 	Packet_RegisterDefault();
-	Command_RegisterDefault();
 	Plugin_LoadAll();
 
 	Directory_Ensure("worlds");
