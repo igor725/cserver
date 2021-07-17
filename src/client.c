@@ -272,10 +272,8 @@ THREAD_FUNC(WorldSendThread) {
 	PlayerData *pd = client->playerData;
 	World *world = pd->world;
 
-	if(world->process == WP_LOADING) {
-		Client_Chat(client, MT_CHAT, Lang_Get(Lang_MsgGrp, 0));
+	if(world->process == WP_LOADING)
 		Waitable_Wait(world->wait);
-	}
 
 	if(!world->loaded) {
 		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
@@ -961,12 +959,6 @@ cs_bool Client_Spawn(Client *client) {
 
 	pd->spawned = true;
 	Event_Call(EVT_ONSPAWN, client);
-	if(pd->firstSpawn) { // TODO: Перенести это куда-нибудь
-		cs_str name = Client_GetName(client);
-		cs_str appname = Client_GetAppName(client);
-		Log_Info(Lang_Get(Lang_MsgGrp, 1), name, appname);
-		pd->firstSpawn = false;
-	}
 	return true;
 }
 
@@ -994,7 +986,6 @@ void Client_Tick(Client *client, cs_int32 delta) {
 					CPE_WriteRemoveName(other, client);
 			}
 			Event_Call(EVT_ONDISCONNECT, client);
-			Log_Info(Lang_Get(Lang_MsgGrp, 2), Client_GetName(client));
 		}
 		Client_Despawn(client);
 		Client_Free(client);

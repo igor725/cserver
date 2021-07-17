@@ -8,7 +8,7 @@
 
 Plugin *pluginsList[MAX_PLUGINS];
 
-cs_bool Plugin_Load(cs_str name) {
+cs_bool Plugin_LoadDll(cs_str name) {
 	cs_char path[256], error[512];
 	void *lib;
 	pluginFunc initSym;
@@ -53,7 +53,7 @@ cs_bool Plugin_Load(cs_str name) {
 		}
 
 		if(plugin->id == -1 || !initSym()) {
-			Plugin_Unload(plugin);
+			Plugin_UnloadDll(plugin);
 			return false;
 		}
 
@@ -72,7 +72,7 @@ Plugin *Plugin_Get(cs_str name) {
 	return NULL;
 }
 
-cs_bool Plugin_Unload(Plugin *plugin) {
+cs_bool Plugin_UnloadDll(Plugin *plugin) {
 	if(plugin->unload && !(*(pluginFunc)plugin->unload)())
 		return false;
 	if(plugin->name)
@@ -92,7 +92,7 @@ void Plugin_LoadAll(void) {
 	if(Iter_Init(&pIter, "plugins", DLIB_EXT)) {
 		do {
 			if(!pIter.isDir && pIter.cfile)
-				Plugin_Load(pIter.cfile);
+				Plugin_LoadDll(pIter.cfile);
 		} while(Iter_Next(&pIter));
 	}
 	Iter_Close(&pIter);
