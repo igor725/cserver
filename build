@@ -88,6 +88,7 @@ pids=()
 cnt=0
 
 for C in `find "$ROOT/src/" -type f -name "*.c" -o -name "*.cpp"`; do
+	objpath="$OBJDIR/$(basename $C .c).o"
 	$CC -c $COMMIT_SHA $C -o $objpath -I"$ROOT/src" $WARN $OPT $CFLAGS 2>> $STDERR &
 	pids+=($!)
 	((cnt++))
