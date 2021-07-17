@@ -34,11 +34,12 @@ NOTE: This script uses Microsoft Visual Studio to compile the project
 * ``wall`` - Enable all possible warnings
 * ``install`` - Copy plugin binary to the ``plugins`` directory after compilation (Can be used only with ``pb``)
 
-### Plugin building notes
+### Notes
+* By default the server doesn't have any chat commands, build the cs-base plugin to add them.
 * Your directory should have the following structure in order to compile plugins
-
 ```
   [root_folder]/cserver - Main server repository
+  [root_folder]/cs-base - Base server functionality
   [root_folder]/cs-survival - Survival plugin
   [root_folder]/cs-test - Test plugin
 ```
