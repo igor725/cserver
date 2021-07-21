@@ -173,7 +173,7 @@ cs_bool Config_Load(CStore *store) {
 	while((lnret = File_ReadLine(fp, line, 256)) > 0 && ++linenum) {
 		if(!haveComment && *line == '#') {
 			haveComment = true;
-			String_Copy(comment, MAX_CFG_LEN, line);
+			String_Copy(comment, MAX_CFG_LEN, line + 1);
 			continue;
 		}
 		cs_char *value = (cs_char *)String_FirstChar(line, '=');
