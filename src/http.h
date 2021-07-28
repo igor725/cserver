@@ -22,7 +22,7 @@ typedef struct _Http {
 } Http;
 #endif
 
-void Http_Init(void);
+cs_bool Http_Init(void);
 void Http_Uninit(void);
 
 API cs_bool Http_Open(Http *http, cs_str domain);

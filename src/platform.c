@@ -8,15 +8,17 @@
 #if defined(WINDOWS)
 HANDLE hHeap;
 
-void Memory_Init(void) {
+cs_bool Memory_Init(void) {
 	hHeap = HeapCreate(
 		HEAP_GENERATE_EXCEPTIONS | HEAP_NO_SERIALIZE,
 		0x01000, 0x00000
 	);
+	return hHeap != NULL;
 }
 
 void Memory_Uninit(void) {
-	HeapDestroy(hHeap);
+	if(hHeap)
+		HeapDestroy(hHeap);
 }
 
 void *Memory_Alloc(cs_size num, cs_size size) {

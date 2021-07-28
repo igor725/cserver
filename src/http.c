@@ -4,8 +4,11 @@
 #include "http.h"
 
 #if defined(WINDOWS)
-void Http_Init(void) {
-	hInternet = InternetOpenA(HTTP_USERAGENT, INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+cs_bool Http_Init(void) {
+	return (hInternet = InternetOpenA(HTTP_USERAGENT,
+		INTERNET_OPEN_TYPE_PRECONFIG,
+		NULL, NULL, 0
+	)) != NULL;
 }
 
 void Http_Uninit(void) {
@@ -43,7 +46,7 @@ void Http_Cleanup(Http *http) {
 	InternetCloseHandle(http->req);
 }
 #elif defined(POSIX)
-void Http_Init(void) {}
+cs_bool Http_Init(void) {return true;}
 void Http_Uninit(void) {}
 
 cs_bool Http_Open(Http *http, cs_str domain) {

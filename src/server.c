@@ -76,11 +76,14 @@ THREAD_FUNC(AcceptThread) {
 		if(fd != INVALID_SOCKET) {
 			if(!Server_Active) {
 				Socket_Close(fd);
-				continue;
+				break;
 			}
-			cs_uint32 addr = ntohl(caddr.sin_addr.s_addr);
-			Client *tmp = Client_New(fd, addr);
-			Thread_Create(ClientInitThread, tmp, true);
+
+			Client *tmp = Client_New(fd, ntohl(caddr.sin_addr.s_addr));
+			if(tmp)
+				Thread_Create(ClientInitThread, tmp, true);
+			else
+				Socket_Close(fd);
 		}
 	}
 
@@ -89,6 +92,9 @@ THREAD_FUNC(AcceptThread) {
 
 static void Bind(cs_str ip, cs_uint16 port) {
 	Server_Socket = Socket_New();
+	if(!Server_Socket) {
+		Error_PrintSys(true);
+	}
 	struct sockaddr_in ssa;
 	switch (Socket_SetAddr(&ssa, ip, port)) {
 		case 0:
@@ -106,9 +112,8 @@ static void Bind(cs_str ip, cs_uint16 port) {
 	}
 }
 
-void Server_InitialWork(void) {
-	if(!Socket_Init()) return;
-	Lang_Init();
+cs_bool Server_Init(void) {
+	if(!Socket_Init() || !Lang_Init()) return false;
 
 	CStore *cfg = Config_NewStore(MAINCFG);
 	CEntry *ent;
@@ -166,7 +171,7 @@ void Server_InitialWork(void) {
 	cfg->modified = true;
 	if(!Config_Load(cfg)) {
 		Config_PrintError(cfg);
-		Process_Exit(1);
+		return false;
 	}
 	Log_SetLevelStr(Config_GetStrByKey(cfg, CFG_LOGLEVEL_KEY));
 
@@ -206,6 +211,7 @@ void Server_InitialWork(void) {
 	Bind(ip, port);
 	Event_Call(EVT_POSTSTART, NULL);
 	ConsoleIO_Init();
+	return true;
 }
 
 void Server_DoStep(cs_int32 delta) {
@@ -218,6 +224,7 @@ void Server_DoStep(cs_int32 delta) {
 }
 
 void Server_StartLoop(void) {
+	if(!Server_Active) return;
 	cs_uint64 last, curr = Time_GetMSec();
 	cs_int32 delta;
 

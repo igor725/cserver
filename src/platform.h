@@ -57,7 +57,7 @@ typedef struct _DirIter {
 
 #define Memory_Zero(p, c) Memory_Fill(p, c, 0)
 
-void Memory_Init(void);
+cs_bool Memory_Init(void);
 void Memory_Uninit(void);
 
 API void *Memory_Alloc(cs_size num, cs_size size);

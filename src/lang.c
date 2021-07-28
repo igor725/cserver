@@ -2,12 +2,14 @@
 #include "platform.h"
 #include "lang.h"
 
-void Lang_Init(void) {
+cs_bool Lang_Init(void) {
 	Lang_SwGrp = Lang_NewGroup(2);
+	if(!Lang_SwGrp) return false;
 	Lang_Set(Lang_SwGrp, 0, "&4disabled");
 	Lang_Set(Lang_SwGrp, 1, "&aenabled");
 
 	Lang_ErrGrp = Lang_NewGroup(7);
+	if(!Lang_ErrGrp) return false;
 	Lang_Set(Lang_ErrGrp, 0, "Unexpected error.");
 	Lang_Set(Lang_ErrGrp, 1, "%s:%d in function %s: %s");
 	Lang_Set(Lang_ErrGrp, 2, "Invalid packet 0x%02X from Client[%d]");
@@ -15,6 +17,7 @@ void Lang_Init(void) {
 	Lang_Set(Lang_ErrGrp, 4, "Not a websocket connection.");
 
 	Lang_ConGrp = Lang_NewGroup(8);
+	if(!Lang_ConGrp) return false;
 	Lang_Set(Lang_ConGrp, 0, "Server started on %s:%d.");
 	Lang_Set(Lang_ConGrp, 1, "Last server tick took %dms!");
 	Lang_Set(Lang_ConGrp, 2, "Time ran backwards? Time between last ticks < 0.");
@@ -25,6 +28,7 @@ void Lang_Init(void) {
 	Lang_Set(Lang_ConGrp, 7, "Please upgrade your server software. Plugin \"%s\" compiled for PluginAPI v%03d, but server uses v%d.");
 
 	Lang_KickGrp = Lang_NewGroup(11);
+	if(!Lang_KickGrp) return false;
 	Lang_Set(Lang_KickGrp, 0, "Kicked without reason");
 	Lang_Set(Lang_KickGrp, 1, "Server is full");
 	Lang_Set(Lang_KickGrp, 2, "Invalid protocol version");
@@ -38,6 +42,7 @@ void Lang_Init(void) {
 	Lang_Set(Lang_KickGrp, 10, "Too many connections from one IP");
 
 	Lang_CmdGrp = Lang_NewGroup(18);
+	if(!Lang_CmdGrp) return false;
 	Lang_Set(Lang_CmdGrp, 0, "Usage: %s.");
 	Lang_Set(Lang_CmdGrp, 1, "Access denied.");
 	Lang_Set(Lang_CmdGrp, 2, "Player not found.");
@@ -45,8 +50,10 @@ void Lang_Init(void) {
 	Lang_Set(Lang_CmdGrp, 4, "This command can't be called from console.");
 
 	Lang_DbgGrp = Lang_NewGroup(2);
+	if(!Lang_DbgGrp) return false;
 	Lang_Set(Lang_DbgGrp, 0, "Symbol: %s - 0x%0X");
 	Lang_Set(Lang_DbgGrp, 1, "\tFile: %s: %d");
+	return true;
 }
 
 LGroup *Lang_NewGroup(cs_uint32 size) {
