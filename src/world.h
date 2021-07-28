@@ -106,7 +106,7 @@ API cs_bool World_Save(World *world, cs_bool unload);
 
 API void World_SetDimensions(World *world, const SVec *dims);
 API cs_bool World_SetBlock(World *world, SVec *pos, BlockID id);
-API cs_bool World_SetBlockO(World *world, cs_int32 offset, BlockID id);
+API cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id);
 API cs_bool World_SetEnvColor(World *world, cs_byte type, Color3* color);
 API cs_bool World_SetProperty(World *world, cs_byte property, cs_int32 value);
 API cs_bool World_SetTexturePack(World *world, cs_str url);
@@ -115,7 +115,7 @@ API cs_bool World_SetWeather(World *world, cs_int8 type);
 API void *World_GetData(World *world, cs_uint32 *size);
 API BlockID *World_GetBlockArray(World *world, cs_uint32 *size);
 API cs_uint32 World_GetBlockArraySize(World *world);
-API cs_int32 World_GetOffset(World *world, SVec *pos);
+API cs_uint32 World_GetOffset(World *world, SVec *pos);
 API BlockID World_GetBlock(World *world, SVec *pos);
 API cs_int32 World_GetProperty(World *world, cs_byte property);
 API Color3* World_GetEnvColor(World *world, cs_byte type);
