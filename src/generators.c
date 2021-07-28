@@ -367,15 +367,8 @@ THREAD_FUNC(cavesThread) {
 
 static cs_bool defaultgenerator(World *world, void *data) {
 	(void)data;
-	/*
-		Поскольку из меня очень хороший программист вышел,
-		генерация мира с меньшими размерами приводит к
-		повреждению памяти, исправлять это мне лень, так
-		что пока просто запретим создавать маленькие карты.
-		¯\_(ツ)_/¯
-	*/
-	if(world->info.dimensions.x < 256 ||
-	world->info.dimensions.z < 256 ||
+	if(world->info.dimensions.x < 32 ||
+	world->info.dimensions.z < 32 ||
 	world->info.dimensions.y < 32)
 		return false;
 	Memory_Fill(&ctx, sizeof(ctx), 0);
