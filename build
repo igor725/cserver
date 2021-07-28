@@ -3,14 +3,12 @@ if [ "$CC" = "" ]; then
 	CC="gcc"
 fi
 
-MAX_WORKERS=$(nproc)
 DEBUG=0
 OPT="-O2"
 WARN=""
 ROOT="."
 CC="$CC -fdiagnostics-color=always"
-LNK="$CC -rdynamic"
-CFLAGS="-pipe -fPIC"
+CFLAGS="-rdynamic -pipe -fPIC"
 LIBS=""
 OUTBIN="server"
 if which git >/dev/null; then
@@ -50,7 +48,7 @@ do
 			if [ ! -d "../cs-$a/src" ]; then notaplugin; fi
 			PLUGIN_NAME="$a"
 			CFLAGS="$CFLAGS -DPLUGIN_BUILD -Isrc"
-			LNK="$CC -shared"
+			CC="$CC -shared"
 			OUTBIN="$a.so"
 			ROOT="../cs-$a"
 		fi
@@ -75,44 +73,17 @@ do
 done
 
 STDERR="$ROOT/out/stderr"
-OBJDIR="$ROOT/objs"
 OUTDIR="$ROOT/out"
 
 if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
-if [ ! -d "$OBJDIR" ]; then mkdir $OBJDIR; fi
 if [ $DEBUG -eq 0 ]; then CFLAGS="$CFLAGS -DRELEASE_BUILD"; fi
 
 echo -n "Compiling..."
-echo -n "" > $STDERR
-pids=()
-cnt=0
-
-for C in `find "$ROOT/src/" -type f -name "*.c" -o -name "*.cpp"`; do
-	objpath="$OBJDIR/$(basename $C .c).o"
-	$CC -c $COMMIT_SHA $C -o $objpath -I"$ROOT/src" $WARN $OPT $CFLAGS 2>> $STDERR &
-	pids+=($!)
-	((cnt++))
-	if [ $cnt -ge $MAX_WORKERS ]; then
-		dowait ${pids[-1]}
-		unset pids[-1]
-		((cnt--))
-	fi
-done
-
-for pid in ${pids[@]}; do
-	dowait $pid
-done
-
 if [ $PLUGIN_BUILD -eq 0 ]; then
 	LIBS="$LIBS -lpthread -ldl -lcrypto -lcurl -lz"
 fi
 
-echo -ne "done\nLinking..."
-$LNK $OBJDIR/*.o -o"$OUTDIR/$OUTBIN" $LIBS 2>> $STDERR
-if [ $? -ne 0 ]; then
-	echo -ne "error\nLinker errors:\n$(cat $STDERR)\n"
-	exit 1
-fi
+$CC $CFLAGS $COMMIT_SHA $WARN $OPT -I$ROOT/src $ROOT/src/*.c -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR
 
 if [ $DEBUG -eq 0 ]; then
 	echo -ne "done\nStripping..."
@@ -130,6 +101,6 @@ fi
 
 stderrlen=$(wc -c < "$STDERR")
 if [ $stderrlen -gt 0 ]; then
-	echo -e "Compiler warnings:\n$(cat $STDERR)"
+	echo -e "Compiler stderr:\n$(cat $STDERR)"
 fi
 exit 0

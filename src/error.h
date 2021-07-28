@@ -32,7 +32,7 @@ if(abort) { \
 }
 #if defined(WINDOWS)
 #  define Error_PrintSys(abort) ERROR_PRINT(ET_SYS, GetLastError(), abort);
-#elif defined(POSIX)
+#elif defined(UNIX)
 #  define Error_PrintSys(abort) ERROR_PRINT(ET_SYS, errno, abort);
 #endif
 

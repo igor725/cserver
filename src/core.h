@@ -31,7 +31,7 @@ typedef unsigned int cs_uintptr;
 typedef unsigned int cs_size;
 #endif // _WIN64
 #elif defined(__unix__)
-#define POSIX
+#define UNIX
 #define PATH_DELIM "/"
 #define DLIB_EXT "so"
 

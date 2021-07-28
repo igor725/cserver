@@ -47,7 +47,7 @@ void Error_CallStack(void) {
 		if(symbol.Name && String_Compare(symbol.Name, "main")) break;
 	}
 }
-#elif defined(POSIX)
+#elif defined(UNIX)
 #ifndef __ANDROID__
 void Error_CallStack(void) {
 	void *stack[16];
@@ -95,7 +95,7 @@ static void getErrorStr(cs_int32 type, cs_int32 code, cs_char *errbuf, cs_size s
 cs_int32 Error_GetSysCode(void) {
 #if defined(WINDOWS)
 	return GetLastError();
-#elif defined(POSIX)
+#elif defined(UNIX)
 	return errno;
 #endif
 }

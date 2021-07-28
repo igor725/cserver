@@ -2,7 +2,7 @@
 #define CONSOLEIO_H
 #if defined(WINDOWS)
 #define CONSOLEIO_TERMINATE CTRL_C_EVENT
-#elif defined(POSIX)
+#elif defined(UNIX)
 #include <signal.h>
 #define CONSOLEIO_TERMINATE SIGINT
 #endif

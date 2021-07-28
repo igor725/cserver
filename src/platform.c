@@ -32,7 +32,7 @@ void *Memory_Realloc(void *buf, cs_size old, cs_size new) {
 void Memory_Free(void *ptr) {
 	HeapFree(hHeap, 0, ptr);
 }
-#elif defined(POSIX)
+#elif defined(UNIX)
 #include <stdlib.h>
 #include <signal.h>
 
@@ -73,7 +73,7 @@ void Memory_Fill(void *dst, cs_size count, cs_byte val) {
 cs_bool File_Rename(cs_str path, cs_str newpath) {
 #if defined(WINDOWS)
 	return (cs_bool)MoveFileExA(path, newpath, MOVEFILE_REPLACE_EXISTING);
-#elif defined(POSIX)
+#elif defined(UNIX)
 	return rename(path, newpath) == 0;
 #endif
 }
@@ -172,7 +172,7 @@ Socket Socket_New(void) {
 }
 
 cs_bool Socket_Bind(Socket sock, struct sockaddr_in *addr) {
-#if defined(POSIX)
+#if defined(UNIX)
 	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(cs_int32){1}, 4) == -1) {
 		return false;
 	}
@@ -201,7 +201,7 @@ Socket Socket_Accept(Socket sock, struct sockaddr_in *addr) {
 
 #if defined(WINDOWS)
 #define SOCK_DFLAGS 0
-#elif defined(POSIX)
+#elif defined(UNIX)
 #include <unistd.h>
 #define SOCK_DFLAGS MSG_NOSIGNAL
 #endif
@@ -241,7 +241,7 @@ void Socket_Shutdown(Socket sock, cs_int32 how) {
 void Socket_Close(Socket sock) {
 #if defined(WINDOWS)
 	closesocket(sock);
-#elif defined(POSIX)
+#elif defined(UNIX)
 	close(sock);
 #endif
 }
@@ -287,7 +287,7 @@ cs_bool Iter_Close(DirIter *iter) {
 	FindClose(iter->dirHandle);
 	return true;
 }
-#elif defined(POSIX)
+#elif defined(UNIX)
 static cs_bool checkExtension(cs_str filename, cs_str ext) {
 	cs_str _ext = String_LastChar(filename, '.');
 	if(!_ext && !ext) return true;
@@ -349,7 +349,7 @@ cs_bool Directory_SetCurrentDir(cs_str path) {
 cs_bool Directory_Create(cs_str path) {
 	return (cs_bool)CreateDirectoryA(path, NULL);
 }
-#elif defined(POSIX)
+#elif defined(UNIX)
 cs_bool Directory_Exists(cs_str path) {
 	struct stat ss;
 	return stat(path, &ss) == 0 && S_ISDIR(ss.st_mode);
@@ -386,7 +386,7 @@ cs_char *DLib_GetError(cs_char *buf, cs_size len) {
 cs_bool DLib_GetSym(void *lib, cs_str sname, void *sym) {
 	return (*(void **)sym = (void *)GetProcAddress(lib, sname)) != NULL;
 }
-#elif defined(POSIX)
+#elif defined(UNIX)
 #include <dlfcn.h>
 
 cs_bool DLib_Load(cs_str path, void **lib) {
@@ -447,7 +447,7 @@ void Thread_Join(Thread th) {
 void Thread_Sleep(cs_uint32 ms) {
 	Sleep(ms);
 }
-#elif defined(POSIX)
+#elif defined(UNIX)
 Thread Thread_Create(TFUNC func, TARG arg, cs_bool detach) {
 	Thread th = Memory_Alloc(1, sizeof(Thread));
 	if(pthread_create(th, NULL, func, arg) != 0) {
@@ -529,7 +529,7 @@ void Waitable_Signal(Waitable *handle) {
 void Waitable_Wait(Waitable *handle) {
 	WaitForSingleObject(handle, INFINITE);
 }
-#elif defined(POSIX)
+#elif defined(UNIX)
 #include <fcntl.h>
 #include <poll.h>
 
@@ -616,7 +616,7 @@ cs_uint64 Time_GetMSec(void) {
 	cs_uint64 time = ft.dwLowDateTime | ((cs_uint64)ft.dwHighDateTime << 32);
 	return (time / 10000) + 50491123200000ULL;
 }
-#elif defined(POSIX)
+#elif defined(UNIX)
 void Time_Format(cs_char *buf, cs_size buflen) {
 	struct timeval tv;
 	struct tm *tm;
@@ -642,7 +642,7 @@ cs_uint64 Time_GetMSec() {
 cs_bool Console_BindSignalHandler(TSHND handler) {
 #if defined(WINDOWS)
 	return (cs_bool)SetConsoleCtrlHandler((PHANDLER_ROUTINE)handler, TRUE);
-#elif defined(POSIX)
+#elif defined(UNIX)
 	return (cs_bool)(signal(SIGINT, (void(*)(int))handler) != SIG_ERR);
 #endif
 }
@@ -650,7 +650,7 @@ cs_bool Console_BindSignalHandler(TSHND handler) {
 void Process_Exit(cs_int32 code) {
 #if defined(WINDOWS)
 	ExitProcess(code);
-#elif defined(POSIX)
+#elif defined(UNIX)
 	exit(code);
 #endif
 }
