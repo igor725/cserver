@@ -36,7 +36,7 @@ void Memory_Free(void *ptr) {
 #include <stdlib.h>
 #include <signal.h>
 
-void Memory_Init(void) {}
+cs_bool Memory_Init(void) {return true;}
 void Memory_Uninit(void) {}
 
 void *Memory_Alloc(cs_size num, cs_size size) {
@@ -643,7 +643,7 @@ cs_bool Console_BindSignalHandler(TSHND handler) {
 #if defined(WINDOWS)
 	return (cs_bool)SetConsoleCtrlHandler((PHANDLER_ROUTINE)handler, TRUE);
 #elif defined(POSIX)
-	return (cs_bool)signal(SIGINT, (void(*)(int))handler) != SIG_ERR;
+	return (cs_bool)(signal(SIGINT, (void(*)(int))handler) != SIG_ERR);
 #endif
 }
 
