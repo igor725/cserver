@@ -42,7 +42,7 @@ gen_biome_step = 20,
 gen_biome_radius = 5,
 gen_biome_radius2 = 0; // Аналогично gen_cave_radius2
 
-static cs_float gen_trees_count_mult = 0.007f,
+static cs_float gen_trees_count_mult = 0.004f,
 gen_ores_count_mult = 1.0f / 2000.0f,
 gen_caves_count_mult = 2.0f / 700000.0f,
 gen_houses_count_mult = 1.0f / 70000.0f,
@@ -59,10 +59,10 @@ static struct {
 	Thread threads[MAX_THREADS];
 	cs_uint32 wsize, lvlSize;
 	cs_uint16 *biomes, *heightMap,
-	biomeSizeX, biomeSizeZ, biomesNum,
-	heightGrass, heightWater, heightStone,
-	heightLava, gravelVeinSize, biomeSize,
-	numCaves;
+	*biomesWithTrees, biomeSizeX,
+	biomeSizeZ, biomesNum, heightGrass,
+	heightWater, heightStone, heightLava,
+	gravelVeinSize, biomeSize, numCaves;
 } ctx;
 
 enum DefGenBiomes {
@@ -177,6 +177,18 @@ static void genHeightMap(void) {
 			ctx.heightMap[offset] = max(min(ctx.heightMap[offset], ctx.dims->y - 2), 3);
 		}
 	}
+}
+
+static cs_uint16 getHeight(cs_uint16 x, cs_uint16 z) {
+	cs_uint16 hx = x / gen_biome_step, hz = z / gen_biome_step;
+	float percentX = (cs_float)x / (cs_float)gen_biome_step - hx,
+	percentZ = (cs_float)z / (cs_float)gen_biome_step - hz;
+
+	return (cs_uint16)(((cs_float)ctx.heightMap[hx + hz * ctx.biomeSizeX] * (1 - percentX)
+	+ (cs_float)ctx.heightMap[(hx + 1) + hz * ctx.biomeSizeX] * percentX)
+	* (1 - percentZ) + ((cs_float)ctx.heightMap[hx + (hz + 1) * ctx.biomeSizeX]
+	* (1 - percentX) + (cs_float)ctx.heightMap[(hx + 1) + (hz + 1) * ctx.biomeSizeX] * percentX)
+	* percentZ + 0.5f);
 }
 
 #define setBlock(vec, id) ctx.data[(vec.y * ctx.dims->z + vec.z) * ctx.dims->x + vec.x] = id
@@ -365,6 +377,80 @@ THREAD_FUNC(cavesThread) {
 	return 0;
 }
 
+static void placeTree(SVec treePos, cs_uint16 baseHeight) {
+	for(cs_uint16 dz = treePos.z - 2; dz <= treePos.z + 2; dz++) {
+		for(cs_uint16 y = treePos.y - 2; y <= treePos.y - 1; y++) {
+			cs_uint32 offset = (y * ctx.dims->z + dz) * ctx.dims->x + treePos.x - 2;
+			Memory_Fill(ctx.data + offset, 5, BLOCK_LEAVES);
+		}
+	}
+
+	SVec tmp = treePos;
+	for(tmp.y = baseHeight + 1; tmp.y <= treePos.y; tmp.y++)
+		setBlock(tmp, BLOCK_LOG);
+
+	tmp = treePos;
+	for(tmp.x = treePos.x - 1; tmp.x <= treePos.x + 1; tmp.x++)
+		if(tmp.x != treePos.x) for(tmp.y = treePos.y; tmp.y < treePos.y + 1; tmp.y++)
+			setBlock(tmp, BLOCK_LEAVES);
+
+	tmp = treePos;
+	for(tmp.z = treePos.z - 1; tmp.z <= treePos.z + 1; tmp.z++)
+		if(tmp.z != treePos.z) for(tmp.y = treePos.y; tmp.y <= treePos.y + 1; tmp.y++)
+			setBlock(tmp, BLOCK_LEAVES);
+
+	tmp = treePos; tmp.y++;
+	setBlock(tmp, BLOCK_LEAVES);
+}
+
+THREAD_FUNC(treesThread) {
+	(void)param;
+
+	ctx.biomesWithTrees = Memory_Alloc(2, ctx.biomeSize);
+
+	cs_uint16 biomesWithTreesNum = 0;
+	for(cs_uint16 i = 0; i <= ctx.biomeSize; i++) {
+		enum DefGenBiomes biome = ctx.biomes[i];
+		if(biome == BIOME_TREES || biome == BIOME_SAND)
+			ctx.biomesWithTrees[biomesWithTreesNum++] = i;
+	}
+
+	cs_uint32 trees = ctx.dims->x * ctx.dims->z;
+	trees = (cs_uint32)((cs_float)trees * gen_trees_count_mult);
+	trees = (cs_uint32)((cs_float)trees * ((cs_float)biomesWithTreesNum / ctx.biomeSize));
+	for(cs_uint32 i = 0; i < trees; i++) {
+		cs_uint16 randBiome = (cs_uint16)Random_Range(&ctx.rnd, 1, biomesWithTreesNum);
+		SVec treePos;
+		treePos.x = (ctx.biomesWithTrees[randBiome] % ctx.biomeSizeX)
+			* gen_biome_step + (cs_uint16)Random_Range(&ctx.rnd, 1, gen_biome_step)
+			- gen_biome_step / 2;
+		treePos.z = (cs_uint16)(((cs_float)ctx.biomesWithTrees[randBiome] / (cs_float)ctx.biomeSizeX)
+			* gen_biome_step + (cs_uint16)Random_Range(&ctx.rnd, 1, gen_biome_step) - gen_biome_step / 2);
+
+		treePos.x = max(6, min(ctx.dims->x - 6, treePos.x));
+		treePos.z = max(6, min(ctx.dims->z - 6, treePos.z));
+
+		cs_uint16 baseHeight = getHeight(treePos.x, treePos.z), baseHeight2;
+		if(baseHeight > ctx.heightWater && baseHeight + 8 < ctx.dims->y) {
+			enum DefGenBiomes biome = ctx.biomes[ctx.biomesWithTrees[randBiome]];
+
+			switch (biome) {
+				case BIOME_TREES:
+					treePos.y = baseHeight + (cs_uint16)Random_Range(&ctx.rnd, 4, 6);
+					placeTree(treePos, baseHeight);
+					break;
+				case BIOME_SAND:
+					baseHeight2 = baseHeight + (cs_uint16)Random_Range(&ctx.rnd, 1, 4);
+					for(treePos.y = baseHeight + 1; treePos.y <= baseHeight2; treePos.y++)
+						setBlock(treePos, BLOCK_LEAVES);
+				default: break;
+			}
+		}
+	}
+
+	return 0;
+}
+
 static cs_bool defaultgenerator(World *world, void *data) {
 	(void)data;
 	if(world->info.dimensions.x < 32 ||
@@ -395,6 +481,8 @@ static cs_bool defaultgenerator(World *world, void *data) {
 	newGenThread(terrainThread);
 	for(cs_uint16 i = 0; i < ctx.numCaves; i++)
 		newGenThread(cavesThread);
+	if(gen_enable_trees)
+		newGenThread(treesThread);
 	waitAll();
 
 	WorldInfo *wi = &world->info;
