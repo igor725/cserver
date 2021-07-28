@@ -20,7 +20,7 @@ VAR CStore *Server_Config;
 VAR cs_uint64 Server_StartTime;
 Socket Server_Socket;
 
-void Server_InitialWork(void);
+cs_bool Server_Init(void);
 void Server_DoStep(cs_int32 delta);
 void Server_StartLoop(void);
 void Server_Stop(void);

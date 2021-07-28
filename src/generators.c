@@ -1,12 +1,10 @@
 #include "core.h"
-#include "block.h"
-#include "world.h"
-#include "generators.h"
+#include "str.h"
 #include "csmath.h"
+#include "block.h"
+#include "generators.h"
 
-// Генератор плоского мира
-
-void Generator_Flat(World *world) {
+static cs_bool flatgenerator(World *world) {
 	WorldInfo *wi = &world->info;
 	SVec *dims = &wi->dimensions;
 
@@ -21,16 +19,12 @@ void Generator_Flat(World *world) {
 
 	World_SetProperty(world, PROP_CLOUDSLEVEL, dims->y + 2);
 	World_SetProperty(world, PROP_EDGELEVEL, dims->y / 2);
-	wi->spawnVec.x = (cs_float)dims->x / 2;
-	wi->spawnVec.y = (cs_float)(dims->y / 2) + 1.59375f;
-	wi->spawnVec.z = (cs_float)dims->z / 2;
-}
 
-/*
-** Генератор обычного мира.
-** Когда-нибудь он точно будет
-** готов, но явно не сегодня.
-*/
+	wi->spawnVec.x = (float)dims->x / 2;
+	wi->spawnVec.y = (float)(dims->y / 2) + 1.59375f;
+	wi->spawnVec.z = (float)dims->z / 2;
+	return true;
+}
 
 static cs_bool gen_enable_caves = true,
 gen_enable_trees = true,
@@ -56,7 +50,7 @@ gen_gravel_count_mult = 1.0f / 500000;
 #define MAX_THREADS 64
 cs_int32 cfgMaxThreads = 8;
 
-static struct DefGenContext {
+static struct {
 	RNGState rnd;
 	World *world;
 	BlockID *data;
@@ -212,7 +206,8 @@ THREAD_FUNC(terrainThread) {
 			((cs_float)ctx.heightMap[hx + (hz + 1) * ctx.biomeSizeX] * percentNegX +
 			(cs_float)ctx.heightMap[(hx + 1) + (hz + 1) * ctx.biomeSizeX] * percentPosX) *
 			percentZ + 0.5f);
-			heightStone1 = max(height1 - (cs_uint16)Random_Range(&ctx.rnd, 4, 6), 1);
+			height1 = min(height1, ctx.dims->y - 1);
+			heightStone1 = min(max(height1 - (cs_uint16)Random_Range(&ctx.rnd, 4, 6), 1), ctx.dims->y - 1);
 
 			if(hz != biomePosZOld) {
 				biomePosZOld = hz;
@@ -369,7 +364,8 @@ THREAD_FUNC(cavesThread) {
 	return 0;
 }
 
-void Generator_Default(World *world) {
+static cs_bool defaultgenerator(World *world) {
+	Memory_Fill(&ctx, sizeof(ctx), 0);
 	gen_cave_radius2 = gen_cave_radius * gen_cave_radius;
 	gen_biome_radius2 = gen_biome_radius * gen_biome_radius;
 
@@ -407,4 +403,54 @@ void Generator_Default(World *world) {
 	World_SetProperty(world, PROP_SIDEOFFSET, 0);
 
 	doCleanUp();
+	return true;
+}
+
+cs_bool Generators_Init(void) {
+	return Generators_Add("flat", flatgenerator) &&
+	Generators_Add("default", defaultgenerator);
+}
+
+cs_bool Generators_Add(cs_str name, GeneratorRoutine gr) {
+	return KList_Add(&Generators_List, (void *)name, (void *)gr) != NULL;
+}
+
+cs_bool Generators_Remove(cs_str name) {
+	KListField *ptr = NULL;
+
+	List_Iter(ptr, Generators_List) {
+		if(String_CaselessCompare(ptr->key.str, name)) {
+			KList_Remove(&Generators_List, ptr);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+cs_bool Generators_RemoveByFunc(GeneratorRoutine gr) {
+	KListField *ptr = NULL;
+
+	List_Iter(ptr, Generators_List) {
+		if(ptr->value.ptr == gr) {
+			KList_Remove(&Generators_List, ptr);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+cs_bool Generators_Use(World *world, cs_str name) {
+	KListField *ptr = NULL;
+
+	List_Iter(ptr, Generators_List) {
+		if(String_CaselessCompare(ptr->key.str, name)) {
+			GeneratorRoutine gr = (GeneratorRoutine)ptr->value.ptr;
+			if(gr) return gr(world);
+			break;
+		}
+	}
+
+	return false;
 }

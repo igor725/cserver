@@ -39,7 +39,7 @@ static void NewSecret(void) {
 		Secret[i] = (cs_char)Random_Range(&secrnd, min, max);
 	}
 
-	FILE *sfile = File_Open("secret.txt", "w");
+	cs_file sfile = File_Open("secret.txt", "w");
 	if(sfile) {
 		File_Write("#Remove this file if you want to generate new secret key.\n", 58, 1, sfile);
 		File_Write(Secret, 16, 1, sfile);
@@ -134,7 +134,7 @@ THREAD_FUNC(HeartbeatThread) {
 }
 
 void Heartbeat_Start(cs_uint32 delay) {
-	FILE *sfile = File_Open("secret.txt", "r");
+	cs_file sfile = File_Open("secret.txt", "r");
 	if(sfile) {
 		File_Seek(sfile, 59, SEEK_SET);
 		File_Read(Secret, 16, 1, sfile);

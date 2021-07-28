@@ -83,14 +83,12 @@ if [ ! -d "$OBJDIR" ]; then mkdir $OBJDIR; fi
 if [ $DEBUG -eq 0 ]; then CFLAGS="$CFLAGS -DRELEASE_BUILD"; fi
 
 echo -n "Compiling..."
-OBJS=""
 echo -n "" > $STDERR
 pids=()
 cnt=0
 
 for C in `find "$ROOT/src/" -type f -name "*.c" -o -name "*.cpp"`; do
 	objpath="$OBJDIR/$(basename $C .c).o"
-	OBJS="$OBJS $objpath"
 	$CC -c $COMMIT_SHA $C -o $objpath -I"$ROOT/src" $WARN $OPT $CFLAGS 2>> $STDERR &
 	pids+=($!)
 	((cnt++))
@@ -110,7 +108,7 @@ if [ $PLUGIN_BUILD -eq 0 ]; then
 fi
 
 echo -ne "done\nLinking..."
-$LNK $OBJS -o "$OUTDIR/$OUTBIN" $LIBS 2>> $STDERR
+$LNK $OBJDIR/*.o -o"$OUTDIR/$OUTBIN" $LIBS 2>> $STDERR
 if [ $? -ne 0 ]; then
 	echo -ne "error\nLinker errors:\n$(cat $STDERR)\n"
 	exit 1

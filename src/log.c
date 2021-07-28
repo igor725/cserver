@@ -21,8 +21,8 @@ static cs_str getName(cs_byte flag) {
 	return NULL;
 }
 
-void Log_Init(void) {
-	Log_Mutex = Mutex_Create();
+cs_bool Log_Init(void) {
+	return (Log_Mutex = Mutex_Create()) != NULL;
 }
 
 void Log_Uninit(void) {
