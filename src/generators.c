@@ -100,8 +100,9 @@ static void waitAll(void) {
 }
 
 static void doCleanUp(void) {
-	Memory_Free(ctx.biomes);
-	Memory_Free(ctx.heightMap);
+	if(ctx.heightMap) Memory_Free(ctx.biomes);
+	if(ctx.heightMap) Memory_Free(ctx.heightMap);
+	if(ctx.biomesWithTrees) Memory_Free(ctx.biomesWithTrees);
 	Memory_Fill(&ctx, sizeof(ctx), 0);
 }
 
