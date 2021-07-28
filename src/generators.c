@@ -33,31 +33,27 @@ gen_enable_ores = true,
 gen_enable_houses = true;
 
 static cs_uint16 gen_cave_radius = 3,
-gen_cave_radius2 = 0, // Значение вычисляется само при инициализации генератора
 gen_cave_min_length = 100,
 gen_cave_max_length = 500,
 gen_ore_vein_size = 3,
 gen_gravel_vein_size = 14,
 gen_biome_step = 20,
-gen_biome_radius = 5,
-gen_biome_radius2 = 0; // Аналогично gen_cave_radius2
+gen_biome_radius = 5;
 
-static cs_float gen_trees_count_mult = 0.004f,
+static cs_float gen_trees_count_mult = 1.0f / 250.0f,
 gen_ores_count_mult = 1.0f / 2000.0f,
 gen_caves_count_mult = 2.0f / 700000.0f,
 gen_houses_count_mult = 1.0f / 70000.0f,
 gen_gravel_count_mult = 1.0f / 500000;
 
 #define MAX_THREADS 64
-cs_int32 cfgMaxThreads = 8;
 
 static struct {
 	RNGState rnd;
-	World *world;
 	BlockID *data;
 	SVec *dims;
 	Thread threads[MAX_THREADS];
-	cs_uint32 wsize, lvlSize;
+	cs_uint32 planeSize;
 	cs_uint16 *biomes, *heightMap,
 	*biomesWithTrees, biomeSizeX,
 	biomeSizeZ, biomesNum, heightGrass,
@@ -76,7 +72,7 @@ enum DefGenBiomes {
 
 static cs_int32 newGenThread(TFUNC func) {
 	for(cs_int32 i = 0; i < MAX_THREADS; i++) {
-		if(i > cfgMaxThreads) {
+		if(i > 4) {
 			i = 0;
 			if(Thread_IsValid(ctx.threads[i])) {
 				Thread_Join(ctx.threads[i]);
@@ -125,7 +121,7 @@ static void genBiomes(void) {
 				cs_int16 nx = x + dx,
 				nz = z + dz;
 
-				if(dx * dx + dz * dz < gen_biome_radius2 &&
+				if(dx * dx + dz * dz < (gen_biome_radius * gen_biome_radius) &&
 				0 <= nx && nx < ctx.biomeSizeX &&
 				0 <= nz && nz < ctx.biomeSizeZ) {
 					cs_uint16 offset = nx + nz * ctx.biomeSizeX;
@@ -185,10 +181,10 @@ static cs_uint16 getHeight(cs_uint16 x, cs_uint16 z) {
 	float percentX = (cs_float)x / (cs_float)gen_biome_step - hx,
 	percentZ = (cs_float)z / (cs_float)gen_biome_step - hz;
 
-	return (cs_uint16)(((cs_float)ctx.heightMap[hx + hz * ctx.biomeSizeX] * (1 - percentX)
+	return (cs_uint16)(((cs_float)ctx.heightMap[hx + hz * ctx.biomeSizeX] * (1.0f - percentX)
 	+ (cs_float)ctx.heightMap[(hx + 1) + hz * ctx.biomeSizeX] * percentX)
-	* (1 - percentZ) + ((cs_float)ctx.heightMap[hx + (hz + 1) * ctx.biomeSizeX]
-	* (1 - percentX) + (cs_float)ctx.heightMap[(hx + 1) + (hz + 1) * ctx.biomeSizeX] * percentX)
+	* (1.0f - percentZ) + ((cs_float)ctx.heightMap[hx + (hz + 1) * ctx.biomeSizeX]
+	* (1.0f - percentX) + (cs_float)ctx.heightMap[(hx + 1) + (hz + 1) * ctx.biomeSizeX] * percentX)
 	* percentZ + 0.5f);
 }
 
@@ -265,49 +261,49 @@ THREAD_FUNC(terrainThread) {
 			cs_uint16 y; // For iterators
 
 			for(y = ctx.heightStone; y < heightStone1; y++)
-				ctx.data[offset + y * ctx.lvlSize] = BLOCK_STONE;
+				ctx.data[offset + y * ctx.planeSize] = BLOCK_STONE;
 
 			switch (biome) {
 				case BIOME_NORMAL:
 				case BIOME_TREES:
 					for(y = heightStone1; y < height1 - 1; y++)
-						ctx.data[offset + y * ctx.lvlSize] = BLOCK_DIRT;
+						ctx.data[offset + y * ctx.planeSize] = BLOCK_DIRT;
 
 					if(height1 > ctx.heightWater) {
-						ctx.data[offset + (height1 - 1) * ctx.lvlSize] = BLOCK_DIRT;
-						ctx.data[offset + height1 * ctx.lvlSize] = BLOCK_GRASS;
+						ctx.data[offset + (height1 - 1) * ctx.planeSize] = BLOCK_DIRT;
+						ctx.data[offset + height1 * ctx.planeSize] = BLOCK_GRASS;
 					} else {
-						ctx.data[offset + (height1 - 1) * ctx.lvlSize] = BLOCK_DIRT;
-						ctx.data[offset + height1 * ctx.lvlSize] = BLOCK_SAND;
+						ctx.data[offset + (height1 - 1) * ctx.planeSize] = BLOCK_DIRT;
+						ctx.data[offset + height1 * ctx.planeSize] = BLOCK_SAND;
 					}
 
 					for(y = height1 + 1; y <= ctx.heightWater; y++)
-						ctx.data[offset + y * ctx.lvlSize] = BLOCK_WATER;
+						ctx.data[offset + y * ctx.planeSize] = BLOCK_WATER;
 					break;
 				case BIOME_HIGH:
 					for(y = heightStone1; y <= height1; y++)
-						ctx.data[offset + y * ctx.lvlSize] = BLOCK_STONE;
+						ctx.data[offset + y * ctx.planeSize] = BLOCK_STONE;
 					for(y = height1 + 1; y <= ctx.heightWater; y++)
-						ctx.data[offset + y * ctx.lvlSize] = BLOCK_WATER;
+						ctx.data[offset + y * ctx.planeSize] = BLOCK_WATER;
 					break;
 				case BIOME_SAND:
 					for(y = heightStone1; y <= height1; y++)
-						ctx.data[offset + y * ctx.lvlSize] = BLOCK_SAND;
+						ctx.data[offset + y * ctx.planeSize] = BLOCK_SAND;
 					for(y = height1 + 1; y <= ctx.heightWater; y++)
-						ctx.data[offset + y * ctx.lvlSize] = BLOCK_WATER;
+						ctx.data[offset + y * ctx.planeSize] = BLOCK_WATER;
 					break;
 				case BIOME_WATER:
 					for(y = heightStone1; y <= min(height1, ctx.heightGrass - 2); y++)
-						ctx.data[offset + y * ctx.lvlSize] = BLOCK_DIRT;
+						ctx.data[offset + y * ctx.planeSize] = BLOCK_DIRT;
 					for(y = max(heightStone1, ctx.heightGrass - 2); y <= height1; y++)
-						ctx.data[offset + y * ctx.lvlSize] = BLOCK_SAND;
+						ctx.data[offset + y * ctx.planeSize] = BLOCK_SAND;
 					for(y = height1 + 1; y <= ctx.heightWater; y++)
-						ctx.data[offset + y * ctx.lvlSize] = BLOCK_WATER;
+						ctx.data[offset + y * ctx.planeSize] = BLOCK_WATER;
 					break;
 				default:
-					ctx.data[offset + (height1 - 1) * ctx.lvlSize] =
+					ctx.data[offset + (height1 - 1) * ctx.planeSize] =
 					(BlockID)Random_Range(&ctx.rnd, BLOCK_RED, BLOCK_BLACK);
-					ctx.data[offset + height1 * ctx.lvlSize] =
+					ctx.data[offset + height1 * ctx.planeSize] =
 					(BlockID)Random_Range(&ctx.rnd, BLOCK_RED, BLOCK_BLACK);
 					break;
 			}
@@ -321,7 +317,6 @@ THREAD_FUNC(cavesThread) {
 	(void)param;
 
 	cs_uint16 caveLength = (cs_uint16)Random_Range(&ctx.rnd, gen_cave_min_length, gen_cave_max_length);
-	cs_uint16 caveChangeDir = caveLength / 3;
 
 	SVec pos;
 	Vec delta, direction;
@@ -335,7 +330,7 @@ THREAD_FUNC(cavesThread) {
 	direction.z = (Random_Float(&ctx.rnd) - 0.5f) * 0.6f;
 
 	for(cs_uint16 j = 1; j <= caveLength; j++) {
-		if(j % caveChangeDir == 0) {
+		if(j % (caveLength / 3) == 0) {
 			direction.x = (Random_Float(&ctx.rnd) - 0.5f) * 0.6f;
 			direction.y = (Random_Float(&ctx.rnd) - 0.5f) * 0.2f;
 			direction.z = (Random_Float(&ctx.rnd) - 0.5f) * 0.6f;
@@ -358,7 +353,7 @@ THREAD_FUNC(cavesThread) {
 					bpos.y = pos.y + dy;
 					bpos.z = pos.z + dz;
 
-					if(dx * dx + dz * dz + dy * dy < gen_cave_radius2
+					if(dx * dx + dz * dz + dy * dy < (gen_cave_radius * gen_cave_radius)
 					&& 1 < bpos.y && bpos.y < ctx.dims->y - 2
 					&& 1 < bpos.x && bpos.x < ctx.dims->x - 2
 					&& 1 < bpos.z && bpos.z < ctx.dims->z - 2) {
@@ -378,7 +373,9 @@ THREAD_FUNC(cavesThread) {
 	return 0;
 }
 
-static void placeTree(SVec treePos, cs_uint16 baseHeight) {
+static void placeTree(SVec treePos) {
+	cs_uint16 baseHeight = treePos.y;
+	treePos.y += (cs_uint16)Random_Range(&ctx.rnd, 4, 6);
 	for(cs_uint16 dz = treePos.z - 2; dz <= treePos.z + 2; dz++) {
 		for(cs_uint16 y = treePos.y - 2; y <= treePos.y - 1; y++) {
 			cs_uint32 offset = (y * ctx.dims->z + dz) * ctx.dims->x + treePos.x - 2;
@@ -431,19 +428,19 @@ THREAD_FUNC(treesThread) {
 		treePos.x = max(6, min(ctx.dims->x - 6, treePos.x));
 		treePos.z = max(6, min(ctx.dims->z - 6, treePos.z));
 
-		cs_uint16 baseHeight = getHeight(treePos.x, treePos.z), baseHeight2;
-		if(baseHeight > ctx.heightWater && baseHeight + 8 < ctx.dims->y) {
+		treePos.y = getHeight(treePos.x, treePos.z);
+		cs_uint16 cactusHeight = treePos.y;
+		if(treePos.y > ctx.heightWater && treePos.y + 8 < ctx.dims->y) {
 			enum DefGenBiomes biome = ctx.biomes[ctx.biomesWithTrees[randBiome]];
 
 			switch (biome) {
 				case BIOME_TREES:
-					treePos.y = baseHeight + (cs_uint16)Random_Range(&ctx.rnd, 4, 6);
-					placeTree(treePos, baseHeight);
+					placeTree(treePos);
 					break;
 				case BIOME_SAND:
-					baseHeight2 = baseHeight + (cs_uint16)Random_Range(&ctx.rnd, 1, 4);
-					for(treePos.y = baseHeight + 1; treePos.y <= baseHeight2; treePos.y++)
+					for(cactusHeight += (cs_uint16)Random_Range(&ctx.rnd, 1, 4); treePos.y <= cactusHeight; treePos.y++)
 						setBlock(treePos, BLOCK_LEAVES);
+					break;
 				default: break;
 			}
 		}
@@ -459,13 +456,10 @@ static cs_bool defaultgenerator(World *world, void *data) {
 	world->info.dimensions.y < 32)
 		return false;
 	Memory_Fill(&ctx, sizeof(ctx), 0);
-	gen_cave_radius2 = gen_cave_radius * gen_cave_radius;
-	gen_biome_radius2 = gen_biome_radius * gen_biome_radius;
 
-	ctx.world = world;
 	ctx.dims = &world->info.dimensions;
-	ctx.lvlSize = ctx.dims->x * ctx.dims->z;
-	ctx.data = World_GetBlockArray(world, &ctx.wsize);
+	ctx.planeSize = ctx.dims->x * ctx.dims->z;
+	ctx.data = World_GetBlockArray(world, NULL);
 
 	ctx.heightGrass = ctx.dims->y / 2;
 	ctx.heightWater = ctx.heightGrass;
@@ -477,8 +471,8 @@ static cs_bool defaultgenerator(World *world, void *data) {
 	Random_SeedFromTime(&ctx.rnd);
 	genBiomes();
 	genHeightMap();
-	Memory_Fill(ctx.data, ctx.lvlSize, BLOCK_BEDROCK);
-	Memory_Fill(ctx.data + ctx.lvlSize, ctx.lvlSize * (ctx.heightStone - 1), BLOCK_STONE);
+	Memory_Fill(ctx.data, ctx.planeSize, BLOCK_BEDROCK);
+	Memory_Fill(ctx.data + ctx.planeSize, ctx.planeSize * (ctx.heightStone - 1), BLOCK_STONE);
 	newGenThread(terrainThread);
 	for(cs_uint16 i = 0; i < ctx.numCaves; i++)
 		newGenThread(cavesThread);
@@ -489,14 +483,12 @@ static cs_bool defaultgenerator(World *world, void *data) {
 	WorldInfo *wi = &world->info;
 	cs_uint16 x = ctx.dims->x / 2, z = ctx.dims->z / 2;
 	wi->spawnVec.x = (cs_float)x;
-	wi->spawnVec.y = (cs_float)ctx.heightMap[ctx.biomeSizeX / 2 + ctx.biomeSizeZ / 2 * ctx.biomeSizeX] +
-	(1.59375f * 4);
+	wi->spawnVec.y = (cs_float)ctx.heightMap[ctx.biomeSizeX / 2 + ctx.biomeSizeZ / 2 * ctx.biomeSizeX] + 6.375f;
 	wi->spawnVec.z = (cs_float)z;
 	World_SetProperty(world, PROP_SIDEBLOCK, BLOCK_AIR);
 	World_SetProperty(world, PROP_EDGEBLOCK, BLOCK_WATER);
 	World_SetProperty(world, PROP_EDGELEVEL, ctx.heightWater + 1);
 	World_SetProperty(world, PROP_SIDEOFFSET, 0);
-
 	doCleanUp();
 	return true;
 }
