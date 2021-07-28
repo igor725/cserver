@@ -296,28 +296,28 @@ THREAD_FUNC(WorldSaveThread) {
 
 	stream.next_in = World_GetBlockArray(world, &stream.avail_in);
 
-	cs_byte state = 0;
+	cs_byte zstate = 0;
 	do {
 		stream.next_out = out;
 		stream.avail_out = CHUNK_SIZE;
 
-		if((ret = deflate(&stream, state == 0 ? Z_NO_FLUSH : Z_FINISH)) == Z_STREAM_ERROR) {
+		if((ret = deflate(&stream, zstate == 0 ? Z_NO_FLUSH : Z_FINISH)) == Z_STREAM_ERROR) {
 			ERROR_PRINT(ET_ZLIB, ret, false);
 			goto world_save_end;
 		}
 
 		if(stream.avail_out == CHUNK_SIZE) {
-			if(state == 1)
-				state = 2;
+			if(zstate == 1)
+				zstate = 2;
 			else
-				state = 1;
+				zstate = 1;
 		} else {
 			if(!File_Write(out, 1, CHUNK_SIZE - stream.avail_out, fp)) {
 				Error_PrintSys(false);
 				goto world_save_end;
 			}
 		}
-	} while(state != 2);
+	} while(zstate != 2);
 	succ = (stream.avail_in == 0);
 
 	world_save_end:

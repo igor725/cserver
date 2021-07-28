@@ -314,22 +314,21 @@ THREAD_FUNC(WorldSendThread) {
 		return 0;
 	}
 
-	cs_bool state = 0;
-
+	cs_byte zstate = 0;
 	do {
 		stream.next_out = out;
 		stream.avail_out = CHUNK_SIZE;
 
-		if((ret = deflate(&stream, state == 0 ? Z_NO_FLUSH : Z_FINISH)) == Z_STREAM_ERROR) {
+		if((ret = deflate(&stream, zstate == 0 ? Z_NO_FLUSH : Z_FINISH)) == Z_STREAM_ERROR) {
 			pd->state = STATE_WLOADERR;
 			goto world_send_end;
 		}
 
 		if(stream.avail_out == CHUNK_SIZE) {
-			if(state == 1)
-				state = 2;
+			if(zstate == 1)
+				zstate = 2;
 			else
-				state = 1;
+				zstate = 1;
 		} else {
 			*len = htons(CHUNK_SIZE - (cs_uint16)stream.avail_out);
 			if(client->closed || !Client_Send(client, CHUNK_SIZE + 4)) {
@@ -337,7 +336,7 @@ THREAD_FUNC(WorldSendThread) {
 				goto world_send_end;
 			}
 		}
-	} while(state != 2);
+	} while(zstate != 2);
 	pd->state = STATE_WLOADDONE;
 
 	world_send_end:
