@@ -1,11 +1,8 @@
 #include "core.h"
-#include "world.h"
+#include "str.h"
 #include "generators.h"
-#include "csmath.h"
 
-// Генератор плоского мира
-
-void Generator_Flat(World *world) {
+static cs_bool flatgenerator(World *world) {
 	WorldInfo *wi = &world->info;
 	SVec *dims = &wi->dimensions;
 
@@ -24,46 +21,53 @@ void Generator_Flat(World *world) {
 	wi->spawnVec.x = (float)dims->x / 2;
 	wi->spawnVec.y = (float)(dims->y / 2) + 1.59375f;
 	wi->spawnVec.z = (float)dims->z / 2;
+	return true;
 }
 
-/*
-** Генератор обычного мира.
-** Когда-нибудь он точно будет
-** готов, но явно не сегодня.
-*/
+cs_bool Generators_Init(void) {
+	return Generators_Add("flat", flatgenerator);
+}
 
-/*
-#define MAX_THREADS 16
+cs_bool Generators_Add(cs_str name, GeneratorRoutine gr) {
+	return KList_Add(&Generators_List, (void *)name, (void *)gr) != NULL;
+}
 
-Thread threads[MAX_THREADS];
-cs_int32 cfgMaxThreads = 2;
+cs_bool Generators_Remove(cs_str name) {
+	KListField *ptr = NULL;
 
-static cs_int32 AddThread(TFUNC func, TARG arg) {
-	for(cs_int32 i = 0; i < MAX_THREADS; i++) {
-		if(i > cfgMaxThreads) {
-			i = 0;
-			if(Thread_IsValid(threads[i])) {
-				Thread_Join(threads[i]);
-				threads[i] = NULL;
-			}
-		}
-		if(!Thread_IsValid(threads[i])) {
-			threads[i] = Thread_Create(func, arg);
-			return i;
+	List_Iter(ptr, Generators_List) {
+		if(String_CaselessCompare(ptr->key.str, name)) {
+			KList_Remove(&Generators_List, ptr);
+			return true;
 		}
 	}
-	return -1;
+
+	return false;
 }
 
-static void WaitAll(void) {
-	for(cs_int32 i = 0; i < MAX_THREADS; i++) {
-		if(Thread_IsValid(threads[i]))
-			Thread_Join(threads[i]);
+cs_bool Generators_RemoveByFunc(GeneratorRoutine gr) {
+	KListField *ptr = NULL;
+
+	List_Iter(ptr, Generators_List) {
+		if(ptr->value.ptr == gr) {
+			KList_Remove(&Generators_List, ptr);
+			return true;
+		}
 	}
+
+	return false;
 }
 
-void Generator_Default(World *world) {
-	RNGState rnd;
-	Random_Seed(&rnd, 1337);
+cs_bool Generators_Use(World *world, cs_str name) {
+	KListField *ptr = NULL;
+
+	List_Iter(ptr, Generators_List) {
+		if(String_CaselessCompare(ptr->key.str, name)) {
+			GeneratorRoutine gr = (GeneratorRoutine)ptr->value.ptr;
+			if(gr) return gr(world);
+			break;
+		}
+	}
+
+	return false;
 }
-*/

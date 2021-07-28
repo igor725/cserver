@@ -113,7 +113,7 @@ static void Bind(cs_str ip, cs_uint16 port) {
 }
 
 cs_bool Server_Init(void) {
-	if(!Socket_Init() || !Lang_Init()) return false;
+	if(!Socket_Init() || !Lang_Init() || !Generators_Init()) return false;
 
 	CStore *cfg = Config_NewStore(MAINCFG);
 	CEntry *ent;
@@ -197,7 +197,8 @@ cs_bool Server_Init(void) {
 		SVec defdims = {256, 256, 256};
 		World_SetDimensions(tmp, &defdims);
 		World_AllocBlockArray(tmp);
-		Generator_Flat(tmp);
+		if(!Generators_Use(tmp, "flat"))
+			Log_Error("Oh! Error happened in the world generator.");
 		Worlds_List[0] = tmp;
 	}
 
