@@ -280,7 +280,7 @@ THREAD_FUNC(WorldSendThread) {
 		return 0;
 	}
 
-	Vanilla_WriteLvlInit(client);
+	Vanilla_WriteLvlInit(client, World_GetBlockArraySize(world));
 	Mutex_Lock(client->mutex);
 	cs_byte *data = (cs_byte *)client->wrbuf;
 
@@ -304,31 +304,40 @@ THREAD_FUNC(WorldSendThread) {
 
 	if((ret = deflateInit2(
 		&stream,
-		1,
+		Z_DEFAULT_COMPRESSION,
 		Z_DEFLATED,
 		wndBits,
 		8,
-		Z_RLE)) != Z_OK) {
+		Z_DEFAULT_STRATEGY)) != Z_OK) {
 			Log_Error("deflateInit2 error: %s", zError(ret));
 		pd->state = STATE_WLOADERR;
 		return 0;
 	}
 
+	cs_bool state = 0;
+
 	do {
 		stream.next_out = out;
 		stream.avail_out = CHUNK_SIZE;
 
-		if((ret = deflate(&stream, Z_NO_FLUSH)) == Z_STREAM_ERROR) {
+		if((ret = deflate(&stream, state == 0 ? Z_NO_FLUSH : Z_FINISH)) == Z_STREAM_ERROR) {
 			pd->state = STATE_WLOADERR;
 			goto world_send_end;
 		}
 
-		*len = htons(CHUNK_SIZE - (cs_uint16)stream.avail_out);
-		if(client->closed || !Client_Send(client, CHUNK_SIZE + 4)) {
-			pd->state = STATE_WLOADERR;
-			goto world_send_end;
+		if(stream.avail_out == CHUNK_SIZE) {
+			if(state == 1)
+				state = 2;
+			else
+				state = 1;
+		} else {
+			*len = htons(CHUNK_SIZE - (cs_uint16)stream.avail_out);
+			if(client->closed || !Client_Send(client, CHUNK_SIZE + 4)) {
+				pd->state = STATE_WLOADERR;
+				goto world_send_end;
+			}
 		}
-	} while(stream.avail_out == 0);
+	} while(state != 2);
 	pd->state = STATE_WLOADDONE;
 
 	world_send_end:

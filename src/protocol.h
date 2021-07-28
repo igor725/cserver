@@ -102,7 +102,7 @@ void Packet_RegisterDefault(void);
 */
 
 void Vanilla_WriteHandshake(Client *client, cs_str name, cs_str motd);
-void Vanilla_WriteLvlInit(Client *client);
+void Vanilla_WriteLvlInit(Client *client, cs_uint32 size);
 void Vanilla_WriteLvlFin(Client *client, SVec *dims);
 void Vanilla_WriteSetBlock(Client *client, SVec *pos, BlockID block);
 void Vanilla_WriteSpawn(Client *client, Client *other);

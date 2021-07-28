@@ -305,12 +305,12 @@ void Vanilla_WriteHandshake(Client *client, cs_str name, cs_str motd) {
 	PacketWriter_End(client, 131);
 }
 
-void Vanilla_WriteLvlInit(Client *client) {
+void Vanilla_WriteLvlInit(Client *client, cs_uint32 size) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x02;
 	if(Client_GetExtVer(client, EXT_FASTMAP)) {
-		*(cs_uint32 *)data = htonl(World_GetBlockArraySize(Client_GetWorld(client)));
+		*(cs_uint32 *)data = htonl(size);
 		PacketWriter_End(client, 5);
 	} else {
 		PacketWriter_End(client, 1);

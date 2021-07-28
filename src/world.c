@@ -158,7 +158,7 @@ cs_int8 World_GetWeather(World *world) {
 }
 
 void World_AllocBlockArray(World *world) {
-	void *data = Memory_Alloc(world->wdata.size * sizeof(BlockID) + 4, 1);
+	void *data = Memory_Alloc(world->wdata.size + 4, 1);
 	*(cs_uint32 *)data = htonl(world->wdata.size);
 	world->wdata.ptr = data;
 	world->wdata.blocks = (BlockID *)data + 4;
@@ -282,27 +282,42 @@ THREAD_FUNC(WorldSaveThread) {
 	stream.zfree = Z_NULL;
 	stream.opaque = Z_NULL;
 
-	if((ret = deflateInit(&stream, Z_BEST_COMPRESSION)) != Z_OK) {
+	if((ret = deflateInit2(
+		&stream,
+		Z_DEFAULT_COMPRESSION,
+		Z_DEFLATED,
+		31,
+		8,
+		Z_DEFAULT_STRATEGY
+	)) != Z_OK) {
 		ERROR_PRINT(ET_ZLIB, ret, false);
 		goto world_save_end;
 	}
 
 	stream.next_in = World_GetBlockArray(world, &stream.avail_in);
 
+	cs_byte state = 0;
 	do {
 		stream.next_out = out;
 		stream.avail_out = CHUNK_SIZE;
 
-		if((ret = deflate(&stream, Z_FINISH)) == Z_STREAM_ERROR) {
+		if((ret = deflate(&stream, state == 0 ? Z_NO_FLUSH : Z_FINISH)) == Z_STREAM_ERROR) {
 			ERROR_PRINT(ET_ZLIB, ret, false);
 			goto world_save_end;
 		}
 
-		if(!File_Write(out, 1, CHUNK_SIZE - stream.avail_out, fp)) {
-			Error_PrintSys(false);
-			goto world_save_end;
+		if(stream.avail_out == CHUNK_SIZE) {
+			if(state == 1)
+				state = 2;
+			else
+				state = 1;
+		} else {
+			if(!File_Write(out, 1, CHUNK_SIZE - stream.avail_out, fp)) {
+				Error_PrintSys(false);
+				goto world_save_end;
+			}
 		}
-	} while(stream.avail_out == 0);
+	} while(state != 2);
 	succ = (stream.avail_in == 0);
 
 	world_save_end:
@@ -351,7 +366,7 @@ THREAD_FUNC(WorldLoadThread) {
 	stream.zfree = Z_NULL;
 	stream.opaque = Z_NULL;
 
-	if((ret = inflateInit(&stream)) != Z_OK) {
+	if((ret = inflateInit2(&stream, 31)) != Z_OK) {
 		ERROR_PRINT(ET_ZLIB, ret, false);
 		goto world_load_done;
 	}
