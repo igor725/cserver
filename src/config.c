@@ -158,7 +158,7 @@ void Config_PrintError(CStore *store) {
 }
 
 cs_bool Config_Load(CStore *store) {
-	FILE *fp = File_Open(store->path, "r");
+	cs_file fp = File_Open(store->path, "r");
 	if(!fp) {
 		if(errno == ENOENT) return true;
 		CFG_SYSERROR
@@ -232,7 +232,7 @@ cs_bool Config_Save(CStore *store) {
 	cs_char tmpname[256];
 	String_FormatBuf(tmpname, 256, "%s.tmp", store->path);
 
-	FILE *fp = File_Open(tmpname, "w");
+	cs_file fp = File_Open(tmpname, "w");
 	if(!fp) {
 		CFG_SYSERROR
 		return false;

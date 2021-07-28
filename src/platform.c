@@ -78,15 +78,15 @@ cs_bool File_Rename(cs_str path, cs_str newpath) {
 #endif
 }
 
-FILE *File_Open(cs_str path, cs_str mode) {
+cs_file File_Open(cs_str path, cs_str mode) {
 	return fopen(path, mode);
 }
 
-cs_size File_Read(void *ptr, cs_size size, cs_size count, FILE *fp) {
+cs_size File_Read(void *ptr, cs_size size, cs_size count, cs_file fp) {
 	return fread(ptr, size, count, fp);
 }
 
-cs_int32 File_ReadLine(FILE *fp, cs_char *line, cs_int32 len) {
+cs_int32 File_ReadLine(cs_file fp, cs_char *line, cs_int32 len) {
 	cs_int32 bleft = len + 1;
 
 	while(--bleft) {
@@ -99,19 +99,19 @@ cs_int32 File_ReadLine(FILE *fp, cs_char *line, cs_int32 len) {
 	return len - bleft;
 }
 
-cs_size File_Write(const void *ptr, cs_size size, cs_size count, FILE *fp) {
+cs_size File_Write(const void *ptr, cs_size size, cs_size count, cs_file fp) {
 	return fwrite(ptr, size, count, fp);
 }
 
-cs_int32 File_GetChar(FILE *fp) {
+cs_int32 File_GetChar(cs_file fp) {
 	return fgetc(fp);
 }
 
-cs_bool File_Error(FILE *fp) {
+cs_bool File_Error(cs_file fp) {
 	return ferror(fp) != 0;
 }
 
-cs_bool File_WriteFormat(FILE *fp, cs_str fmt, ...) {
+cs_bool File_WriteFormat(cs_file fp, cs_str fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
 	vfprintf(fp, fmt, args);
@@ -120,15 +120,15 @@ cs_bool File_WriteFormat(FILE *fp, cs_str fmt, ...) {
 	return !File_Error(fp);
 }
 
-cs_bool File_Flush(FILE *fp) {
+cs_bool File_Flush(cs_file fp) {
 	return fflush(fp) == 0;
 }
 
-cs_int32 File_Seek(FILE *fp, long offset, cs_int32 origin) {
+cs_int32 File_Seek(cs_file fp, long offset, cs_int32 origin) {
 	return fseek(fp, offset, origin);
 }
 
-cs_bool File_Close(FILE *fp) {
+cs_bool File_Close(cs_file fp) {
 	return fclose(fp) != 0;
 }
 
