@@ -427,10 +427,10 @@ void World_Unload(World *world) {
 
 cs_uint32 World_GetOffset(World *world, SVec *pos) {
 	if(pos->x < 0 || pos->y < 0 || pos->z < 0) return 0;
-	cs_uint32 offset = pos->z * world->info.dimensions.z +
-	pos->y * (world->info.dimensions.x * world->info.dimensions.y) + pos->x;
+	cs_uint32 offset = ((cs_uint32)pos->y * (cs_uint32)world->info.dimensions.z
+	+ (cs_uint32)pos->z) * (cs_uint32)world->info.dimensions.x + (cs_uint32)pos->x;
 	if(offset > world->wdata.size) return world->wdata.size;
-	return (cs_int32)offset;
+	return offset;
 }
 
 cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id) {
