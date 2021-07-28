@@ -105,9 +105,9 @@ static void doCleanUp(void) {
 }
 
 static void genBiomes(void) {
-	ctx.biomeSizeX = (ctx.dims->x / gen_biome_step) + 1,
-	ctx.biomeSizeZ = (ctx.dims->z / gen_biome_step) + 1,
-	ctx.biomeSize = ctx.biomeSizeX * ctx.biomeSizeZ,
+	ctx.biomeSizeX = (ctx.dims->x / gen_biome_step) + 2;
+	ctx.biomeSizeZ = (ctx.dims->z / gen_biome_step) + 2;
+	ctx.biomeSize = ctx.biomeSizeX * ctx.biomeSizeZ;
 	ctx.biomesNum = ctx.dims->x * ctx.dims->z / gen_biome_step / gen_biome_radius / 64 + 1;
 	ctx.biomes = Memory_Alloc(2, ctx.biomeSize);
 	for(cs_uint16 i = 0; i < ctx.biomeSize; i++)
