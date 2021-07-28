@@ -197,7 +197,7 @@ cs_bool Server_Init(void) {
 		SVec defdims = {256, 256, 256};
 		World_SetDimensions(tmp, &defdims);
 		World_AllocBlockArray(tmp);
-		if(!Generators_Use(tmp, "flat"))
+		if(!Generators_Use(tmp, "flat", NULL))
 			Log_Error("Oh! Error happened in the world generator.");
 		Worlds_List[0] = tmp;
 	}

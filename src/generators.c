@@ -4,17 +4,18 @@
 #include "block.h"
 #include "generators.h"
 
-static cs_bool flatgenerator(World *world) {
+static cs_bool flatgenerator(World *world, void *data) {
+	(void)data;
 	WorldInfo *wi = &world->info;
 	SVec *dims = &wi->dimensions;
 
-	BlockID *data = World_GetBlockArray(world, NULL);
+	BlockID *blocks = World_GetBlockArray(world, NULL);
 	cs_int32 dirtEnd = dims->x * dims->z * (dims->y / 2 - 1);
 	for(cs_int32 i = 0; i < dirtEnd + dims->x * dims->z; i++) {
 		if(i < dirtEnd)
-			data[i] = 3;
+			blocks[i] = 3;
 		else
-			data[i] = 2;
+			blocks[i] = 2;
 	}
 
 	World_SetProperty(world, PROP_CLOUDSLEVEL, dims->y + 2);
@@ -452,13 +453,13 @@ cs_bool Generators_RemoveByFunc(GeneratorRoutine gr) {
 	return false;
 }
 
-cs_bool Generators_Use(World *world, cs_str name) {
+cs_bool Generators_Use(World *world, cs_str name, void *data) {
 	KListField *ptr = NULL;
 
 	List_Iter(ptr, Generators_List) {
 		if(String_CaselessCompare(ptr->key.str, name)) {
 			GeneratorRoutine gr = (GeneratorRoutine)ptr->value.ptr;
-			if(gr) return gr(world);
+			if(gr) return gr(world, data);
 			break;
 		}
 	}
