@@ -3,7 +3,6 @@
 #include "str.h"
 #include "error.h"
 #include <stdio.h>
-#include <signal.h>
 
 #if defined(WINDOWS)
 HANDLE hHeap;
@@ -35,6 +34,7 @@ void Memory_Free(void *ptr) {
 }
 #elif defined(POSIX)
 #include <stdlib.h>
+#include <signal.h>
 
 void Memory_Init(void) {}
 void Memory_Uninit(void) {}
