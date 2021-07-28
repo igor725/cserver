@@ -365,7 +365,8 @@ THREAD_FUNC(cavesThread) {
 	return 0;
 }
 
-static cs_bool defaultgenerator(World *world) {
+static cs_bool defaultgenerator(World *world, void *data) {
+	(void)data;
 	/*
 		Поскольку из меня очень хороший программист вышел,
 		генерация мира с меньшими размерами приводит к
@@ -393,7 +394,7 @@ static cs_bool defaultgenerator(World *world) {
 	ctx.gravelVeinSize = min(gen_gravel_vein_size, ctx.heightGrass / 3);
 	ctx.numCaves = (cs_uint16)((cs_float)(ctx.dims->x * ctx.heightGrass * ctx.dims->z) * gen_caves_count_mult);
 
-	Random_Seed(&ctx.rnd, 1337);
+	Random_SeedFromTime(&ctx.rnd);
 	genBiomes();
 	genHeightMap();
 	Memory_Fill(ctx.data, ctx.lvlSize, BLOCK_BEDROCK);
