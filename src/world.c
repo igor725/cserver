@@ -88,6 +88,9 @@ World *World_GetByID(WorldID id) {
 void World_SetDimensions(World *world, const SVec *dims) {
 	world->info.dimensions = *dims;
 	world->wdata.size = dims->x * dims->y * dims->z;
+	if(world->wdata.ptr) Memory_Free(world->wdata.ptr);
+	world->wdata.ptr = NULL;
+	world->wdata.blocks = NULL;
 }
 
 cs_bool World_SetProperty(World *world, cs_byte property, cs_int32 value) {
