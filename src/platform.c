@@ -639,15 +639,13 @@ cs_uint64 Time_GetMSec() {
 }
 #endif
 
+cs_bool Console_BindSignalHandler(TSHND handler) {
 #if defined(WINDOWS)
-cs_bool Console_BindSignalHandler(TSHND handler) {
 	return (cs_bool)SetConsoleCtrlHandler((PHANDLER_ROUTINE)handler, TRUE);
-}
 #elif defined(POSIX)
-cs_bool Console_BindSignalHandler(TSHND handler) {
-	return signal(SIGINT, (void(*)(int))handler) != SIG_ERR;
-}
+	return (cs_bool)signal(SIGINT, (void(*)(int))handler) != SIG_ERR;
 #endif
+}
 
 void Process_Exit(cs_int32 code) {
 #if defined(WINDOWS)
