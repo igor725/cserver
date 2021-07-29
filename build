@@ -83,6 +83,7 @@ if [ $PLUGIN_BUILD -eq 0 ]; then
 	LIBS="$LIBS -lpthread -ldl -lcrypto -lcurl -lz"
 fi
 
+> $STDERR
 $CC $CFLAGS $COMMIT_SHA $WARN $OPT -I$ROOT/src $ROOT/src/*.c -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR
 
 if [ $DEBUG -eq 0 ]; then
