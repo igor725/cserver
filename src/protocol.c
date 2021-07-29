@@ -11,7 +11,7 @@
 #include "lang.h"
 #include <zlib.h>
 
-Packet *packetsList[MAX_PACKETS];
+Packet *packetsList[256];
 cs_uint16 extensionsCount;
 CPEExt *headExtension;
 
@@ -262,6 +262,7 @@ static const struct extReg serverExtensions[] = {
 	{"SetHotbar", 1},
 	{"SetSpawnpoint", 1},
 	{"VelocityControl", 1},
+	{"CustomParticles", 1},
 
 	{NULL, 0}
 };
@@ -287,11 +288,6 @@ void Packet_RegisterDefault(void) {
 Packet *Packet_Get(cs_byte id) {
 	return packetsList[id];
 }
-
-/*
-** Врайтеры и хендлеры
-** ванильного протокола
-*/
 
 void Vanilla_WriteHandshake(Client *client, cs_str name, cs_str motd) {
 	PacketWriter_Start(client);
@@ -331,7 +327,7 @@ void Vanilla_WriteSetBlock(Client *client, SVec *pos, BlockID block) {
 
 	*data++ = 0x06;
 	Proto_WriteSVec(&data, pos);
-	*data = block;
+	*data++ = block;
 
 	PacketWriter_End(client, 8);
 }
@@ -374,7 +370,7 @@ void Vanilla_WriteDespawn(Client *client, Client *other) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x0C;
-	*data = client == other ? CLIENT_SELF : other->id;
+	*data++ = client == other ? CLIENT_SELF : other->id;
 
 	PacketWriter_End(client, 2);
 }
@@ -650,8 +646,8 @@ void CPE_WriteExtEntry(Client *client, CPEExt *ext) {
 void CPE_WriteClickDistance(Client *client, cs_int16 dist) {
 	PacketWriter_Start(client);
 
-	*data = 0x12;
-	*(cs_int16 *)++data = dist;
+	*data++ = 0x12;
+	*(cs_int16 *)data = dist;
 
 	PacketWriter_End(client, 3);
 }
@@ -663,7 +659,7 @@ void CPE_WriteHoldThis(Client *client, BlockID block, cs_bool preventChange) {
 
 	*data++ = 0x14;
 	*data++ = block;
-	*data = (cs_char)preventChange;
+	*data   = (cs_char)preventChange;
 
 	PacketWriter_End(client, 3);
 }
@@ -683,8 +679,7 @@ void CPE_WriteSetHotKey(Client *client, cs_str action, cs_int32 keycode, cs_int8
 void CPE_WriteAddName(Client *client, Client *other) {
 	PacketWriter_Start(client);
 
-	*data++ = 0x16;
-	data++; // 16 bit id? For what?
+	*data = 0x16; data += 2;
 	*data++ = client == other ? CLIENT_SELF : other->id;
 	Proto_WriteString(&data, Client_GetName(other));
 	Proto_WriteString(&data, Client_GetName(other));
@@ -714,9 +709,8 @@ void CPE_WriteAddEntity2(Client *client, Client *other) {
 void CPE_WriteRemoveName(Client *client, Client *other) {
 	PacketWriter_Start(client);
 
-	*data++ = 0x18;
-	data++; // Short value... again.
-	*data++ = client == other ? CLIENT_SELF : other->id;
+	*data = 0x18; data += 2;
+	*data = client == other ? CLIENT_SELF : other->id;
 
 	PacketWriter_End(client, 3);
 }
@@ -736,7 +730,7 @@ void CPE_WriteMakeSelection(Client *client, cs_byte id, SVec *start, SVec *end, 
 
 	*data++ = 0x1A;
 	*data++ = id;
-	data += 64; // Label
+	Proto_WriteString(&data, NULL); // Label
 	Proto_WriteSVec(&data, start);
 	Proto_WriteSVec(&data, end);
 	Proto_WriteColor4(&data, color);
@@ -748,7 +742,7 @@ void CPE_WriteRemoveSelection(Client *client, cs_byte id) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1B;
-	*data = id;
+	*data   = id;
 
 	PacketWriter_End(client, 2);
 }
@@ -759,7 +753,7 @@ void CPE_WriteBlockPerm(Client *client, BlockID id, cs_bool allowPlace, cs_bool 
 	*data++ = 0x1C;
 	*data++ = id;
 	*data++ = (cs_char)allowPlace;
-	*data = (cs_char)allowDestroy;
+	*data   = (cs_char)allowDestroy;
 
 	PacketWriter_End(client, 4);
 }
@@ -784,7 +778,7 @@ void CPE_WriteWeatherType(Client *client, cs_int8 type) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x1F;
-	*data = type;
+	*data   = type;
 
 	PacketWriter_End(client, 2);
 }
@@ -818,7 +812,7 @@ void CPE_WriteUndefineBlock(Client *client, BlockID id) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x24;
-	*data++ = id;
+	*data = id;
 
 	PacketWriter_End(client, 2);
 }
@@ -893,22 +887,22 @@ void CPE_WriteTwoWayPing(Client *client, cs_byte direction, cs_int16 num) {
 	PacketWriter_End(client, 4);
 }
 
-void CPE_WriteInventoryOrder(Client *client, Order order, BlockID block) {
+void CPE_WriteInventoryOrder(Client *client, cs_byte order, BlockID block) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x2C;
 	*data++ = block;
-	*data = order;
+	*data   = order;
 
 	PacketWriter_End(client, 3);
 }
 
-void CPE_WriteSetHotBar(Client *client, Order order, BlockID block) {
+void CPE_WriteSetHotBar(Client *client, cs_byte order, BlockID block) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x2D;
 	*data++ = block;
-	*data = order;
+	*data   = order;
 
 	PacketWriter_End(client, 3);
 }
@@ -939,6 +933,37 @@ void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_bool mode) {
 	*(cs_uint32 *)data = mode ? 0x01010101 : 0x00000000; // Why not?
 
 	PacketWriter_End(client, 16);
+}
+
+void CPE_WriteDefineEffect(Client *client, CustomParticle *e) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x30;
+	*(struct TextureRec *)data = e->rec;
+	*data++ = e->frameCount;
+	*data++ = e->particleCount;
+	*data++ = (cs_byte)(e->size * 32.0f);
+	*(cs_uint32 *)data = htonl((cs_uint32)(e->sizeVariation * 1000.0f)); data += 4;
+	*(cs_uint16 *)data = htons((cs_uint16)(e->spread * 32.0f)); data += 2;
+	*(cs_uint32 *)data = htonl((cs_uint32)(e->speed * 10000.0f)); data += 4;
+	*(cs_uint32 *)data = htonl((cs_uint32)(e->gravity * 10000.0f)); data += 4;
+	*(cs_uint32 *)data = htonl((cs_uint32)(e->baseLifetime * 10000.0f)); data += 4;
+	*(cs_uint32 *)data = htonl((cs_uint32)(e->lifetimeVariation * 10000.0f)); data += 4;
+	*data++ = e->collideFlags;
+	*data = e->fullBright;
+
+	PacketWriter_End(client, 36);
+}
+
+void CPE_WriteSpawnEffect(Client *client, cs_byte id, Vec *pos, Vec *origin) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x31;
+	*data++ = id;
+	Proto_WriteFlVec(&data, pos);
+	Proto_WriteFlVec(&data, origin);
+
+	PacketWriter_End(client, 26);
 }
 
 cs_bool CPEHandler_ExtInfo(Client *client, cs_str data) {
