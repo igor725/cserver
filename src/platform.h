@@ -72,6 +72,7 @@ API cs_bool Iter_Close(DirIter *iter);
 
 API cs_bool File_Rename(cs_str path, cs_str newpath);
 API cs_file File_Open(cs_str path, cs_str mode);
+API cs_file File_ProcOpen(cs_str cmd, cs_str mode);
 API cs_size File_Read(void *ptr, cs_size size, cs_size count, cs_file fp);
 API cs_int32 File_ReadLine(cs_file fp, cs_char *line, cs_int32 len);
 API cs_size File_Write(const void *ptr, cs_size size, cs_size count, cs_file fp);
@@ -81,6 +82,7 @@ API cs_bool File_WriteFormat(cs_file fp, cs_str fmt, ...);
 API cs_bool File_Flush(cs_file fp);
 API cs_int32 File_Seek(cs_file fp, long offset, cs_int32 origin);
 API cs_bool File_Close(cs_file fp);
+API cs_bool File_ProcClose(cs_file fp);
 
 API cs_bool Directory_Exists(cs_str dir);
 API cs_bool Directory_Create(cs_str dir);
