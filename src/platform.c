@@ -82,6 +82,14 @@ cs_file File_Open(cs_str path, cs_str mode) {
 	return fopen(path, mode);
 }
 
+cs_file File_ProcOpen(cs_str cmd, cs_str mode) {
+#if defined(WINDOWS)
+	return _popen(cmd, mode);
+#else
+	return popen(cmd, mode);
+#endif
+}
+
 cs_size File_Read(void *ptr, cs_size size, cs_size count, cs_file fp) {
 	return fread(ptr, size, count, fp);
 }
@@ -130,6 +138,14 @@ cs_int32 File_Seek(cs_file fp, long offset, cs_int32 origin) {
 
 cs_bool File_Close(cs_file fp) {
 	return fclose(fp) != 0;
+}
+
+cs_bool File_ProcClose(cs_file fp) {
+#if defined(WINDOWS)
+	return (cs_bool)_pclose(fp);
+#else
+	return (cs_bool)pclose(fp);
+#endif
 }
 
 cs_bool Socket_Init(void) {
