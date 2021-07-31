@@ -1,6 +1,7 @@
 #ifndef HASH_H
 #define HASH_H
 #if defined(WINDOWS)
+#include <windows.h>
 #include <wincrypt.h>
 
 typedef struct _WinHash {

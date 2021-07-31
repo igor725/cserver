@@ -3,7 +3,6 @@
 #include "error.h"
 #include "str.h"
 #include "server.h"
-#include "client.h"
 #include "world.h"
 #include "event.h"
 #include <zlib.h>
@@ -146,11 +145,6 @@ cs_bool World_SetEnvColor(World *world, cs_byte type, Color3* color) {
 Color3* World_GetEnvColor(World *world, cs_byte type) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	return &world->info.colors[type];
-}
-
-void World_UpdateClients(World *world) {
-	Clients_UpdateWorldInfo(world);
-	world->info.modval = MV_NONE;
 }
 
 cs_int8 World_GetWeather(World *world) {

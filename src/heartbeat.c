@@ -71,7 +71,7 @@ static void DoRequest(void) {
 		name, port, count,
 		max, Secret,
 		public ? "true" : "false",
-		SOFTWARE_NAME "%%47" GIT_COMMIT_SHA
+		SOFTWARE_NAME "%2F" GIT_COMMIT_SHA
 	);
 
 	Http h;

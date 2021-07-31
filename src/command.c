@@ -4,13 +4,8 @@
 #include "log.h"
 #include "platform.h"
 #include "client.h"
-#include "server.h"
-#include "generators.h"
 #include "command.h"
-#include "config.h"
-#include "plugin.h"
 #include "lang.h"
-#include <zlib.h>
 
 KListField *headCmd = NULL;
 

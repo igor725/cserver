@@ -140,6 +140,7 @@ void Clients_UpdateWorldInfo(World *world) {
 		if(cl && Client_IsInWorld(cl, world))
 			Client_UpdateWorldInfo(cl, world, false);
 	}
+	world->info.modval = MV_NONE;
 }
 
 void Clients_KickAll(cs_str reason) {

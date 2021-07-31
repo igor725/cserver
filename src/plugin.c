@@ -3,7 +3,6 @@
 #include "log.h"
 #include "platform.h"
 #include "plugin.h"
-#include "command.h"
 #include "lang.h"
 
 Plugin *pluginsList[MAX_PLUGINS];

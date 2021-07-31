@@ -6,8 +6,6 @@
 #include "client.h"
 #include "protocol.h"
 #include "config.h"
-#include "command.h"
-#include "websocket.h"
 #include "generators.h"
 #include "heartbeat.h"
 #include "platform.h"

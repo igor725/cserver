@@ -9,7 +9,6 @@
 */
 #include "core.h"
 #ifdef WINDOWS
-#include <windows.h>
 #include "hash.h"
 
 static cs_bool HashInit(HASH_CTX *ctx, cs_int32 type) {
