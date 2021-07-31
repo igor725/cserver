@@ -90,7 +90,7 @@ cs_uint32 String_FormatError(cs_uint32 code, cs_char *buf, cs_size buflen, va_li
 		}
 	}
 	return len;
-#elif defined(POSIX)
+#elif defined(UNIX)
 	(void)args;
 	return String_Copy(buf, buflen, strerror(code));
 #endif
@@ -99,7 +99,7 @@ cs_uint32 String_FormatError(cs_uint32 code, cs_char *buf, cs_size buflen, va_li
 cs_int32 String_FormatBufVararg(cs_char *buf, cs_size len, cs_str str, va_list *args) {
 #if defined(WINDOWS)
 	return vsprintf_s(buf, len, str, *args);
-#elif defined(POSIX)
+#elif defined(UNIX)
 	return vsnprintf(buf, len, str, *args);
 #endif
 }

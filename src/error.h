@@ -26,13 +26,13 @@ if(abort) { \
 	Process_Exit(ecode); \
 }
 #define Error_PrintF2(etype, ecode, abort, ...) \
-Error_PrintF(etype, ecode, __FILE__, __LINE__, __func__, __VA_ARGS__); \
+Error_PrintF(etype, ecode, __FILE__, __LINE__, __func__, ##__VA_ARGS__); \
 if(abort) { \
 	Process_Exit(ecode); \
 }
 #if defined(WINDOWS)
 #  define Error_PrintSys(abort) ERROR_PRINT(ET_SYS, GetLastError(), abort);
-#elif defined(POSIX)
+#elif defined(UNIX)
 #  define Error_PrintSys(abort) ERROR_PRINT(ET_SYS, errno, abort);
 #endif
 

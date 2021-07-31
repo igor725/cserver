@@ -140,7 +140,7 @@ API cs_bool Client_IsInGame(Client *client);
 API cs_bool Client_IsOP(Client *client);
 
 API cs_bool Client_SetWeather(Client *client, cs_int8 type);
-API cs_bool Client_SetInvOrder(Client *client, Order order, BlockID block);
+API cs_bool Client_SetInvOrder(Client *client, cs_byte order, BlockID block);
 API cs_bool Client_SetEnvProperty(Client *client, cs_byte property, cs_int32 value);
 API cs_bool Client_SetEnvColor(Client *client, cs_byte type, Color3* color);
 API cs_bool Client_SetTexturePack(Client *client, cs_str url);
@@ -151,12 +151,14 @@ API cs_bool Client_SetModelStr(Client *client, cs_str model);
 API cs_bool Client_SetBlockPerm(Client *client, BlockID block, cs_bool allowPlace, cs_bool allowDestroy);
 API cs_bool Client_SetHeld(Client *client, BlockID block, cs_bool canChange);
 API cs_bool Client_SetHotkey(Client *client, cs_str action, cs_int32 keycode, cs_int8 keymod);
-API cs_bool Client_SetHotbar(Client *client, Order pos, BlockID block);
+API cs_bool Client_SetHotbar(Client *client, cs_byte pos, BlockID block);
 API cs_bool Client_SetSkin(Client *client, cs_str skin);
 API cs_bool Client_SetSpawn(Client *client, Vec *pos, Ang *ang);
 API cs_bool Client_SetVelocity(Client *client, Vec *velocity, cs_bool mode);
 API cs_bool Client_SetRotation(Client *client, cs_byte axis, cs_int32 value);
 API cs_bool Client_SetGroup(Client *client, cs_int16 gid);
+API cs_bool Client_RegisterParticle(Client *client, CustomParticle *e);
+API cs_bool Client_SpawnParticle(Client *client, cs_byte id, Vec *pos, Vec *origin);
 
 API cs_str Client_GetName(Client *client);
 API cs_str Client_GetAppName(Client *client);

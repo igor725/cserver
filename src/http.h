@@ -10,7 +10,7 @@ typedef struct _Http {
 	cs_bool secure;
 	HINTERNET conn, req;
 } Http;
-#elif defined(POSIX)
+#elif defined(UNIX)
 #include <curl/curl.h>
 
 typedef struct _Http {

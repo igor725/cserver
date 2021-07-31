@@ -45,7 +45,7 @@ void Http_Cleanup(Http *http) {
 	InternetCloseHandle(http->conn);
 	InternetCloseHandle(http->req);
 }
-#elif defined(POSIX)
+#elif defined(UNIX)
 cs_bool Http_Init(void) {return true;}
 void Http_Uninit(void) {}
 

@@ -31,7 +31,7 @@ typedef unsigned int cs_uintptr;
 typedef unsigned int cs_size;
 #endif // _WIN64
 #elif defined(__unix__)
-#define POSIX
+#define UNIX
 #define PATH_DELIM "/"
 #define DLIB_EXT "so"
 
@@ -77,17 +77,33 @@ typedef unsigned long cs_ulong;
 typedef float cs_float;
 typedef const cs_char *cs_str;
 typedef cs_byte cs_bool;
-typedef cs_byte Order;
 typedef cs_byte BlockID;
 typedef cs_int8 ClientID;
 typedef cs_int16 WorldID;
-// TODO: Придумать, как пернести это чудо в protocol.h
+typedef struct {
+	cs_int16 r, g, b, a;
+} Color4;
+
+typedef struct {
+	cs_int16 r, g, b;
+} Color3;
+
 typedef struct _CPEExt {
 	cs_str name; // Название дополнения
 	cs_int32 version; // Его версия
 	cs_uint32 hash; // crc32 хеш названия дополнения
 	struct _CPEExt *next; // Следующее дополнение
 } CPEExt;
+
+typedef struct _CustomParticle {
+	cs_byte id;
+	struct TextureRec {cs_byte U1, V1, U2, V2;} rec;
+	Color3 tintCol;
+	cs_byte frameCount, particleCount, collideFlags;
+	cs_bool fullBright;
+	cs_float size, sizeVariation, spread, speed,
+	gravity, baseLifetime, lifetimeVariation;
+} CustomParticle;
 
 #ifdef PLUGIN_BUILD
 EXP cs_bool Plugin_Load(void);
@@ -108,19 +124,10 @@ EXP extern cs_int32 Plugin_ApiVer, Plugin_Version;
 #define MAX_CLIENT_PPS 128
 #define MAX_CFG_LEN 128
 #define MAX_CLIENTS 127
-#define MAX_PACKETS 256
 #define MAX_WORLDS 256
 #define MAX_EVENTS 128
 
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
 #define MODE(b) Lang_Get(Lang_SwGrp, b > 0)
 #define BIT(b) (1U << b)
-
-typedef struct {
-	cs_int16 r, g, b, a;
-} Color4;
-
-typedef struct {
-	cs_int16 r, g, b;
-} Color3;
 #endif

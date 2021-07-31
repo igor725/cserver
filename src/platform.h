@@ -10,7 +10,7 @@ typedef void Waitable;
 typedef CRITICAL_SECTION Mutex;
 typedef SOCKET Socket;
 typedef HANDLE *Thread, *ITER_DIR;
-#elif defined(POSIX)
+#elif defined(UNIX)
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/time.h>

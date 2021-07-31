@@ -57,6 +57,7 @@ return;
 #define EXT_MOREBLOCKS 0xA349DCECul
 #define EXT_SETSPAWN 0x9149FD59ul
 #define EXT_VELCTRL 0xF8DF4FF7ul
+#define EXT_PARTICLE 0x0D732743ul
 
 typedef cs_bool(*packetHandler)(Client *client, cs_str data);
 
@@ -135,7 +136,7 @@ cs_bool CPEHandler_PlayerClick(Client *client, cs_str data);
 void CPE_WriteInfo(Client *client);
 void CPE_WriteExtEntry(Client *client, CPEExt *ext);
 void CPE_WriteClickDistance(Client *client, cs_int16 dist);
-void CPE_WriteInventoryOrder(Client *client, Order order, BlockID block);
+void CPE_WriteInventoryOrder(Client *client, cs_byte order, BlockID block);
 void CPE_WriteHoldThis(Client *client, BlockID block, cs_bool preventChange);
 void CPE_WriteSetHotKey(Client *client, cs_str action, cs_int32 keycode, cs_int8 keymod);
 void CPE_WriteAddName(Client *client, Client *other);
@@ -150,9 +151,11 @@ void CPE_WriteUndefineBlock(Client *client, BlockID id);
 void CPE_WriteDefineExBlock(Client *client, BlockDef *block);
 void CPE_WriteBulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
 void CPE_WriteSetTextColor(Client *client, Color4* color, cs_char code);
-void CPE_WriteSetHotBar(Client *client, Order order, BlockID block);
+void CPE_WriteSetHotBar(Client *client, cs_byte order, BlockID block);
 void CPE_WriteSetSpawnPoint(Client *client, Vec *pos, Ang *ang);
 void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_bool mode);
+void CPE_WriteDefineEffect(Client *client, CustomParticle *e);
+void CPE_WriteSpawnEffect(Client *client, cs_byte id, Vec *pos, Vec *origin);
 void CPE_WriteWeatherType(Client *client, cs_int8 type);
 void CPE_WriteTexturePack(Client *client, cs_str url);
 void CPE_WriteMapProperty(Client *client, cs_byte property, cs_int32 value);

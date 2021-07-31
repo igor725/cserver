@@ -576,7 +576,7 @@ cs_bool Client_SetWeather(Client *client, cs_int8 type) {
 	return false;
 }
 
-cs_bool Client_SetInvOrder(Client *client, Order order, BlockID block) {
+cs_bool Client_SetInvOrder(Client *client, cs_byte order, BlockID block) {
 	if(!Block_IsValid(block)) return false;
 
 	if(Client_GetExtVer(client, EXT_INVORDER)) {
@@ -603,7 +603,7 @@ cs_bool Client_SetHotkey(Client *client, cs_str action, cs_int32 keycode, cs_int
 	return false;
 }
 
-cs_bool Client_SetHotbar(Client *client, Order pos, BlockID block) {
+cs_bool Client_SetHotbar(Client *client, cs_byte pos, BlockID block) {
 	if(!Block_IsValid(block) || pos > 8) return false;
 	if(Client_GetExtVer(client, EXT_SETHOTBAR)) {
 		CPE_WriteSetHotBar(client, pos, block);
@@ -651,6 +651,22 @@ cs_bool Client_SetSpawn(Client *client, Vec *pos, Ang *ang) {
 cs_bool Client_SetVelocity(Client *client, Vec *velocity, cs_bool mode) {
 	if(Client_GetExtVer(client, EXT_VELCTRL)) {
 		CPE_WriteVelocityControl(client, velocity, mode);
+		return true;
+	}
+	return false;
+}
+
+cs_bool Client_RegisterParticle(Client *client, CustomParticle *e) {
+	if(Client_GetExtVer(client, EXT_PARTICLE)) {
+		CPE_WriteDefineEffect(client, e);
+		return true;
+	}
+	return false;
+}
+
+cs_bool Client_SpawnParticle(Client *client, cs_byte id, Vec *pos, Vec *origin) {
+	if(Client_GetExtVer(client, EXT_PARTICLE)) {
+		CPE_WriteSpawnEffect(client, id, pos, origin);
 		return true;
 	}
 	return false;
@@ -967,8 +983,9 @@ cs_bool Client_Spawn(Client *client) {
 		}
 	}
 
-	pd->spawned = true;
 	Event_Call(EVT_ONSPAWN, client);
+	pd->firstSpawn = false;
+	pd->spawned = true;
 	return true;
 }
 
