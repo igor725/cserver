@@ -983,8 +983,9 @@ cs_bool Client_Spawn(Client *client) {
 		}
 	}
 
-	pd->spawned = true;
 	Event_Call(EVT_ONSPAWN, client);
+	pd->firstSpawn = false;
+	pd->spawned = true;
 	return true;
 }
 
