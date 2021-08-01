@@ -5,6 +5,7 @@ SET ARCH=%VSCMD_ARG_TGT_ARCH%
 SET DEBUG=0
 SET PROJECT_ROOT=.
 SET BUILD_PLUGIN=0
+SET ECODE=0
 
 SET SVOUTDIR=.\out\%ARCH%
 SET BINNAME=server.exe
@@ -178,8 +179,9 @@ GOTO end
 
 :compileerror
 ECHO Something went wrong :(
+SET ECODE=1
 GOTO end
 
 :end
 endlocal
-exit /B 0
+EXIT /B %ECODE%

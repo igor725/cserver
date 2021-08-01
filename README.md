@@ -34,6 +34,7 @@ NOTE: This script uses Microsoft Visual Studio to compile the project
 * ``dbg`` - Build with debug symbols
 * ``wall`` - Enable all possible warnings
 * ``wx`` - Treat warnings as errors
+* ``w0`` - Disable all warnings
 * ``od`` - Disable compiler optimizations
 * ``run`` - Start the server after compilation
 * ``runsame`` - Start the server after compilation in the same console window

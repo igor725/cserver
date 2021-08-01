@@ -3,6 +3,7 @@ if [ "$CC" = "" ]; then
 	CC="gcc"
 fi
 
+RUN=0
 DEBUG=0
 OPT="-O2"
 WARN=""
@@ -18,7 +19,8 @@ else
 fi
 PLUGIN_BUILD=0
 PLUGIN_INSTALL=0
-PLUGINS_DIR="$ROOT/out/plugins"
+SERVER_OUTROOT="$ROOT/out"
+PLUGINS_DIR="$SERVER_OUTROOT/plugins"
 
 notaplugin () {
 	echo "Looks like the specified directory is not a plugin."
@@ -63,13 +65,10 @@ do
 	if [ "$a" == "pb" ]; then PLUGIN_BUILD=1; fi
 	if [ "$a" == "pbu" ]; then PLUGIN_BUILD=2; fi
 	if [ "$a" == "wall" ]; then WARN="-Wall -Wextra -pedantic-errors"; fi
-	if [ "$a" == "nowarn" ]; then WARN="-W0"; fi
+	if [ "$a" == "w0" ]; then WARN="-W0"; fi
 	if [ "$a" == "dbg" ]; then DEBUG=1; CFLAGS="$CFLAGS -g"; OPT="-O0"; fi
-	if [ "$a" == "o0" ]; then OPT="-O0"; fi
-	if [ "$a" == "o1" ]; then OPT="-O1"; fi
-	if [ "$a" == "o2" ]; then OPT="-O2"; fi
-	if [ "$a" == "o3" ]; then OPT="-O3"; fi
-	if [ "$a" == "of" ]; then OPT="-Ofast"; fi
+	if [ "$a" == "od" ]; then OPT="-O0"; fi
+	if [[ "$a" == "run" || "$a" == "runsame" ]]; then RUN=1; fi
 done
 
 STDERR="$ROOT/out/stderr"
@@ -103,5 +102,13 @@ fi
 stderrlen=$(wc -c < "$STDERR")
 if [ $stderrlen -gt 0 ]; then
 	echo -e "Compiler stderr:\n$(cat $STDERR)"
+	exit 1
 fi
+
+if [ $RUN -eq 1 ]; then
+	pushd $SERVER_OUTROOT
+	./server
+	popd
+fi
+
 exit 0
