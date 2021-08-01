@@ -118,6 +118,7 @@ EXP extern cs_int32 Plugin_ApiVer, Plugin_Version;
 #define MAINCFG "server.cfg"
 #define WORLD_MAGIC 0x54414457
 #define PLUGIN_API_NUM 1
+#define TICKS_PER_SECOND 60
 
 #define MAX_PLUGINS 64
 #define	MAX_CMD_OUT 1024

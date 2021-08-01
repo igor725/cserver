@@ -241,7 +241,7 @@ void Server_StartLoop(void) {
 			delta = 500;
 		}
 		Server_DoStep(delta);
-		Thread_Sleep(10);
+		Thread_Sleep(1000 / TICKS_PER_SECOND);
 	}
 }
 

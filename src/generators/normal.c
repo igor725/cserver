@@ -19,11 +19,17 @@ gen_gravel_count_mult = 1.0f / 500000;
 
 #define MAX_THREADS 8
 
+typedef struct {
+	cs_str debugname;
+	Thread handle;
+	cs_bool active;
+} WThread;
+
 static struct {
 	RNGState rnd;
 	BlockID *data;
 	SVec *dims;
-	Thread threads[MAX_THREADS];
+	WThread threads[MAX_THREADS];
 	cs_uint32 planeSize;
 	cs_uint16 *biomes, *heightMap,
 	*biomesWithTrees, biomeSizeX,
@@ -41,28 +47,35 @@ enum DefGenBiomes {
 	BIOME_WATER
 };
 
-static cs_int32 newGenThread(TFUNC func) {
+static void waitFreeThreadSlot(void) {
 	for(cs_int32 i = 0; i < MAX_THREADS; i++) {
-		if(i == MAX_THREADS-1) {
-			i = 0;
-			if(Thread_IsValid(ctx.threads[i])) {
-				Thread_Join(ctx.threads[i]);
-				ctx.threads[i] = NULL;
-			}
-		}
-		if(!Thread_IsValid(ctx.threads[i])) {
-			ctx.threads[i] = Thread_Create(func, NULL, false);
-			return i;
-		}
+		WThread *thread = &ctx.threads[i];
+		if(!thread->active) break;
+		Thread_Sleep(1000 / TICKS_PER_SECOND);
 	}
-
-	return -1;
 }
 
 static void waitAll(void) {
 	for(cs_int32 i = 0; i < MAX_THREADS; i++) {
-		if(Thread_IsValid(ctx.threads[i]))
-			Thread_Join(ctx.threads[i]);
+		WThread *thread = &ctx.threads[i];
+		if(thread->active && Thread_IsValid(thread->handle))
+			Thread_Join(thread->handle);
+	}
+}
+
+static void newGenThread(TFUNC func) {
+	for(cs_int32 i = 0; i < MAX_THREADS; i++) {
+		WThread *thread = &ctx.threads[i];
+		if(i == MAX_THREADS-1 && thread->active) {
+			waitFreeThreadSlot();
+			newGenThread(func);
+			return;
+		}
+
+		if(!thread->active) {
+			thread->handle = Thread_Create(func, thread, false);
+			thread->active = true;
+		}
 	}
 }
 
@@ -163,7 +176,8 @@ static cs_uint16 getHeight(cs_uint16 x, cs_uint16 z) {
 #define getBlock(vec) ctx.data[(vec.y * ctx.dims->z + vec.z) * ctx.dims->x + vec.x]
 
 THREAD_FUNC(terrainThread) {
-	(void)param;
+	WThread *self = (WThread *)param;
+	self->debugname = "Terrain worker";
 
 	cs_uint16 height1, heightStone1;
 	enum DefGenBiomes biome;
@@ -281,11 +295,13 @@ THREAD_FUNC(terrainThread) {
 		}
 	}
 
+	self->active = false;
 	return 0;
 }
 
 THREAD_FUNC(cavesThread) {
-	(void)param;
+	WThread *self = (WThread *)param;
+	self->debugname = "Caves worker";
 
 	cs_uint16 caveLength = (cs_uint16)Random_Range(&ctx.rnd, gen_cave_min_length, gen_cave_max_length);
 
@@ -341,6 +357,7 @@ THREAD_FUNC(cavesThread) {
 		}
 	}
 
+	self->active = false;
 	return 0;
 }
 
@@ -373,7 +390,8 @@ static void placeTree(SVec treePos) {
 }
 
 THREAD_FUNC(treesThread) {
-	(void)param;
+	WThread *self = (WThread *)param;
+	self->debugname = "Trees worker";
 
 	ctx.biomesWithTrees = Memory_Alloc(2, ctx.biomeSize);
 
@@ -387,6 +405,8 @@ THREAD_FUNC(treesThread) {
 	cs_uint32 trees = ctx.dims->x * ctx.dims->z;
 	trees = (cs_uint32)((cs_float)trees * gen_trees_count_mult);
 	trees = (cs_uint32)((cs_float)trees * ((cs_float)biomesWithTreesNum / ctx.biomeSize));
+	trees /= 2;
+	
 	for(cs_uint32 i = 0; i < trees; i++) {
 		cs_uint16 randBiome = (cs_uint16)Random_Range(&ctx.rnd, 1, biomesWithTreesNum);
 		SVec treePos;
@@ -417,6 +437,7 @@ THREAD_FUNC(treesThread) {
 		}
 	}
 
+	self->active = false;
 	return 0;
 }
 
@@ -448,10 +469,10 @@ static cs_bool normalgenerator(World *world, void *data) {
 	Memory_Fill(ctx.data, ctx.planeSize, BLOCK_BEDROCK);
 	Memory_Fill(ctx.data + ctx.planeSize, ctx.planeSize * (ctx.heightStone - 1), BLOCK_STONE);
 	newGenThread(terrainThread);
-	for(cs_uint16 i = 0; i < ctx.numCaves; i++)
-		newGenThread(cavesThread);
 	if(gen_enable_trees)
 		newGenThread(treesThread);
+	for(cs_uint16 i = 0; i < ctx.numCaves; i++)
+		newGenThread(cavesThread);
 	waitAll();
 
 	WorldInfo *wi = &world->info;
