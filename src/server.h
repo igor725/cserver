@@ -1,5 +1,6 @@
 #ifndef SERVER_H
 #define SERVER_H
+#include "platform.h"
 #include "config.h"
 
 #define CFG_SERVERIP_KEY "server-ip"

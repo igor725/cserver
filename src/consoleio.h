@@ -7,6 +7,6 @@
 #define CONSOLEIO_TERMINATE SIGINT
 #endif
 
-void ConsoleIO_Init(void);
+cs_bool ConsoleIO_Init(void);
 cs_bool ConsoleIO_Handler(cs_uint32 signal);
 #endif

@@ -105,8 +105,20 @@ IF "%BUILD_PLUGIN%"=="1" (
 	IF NOT EXIST !PROJECT_ROOT!\src GOTO notaplugin
 	ECHO Building plugin: %PLUGNAME%
 ) else (
-	SET MSVC_LIBS=%MSVC_LIBS% ws2_32.lib wininet.lib advapi32.lib zdll.lib
+	SET ZLIB_STATIC=z.lib
+	FOR /F "tokens=* USEBACKQ" %%F IN (`DIR /B .\zlib\lib%ARCH%\*.lib`) DO (
+		SET ZLIB_STATIC=%%F
+	)
+	SET ZLIB_DYNAMIC=!ZLIB_STATIC:~0,-3!dll
+	SET ZLIB_DEBUG=!ZLIB_STATIC:~0,-3!pdb
+	SET MSVC_LIBS=%MSVC_LIBS% ws2_32.lib wininet.lib advapi32.lib !ZLIB_STATIC!
 	SET OUTDIR=%SVOUTDIR%
+	IF NOT EXIST "%SVOUTDIR%\!ZLIB_DYNAMIC!" (
+		COPY ".\zlib\lib%ARCH%\!ZLIB_DYNAMIC!" "%SVOUTDIR%"
+	)
+	IF "%DEBUG%"=="1" IF NOT EXIST "%SVOUTDIR%\!ZLIB_DEBUG!" (
+		COPY ".\zlib\lib%ARCH%\!ZLIB_DEBUG!" "%SVOUTDIR%"
+	)
 )
 
 SET BINPATH=%OUTDIR%\%BINNAME%

@@ -22,9 +22,7 @@ cs_bool ConsoleIO_Handler(cs_uint32 signal) {
   return true;
 }
 
-void ConsoleIO_Init(void) {
+cs_bool ConsoleIO_Init(void) {
   Thread_Create(ConsoleIO_Thread, NULL, true);
-	if(!Console_BindSignalHandler(ConsoleIO_Handler)) {
-    Log_Warn("Can't bind CtrlHandler :(");
-  }
+	return Console_BindSignalHandler(ConsoleIO_Handler);
 }

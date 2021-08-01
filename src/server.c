@@ -209,7 +209,8 @@ cs_bool Server_Init(void) {
 	Thread_Create(AcceptThread, NULL, true);
 	Bind(ip, port);
 	Event_Call(EVT_POSTSTART, NULL);
-	ConsoleIO_Init();
+	if(ConsoleIO_Init())
+		Log_Info(Lang_Get(Lang_ConGrp, 8));
 	return true;
 }
 

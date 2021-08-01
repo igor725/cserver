@@ -16,7 +16,7 @@ cs_bool Lang_Init(void) {
 	Lang_Set(Lang_ErrGrp, 3, "Heartbeat error: %s.");
 	Lang_Set(Lang_ErrGrp, 4, "Not a websocket connection.");
 
-	Lang_ConGrp = Lang_NewGroup(8);
+	Lang_ConGrp = Lang_NewGroup(9);
 	if(!Lang_ConGrp) return false;
 	Lang_Set(Lang_ConGrp, 0, "Server started on %s:%d.");
 	Lang_Set(Lang_ConGrp, 1, "Last server tick took %dms!");
@@ -24,8 +24,9 @@ cs_bool Lang_Init(void) {
 	Lang_Set(Lang_ConGrp, 3, "Server play URL: %s.");
 	Lang_Set(Lang_ConGrp, 4, "Kicking players...");
 	Lang_Set(Lang_ConGrp, 5, "Saving worlds...");
-	Lang_Set(Lang_ConGrp, 6, "Plugin \"%s\" is deprecated. Server uses PluginAPI v%03d, but plugin compiled for v%03d.");
-	Lang_Set(Lang_ConGrp, 7, "Please upgrade your server software. Plugin \"%s\" compiled for PluginAPI v%03d, but server uses v%d.");
+	Lang_Set(Lang_ConGrp, 6, "Plugin \"%s\" is deprecated. Server uses PluginAPI v%03d but plugin compiled for v%03d.");
+	Lang_Set(Lang_ConGrp, 7, "Please upgrade your server software. Plugin \"%s\" compiled for PluginAPI v%03d but server uses v%d.");
+	Lang_Set(Lang_ConGrp, 8, "Press Ctrl+C to stop the server.");
 
 	Lang_KickGrp = Lang_NewGroup(11);
 	if(!Lang_KickGrp) return false;
