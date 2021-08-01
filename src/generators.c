@@ -7,6 +7,7 @@
 #include "generators/flat.c"
 #include "generators/normal.c"
 
+KListField *Generators_List = NULL;
 struct GenRoutineStruct {GeneratorRoutine func;};
 
 cs_bool Generators_Init(void) {
