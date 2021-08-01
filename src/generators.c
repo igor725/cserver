@@ -5,13 +5,13 @@
 #include "generators.h"
 
 #include "generators/flat.c"
-#include "generators/default.c"
+#include "generators/normal.c"
 
 struct GenRoutineStruct {GeneratorRoutine func;};
 
 cs_bool Generators_Init(void) {
 	return Generators_Add("flat", flatgenerator) &&
-	Generators_Add("default", defaultgenerator);
+	Generators_Add("normal", normalgenerator);
 }
 
 cs_bool Generators_Add(cs_str name, GeneratorRoutine gr) {

@@ -41,6 +41,7 @@ NOTE: This script uses Microsoft Visual Studio to compile the project
 * ``install`` - Copy plugin binary to the ``plugins`` directory after compilation (Can be used only with ``pb``)
 
 ### Notes
+* My main OS - Windows 10. It means the Linux part of the server not well tested.
 * By default the server doesn't have any chat commands, build the cs-base plugin to add them.
 * Your directory should have the following structure in order to compile plugins
 ```

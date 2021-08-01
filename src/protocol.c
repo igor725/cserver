@@ -553,7 +553,7 @@ cs_bool Handler_Message(Client *client, cs_str data) {
 	}
 
 	if(Event_OnMessage(client, messptr, &type)) {
-		cs_char formatted[320] = {0};
+		cs_char formatted[320];
 		String_FormatBuf(formatted, 320, CHATLINE, client->playerData->name, messptr);
 
 		if(*messptr == '/') {
