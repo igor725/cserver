@@ -15,10 +15,10 @@
 #define CFG_HEARTBEATDELAY_KEY "heartbeat-delay"
 #define CFG_HEARTBEAT_PUBLIC_KEY "heartbeat-public"
 
-VAR cs_bool Server_Active;
-VAR CStore *Server_Config;
-VAR cs_uint64 Server_StartTime;
-Socket Server_Socket;
+VAR extern cs_bool Server_Active;
+VAR extern CStore *Server_Config;
+VAR extern cs_uint64 Server_StartTime;
+extern Socket Server_Socket;
 
 cs_bool Server_Init(void);
 void Server_DoStep(cs_int32 delta);

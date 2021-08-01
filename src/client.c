@@ -14,6 +14,8 @@
 
 AListField *headAssocType = NULL,
 *headCGroup = NULL;
+Client *Broadcast = NULL;
+Client *Clients_List[MAX_CLIENTS] = {0};
 
 static AListField *AGetType(cs_uint16 type) {
 	AListField *ptr = NULL;

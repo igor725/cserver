@@ -5,7 +5,7 @@
 #include "plugin.h"
 #include "lang.h"
 
-Plugin *pluginsList[MAX_PLUGINS];
+Plugin *pluginsList[MAX_PLUGINS] = {0};
 
 cs_bool Plugin_LoadDll(cs_str name) {
 	cs_char path[256], error[512];

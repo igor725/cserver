@@ -7,6 +7,8 @@
 #include "event.h"
 #include <zlib.h>
 
+World *Worlds_List[MAX_WORLDS] = {0};
+
 void Worlds_SaveAll(cs_bool join, cs_bool unload) {
 	for(cs_int32 i = 0; i < MAX_WORLDS; i++) {
 		World *world = Worlds_List[i];

@@ -2,6 +2,10 @@
 #include "platform.h"
 #include "lang.h"
 
+LGroup *Lang_SwGrp = NULL, *Lang_ErrGrp = NULL,
+*Lang_ConGrp = NULL, *Lang_KickGrp = NULL,
+*Lang_CmdGrp = NULL, *Lang_DbgGrp = NULL;
+
 cs_bool Lang_Init(void) {
 	Lang_SwGrp = Lang_NewGroup(2);
 	if(!Lang_SwGrp) return false;

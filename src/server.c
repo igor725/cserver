@@ -15,6 +15,11 @@
 #include "timer.h"
 #include "consoleio.h"
 
+cs_bool Server_Active = false;
+CStore *Server_Config = NULL;
+cs_uint64 Server_StartTime = 0;
+Socket Server_Socket = 0;
+
 THREAD_FUNC(ClientInitThread) {
 	Client *tmp = (Client *)param;
 	cs_int8 maxConnPerIP = Config_GetInt8ByKey(Server_Config, CFG_CONN_KEY),
