@@ -5,8 +5,18 @@
 #include "lang.h"
 #include "hash.h"
 
-#define WS_RESP "HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Protocol: %s\r\nSec-WebSocket-Accept: %s\r\n\r\n"
-#define WS_ERRRESP "HTTP/1.1 %d %s\r\nConnection: Close\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s"
+cs_str ws_resp =
+"HTTP/1.1 101 Switching Protocols\r\n"
+"Connection: Upgrade\r\n"
+"Upgrade: websocket\r\n"
+"Sec-WebSocket-Protocol: %s\r\n"
+"Sec-WebSocket-Accept: %s\r\n\r\n";
+
+cs_str ws_err =
+"HTTP/1.1 %d %s\r\n"
+"Connection: Close\r\n"
+"Content-Type: text/plain\r\n"
+"Content-Length: %d\r\n\r\n";
 
 cs_bool WebSock_DoHandshake(WebSock *ws) {
 	if(!ws->proto) return false;
@@ -18,7 +28,7 @@ cs_bool WebSock_DoHandshake(WebSock *ws) {
 	if(Socket_ReceiveLine(ws->sock, line, 1024)) {
 		cs_str httpver = String_LastChar(line, 'H');
 		if(!httpver || !String_CaselessCompare(httpver, "HTTP/1.1")) {
-			rsplen = String_FormatBuf(line, 1024, WS_ERRRESP, 505, "HTTP Version Not Supported", 0, "");
+			rsplen = String_FormatBuf(line, 1024, ws_err, 505, "HTTP Version Not Supported", 0);
 			Socket_Send(ws->sock, line, rsplen);
 			return false;
 		}
@@ -54,13 +64,15 @@ cs_bool WebSock_DoHandshake(WebSock *ws) {
 		SHA1_Final(hash, &ctx);
 		String_ToB64(hash, 20, b64);
 
-		rsplen = String_FormatBuf(line, 1024, WS_RESP, ws->proto, b64);
+		rsplen = String_FormatBuf(line, 1024, ws_resp, ws->proto, b64);
 		return Socket_Send(ws->sock, line, rsplen) == rsplen;
 	}
 
 	cs_str str = Lang_Get(Lang_ErrGrp, 4);
-	rsplen = String_FormatBuf(line, 1024, WS_ERRRESP, 400, "Bad request", String_Length(str), str);
+	cs_int32 len = (cs_int32)String_Length(str);
+	rsplen = String_FormatBuf(line, 1024, ws_err, 400, "Bad request", len);
 	Socket_Send(ws->sock, line, rsplen);
+	Socket_Send(ws->sock, str, len);
 	return false;
 }
 
@@ -117,9 +129,8 @@ cs_bool WebSock_ReceiveFrame(WebSock *ws) {
 			cs_int32 len = Socket_Receive(ws->sock, ws->recvbuf, ws->plen, MSG_WAITALL);
 
 			if(len == ws->plen) {
-				for(cs_int32 i = 0; i < len; i++) {
+				for(cs_int32 i = 0; i < len; i++)
 					ws->recvbuf[i] ^= ws->mask[i % 4];
-				}
 			} else {
 				ws->error = WS_ERR_PAYLOAD_LEN_MISMATCH;
 				return false;

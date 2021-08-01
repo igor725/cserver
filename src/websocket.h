@@ -1,6 +1,6 @@
 #ifndef WEBSOCKET_H
 #define WEBSOCKET_H
-enum {
+enum WebSockState {
 	WS_ST_HDR,
 	WS_ST_PLEN,
 	WS_ST_MASK,
@@ -8,7 +8,7 @@ enum {
 	WS_ST_DONE
 };
 
-enum {
+enum WebSockErrors {
 	WS_ERR_SUCC,
 	WS_ERR_UNKNOWN,
 	WS_ERR_MASK,
@@ -16,14 +16,14 @@ enum {
 	WS_ERR_PAYLOAD_LEN_MISMATCH,
 };
 
-typedef struct _WebSock {
+typedef struct {
 	Socket sock;
 	cs_str proto;
 	cs_char *recvbuf,
 	header[2],
 	mask[4];
-	cs_int32 state,
-	error;
+	enum WebSockState state;
+	enum WebSockErrors error;
 	cs_uint16 plen;
 	cs_byte opcode;
 	cs_bool done;
