@@ -17,7 +17,7 @@ gen_caves_count_mult = 2.0f / 700000.0f,
 gen_houses_count_mult = 1.0f / 70000.0f,
 gen_gravel_count_mult = 1.0f / 500000;
 
-#define MAX_THREADS 64
+#define MAX_THREADS 8
 
 static struct {
 	RNGState rnd;
@@ -43,7 +43,7 @@ enum DefGenBiomes {
 
 static cs_int32 newGenThread(TFUNC func) {
 	for(cs_int32 i = 0; i < MAX_THREADS; i++) {
-		if(i > 4) {
+		if(i == MAX_THREADS-1) {
 			i = 0;
 			if(Thread_IsValid(ctx.threads[i])) {
 				Thread_Join(ctx.threads[i]);
@@ -77,14 +77,14 @@ static void genBiomes(void) {
 	ctx.biomeSizeX = (ctx.dims->x / gen_biome_step) + 2;
 	ctx.biomeSizeZ = (ctx.dims->z / gen_biome_step) + 2;
 	ctx.biomeSize = ctx.biomeSizeX * ctx.biomeSizeZ;
-	ctx.biomesNum = ctx.dims->x * ctx.dims->z / gen_biome_step / gen_biome_radius / 64 + 1;
+	ctx.biomesNum = ctx.dims->x * ctx.dims->z / gen_biome_step / gen_biome_radius / 64;
 	ctx.biomes = Memory_Alloc(2, ctx.biomeSize);
 	for(cs_uint16 i = 0; i < ctx.biomeSize; i++)
 		ctx.biomes[i] = BIOME_NORMAL;
 
-	for(cs_uint16 i = 0; i <= ctx.biomesNum; i++) {
-		cs_uint16 x = (cs_uint16)Random_Next(&ctx.rnd, ctx.biomeSizeX - 1),
-		z = (cs_uint16)Random_Next(&ctx.rnd, ctx.biomeSizeZ - 1),
+	for(cs_uint16 i = 0; i < ctx.biomesNum; i++) {
+		cs_uint16 x = (cs_uint16)Random_Next(&ctx.rnd, ctx.biomeSizeX),
+		z = (cs_uint16)Random_Next(&ctx.rnd, ctx.biomeSizeZ),
 		biome = (cs_uint16)Random_Range(&ctx.rnd, BIOME_NORMAL, BIOME_WATER);
 
 		for(cs_int16 dx = -gen_biome_radius; dx <= gen_biome_radius; dx++) {
@@ -421,7 +421,6 @@ THREAD_FUNC(treesThread) {
 }
 
 static cs_bool normalgenerator(World *world, void *data) {
-	(void)data;
 	if(world->info.dimensions.x < 32 ||
 	world->info.dimensions.z < 32 ||
 	world->info.dimensions.y < 32)
@@ -439,7 +438,11 @@ static cs_bool normalgenerator(World *world, void *data) {
 	ctx.gravelVeinSize = min(gen_gravel_vein_size, ctx.heightGrass / 3);
 	ctx.numCaves = (cs_uint16)((cs_float)(ctx.dims->x * ctx.heightGrass * ctx.dims->z) * gen_caves_count_mult);
 
-	Random_SeedFromTime(&ctx.rnd);
+	if(!data)
+		Random_SeedFromTime(&ctx.rnd);
+	else
+		Random_Seed(&ctx.rnd, *(cs_int32 *)data);
+
 	genBiomes();
 	genHeightMap();
 	Memory_Fill(ctx.data, ctx.planeSize, BLOCK_BEDROCK);
