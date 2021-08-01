@@ -27,14 +27,6 @@ notaplugin () {
 	exit 1;
 }
 
-dowait () {
-	wait $1
-	if [ $? -ne 0 ]; then
-		echo -ne "error\nCompiler errors:\n$(cat $STDERR)\n"
-		exit 1
-	fi
-}
-
 for a in "$@"
 do
 	if [ $PLUGIN_BUILD -ne 0 ]; then
@@ -84,6 +76,10 @@ fi
 
 > $STDERR
 $CC $CFLAGS $COMMIT_SHA $WARN $OPT -I$ROOT/src $ROOT/src/*.c -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR
+if [ $? -ne 0 ]; then
+	echo -ne "error\nCompiler errors:\n$(cat $STDERR)\n"
+	exit 1
+fi
 
 if [ $DEBUG -eq 0 ]; then
 	echo -ne "done\nStripping..."
