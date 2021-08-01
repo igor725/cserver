@@ -33,6 +33,10 @@ NOTE: This script uses Microsoft Visual Studio to compile the project
 * ``pbu`` - Pull plugin repository and build it (This argument is used instead of ``pb``)
 * ``dbg`` - Build with debug symbols
 * ``wall`` - Enable all possible warnings
+* ``wx`` - Treat warnings as errors
+* ``od`` - Disable compiler optimizations
+* ``run`` - Start the server after compilation
+* ``runsame`` - Start the server after compilation in the same console window
 * ``install`` - Copy plugin binary to the ``plugins`` directory after compilation (Can be used only with ``pb``)
 
 ### Notes

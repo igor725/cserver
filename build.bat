@@ -2,7 +2,6 @@
 setlocal enableextensions enabledelayedexpansion
 
 SET ARCH=%VSCMD_ARG_TGT_ARCH%
-SET CLEAN=0
 SET DEBUG=0
 SET PROJECT_ROOT=.
 SET BUILD_PLUGIN=0
@@ -30,15 +29,10 @@ IF %ERRORLEVEL% NEQ 0 (
 :argloop
 IF "%1"=="" GOTO argsdone
 IF "%1"=="cls" cls
-IF "%1"=="cloc" GOTO cloc
-IF "%1"=="debug" SET DEBUG=1
 IF "%1"=="dbg" SET DEBUG=1
 IF "%1"=="run" SET RUNMODE=0
-IF "%1"=="onerun" SET RUNMODE=1
-IF "%1"=="clean" SET CLEAN=1
-IF "%1"=="o2" SET OPT_LEVEL=/O2
-IF "%1"=="o1" SET OPT_LEVEL=/O1
-IF "%1"=="o0" SET OPT_LEVEL=/Od
+IF "%1"=="runsame" SET RUNMODE=1
+IF "%1"=="od" SET OPT_LEVEL=/Od
 IF "%1"=="wall" SET WARN_LEVEL=/Wall /wd4820 /wd5045 /wd4710
 IF "%1"=="w4" SET WARN_LEVEL=/W4
 IF "%1"=="w0" SET WARN_LEVEL=/W0
@@ -105,13 +99,13 @@ IF "%BUILD_PLUGIN%"=="1" (
 	IF NOT EXIST !PROJECT_ROOT!\src GOTO notaplugin
 	ECHO Building plugin: %PLUGNAME%
 ) else (
-	SET ZLIB_STATIC=z.lib
+	SET ZLIB_LINK=z.lib
 	FOR /F "tokens=* USEBACKQ" %%F IN (`DIR /B .\zlib\lib%ARCH%\*.lib`) DO (
-		SET ZLIB_STATIC=%%F
+		SET ZLIB_LINK=%%F
 	)
-	SET ZLIB_DYNAMIC=!ZLIB_STATIC:~0,-3!dll
-	SET ZLIB_DEBUG=!ZLIB_STATIC:~0,-3!pdb
-	SET MSVC_LIBS=%MSVC_LIBS% ws2_32.lib wininet.lib advapi32.lib !ZLIB_STATIC!
+	SET ZLIB_DYNAMIC=!ZLIB_LINK:~0,-3!dll
+	SET ZLIB_DEBUG=!ZLIB_LINK:~0,-3!pdb
+	SET MSVC_LIBS=%MSVC_LIBS% ws2_32.lib wininet.lib advapi32.lib !ZLIB_LINK!
 	SET OUTDIR=%SVOUTDIR%
 	IF NOT EXIST "%SVOUTDIR%\!ZLIB_DYNAMIC!" (
 		COPY ".\zlib\lib%ARCH%\!ZLIB_DYNAMIC!" "%SVOUTDIR%"
@@ -123,10 +117,8 @@ IF "%BUILD_PLUGIN%"=="1" (
 
 SET BINPATH=%OUTDIR%\%BINNAME%
 
-IF "%CLEAN%"=="0" (
-	IF NOT EXIST !OBJDIR! MD !OBJDIR!
-	IF NOT EXIST !OUTDIR! MD !OUTDIR!
-) else GOTO clean
+IF NOT EXIST !OBJDIR! MD !OBJDIR!
+IF NOT EXIST !OUTDIR! MD !OUTDIR!
 
 IF "%BUILD_PLUGIN%"=="1" (
   SET MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DPLUGIN_BUILD /I.\src\
@@ -145,18 +137,18 @@ IF EXIST %PROJECT_ROOT%\version.rc (
 	SET MSVC_OPTS=%OBJDIR%\version.res %MSVC_OPTS%
 )
 
-set SRC_LIST=
+SET SRC_LIST=
 FOR /F "tokens=* USEBACKQ" %%A IN (`dir /b /a-d %PROJECT_ROOT%\src\*.c %PROJECT_ROOT%\src\*.cpp`) DO (
-	set SRC_LIST=!SRC_LIST! %PROJECT_ROOT%\src\%%A
+	SET SRC_LIST=!SRC_LIST! %PROJECT_ROOT%\src\%%A
 )
 CL%SRC_LIST% /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%
 
 IF "%BUILD_PLUGIN%"=="1" (
 	IF "%PLUGIN_INSTALL%"=="1" (
 		IF NOT EXIST !SVPLUGDIR! MD !SVPLUGDIR!
-		copy /y !OUTDIR!\%PLUGNAME%.dll !SVPLUGDIR!
+		COPY /Y !OUTDIR!\%PLUGNAME%.dll !SVPLUGDIR!
 		IF "%DEBUG%"=="1" (
-			copy /y !OUTDIR!\%PLUGNAME%.pdb !SVPLUGDIR!
+			COPY /Y !OUTDIR!\%PLUGNAME%.pdb !SVPLUGDIR!
 		)
 	)
   GOTO end
@@ -173,17 +165,6 @@ GOTO end
 PUSHD %OUTDIR%
 %BINNAME%
 POPD
-GOTO end
-
-:cloc
-SET CLOCPATH=.
-IF "%2" == "full" SET CLOCPATH=..
-cloc !CLOCPATH!
-GOTO end
-
-:clean
-del %OBJDIR%\*.obj %OUTDIR%\*.exe %OUTDIR%\*.dll
-del %OUTDIR%\*.lib %OUTDIR%\*.pdb %OUTDIR%\*.exp
 GOTO end
 
 :vcerror
