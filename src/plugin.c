@@ -5,7 +5,7 @@
 #include "plugin.h"
 #include "lang.h"
 
-Plugin *pluginsList[MAX_PLUGINS] = {0};
+Plugin *Plugins_List[MAX_PLUGINS] = {0};
 
 cs_bool Plugin_LoadDll(cs_str name) {
 	cs_char path[256], error[512];
@@ -44,8 +44,8 @@ cs_bool Plugin_LoadDll(cs_str name) {
 		plugin->id = -1;
 
 		for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
-			if(!pluginsList[i]) {
-				pluginsList[i] = plugin;
+			if(!Plugins_List[i]) {
+				Plugins_List[i] = plugin;
 				plugin->id = i;
 				break;
 			}
@@ -65,7 +65,7 @@ cs_bool Plugin_LoadDll(cs_str name) {
 
 Plugin *Plugin_Get(cs_str name) {
 	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
-		Plugin *ptr = pluginsList[i];
+		Plugin *ptr = Plugins_List[i];
 		if(ptr && String_Compare(ptr->name, name)) return ptr;
 	}
 	return NULL;
@@ -77,7 +77,7 @@ cs_bool Plugin_UnloadDll(Plugin *plugin) {
 	if(plugin->name)
 		Memory_Free((void *)plugin->name);
 	if(plugin->id != -1)
-		pluginsList[plugin->id] = NULL;
+		Plugins_List[plugin->id] = NULL;
 
 	DLib_Unload(plugin->lib);
 	Memory_Free(plugin);
@@ -99,7 +99,7 @@ void Plugin_LoadAll(void) {
 
 void Plugin_UnloadAll(void) {
 	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
-		Plugin *plugin = pluginsList[i];
+		Plugin *plugin = Plugins_List[i];
 		if(plugin && plugin->unload)
 			(*(pluginFunc)plugin->unload)();
 	}
