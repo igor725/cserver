@@ -39,33 +39,33 @@ THREAD_FUNC(ClientInitThread) {
 	}
 
 	cs_byte attempt = 0;
-	while(attempt < 5) {
+	while(attempt < 10) {
 		if(Socket_Receive(tmp->sock, tmp->rdbuf, 5, MSG_PEEK) == 5) {
-			if(String_CaselessCompare(tmp->rdbuf, "GET /")) {
+			if(String_CaselessCompare2(tmp->rdbuf, "GET /", 5)) {
 				WebSock *wscl = Memory_Alloc(1, sizeof(WebSock));
 				wscl->proto = "ClassiCube";
 				wscl->recvbuf = tmp->rdbuf;
 				wscl->sock = tmp->sock;
 				tmp->websock = wscl;
 				if(WebSock_DoHandshake(wscl))
-					goto client_ok;
-				else break;
-			} else goto client_ok;
+					break;
+				else attempt = 10;
+			} else break;
 		}
 		Thread_Sleep(100);
 		attempt++;
 	}
 
-	Client_Kick(tmp, Lang_Get(Lang_KickGrp, 7));
-	Client_Free(tmp);
-	return 0;
-
-	client_ok:
-	if(!Client_Add(tmp)) {
-		Client_Kick(tmp, Lang_Get(Lang_KickGrp, 1));
+	if(attempt < 10) {
+		if(!Client_Add(tmp)) {
+			Client_Kick(tmp, Lang_Get(Lang_KickGrp, 1));
+			Client_Free(tmp);
+		}
+	} else {
+		Client_Kick(tmp, Lang_Get(Lang_KickGrp, 7));
 		Client_Free(tmp);
 	}
-
+	
 	return 0;
 }
 
@@ -75,19 +75,22 @@ THREAD_FUNC(AcceptThread) {
 
 	while(Server_Active) {
 		Socket fd = Socket_Accept(Server_Socket, &caddr);
-
-		if(fd != INVALID_SOCKET) {
-			if(!Server_Active) {
-				Socket_Close(fd);
-				break;
-			}
-
-			Client *tmp = Client_New(fd, ntohl(caddr.sin_addr.s_addr));
-			if(tmp)
-				Thread_Create(ClientInitThread, tmp, true);
-			else
-				Socket_Close(fd);
+		if(fd == INVALID_SOCKET) break;
+		if(!Server_Active) {
+			Socket_Close(fd);
+			break;
 		}
+
+		Client *tmp = Client_New(fd, ntohl(caddr.sin_addr.s_addr));
+		if(tmp)
+			Thread_Create(ClientInitThread, tmp, true);
+		else
+			Socket_Close(fd);
+	}
+
+	if(Server_Active) {
+		Error_PrintSys(false);
+		Server_Active = false;
 	}
 
 	return 0;
@@ -211,11 +214,11 @@ cs_bool Server_Init(void) {
 	Server_Active = true;
 	cs_str ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
 	cs_uint16 port = Config_GetInt16ByKey(cfg, CFG_SERVERPORT_KEY);
-	Thread_Create(AcceptThread, NULL, true);
 	Bind(ip, port);
 	Event_Call(EVT_POSTSTART, NULL);
 	if(ConsoleIO_Init())
 		Log_Info(Lang_Get(Lang_ConGrp, 8));
+	Thread_Create(AcceptThread, NULL, true);
 	return true;
 }
 
