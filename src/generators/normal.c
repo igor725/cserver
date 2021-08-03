@@ -80,17 +80,11 @@ static void newGenThread(TFUNC func) {
 	}
 }
 
-static void doCleanUp(void) {
-	if(ctx.biomes) Memory_Free(ctx.biomes);
-	if(ctx.heightMap) Memory_Free(ctx.heightMap);
-	if(ctx.biomesWithTrees) Memory_Free(ctx.biomesWithTrees);
-}
-
 static void genBiomesAndHeightmap(void) {
 	ctx.biomeSizeX = (ctx.dims->x / gen_biome_step) + 2;
 	ctx.biomeSizeZ = (ctx.dims->z / gen_biome_step) + 2;
 	ctx.biomeSize = ctx.biomeSizeX * ctx.biomeSizeZ;
-	ctx.biomesNum = ctx.dims->x * ctx.dims->z / gen_biome_step / gen_biome_radius / 64;
+	ctx.biomesNum = (cs_uint16)ctx.planeSize / gen_biome_step / gen_biome_radius / 64;
 	ctx.biomes = Memory_Alloc(2, ctx.biomeSize);
 	ctx.heightMap = Memory_Alloc(2, ctx.biomeSize);
 	for(cs_uint16 i = 0; i < ctx.biomeSize; i++)
@@ -362,8 +356,7 @@ THREAD_FUNC(oresThread) {
 	WThread *self = (WThread *)param;
 	self->debugname = "Ores worker";
 
-	cs_uint32 oreCount = (cs_uint32)((cs_float)(ctx.dims->x * ctx.dims->y *
-	ctx.dims->z) * gen_ores_count_mult);
+	cs_uint32 oreCount = (cs_uint32)((cs_float)(ctx.planeSize * ctx.dims->y) * gen_ores_count_mult);
 
 	SVec pos, tmp;
 	for(; oreCount > 0; oreCount--) {
@@ -432,7 +425,7 @@ THREAD_FUNC(treesThread) {
 			ctx.biomesWithTrees[biomesWithTreesNum++] = i;
 	}
 
-	cs_uint32 trees = ctx.dims->x * ctx.dims->z;
+	cs_uint32 trees = ctx.planeSize;
 	trees = (cs_uint32)((cs_float)trees * gen_trees_count_mult);
 	trees = (cs_uint32)((cs_float)trees * ((cs_float)biomesWithTreesNum / ctx.biomeSize));
 
@@ -470,6 +463,12 @@ THREAD_FUNC(treesThread) {
 	return 0;
 }
 
+static void doCleanUp(void) {
+	if(ctx.biomes) Memory_Free(ctx.biomes);
+	if(ctx.heightMap) Memory_Free(ctx.heightMap);
+	if(ctx.biomesWithTrees) Memory_Free(ctx.biomesWithTrees);
+}
+
 static cs_bool normalgenerator(World *world, void *data) {
 	(void)data;
 	if(world->info.dimensions.x < 32 ||
@@ -490,13 +489,17 @@ static cs_bool normalgenerator(World *world, void *data) {
 	ctx.heightStone = ctx.heightGrass - 3;
 
 	ctx.gravelVeinSize = min(gen_gravel_vein_size, ctx.heightGrass / 3);
-	ctx.numCaves = (cs_uint16)((cs_float)(ctx.dims->x * ctx.heightGrass * ctx.dims->z) * gen_caves_count_mult);
+	if(gen_enable_caves)
+		ctx.numCaves = (cs_uint16)((cs_float)(ctx.planeSize * ctx.heightGrass) * gen_caves_count_mult);
+	else
+		ctx.numCaves = 0;
 
 	genBiomesAndHeightmap();
 	Memory_Fill(ctx.data, ctx.planeSize, BLOCK_BEDROCK);
 	Memory_Fill(ctx.data + ctx.planeSize, ctx.planeSize * (ctx.heightStone - 1), BLOCK_STONE);
+
 	newGenThread(terrainThread);
-	if(gen_enable_caves)
+	if(gen_enable_ores)
 		newGenThread(oresThread);
 	if(gen_enable_trees)
 		newGenThread(treesThread);
