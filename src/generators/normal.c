@@ -86,12 +86,13 @@ static void doCleanUp(void) {
 	if(ctx.biomesWithTrees) Memory_Free(ctx.biomesWithTrees);
 }
 
-static void genBiomes(void) {
+static void genBiomesAndHeightmap(void) {
 	ctx.biomeSizeX = (ctx.dims->x / gen_biome_step) + 2;
 	ctx.biomeSizeZ = (ctx.dims->z / gen_biome_step) + 2;
 	ctx.biomeSize = ctx.biomeSizeX * ctx.biomeSizeZ;
 	ctx.biomesNum = ctx.dims->x * ctx.dims->z / gen_biome_step / gen_biome_radius / 64;
 	ctx.biomes = Memory_Alloc(2, ctx.biomeSize);
+	ctx.heightMap = Memory_Alloc(2, ctx.biomeSize);
 	for(cs_uint16 i = 0; i < ctx.biomeSize; i++)
 		ctx.biomes[i] = BIOME_NORMAL;
 
@@ -115,10 +116,6 @@ static void genBiomes(void) {
 			}
 		}
 	}
-}
-
-static void genHeightMap(void) {
-	ctx.heightMap = Memory_Alloc(2, ctx.biomeSize);
 
 	for(cs_uint16 x = 0; x < ctx.biomeSizeX; x++) {
 		for(cs_uint16 z = 0; z < ctx.biomeSizeZ; z++) {
@@ -495,8 +492,7 @@ static cs_bool normalgenerator(World *world, void *data) {
 	ctx.gravelVeinSize = min(gen_gravel_vein_size, ctx.heightGrass / 3);
 	ctx.numCaves = (cs_uint16)((cs_float)(ctx.dims->x * ctx.heightGrass * ctx.dims->z) * gen_caves_count_mult);
 
-	genBiomes();
-	genHeightMap();
+	genBiomesAndHeightmap();
 	Memory_Fill(ctx.data, ctx.planeSize, BLOCK_BEDROCK);
 	Memory_Fill(ctx.data + ctx.planeSize, ctx.planeSize * (ctx.heightStone - 1), BLOCK_STONE);
 	newGenThread(terrainThread);
