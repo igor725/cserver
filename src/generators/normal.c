@@ -12,8 +12,8 @@ gen_biome_step = 20,
 gen_biome_radius = 5;
 
 static cs_float gen_trees_count_mult = 1.0f / 250.0f,
-gen_ores_count_mult = 1.0f / 2000.0f,
-gen_caves_count_mult = 2.0f / 700000.0f,
+gen_ores_count_mult = 1.0f / 800.0f,
+gen_caves_count_mult = 2.0f / 200000.0f,
 gen_houses_count_mult = 1.0f / 70000.0f,
 gen_gravel_count_mult = 1.0f / 500000;
 
@@ -75,15 +75,15 @@ static void newGenThread(TFUNC func) {
 		if(!thread->active) {
 			thread->handle = Thread_Create(func, thread, false);
 			thread->active = true;
+			break;
 		}
 	}
 }
 
 static void doCleanUp(void) {
-	if(ctx.heightMap) Memory_Free(ctx.biomes);
+	if(ctx.biomes) Memory_Free(ctx.biomes);
 	if(ctx.heightMap) Memory_Free(ctx.heightMap);
 	if(ctx.biomesWithTrees) Memory_Free(ctx.biomesWithTrees);
-	Memory_Fill(&ctx, sizeof(ctx), 0);
 }
 
 static void genBiomes(void) {
@@ -361,6 +361,39 @@ THREAD_FUNC(cavesThread) {
 	return 0;
 }
 
+THREAD_FUNC(oresThread) {
+	WThread *self = (WThread *)param;
+	self->debugname = "Ores worker";
+
+	cs_uint32 oreCount = (cs_uint32)((cs_float)(ctx.dims->x * ctx.dims->y *
+	ctx.dims->z) * gen_ores_count_mult);
+
+	SVec pos, tmp;
+	for(; oreCount > 0; oreCount--) {
+		pos.x = (cs_int16)Random_Range(&ctx.rnd, 0, ctx.dims->x - gen_ore_vein_size);
+		pos.z = (cs_int16)Random_Range(&ctx.rnd, 0, ctx.dims->z - gen_ore_vein_size);
+		pos.y = (cs_int16)(3.0f * Random_Float(&ctx.rnd) *
+		(cs_float)min(ctx.dims->y - gen_ore_vein_size, ctx.heightGrass + 15));
+
+		BlockID id = (BlockID)Random_Range(&ctx.rnd, BLOCK_GOLD_ORE, BLOCK_COAL_ORE);
+		for(tmp.x = 0; tmp.x < gen_ore_vein_size; tmp.x++) {
+			for(tmp.y = 0; tmp.y < gen_ore_vein_size; tmp.y++) {
+				for(tmp.z = 0; tmp.z < gen_ore_vein_size; tmp.z++) {
+					pos.x += tmp.x;
+					pos.y += tmp.y;
+					pos.z += tmp.z;
+					if(pos.x < ctx.dims->x && pos.y < ctx.dims->y && pos.z < ctx.dims->z)
+						if(Random_Float(&ctx.rnd) > 0.7f && getBlock(pos) == 1)
+							setBlock(pos, id);
+				}
+			}
+		}
+	}
+
+	self->active = false;
+	return 0;
+}
+
 static void placeTree(SVec treePos) {
 	cs_uint16 baseHeight = treePos.y;
 	treePos.y += (cs_uint16)Random_Range(&ctx.rnd, 4, 6);
@@ -405,8 +438,7 @@ THREAD_FUNC(treesThread) {
 	cs_uint32 trees = ctx.dims->x * ctx.dims->z;
 	trees = (cs_uint32)((cs_float)trees * gen_trees_count_mult);
 	trees = (cs_uint32)((cs_float)trees * ((cs_float)biomesWithTreesNum / ctx.biomeSize));
-	trees /= 2;
-	
+
 	for(cs_uint32 i = 0; i < trees; i++) {
 		cs_uint16 randBiome = (cs_uint16)Random_Range(&ctx.rnd, 1, biomesWithTreesNum);
 		SVec treePos;
@@ -442,16 +474,20 @@ THREAD_FUNC(treesThread) {
 }
 
 static cs_bool normalgenerator(World *world, void *data) {
+	(void)data;
 	if(world->info.dimensions.x < 32 ||
 	world->info.dimensions.z < 32 ||
 	world->info.dimensions.y < 32)
 		return false;
+
 	Memory_Fill(&ctx, sizeof(ctx), 0);
+	Random_SeedFromTime(&ctx.rnd);
 
 	ctx.dims = &world->info.dimensions;
 	ctx.planeSize = ctx.dims->x * ctx.dims->z;
 	ctx.data = World_GetBlockArray(world, NULL);
 
+	ctx.heightLava = 7;
 	ctx.heightGrass = ctx.dims->y / 2;
 	ctx.heightWater = ctx.heightGrass;
 	ctx.heightStone = ctx.heightGrass - 3;
@@ -459,16 +495,13 @@ static cs_bool normalgenerator(World *world, void *data) {
 	ctx.gravelVeinSize = min(gen_gravel_vein_size, ctx.heightGrass / 3);
 	ctx.numCaves = (cs_uint16)((cs_float)(ctx.dims->x * ctx.heightGrass * ctx.dims->z) * gen_caves_count_mult);
 
-	if(!data)
-		Random_SeedFromTime(&ctx.rnd);
-	else
-		Random_Seed(&ctx.rnd, *(cs_int32 *)data);
-
 	genBiomes();
 	genHeightMap();
 	Memory_Fill(ctx.data, ctx.planeSize, BLOCK_BEDROCK);
 	Memory_Fill(ctx.data + ctx.planeSize, ctx.planeSize * (ctx.heightStone - 1), BLOCK_STONE);
 	newGenThread(terrainThread);
+	if(gen_enable_caves)
+		newGenThread(oresThread);
 	if(gen_enable_trees)
 		newGenThread(treesThread);
 	for(cs_uint16 i = 0; i < ctx.numCaves; i++)
@@ -485,5 +518,6 @@ static cs_bool normalgenerator(World *world, void *data) {
 	World_SetProperty(world, PROP_EDGELEVEL, ctx.heightWater + 1);
 	World_SetProperty(world, PROP_SIDEOFFSET, 0);
 	doCleanUp();
+
 	return true;
 }
