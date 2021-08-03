@@ -30,12 +30,13 @@ static struct {
 	BlockID *data;
 	SVec *dims;
 	WThread threads[MAX_THREADS];
-	cs_uint32 planeSize;
+	cs_uint32 planeSize, biomesNum,
+	biomeSize, numCaves;
 	cs_uint16 *biomes, *heightMap,
 	*biomesWithTrees, biomeSizeX,
-	biomeSizeZ, biomesNum, heightGrass,
+	biomeSizeZ, heightGrass,
 	heightWater, heightStone, heightLava,
-	gravelVeinSize, biomeSize, numCaves;
+	gravelVeinSize;
 } ctx;
 
 enum DefGenBiomes {
@@ -84,13 +85,13 @@ static void genBiomesAndHeightmap(void) {
 	ctx.biomeSizeX = (ctx.dims->x / gen_biome_step) + 2;
 	ctx.biomeSizeZ = (ctx.dims->z / gen_biome_step) + 2;
 	ctx.biomeSize = ctx.biomeSizeX * ctx.biomeSizeZ;
-	ctx.biomesNum = (cs_uint16)ctx.planeSize / gen_biome_step / gen_biome_radius / 64;
+	ctx.biomesNum = ctx.planeSize / gen_biome_step / gen_biome_radius / 64;
 	ctx.biomes = Memory_Alloc(2, ctx.biomeSize);
 	ctx.heightMap = Memory_Alloc(2, ctx.biomeSize);
 	for(cs_uint16 i = 0; i < ctx.biomeSize; i++)
 		ctx.biomes[i] = BIOME_NORMAL;
 
-	for(cs_uint16 i = 0; i < ctx.biomesNum; i++) {
+	for(cs_uint32 i = 0; i < ctx.biomesNum; i++) {
 		cs_uint16 x = (cs_uint16)Random_Next(&ctx.rnd, ctx.biomeSizeX),
 		z = (cs_uint16)Random_Next(&ctx.rnd, ctx.biomeSizeZ),
 		biome = (cs_uint16)Random_Range(&ctx.rnd, BIOME_NORMAL, BIOME_WATER);
