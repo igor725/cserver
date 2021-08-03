@@ -69,7 +69,7 @@ void *Memory_Alloc(cs_size num, cs_size size) {
 
 void *Memory_TryRealloc(void *buf, cs_size old, cs_size new) {
 	void *pNew = realloc(buf, new);
-	if(!pnew) return NULL;
+	if(!pNew) return NULL;
 	if(new > old) Memory_Zero(pNew + old, new - old);
 	return pNew;
 }
@@ -79,7 +79,7 @@ void *Memory_Realloc(void *buf, cs_size old, cs_size new) {
 	if(!ptr) {
 		Error_PrintSys(true);
 	}
-	return pNew;
+	return ptr;
 }
 
 void Memory_Free(void *ptr) {
