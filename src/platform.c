@@ -9,7 +9,7 @@ HANDLE hHeap;
 
 cs_bool Memory_Init(void) {
 	hHeap = HeapCreate(
-		HEAP_GENERATE_EXCEPTIONS | HEAP_NO_SERIALIZE,
+		HEAP_NO_SERIALIZE,
 		0x01000, 0x00000
 	);
 	return hHeap != NULL;
@@ -20,13 +20,29 @@ void Memory_Uninit(void) {
 		HeapDestroy(hHeap);
 }
 
-void *Memory_Alloc(cs_size num, cs_size size) {
+void *Memory_TryAlloc(cs_size num, cs_size size) {
 	return HeapAlloc(hHeap, HEAP_ZERO_MEMORY, num * size);
 }
 
-void *Memory_Realloc(void *buf, cs_size old, cs_size new) {
+void *Memory_Alloc(cs_size num, cs_size size) {
+	void *ptr = Memory_TryAlloc(num, size);
+	if(!ptr) {
+		Error_PrintSys(true);
+	}
+	return ptr;
+}
+
+void *Memory_TryRealloc(void *buf, cs_size old, cs_size new) {
 	(void)old;
 	return HeapReAlloc(hHeap, HEAP_ZERO_MEMORY, buf, new);
+}
+
+void *Memory_Realloc(void *buf, cs_size old, cs_size new) {
+	void *ptr = Memory_TryRealloc(buf, old, new);
+	if(!ptr) {
+		Error_PrintSys(true);
+	}
+	return ptr;
 }
 
 void Memory_Free(void *ptr) {
@@ -39,18 +55,30 @@ void Memory_Free(void *ptr) {
 cs_bool Memory_Init(void) {return true;}
 void Memory_Uninit(void) {}
 
+void *Memory_TryAlloc(cs_size num, cs_size size) {
+	return calloc(num, size);
+}
+
 void *Memory_Alloc(cs_size num, cs_size size) {
-	void *ptr;
-	if((ptr = calloc(num, size)) == NULL) {
+	void *ptr = Memory_TryAlloc(num, size);
+	if(!ptr) {
 		Error_PrintSys(true);
 	}
 	return ptr;
 }
 
+void *Memory_TryRealloc(void *buf, cs_size old, cs_size new) {
+	void *pNew = realloc(buf, new);
+	if(!pnew) return NULL;
+	if(new > old) Memory_Zero(pNew + old, new - old);
+	return pNew;
+}
+
 void *Memory_Realloc(void *buf, cs_size old, cs_size new) {
-	cs_char *pNew = realloc(buf, new);
-	if(new > old)
-		Memory_Zero(pNew + old, new - old);
+	void *ptr = Memory_TryRealloc(buf, old, new);
+	if(!ptr) {
+		Error_PrintSys(true);
+	}
 	return pNew;
 }
 
@@ -500,9 +528,6 @@ void Thread_Sleep(cs_uint32 ms) {
 #if defined(WINDOWS)
 Mutex *Mutex_Create(void) {
 	Mutex *ptr = Memory_Alloc(1, sizeof(Mutex));
-	if(!ptr) {
-		ERROR_PRINT(ET_SYS, GetLastError(), true);
-	}
 	InitializeCriticalSection(ptr);
 	return ptr;
 }
@@ -554,7 +579,6 @@ Mutex *Mutex_Create(void) {
 	cs_int32 ret = pthread_mutex_init(ptr, NULL);
 	if(ret) {
 		ERROR_PRINT(ET_SYS, ret, true);
-		return NULL;
 	}
 	return ptr;
 }

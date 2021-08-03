@@ -153,13 +153,13 @@ void Clients_KickAll(cs_str reason) {
 }
 
 Client *Client_New(Socket fd, cs_uint32 addr) {
-	Client *tmp = Memory_Alloc(1, sizeof(Client));
-	tmp->sock = fd;
-	tmp->addr = addr;
-	tmp->id = CLIENT_SELF;
-	tmp->mutex = Mutex_Create();
-	tmp->rdbuf = Memory_Alloc(134, 1);
-	tmp->wrbuf = Memory_Alloc(2048, 1);
+	Client *tmp = Memory_TryAlloc(1, sizeof(Client));
+	if(tmp) {
+		tmp->sock = fd;
+		tmp->addr = addr;
+		tmp->id = CLIENT_SELF;
+		tmp->mutex = Mutex_Create();	
+	}
 	return tmp;
 }
 
@@ -515,7 +515,6 @@ static cs_uint16 GetPacketSizeFor(Packet *packet, Client *client, cs_bool *exten
 
 void Client_Init(void) {
 	Broadcast = Memory_Alloc(1, sizeof(Client));
-	Broadcast->wrbuf = Memory_Alloc(2048, 1);
 	Broadcast->mutex = Mutex_Create();
 }
 
@@ -782,8 +781,6 @@ void Client_Free(Client *client) {
 
 	if(client->mutex) Mutex_Free(client->mutex);
 	if(client->websock) Memory_Free(client->websock);
-	if(client->rdbuf) Memory_Free(client->rdbuf);
-	if(client->wrbuf) Memory_Free(client->wrbuf);
 
 	PlayerData *pd = client->playerData;
 
