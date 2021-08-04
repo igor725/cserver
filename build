@@ -56,7 +56,8 @@ do
 	if [ "$a" == "cls" ]; then clear; fi
 	if [ "$a" == "pb" ]; then PLUGIN_BUILD=1; fi
 	if [ "$a" == "pbu" ]; then PLUGIN_BUILD=2; fi
-	if [ "$a" == "wall" ]; then WARN="-Wall -Wextra -pedantic-errors"; fi
+	if [ "$a" == "wall" ]; then WARN="-Wall -Wextra"; fi
+	if [ "$a" == "wx" ]; then CFLAGS="$CFLAGS -pedantic-errors"; fi
 	if [ "$a" == "w0" ]; then WARN="-W0"; fi
 	if [ "$a" == "dbg" ]; then DEBUG=1; CFLAGS="$CFLAGS -g"; OPT="-O0"; fi
 	if [ "$a" == "od" ]; then OPT="-O0"; fi
