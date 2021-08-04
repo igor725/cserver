@@ -137,38 +137,38 @@ cs_byte Proto_ReadStringNoAlloc(cs_str *dataptr, cs_char *dst) {
 	return end;
 }
 
-void Proto_ReadSVec(cs_str *dataptr, SVec *vec) {
-	cs_str data = *dataptr;
+void Proto_ReadSVec(cs_char **dataptr, SVec *vec) {
+	cs_char *data = *dataptr;
 	vec->x = ntohs(*(cs_int16 *)data); data += 2;
 	vec->y = ntohs(*(cs_int16 *)data); data += 2;
 	vec->z = ntohs(*(cs_int16 *)data); data += 2;
 	*dataptr = data;
 }
 
-void Proto_ReadAng(cs_str *dataptr, Ang *ang) {
-	cs_str data = *dataptr;
+void Proto_ReadAng(cs_char **dataptr, Ang *ang) {
+	cs_char *data = *dataptr;
 	ang->yaw = (((cs_float)*data++) / 256) * 360;
 	ang->pitch = (((cs_float)*data++) / 256) * 360;
 	*dataptr = data;
 }
 
-void Proto_ReadFlSVec(cs_str *dataptr, Vec *vec) {
-	cs_str data = *dataptr;
+void Proto_ReadFlSVec(cs_char **dataptr, Vec *vec) {
+	cs_char *data = *dataptr;
 	vec->x = (cs_float)ntohs(*(cs_int16 *)data) / 32; data += 2;
 	vec->y = (cs_float)ntohs(*(cs_int16 *)data) / 32; data += 2;
 	vec->z = (cs_float)ntohs(*(cs_int16 *)data) / 32; data += 2;
 	*dataptr = data;
 }
 
-void Proto_ReadFlVec(cs_str *dataptr, Vec *vec) {
-	cs_str data = *dataptr;
+void Proto_ReadFlVec(cs_char **dataptr, Vec *vec) {
+	cs_char *data = *dataptr;
 	vec->x = (cs_float)ntohl(*(cs_int32 *)data) / 32; data += 4;
 	vec->y = (cs_float)ntohl(*(cs_int32 *)data) / 32; data += 4;
 	vec->z = (cs_float)ntohl(*(cs_int32 *)data) / 32; data += 4;
 	*dataptr = data;
 }
 
-cs_bool Proto_ReadClientPos(Client *client, cs_str data) {
+cs_bool Proto_ReadClientPos(Client *client, cs_char *data) {
 	PlayerData *cpd = client->playerData;
 	Vec *vec = &cpd->position, newVec;
 	Ang *ang = &cpd->angle, newAng;

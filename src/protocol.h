@@ -78,11 +78,11 @@ API void Packet_RegisterCPE(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 
 
 API cs_byte Proto_ReadString(cs_str *data, cs_str *dstptr);
 API cs_byte Proto_ReadStringNoAlloc(cs_str *data, cs_char *dst);
-API void Proto_ReadSVec(cs_str *dataptr, SVec *vec);
-API void Proto_ReadAng(cs_str *dataptr, Ang *ang);
-API void Proto_ReadFlSVec(cs_str *dataptr, Vec *vec);
-API void Proto_ReadFlVec(cs_str *dataptr, Vec *vec);
-API cs_bool Proto_ReadClientPos(Client *client, cs_str data);
+API void Proto_ReadSVec(cs_char **dataptr, SVec *vec);
+API void Proto_ReadAng(cs_char **dataptr, Ang *ang);
+API void Proto_ReadFlSVec(cs_char **dataptr, Vec *vec);
+API void Proto_ReadFlVec(cs_char **dataptr, Vec *vec);
+API cs_bool Proto_ReadClientPos(Client *client, cs_char *data);
 
 API void Proto_WriteString(cs_char **dataptr, cs_str string);
 API void Proto_WriteFlVec(cs_char **dataptr, const Vec *vec);
