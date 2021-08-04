@@ -95,8 +95,6 @@ API void Proto_WriteByteColor3(cs_char **dataptr, const Color3* color);
 API void Proto_WriteByteColor4(cs_char **dataptr, const Color4* color);
 API cs_uint32 Proto_WriteClientPos(cs_char *data, Client *client, cs_bool extended);
 
-void Packet_RegisterDefault(void);
-
 /*
 ** Врайтеры и хендлеры
 ** ванильного протокола
@@ -113,11 +111,6 @@ void Vanilla_WriteDespawn(Client *client, Client *other);
 void Vanilla_WriteChat(Client *client, cs_byte type, cs_str mesg);
 void Vanilla_WriteKick(Client *client, cs_str reason);
 
-cs_bool Handler_Handshake(Client *client, cs_str data);
-cs_bool Handler_SetBlock(Client *client, cs_str data);
-cs_bool Handler_PosAndOrient(Client *client, cs_str data);
-cs_bool Handler_Message(Client *client, cs_str data);
-
 /*
 ** Врайтеры и хендлеры
 ** CPE протокола и прочие,
@@ -127,11 +120,6 @@ API cs_bool CPE_CheckModel(cs_int16 model);
 API void CPE_RegisterExtension(cs_str name, cs_int32 version);
 API cs_int16 CPE_GetModelNum(cs_str model);
 API cs_str CPE_GetModelStr(cs_int16 num);
-
-cs_bool CPEHandler_ExtInfo(Client *client, cs_str data);
-cs_bool CPEHandler_ExtEntry(Client *client, cs_str data);
-cs_bool CPEHandler_TwoWayPing(Client *client, cs_str data);
-cs_bool CPEHandler_PlayerClick(Client *client, cs_str data);
 
 void CPE_WriteInfo(Client *client);
 void CPE_WriteExtEntry(Client *client, CPEExt *ext);
@@ -163,4 +151,6 @@ void CPE_WriteSetEntityProperty(Client *client, Client *other, cs_int8 type, cs_
 void CPE_WriteTwoWayPing(Client *client, cs_byte direction, cs_int16 num);
 void CPE_WriteSetModel(Client *client, Client *other);
 void CPE_WriteBlockPerm(Client *client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy);
+
+void Packet_RegisterDefault(void);
 #endif // PROTOCOL_H

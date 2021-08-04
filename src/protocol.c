@@ -9,22 +9,18 @@
 #include "platform.h"
 #include "command.h"
 #include "lang.h"
-#include <zlib.h>
 
-Packet *packetsList[256];
+// crc32 declaration from zlib.h
+extern cs_ulong crc32(cs_ulong, cs_byte *, cs_uint32);
 cs_uint16 extensionsCount;
 CPEExt *headExtension;
 
 void Proto_WriteString(cs_char **dataptr, cs_str string) {
-	cs_char *data = *dataptr;
 	cs_size size = 0;
-	if(string) {
+	if(string)
 		size = min(String_Length(string), 64);
-		Memory_Copy(data, string, size);
-	}
-	if(size < 64)
-		Memory_Fill(data + size, 64 - size, 32);
-	*dataptr += 64;
+	for(cs_byte i = 0; i < 64; i++)
+		*(*dataptr)++ = i < size ? string[i] : ' ';
 }
 
 void Proto_WriteFlVec(cs_char **dataptr, const Vec *vec) {
@@ -198,95 +194,6 @@ cs_bool Proto_ReadClientPos(Client *client, cs_str data) {
 	}
 
 	return changed;
-}
-
-void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler) {
-	Packet *tmp = Memory_Alloc(1, sizeof(Packet));
-	tmp->id = id;
-	tmp->size = size;
-	tmp->handler = handler;
-	packetsList[id] = tmp;
-}
-
-void Packet_RegisterCPE(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler) {
-	Packet *tmp = packetsList[id];
-	tmp->exthash = hash;
-	tmp->extVersion = ver;
-	tmp->cpeHandler = handler;
-	tmp->extSize = size;
-	tmp->haveCPEImp = true;
-}
-
-void Packet_RegisterExtension(cs_str name, cs_int32 version) {
-	CPEExt *tmp = Memory_Alloc(1, sizeof(struct _CPEExt));
-	tmp->name = name;
-	tmp->version = version;
-	tmp->next = headExtension;
-	headExtension = tmp;
-	++extensionsCount;
-}
-
-struct extReg {
-	cs_str name;
-	cs_int32 version;
-};
-
-static const struct extReg serverExtensions[] = {
-	{"ClickDistance", 1},
-	// {"CustomBlocks", 1},
-	{"HeldBlock", 1},
-	{"EmoteFix", 1},
-	{"TextHotKey", 1},
-	{"ExtPlayerList", 2},
-	{"EnvColors", 1},
-	{"SelectionCuboid", 1},
-	{"BlockPermissions", 1},
-	{"ChangeModel", 1},
-	// {"EnvMapAppearance", 1},
-	{"EnvWeatherType", 1},
-	{"HackControl", 1},
-	{"MessageTypes", 1},
-	{"PlayerClick", 1},
-	{"LongerMessages", 1},
-	{"FullCP437", 1},
-	{"BlockDefinitions", 1},
-	{"BlockDefinitionsExt", 2},
-	{"BulkBlockUpdate", 1},
-	{"TextColors", 1},
-	{"EnvMapAspect", 1},
-	{"EntityProperty", 1},
-	{"ExtEntityPositions", 1},
-	{"TwoWayPing", 1},
-	{"InventoryOrder", 1},
-	{"FastMap", 1},
-	{"SetHotbar", 1},
-	{"SetSpawnpoint", 1},
-	{"VelocityControl", 1},
-	{"CustomParticles", 1},
-
-	{NULL, 0}
-};
-
-void Packet_RegisterDefault(void) {
-	Packet_Register(0x00, 130, Handler_Handshake);
-	Packet_Register(0x05,   8, Handler_SetBlock);
-	Packet_Register(0x08,   9, Handler_PosAndOrient);
-	Packet_Register(0x0D,  65, Handler_Message);
-
-	const struct extReg *ext;
-	for(ext = serverExtensions; ext->name; ext++) {
-		Packet_RegisterExtension(ext->name, ext->version);
-	}
-
-	Packet_Register(0x10, 66, CPEHandler_ExtInfo);
-	Packet_Register(0x11, 68, CPEHandler_ExtEntry);
-	Packet_Register(0x2B,  3, CPEHandler_TwoWayPing);
-	Packet_Register(0x22, 14, CPEHandler_PlayerClick);
-	Packet_RegisterCPE(0x08, EXT_ENTPOS, 1, 15, NULL);
-}
-
-Packet *Packet_Get(cs_byte id) {
-	return packetsList[id];
 }
 
 void Vanilla_WriteHandshake(Client *client, cs_str name, cs_str motd) {
@@ -1051,4 +958,95 @@ cs_bool CPEHandler_TwoWayPing(Client *client, cs_str data) {
 		}
 	}
 	return false;
+}
+
+Packet *packetsList[256];
+
+void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler) {
+	Packet *tmp = Memory_Alloc(1, sizeof(Packet));
+	tmp->id = id;
+	tmp->size = size;
+	tmp->handler = handler;
+	packetsList[id] = tmp;
+}
+
+void Packet_RegisterCPE(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler) {
+	Packet *tmp = packetsList[id];
+	tmp->exthash = hash;
+	tmp->extVersion = ver;
+	tmp->cpeHandler = handler;
+	tmp->extSize = size;
+	tmp->haveCPEImp = true;
+}
+
+void Packet_RegisterExtension(cs_str name, cs_int32 version) {
+	CPEExt *tmp = Memory_Alloc(1, sizeof(struct _CPEExt));
+	tmp->name = name;
+	tmp->version = version;
+	tmp->next = headExtension;
+	headExtension = tmp;
+	++extensionsCount;
+}
+
+struct extReg {
+	cs_str name;
+	cs_int32 version;
+};
+
+static const struct extReg serverExtensions[] = {
+	{"ClickDistance", 1},
+	// {"CustomBlocks", 1},
+	{"HeldBlock", 1},
+	{"EmoteFix", 1},
+	{"TextHotKey", 1},
+	{"ExtPlayerList", 2},
+	{"EnvColors", 1},
+	{"SelectionCuboid", 1},
+	{"BlockPermissions", 1},
+	{"ChangeModel", 1},
+	// {"EnvMapAppearance", 1},
+	{"EnvWeatherType", 1},
+	{"HackControl", 1},
+	{"MessageTypes", 1},
+	{"PlayerClick", 1},
+	{"LongerMessages", 1},
+	{"FullCP437", 1},
+	{"BlockDefinitions", 1},
+	{"BlockDefinitionsExt", 2},
+	{"BulkBlockUpdate", 1},
+	{"TextColors", 1},
+	{"EnvMapAspect", 1},
+	{"EntityProperty", 1},
+	{"ExtEntityPositions", 1},
+	{"TwoWayPing", 1},
+	{"InventoryOrder", 1},
+	{"FastMap", 1},
+	{"SetHotbar", 1},
+	{"SetSpawnpoint", 1},
+	{"VelocityControl", 1},
+	{"CustomParticles", 1},
+
+	{NULL, 0}
+};
+
+Packet *Packet_Get(cs_byte id) {
+	return packetsList[id];
+}
+
+void Packet_RegisterDefault(void) {
+	Packet_Register(0x00, 130, Handler_Handshake);
+	Packet_Register(0x05,   8, Handler_SetBlock);
+	Packet_Register(0x08,   9, Handler_PosAndOrient);
+	Packet_Register(0x0D,  65, Handler_Message);
+
+	const struct extReg *ext;
+	for(ext = serverExtensions; ext->name; ext++) {
+		Packet_RegisterExtension(ext->name, ext->version);
+	}
+
+	Packet_Register(0x10, 66, CPEHandler_ExtInfo);
+	Packet_Register(0x11, 68, CPEHandler_ExtEntry);
+	Packet_Register(0x2B,  3, CPEHandler_TwoWayPing);
+	Packet_Register(0x22, 14, CPEHandler_PlayerClick);
+	Packet_RegisterCPE(0x08, EXT_ENTPOS, 1, 15, NULL);
 }
