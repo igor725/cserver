@@ -320,7 +320,7 @@ void Vanilla_WriteKick(Client *client, cs_str reason) {
 	PacketWriter_End(client, 65);
 }
 
-cs_bool Handler_Handshake(Client *client, cs_str data) {
+cs_bool Handler_Handshake(Client *client, cs_char *data) {
 	if(client->playerData) return false;
 	if(*data++ != 0x07) {
 		Client_Kick(client, Lang_Get(Lang_KickGrp, 2));
@@ -380,7 +380,7 @@ static void UpdateBlock(World *world, SVec *pos, BlockID block) {
 	}
 }
 
-cs_bool Handler_SetBlock(Client *client, cs_str data) {
+cs_bool Handler_SetBlock(Client *client, cs_char *data) {
 	ValidateClientState(client, STATE_INGAME, false)
 
 	World *world = Client_GetWorld(client);
@@ -416,7 +416,7 @@ cs_bool Handler_SetBlock(Client *client, cs_str data) {
 	return true;
 }
 
-cs_bool Handler_PosAndOrient(Client *client, cs_str data) {
+cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
 	ValidateClientState(client, STATE_INGAME, false)
 
 	CPEData *cpd = client->cpeData;
@@ -437,7 +437,7 @@ cs_bool Handler_PosAndOrient(Client *client, cs_str data) {
 	return true;
 }
 
-cs_bool Handler_Message(Client *client, cs_str data) {
+cs_bool Handler_Message(Client *client, cs_char *data) {
 	ValidateClientState(client, STATE_INGAME, true)
 
 	cs_char message[65],
@@ -872,7 +872,7 @@ void CPE_WriteSpawnEffect(Client *client, cs_byte id, Vec *pos, Vec *origin) {
 	PacketWriter_End(client, 26);
 }
 
-cs_bool CPEHandler_ExtInfo(Client *client, cs_str data) {
+cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
 	ValidateClientState(client, STATE_INITIAL, false)
 
@@ -881,7 +881,7 @@ cs_bool CPEHandler_ExtInfo(Client *client, cs_str data) {
 	return true;
 }
 
-cs_bool CPEHandler_ExtEntry(Client *client, cs_str data) {
+cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
 	ValidateClientState(client, STATE_INITIAL, false)
 
@@ -911,7 +911,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_str data) {
 	return true;
 }
 
-cs_bool CPEHandler_PlayerClick(Client *client, cs_str data) {
+cs_bool CPEHandler_PlayerClick(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
 	ValidateClientState(client, STATE_INGAME, false)
 
