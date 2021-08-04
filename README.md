@@ -3,13 +3,13 @@ Another Minecraft Classic server written in C. Very buggy and dirty, but it may 
 
 ## Dependencies
 
-### On linux
-1. pthread
-2. libcrypto
-3. curl
-4. zlib
+### On Linux
+1. zlib
+2. pthread
+3. libcrypto
+4. curl
 
-### On windows
+### On Windows
 1. zlib
 2. ws2_32
 3. wininet
@@ -17,7 +17,7 @@ Another Minecraft Classic server written in C. Very buggy and dirty, but it may 
 
 ## Building
 
-### On linux
+### On Linux
 ``./build [args ...]``
 
 NOTE: This script uses gcc, but you can change this to any gcc-like compiler by setting CC environment variable (``CC=clang ./build [args ...]``).

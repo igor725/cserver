@@ -179,7 +179,7 @@ cs_bool File_ProcClose(cs_file fp) {
 cs_bool Socket_Init(void) {
 #if defined(WINDOWS)
 	WSADATA ws;
-	return WSAStartup(MAKEWORD(1, 1), &ws) != SOCKET_ERROR;
+	return WSAStartup(MAKEWORD(2, 2), &ws) != SOCKET_ERROR;
 #else
 	return true;
 #endif
