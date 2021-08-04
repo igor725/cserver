@@ -102,7 +102,7 @@ cs_uint32 Proto_WriteClientPos(cs_char *data, Client *client, cs_bool extended) 
 	return Proto_WriteVecAng(&data, &pd->position, &pd->angle, extended);
 }
 
-cs_byte Proto_ReadString(cs_str *dataptr, cs_str *dstptr) {
+cs_byte Proto_ReadString(cs_char **dataptr, cs_str *dstptr) {
 	cs_str data = *dataptr;
 	*dataptr += 64;
 	cs_byte end;
@@ -121,7 +121,7 @@ cs_byte Proto_ReadString(cs_str *dataptr, cs_str *dstptr) {
 	return end;
 }
 
-cs_byte Proto_ReadStringNoAlloc(cs_str *dataptr, cs_char *dst) {
+cs_byte Proto_ReadStringNoAlloc(cs_char **dataptr, cs_char *dst) {
 	cs_str data = *dataptr;
 	*dataptr += 64;
 	cs_byte end;
@@ -934,7 +934,7 @@ cs_bool CPEHandler_PlayerClick(Client *client, cs_char *data) {
 	return true;
 }
 
-cs_bool CPEHandler_TwoWayPing(Client *client, cs_str data) {
+cs_bool CPEHandler_TwoWayPing(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
 
 	CPEData *cpd = client->cpeData;
