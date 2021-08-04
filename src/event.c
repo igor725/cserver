@@ -71,39 +71,43 @@ cs_bool Event_Call(cs_uint32 type, void *param) {
 }
 
 cs_bool Event_OnMessage(Client *client, cs_char *message, cs_byte *type) {
-	onMessage params;
-	params.client = client;
-	params.message = message;
-	params.type = type;
+	onMessage params = {
+		.client = client,
+		.message = message,
+		.type = type
+	};
 	return Event_Call(EVT_ONMESSAGE, &params);
 }
 
 cs_bool Event_OnBlockPlace(Client *client, cs_byte mode, SVec *pos, BlockID *id) {
-	onBlockPlace params;
-	params.client = client;
-	params.mode = mode;
-	params.pos = pos;
-	params.id = id;
+	onBlockPlace params = {
+		.client = client,
+		.mode = mode,
+		.pos = pos,
+		.id = id
+	};
 	return Event_Call(EVT_ONBLOCKPLACE, &params);
 }
 
 void Event_OnHeldBlockChange(Client *client, BlockID prev, BlockID curr) {
-	onHeldBlockChange params;
-	params.client = client;
-	params.prev = prev;
-	params.curr = curr;
+	onHeldBlockChange params = {
+		.client = client,
+		.prev = prev,
+		.curr = curr
+	};
 	Event_Call(EVT_ONHELDBLOCKCHNG, &params);
 }
 
 void Event_OnClick(Client *client, cs_char btn, cs_char act, cs_int16 yaw, cs_int16 pitch, ClientID id, SVec *pos, cs_char face) {
-	onPlayerClick params;
-	params.client = client;
-	params.button = btn;
-	params.action = act;
-	params.yaw = yaw;
-	params.pitch = pitch;
-	params.tgid = id;
-	params.pos = pos;
-	params.face = face;
+	onPlayerClick params = {
+		.client = client,
+		.button = btn,
+		.action = act,
+		.yaw = yaw,
+		.pitch = pitch,
+		.tgid = id,
+		.pos = pos,
+		.face = face
+	};
 	Event_Call(EVT_ONCLICK, &params);
 }
