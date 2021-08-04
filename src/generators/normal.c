@@ -31,7 +31,7 @@ static struct {
 	SVec *dims;
 	WThread threads[MAX_THREADS];
 	cs_uint32 planeSize, biomesNum,
-	biomeSize, numCaves;
+	biomeSize, numCaves, worldSize;
 	cs_uint16 *biomes, *heightMap,
 	*biomesWithTrees, biomeSizeX,
 	biomeSizeZ, heightGrass,
@@ -143,7 +143,7 @@ static void genBiomesAndHeightmap(void) {
 					else
 						ctx.heightMap[offset] = ctx.heightGrass + (cs_int16)Random_Range(&ctx.rnd, -10, -3);
 					break;
-				default:
+				case BIOME_INVALID:
 					ctx.heightMap[offset] = ctx.heightGrass;
 			}
 
@@ -277,7 +277,7 @@ THREAD_FUNC(terrainThread) {
 					for(y = height1 + 1; y <= ctx.heightWater; y++)
 						ctx.data[offset + y * ctx.planeSize] = BLOCK_WATER;
 					break;
-				default:
+				case BIOME_INVALID:
 					ctx.data[offset + (height1 - 1) * ctx.planeSize] =
 					(BlockID)Random_Range(&ctx.rnd, BLOCK_RED, BLOCK_BLACK);
 					ctx.data[offset + height1 * ctx.planeSize] =
@@ -357,7 +357,7 @@ THREAD_FUNC(oresThread) {
 	WThread *self = (WThread *)param;
 	self->debugname = "Ores worker";
 
-	cs_uint32 oreCount = (cs_uint32)((cs_float)(ctx.planeSize * ctx.dims->y) * gen_ores_count_mult);
+	cs_uint32 oreCount = (cs_uint32)(ctx.worldSize * gen_ores_count_mult);
 
 	SVec pos, tmp;
 	for(; oreCount > 0; oreCount--) {
@@ -455,7 +455,11 @@ THREAD_FUNC(treesThread) {
 					for(cactusHeight += (cs_uint16)Random_Range(&ctx.rnd, 1, 4); treePos.y <= cactusHeight; treePos.y++)
 						setBlock(treePos, BLOCK_LEAVES);
 					break;
-				default: break;
+				case BIOME_INVALID:
+				case BIOME_NORMAL:
+				case BIOME_HIGH:
+				case BIOME_WATER:
+					break;
 			}
 		}
 	}
@@ -482,7 +486,7 @@ static cs_bool normalgenerator(World *world, void *data) {
 
 	ctx.dims = &world->info.dimensions;
 	ctx.planeSize = ctx.dims->x * ctx.dims->z;
-	ctx.data = World_GetBlockArray(world, NULL);
+	ctx.data = World_GetBlockArray(world, &ctx.worldSize);
 
 	ctx.heightLava = 7;
 	ctx.heightGrass = ctx.dims->y / 2;
