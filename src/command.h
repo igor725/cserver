@@ -75,7 +75,7 @@ typedef struct {
 	cs_char *out;
 } CommandCallData;
 
-typedef cs_bool(*cmdFunc)(CommandCallData *cdata);
+typedef cs_bool(*cmdFunc)(CommandCallData *);
 
 typedef struct _Command {
 	cs_str alias;

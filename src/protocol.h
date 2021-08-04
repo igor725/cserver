@@ -59,7 +59,7 @@ return;
 #define EXT_VELCTRL 0xF8DF4FF7ul
 #define EXT_PARTICLE 0x0D732743ul
 
-typedef cs_bool(*packetHandler)(Client *client, cs_str data);
+typedef cs_bool(*packetHandler)(Client *, cs_char *);
 
 typedef struct _Packet {
 	cs_byte id;
