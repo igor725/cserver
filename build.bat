@@ -100,6 +100,7 @@ IF "%BUILD_PLUGIN%"=="1" (
 	IF NOT EXIST !PROJECT_ROOT!\src GOTO notaplugin
 	ECHO Building plugin: %PLUGNAME%
 ) else (
+	IF NOT EXIST "%SVOUTDIR%" MKDIR %SVOUTDIR%
 	SET ZLIB_LINK=z.lib
 	FOR /F "tokens=* USEBACKQ" %%F IN (`DIR /B .\zlib\lib%ARCH%\*.lib`) DO (
 		SET ZLIB_LINK=%%F
