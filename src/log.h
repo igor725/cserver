@@ -23,5 +23,5 @@ API void Log_Warn(cs_str str, ...);
 API void Log_Debug(cs_str str, ...);
 
 API void Log_SetLevelStr(cs_str str);
-VAR extern cs_byte Log_Level;
+VAR cs_byte Log_Level;
 #endif // LOG_H

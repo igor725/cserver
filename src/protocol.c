@@ -9,9 +9,8 @@
 #include "platform.h"
 #include "command.h"
 #include "lang.h"
+#include <zlib.h>
 
-// crc32 declaration from zlib.h
-extern cs_ulong crc32(cs_ulong, cs_byte *, cs_uint32);
 cs_uint16 extensionsCount;
 CPEExt *headExtension;
 

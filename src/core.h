@@ -8,11 +8,11 @@
 #define WIN32_LEAN_AND_MEAN
 #ifndef PLUGIN_BUILD
 #define API __declspec(dllexport, noinline)
-#define VAR __declspec(dllexport)
+#define VAR __declspec(dllexport) extern
 #else
 #define API __declspec(dllimport)
-#define VAR __declspec(dllimport)
-#define EXP __declspec(dllexport)
+#define VAR __declspec(dllimport) extern
+#define EXP __declspec(dllexport) extern
 #endif // PLUGIN_BUILD
 
 typedef __int8 cs_int8;
@@ -37,11 +37,11 @@ typedef unsigned int cs_size;
 
 #ifndef PLUGIN_BUILD
 #define API __attribute__((visibility("default"), noinline))
-#define VAR __attribute__((visibility("default")))
+#define VAR __attribute__((visibility("default"))) extern
 #else
 #define API
-#define VAR
-#define EXP __attribute__((__visibility__("default")))
+#define VAR extern
+#define EXP __attribute__((__visibility__("default"))) extern
 #endif // PLUGIN_BUILD
 
 #define min(a, b) (((a)<(b))?(a):(b))
@@ -108,7 +108,7 @@ typedef struct _CustomParticle {
 #ifdef PLUGIN_BUILD
 EXP cs_bool Plugin_Load(void);
 EXP cs_bool Plugin_Unload(void);
-EXP extern cs_int32 Plugin_ApiVer, Plugin_Version;
+EXP cs_int32 Plugin_ApiVer, Plugin_Version;
 #define Plugin_SetVersion(ver) cs_int32 Plugin_ApiVer = PLUGIN_API_NUM, Plugin_Version = ver;
 #endif
 

@@ -176,6 +176,6 @@ API cs_int16 Client_GetGroupID(Client *client);
 API cs_bool Client_Spawn(Client *client);
 API cs_bool Client_Despawn(Client *client);
 
-VAR extern Client *Broadcast;
-VAR extern Client *Clients_List[MAX_CLIENTS];
+VAR Client *Broadcast;
+VAR Client *Clients_List[MAX_CLIENTS];
 #endif // CLIENT_H

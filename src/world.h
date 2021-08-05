@@ -124,5 +124,5 @@ API cs_int8 World_GetWeather(World *world);
 API World *World_GetByName(cs_str name);
 API World *World_GetByID(WorldID id);
 
-VAR extern World *Worlds_List[MAX_WORLDS];
+VAR World *Worlds_List[MAX_WORLDS];
 #endif // WORLD_H

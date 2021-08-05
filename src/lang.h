@@ -5,7 +5,7 @@ typedef struct _LGroup {
 	cs_str *strings;
 } LGroup;
 
-VAR extern LGroup *Lang_SwGrp, *Lang_ErrGrp, *Lang_ConGrp,
+VAR LGroup *Lang_SwGrp, *Lang_ErrGrp, *Lang_ConGrp,
 *Lang_KickGrp, *Lang_CmdGrp, *Lang_DbgGrp;
 
 cs_bool Lang_Init(void);
