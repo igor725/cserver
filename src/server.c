@@ -239,19 +239,26 @@ cs_bool Server_Init(void) {
 					cs_char *del = buffer, *prev = buffer;
 					for(cs_uint16 i = 0; i < 3; i++) {
 						del = (cs_char *)String_FirstChar(del, 'x');
-						if(del) *del++ = '\0';
+						if(del) *del++ = '\0'; else if(i != 2) break;
 						((cs_uint16 *)&dims)[i] = (cs_uint16)String_ToInt(prev);
 						prev = del;
 					}
-					if(tmp) {
+					if(tmp && dims.x > 0 && dims.y > 0 && dims.z > 0) {
 						World_SetDimensions(tmp, &dims);
 						World_AllocBlockArray(tmp);
 						tmp->id = wIndex++;
 						Worlds_List[tmp->id] = tmp;
+					} else {
+						Log_Error("Invalid dimensions specified for \"%s\"", tmp->name);
+						World_Free(tmp);
 					}
 				} else if(!skip_creating && state == 2) {
 					GeneratorRoutine gr = Generators_Get(buffer);
-					if(gr) gr(tmp, NULL);
+					if(gr) {
+						if(!gr(tmp, NULL))
+							Log_Error("World generator failed for \"%s\"", tmp->name);
+					} else
+						Log_Error("Invalid generator specified for \"%s\"", tmp->name);
 				}
 
 				if(*worlds == ':')
