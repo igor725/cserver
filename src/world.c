@@ -73,6 +73,11 @@ cs_bool World_Add(World *world) {
 	return true;
 }
 
+cs_bool World_IsReadyToPlay(World *world) {
+	return world->wdata.ptr != NULL &&
+	world->process == WP_NOPROC && world->loaded;
+}
+
 World *World_GetByName(cs_str name) {
 	for(WorldID i = 0; i < MAX_WORLDS; i++) {
 		World *world = Worlds_List[i];
@@ -390,7 +395,7 @@ THREAD_FUNC(WorldLoadThread) {
 	error = false;
 
 	world_load_done:
-	File_Close(fp);
+	if(fp) File_Close(fp);
 	inflateEnd(&stream);
 	world->process = WP_NOPROC;
 	world->saveUnload = false;

@@ -65,7 +65,7 @@ THREAD_FUNC(ClientInitThread) {
 		Client_Kick(tmp, Lang_Get(Lang_KickGrp, 7));
 		Client_Free(tmp);
 	}
-	
+
 	return 0;
 }
 
@@ -161,6 +161,10 @@ cs_bool Server_Init(void) {
 	Config_SetLimit(ent, 1, 5);
 	Config_SetDefaultInt8(ent, 5);
 
+	ent = Config_NewEntry(cfg, CFG_WORLDS_KEY, CFG_TSTR);
+	Config_SetComment(ent, "List of worlds to load at startup. (Can be \"*\" it means load all worlds in the folder.)");
+	Config_SetDefaultStr(ent, "world.cws:256x256x256:normal,flat_world.cws:256x256x256:flat");
+
 	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_KEY, CFG_TBOOL);
 	Config_SetComment(ent, "Enable ClassiCube heartbeat.");
 	Config_SetDefaultBool(ent, false);
@@ -185,28 +189,89 @@ cs_bool Server_Init(void) {
 	Plugin_LoadAll();
 
 	Directory_Ensure("worlds");
+	cs_str worlds = Config_GetStrByKey(cfg, CFG_WORLDS_KEY);
 	WorldID wIndex = 0;
-	DirIter wIter;
-	if(Iter_Init(&wIter, "worlds", "cws")) {
-		do {
-			if(wIter.isDir || !wIter.cfile) continue;
-			World *tmp = World_Create(wIter.cfile);
-			tmp->id = wIndex++;
-			if(!World_Load(tmp) || !World_Add(tmp))
-				World_Free(tmp);
-		} while(Iter_Next(&wIter) && wIndex < MAX_WORLDS);
-	}
-	Iter_Close(&wIter);
+	if(*worlds == '*') {
+		DirIter wIter;
+		if(Iter_Init(&wIter, "worlds", "cws")) {
+			do {
+				if(wIter.isDir || !wIter.cfile) continue;
+				World *tmp = World_Create(wIter.cfile);
+				tmp->id = wIndex++;
+				if(!World_Load(tmp) || !World_Add(tmp))
+					World_Free(tmp);
+			} while(Iter_Next(&wIter) && wIndex < MAX_WORLDS);
+		}
+		Iter_Close(&wIter);
 
-	if(wIndex < 1) {
-		World *tmp = World_Create("world.cws");
-		SVec defdims = {256, 256, 256};
-		World_SetDimensions(tmp, &defdims);
-		World_AllocBlockArray(tmp);
-		if(!Generators_Use(tmp, "normal", NULL))
-			Log_Error("Oh! Error happened in the world generator.");
-		Worlds_List[0] = tmp;
+		if(wIndex < 1) {
+			World *tmp = World_Create("world.cws");
+			SVec defdims = {256, 256, 256};
+			World_SetDimensions(tmp, &defdims);
+			World_AllocBlockArray(tmp);
+			if(!Generators_Use(tmp, "normal", NULL))
+				Log_Error("Oh! Error happened in the world generator.");
+			Worlds_List[0] = tmp;
+		}
+	} else {
+		cs_bool skip_creating = false;
+		cs_byte state = 0, pos = 0;
+		cs_char buffer[64];
+		SVec dims = {0, 0, 0};
+		World *tmp = NULL;
+
+		do {
+			if(*worlds == ':' || *worlds == ',' || *worlds == '\0') {
+				buffer[pos] = '\0';
+
+				if(state == 0) {
+					skip_creating = false;
+					tmp = World_Create(buffer);
+					if(World_Load(tmp)) {
+						Waitable_Wait(tmp->wait);
+						if(World_IsReadyToPlay(tmp)) {
+							tmp->id = wIndex++;
+							Worlds_List[tmp->id] = tmp;
+							skip_creating = true;
+						}
+					}
+				} else if(!skip_creating && state == 1) {
+					cs_char *del = buffer, *prev = buffer;
+					for(cs_uint16 i = 0; i < 3; i++) {
+						del = (cs_char *)String_FirstChar(del, 'x');
+						if(del) *del++ = '\0';
+						((cs_uint16 *)&dims)[i] = (cs_uint16)String_ToInt(prev);
+						prev = del;
+					}
+					if(tmp) {
+						World_SetDimensions(tmp, &dims);
+						World_AllocBlockArray(tmp);
+						tmp->id = wIndex++;
+						Worlds_List[tmp->id] = tmp;
+					}
+				} else if(!skip_creating && state == 2) {
+					GeneratorRoutine gr = Generators_Get(buffer);
+					if(gr) gr(tmp, NULL);
+				}
+
+				if(*worlds == ':')
+					state++;
+				else if(*worlds == '\0')
+					state = 3;
+				else
+					state = 0;
+				pos = 0;
+			} else
+				buffer[pos++] = *worlds;
+			worlds++;
+		} while(state < 3);
 	}
+
+	if(!Worlds_List[0]) {
+		Log_Error("No worlds loaded.");
+		return false;
+	} else
+		Log_Info("%d world(-s) successfully loaded.", wIndex);
 
 	if(Config_GetBoolByKey(cfg, CFG_HEARTBEAT_KEY))
 		Heartbeat_Start(Config_GetInt32ByKey(cfg, CFG_HEARTBEATDELAY_KEY));

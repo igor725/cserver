@@ -98,6 +98,7 @@ API World *World_Create(cs_str name);
 API void World_AllocBlockArray(World *world);
 API void World_Free(World *world);
 API cs_bool World_Add(World *world);
+API cs_bool World_IsReadyToPlay(World *world);
 API void World_UpdateClients(World *world);
 
 API cs_bool World_Load(World *world);

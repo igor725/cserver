@@ -52,15 +52,20 @@ cs_bool Generators_RemoveByFunc(GeneratorRoutine gr) {
 }
 
 cs_bool Generators_Use(World *world, cs_str name, void *data) {
+	GeneratorRoutine gr = Generators_Get(name);
+	return gr != NULL ? gr(world, data) : false;
+}
+
+GeneratorRoutine Generators_Get(cs_str name) {
 	KListField *ptr = NULL;
 
 	List_Iter(ptr, Generators_List) {
 		if(String_CaselessCompare(ptr->key.str, name)) {
 			struct GenRoutineStruct *grs = (struct GenRoutineStruct *)ptr->value.ptr;
-			if(grs) return grs->func(world, data);
+			if(grs) return grs->func;
 			break;
 		}
 	}
 
-	return false;
+	return NULL;
 }

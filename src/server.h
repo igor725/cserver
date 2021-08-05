@@ -11,6 +11,7 @@
 #define CFG_LOCALOP_KEY "always-local-op"
 #define CFG_MAXPLAYERS_KEY "max-players"
 #define CFG_CONN_KEY "max-connections-per-ip"
+#define CFG_WORLDS_KEY "worlds-list"
 #define CFG_HEARTBEAT_KEY "heartbeat-enabled"
 #define CFG_HEARTBEATDELAY_KEY "heartbeat-delay"
 #define CFG_HEARTBEAT_PUBLIC_KEY "heartbeat-public"
