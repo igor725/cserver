@@ -66,24 +66,12 @@ CEntry *Config_NewEntry(CStore *store, cs_str key, cs_int32 type) {
 	return ent;
 }
 
-static void EmptyEntry(CEntry *ent) {
+static void ClearEntry(CEntry *ent) {
 	if(ent->type == CFG_TSTR && ent->value.vchar)
 		Memory_Free((void *)ent->value.vchar);
 
 	ent->flags &= ~CFG_FCHANGED;
 	ent->value.vchar = NULL;
-}
-
-static cs_bool AllCfgEntriesParsed(CStore *store) {
-	CEntry *ent = store->firstCfgEntry;
-
-	while(ent) {
-		if((ent->flags & CFG_FREADED) == 0)
-			return false;
-		ent = ent->next;
-	}
-
-	return true;
 }
 
 cs_str Config_TypeName(CETypes type) {
@@ -219,10 +207,18 @@ cs_bool Config_Load(CStore *store) {
 		return false;
 	}
 
-	store->modified = !AllCfgEntriesParsed(store);
 	File_Close(fp);
-
 	CFG_SETERROR(ET_NOERR, 0, 0);
+
+	CEntry *ent = store->firstCfgEntry;
+	while(ent) {
+		if((ent->flags & CFG_FREADED) == 0) {
+			store->modified = true;
+			break;
+		}
+		ent = ent->next;
+	}
+
 	return true;
 }
 
@@ -401,12 +397,12 @@ void Config_SetDefaultStr(CEntry *ent, cs_str value) {
 void Config_SetStr(CEntry *ent, cs_str value) {
 	CFG_TYPE(CFG_TSTR);
 	if(!value) {
-		EmptyEntry(ent);
+		ClearEntry(ent);
 		ent->store->modified = true;
 	}else if(!ent->defvalue.vchar|| !String_Compare(value, ent->defvalue.vchar)) {
 		if(ent->value.vchar&& String_Compare(value, ent->value.vchar))
 			return;
-		EmptyEntry(ent);
+		ClearEntry(ent);
 		ent->flags |= CFG_FCHANGED;
 		ent->value.vchar = String_AllocCopy(value);
 		ent->store->modified = true;
@@ -455,7 +451,7 @@ void Config_EmptyStore(CStore *store) {
 			Memory_Free((void *)prev->commentary);
 		if(prev->type == CFG_TSTR)
 			Memory_Free((void *)prev->defvalue.vchar);
-		EmptyEntry(prev);
+		ClearEntry(prev);
 		Memory_Free(prev);
 	}
 
