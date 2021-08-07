@@ -1,5 +1,7 @@
 @ECHO off
 setlocal enableextensions enabledelayedexpansion
+ECHO Changing working directory to "%~dp0"
+CD /D %~dp0
 
 SET ARCH=%VSCMD_ARG_TGT_ARCH%
 SET DEBUG=0
