@@ -13,12 +13,12 @@ SET BINNAME=server.exe
 SET WARN_LEVEL=/W3
 SET OPT_LEVEL=/O2
 
-SET MSVC_LINKER=/opt:ref /subsystem:console
-SET MSVC_OPTS=/MP /GL /Oi /Gy /fp:fast /DZLIB_DLL /DZLIB_WINAPI
+SET MSVC_LINKER=/opt:ref
+SET MSVC_OPTS=/MP /Oi /DZLIB_DLL /DZLIB_WINAPI
 SET OBJDIR=objs\%ARCH%
 SET MSVC_LIBS=kernel32.lib
 
-git --version
+git --version >nul
 IF %ERRORLEVEL% NEQ 0 (
 	SET MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_SHA#\"0000000\"
 ) ELSE (
@@ -100,6 +100,7 @@ IF "%BUILD_PLUGIN%"=="1" (
 	IF NOT EXIST !PROJECT_ROOT!\src GOTO notaplugin
 	ECHO Building plugin: %PLUGNAME%
 ) else (
+	SET MSVC_LINKER=%MSVC_LINKER% /subsystem:console
 	IF NOT EXIST "%SVOUTDIR%" MKDIR %SVOUTDIR%
 	SET ZLIB_LINK=z.lib
 	FOR /F "tokens=* USEBACKQ" %%F IN (`DIR /B .\zlib\lib%ARCH%\*.lib`) DO (

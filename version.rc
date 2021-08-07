@@ -12,7 +12,6 @@ FILETYPE VFT_APP
 			VALUE "FileDescription", "Minecraft Classic server software\000"
 			VALUE "ProductName", "CServer\000"
 			VALUE "ProductVersion", "1.0\000"
-			VALUE "LegalCopyright", "\251 2019 Igor Gvaldov\000"
 			VALUE "OriginalFilename", "server.exe\000"
 		}
 	}
