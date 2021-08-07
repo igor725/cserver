@@ -105,21 +105,7 @@ typedef struct _CustomParticle {
 	gravity, baseLifetime, lifetimeVariation;
 } CustomParticle;
 
-#ifdef PLUGIN_BUILD
-EXP cs_bool Plugin_Load(void);
-EXP cs_bool Plugin_Unload(void);
-EXP cs_int32 Plugin_ApiVer, Plugin_Version;
-#define Plugin_SetVersion(ver) cs_int32 Plugin_ApiVer = PLUGIN_API_NUM, Plugin_Version = ver;
-#endif
-
-#define SOFTWARE_NAME "C-Server"
-#define SOFTWARE_FULLNAME SOFTWARE_NAME "/" GIT_COMMIT_SHA
-#define CHATLINE "<%s>: %s"
-#define MAINCFG "server.cfg"
-#define WORLD_MAGIC 0x54414457
 #define PLUGIN_API_NUM 1
-#define TICKS_PER_SECOND 60
-
 #define MAX_PLUGINS 64
 #define	MAX_CMD_OUT 1024
 #define MAX_CLIENT_PPS 128
@@ -127,6 +113,19 @@ EXP cs_int32 Plugin_ApiVer, Plugin_Version;
 #define MAX_CLIENTS 127
 #define MAX_WORLDS 256
 #define MAX_EVENTS 128
+
+#ifdef PLUGIN_BUILD
+EXP cs_bool Plugin_Load(void);
+EXP cs_bool Plugin_Unload(void);
+EXP cs_int32 Plugin_ApiVer, Plugin_Version;
+#define Plugin_SetVersion(ver) cs_int32 Plugin_ApiVer = PLUGIN_API_NUM, Plugin_Version = ver;
+#else
+#define SOFTWARE_NAME "C-Server"
+#define SOFTWARE_FULLNAME SOFTWARE_NAME "/" GIT_COMMIT_SHA
+#define TICKS_PER_SECOND 60
+#define MAINCFG "server.cfg"
+#define WORLD_MAGIC 0x54414457
+#endif
 
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
 #define MODE(b) Lang_Get(Lang_SwGrp, b > 0)

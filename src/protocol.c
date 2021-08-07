@@ -460,7 +460,7 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 
 	if(Event_OnMessage(client, messptr, &type)) {
 		cs_char formatted[320];
-		String_FormatBuf(formatted, 320, CHATLINE, client->playerData->name, messptr);
+		String_FormatBuf(formatted, 320, "<%s>: %s", Client_GetName(client), messptr);
 
 		if(*messptr == '/') {
 			if(!Command_Handle(messptr, client))
