@@ -91,7 +91,7 @@ IF "%DEBUG%"=="0" (
 )
 
 IF "%BUILD_PLUGIN%"=="1" (
-  SET MSVC_LINKER=%MSVC_LINKER% /DLL
+  SET MSVC_LINKER=%MSVC_LINKER% /DLL /NOENTRY
 	SET SVPLUGDIR=%SVOUTDIR%\plugins
   SET BINNAME=%PLUGNAME%.dll
 	SET PROJECT_ROOT=..\cs-%PLUGNAME%
@@ -125,7 +125,7 @@ SET BINPATH=%OUTDIR%\%BINNAME%
 IF "%BUILD_PLUGIN%"=="1" (
   SET MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DPLUGIN_BUILD /I.\src\
   SET MSVC_LIBS=server.lib %MSVC_LIBS%
-	SET MSVC_LINKER=%MSVC_LINKER% /libpath:%SVOUTDIR% /noentry
+	SET MSVC_LINKER=%MSVC_LINKER% /libpath:%SVOUTDIR%
 ) else (
 	SET MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH%
 )
@@ -144,6 +144,7 @@ FOR /F "tokens=* USEBACKQ" %%A IN (`dir /b /a-d %PROJECT_ROOT%\src\*.c %PROJECT_
 	SET SRC_LIST=!SRC_LIST! %PROJECT_ROOT%\src\%%A
 )
 CL%SRC_LIST% /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%
+IF NOT "%ERRORLEVEL%"=="0" GOTO compileerror
 
 IF "%BUILD_PLUGIN%"=="1" (
 	IF "%PLUGIN_INSTALL%"=="1" (
@@ -154,9 +155,7 @@ IF "%BUILD_PLUGIN%"=="1" (
 		)
 	)
   GOTO end
-) else (
-  IF "%ERRORLEVEL%"=="0" (GOTO binstart) else (GOTO compileerror)
-)
+) else GOTO binstart
 
 :binstart
 IF "%RUNMODE%"=="0" start /D %OUTDIR% %BINNAME%
