@@ -1,5 +1,17 @@
 # cserver
-Another Minecraft Classic server written in C. Very buggy and dirty, but it may be useful for someone.
+Another Minecraft Classic server written in C. Not well written, but it may be useful for someone. The server MAY have many security holes. Use carefully!
+
+## Features
+* Classic Protocol Extension
+* Multiplatform (Windows/Linux)
+* Multithreaded clients processing
+* Up to 256 worlds can be loaded
+* Plugins support
+* WebSocket client support
+* RCON server (Implemented in base plugin)
+* Own world generator (Written by [scaled](https://github.com/scaledteam) for [LuaClassic](https://github.com/igor725/LuaClassic), later ported to C by me)
+* Heartbeat support
+* Easy configurable
 
 ## Dependencies
 
@@ -20,12 +32,12 @@ Another Minecraft Classic server written in C. Very buggy and dirty, but it may 
 ### On Linux
 ``./build [args ...]``
 
-NOTE: This script uses gcc, but you can change this to any gcc-like compiler by setting CC environment variable (``CC=clang ./build [args ...]``).
+NOTE: This script uses gcc, but you can change it to another by setting CC environment variable (``CC=clang ./build [args ...]``).
 
 ### On Windows
 ``.\build.bat [args ...]``
 
-NOTE: This script uses Microsoft Visual Studio to compile the project.
+NOTE: This script must be runned in the Visual Studio Developer Command Prompt
 
 ### Build script arguments
 * ``cls`` - Clear console window before compilation;
@@ -39,6 +51,12 @@ NOTE: This script uses Microsoft Visual Studio to compile the project.
 * ``run`` - Start the server after compilation;
 * ``runsame`` - Start the server after compilation in the same console window;
 * ``install`` - Copy plugin binary to the ``plugins`` directory after compilation (Can be used only with ``pb``).
+
+
+### Example
+* ``./build`` - Build the server release binary
+* ``./build dbg wall`` - Build the server with all warnings and debug symbols
+* ``./build dbg wall pb base install`` - Build the base plugin with all warnings and debug symbols, then copy binary to the plugins directory
 
 ### Notes
 * My main OS - Windows 10. It means the Linux part of the server not well tested.
