@@ -38,7 +38,7 @@ static void NewSecret(cs_uint32 length) {
 		}
 		Secret[i] = (cs_char)Random_Range(&secrnd, min, max);
 	}
-	Secret[length + 1] = '\0';
+	Secret[length] = '\0';
 
 	cs_file sfile = File_Open("secret.txt", "w");
 	if(sfile) {
