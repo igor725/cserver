@@ -14,13 +14,13 @@
 #define PLAY_URL_LEN 38
 
 cs_bool PlayURL_OK = false;
-cs_char Secret[17] = {0};
+cs_char Secret[90] = {0};
 cs_uint32 Delay = 5000;
 
-static void NewSecret(void) {
+static void NewSecret(cs_uint32 length) {
 	RNGState secrnd;
 	Random_SeedFromTime(&secrnd);
-	for(cs_int32 i = 0; i < 17; i++) {
+	for(cs_uint32 i = 0; i < length; i++) {
 		cs_int32 min, max;
 		switch(Random_Range(&secrnd, 0, 3)) {
 			case 0:
@@ -38,11 +38,13 @@ static void NewSecret(void) {
 		}
 		Secret[i] = (cs_char)Random_Range(&secrnd, min, max);
 	}
+	Secret[length + 1] = '\0';
 
 	cs_file sfile = File_Open("secret.txt", "w");
 	if(sfile) {
 		File_Write("#Remove this file if you want to generate new secret key.\n", 58, 1, sfile);
-		File_Write(Secret, 16, 1, sfile);
+		File_Write("#This key used by the heartbeat as server's \"salt\" for user authentication check.\n", 82, 1, sfile);
+		File_Write(Secret, length, 1, sfile);
 		File_Close(sfile);
 	}
 }
@@ -58,7 +60,7 @@ static void TrimReserved(cs_char *name, cs_int32 len) {
 }
 
 static void DoRequest(void) {
-	if(*Secret == '\0') NewSecret();
+	if(*Secret == '\0') NewSecret(32);
 	cs_char reqstr[512], name[65], rsp[1024];
 	String_Copy(name, 65, Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY));
 	TrimReserved(name, 65);
@@ -136,8 +138,10 @@ THREAD_FUNC(HeartbeatThread) {
 void Heartbeat_Start(cs_uint32 delay) {
 	cs_file sfile = File_Open("secret.txt", "r");
 	if(sfile) {
-		File_Seek(sfile, 59, SEEK_SET);
-		File_Read(Secret, 16, 1, sfile);
+		do {
+			if(!File_ReadLine(sfile, Secret, 90))
+				break;
+		} while(*Secret == '#');
 		File_Close(sfile);
 	}
 	Delay = delay * 1000;
