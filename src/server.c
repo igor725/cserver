@@ -125,6 +125,7 @@ cs_bool Server_Init(void) {
 	CEntry *ent;
 
 	Server_StartTime = Time_GetMSec();
+	Server_Active = true;
 	Server_Config = cfg;
 
 	ent = Config_NewEntry(cfg, CFG_SERVERIP_KEY, CFG_TSTR);
@@ -283,7 +284,6 @@ cs_bool Server_Init(void) {
 	if(Config_GetBoolByKey(cfg, CFG_HEARTBEAT_KEY))
 		Heartbeat_Start(Config_GetInt32ByKey(cfg, CFG_HEARTBEATDELAY_KEY));
 
-	Server_Active = true;
 	cs_str ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
 	cs_uint16 port = Config_GetInt16ByKey(cfg, CFG_SERVERPORT_KEY);
 	Bind(ip, port);
