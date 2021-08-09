@@ -1,7 +1,6 @@
 static cs_bool gen_enable_caves = true,
 gen_enable_trees = true,
-gen_enable_ores = true,
-gen_enable_houses = true;
+gen_enable_ores = true;
 
 static cs_uint16 gen_cave_radius = 3,
 gen_cave_min_length = 100,
@@ -13,9 +12,7 @@ gen_biome_radius = 5;
 
 static cs_float gen_trees_count_mult = 1.0f / 250.0f,
 gen_ores_count_mult = 1.0f / 800.0f,
-gen_caves_count_mult = 2.0f / 200000.0f,
-gen_houses_count_mult = 1.0f / 70000.0f,
-gen_gravel_count_mult = 1.0f / 500000;
+gen_caves_count_mult = 2.0f / 200000.0f;
 
 #define MAX_THREADS 8
 

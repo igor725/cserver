@@ -34,6 +34,7 @@ typedef unsigned int cs_uintptr, cs_size;
 #endif // _MSC_VER
 #elif defined(__unix__)
 #define UNIX
+#define _GNU_SOURCE
 #define PATH_DELIM "/"
 #define DLIB_EXT "so"
 

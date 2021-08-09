@@ -8,5 +8,4 @@
 #endif
 
 cs_bool ConsoleIO_Init(void);
-cs_bool ConsoleIO_Handler(cs_uint32 signal);
 #endif

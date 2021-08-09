@@ -17,9 +17,9 @@ THREAD_FUNC(ConsoleIO_Thread) {
 	return 0;
 }
 
-cs_bool ConsoleIO_Handler(cs_uint32 signal) {
+static TSHND_RET ConsoleIO_Handler(TSHND_PARAM signal) {
   if(signal == CONSOLEIO_TERMINATE)Server_Active = false;
-  return true;
+  return TSHND_OK;
 }
 
 cs_bool ConsoleIO_Init(void) {

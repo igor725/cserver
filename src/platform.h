@@ -10,6 +10,9 @@ typedef void Waitable;
 typedef CRITICAL_SECTION Mutex;
 typedef SOCKET Socket;
 typedef HANDLE *Thread, *ITER_DIR;
+typedef BOOL TSHND_RET;
+typedef DWORD TSHND_PARAM;
+#define TSHND_OK TRUE
 #elif defined(UNIX)
 #include <pthread.h>
 #include <sys/stat.h>
@@ -25,6 +28,8 @@ typedef struct dirent *ITER_FILE;
 typedef void *TRET;
 typedef pthread_t *Thread;
 typedef pthread_mutex_t Mutex;
+typedef void TSHND_RET;
+typedef cs_int32 TSHND_PARAM;
 typedef struct {
 	cs_int32 pipefd[2];
 	cs_char buf[2];
@@ -33,12 +38,13 @@ typedef cs_int32 Socket;
 
 #define INVALID_SOCKET (Socket)-1
 #define SD_SEND SHUT_WR
+#define TSHND_OK
 #endif
 
 typedef FILE *cs_file;
 typedef void *TARG;
 typedef TRET(*TFUNC)(TARG);
-typedef cs_bool(*TSHND)(cs_uint32);
+typedef TSHND_RET(*TSHND)(TSHND_PARAM);
 #define THREAD_FUNC(N) \
 static TRET N(TARG param)
 
