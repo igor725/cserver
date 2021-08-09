@@ -47,6 +47,10 @@ void Error_CallStack(void) {
 		if(symbol.Name && String_Compare(symbol.Name, "main")) break;
 	}
 }
+#elif defined(__ANDROID__)
+void Error_CallStack(void) {
+	Log_Debug("CallStack printing can't be implemented on Android");
+}
 #elif defined(UNIX)
 #include <dlfcn.h>
 #include <execinfo.h>
