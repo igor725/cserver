@@ -81,7 +81,7 @@ THREAD_FUNC(AcceptThread) {
 			break;
 		}
 
-		Client *tmp = Client_New(fd, ntohl(caddr.sin_addr.s_addr));
+		Client *tmp = Client_New(fd, caddr.sin_addr.s_addr);
 		if(tmp)
 			Thread_Create(ClientInitThread, tmp, true);
 		else

@@ -642,6 +642,13 @@ cs_bool Client_SetSkin(Client *client, cs_str skin) {
 	return true;
 }
 
+cs_int32 Client_GetPing(Client *client) {
+	if(Client_GetExtVer(client, EXT_TWOWAYPING)) {
+		return client->cpeData->pingTime;
+	}
+	return -1;
+}
+
 cs_bool Client_SetSpawn(Client *client, Vec *pos, Ang *ang) {
 	if(Client_GetExtVer(client, EXT_SETSPAWN)) {
 		CPE_WriteSetSpawnPoint(client, pos, ang);

@@ -113,6 +113,7 @@ API cs_bool World_SetProperty(World *world, cs_byte property, cs_int32 value);
 API cs_bool World_SetTexturePack(World *world, cs_str url);
 API cs_bool World_SetWeather(World *world, cs_int8 type);
 
+API cs_str World_GetName(World *world);
 API void *World_GetData(World *world, cs_uint32 *size);
 API BlockID *World_GetBlockArray(World *world, cs_uint32 *size);
 API cs_uint32 World_GetBlockArraySize(World *world);

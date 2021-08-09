@@ -426,6 +426,11 @@ void World_Unload(World *world) {
 	world->loaded = false;
 }
 
+cs_str World_GetName(World *world) {
+	if(!world->name) return "unnamed";
+	return world->name;
+}
+
 cs_uint32 World_GetOffset(World *world, SVec *pos) {
 	if(pos->x < 0 || pos->y < 0 || pos->z < 0) return 0;
 	cs_uint32 offset = ((cs_uint32)pos->y * (cs_uint32)world->info.dimensions.z
