@@ -12,7 +12,7 @@ gen_biome_radius = 5;
 
 static cs_float gen_trees_count_mult = 1.0f / 250.0f,
 gen_ores_count_mult = 1.0f / 800.0f,
-gen_caves_count_mult = 2.0f / 200000.0f;
+gen_caves_count_mult = 3.2f / 200000.0f;
 
 #define MAX_THREADS 8
 
@@ -465,12 +465,6 @@ THREAD_FUNC(treesThread) {
 	return 0;
 }
 
-static void doCleanUp(void) {
-	if(ctx.biomes) Memory_Free(ctx.biomes);
-	if(ctx.heightMap) Memory_Free(ctx.heightMap);
-	if(ctx.biomesWithTrees) Memory_Free(ctx.biomesWithTrees);
-}
-
 static cs_bool normalgenerator(World *world, void *data) {
 	(void)data;
 	if(world->info.dimensions.x < 32 ||
@@ -518,7 +512,10 @@ static cs_bool normalgenerator(World *world, void *data) {
 	World_SetProperty(world, PROP_EDGEBLOCK, BLOCK_WATER);
 	World_SetProperty(world, PROP_EDGELEVEL, ctx.heightWater + 1);
 	World_SetProperty(world, PROP_SIDEOFFSET, 0);
-	doCleanUp();
+
+	if(ctx.biomes) Memory_Free(ctx.biomes);
+	if(ctx.heightMap) Memory_Free(ctx.heightMap);
+	if(ctx.biomesWithTrees) Memory_Free(ctx.biomesWithTrees);
 
 	return true;
 }
