@@ -12,7 +12,7 @@ CC="$CC -fdiagnostics-color=always"
 CFLAGS="-rdynamic -pipe -fPIC"
 LIBS=""
 OUTBIN="server"
-if which git >/dev/null; then
+if git --version >/dev/null 2>&1; then
 	COMMIT_SHA="-DGIT_COMMIT_SHA=\"$(git rev-parse --short HEAD)\""
 else
 	COMMIT_SHA="-DGIT_COMMIT_SHA=\"0000000\""
