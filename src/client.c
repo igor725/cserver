@@ -158,7 +158,7 @@ Client *Client_New(Socket fd, cs_uint32 addr) {
 		tmp->sock = fd;
 		tmp->addr = addr;
 		tmp->id = CLIENT_SELF;
-		tmp->mutex = Mutex_Create();	
+		tmp->mutex = Mutex_Create();
 	}
 	return tmp;
 }
@@ -840,7 +840,7 @@ cs_int32 Client_Send(Client *client, cs_int32 len) {
 static void PacketReceiverWs(Client *client) {
 	cs_byte packetId;
 	Packet *packet;
-	cs_bool extended;
+	cs_bool extended = false;
 	cs_uint16 packetSize, recvSize;
 	WebSock *ws = client->websock;
 	cs_char *data = client->rdbuf;
@@ -887,9 +887,9 @@ static void PacketReceiverWs(Client *client) {
 
 static void PacketReceiverRaw(Client *client) {
 	Packet *packet;
-	cs_bool extended;
 	cs_uint16 packetSize;
 	cs_byte packetId;
+	cs_bool extended = false;
 
 	if(Socket_Receive(client->sock, (cs_char *)&packetId, 1, MSG_WAITALL) == 1) {
 		packet = Packet_Get(packetId);
