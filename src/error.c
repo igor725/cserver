@@ -48,7 +48,9 @@ void Error_CallStack(void) {
 	}
 }
 #elif defined(UNIX)
-#ifndef __ANDROID__
+#include <dlfcn.h>
+#include <execinfo.h>
+
 void Error_CallStack(void) {
 	void *stack[16];
 	cs_int32 frames = backtrace(stack, 16);
@@ -63,11 +65,6 @@ void Error_CallStack(void) {
 		}
 	}
 }
-#else
-void Error_CallStack(void) {
-	Log_Error("Error_CallStack not implemented.");
-}
-#endif // __ANDROID__
 #endif
 #else
 void Error_CallStack(void) {}
