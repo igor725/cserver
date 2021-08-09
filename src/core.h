@@ -15,6 +15,7 @@
 #define EXP __declspec(dllexport) extern
 #endif // PLUGIN_BUILD
 
+#if _MSC_VER
 typedef __int8 cs_int8;
 typedef __int16 cs_int16;
 typedef __int32 cs_int32;
@@ -24,12 +25,13 @@ typedef unsigned __int16 cs_uint16;
 typedef unsigned __int32 cs_uint32;
 typedef unsigned __int64 cs_uint64;
 #ifdef _WIN64
-typedef unsigned __int64 cs_uintptr;
-typedef unsigned __int64 cs_size;
+typedef unsigned __int64 cs_uintptr, cs_size;
 #else
-typedef unsigned int cs_uintptr;
-typedef unsigned int cs_size;
+typedef unsigned int cs_uintptr, cs_size;
 #endif // _WIN64
+#else
+#define CSTYPES_ERROR
+#endif // _MSC_VER
 #elif defined(__unix__)
 #define UNIX
 #define PATH_DELIM "/"
@@ -46,10 +48,9 @@ typedef unsigned int cs_size;
 
 #define min(a, b) (((a)<(b))?(a):(b))
 #define max(a, b) (((a)>(b))?(a):(b))
-#define INVALID_SOCKET -1
-#define SD_SEND   SHUT_WR
 #define MAX_PATH  PATH_MAX
 
+#ifdef __INT8_TYPE__
 typedef __INT8_TYPE__ cs_int8;
 typedef __INT16_TYPE__ cs_int16;
 typedef __INT32_TYPE__ cs_int32;
@@ -58,14 +59,30 @@ typedef __UINT8_TYPE__ cs_byte;
 typedef __UINT16_TYPE__ cs_uint16;
 typedef __UINT32_TYPE__ cs_uint32;
 typedef __UINT64_TYPE__ cs_uint64;
-typedef __UINTPTR_TYPE__ cs_uintptr;
-typedef __SIZE_TYPE__ cs_size;
+typedef __UINTPTR_TYPE__ cs_uintptr, cs_size;
+#else
+#define CSTYPES_ERROR
+#endif //__INT8_TYPE__
 #else
 #error Unknown OS
 #endif // OS defines
 
+#ifdef CSTYPES_ERROR
+typedef signed char cs_int8;
+typedef signed short cs_int16;
+typedef signed int cs_int32;
+typedef signed long long cs_int64;
+typedef unsigned char cs_byte;
+typedef unsigned short cs_uint16;
+typedef unsigned int cs_uint32;
+typedef unsigned long long cs_uint64;
+typedef unsigned long cs_uintptr, cs_size;
+#endif
+
+#ifndef true
 #define true  1
 #define false 0
+#endif
 
 #ifndef NULL
 #define NULL ((void *)0)

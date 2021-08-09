@@ -23,7 +23,8 @@ cs_bool WebSock_DoHandshake(WebSock *ws) {
 	cs_char line[1024], wskey[32], b64[30];
 	cs_byte hash[20];
 	cs_bool validConnection = false;
-	cs_int32 wskeylen = 0, rsplen = 0;
+	cs_int32 rsplen = 0;
+	cs_ulong wskeylen = 0;
 
 	if(Socket_ReceiveLine(ws->sock, line, 1024)) {
 		cs_str httpver = String_LastChar(line, 'H');
@@ -42,7 +43,7 @@ cs_bool WebSock_DoHandshake(WebSock *ws) {
 		*value = '\0';value += 2;
 
 		if(String_CaselessCompare(line, "Sec-WebSocket-Key")) {
-			wskeylen = (cs_int32)String_Copy(wskey, 32, value);
+			wskeylen = (cs_ulong)String_Copy(wskey, 32, value);
 		} else if(String_CaselessCompare(line, "Sec-WebSocket-Version")) {
 			if(String_ToInt(value) != 13) break;
 		} else if(String_CaselessCompare(line, "Sec-WebSocket-Protocol")) {

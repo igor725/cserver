@@ -140,7 +140,7 @@ IF EXIST %PROJECT_ROOT%\version.rc (
 )
 
 SET SRC_LIST=
-FOR /F "tokens=* USEBACKQ" %%A IN (`dir /b /a-d %PROJECT_ROOT%\src\*.c %PROJECT_ROOT%\src\*.cpp`) DO (
+FOR /F "tokens=* USEBACKQ" %%A IN (`dir /b /a-d %PROJECT_ROOT%\src\*.c`) DO (
 	SET SRC_LIST=!SRC_LIST! %PROJECT_ROOT%\src\%%A
 )
 CL%SRC_LIST% /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%

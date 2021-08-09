@@ -30,6 +30,9 @@ typedef struct {
 	cs_char buf[2];
 } Waitable;
 typedef cs_int32 Socket;
+
+#define INVALID_SOCKET (Socket)-1
+#define SD_SEND SHUT_WR
 #endif
 
 typedef FILE *cs_file;

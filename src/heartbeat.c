@@ -111,8 +111,8 @@ cs_bool Heartbeat_CheckKey(Client *client) {
 	cs_char hash_hex[16 * 2 + 1];
 
 	MD5_Init(&ctx);
-	MD5_Update(&ctx, Secret, String_Length(Secret));
-	MD5_Update(&ctx, name, String_Length(name));
+	MD5_Update(&ctx, Secret, (cs_ulong)String_Length(Secret));
+	MD5_Update(&ctx, name, (cs_ulong)String_Length(name));
 	MD5_Final(hash, &ctx);
 
 	for(cs_int32 i = 0; i < 16; i++) {

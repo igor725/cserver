@@ -1,5 +1,6 @@
 # cserver
 Another Minecraft Classic server in C. Not well written, but it may be useful for someone. The server MAY have many security holes. Use carefully!
+The goal of this project: create a stable, customizable and future-rich multiplatform Minecraft Classic server with a minimal dependencies count.
 ![atom_2021-08-08_08-14-18](https://user-images.githubusercontent.com/40758030/128621626-65725e58-561f-4cee-bbdb-fdf69c17b9a2.png)
 
 
@@ -10,7 +11,7 @@ Another Minecraft Classic server in C. Not well written, but it may be useful fo
 * Up to 256 worlds can be loaded
 * Plugins support
 * WebSocket client support ([More info](https://www.classicube.net/server/list/))
-* RCON server (Implemented in base plugin)
+* RCON server (Implemented in [base plugin](https://github.com/igor725/cs-base))
 * Own world generator (Written by [scaled](https://github.com/scaledteam) for [LuaClassic](https://github.com/igor725/LuaClassic), later ported to C by me)
 * Heartbeat support
 * Easy configurable
