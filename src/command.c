@@ -61,26 +61,18 @@ void Command_UnregisterByFunc(cmdFunc func) {
 	}
 }
 
-/*
-** По задумке эта функция делит строку с ньлайнами
-** на несколько и по одной шлёт их клиенту, вроде
-** как оно так и работает, но у меня есть сомнения
-** на счёт надёжности данной функции.
-** TODO: Разобраться, может ли здесь произойти краш.
-*/
-static void SendOutput(Client *caller, cs_str ret) {
+static void SendOutput(Client *caller, cs_char *ret) {
 	if(caller) {
-		while(*ret != '\0') {
-			cs_char *nlptr = (cs_char *)String_FirstChar(ret, '\r');
-			if(nlptr)
-				*nlptr++ = '\0';
-			else
-				nlptr = (cs_char *)ret;
+		cs_char *tmp = ret;
+		while(*tmp) {
+			cs_char *nlptr = (cs_char *)String_FirstChar(tmp, '\r');
+			if(nlptr) *nlptr++ = '\0';
+			else nlptr = tmp;
 			nlptr = (cs_char *)String_FirstChar(nlptr, '\n');
 			if(nlptr) *nlptr++ = '\0';
-			Client_Chat(caller, 0, ret);
+			Client_Chat(caller, 0, tmp);
 			if(!nlptr) break;
-			ret = nlptr;
+			tmp = nlptr;
 		}
 	} else
 		Log_Info(ret);
@@ -106,11 +98,11 @@ cs_bool Command_Handle(cs_char *str, Client *caller) {
 	Command *cmd = Command_GetByName(str);
 	if(cmd) {
 		if(cmd->flags & CMDF_CLIENT && !caller) {
-			SendOutput(caller, Lang_Get(Lang_CmdGrp, 4));
+			Client_Chat(caller, MT_CHAT, Lang_Get(Lang_CmdGrp, 4));
 			return true;
 		}
 		if(cmd->flags & CMDF_OP && (caller && !Client_IsOP(caller))) {
-			SendOutput(caller, Lang_Get(Lang_CmdGrp, 1));
+			Client_Chat(caller, MT_CHAT, Lang_Get(Lang_CmdGrp, 1));
 			return true;
 		}
 
