@@ -23,7 +23,7 @@ SET MSVC_OPTS=/MP /Oi /DZLIB_DLL /DZLIB_WINAPI
 SET MSVC_LIBS=kernel32.lib
 
 git --version >nul
-IF %ERRORLEVEL% EQ 0 (
+IF "%ERRORLEVEL%"=="0" (
 	FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --short HEAD`) DO (
 		SET MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_SHA#\"%%F\"
 	)
