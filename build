@@ -14,8 +14,6 @@ LIBS=""
 OUTBIN="server"
 if git --version >/dev/null 2>&1; then
 	COMMIT_SHA="-DGIT_COMMIT_SHA=\"$(git rev-parse --short HEAD)\""
-else
-	COMMIT_SHA="-DGIT_COMMIT_SHA=\"0000000\""
 fi
 PLUGIN_BUILD=0
 PLUGIN_INSTALL=0

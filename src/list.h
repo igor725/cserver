@@ -1,5 +1,7 @@
 #ifndef LIST_H
 #define LIST_H
+#include "core.h"
+
 typedef struct _AListField {
 	union {
 		cs_byte num8;

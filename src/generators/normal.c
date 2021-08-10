@@ -1,3 +1,8 @@
+#include "core.h"
+#include "world.h"
+#include "block.h"
+#include "csmath.h"
+
 static cs_bool gen_enable_caves = true,
 gen_enable_trees = true,
 gen_enable_ores = true;

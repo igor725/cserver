@@ -1,5 +1,7 @@
 #ifndef HTTP_H
 #define HTTP_H
+#include "core.h"
+
 #define HTTP_USERAGENT "CServer/1.0"
 
 #if defined(WINDOWS)

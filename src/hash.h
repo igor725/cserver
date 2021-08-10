@@ -1,5 +1,7 @@
 #ifndef HASH_H
 #define HASH_H
+#include "core.h"
+
 #if defined(WINDOWS)
 #include <windows.h>
 #include <wincrypt.h>

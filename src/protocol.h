@@ -1,5 +1,6 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
+#include "core.h"
 #include "client.h"
 
 #define ValidateClientState(client, st, ret) \

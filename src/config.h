@@ -1,5 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
+#include "core.h"
+
 typedef enum {
 	CFG_TINVALID,
 	CFG_TBOOL,

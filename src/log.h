@@ -1,5 +1,6 @@
 #ifndef LOG_H
 #define LOG_H
+#include "core.h"
 #include "platform.h"
 
 enum {

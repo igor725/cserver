@@ -1,5 +1,6 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
+#include "core.h"
 #include <stdio.h>
 
 #if defined(WINDOWS)

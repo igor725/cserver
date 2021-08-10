@@ -1,5 +1,6 @@
 #ifndef CLIENT_H
 #define CLIENT_H
+#include "core.h"
 #include "list.h"
 #include "block.h"
 #include "vector.h"

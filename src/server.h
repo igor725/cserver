@@ -1,5 +1,6 @@
 #ifndef SERVER_H
 #define SERVER_H
+#include "core.h"
 #include "platform.h"
 #include "config.h"
 

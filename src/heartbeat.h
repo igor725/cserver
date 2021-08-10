@@ -1,5 +1,6 @@
 #ifndef HEARTBEAT_H
 #define HEARTBEAT_H
+#include "core.h"
 #include "client.h"
 
 cs_bool Heartbeat_CheckKey(Client *client);

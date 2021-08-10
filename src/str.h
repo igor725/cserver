@@ -1,5 +1,6 @@
 #ifndef STR_H
 #define STR_H
+#include "core.h"
 #include <stdarg.h>
 
 API cs_char *String_FindSubstr(cs_str str, cs_str strsrch);

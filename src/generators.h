@@ -1,5 +1,6 @@
 #ifndef GENERATORS_H
 #define GENERATORS_H
+#include "core.h"
 #include "list.h"
 #include "world.h"
 

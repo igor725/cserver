@@ -134,6 +134,10 @@ typedef struct _CustomParticle {
 #define MAX_WORLDS 256
 #define MAX_EVENTS 128
 
+#ifndef GIT_COMMIT_SHA
+#define GIT_COMMIT_SHA "0000000"
+#endif
+
 #ifdef PLUGIN_BUILD
 EXP cs_bool Plugin_Load(void);
 EXP cs_bool Plugin_Unload(void);

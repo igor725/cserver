@@ -1,5 +1,7 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
+#include "core.h"
+
 typedef cs_bool(*pluginFunc)(void);
 typedef struct _Plugin {
 	cs_int8 id;

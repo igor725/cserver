@@ -1,5 +1,8 @@
 #ifndef WEBSOCKET_H
 #define WEBSOCKET_H
+#include "core.h"
+#include "platform.h"
+
 enum WebSockState {
 	WS_ST_HDR,
 	WS_ST_PLEN,

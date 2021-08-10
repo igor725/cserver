@@ -1,5 +1,7 @@
 #ifndef LANG_H
 #define LANG_H
+#include "core.h"
+
 typedef struct _LGroup {
 	cs_uint32 size;
 	cs_str *strings;

@@ -1,5 +1,6 @@
 #ifndef BLOCK_H
 #define BLOCK_H
+#include "core.h"
 #include "world.h"
 
 typedef enum {

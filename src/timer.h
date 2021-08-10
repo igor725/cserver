@@ -1,5 +1,7 @@
 #ifndef TIMER_H
 #define TIMER_H
+#include "core.h"
+
 typedef void(*TimerCallback)(cs_int32, cs_int32, void *);
 #define TIMER_FUNC(N) \
 static void N(cs_int32 ticks, cs_int32 left, void *ud)

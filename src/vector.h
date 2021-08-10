@@ -1,5 +1,7 @@
 #ifndef VECTOR_H
 #define VECTOR_H
+#include "core.h"
+
 typedef struct _SVec {
 	cs_int16 x, y, z;
 } SVec;

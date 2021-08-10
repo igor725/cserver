@@ -1,5 +1,6 @@
 #ifndef CSMATH_H
 #define CSMATH_H
+#include "core.h"
 #include "vector.h"
 
 typedef cs_uint64 RNGState;

@@ -1,5 +1,6 @@
 #ifndef WORLD_H
 #define WORLD_H
+#include "core.h"
 #include "platform.h"
 #include "vector.h"
 /*
