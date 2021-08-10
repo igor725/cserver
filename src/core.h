@@ -13,6 +13,7 @@
 #define API __declspec(dllimport)
 #define VAR __declspec(dllimport) extern
 #define EXP __declspec(dllexport) extern
+#define EXPF __declspec(dllexport)
 #endif // PLUGIN_BUILD
 
 #if _MSC_VER
@@ -39,12 +40,13 @@ typedef unsigned int cs_uintptr, cs_size;
 #define DLIB_EXT "so"
 
 #ifndef PLUGIN_BUILD
-#define API __attribute__((visibility("default"), noinline))
-#define VAR __attribute__((visibility("default"))) extern
+#define API __attribute__((__visibility__("default"), noinline))
+#define VAR __attribute__((__visibility__("default"))) extern
 #else
 #define API
 #define VAR extern
 #define EXP __attribute__((__visibility__("default"))) extern
+#define EXPF __attribute__((__visibility__("default")))
 #endif // PLUGIN_BUILD
 
 #define min(a, b) (((a)<(b))?(a):(b))
