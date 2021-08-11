@@ -2,7 +2,7 @@
 #define CONFIG_H
 #include "core.h"
 
-typedef enum {
+typedef enum _CETypes {
 	CFG_TINVALID,
 	CFG_TBOOL,
 	CFG_TINT32,
@@ -11,12 +11,10 @@ typedef enum {
 	CFG_TSTR
 } CETypes;
 
-enum {
-	CFG_FINVALID,
-	CFG_FREADED = BIT(0), // Была ли осуществленна попытка чтения значения из cfg файла
-	CFG_FCHANGED = BIT(1), // Отличается ли текущее значение записи от заданного стандартного
-	CFG_FHAVELIMITS = BIT(2) // Применимо только для integer типов
-};
+
+#define CFG_FREADED BIT(0) // Была ли осуществленна попытка чтения значения из cfg файла
+#define CFG_FCHANGED BIT(1) // Отличается ли текущее значение записи от заданного стандартного
+#define CFG_FHAVELIMITS BIT(2) // Применимо только для integer типов
 
 typedef struct _CEntry {
 	cs_byte flags; // Флаги cfg-записи

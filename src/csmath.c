@@ -57,6 +57,7 @@ cs_int32 Random_Next(RNGState *seed, cs_int32 n) {
 		bits  = (cs_int32)(*seed >> (48 - 31));
 		val   = bits % n;
 	} while (bits - val + (n - 1) < 0);
+
 	return val;
 }
 
@@ -65,6 +66,7 @@ cs_float Random_Float(RNGState *seed) {
 
 	*seed = (*seed * RND_VALUE + 0xBLL) & RND_MASK;
 	raw   = (cs_int32)(*seed >> (48 - 24));
+	
 	return raw / ((cs_float)(1 << 24));
 }
 

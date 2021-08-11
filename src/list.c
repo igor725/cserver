@@ -4,11 +4,10 @@
 #include "list.h"
 
 AListField *AList_AddField(AListField **head, void *value) {
-	AListField *currHead = *head;
 	AListField *ptr = Memory_Alloc(1, sizeof(AListField));
 	ptr->value.ptr = value;
-	if(currHead) currHead->next = ptr;
-	ptr->prev = currHead;
+	if(*head) (*head)->next = ptr;
+	ptr->prev = *head;
 	*head = ptr;
 	return ptr;
 }
@@ -24,12 +23,11 @@ void AList_Remove(AListField **head, AListField *field) {
 }
 
 KListField *KList_Add(KListField **head, void *key, void *value) {
-	KListField *currHead = *head;
 	KListField *ptr = Memory_Alloc(1, sizeof(KListField));
 	ptr->key.ptr = key;
 	ptr->value.ptr = value;
-	if(currHead) currHead->next = ptr;
-	ptr->prev = currHead;
+	if(*head) (*head)->next = ptr;
+	ptr->prev = *head;
 	*head = ptr;
 	return ptr;
 }

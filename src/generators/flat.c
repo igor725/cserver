@@ -1,4 +1,5 @@
 #include "core.h"
+#include "block.h"
 #include "world.h"
 
 static cs_bool flatgenerator(World *world, void *data) {
@@ -7,13 +8,9 @@ static cs_bool flatgenerator(World *world, void *data) {
 	SVec *dims = &wi->dimensions;
 
 	BlockID *blocks = World_GetBlockArray(world, NULL);
-	cs_int32 dirtEnd = dims->x * dims->z * (dims->y / 2 - 1);
-	for(cs_int32 i = 0; i < dirtEnd + dims->x * dims->z; i++) {
-		if(i < dirtEnd)
-			blocks[i] = 3;
-		else
-			blocks[i] = 2;
-	}
+	cs_uint32 dirtEnd = dims->x * dims->z * (dims->y / 2 - 1);
+	for(cs_uint32 i = 0; i < dirtEnd + dims->x * dims->z; i++)
+		blocks[i] = i < dirtEnd ? BLOCK_DIRT : BLOCK_GRASS;
 
 	World_SetProperty(world, PROP_CLOUDSLEVEL, dims->y + 2);
 	World_SetProperty(world, PROP_EDGELEVEL, dims->y / 2);
