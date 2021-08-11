@@ -17,7 +17,7 @@
 
 cs_bool Server_Active = false;
 CStore *Server_Config = NULL;
-cs_uint64 Server_StartTime = 0;
+cs_uint64 Server_StartTime = 0, Server_LatestBadTick = 0;
 Socket Server_Socket = 0;
 
 THREAD_FUNC(ClientInitThread) {
@@ -313,10 +313,12 @@ void Server_StartLoop(void) {
 		curr = Time_GetMSec();
 		delta = (cs_int32)(curr - last);
 		if(delta < 0) {
+			Server_LatestBadTick = Time_GetMSec();
 			Log_Warn(Lang_Get(Lang_ConGrp, 2));
 			delta = 0;
 		}
 		if(delta > 500) {
+			Server_LatestBadTick = Time_GetMSec();
 			Log_Warn(Lang_Get(Lang_ConGrp, 1), delta);
 			delta = 500;
 		}

@@ -1028,7 +1028,7 @@ void Client_Tick(Client *client, cs_int32 delta) {
 
 	client->ppstm += delta;
 	if(client->ppstm > 1000) {
-		if(client->pps > MAX_CLIENT_PPS) {
+		if(client->pps > MAX_CLIENT_PPS && Server_LatestBadTick + 5000 < Time_GetMSec()) {
 			Client_Kick(client, Lang_Get(Lang_KickGrp, 9));
 			return;
 		}
