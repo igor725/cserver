@@ -278,7 +278,7 @@ THREAD_FUNC(WorldSaveThread) {
 
 	Bytef out[CHUNK_SIZE];
 	cs_int32 ret;
-	z_stream stream = {0};
+	z_stream stream;
 	stream.zalloc = Z_NULL;
 	stream.zfree = Z_NULL;
 	stream.opaque = Z_NULL;
@@ -362,7 +362,7 @@ THREAD_FUNC(WorldLoadThread) {
 
 	cs_int32 ret;
 	Bytef in[CHUNK_SIZE];
-	z_stream stream = {0};
+	z_stream stream;
 	stream.zalloc = Z_NULL;
 	stream.zfree = Z_NULL;
 	stream.opaque = Z_NULL;

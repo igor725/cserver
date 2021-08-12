@@ -287,14 +287,14 @@ THREAD_FUNC(WorldSendThread) {
 
 	Vanilla_WriteLvlInit(client, World_GetBlockArraySize(world));
 	Mutex_Lock(client->mutex);
-	cs_byte *data = (cs_byte *)client->wrbuf;
 
+	cs_byte *data = (cs_byte *)client->wrbuf;
 	*data++ = 0x03;
 	cs_uint16 *len = (cs_uint16 *)data++;
 	Bytef *out = ++data;
 
 	cs_int32 ret, wndBits;
-	z_stream stream = {0};
+	z_stream stream;
 	stream.zalloc = Z_NULL;
 	stream.zfree = Z_NULL;
 	stream.opaque = Z_NULL;
@@ -384,11 +384,6 @@ cs_bool Client_ChangeWorld(Client *client, World *world) {
 }
 
 void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
-	/*
-	** Нет смысла пыжиться в попытках
-	** поменять значения клиенту, если
-	** он не поддерживает CPE вообще.
-	*/
 	if(!client->cpeData) return;
 	WorldInfo *wi = &world->info;
 	cs_byte modval = wi->modval,
