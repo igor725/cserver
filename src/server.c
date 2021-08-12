@@ -127,6 +127,11 @@ cs_bool Server_Init(void) {
 		Log_Error("Your zlib installation has no gzip support.");
 		return false;
 	}
+	if(zflags & BIT(21)) {
+		Log_Warn("Your zlib installation supports only one, lowest compression level!");
+		Log_Warn("This means less CPU load in deflate tasks, but the worlds will take much more space on your disk.");
+		Log_Warn("It also means a longer connection of players to the server.");
+	}
 
 	CStore *cfg = Config_NewStore(MAINCFG);
 	CEntry *ent;
