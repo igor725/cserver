@@ -278,10 +278,11 @@ THREAD_FUNC(WorldSaveThread) {
 
 	Bytef out[CHUNK_SIZE];
 	cs_int32 ret;
-	z_stream stream;
-	stream.zalloc = Z_NULL;
-	stream.zfree = Z_NULL;
-	stream.opaque = Z_NULL;
+	z_stream stream = {
+		.zalloc = Z_NULL,
+		.zfree = Z_NULL,
+		.opaque = Z_NULL
+	};
 
 	if((ret = deflateInit2(
 		&stream,
@@ -362,10 +363,11 @@ THREAD_FUNC(WorldLoadThread) {
 
 	cs_int32 ret;
 	Bytef in[CHUNK_SIZE];
-	z_stream stream;
-	stream.zalloc = Z_NULL;
-	stream.zfree = Z_NULL;
-	stream.opaque = Z_NULL;
+	z_stream stream = {
+		.zalloc = Z_NULL,
+		.zfree = Z_NULL,
+		.opaque = Z_NULL
+	};
 
 	if((ret = inflateInit2(&stream, 31)) != Z_OK) {
 		ERROR_PRINT(ET_ZLIB, ret, false);

@@ -273,7 +273,6 @@ cs_bool Client_Despawn(Client *client) {
 
 THREAD_FUNC(WorldSendThread) {
 	Client *client = (Client *)param;
-	if(client->closed) return 0;
 	PlayerData *pd = client->playerData;
 	World *world = pd->world;
 
@@ -294,10 +293,11 @@ THREAD_FUNC(WorldSendThread) {
 	Bytef *out = ++data;
 
 	cs_int32 ret, wndBits;
-	z_stream stream;
-	stream.zalloc = Z_NULL;
-	stream.zfree = Z_NULL;
-	stream.opaque = Z_NULL;
+	z_stream stream = {
+		.zalloc = Z_NULL,
+		.zfree = Z_NULL,
+		.opaque = Z_NULL
+	};
 
 	if(Client_GetExtVer(client, EXT_FASTMAP)) {
 		stream.next_in = World_GetBlockArray(world, &stream.avail_in);
@@ -308,14 +308,14 @@ THREAD_FUNC(WorldSendThread) {
 	}
 
 	if((ret = deflateInit2(
-		&stream,
-		Z_DEFAULT_COMPRESSION,
-		Z_DEFLATED,
-		wndBits,
-		8,
-		Z_DEFAULT_STRATEGY)) != Z_OK) {
-			Log_Error("deflateInit2 error: %s", zError(ret));
-		pd->state = STATE_WLOADERR;
+	&stream,
+	Z_DEFAULT_COMPRESSION,
+	Z_DEFLATED,
+	wndBits,
+	8,
+	Z_DEFAULT_STRATEGY)) != Z_OK) {
+		Log_Error("deflateInit2 error: %s", zError(ret));
+		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
 		return 0;
 	}
 
@@ -370,10 +370,8 @@ cs_bool Client_ChangeWorld(Client *client, World *world) {
 	if(Client_IsInWorld(client, world)) return false;
 	PlayerData *pd = client->playerData;
 
-	if(pd->state != STATE_INITIAL && pd->state != STATE_INGAME) {
-		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
+	if(pd->state != STATE_INITIAL && pd->state != STATE_INGAME)
 		return false;
-	}
 
 	Client_Despawn(client);
 	pd->world = world;

@@ -40,7 +40,7 @@ cs_bool Lang_Init(void) {
 	Lang_Set(Lang_KickGrp, 3, "This name is already in use");
 	Lang_Set(Lang_KickGrp, 4, "Auth failed");
 	Lang_Set(Lang_KickGrp, 5, "Server stopped");
-	Lang_Set(Lang_KickGrp, 6, "Map sending failed");
+	Lang_Set(Lang_KickGrp, 6, "World compression failed");
 	Lang_Set(Lang_KickGrp, 7, "Packet reading error");
 	Lang_Set(Lang_KickGrp, 8, "Invalid block ID");
 	Lang_Set(Lang_KickGrp, 9, "Too many packets per second");
