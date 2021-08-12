@@ -14,6 +14,7 @@
 #include "lang.h"
 #include "timer.h"
 #include "consoleio.h"
+#include <zlib.h>
 
 cs_bool Server_Active = false;
 CStore *Server_Config = NULL;
@@ -120,6 +121,12 @@ static void Bind(cs_str ip, cs_uint16 port) {
 
 cs_bool Server_Init(void) {
 	if(!Socket_Init() || !Lang_Init() || !Generators_Init()) return false;
+
+	cs_ulong zflags = zlibCompileFlags();
+	if(zflags & BIT(17)) {
+		Log_Error("Your zlib installation has no gzip support.");
+		return false;
+	}
 
 	CStore *cfg = Config_NewStore(MAINCFG);
 	CEntry *ent;

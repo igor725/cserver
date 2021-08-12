@@ -1,0 +1,35 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build debug",
+			"type": "shell",
+			"command": "build.bat",
+			"args": [
+				"wall",
+				"dbg"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "silent"
+			},
+			"problemMatcher": "$msCompile"
+		},
+		{
+			"label": "Build release",
+			"type": "shell",
+			"command": "build.bat",
+			"args": [
+				"wall"
+			],
+			"group": "build",
+			"presentation": {
+				"reveal": "silent"
+			},
+			"problemMatcher": "$msCompile"
+		}
+	]
+}

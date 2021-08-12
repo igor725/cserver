@@ -2,22 +2,24 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch x64 debug",
+            "name": "Launch debug",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/out/x64dbg/server.exe",
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/out/x64dbg",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "preLaunchTask": "Build debug"
         },
         {
-            "name": "Launch x86 debug",
+            "name": "Launch release",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/out/x86dbg/server.exe",
+            "program": "${workspaceFolder}/out/x64/server.exe",
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/out/x86dbg",
-            "console": "integratedTerminal"
-        }
+            "cwd": "${workspaceFolder}/out/x64",
+            "console": "integratedTerminal",
+            "preLaunchTask": "Build release"
+        },
     ]
 }

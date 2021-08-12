@@ -7,7 +7,6 @@ SET ARCH=%VSCMD_ARG_TGT_ARCH%
 SET DEBUG=0
 SET PROJECT_ROOT=.
 SET BUILD_PLUGIN=0
-SET ECODE=0
 
 SET BINNAME=server.exe
 
@@ -131,17 +130,14 @@ IF "%BUILD_PLUGIN%"=="1" (
 SET MSVC_OPTS=%MSVC_OPTS% %WARN_LEVEL% %OPT_LEVEL% /Fo%OBJDIR%\
 set MSVC_OPTS=%MSVC_OPTS% /I.\zlib\include\
 SET MSVC_OPTS=%MSVC_OPTS% /link /libpath:.\zlib\lib%ARCH%\ %MSVC_LINKER%
+SET SOURCES=%PROJECT_ROOT%\src\*.c
 
 IF EXIST %PROJECT_ROOT%\version.rc (
-	RC /nologo /fo%OBJDIR%\version.res %PROJECT_ROOT%\version.rc
-	SET MSVC_OPTS=%OBJDIR%\version.res %MSVC_OPTS%
+	RC /nologo /Fo%OBJDIR%\version.res %PROJECT_ROOT%\version.rc
+	SET SOURCES=%SOURCES% %OBJDIR%\version.res
 )
 
-SET SRC_LIST=
-FOR /F "tokens=* USEBACKQ" %%A IN (`dir /b /a-d %PROJECT_ROOT%\src\*.c`) DO (
-	SET SRC_LIST=!SRC_LIST! %PROJECT_ROOT%\src\%%A
-)
-CL%SRC_LIST% /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%
+CL %SOURCES% /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%
 IF NOT "%ERRORLEVEL%"=="0" GOTO compileerror
 
 IF "%BUILD_PLUGIN%"=="1" (
@@ -152,19 +148,19 @@ IF "%BUILD_PLUGIN%"=="1" (
 			COPY /Y !OUTDIR!\%PLUGNAME%.pdb !SVPLUGDIR!
 		)
 	)
-  GOTO end
+  GOTO endok
 ) else GOTO binstart
 
 :binstart
 IF "%RUNMODE%"=="0" start /D %OUTDIR% %BINNAME%
 IF "%RUNMODE%"=="1" GOTO onerun
-GOTO end
+GOTO endok
 
 :onerun
 PUSHD %OUTDIR%
 %BINNAME%
 POPD
-GOTO end
+GOTO endok
 
 :vcerror
 ECHO Error: Script must be runned from VS Native Tools Command Prompt.
@@ -177,9 +173,12 @@ GOTO end
 
 :compileerror
 ECHO Something went wrong :(
-SET ECODE=1
 GOTO end
 
 :end
 endlocal
-EXIT /B %ECODE%
+EXIT /B 2
+
+:endok
+endlocal
+EXIT /B 0
