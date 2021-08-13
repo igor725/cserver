@@ -71,6 +71,10 @@ Plugin *Plugin_Get(cs_str name) {
 	return NULL;
 }
 
+cs_bool Plugin_GetSymbol(Plugin *plugin, cs_str name, void *sym) {
+	return DLib_GetSym(plugin->lib, name, sym);
+}
+
 cs_bool Plugin_UnloadDll(Plugin *plugin) {
 	if(plugin->unload && !(*(pluginFunc)plugin->unload)())
 		return false;

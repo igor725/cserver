@@ -17,5 +17,6 @@ void Plugin_UnloadAll(void);
 API cs_bool Plugin_LoadDll(cs_str name);
 API cs_bool Plugin_UnloadDll(Plugin *plugin);
 API Plugin *Plugin_Get(cs_str name);
+API cs_bool Plugin_GetSymbol(Plugin *plugin, cs_str name, void *proc);
 VAR Plugin *Plugins_List[MAX_PLUGINS];
 #endif // PLUGIN_H
