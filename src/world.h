@@ -3,6 +3,8 @@
 #include "core.h"
 #include "platform.h"
 #include "vector.h"
+#include "list.h"
+
 /*
 ** Если какой-то из дефайнов ниже
 ** вырос, удостовериться, что
@@ -78,7 +80,6 @@ typedef struct _WorldInfo {
 } WorldInfo;
 
 typedef struct _World {
-	WorldID id;
 	cs_str name;
 	WorldInfo info;
 	cs_bool modified;
@@ -125,7 +126,6 @@ API Color3* World_GetEnvColor(World *world, cs_byte type);
 API cs_int8 World_GetWeather(World *world);
 
 API World *World_GetByName(cs_str name);
-API World *World_GetByID(WorldID id);
 
-VAR World *Worlds_List[MAX_WORLDS];
+VAR AListField *World_Head;
 #endif // WORLD_H

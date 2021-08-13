@@ -8,7 +8,6 @@ The goal of this project: create a stable, customizable and future-rich multipla
 * Classic Protocol Extension
 * Multiplatform (Windows/Linux)
 * Multithreaded clients processing
-* Up to 256 worlds can be loaded
 * Plugins support
 * WebSocket client support ([More info](https://www.classicube.net/server/list/))
 * RCON server (Implemented in [base plugin](https://github.com/igor725/cs-base))

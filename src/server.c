@@ -203,17 +203,17 @@ cs_bool Server_Init(void) {
 
 	Directory_Ensure("worlds");
 	cs_str worlds = Config_GetStrByKey(cfg, CFG_WORLDS_KEY);
-	WorldID wIndex = 0;
+	cs_uint32 wIndex = 0;
 	if(*worlds == '*') {
 		DirIter wIter;
 		if(Iter_Init(&wIter, "worlds", "cws")) {
 			do {
 				if(wIter.isDir || !wIter.cfile) continue;
 				World *tmp = World_Create(wIter.cfile);
-				tmp->id = wIndex++;
 				if(!World_Load(tmp) || !World_Add(tmp))
 					World_Free(tmp);
-			} while(Iter_Next(&wIter) && wIndex < MAX_WORLDS);
+				else wIndex++;
+			} while(Iter_Next(&wIter));
 		}
 		Iter_Close(&wIter);
 
@@ -224,7 +224,7 @@ cs_bool Server_Init(void) {
 			World_AllocBlockArray(tmp);
 			if(!Generators_Use(tmp, "normal", NULL))
 				Log_Error("Oh! Error happened in the world generator.");
-			Worlds_List[0] = tmp;
+			AList_AddField(&World_Head, tmp);
 		}
 	} else {
 		cs_bool skip_creating = false;
@@ -243,9 +243,9 @@ cs_bool Server_Init(void) {
 					if(World_Load(tmp)) {
 						Waitable_Wait(tmp->wait);
 						if(World_IsReadyToPlay(tmp)) {
-							tmp->id = wIndex++;
-							Worlds_List[tmp->id] = tmp;
+							AList_AddField(&World_Head, tmp);
 							skip_creating = true;
+							wIndex++;
 						}
 					}
 				} else if(!skip_creating && state == 1) {
@@ -259,8 +259,8 @@ cs_bool Server_Init(void) {
 					if(tmp && dims.x > 0 && dims.y > 0 && dims.z > 0) {
 						World_SetDimensions(tmp, &dims);
 						World_AllocBlockArray(tmp);
-						tmp->id = wIndex++;
-						Worlds_List[tmp->id] = tmp;
+						AList_AddField(&World_Head, tmp);
+						wIndex++;
 					} else {
 						Log_Error("Invalid dimensions specified for \"%s\"", tmp->name);
 						World_Free(tmp);
@@ -287,7 +287,7 @@ cs_bool Server_Init(void) {
 		} while(state < 3);
 	}
 
-	if(!Worlds_List[0]) {
+	if(!World_Head) {
 		Log_Error("No worlds loaded.");
 		return false;
 	} else

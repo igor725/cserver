@@ -99,7 +99,6 @@ typedef const cs_char *cs_str;
 typedef cs_byte cs_bool;
 typedef cs_byte BlockID;
 typedef cs_int8 ClientID;
-typedef cs_int16 WorldID;
 typedef struct {
 	cs_int16 r, g, b, a;
 } Color4;
@@ -131,7 +130,6 @@ typedef struct _CustomParticle {
 #define MAX_CLIENT_PPS 128
 #define MAX_CFG_LEN 128
 #define MAX_CLIENTS 127
-#define MAX_WORLDS 256
 #define MAX_EVENTS 128
 
 #ifndef GIT_COMMIT_SHA

@@ -5,21 +5,20 @@
 #include "server.h"
 #include "world.h"
 #include "event.h"
+#include "list.h"
 #include <zlib.h>
 
-World *Worlds_List[MAX_WORLDS] = {0};
+AListField *World_Head = NULL;
 
 void Worlds_SaveAll(cs_bool join, cs_bool unload) {
-	for(cs_int32 i = 0; i < MAX_WORLDS; i++) {
-		World *world = Worlds_List[i];
+	AListField *tmp;
 
-		if(i < MAX_WORLDS && world) {
-			if(World_Save(world, unload) && join) {
-				Waitable_Wait(world->wait);
-				if(!Server_Active) {
-					World_Free(world);
-				}
-			}
+	List_Iter(tmp, World_Head) {
+		World *world = (World *)tmp->value.ptr;
+		if(World_Save(world, unload) && join) {
+			Waitable_Wait(world->wait);
+			if(!Server_Active)
+				World_Free(world);
 		}
 	}
 }
@@ -30,7 +29,6 @@ World *World_Create(cs_str name) {
 	tmp->name = String_AllocCopy(name);
 	tmp->wait = Waitable_Create();
 	tmp->process = WP_NOPROC;
-	tmp->id = -1;
 
 	/*
 	** Устанавливаем дефолтные значения
@@ -57,20 +55,7 @@ World *World_Create(cs_str name) {
 }
 
 cs_bool World_Add(World *world) {
-	if(world->id == -1) {
-		for(WorldID i = 0; i < MAX_WORLDS; i++) {
-			if(!Worlds_List[i]) {
-				world->id = i;
-				Worlds_List[i] = world;
-				return true;
-			}
-		}
-		return false;
-	}
-
-	if(world->id > MAX_WORLDS) return false;
-	Worlds_List[world->id] = world;
-	return true;
+	return AList_AddField(&World_Head, world) != NULL;
 }
 
 cs_bool World_IsReadyToPlay(World *world) {
@@ -79,16 +64,13 @@ cs_bool World_IsReadyToPlay(World *world) {
 }
 
 World *World_GetByName(cs_str name) {
-	for(WorldID i = 0; i < MAX_WORLDS; i++) {
-		World *world = Worlds_List[i];
+	AListField *tmp;
+	List_Iter(tmp, World_Head) {
+		World *world = (World *)tmp->value.ptr;
 		if(world && String_CaselessCompare(world->name, name))
 			return world;
 	}
 	return NULL;
-}
-
-World *World_GetByID(WorldID id) {
-	return id < MAX_WORLDS ? Worlds_List[id] : NULL;
 }
 
 void World_SetDimensions(World *world, const SVec *dims) {
@@ -181,8 +163,14 @@ cs_uint32 World_GetBlockArraySize(World *world) {
 }
 
 void World_Free(World *world) {
+	AListField *tmp;
+	List_Iter(tmp, World_Head) {
+		if(tmp->value.ptr == world) {
+			AList_Remove(&World_Head, tmp);
+			break;
+		}
+	}
 	Waitable_Free(world->wait);
-	if(world->id != -1) Worlds_List[world->id] = NULL;
 	Memory_Free(world);
 }
 

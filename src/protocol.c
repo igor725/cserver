@@ -365,7 +365,7 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 		}
 	} else {
 		Event_Call(EVT_ONHANDSHAKEDONE, client);
-		Client_ChangeWorld(client, Worlds_List[0]);
+		Client_ChangeWorld(client, (World *)World_Head->value.ptr);
 	}
 
 	return true;
@@ -904,7 +904,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 
 	if(--cpd->_extCount == 0) {
 		Event_Call(EVT_ONHANDSHAKEDONE, client);
-		Client_ChangeWorld(client, Worlds_List[0]);
+		Client_ChangeWorld(client, (World *)World_Head->value.ptr);
 	}
 
 	return true;
