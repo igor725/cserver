@@ -16,8 +16,8 @@
 #include "consoleio.h"
 #include <zlib.h>
 
-cs_bool Server_Active = false;
 CStore *Server_Config = NULL;
+cs_bool Server_Active = false, Server_Ready = false;
 cs_uint64 Server_StartTime = 0, Server_LatestBadTick = 0;
 Socket Server_Socket = 0;
 
@@ -182,10 +182,10 @@ cs_bool Server_Init(void) {
 	Config_SetComment(ent, "Enable ClassiCube heartbeat.");
 	Config_SetDefaultBool(ent, false);
 
-	ent = Config_NewEntry(cfg, CFG_HEARTBEATDELAY_KEY, CFG_TINT32);
+	ent = Config_NewEntry(cfg, CFG_HEARTBEATDELAY_KEY, CFG_TINT8);
 	Config_SetComment(ent, "Heartbeat request delay. [1-60]");
 	Config_SetLimit(ent, 1, 60);
-	Config_SetDefaultInt32(ent, 10);
+	Config_SetDefaultInt8(ent, 10);
 
 	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_PUBLIC_KEY, CFG_TBOOL);
 	Config_SetComment(ent, "Show server in the ClassiCube server list.");
@@ -294,7 +294,7 @@ cs_bool Server_Init(void) {
 		Log_Info("%d world(-s) successfully loaded.", wIndex);
 
 	if(Config_GetBoolByKey(cfg, CFG_HEARTBEAT_KEY))
-		Heartbeat_Start(Config_GetInt32ByKey(cfg, CFG_HEARTBEATDELAY_KEY));
+		Heartbeat_Start(Config_GetInt8ByKey(cfg, CFG_HEARTBEATDELAY_KEY));
 
 	cs_str ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
 	cs_uint16 port = Config_GetInt16ByKey(cfg, CFG_SERVERPORT_KEY);
@@ -303,6 +303,7 @@ cs_bool Server_Init(void) {
 	if(ConsoleIO_Init())
 		Log_Info(Lang_Get(Lang_ConGrp, 8));
 	Thread_Create(AcceptThread, NULL, true);
+	Server_Ready = true;
 	return true;
 }
 
