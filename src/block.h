@@ -91,9 +91,9 @@ typedef enum {
 } BEBlockDrawTypes;
 
 typedef struct _BlockDef {
+	cs_str name;
 	BlockID id;
 	cs_byte flags;
-	cs_str name;
 	union {
 		struct _BlockParamsExt {
 			cs_byte solidity;

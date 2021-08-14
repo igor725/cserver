@@ -47,13 +47,13 @@ typedef struct _CGroup {
 	AListField *field;
 } CGroup;
 
-typedef struct {
+typedef struct _CPEHacks {
 	cs_bool flying, noclip, speeding,
 	spawnControl, tpv;
 	cs_int16 jumpHeight;
 } CPEHacks;
 
-typedef struct {
+typedef struct _CPEData {
 	CPEExt *headExtension; // Список дополнений клиента
 	cs_str appName, // Название игрового клиента
 	skin; // Скин игрока, может быть NULL [ExtPlayerList]
@@ -67,23 +67,23 @@ typedef struct {
 	group; // Текущая группа игрока [ExtPlayerList]
 	cs_uint16 pingData; // Данные, цепляемые к пинг-запросу
 	cs_uint32 pingTime; // Сам пинг, в миллисекундах
-	cs_int32 rotation[3]; // Вращение модели игрока в градусах [EntityProperty]
 	cs_uint64 pingStart; // Время начала пинг-запроса
+	cs_int32 rotation[3]; // Вращение модели игрока в градусах [EntityProperty]
 } CPEData;
 
-typedef struct {
-	cs_int32 state; // Текущее состояние игрока
+typedef struct _PData {
 	cs_str key, // Ключ, полученный от игрока
 	name; // Имя игрока
 	World *world; // Мир, в котором игрок обитает
 	Vec position; // Позиция игрока
 	Ang angle; // Угол вращения игрока
+	cs_int32 state; // Текущее состояние игрока
 	cs_bool isOP, // Является ли игрок оператором
 	spawned, // Заспавнен ли игрок
 	firstSpawn; // Был лы этот спавн первым с момента захода на сервер
 } PlayerData;
 
-typedef struct {
+typedef struct _Client {
 	cs_bool closed; // В случае значения true сервер прекращает общение с клиентом и удаляет его
 	Socket sock; // Файловый дескриптор сокета клиента
 	ClientID id; // Используется в качестве entityid

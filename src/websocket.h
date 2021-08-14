@@ -20,16 +20,16 @@ enum WebSockErrors {
 };
 
 typedef struct {
+	enum WebSockState state;
+	enum WebSockErrors error;
+	cs_byte opcode;
+	cs_bool done;
+	cs_uint16 plen;
 	Socket sock;
 	cs_str proto;
 	cs_char *recvbuf,
 	header[2],
 	mask[4];
-	enum WebSockState state;
-	enum WebSockErrors error;
-	cs_uint16 plen;
-	cs_byte opcode;
-	cs_bool done;
 } WebSock;
 
 API cs_bool WebSock_DoHandshake(WebSock *ws);

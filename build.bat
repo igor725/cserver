@@ -35,7 +35,7 @@ IF "%1"=="dbg" SET DEBUG=1
 IF "%1"=="run" SET RUNMODE=0
 IF "%1"=="runsame" SET RUNMODE=1
 IF "%1"=="od" SET OPT_LEVEL=/Od
-IF "%1"=="wall" SET WARN_LEVEL=/Wall /wd4820 /wd5045 /wd4710
+IF "%1"=="wall" SET WARN_LEVEL=/Wall /wd4820 /wd5045
 IF "%1"=="w4" SET WARN_LEVEL=/W4
 IF "%1"=="w0" SET WARN_LEVEL=/W0
 IF "%1"=="wx" SET MSVC_OPTS=%MSVC_OPTS% /WX

@@ -64,11 +64,10 @@ typedef cs_bool(*packetHandler)(Client *, cs_char *);
 
 typedef struct _Packet {
 	cs_byte id;
-	cs_uint16 size;
 	cs_bool haveCPEImp;
+	cs_uint16 size, extSize;
 	cs_uint32 exthash;
 	cs_int32 extVersion;
-	cs_uint16 extSize;
 	packetHandler handler;
 	packetHandler cpeHandler;
 } Packet;

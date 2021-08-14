@@ -987,12 +987,10 @@ void Packet_RegisterExtension(cs_str name, cs_int32 version) {
 	++extensionsCount;
 }
 
-struct extReg {
+static const struct extReg {
 	cs_str name;
 	cs_int32 version;
-};
-
-static const struct extReg serverExtensions[] = {
+} serverExtensions[] = {
 	{"ClickDistance", 1},
 	// {"CustomBlocks", 1},
 	{"HeldBlock", 1},
