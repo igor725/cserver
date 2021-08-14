@@ -271,101 +271,6 @@ cs_bool Client_Despawn(Client *client) {
 
 #define CHUNK_SIZE 1024
 
-THREAD_FUNC(WorldSendThread) {
-	Client *client = (Client *)param;
-	PlayerData *pd = client->playerData;
-	World *world = pd->world;
-
-	if(world->process == WP_LOADING)
-		Waitable_Wait(world->wait);
-
-	if(!world->loaded) {
-		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
-		return 0;
-	}
-
-	Vanilla_WriteLvlInit(client, World_GetBlockArraySize(world));
-	Mutex_Lock(client->mutex);
-
-	cs_byte *data = (cs_byte *)client->wrbuf;
-	*data++ = 0x03;
-	cs_uint16 *len = (cs_uint16 *)data++;
-	Bytef *out = ++data;
-
-	cs_int32 ret, wndBits;
-	z_stream stream = {
-		.zalloc = Z_NULL,
-		.zfree = Z_NULL,
-		.opaque = Z_NULL
-	};
-
-	if(Client_GetExtVer(client, EXT_FASTMAP)) {
-		stream.next_in = World_GetBlockArray(world, &stream.avail_in);
-		wndBits = -15;
-	} else {
-		stream.next_in = World_GetData(world, &stream.avail_in);
-		wndBits = 31;
-	}
-
-	if((ret = deflateInit2(
-	&stream,
-	Z_DEFAULT_COMPRESSION,
-	Z_DEFLATED,
-	wndBits,
-	8,
-	Z_DEFAULT_STRATEGY)) != Z_OK) {
-		Log_Error("deflateInit2 error: %s", zError(ret));
-		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
-		return 0;
-	}
-
-	cs_byte zstate = 0;
-	do {
-		stream.next_out = out;
-		stream.avail_out = CHUNK_SIZE;
-
-		if((ret = deflate(&stream, zstate == 0 ? Z_NO_FLUSH : Z_FINISH)) == Z_STREAM_ERROR) {
-			pd->state = STATE_WLOADERR;
-			goto world_send_end;
-		}
-
-		if(stream.avail_out == CHUNK_SIZE) {
-			if(zstate == 1)
-				zstate = 2;
-			else
-				zstate = 1;
-		} else {
-			*len = htons(CHUNK_SIZE - (cs_uint16)stream.avail_out);
-			if(client->closed || !Client_Send(client, CHUNK_SIZE + 4)) {
-				pd->state = STATE_WLOADERR;
-				goto world_send_end;
-			}
-		}
-	} while(zstate != 2);
-	pd->state = STATE_WLOADDONE;
-
-	world_send_end:
-	deflateEnd(&stream);
-	Mutex_Unlock(client->mutex);
-	if(pd->state == STATE_WLOADDONE) {
-		pd->state = STATE_INGAME;
-		pd->position = world->info.spawnVec;
-		pd->angle = world->info.spawnAng;
-		Event_Call(EVT_PRELVLFIN, client);
-		if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
-			for(BlockID id = 0; id < 255; id++) {
-				BlockDef *bdef = Block_GetDefinition(id);
-				if(bdef) Client_DefineBlock(client, bdef);
-			}
-		}
-		Vanilla_WriteLvlFin(client, &world->info.dimensions);
-		Client_Spawn(client);
-	} else
-		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
-
-	return 0;
-}
-
 cs_bool Client_ChangeWorld(Client *client, World *world) {
 	if(Client_IsInWorld(client, world)) return false;
 	PlayerData *pd = client->playerData;
@@ -377,7 +282,7 @@ cs_bool Client_ChangeWorld(Client *client, World *world) {
 	pd->world = world;
 	pd->state = STATE_MOTD;
 	if(!world->loaded) World_Load(world);
-	client->thread[1] = Thread_Create(WorldSendThread, client, false);
+	pd->reqWorldChange = world;
 	return true;
 }
 
@@ -773,8 +678,8 @@ cs_bool Client_Update(Client *client) {
 }
 
 void Client_Free(Client *client) {
-	if(client->thread[0])
-		Thread_Join(client->thread[0]);
+	if(client->thread)
+		Thread_Join(client->thread);
 
 	if(client->id >= 0)
 		Clients_List[client->id] = NULL;
@@ -913,6 +818,98 @@ static void PacketReceiverRaw(Client *client) {
 		client->closed = true;
 }
 
+static void WorldSendThread(Client *client, World *world) {
+	PlayerData *pd = client->playerData;
+	
+	if(world->process == WP_LOADING)
+		Waitable_Wait(world->wait);
+
+	if(!world->loaded) {
+		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
+		return;
+	}
+
+	Vanilla_WriteLvlInit(client, World_GetBlockArraySize(world));
+	Mutex_Lock(client->mutex);
+
+	cs_byte *data = (cs_byte *)client->wrbuf;
+	*data++ = 0x03;
+	cs_uint16 *len = (cs_uint16 *)data++;
+	Bytef *out = ++data;
+
+	cs_int32 ret, wndBits;
+	z_stream stream = {
+		.zalloc = Z_NULL,
+		.zfree = Z_NULL,
+		.opaque = Z_NULL
+	};
+
+	if(Client_GetExtVer(client, EXT_FASTMAP)) {
+		stream.next_in = World_GetBlockArray(world, &stream.avail_in);
+		wndBits = -15;
+	} else {
+		stream.next_in = World_GetData(world, &stream.avail_in);
+		wndBits = 31;
+	}
+
+	if((ret = deflateInit2(
+	&stream,
+	Z_DEFAULT_COMPRESSION,
+	Z_DEFLATED,
+	wndBits,
+	8,
+	Z_DEFAULT_STRATEGY)) != Z_OK) {
+		Log_Error("deflateInit2 error: %s", zError(ret));
+		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
+		return;
+	}
+
+	cs_byte zstate = 0;
+	do {
+		stream.next_out = out;
+		stream.avail_out = CHUNK_SIZE;
+
+		if((ret = deflate(&stream, zstate == 0 ? Z_NO_FLUSH : Z_FINISH)) == Z_STREAM_ERROR) {
+			pd->state = STATE_WLOADERR;
+			goto world_send_end;
+		}
+
+		if(stream.avail_out == CHUNK_SIZE) {
+			if(zstate == 1)
+				zstate = 2;
+			else
+				zstate = 1;
+		} else {
+			*len = htons(CHUNK_SIZE - (cs_uint16)stream.avail_out);
+			if(client->closed || !Client_Send(client, CHUNK_SIZE + 4)) {
+				pd->state = STATE_WLOADERR;
+				goto world_send_end;
+			}
+		}
+	} while(zstate != 2);
+	pd->state = STATE_WLOADDONE;
+
+	world_send_end:
+	deflateEnd(&stream);
+	Mutex_Unlock(client->mutex);
+	if(pd->state == STATE_WLOADDONE) {
+		pd->world = world;
+		pd->state = STATE_INGAME;
+		pd->position = world->info.spawnVec;
+		pd->angle = world->info.spawnAng;
+		Event_Call(EVT_PRELVLFIN, client);
+		if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
+			for(BlockID id = 0; id < 255; id++) {
+				BlockDef *bdef = Block_GetDefinition(id);
+				if(bdef) Client_DefineBlock(client, bdef);
+			}
+		}
+		Vanilla_WriteLvlFin(client, &world->info.dimensions);
+		Client_Spawn(client);
+	} else
+		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
+}
+
 THREAD_FUNC(ClientThread) {
 	Client *client = (Client *)param;
 
@@ -922,9 +919,9 @@ THREAD_FUNC(ClientThread) {
 		else
 			PacketReceiverRaw(client);
 
-		if(client->thread[1]) {
-			Thread_Join(client->thread[1]);
-			client->thread[1] = NULL;
+		if(client->playerData->reqWorldChange) {
+			WorldSendThread(client, client->playerData->reqWorldChange);
+			client->playerData->reqWorldChange = NULL;
 		}
 	}
 
@@ -936,7 +933,7 @@ cs_bool Client_Add(Client *client) {
 	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
 		if(!Clients_List[i]) {
 			client->id = i;
-			client->thread[0] = Thread_Create(ClientThread, client, false);
+			client->thread = Thread_Create(ClientThread, client, false);
 			Clients_List[i] = client;
 			return true;
 		}

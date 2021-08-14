@@ -74,7 +74,7 @@ typedef struct _CPEData {
 typedef struct _PData {
 	cs_str key, // Ключ, полученный от игрока
 	name; // Имя игрока
-	World *world; // Мир, в котором игрок обитает
+	World *world, *reqWorldChange; // Мир, в котором игрок обитает
 	Vec position; // Позиция игрока
 	Ang angle; // Угол вращения игрока
 	cs_int32 state; // Текущее состояние игрока
@@ -90,7 +90,7 @@ typedef struct _Client {
 	cs_uint32 pps, // Количество пакетов, отправленных игроком за секунду
 	ppstm, // Таймер для счётчика пакетов
 	addr; // ipv4 адрес клиента
-	void *thread[2]; // Потоки клиента
+	Thread thread; // Потоки клиента
 	CPEData *cpeData; // В случае vanilla клиента эта структура не создаётся
 	PlayerData *playerData; // Создаётся при получении hanshake пакета
 	KListField *headNode; // Последняя созданная ассоциативная нода у клиента
