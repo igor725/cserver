@@ -82,7 +82,7 @@ THREAD_FUNC(ClientInitThread) {
 	return 0;
 }
 
-THREAD_FUNC(AcceptThread) {
+THREAD_FUNC(SockAcceptThread) {
 	(void)param;
 	struct sockaddr_in caddr;
 
@@ -319,7 +319,7 @@ cs_bool Server_Init(void) {
 	Event_Call(EVT_POSTSTART, NULL);
 	if(ConsoleIO_Init())
 		Log_Info(Lang_Get(Lang_ConGrp, 8));
-	Thread_Create(AcceptThread, NULL, true);
+	Thread_Create(SockAcceptThread, NULL, true);
 	Server_Ready = true;
 	return true;
 }

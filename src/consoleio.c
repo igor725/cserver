@@ -5,7 +5,7 @@
 #include "command.h"
 #include "consoleio.h"
 
-THREAD_FUNC(ConsoleIO_Thread) {
+THREAD_FUNC(ConsoleIOThread) {
 	(void)param;
 	cs_char buf[192];
 
@@ -23,6 +23,6 @@ static TSHND_RET ConsoleIO_Handler(TSHND_PARAM signal) {
 }
 
 cs_bool ConsoleIO_Init(void) {
-  Thread_Create(ConsoleIO_Thread, NULL, true);
+  Thread_Create(ConsoleIOThread, NULL, true);
 	return Console_BindSignalHandler(ConsoleIO_Handler);
 }
