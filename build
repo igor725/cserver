@@ -105,11 +105,8 @@ if [ $PLUGIN_BUILD -eq 0 ]; then
 	LIBS="$LIBS -lpthread -ldl -lcrypto -lcurl -lz"
 fi
 
-$CC -rdynamic $OBJDIR/*.o -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR
-if [ $? -ne 0 ]; then
-	echo -ne "error\nCompiler errors:\n$(cat $STDERR)\n"
-	exit 1
-fi
+$CC -rdynamic $OBJDIR/*.o -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR &
+waitfor $!
 
 if [ $DEBUG -eq 0 ]; then
 	echo -ne "done\nStripping..."
