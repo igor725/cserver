@@ -20,7 +20,7 @@ cs_str const Strings[] = {
 #if defined(WINDOWS)
 #include <dbghelp.h>
 
-void Error_CallStack(void) {
+static void PrintCallStack(void) {
 	void *stack[16];
 	cs_uint16 frames;
 	SYMBOL_INFO symbol = {0};
@@ -48,14 +48,14 @@ void Error_CallStack(void) {
 	}
 }
 #elif defined(__ANDROID__)
-void Error_CallStack(void) {
+static void PrintCallStack(void) {
 	Log_Debug("CallStack printing can't be implemented on Android");
 }
 #elif defined(UNIX)
 #include <dlfcn.h>
 #include <execinfo.h>
 
-void Error_CallStack(void) {
+static void PrintCallStack(void) {
 	void *stack[16];
 	cs_int32 frames = backtrace(stack, 16);
 
@@ -112,7 +112,7 @@ void Error_Print(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_s
 		** причине остались форматируемые значения.
 		*/
 		Log_Error("%s", strbuf);
-		Error_CallStack();
+		PrintCallStack();
 	}
 }
 
@@ -127,6 +127,6 @@ void Error_PrintF(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_
 	if(String_FormatBuf(strbuf, 384, Lang_Get(Lang_ErrGrp, 1), file, line, func, errbuf)) {
 		// См. комментарий в Error_Print
 		Log_Error("%s", strbuf);
-		Error_CallStack();
+		PrintCallStack();
 	}
 }

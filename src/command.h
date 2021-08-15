@@ -29,26 +29,13 @@ String_GetArgument(ccdata->args, a, s, n)
 #define COMMAND_PRINTUSAGE \
 COMMAND_PRINTF(Lang_Get(Lang_CmdGrp, 0), cmdUsage);
 
-// TODO: Сделать это добро функцией
 #define COMMAND_ARG2WN(wn, idx) \
 if(COMMAND_GETARG(wn, 64, idx)) { \
 	cs_str wndot = String_LastChar(wn, '.'); \
 	if(!wndot || !String_CaselessCompare(wndot, ".cws")) \
 		String_Append(wn, 64, ".cws"); \
 } else { \
-	if(!ccdata->caller) { \
-		COMMAND_PRINTUSAGE; \
-	} else { \
-		PlayerData *pd = ccdata->caller->playerData; \
-		if(!pd) { \
-			COMMAND_PRINTUSAGE; \
-		} \
-		World *world = pd->world; \
-		if(!world) { \
-			COMMAND_PRINTUSAGE; \
-		} \
-		String_Copy(wn, 64, world->name); \
-	} \
+	COMMAND_PRINTUSAGE; \
 }
 
 #define COMMAND_FUNC(N) \
