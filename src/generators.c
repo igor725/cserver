@@ -2,6 +2,9 @@
 #include "str.h"
 #include "generators.h"
 
+static cs_bool flatgenerator(World *world, void *data);
+static cs_bool normalgenerator(World *world, void *data);
+
 #include "generators/flat.c"
 #include "generators/normal.c"
 

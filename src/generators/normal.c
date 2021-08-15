@@ -470,7 +470,7 @@ THREAD_FUNC(treesThread) {
 	return 0;
 }
 
-static cs_bool normalgenerator(World *world, void *data) {
+cs_bool normalgenerator(World *world, void *data) {
 	(void)data;
 	if(world->info.dimensions.x < 32 ||
 	world->info.dimensions.z < 32 ||

@@ -3,13 +3,14 @@ if [ "$CC" = "" ]; then
 	CC="gcc"
 fi
 
+MAXWORKERS=$(nproc)
 RUN=0
 DEBUG=0
 OPT="-O2"
 WARN=""
 ROOT="."
 CC="$CC -fdiagnostics-color=always"
-CFLAGS="-rdynamic -pipe -fPIC"
+CFLAGS="-pipe -fPIC"
 LIBS=""
 OUTBIN="server"
 if git --version >/dev/null 2>&1; then
@@ -23,6 +24,14 @@ PLUGINS_DIR="$SERVER_OUTROOT/plugins"
 notaplugin () {
 	echo "Looks like the specified directory is not a plugin."
 	exit 1;
+}
+
+waitfor () {
+	wait $1
+	if [ $? -ne 0 ]; then
+		echo -ne "error\nCompiler errors:\n$(cat $STDERR)\n"
+		exit 1
+	fi
 }
 
 for a in "$@"
@@ -64,17 +73,39 @@ done
 
 STDERR="$ROOT/out/stderr"
 OUTDIR="$ROOT/out"
+OBJDIR="$ROOT/objs"
 
 if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
+if [ ! -d "$OBJDIR" ]; then mkdir $OBJDIR; fi
 if [ $DEBUG -eq 0 ]; then CFLAGS="$CFLAGS -DRELEASE_BUILD"; fi
 
 echo -n "Compiling..."
+pids=()
+cnt=0
+
+> $STDERR
+for SOURCE in `find "$ROOT/src/" -type f -name "*.c"`; do
+	objpath="$OBJDIR/$(basename $SOURCE .c).o"
+	$CC -c $CFLAGS $COMMIT_SHA $WARN $OPT -I$ROOT/src $SOURCE -o$objpath 2>> $STDERR &
+	pids+=($!)
+	((cnt++))
+	#if [ $cnt -ge $MAXWORKERS ]; then
+		#TODO: Proper workers count limiter
+		#unset pids[-1]
+		#((cnt--))
+	#fi
+done
+
+for pid in ${pids[@]}; do
+	waitfor $pid
+done
+
+echo -ne "done\nLinking..."
 if [ $PLUGIN_BUILD -eq 0 ]; then
 	LIBS="$LIBS -lpthread -ldl -lcrypto -lcurl -lz"
 fi
 
-> $STDERR
-$CC $CFLAGS $COMMIT_SHA $WARN $OPT -I$ROOT/src $ROOT/src/*.c -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR
+$CC -rdynamic $OBJDIR/*.o -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR
 if [ $? -ne 0 ]; then
 	echo -ne "error\nCompiler errors:\n$(cat $STDERR)\n"
 	exit 1
@@ -82,13 +113,13 @@ fi
 
 if [ $DEBUG -eq 0 ]; then
 	echo -ne "done\nStripping..."
-	strip "$OUTDIR/$OUTBIN"
+	strip $OUTDIR/$OUTBIN
 fi
 
 if [ $PLUGIN_INSTALL -eq 1 ]; then
 	echo -ne "done\nCopying to plugins directory..."
 	if [ ! -d "$PLUGINS_DIR" ]; then mkdir $PLUGINS_DIR; fi
-	cp "$OUTDIR/$OUTBIN" "$PLUGINS_DIR/$OUTBIN"
+	cp $OUTDIR/$OUTBIN $PLUGINS_DIR/$OUTBIN
 	echo "done"
 else
 	echo "done"
