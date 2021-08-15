@@ -905,9 +905,10 @@ void Client_Loop(Client *client) {
 		else
 			PacketReceiverRaw(client);
 
-		if(client->playerData->reqWorldChange) {
-			WorldSendThread(client, client->playerData->reqWorldChange);
-			client->playerData->reqWorldChange = NULL;
+		PlayerData *pd = client->playerData;
+		if(pd && pd->reqWorldChange) {
+			WorldSendThread(client, pd->reqWorldChange);
+			pd->reqWorldChange = NULL;
 		}
 	}
 }
