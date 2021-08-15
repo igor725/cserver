@@ -3,7 +3,7 @@
 #include "core.h"
 #include "platform.h"
 
-enum WebSockState {
+enum _WebSockState {
 	WS_ST_HDR,
 	WS_ST_PLEN,
 	WS_ST_MASK,
@@ -11,7 +11,7 @@ enum WebSockState {
 	WS_ST_DONE
 };
 
-enum WebSockErrors {
+enum _WebSockErrors {
 	WS_ERR_SUCC,
 	WS_ERR_UNKNOWN,
 	WS_ERR_MASK,
@@ -19,9 +19,9 @@ enum WebSockErrors {
 	WS_ERR_PAYLOAD_LEN_MISMATCH,
 };
 
-typedef struct {
-	enum WebSockState state;
-	enum WebSockErrors error;
+typedef struct _WebSock {
+	enum _WebSockState state;
+	enum _WebSockErrors error;
 	cs_byte opcode;
 	cs_bool done;
 	cs_uint16 plen;

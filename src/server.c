@@ -21,6 +21,18 @@ cs_bool Server_Active = false, Server_Ready = false;
 cs_uint64 Server_StartTime = 0, Server_LatestBadTick = 0;
 Socket Server_Socket = 0;
 
+static cs_bool AddClient(Client *client) {
+	cs_int8 maxplayers = Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
+	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
+		if(!Clients_List[i]) {
+			client->id = i;
+			Clients_List[i] = client;
+			return true;
+		}
+	}
+	return false;
+}
+
 THREAD_FUNC(ClientInitThread) {
 	Client *tmp = (Client *)param;
 	cs_int8 maxConnPerIP = Config_GetInt8ByKey(Server_Config, CFG_CONN_KEY),
@@ -58,10 +70,10 @@ THREAD_FUNC(ClientInitThread) {
 	}
 
 	if(attempt < 10) {
-		if(!Client_Add(tmp)) {
+		if(!AddClient(tmp)) {
 			Client_Kick(tmp, Lang_Get(Lang_KickGrp, 1));
 			Client_Free(tmp);
-		}
+		} else Client_Loop(tmp);
 	} else {
 		Client_Kick(tmp, Lang_Get(Lang_KickGrp, 7));
 		Client_Free(tmp);
@@ -82,10 +94,14 @@ THREAD_FUNC(AcceptThread) {
 			break;
 		}
 
-		Client *tmp = Client_New(fd, caddr.sin_addr.s_addr);
-		if(tmp)
-			Thread_Create(ClientInitThread, tmp, true);
-		else
+		Client *tmp = Memory_TryAlloc(1, sizeof(Client));
+		if(tmp) {
+			tmp->sock = fd;
+			tmp->id = CLIENT_SELF;
+			tmp->mutex = Mutex_Create();
+			tmp->addr = caddr.sin_addr.s_addr;
+			tmp->thread = Thread_Create(ClientInitThread, tmp, false);
+		} else
 			Socket_Close(fd);
 	}
 
@@ -112,7 +128,6 @@ static void Bind(cs_str ip, cs_uint16 port) {
 			break;
 	}
 
-	Client_Init();
 	Log_Info(Lang_Get(Lang_ConGrp, 0), ip, port);
 	if(!Socket_Bind(Server_Socket, &ssa)) {
 		Error_PrintSys(true);
@@ -198,6 +213,8 @@ cs_bool Server_Init(void) {
 	}
 	Log_SetLevelStr(Config_GetStrByKey(cfg, CFG_LOGLEVEL_KEY));
 
+	Broadcast = Memory_Alloc(1, sizeof(Client));
+	Broadcast->mutex = Mutex_Create();
 	Packet_RegisterDefault();
 	Plugin_LoadAll();
 

@@ -20,9 +20,8 @@ Client *Clients_List[MAX_CLIENTS] = {0};
 static AListField *AGetType(cs_uint16 type) {
 	AListField *ptr = NULL;
 
-	List_Iter(ptr, headAssocType) {
+	List_Iter(ptr, headAssocType)
 		if(ptr->value.num16 == type) return ptr;
-	}
 
 	return NULL;
 }
@@ -30,9 +29,8 @@ static AListField *AGetType(cs_uint16 type) {
 static KListField *AGetNode(Client *client, cs_uint16 type) {
 	KListField *ptr = NULL;
 
-	List_Iter(ptr, client->headNode) {
+	List_Iter(ptr, client->headNode)
 		if(ptr->key.num16 == type) return ptr;
-	}
 
 	return NULL;
 }
@@ -150,17 +148,6 @@ void Clients_KickAll(cs_str reason) {
 		Client *client = Clients_List[i];
 		if(client) Client_Kick(client, reason);
 	}
-}
-
-Client *Client_New(Socket fd, cs_uint32 addr) {
-	Client *tmp = Memory_TryAlloc(1, sizeof(Client));
-	if(tmp) {
-		tmp->sock = fd;
-		tmp->addr = addr;
-		tmp->id = CLIENT_SELF;
-		tmp->mutex = Mutex_Create();
-	}
-	return tmp;
 }
 
 cs_str Client_GetName(Client *client) {
@@ -409,11 +396,6 @@ static cs_uint16 GetPacketSizeFor(Packet *packet, Client *client, cs_bool *exten
 		if(*extended) packetSize = packet->extSize;
 	}
 	return packetSize;
-}
-
-void Client_Init(void) {
-	Broadcast = Memory_Alloc(1, sizeof(Client));
-	Broadcast->mutex = Mutex_Create();
 }
 
 cs_bool Client_IsInGame(Client *client) {
@@ -910,9 +892,7 @@ static void WorldSendThread(Client *client, World *world) {
 		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
 }
 
-THREAD_FUNC(ClientThread) {
-	Client *client = (Client *)param;
-
+void Client_Loop(Client *client) {
 	while(!client->closed) {
 		if(client->websock)
 			PacketReceiverWs(client);
@@ -924,21 +904,6 @@ THREAD_FUNC(ClientThread) {
 			client->playerData->reqWorldChange = NULL;
 		}
 	}
-
-	return 0;
-}
-
-cs_bool Client_Add(Client *client) {
-	cs_int8 maxplayers = Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
-	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
-		if(!Clients_List[i]) {
-			client->id = i;
-			client->thread = Thread_Create(ClientThread, client, false);
-			Clients_List[i] = client;
-			return true;
-		}
-	}
-	return false;
 }
 
 static void SendSpawnPacket(Client *client, Client *other) {

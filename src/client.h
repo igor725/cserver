@@ -100,13 +100,12 @@ typedef struct _Client {
 	wrbuf[2048]; // Буфер для отправки пакетов клиенту
 } Client;
 
+void Client_Tick(Client *client, cs_int32 delta);
+void Client_Loop(Client *client);
+void Client_Free(Client *client);
+
 cs_int32 Client_Send(Client *client, cs_int32 len);
 cs_bool Client_CheckAuth(Client *client);
-void Client_Free(Client *client);
-void Client_Tick(Client *client, cs_int32 delta);
-Client *Client_New(Socket fd, cs_uint32 addr);
-cs_bool Client_Add(Client *client);
-void Client_Init(void);
 cs_bool Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
 cs_bool Client_DefineBlock(Client *client, BlockDef *block);
 cs_bool Client_UndefineBlock(Client *client, BlockID id);
