@@ -330,7 +330,7 @@ void Config_SetDefaultInt16(CEntry *ent, cs_int16 value) {
 
 void Config_SetInt32(CEntry *ent, cs_int32 value) {
 	CFG_TYPE(CFG_TINT32);
-	if(ent->defvalue.vint != value) {
+	if(Config_GetInt32(ent) != value) {
 		ent->flags |= CFG_FCHANGED;
 		if(ent->flags & CFG_FHAVELIMITS)
 			value = min(max(value, ent->limits[1]), ent->limits[0]);
@@ -340,7 +340,7 @@ void Config_SetInt32(CEntry *ent, cs_int32 value) {
 
 void Config_SetInt16(CEntry *ent, cs_int16 value) {
 	CFG_TYPE(CFG_TINT16);
-	if(ent->defvalue.vint16 != value) {
+	if(Config_GetInt16(ent) != value) {
 		ent->flags |= CFG_FCHANGED;
 		if(ent->flags & CFG_FHAVELIMITS)
 			value = (cs_int16)min(max(value, ent->limits[1]), ent->limits[0]);
@@ -351,7 +351,7 @@ void Config_SetInt16(CEntry *ent, cs_int16 value) {
 
 void Config_SetInt8(CEntry *ent, cs_int8 value) {
 	CFG_TYPE(CFG_TINT8);
-	if(ent->defvalue.vint8 != value) {
+	if(Config_GetInt8(ent) != value) {
 		ent->flags |= CFG_FCHANGED;
 		if(ent->flags & CFG_FHAVELIMITS)
 			value = (cs_int8)min(max(value, ent->limits[1]), ent->limits[0]);
@@ -399,7 +399,7 @@ void Config_SetStr(CEntry *ent, cs_str value) {
 	if(!value) {
 		ClearEntry(ent);
 		ent->store->modified = true;
-	}else if(!ent->defvalue.vchar|| !String_Compare(value, ent->defvalue.vchar)) {
+	}else if(!String_Compare(value, Config_GetStr(ent))) {
 		if(ent->value.vchar&& String_Compare(value, ent->value.vchar))
 			return;
 		ClearEntry(ent);
@@ -425,7 +425,7 @@ void Config_SetDefaultBool(CEntry *ent, cs_bool value) {
 
 void Config_SetBool(CEntry *ent, cs_bool value) {
 	CFG_TYPE(CFG_TBOOL);
-	if(ent->defvalue.vbool != value) {
+	if(Config_GetBool(ent) != value) {
 		ent->flags |= CFG_FCHANGED;
 		ent->value.vbool = value;
 		ent->store->modified = true;

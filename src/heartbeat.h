@@ -11,7 +11,7 @@ typedef struct _Heartbeat {
 	template, secretfile;
 	cs_char secretkey[90];
 	heartbeatKeyChecker validate;
-	cs_bool isPublic, isSecure, isPlayURLok;
+	cs_bool isPublic, isSecure, isPlayURLok, isOnline;
 	cs_uint16 delay;
 } Heartbeat;
 

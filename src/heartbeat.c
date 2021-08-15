@@ -95,7 +95,7 @@ cs_bool Heartbeat_VanillaKeyChecker(Heartbeat *hb, Client *client) {
 
 THREAD_FUNC(HeartbeatThread) {
 	Heartbeat *hb = (Heartbeat *)param;
-	while(true) {
+	while(hb->isOnline) {
 		Heartbeat_DoRequest(hb);
 		Thread_Sleep(hb->delay);
 		if(!Server_Active) break;
@@ -141,6 +141,7 @@ cs_bool Heartbeat_Run(Heartbeat *hb) {
 	!hb->playURL || !hb->domain
 	|| !hb->secretfile || hb->delay < 1000) return false;
 	hb->isPlayURLok = false;
+	hb->isOnline = true;
 
 	cs_file sfile = File_Open(hb->secretfile, "r");
 	if(sfile) {
