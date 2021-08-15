@@ -275,7 +275,7 @@ cs_int32 Socket_ReceiveLine(Socket sock, cs_char *line, cs_int32 len) {
 }
 
 cs_int32 Socket_Send(Socket sock, const cs_char *buf, cs_int32 len) {
-	return send(sock, buf, len, 0);
+	return send(sock, buf, len, SOCK_DFLAGS);
 }
 
 void Socket_Shutdown(Socket sock, cs_int32 how) {
