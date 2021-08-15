@@ -12,7 +12,7 @@ typedef struct _Heartbeat {
 	cs_char secretkey[90];
 	heartbeatKeyChecker validate;
 	cs_bool isPublic, isSecure, isPlayURLok;
-	cs_uint16 port, delay;
+	cs_uint16 delay;
 } Heartbeat;
 
 API cs_bool Heartbeat_VanillaKeyChecker(Heartbeat *hb, Client *client);

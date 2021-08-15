@@ -137,8 +137,11 @@ void Heartbeat_NewSecret(Heartbeat *hb, cs_uint32 length) {
 }
 
 cs_bool Heartbeat_Run(Heartbeat *hb) {
-	if(!hb->validate) return false;
+	if(!hb->validate || !hb->template ||
+	!hb->playURL || !hb->domain
+	|| !hb->secretfile || hb->delay < 1000) return false;
 	hb->isPlayURLok = false;
+
 	cs_file sfile = File_Open(hb->secretfile, "r");
 	if(sfile) {
 		do {
