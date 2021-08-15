@@ -77,6 +77,7 @@ THREAD_FUNC(ClientInitThread) {
 	} else
 		Client_Kick(tmp, Lang_Get(Lang_KickGrp, 7));
 
+	Client_Tick(tmp, 0);
 	Client_Free(tmp);
 	return 0;
 }
@@ -359,7 +360,7 @@ void Server_StartLoop(void) {
 void Server_Stop(void) {
 	Event_Call(EVT_ONSTOP, NULL);
 	Log_Info(Lang_Get(Lang_ConGrp, 4));
-	Clients_KickAll(Lang_Get(Lang_KickGrp, 5));
+	Clients_KickAll(Lang_Get(Lang_KickGrp, 5), true);
 	Log_Info(Lang_Get(Lang_ConGrp, 5));
 	Worlds_SaveAll(true, true);
 	Socket_Close(Server_Socket);

@@ -143,10 +143,13 @@ void Clients_UpdateWorldInfo(World *world) {
 	world->info.modval = MV_NONE;
 }
 
-void Clients_KickAll(cs_str reason) {
+void Clients_KickAll(cs_str reason, cs_bool wait) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
-		if(client) Client_Kick(client, reason);
+		if(client) {
+			Client_Kick(client, reason);
+			if(wait) Thread_Join(client->thread);
+		}
 	}
 }
 
@@ -953,13 +956,6 @@ void Client_Kick(Client *client, cs_str reason) {
 	if(!reason) reason = Lang_Get(Lang_KickGrp, 0);
 	Vanilla_WriteKick(client, reason);
 	client->closed = true;
-
-	/*
-	** Этот вызов нужен, чтобы корректно завершить
-	** сокет клиента после кика, если цикл сервера
-	** в основом потоке уже не работает.
-	*/
-	if(!Server_Active) Client_Tick(client, 0);
 }
 
 void Client_Tick(Client *client, cs_int32 delta) {
