@@ -32,8 +32,9 @@ typedef pthread_mutex_t Mutex;
 typedef void TSHND_RET;
 typedef cs_int32 TSHND_PARAM;
 typedef struct {
-	cs_int32 pipefd[2];
-	cs_char buf[2];
+	pthread_cond_t cond;
+	Mutex *mutex;
+	cs_bool signalled;
 } Waitable;
 typedef cs_int32 Socket;
 

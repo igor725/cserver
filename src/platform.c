@@ -607,35 +607,38 @@ void Mutex_Unlock(Mutex *handle) {
 
 Waitable *Waitable_Create(void) {
 	Waitable *handle = Memory_Alloc(1, sizeof(Waitable));
-	if(pipe(handle->pipefd) == 0) {
-		if(fcntl(handle->pipefd[0], F_SETFL, O_NONBLOCK) != 0) {
-			Waitable_Free(handle);
-			return NULL;
-		}
-		return handle;
-	}
-	return NULL;
+	pthread_cond_init(&handle->cond, NULL);
+	handle->mutex = Mutex_Create();
+	handle->signalled = false;
+	return handle;
 }
 
 void Waitable_Free(Waitable *handle) {
-	close(handle->pipefd[0]);
-	close(handle->pipefd[1]);
+	pthread_cond_destroy(&handle->cond);
+	Mutex_Free(handle->mutex);
 	Memory_Free(handle);
 }
 
 void Waitable_Signal(Waitable *handle) {
-	write(handle->pipefd[1], &handle->buf, 1);
+	Mutex_Lock(handle->mutex);
+	if(!handle->signalled) {
+		handle->signalled = true;
+		pthread_cond_signal(&handle->cond);
+	}
+	Mutex_Unlock(handle->mutex);
 }
 
 void Waitable_Reset(Waitable *handle) {
-	read(handle->pipefd[0], &handle->buf, 1);
+	Mutex_Lock(handle->mutex);
+	handle->signalled = false;
+	Mutex_Unlock(handle->mutex);
 }
 
 void Waitable_Wait(Waitable *handle) {
-	struct pollfd pfd;
-	pfd.fd = handle->pipefd[0];
-	pfd.events = POLLRDNORM;
-	poll(&pfd, 1, -1);
+	Mutex_Lock(handle->mutex);
+	while(!handle->signalled)
+		pthread_cond_wait(&handle->cond, handle->mutex);
+	Mutex_Unlock(handle->mutex);
 }
 #endif
 
