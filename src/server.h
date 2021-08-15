@@ -3,6 +3,7 @@
 #include "core.h"
 #include "platform.h"
 #include "config.h"
+#include "heartbeat.h"
 
 #define CFG_SERVERIP_KEY "server-ip"
 #define CFG_SERVERPORT_KEY "server-port"
@@ -13,10 +14,11 @@
 #define CFG_MAXPLAYERS_KEY "max-players"
 #define CFG_CONN_KEY "max-connections-per-ip"
 #define CFG_WORLDS_KEY "worlds-list"
-#define CFG_HEARTBEAT_KEY "heartbeat-enabled"
+#define CFG_HEARTBEATENABLED_KEY "heartbeat-enabled"
 #define CFG_HEARTBEATDELAY_KEY "heartbeat-delay"
-#define CFG_HEARTBEAT_PUBLIC_KEY "heartbeat-public"
+#define CFG_HEARTBEATPUBLIC_KEY "heartbeat-public"
 
+VAR Heartbeat *Server_Heartbeat;
 VAR cs_bool Server_Active, Server_Ready;
 VAR CStore *Server_Config;
 VAR cs_uint64 Server_StartTime;

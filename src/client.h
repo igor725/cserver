@@ -162,6 +162,7 @@ API cs_bool Client_SpawnParticle(Client *client, cs_byte id, Vec *pos, Vec *orig
 
 API cs_str Client_GetName(Client *client);
 API cs_str Client_GetAppName(Client *client);
+API cs_str Client_GetKey(Client *client);
 API cs_str Client_GetSkin(Client *client);
 API Client *Client_GetByID(ClientID id);
 API Client *Client_GetByName(cs_str name);

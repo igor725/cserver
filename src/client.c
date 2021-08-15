@@ -158,6 +158,11 @@ cs_str Client_GetName(Client *client) {
 	return client->playerData->name;
 }
 
+cs_str Client_GetKey(Client *client) {
+	if(!client->playerData) return "not received";
+	return client->playerData->key;
+}
+
 cs_str Client_GetAppName(Client *client) {
 	if(!client->cpeData) return "vanilla client";
 	return client->cpeData->appName;
@@ -420,7 +425,8 @@ cs_bool Client_IsOP(Client *client) {
 }
 
 cs_bool Client_CheckAuth(Client *client) {
-	return Heartbeat_CheckKey(client);
+	if(!Server_Heartbeat) return true;
+	return Server_Heartbeat->validate(Server_Heartbeat, client);
 }
 
 cs_bool Client_SetBlock(Client *client, SVec *pos, BlockID id) {

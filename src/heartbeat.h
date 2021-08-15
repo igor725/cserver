@@ -3,7 +3,19 @@
 #include "core.h"
 #include "client.h"
 
-cs_bool Heartbeat_CheckKey(Client *client);
-void Heartbeat_Start(cs_uint32 delay);
-void Heartbeat_Close(void);
+struct _Heartbeat;
+typedef cs_bool(*heartbeatKeyChecker)(struct _Heartbeat *hb, Client *client);
+
+typedef struct _Heartbeat {
+	cs_str domain, playURL,
+	template, secretfile;
+	cs_char secretkey[90];
+	heartbeatKeyChecker validate;
+	cs_bool isPublic, isSecure, isPlayURLok;
+	cs_uint16 port, delay;
+} Heartbeat;
+
+API cs_bool Heartbeat_VanillaKeyChecker(Heartbeat *hb, Client *client);
+API void Heartbeat_NewSecret(Heartbeat *hb, cs_uint32 length);
+API cs_bool Heartbeat_Run(Heartbeat *hb);
 #endif // HEARTBEAT_H

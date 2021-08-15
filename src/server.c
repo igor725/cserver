@@ -20,6 +20,7 @@ CStore *Server_Config = NULL;
 cs_bool Server_Active = false, Server_Ready = false;
 cs_uint64 Server_StartTime = 0, Server_LatestBadTick = 0;
 Socket Server_Socket = 0;
+Heartbeat *Server_Heartbeat = NULL;
 
 static cs_bool AddClient(Client *client) {
 	cs_int8 maxplayers = Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
@@ -193,7 +194,7 @@ cs_bool Server_Init(void) {
 	Config_SetComment(ent, "List of worlds to load at startup. (Can be \"*\" it means load all worlds in the folder.)");
 	Config_SetDefaultStr(ent, "world.cws:256x256x256:normal,flat_world.cws:256x256x256:flat");
 
-	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_KEY, CFG_TBOOL);
+	ent = Config_NewEntry(cfg, CFG_HEARTBEATENABLED_KEY, CFG_TBOOL);
 	Config_SetComment(ent, "Enable ClassiCube heartbeat.");
 	Config_SetDefaultBool(ent, false);
 
@@ -202,7 +203,7 @@ cs_bool Server_Init(void) {
 	Config_SetLimit(ent, 1, 60);
 	Config_SetDefaultInt8(ent, 10);
 
-	ent = Config_NewEntry(cfg, CFG_HEARTBEAT_PUBLIC_KEY, CFG_TBOOL);
+	ent = Config_NewEntry(cfg, CFG_HEARTBEATPUBLIC_KEY, CFG_TBOOL);
 	Config_SetComment(ent, "Show server in the ClassiCube server list.");
 	Config_SetDefaultBool(ent, false);
 
@@ -310,8 +311,22 @@ cs_bool Server_Init(void) {
 	} else
 		Log_Info("%d world(-s) successfully loaded.", wIndex);
 
-	if(Config_GetBoolByKey(cfg, CFG_HEARTBEAT_KEY))
-		Heartbeat_Start(Config_GetInt8ByKey(cfg, CFG_HEARTBEATDELAY_KEY));
+	if(Config_GetBoolByKey(cfg, CFG_HEARTBEATENABLED_KEY)) {
+		Heartbeat classicube = {
+			.template = "/server/heartbeat/?name=%s&port=%d&users=%d&max=%d&salt=%s&public=%s&web=true&software=%s",
+			.playURL = "http://www.classicube.net/server/play/",
+			.domain = "classicube.net",
+			.secretfile = "secret.txt",
+			.validate = Heartbeat_VanillaKeyChecker,
+			.isSecure = true,
+
+			.delay = Config_GetInt8ByKey(cfg, CFG_HEARTBEATDELAY_KEY) * 1000,
+			.isPublic = Config_GetBoolByKey(Server_Config, CFG_HEARTBEATPUBLIC_KEY)
+		};
+
+		Heartbeat_Run(&classicube);
+		Server_Heartbeat = &classicube;
+	}
 
 	cs_str ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
 	cs_uint16 port = Config_GetInt16ByKey(cfg, CFG_SERVERPORT_KEY);
