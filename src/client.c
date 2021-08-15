@@ -660,9 +660,6 @@ cs_bool Client_Update(Client *client) {
 }
 
 void Client_Free(Client *client) {
-	if(client->thread)
-		Thread_Join(client->thread);
-
 	if(client->id >= 0)
 		Clients_List[client->id] = NULL;
 
@@ -977,7 +974,6 @@ void Client_Tick(Client *client, cs_int32 delta) {
 			Event_Call(EVT_ONDISCONNECT, client);
 		}
 		Client_Despawn(client);
-		Client_Free(client);
 		return;
 	}
 

@@ -70,15 +70,14 @@ THREAD_FUNC(ClientInitThread) {
 	}
 
 	if(attempt < 10) {
-		if(!AddClient(tmp)) {
+		if(!AddClient(tmp))
 			Client_Kick(tmp, Lang_Get(Lang_KickGrp, 1));
-			Client_Free(tmp);
-		} else Client_Loop(tmp);
-	} else {
+		else
+			Client_Loop(tmp);
+	} else
 		Client_Kick(tmp, Lang_Get(Lang_KickGrp, 7));
-		Client_Free(tmp);
-	}
 
+	Client_Free(tmp);
 	return 0;
 }
 
