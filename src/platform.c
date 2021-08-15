@@ -684,7 +684,7 @@ cs_uint64 Time_GetMSec() {
 
 cs_bool Console_BindSignalHandler(TSHND handler) {
 #if defined(WINDOWS)
-	return (cs_bool)SetConsoleCtrlHandler(handler, TRUE);
+	return (cs_bool)SetConsoleCtrlHandler((PHANDLER_ROUTINE)handler, TRUE);
 #elif defined(UNIX)
 	return (cs_bool)(signal(SIGINT, (void(*)(int))handler) != SIG_ERR);
 #endif
