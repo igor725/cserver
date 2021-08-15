@@ -4,11 +4,13 @@
 		{
 			"label": "Build debug",
 			"type": "shell",
-			"command": "build.bat",
-			"args": [
-				"wall",
-				"dbg"
-			],
+			"windows" : {
+				"command": "build.bat"
+			},
+			"linux": {
+				"command": "./build"
+			},
+			"args": ["wall", "dbg"],
 			"group": {
 				"kind": "build",
 				"isDefault": true
@@ -21,10 +23,13 @@
 		{
 			"label": "Build release",
 			"type": "shell",
-			"command": "build.bat",
-			"args": [
-				"wall"
-			],
+			"windows" : {
+				"command": "build.bat"
+			},
+			"linux": {
+				"command": "./build"
+			},
+			"args": ["wall"],
 			"group": "build",
 			"presentation": {
 				"reveal": "silent"
