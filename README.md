@@ -1,6 +1,7 @@
 # cserver
 Another Minecraft Classic server in C. Not well written, but it may be useful for someone. The server MAY have many security holes. Use carefully!
 The goal of this project: create a stable, customizable and future-rich multiplatform Minecraft Classic server with a minimal dependencies count.
+
 ![atom_2021-08-08_08-14-18](https://user-images.githubusercontent.com/40758030/128621626-65725e58-561f-4cee-bbdb-fdf69c17b9a2.png)
 
 
@@ -9,7 +10,7 @@ The goal of this project: create a stable, customizable and future-rich multipla
 * Multiplatform (Windows/Linux)
 * Multithreaded clients processing
 * Plugins support
-* WebSocket client support ([More info](https://www.classicube.net/server/list/))
+* WebSocket client support ([More info](https://www.classicube.net/api/docs/server))
 * RCON server (Implemented in [base plugin](https://github.com/igor725/cs-base))
 * Own world generator (Written by [scaled](https://github.com/scaledteam) for [LuaClassic](https://github.com/igor725/LuaClassic), later ported to C by me)
 * Heartbeat support
@@ -34,7 +35,7 @@ The goal of this project: create a stable, customizable and future-rich multipla
 ### On Linux
 ``./build [args ...]``
 
-NOTE: This script uses gcc, but you can change it to another by setting CC environment variable (``CC=clang ./build [args ...]``).
+NOTE: This script uses gcc, but you can change it to another compiler by setting CC environment variable (``CC=clang ./build [args ...]``).
 
 ### On Windows
 ``.\build.bat [args ...]``
@@ -60,9 +61,10 @@ NOTE: This script must be runned in the Visual Studio Developer Command Prompt
 * ``./build dbg wall`` - Build the server with all warnings and debug symbols
 * ``./build dbg wall pb base install`` - Build the base plugin with all warnings and debug symbols, then copy binary to the plugins directory
 
-### Notes
+## Notes
 * My main OS - Windows 10. It means the Linux part of the server not well tested.
-* By default the server doesn't have any chat commands, build the cs-base plugin to add them.
+* By default the server doesn't have any chat commands, build the [cs-base](https://github.com/igor725/cs-base) plugin to add them.
+* Here is the [example plugin](https://github.com/igor725/cs-test) for this server software.
 * Your directory should have the following structure in order to compile plugins:
 ```
   [root_folder]/cserver - Main server repository
