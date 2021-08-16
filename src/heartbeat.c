@@ -9,17 +9,16 @@
 #include "lang.h"
 #include "hash.h"
 
-cs_str reserved = "!*'();:@&=+$,/?#[]%";
-static void TrimReserved(cs_char *name, cs_int32 len) {
+INL static void TrimReserved(cs_char *name, cs_int32 len) {
 	for(cs_int32 i = 0; i < len; i++) {
 		cs_char sym = name[i];
 		if(sym == '\0') break;
 		if(sym == ' ') name[i] = '+';
-		if(String_LastChar(reserved, sym)) name[i] = '.';
+		if(String_FirstChar("!*'();:@&=+$,/?#[]%", sym)) name[i] = '.';
 	}
 }
 
-cs_bool Heartbeat_DoRequest(Heartbeat *hb) {
+INL static cs_bool DoRequest(Heartbeat *hb) {
 	if(*hb->secretkey == '\0') return false;
 	cs_char reqstr[512], name[65], rsp[1024];
 	String_Copy(name, 65, Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY));
@@ -96,7 +95,7 @@ cs_bool Heartbeat_VanillaKeyChecker(Heartbeat *hb, Client *client) {
 THREAD_FUNC(HeartbeatThread) {
 	Heartbeat *hb = (Heartbeat *)param;
 	while(hb->isOnline) {
-		Heartbeat_DoRequest(hb);
+		DoRequest(hb);
 		Thread_Sleep(hb->delay);
 		if(!Server_Active) break;
 	}

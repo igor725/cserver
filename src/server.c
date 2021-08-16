@@ -22,7 +22,7 @@ cs_uint64 Server_StartTime = 0, Server_LatestBadTick = 0;
 Socket Server_Socket = 0;
 Heartbeat *Server_Heartbeat = NULL;
 
-static cs_bool AddClient(Client *client) {
+INL static cs_bool AddClient(Client *client) {
 	cs_int8 maxplayers = Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
 	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
 		if(!Clients_List[i]) {
@@ -114,7 +114,7 @@ THREAD_FUNC(SockAcceptThread) {
 	return 0;
 }
 
-static void Bind(cs_str ip, cs_uint16 port) {
+INL static void Bind(cs_str ip, cs_uint16 port) {
 	Server_Socket = Socket_New();
 	if(!Server_Socket) {
 		Error_PrintSys(true);
@@ -339,7 +339,7 @@ cs_bool Server_Init(void) {
 	return true;
 }
 
-void Server_DoStep(cs_int32 delta) {
+INL static void DoStep(cs_int32 delta) {
 	Event_Call(EVT_ONTICK, &delta);
 	Timer_Update(delta);
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
@@ -367,7 +367,7 @@ void Server_StartLoop(void) {
 			Log_Warn(Lang_Get(Lang_ConGrp, 1), delta);
 			delta = 500;
 		}
-		Server_DoStep(delta);
+		DoStep(delta);
 		Thread_Sleep(1000 / TICKS_PER_SECOND);
 	}
 

@@ -60,7 +60,7 @@ API cs_bool Event_Unregister(cs_uint32 type, cs_uintptr evtFuncPtr);
 #define EVENT_UNREGISTER(t, e) \
 Event_Unregister(t, (cs_uintptr)e);
 
-cs_bool Event_Call(cs_uint32 type, void *param);
+NOINL cs_bool Event_Call(cs_uint32 type, void *param);
 cs_bool Event_OnMessage(Client *client, cs_char *message, cs_byte *type);
 void Event_OnHeldBlockChange(Client *client, BlockID prev, BlockID curr);
 cs_bool Event_OnBlockPlace(Client *client, cs_byte mode, SVec *pos, BlockID *id);

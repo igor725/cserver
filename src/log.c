@@ -5,7 +5,7 @@
 cs_byte Log_Level = LOG_ALL;
 Mutex *Log_Mutex;
 
-static cs_str getName(cs_byte flag) {
+INL static cs_str getName(cs_byte flag) {
 	switch(flag) {
 		case LOG_ERROR:
 			return "ERROR";

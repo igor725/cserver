@@ -174,11 +174,11 @@ void World_Free(World *world) {
 	Memory_Free(world);
 }
 
-static cs_bool WriteWData(cs_file fp, cs_byte dataType, void *ptr, cs_int32 size) {
+NOINL static cs_bool WriteWData(cs_file fp, cs_byte dataType, void *ptr, cs_int32 size) {
 	return File_Write(&dataType, 1, 1, fp) && (size > 0 ? File_Write(ptr, size, 1, fp) : true);
 }
 
-static cs_bool WriteInfo(World *world, cs_file fp) {
+INL static cs_bool WriteInfo(World *world, cs_file fp) {
 	cs_int32 magic = WORLD_MAGIC;
 	if(!File_Write((cs_char *)&magic, 4, 1, fp)) {
 		Error_PrintSys(false);

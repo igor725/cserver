@@ -16,11 +16,10 @@ cs_str const Strings[] = {
 	"Invalid IPv4 address passed to Socket_SetAddr."
 };
 
-#ifndef RELEASE_BUILD
 #if defined(WINDOWS)
 #include <dbghelp.h>
 
-static void PrintCallStack(void) {
+NOINL static void PrintCallStack(void) {
 	void *stack[16];
 	cs_uint16 frames;
 	SYMBOL_INFO symbol = {0};
@@ -49,7 +48,7 @@ static void PrintCallStack(void) {
 }
 #elif defined(__ANDROID__)
 static void PrintCallStack(void) {
-	Log_Debug("CallStack printing can't be implemented on Android");
+	Log_Debug("Callstack printing for android not implemented yet");
 }
 #elif defined(UNIX)
 #include <dlfcn.h>
@@ -70,11 +69,8 @@ static void PrintCallStack(void) {
 	}
 }
 #endif
-#else
-void Error_CallStack(void) {}
-#endif // RELEASE_BUILD
 
-static void getErrorStr(cs_int32 type, cs_int32 code, cs_char *errbuf, cs_size sz, va_list *args) {
+NOINL static void getErrorStr(cs_int32 type, cs_int32 code, cs_char *errbuf, cs_size sz, va_list *args) {
 	switch(type) {
 		case ET_SERVER:
 			if(!args)
@@ -107,10 +103,6 @@ void Error_Print(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_s
 
 	getErrorStr(type, code, errbuf, 256, NULL);
 	if(String_FormatBuf(strbuf, 384, Lang_Get(Lang_ErrGrp, 1), file, line, func, errbuf)) {
-		/*
-		** Избегаем краша, если в строке ошибки по какой-то
-		** причине остались форматируемые значения.
-		*/
 		Log_Error("%s", strbuf);
 		PrintCallStack();
 	}
@@ -125,7 +117,6 @@ void Error_PrintF(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_
 	getErrorStr(type, code, errbuf, 256, &args);
 	va_end(args);
 	if(String_FormatBuf(strbuf, 384, Lang_Get(Lang_ErrGrp, 1), file, line, func, errbuf)) {
-		// См. комментарий в Error_Print
 		Log_Error("%s", strbuf);
 		PrintCallStack();
 	}

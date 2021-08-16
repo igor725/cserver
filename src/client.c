@@ -17,7 +17,7 @@ AListField *headAssocType = NULL,
 Client *Broadcast = NULL;
 Client *Clients_List[MAX_CLIENTS] = {0};
 
-static AListField *AGetType(cs_uint16 type) {
+NOINL static AListField *AGetType(cs_uint16 type) {
 	AListField *ptr = NULL;
 
 	List_Iter(ptr, headAssocType)
@@ -26,7 +26,7 @@ static AListField *AGetType(cs_uint16 type) {
 	return NULL;
 }
 
-static KListField *AGetNode(Client *client, cs_uint16 type) {
+NOINL static KListField *AGetNode(Client *client, cs_uint16 type) {
 	KListField *ptr = NULL;
 
 	List_Iter(ptr, client->headNode)
@@ -330,7 +330,7 @@ cs_bool Client_TeleportTo(Client *client, Vec *pos, Ang *ang) {
 	return false;
 }
 
-static cs_uint32 copyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_char *color) {
+INL static cs_uint32 copyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_char *color) {
 	if(*msg == '\0') return 0;
 
 	if(i > 0) {
@@ -378,7 +378,7 @@ void Client_Chat(Client *client, cs_byte type, cs_str message) {
 	Vanilla_WriteChat(client, type, message);
 }
 
-static void HandlePacket(Client *client, cs_char *data, Packet *packet, cs_bool extended) {
+NOINL static void HandlePacket(Client *client, cs_char *data, Packet *packet, cs_bool extended) {
 	cs_bool ret = false;
 
 	if(extended)
@@ -397,7 +397,7 @@ static void HandlePacket(Client *client, cs_char *data, Packet *packet, cs_bool 
 		client->pps += 1;
 }
 
-static cs_uint16 GetPacketSizeFor(Packet *packet, Client *client, cs_bool *extended) {
+NOINL static cs_uint16 GetPacketSizeFor(Packet *packet, Client *client, cs_bool *extended) {
 	cs_uint16 packetSize = packet->size;
 	if(packet->haveCPEImp) {
 		*extended = Client_GetExtVer(client, packet->exthash) == packet->extVersion;
@@ -730,7 +730,7 @@ cs_int32 Client_Send(Client *client, cs_int32 len) {
 		return Socket_Send(client->sock, client->wrbuf, len);
 }
 
-static void PacketReceiverWs(Client *client) {
+INL static void PacketReceiverWs(Client *client) {
 	cs_byte packetId;
 	Packet *packet;
 	cs_bool extended = false;
@@ -778,7 +778,7 @@ static void PacketReceiverWs(Client *client) {
 		client->closed = true;
 }
 
-static void PacketReceiverRaw(Client *client) {
+INL static void PacketReceiverRaw(Client *client) {
 	Packet *packet;
 	cs_uint16 packetSize;
 	cs_byte packetId;
@@ -913,7 +913,7 @@ void Client_Loop(Client *client) {
 	}
 }
 
-static void SendSpawnPacket(Client *client, Client *other) {
+NOINL static void SendSpawnPacket(Client *client, Client *other) {
 	if(Client_GetExtVer(client, EXT_PLAYERLIST))
 		CPE_WriteAddEntity2(client, other);
 	else

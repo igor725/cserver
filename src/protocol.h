@@ -75,6 +75,7 @@ typedef struct _Packet {
 Packet *Packet_Get(cs_byte id);
 API void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler);
 API void Packet_RegisterCPE(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler);
+API void Packet_RegisterExtension(cs_str name, cs_int32 version);
 
 API cs_byte Proto_ReadString(cs_char **data, cs_str *dstptr);
 API cs_byte Proto_ReadStringNoAlloc(cs_char **data, cs_char *dst);
@@ -100,16 +101,16 @@ API cs_uint32 Proto_WriteClientPos(cs_char *data, Client *client, cs_bool extend
 ** ванильного протокола
 */
 
-void Vanilla_WriteHandshake(Client *client, cs_str name, cs_str motd);
-void Vanilla_WriteLvlInit(Client *client, cs_uint32 size);
-void Vanilla_WriteLvlFin(Client *client, SVec *dims);
-void Vanilla_WriteSetBlock(Client *client, SVec *pos, BlockID block);
-void Vanilla_WriteSpawn(Client *client, Client *other);
-void Vanilla_WriteTeleport(Client *client, Vec *pos, Ang *ang);
-void Vanilla_WritePosAndOrient(Client *client, Client *other);
-void Vanilla_WriteDespawn(Client *client, Client *other);
-void Vanilla_WriteChat(Client *client, cs_byte type, cs_str mesg);
-void Vanilla_WriteKick(Client *client, cs_str reason);
+NOINL void Vanilla_WriteHandshake(Client *client, cs_str name, cs_str motd);
+NOINL void Vanilla_WriteLvlInit(Client *client, cs_uint32 size);
+NOINL void Vanilla_WriteLvlFin(Client *client, SVec *dims);
+NOINL void Vanilla_WriteSetBlock(Client *client, SVec *pos, BlockID block);
+NOINL void Vanilla_WriteSpawn(Client *client, Client *other);
+NOINL void Vanilla_WriteTeleport(Client *client, Vec *pos, Ang *ang);
+NOINL void Vanilla_WritePosAndOrient(Client *client, Client *other);
+NOINL void Vanilla_WriteDespawn(Client *client, Client *other);
+NOINL void Vanilla_WriteChat(Client *client, cs_byte type, cs_str mesg);
+NOINL void Vanilla_WriteKick(Client *client, cs_str reason);
 
 /*
 ** Врайтеры и хендлеры
@@ -121,36 +122,36 @@ API void CPE_RegisterExtension(cs_str name, cs_int32 version);
 API cs_int16 CPE_GetModelNum(cs_str model);
 API cs_str CPE_GetModelStr(cs_int16 num);
 
-void CPE_WriteInfo(Client *client);
-void CPE_WriteExtEntry(Client *client, CPEExt *ext);
-void CPE_WriteClickDistance(Client *client, cs_int16 dist);
-void CPE_WriteInventoryOrder(Client *client, cs_byte order, BlockID block);
-void CPE_WriteHoldThis(Client *client, BlockID block, cs_bool preventChange);
-void CPE_WriteSetHotKey(Client *client, cs_str action, cs_int32 keycode, cs_int8 keymod);
-void CPE_WriteAddName(Client *client, Client *other);
-void CPE_WriteAddEntity2(Client *client, Client *other);
-void CPE_WriteRemoveName(Client *client, Client *other);
-void CPE_WriteEnvColor(Client *client, cs_byte type, Color3* col);
-void CPE_WriteMakeSelection(Client *client, cs_byte id, SVec *start, SVec *end, Color4* color);
-void CPE_WriteRemoveSelection(Client *client, cs_byte id);
-void CPE_WriteHackControl(Client *client, CPEHacks *hacks);
-void CPE_WriteDefineBlock(Client *client, BlockDef *block);
-void CPE_WriteUndefineBlock(Client *client, BlockID id);
-void CPE_WriteDefineExBlock(Client *client, BlockDef *block);
-void CPE_WriteBulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
-void CPE_WriteSetTextColor(Client *client, Color4* color, cs_char code);
-void CPE_WriteSetHotBar(Client *client, cs_byte order, BlockID block);
-void CPE_WriteSetSpawnPoint(Client *client, Vec *pos, Ang *ang);
-void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_bool mode);
-void CPE_WriteDefineEffect(Client *client, CustomParticle *e);
-void CPE_WriteSpawnEffect(Client *client, cs_byte id, Vec *pos, Vec *origin);
-void CPE_WriteWeatherType(Client *client, cs_int8 type);
-void CPE_WriteTexturePack(Client *client, cs_str url);
-void CPE_WriteMapProperty(Client *client, cs_byte property, cs_int32 value);
-void CPE_WriteSetEntityProperty(Client *client, Client *other, cs_int8 type, cs_int32 value);
-void CPE_WriteTwoWayPing(Client *client, cs_byte direction, cs_int16 num);
-void CPE_WriteSetModel(Client *client, Client *other);
-void CPE_WriteBlockPerm(Client *client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy);
+NOINL void CPE_WriteInfo(Client *client);
+NOINL void CPE_WriteExtEntry(Client *client, CPEExt *ext);
+NOINL void CPE_WriteClickDistance(Client *client, cs_int16 dist);
+NOINL void CPE_WriteInventoryOrder(Client *client, cs_byte order, BlockID block);
+NOINL void CPE_WriteHoldThis(Client *client, BlockID block, cs_bool preventChange);
+NOINL void CPE_WriteSetHotKey(Client *client, cs_str action, cs_int32 keycode, cs_int8 keymod);
+NOINL void CPE_WriteAddName(Client *client, Client *other);
+NOINL void CPE_WriteAddEntity2(Client *client, Client *other);
+NOINL void CPE_WriteRemoveName(Client *client, Client *other);
+NOINL void CPE_WriteEnvColor(Client *client, cs_byte type, Color3* col);
+NOINL void CPE_WriteMakeSelection(Client *client, cs_byte id, SVec *start, SVec *end, Color4* color);
+NOINL void CPE_WriteRemoveSelection(Client *client, cs_byte id);
+NOINL void CPE_WriteHackControl(Client *client, CPEHacks *hacks);
+NOINL void CPE_WriteDefineBlock(Client *client, BlockDef *block);
+NOINL void CPE_WriteUndefineBlock(Client *client, BlockID id);
+NOINL void CPE_WriteDefineExBlock(Client *client, BlockDef *block);
+NOINL void CPE_WriteBulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
+NOINL void CPE_WriteSetTextColor(Client *client, Color4* color, cs_char code);
+NOINL void CPE_WriteSetHotBar(Client *client, cs_byte order, BlockID block);
+NOINL void CPE_WriteSetSpawnPoint(Client *client, Vec *pos, Ang *ang);
+NOINL void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_bool mode);
+NOINL void CPE_WriteDefineEffect(Client *client, CustomParticle *e);
+NOINL void CPE_WriteSpawnEffect(Client *client, cs_byte id, Vec *pos, Vec *origin);
+NOINL void CPE_WriteWeatherType(Client *client, cs_int8 type);
+NOINL void CPE_WriteTexturePack(Client *client, cs_str url);
+NOINL void CPE_WriteMapProperty(Client *client, cs_byte property, cs_int32 value);
+NOINL void CPE_WriteSetEntityProperty(Client *client, Client *other, cs_int8 type, cs_int32 value);
+NOINL void CPE_WriteTwoWayPing(Client *client, cs_byte direction, cs_int16 num);
+NOINL void CPE_WriteSetModel(Client *client, Client *other);
+NOINL void CPE_WriteBlockPerm(Client *client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy);
 
 void Packet_RegisterDefault(void);
 #endif // PROTOCOL_H

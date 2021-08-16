@@ -2,16 +2,16 @@
 #ifdef WINDOWS
 #include "hash.h"
 
-static cs_bool HashInit(HASH_CTX *ctx, ALG_ID alg) {
+INL static cs_bool HashInit(HASH_CTX *ctx, ALG_ID alg) {
 	return CryptAcquireContext(&ctx->prov, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) &&
 	CryptCreateHash(ctx->prov, alg, 0, 0, &ctx->hash);
 }
 
-static cs_bool HashUpdate(HASH_CTX *ctx, const void *data, cs_ulong len) {
+INL static cs_bool HashUpdate(HASH_CTX *ctx, const void *data, cs_ulong len) {
 	return (cs_bool)CryptHashData(ctx->hash, data, len, 0);
 }
 
-static cs_bool HashFinal(void *hash, HASH_CTX *ctx) {
+INL static cs_bool HashFinal(void *hash, HASH_CTX *ctx) {
 	return CryptGetHashParam(ctx->hash, HP_HASHVAL, hash, &ctx->hashLen, 0) &&
 	CryptReleaseContext(ctx->prov, 0) && CryptDestroyHash(ctx->hash);
 }

@@ -104,11 +104,11 @@ void Client_Tick(Client *client, cs_int32 delta);
 void Client_Loop(Client *client);
 void Client_Free(Client *client);
 
-cs_int32 Client_Send(Client *client, cs_int32 len);
-cs_bool Client_CheckAuth(Client *client);
-cs_bool Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
-cs_bool Client_DefineBlock(Client *client, BlockDef *block);
-cs_bool Client_UndefineBlock(Client *client, BlockID id);
+NOINL cs_int32 Client_Send(Client *client, cs_int32 len);
+NOINL cs_bool Client_CheckAuth(Client *client);
+NOINL cs_bool Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
+NOINL cs_bool Client_DefineBlock(Client *client, BlockDef *block);
+NOINL cs_bool Client_UndefineBlock(Client *client, BlockID id);
 
 API cs_uint16 Assoc_NewType(void);
 API cs_bool Assoc_DelType(cs_uint16 type, cs_bool freeData);

@@ -87,7 +87,7 @@ void Proto_WriteByteColor4(cs_char **dataptr, const Color4* color) {
 	*dataptr = data;
 }
 
-cs_uint32 Proto_WriteVecAng(cs_char **dataptr, Vec *vec, Ang *ang, cs_bool extended) {
+NOINL static cs_uint32 WriteExtEntityPos(cs_char **dataptr, Vec *vec, Ang *ang, cs_bool extended) {
 	if(extended)
 		Proto_WriteFlVec(dataptr, vec);
 	else
@@ -98,7 +98,7 @@ cs_uint32 Proto_WriteVecAng(cs_char **dataptr, Vec *vec, Ang *ang, cs_bool exten
 
 cs_uint32 Proto_WriteClientPos(cs_char *data, Client *client, cs_bool extended) {
 	PlayerData *pd = client->playerData;
-	return Proto_WriteVecAng(&data, &pd->position, &pd->angle, extended);
+	return WriteExtEntityPos(&data, &pd->position, &pd->angle, extended);
 }
 
 cs_byte Proto_ReadString(cs_char **dataptr, cs_str *dstptr) {
@@ -256,7 +256,7 @@ void Vanilla_WriteTeleport(Client *client, Vec *pos, Ang *ang) {
 	*data++ = 0x08;
 	*data++ = CLIENT_SELF;
 	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
-	cs_uint32 len = Proto_WriteVecAng(&data, pos, ang, extended);
+	cs_uint32 len = WriteExtEntityPos(&data, pos, ang, extended);
 
 	PacketWriter_End(client, 4 + len);
 }

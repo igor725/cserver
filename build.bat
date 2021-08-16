@@ -19,7 +19,7 @@ SET SVOUTDIR=.\%OUTDIR%
 
 SET MSVC_LINKER=/opt:ref
 SET MSVC_OPTS=/FC /MP /Oi /DZLIB_DLL /DZLIB_WINAPI
-SET MSVC_LIBS=kernel32.lib
+SET MSVC_LIBS=kernel32.lib dbghelp.lib
 
 git --version >nul
 IF "%ERRORLEVEL%"=="0" (
@@ -76,15 +76,14 @@ ECHO Build configuration:
 ECHO Architecture: %ARCH%
 
 IF "%DEBUG%"=="0" (
-	set MSVC_OPTS=%MSVC_OPTS% /DRELEASE_BUILD
+	set MSVC_OPTS=%MSVC_OPTS%
 	ECHO Debug: disabled
 ) else (
 	SET OPT_LEVEL=/Od
-  SET MSVC_OPTS=%MSVC_OPTS% /Z7
-	SET MSVC_LIBS=%MSVC_LIBS% dbghelp.lib
+	SET MSVC_OPTS=%MSVC_OPTS% /Z7
 	SET SVOUTDIR=%SVOUTDIR%dbg
 	SET OUTDIR=%OUTDIR%dbg
-  ECHO Debug: enabled
+	ECHO Debug: enabled
 )
 
 IF "%BUILD_PLUGIN%"=="1" (

@@ -77,7 +77,6 @@ OBJDIR="$ROOT/objs"
 
 if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
 if [ ! -d "$OBJDIR" ]; then mkdir $OBJDIR; fi
-if [ $DEBUG -eq 0 ]; then CFLAGS="$CFLAGS -DRELEASE_BUILD"; fi
 
 echo -n "Compiling..."
 pids=()

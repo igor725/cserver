@@ -50,7 +50,7 @@ enum DefGenBiomes {
 	BIOME_WATER
 };
 
-static void waitFreeThreadSlot(void) {
+INL static void waitFreeThreadSlot(void) {
 	for(cs_int32 i = 0; i < MAX_THREADS; i++) {
 		WThread *thread = &ctx.threads[i];
 		if(!thread->active) break;
@@ -58,7 +58,7 @@ static void waitFreeThreadSlot(void) {
 	}
 }
 
-static void waitAll(void) {
+INL static void waitAll(void) {
 	for(cs_int32 i = 0; i < MAX_THREADS; i++) {
 		WThread *thread = &ctx.threads[i];
 		if(thread->active && Thread_IsValid(thread->handle))
@@ -66,7 +66,7 @@ static void waitAll(void) {
 	}
 }
 
-static void newGenThread(TFUNC func) {
+NOINL static void newGenThread(TFUNC func) {
 	for(cs_int32 i = 0; i < MAX_THREADS; i++) {
 		WThread *thread = &ctx.threads[i];
 		if(i == MAX_THREADS-1 && thread->active) {
@@ -154,7 +154,7 @@ static void genBiomesAndHeightmap(void) {
 	}
 }
 
-static cs_uint16 getHeight(cs_uint16 x, cs_uint16 z) {
+INL static cs_uint16 getHeight(cs_uint16 x, cs_uint16 z) {
 	cs_uint16 hx = x / gen_biome_step, hz = z / gen_biome_step;
 	float percentX = (cs_float)x / (cs_float)gen_biome_step - hx,
 	percentZ = (cs_float)z / (cs_float)gen_biome_step - hz;

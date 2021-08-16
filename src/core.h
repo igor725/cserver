@@ -6,6 +6,9 @@
 #define DLIB_EXT "dll"
 #define _CRT_SECURE_NO_WARNINGS
 #define WIN32_LEAN_AND_MEAN
+
+#define INL inline
+#define NOINL __declspec(noinline)
 #ifndef PLUGIN_BUILD
 #define API __declspec(dllexport, noinline)
 #define VAR __declspec(dllexport) extern
@@ -39,6 +42,8 @@ typedef unsigned int cs_uintptr, cs_size;
 #define PATH_DELIM "/"
 #define DLIB_EXT "so"
 
+#define INL inline
+#define NOINL __attribute__((noinline))
 #ifndef PLUGIN_BUILD
 #define API __attribute__((__visibility__("default"), noinline))
 #define VAR __attribute__((__visibility__("default"))) extern
@@ -46,7 +51,7 @@ typedef unsigned int cs_uintptr, cs_size;
 #define API
 #define VAR extern
 #define EXP __attribute__((__visibility__("default"))) extern
-#define EXPF __attribute__((__visibility__("default")))
+#define EXPF __attribute__((__visibility__("default"), noinline))
 #endif // PLUGIN_BUILD
 
 #define min(a, b) (((a)<(b))?(a):(b))

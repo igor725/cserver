@@ -15,9 +15,11 @@ Timer *Timer_Add(cs_int32 ticks, cs_uint32 delay, TimerCallback callback, void *
 	return timer;
 }
 
-static void removeTimerByField(AListField *field) {
-	Memory_Free(field->value.ptr);
-	AList_Remove(&headTimer, field);
+NOINL static void removeTimerByField(AListField *field) {
+	if(field->value.ptr) {
+		Memory_Free(field->value.ptr);
+		AList_Remove(&headTimer, field);
+	}
 }
 
 void Timer_Remove(Timer *timer) {

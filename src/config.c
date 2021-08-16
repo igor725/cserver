@@ -66,7 +66,7 @@ CEntry *Config_NewEntry(CStore *store, cs_str key, cs_int32 type) {
 	return ent;
 }
 
-static void ClearEntry(CEntry *ent) {
+NOINL static void ClearEntry(CEntry *ent) {
 	if(ent->type == CFG_TSTR && ent->value.vchar)
 		Memory_Free((void *)ent->value.vchar);
 

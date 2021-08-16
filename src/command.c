@@ -61,7 +61,7 @@ void Command_UnregisterByFunc(cmdFunc func) {
 	}
 }
 
-static void SendOutput(Client *caller, cs_char *ret) {
+INL static void SendOutput(Client *caller, cs_char *ret) {
 	if(caller) {
 		cs_char *tmp = ret;
 		while(*tmp) {
