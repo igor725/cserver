@@ -28,5 +28,5 @@ extern Socket Server_Socket;
 cs_bool Server_Init(void);
 void Server_DoStep(cs_int32 delta);
 void Server_StartLoop(void);
-void Server_Stop(void);
+void Server_Cleanup(void);
 #endif // SERVER_H

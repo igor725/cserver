@@ -370,10 +370,11 @@ void Server_StartLoop(void) {
 		Server_DoStep(delta);
 		Thread_Sleep(1000 / TICKS_PER_SECOND);
 	}
+
+	Event_Call(EVT_ONSTOP, NULL);
 }
 
-void Server_Stop(void) {
-	Event_Call(EVT_ONSTOP, NULL);
+void Server_Cleanup(void) {
 	Log_Info(Lang_Get(Lang_ConGrp, 4));
 	Clients_KickAll(Lang_Get(Lang_KickGrp, 5), true);
 	Log_Info(Lang_Get(Lang_ConGrp, 5));
