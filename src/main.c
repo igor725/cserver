@@ -6,7 +6,7 @@
 #include "log.h"
 #include "error.h"
 
-cs_int32 main(cs_int32 argc, cs_char **argv) {
+int main(int argc, char *argv[]) {
 	if(Memory_Init() && Log_Init() && Http_Init()) {
 		if(argc < 2 || !String_CaselessCompare(argv[1], "nochdir")) {
 			cs_char *lastSlash = (cs_char *)String_LastChar(argv[0], *PATH_DELIM);
