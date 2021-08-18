@@ -2,35 +2,22 @@
 #define LIST_H
 #include "core.h"
 
+union _MultiValue {
+	cs_byte num8;
+	cs_uint16 num16;
+	cs_uint32 num32;
+	cs_uintptr numptr;
+	cs_str str;
+	void *ptr;
+};
+
 typedef struct _AListField {
-	union {
-		cs_byte num8;
-		cs_uint16 num16;
-		cs_uint32 num32;
-		cs_uintptr numptr;
-		cs_str str;
-		void *ptr;
-	} value;
+	union _MultiValue value;
 	struct _AListField *next, *prev;
 } AListField;
 
 typedef struct _KListField {
-	union {
-		cs_byte num8;
-		cs_uint16 num16;
-		cs_uint32 num32;
-		cs_uintptr numptr;
-		cs_str str;
-		void *ptr;
-	} key;
-	union {
-		cs_byte num8;
-		cs_uint16 num16;
-		cs_uint32 num32;
-		cs_uintptr numptr;
-		cs_str str;
-		void *ptr;
-	} value;
+	union _MultiValue key, value;
 	struct _KListField *next, *prev;
 } KListField;
 

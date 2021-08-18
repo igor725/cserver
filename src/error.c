@@ -5,7 +5,7 @@
 #include "error.h"
 #include <zlib.h>
 
-cs_str const Strings[] = {
+static cs_str const ErrorStrings[] = {
 	"All ok.",
 	"Invalid magic.",
 	"File \"%s\" corrupted.",
@@ -74,9 +74,9 @@ NOINL static void getErrorStr(cs_int32 type, cs_int32 code, cs_char *errbuf, cs_
 	switch(type) {
 		case ET_SERVER:
 			if(!args)
-				String_Copy(errbuf, sz, Strings[code]);
+				String_Copy(errbuf, sz, ErrorStrings[code]);
 			else
-				String_FormatBufVararg(errbuf, sz, Strings[code], args);
+				String_FormatBufVararg(errbuf, sz, ErrorStrings[code], args);
 			break;
 		case ET_ZLIB:
 			String_Copy(errbuf, sz, zError(code));

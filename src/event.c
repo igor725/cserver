@@ -12,10 +12,10 @@ typedef struct {
 	} func;
 } Event;
 
-Event *Event_List[EVENT_TYPES][MAX_EVENTS];
+Event *Event_List[EVENTS_TCOUNT][EVENTS_FCOUNT];
 
 #define rgPart1 \
-for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) { \
+for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) { \
 	if(!Event_List[type][pos]) { \
 		Event *evt = Memory_Alloc(1, sizeof(Event));
 
@@ -41,7 +41,7 @@ cs_bool Event_RegisterBool(cs_uint32 type, evtBoolCallback func) {
 }
 
 cs_bool Event_Unregister(cs_uint32 type, cs_uintptr evtFuncPtr) {
-	for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) {
+	for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) {
 		Event *evt = Event_List[type][pos];
 
 		if(evt && evt->func.fptr == evtFuncPtr) {
@@ -55,7 +55,7 @@ cs_bool Event_Unregister(cs_uint32 type, cs_uintptr evtFuncPtr) {
 cs_bool Event_Call(cs_uint32 type, void *param) {
 	cs_bool ret = true;
 
-	for(cs_int32 pos = 0; pos < MAX_EVENTS; pos++) {
+	for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) {
 		Event *evt = Event_List[type][pos];
 		if(!evt) continue;
 

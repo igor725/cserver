@@ -4,7 +4,6 @@
 #include "vector.h"
 
 typedef cs_uint64 RNGState;
-
 API void Random_Seed(RNGState *rnd, cs_int32 seed);
 API void Random_SeedFromTime(RNGState *rnd);
 API cs_int32 Random_Next(RNGState *rnd, cs_int32 n);

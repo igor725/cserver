@@ -4,7 +4,7 @@
 
 cs_float Math_Sqrt(const cs_float f) {
 	union {
-		int i;
+		cs_int32 i;
 		cs_float f;
 	} u;
 

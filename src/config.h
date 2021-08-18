@@ -11,7 +11,15 @@ typedef enum _CETypes {
 	CFG_TSTR
 } CETypes;
 
+typedef union _CUValue {
+	cs_bool vbool;
+	cs_int8 vint8;
+	cs_int16 vint16;
+	cs_int32 vint;
+	cs_str vchar;
+} CUValue;
 
+#define CFG_MAX_LEN 128
 #define CFG_FREADED BIT(0) // Была ли осуществленна попытка чтения значения из cfg файла
 #define CFG_FCHANGED BIT(1) // Отличается ли текущее значение записи от заданного стандартного
 #define CFG_FHAVELIMITS BIT(2) // Применимо только для integer типов
@@ -21,20 +29,7 @@ typedef struct _CEntry {
 	cs_str key; // Ключ, присваиваемый записи при создании
 	CETypes type; // Тип cfg-записи
 	cs_int32 limits[2]; // Минимальный и максимальный предел значений записи
-	union {
-		cs_bool vbool;
-		cs_int8 vint8;
-		cs_int16 vint16;
-		cs_int32 vint;
-		cs_str vchar;
-	} value; // Значение записи, заданное пользователем
-	union {
-		cs_bool vbool;
-		cs_int8 vint8;
-		cs_int16 vint16;
-		cs_int32 vint;
-		cs_str vchar;
-	} defvalue; // Значение записи, заданное по умолчанию
+	CUValue value, defvalue; // Значение записи, заданное пользователем
 	cs_str commentary; // Комментарий к записи
 	struct _CEntry *next; // Следующая запись
 	struct _CStore *store; // Cfg-хранилище, которому принадлежит запись

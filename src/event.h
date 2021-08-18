@@ -22,10 +22,11 @@ enum {
 	EVT_ONROTATE,
 	EVT_ONDISCONNECT,
 	EVT_ONWEATHER,
-	EVT_ONCOLOR,
-
-	EVENT_TYPES
+	EVT_ONCOLOR
 };
+
+#define EVENTS_TCOUNT 16
+#define EVENTS_FCOUNT 128
 
 typedef struct _onMessage {
 	Client *client;

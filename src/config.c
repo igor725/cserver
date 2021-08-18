@@ -4,16 +4,33 @@
 #include "config.h"
 #include "error.h"
 
-#define CFG_SETERROR(type, error, linenum) \
-store->etype = ET_SERVER; \
-store->ecode = error; \
-store->eline = linenum;
+INL static void setError(CStore *store, cs_int32 etype, cs_int32 ecode, cs_int32 eline) {
+	store->etype = etype;
+	store->ecode = ecode;
+	store->eline = eline;
+}
 
-#define CFG_SYSERROR CFG_SETERROR(ET_SYS, 0, 0);
+INL static void resetError(CStore *store) {
+	setError(store, ET_NOERR, 0, 0);
+}
+
+INL static void setSysError(CStore *store) {
+	setError(store, ET_SYS, 0, 0);
+}
+
+INL static cs_bool checkNumber(cs_str n) {
+	cs_bool valid = true;
+	while(*n && valid) {
+		cs_char c = *n++;
+		if(c < '0' || c > '9') valid = false;
+	}
+	return valid;
+}
 
 #define CFG_LOADCHECKINT \
-if(*value < '0' || *value > '9') { \
-	CFG_SETERROR(ET_SERVER, EC_CFGLINEPARSE, linenum); \
+if(!checkNumber(value)) { \
+	setError(store, ET_SERVER, EC_CFGLINEPARSE, linenum); \
+	File_Close(fp); \
 	return false; \
 }
 
@@ -149,24 +166,25 @@ cs_bool Config_Load(CStore *store) {
 	cs_file fp = File_Open(store->path, "r");
 	if(!fp) {
 		if(errno == ENOENT) return true;
-		CFG_SYSERROR
+		setSysError(store);
 		return false;
 	}
 
 	cs_bool haveComment = false;
-	cs_char line[MAX_CFG_LEN * 2 + 2];
-	cs_char comment[MAX_CFG_LEN];
-	cs_int32 lnret = 0, linenum = 0;
+	cs_char line[CFG_MAX_LEN];
+	cs_char comment[CFG_MAX_LEN];
+	cs_int32 lnlen = 0, linenum = 0;
 
-	while((lnret = File_ReadLine(fp, line, 256)) > 0 && ++linenum) {
+	while((lnlen = File_ReadLine(fp, line, CFG_MAX_LEN)) > 0 && ++linenum) {
 		if(!haveComment && *line == '#') {
 			haveComment = true;
-			String_Copy(comment, MAX_CFG_LEN, line + 1);
+			String_Copy(comment, CFG_MAX_LEN, line + 1);
 			continue;
 		}
 		cs_char *value = (cs_char *)String_FirstChar(line, '=');
 		if(!value) {
-			CFG_SETERROR(ET_SERVER, EC_CFGLINEPARSE, linenum)
+			setError(store, ET_SERVER, EC_CFGLINEPARSE, linenum);
+			File_Close(fp);
 			return false;
 		}
 		*value++ = '\0';
@@ -202,13 +220,14 @@ cs_bool Config_Load(CStore *store) {
 		}
 	}
 
-	if(lnret == -1) {
-		CFG_SETERROR(ET_SERVER, EC_CFGEND, 0)
+	if(lnlen == -1) {
+		setError(store, ET_SERVER, EC_CFGEND, 0);
+		File_Close(fp);
 		return false;
 	}
 
 	File_Close(fp);
-	CFG_SETERROR(ET_NOERR, 0, 0);
+	resetError(store);
 
 	CEntry *ent = store->firstCfgEntry;
 	while(ent) {
@@ -230,7 +249,7 @@ cs_bool Config_Save(CStore *store) {
 
 	cs_file fp = File_Open(tmpname, "w");
 	if(!fp) {
-		CFG_SYSERROR
+		setSysError(store);
 		return false;
 	}
 
@@ -239,11 +258,11 @@ cs_bool Config_Save(CStore *store) {
 	while(ptr) {
 		if(ptr->commentary)
 			if(!File_WriteFormat(fp, "#%s\n", ptr->commentary)) {
-				CFG_SYSERROR;
+				setSysError(store);
 				return false;
 			}
 		if(!File_Write(ptr->key, String_Length(ptr->key), 1, fp)) {
-			CFG_SYSERROR;
+			setSysError(store);
 			return false;
 		}
 
@@ -255,7 +274,7 @@ cs_bool Config_Save(CStore *store) {
 			case CFG_TSTR:
 				vchar = (cs_char *)Config_GetStr(ptr);
 				if(!File_WriteFormat(fp, "=%s\n", vchar)) {
-					CFG_SYSERROR;
+					setSysError(store);
 					return false;
 				}
 				break;
@@ -269,20 +288,20 @@ cs_bool Config_Save(CStore *store) {
 				vint = Config_GetInt8(ptr);
 				cfg_write_int:
 				if(!File_WriteFormat(fp, "=%d\n", vint)) {
-					CFG_SYSERROR;
+					setSysError(store);
 					return false;
 				}
 				break;
 			case CFG_TBOOL:
 				vbool = Config_GetBool(ptr);
 				if(!File_WriteFormat(fp, "=%s\n", vbool ? "True" : "False")) {
-					CFG_SYSERROR;
+					setSysError(store);
 					return false;
 				}
 				break;
 			case CFG_TINVALID:
 				if(!File_Write("=Unknown value\n", 16, 1, fp)) {
-					CFG_SYSERROR;
+					setSysError(store);
 					return false;
 				}
 				break;
@@ -293,11 +312,11 @@ cs_bool Config_Save(CStore *store) {
 	File_Close(fp);
 	store->modified = false;
 	if(!File_Rename(tmpname, store->path)) {
-		CFG_SYSERROR;
+		setSysError(store);
 		return false;
 	}
 
-	CFG_SETERROR(ET_NOERR, 0, 0);
+	resetError(store);
 	return true;
 }
 
