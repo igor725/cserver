@@ -9,7 +9,7 @@ static cs_bool normalgenerator(World *world, void *data);
 #include "generators/normal.c"
 
 KListField *Generators_List = NULL;
-struct GenRoutineStruct {GeneratorRoutine func;};
+struct _GenRoutineStruct {GeneratorRoutine func;};
 
 cs_bool Generators_Init(void) {
 	return Generators_Add("flat", flatgenerator) &&
@@ -17,10 +17,7 @@ cs_bool Generators_Init(void) {
 }
 
 cs_bool Generators_Add(cs_str name, GeneratorRoutine gr) {
-	struct GenRoutineStruct *grs;
-	grs = (struct GenRoutineStruct *)Memory_Alloc(1, sizeof(struct GenRoutineStruct));
-	grs->func = gr;
-	return KList_Add(&Generators_List, (void *)name, (void *)grs) != NULL;
+	return KList_Add(&Generators_List, (void *)name, (void *)gr) != NULL;
 }
 
 cs_bool Generators_Remove(cs_str name) {
@@ -28,7 +25,6 @@ cs_bool Generators_Remove(cs_str name) {
 
 	List_Iter(ptr, Generators_List) {
 		if(String_CaselessCompare(ptr->key.str, name)) {
-			if(ptr->value.ptr) Memory_Free(ptr->value.ptr);
 			KList_Remove(&Generators_List, ptr);
 			return true;
 		}
@@ -41,9 +37,8 @@ cs_bool Generators_RemoveByFunc(GeneratorRoutine gr) {
 	KListField *ptr = NULL;
 
 	List_Iter(ptr, Generators_List) {
-		struct GenRoutineStruct *grs = (struct GenRoutineStruct *)ptr->value.ptr;
+		struct _GenRoutineStruct *grs = (struct _GenRoutineStruct *)&ptr->value.ptr;
 		if(grs && grs->func == gr) {
-			Memory_Free(ptr->value.ptr);
 			KList_Remove(&Generators_List, ptr);
 			return true;
 		}
@@ -62,7 +57,7 @@ GeneratorRoutine Generators_Get(cs_str name) {
 
 	List_Iter(ptr, Generators_List) {
 		if(String_CaselessCompare(ptr->key.str, name)) {
-			struct GenRoutineStruct *grs = (struct GenRoutineStruct *)ptr->value.ptr;
+			struct _GenRoutineStruct *grs = (struct _GenRoutineStruct *)&ptr->value.ptr;
 			if(grs) return grs->func;
 			break;
 		}
