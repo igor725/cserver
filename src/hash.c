@@ -18,7 +18,7 @@ INL static cs_bool FinalHash(void *hash, HASH_CTX *ctx) {
 }
 
 cs_bool Hash_Init(void) {
-	return (cs_bool)CryptAcquireContextA(&hCryptProvider, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
+	return (cs_bool)CryptAcquireContextA(&hCryptProvider, NULL, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
 }
 
 void Hash_Uninit(void) {

@@ -76,11 +76,11 @@ ECHO Build configuration:
 ECHO Architecture: %ARCH%
 
 IF "%DEBUG%"=="0" (
-	set MSVC_OPTS=%MSVC_OPTS%
+	set MSVC_OPTS=%MSVC_OPTS% /MT
 	ECHO Debug: disabled
 ) else (
 	SET OPT_LEVEL=/Od
-	SET MSVC_OPTS=%MSVC_OPTS% /Z7
+	SET MSVC_OPTS=%MSVC_OPTS% /Z7 /MTd
 	SET SVOUTDIR=%SVOUTDIR%dbg
 	SET OUTDIR=%OUTDIR%dbg
 	ECHO Debug: enabled
