@@ -2,12 +2,15 @@
 #define HASH_H
 #include "core.h"
 
+cs_bool Hash_Init(void);
+cs_bool Hash_Uninit(void);
+
 #if defined(WINDOWS)
 #include <windows.h>
 #include <wincrypt.h>
+HCRYPTPROV hCryptProvider;
 
 typedef struct _WinHash {
-	HCRYPTPROV prov;
 	HCRYPTHASH hash;
 	cs_ulong hashLen;
 } SHA_CTX, MD5_CTX, HASH_CTX;

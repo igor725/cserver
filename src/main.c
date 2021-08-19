@@ -5,9 +5,10 @@
 #include "server.h"
 #include "log.h"
 #include "error.h"
+#include "hash.h"
 
 int main(int argc, char *argv[]) {
-	if(Memory_Init() && Log_Init() && Http_Init()) {
+	if(Memory_Init() && Log_Init() && Http_Init() && Hash_Init()) {
 		if(argc < 2 || !String_CaselessCompare(argv[1], "nochdir")) {
 			cs_char *lastSlash = (cs_char *)String_LastChar(argv[0], *PATH_DELIM);
 			if(lastSlash) {
@@ -23,6 +24,7 @@ int main(int argc, char *argv[]) {
 			Server_Cleanup();
 		}
 
+		Hash_Uninit();
 		Http_Uninit();
 		Log_Uninit();
 		Memory_Uninit();
