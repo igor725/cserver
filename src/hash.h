@@ -3,12 +3,11 @@
 #include "core.h"
 
 cs_bool Hash_Init(void);
-cs_bool Hash_Uninit(void);
+void Hash_Uninit(void);
 
 #if defined(WINDOWS)
 #include <windows.h>
 #include <wincrypt.h>
-HCRYPTPROV hCryptProvider;
 
 typedef struct _WinHash {
 	HCRYPTHASH hash;

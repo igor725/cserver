@@ -12,7 +12,7 @@ cs_bool Http_Init(void) {
 }
 
 void Http_Uninit(void) {
-	InternetCloseHandle(hInternet);
+	if(hInternet) InternetCloseHandle(hInternet);
 }
 
 cs_bool Http_Open(Http *http, cs_str domain) {

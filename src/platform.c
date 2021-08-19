@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #if defined(WINDOWS)
-HANDLE hHeap;
+HANDLE hHeap = NULL;
 
 cs_bool Memory_Init(void) {
 	hHeap = HeapCreate(
@@ -16,8 +16,7 @@ cs_bool Memory_Init(void) {
 }
 
 void Memory_Uninit(void) {
-	if(hHeap)
-		HeapDestroy(hHeap);
+	if(hHeap) HeapDestroy(hHeap);
 }
 
 void *Memory_TryAlloc(cs_size num, cs_size size) {

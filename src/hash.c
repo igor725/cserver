@@ -2,6 +2,8 @@
 #include "hash.h"
 
 #if defined(WINDOWS)
+HCRYPTPROV hCryptProvider = 0;
+
 INL static cs_bool InitAlg(HASH_CTX *ctx, ALG_ID alg) {
 	return (cs_bool)CryptCreateHash(hCryptProvider, alg, 0, 0, &ctx->hash);
 }
@@ -19,8 +21,8 @@ cs_bool Hash_Init(void) {
 	return (cs_bool)CryptAcquireContextA(&hCryptProvider, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
 }
 
-cs_bool Hash_Uninit(void) {
-	return (cs_bool)CryptReleaseContext(hCryptProvider, 0);
+void Hash_Uninit(void) {
+	if(hCryptProvider) CryptReleaseContext(hCryptProvider, 0);
 }
 
 cs_bool SHA1_Init(SHA_CTX *ctx) {
@@ -50,5 +52,5 @@ cs_bool MD5_Final(cs_byte *hash, MD5_CTX *ctx) {
 }
 #elif defined(UNIX)
 cs_bool Hash_Init(void) {return true;}
-cs_bool Hash_Uninit(void) {return true;}
+void Hash_Uninit(void) {}
 #endif
