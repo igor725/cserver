@@ -10,6 +10,7 @@ OPT="-O2"
 WARN=""
 ROOT="."
 CC="$CC -fdiagnostics-color=always"
+LNK="$CC -rdynamic"
 CFLAGS="-pipe -fPIC"
 LIBS=""
 OUTBIN="server"
@@ -49,7 +50,7 @@ do
 			if [ ! -d "../cs-$a/src" ]; then notaplugin; fi
 			PLUGIN_NAME="$a"
 			CFLAGS="$CFLAGS -DPLUGIN_BUILD -Isrc"
-			CC="$CC -shared"
+			LNK="$LNK -shared"
 			OUTBIN="$a.so"
 			ROOT="../cs-$a"
 		fi
@@ -104,7 +105,7 @@ if [ $PLUGIN_BUILD -eq 0 ]; then
 	LIBS="$LIBS -lpthread -ldl -lcrypto -lcurl -lz"
 fi
 
-$CC -rdynamic $OBJDIR/*.o -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR &
+$LNK $OBJDIR/*.o -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR &
 waitfor $!
 
 if [ $DEBUG -eq 0 ]; then
