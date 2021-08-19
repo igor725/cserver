@@ -843,7 +843,7 @@ INL static void PacketReceiverRaw(Client *client) {
 		client->closed = true;
 }
 
-static void WorldSendThread(Client *client, World *world) {
+INL static void SendWorld(Client *client, World *world) {
 	PlayerData *pd = client->playerData;
 	
 	if(world->process == WP_LOADING)
@@ -950,7 +950,7 @@ void Client_Loop(Client *client) {
 
 		PlayerData *pd = client->playerData;
 		if(pd && pd->reqWorldChange) {
-			WorldSendThread(client, pd->reqWorldChange);
+			SendWorld(client, pd->reqWorldChange);
 			pd->reqWorldChange = NULL;
 		}
 	}
