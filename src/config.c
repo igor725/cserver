@@ -274,8 +274,8 @@ cs_bool Config_Save(CStore *store) {
 
 		cs_char value[CFG_MAX_LEN];
 		cs_byte written = Config_ToStr(ptr, value, CFG_MAX_LEN);
+		value[written++] = '\n';
 		if(written > 0) {
-			value[written++] = '\n';
 			if(!File_Write(value, 1, written, fp)) {
 				setSysError(store);
 				File_Close(fp);
