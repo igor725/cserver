@@ -3,7 +3,6 @@
 #include "core.h"
 
 typedef enum _CETypes {
-	CFG_TINVALID,
 	CFG_TBOOL,
 	CFG_TINT32,
 	CFG_TINT16,
@@ -25,12 +24,12 @@ typedef union _CUValue {
 #define CFG_FHAVELIMITS BIT(2) // Применимо только для integer типов
 
 typedef struct _CEntry {
-	cs_byte flags; // Флаги cfg-записи
-	cs_str key; // Ключ, присваиваемый записи при создании
 	CETypes type; // Тип cfg-записи
-	cs_int32 limits[2]; // Минимальный и максимальный предел значений записи
-	CUValue value, defvalue; // Значение записи, заданное пользователем
+	cs_byte flags; // Флаги cfg-записи
 	cs_str commentary; // Комментарий к записи
+	cs_str key; // Ключ, присваиваемый записи при создании
+	CUValue value, defvalue; // Значение записи, заданное пользователем
+	cs_int32 limits[2]; // Минимальный и максимальный предел значений записи
 	struct _CEntry *next; // Следующая запись
 	struct _CStore *store; // Cfg-хранилище, которому принадлежит запись
 } CEntry;
@@ -47,7 +46,7 @@ typedef struct _CStore {
 
 API cs_str Config_TypeName(CETypes type);
 API CETypes Config_TypeNameToEnum(cs_str name);
-API cs_bool Config_ToStr(CEntry *ent, cs_char *value, cs_byte len);
+API cs_byte Config_ToStr(CEntry *ent, cs_char *value, cs_byte len);
 API void Config_PrintError(CStore *store);
 
 API CStore *Config_NewStore(cs_str path);

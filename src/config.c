@@ -103,9 +103,8 @@ cs_str Config_TypeName(CETypes type) {
 			return "int8";
 		case CFG_TBOOL:
 			return "boolean";
-		case CFG_TINVALID:
 		default:
-			return "unknownType";
+			return NULL;
 	}
 }
 
@@ -121,30 +120,32 @@ CETypes Config_TypeNameToEnum(cs_str name) {
 	} else if(String_CaselessCompare(name, "boolean")) {
 		return CFG_TBOOL;
 	}
-	return CFG_TINVALID;
+	return -1;
 }
 
-cs_bool Config_ToStr(CEntry *ent, cs_char *value, cs_byte len) {
+cs_byte Config_ToStr(CEntry *ent, cs_char *value, cs_byte len) {
+	cs_byte written = 0;
+	*value = '\0';
+
 	switch (ent->type) {
 		case CFG_TINT32:
-			String_FormatBuf(value, len, "%d", Config_GetInt32(ent));
+			written = (cs_byte)String_FormatBuf(value, len, "%i", Config_GetInt32(ent));
 			break;
 		case CFG_TINT16:
-			String_FormatBuf(value, len, "%d", Config_GetInt16(ent));
+			written = (cs_byte)String_FormatBuf(value, len, "%hi", Config_GetInt16(ent));
 			break;
 		case CFG_TINT8:
-			String_FormatBuf(value, len, "%d", Config_GetInt8(ent));
+			written = (cs_byte)String_FormatBuf(value, len, "%hhi", Config_GetInt8(ent));
 			break;
 		case CFG_TBOOL:
-			String_Copy(value, len, Config_GetBool(ent) ? "True" : "False");
+			written = (cs_byte)String_Copy(value, len, Config_GetBool(ent) ? "True" : "False");
 			break;
 		case CFG_TSTR:
-			String_Copy(value, len, Config_GetStr(ent));
+			written = (cs_byte)String_Copy(value, len, Config_GetStr(ent));
 			break;
-		case CFG_TINVALID:
-			return false;
 	}
-	return true;
+	
+	return written;
 }
 
 void Config_PrintError(CStore *store) {
@@ -171,9 +172,8 @@ cs_bool Config_Load(CStore *store) {
 	}
 
 	cs_bool haveComment = false;
-	cs_char line[CFG_MAX_LEN];
-	cs_char comment[CFG_MAX_LEN];
 	cs_int32 lnlen = 0, linenum = 0;
+	cs_char line[CFG_MAX_LEN], comment[CFG_MAX_LEN];
 
 	while((lnlen = File_ReadLine(fp, line, CFG_MAX_LEN)) > 0 && ++linenum) {
 		if(!haveComment && *line == '#') {
@@ -214,8 +214,6 @@ cs_bool Config_Load(CStore *store) {
 				break;
 			case CFG_TBOOL:
 				Config_SetBool(ent, String_Compare(value, "True"));
-				break;
-			case CFG_TINVALID: // Eh??
 				break;
 		}
 	}
@@ -259,52 +257,30 @@ cs_bool Config_Save(CStore *store) {
 		if(ptr->commentary)
 			if(!File_WriteFormat(fp, "#%s\n", ptr->commentary)) {
 				setSysError(store);
+				File_Close(fp);
 				return false;
 			}
-		if(!File_Write(ptr->key, String_Length(ptr->key), 1, fp)) {
+		if(!File_Write(ptr->key, 1, String_Length(ptr->key), fp)) {
 			setSysError(store);
+			File_Close(fp);
 			return false;
 		}
 
-		cs_char *vchar;
-		cs_int32 vint;
-		cs_bool vbool;
+		if(!File_Write("=", 1, 1, fp)) {
+			setSysError(store);
+			File_Close(fp);
+			return false;
+		}
 
-		switch (ptr->type) {
-			case CFG_TSTR:
-				vchar = (cs_char *)Config_GetStr(ptr);
-				if(!File_WriteFormat(fp, "=%s\n", vchar)) {
-					setSysError(store);
-					return false;
-				}
-				break;
-			case CFG_TINT32:
-				vint = Config_GetInt32(ptr);
-				goto cfg_write_int;
-			case CFG_TINT16:
-				vint = Config_GetInt16(ptr);
-				goto cfg_write_int;
-			case CFG_TINT8:
-				vint = Config_GetInt8(ptr);
-				cfg_write_int:
-				if(!File_WriteFormat(fp, "=%d\n", vint)) {
-					setSysError(store);
-					return false;
-				}
-				break;
-			case CFG_TBOOL:
-				vbool = Config_GetBool(ptr);
-				if(!File_WriteFormat(fp, "=%s\n", vbool ? "True" : "False")) {
-					setSysError(store);
-					return false;
-				}
-				break;
-			case CFG_TINVALID:
-				if(!File_Write("=Unknown value\n", 16, 1, fp)) {
-					setSysError(store);
-					return false;
-				}
-				break;
+		cs_char value[CFG_MAX_LEN];
+		cs_byte written = Config_ToStr(ptr, value, CFG_MAX_LEN);
+		if(written > 0) {
+			value[written++] = '\n';
+			if(!File_Write(value, 1, written, fp)) {
+				setSysError(store);
+				File_Close(fp);
+				return false;
+			}
 		}
 		ptr = ptr->next;
 	}
