@@ -28,7 +28,6 @@ return;
 #define EXT_CLICKDIST 0x6DD2B567ul
 #define EXT_CUSTOMBLOCKS 0x98455F43ul
 #define EXT_HELDBLOCK 0x40C33F88ul
-#define EXT_EMOTEFIX 0x89C01AE6ul
 #define EXT_TEXTHOTKEY 0x73BB9FBFul
 #define EXT_PLAYERLIST 0xBB0CD618ul
 #define EXT_ENVCOLOR 0x4C056274ul
@@ -54,8 +53,6 @@ return;
 #define EXT_INSTANTMOTD 0x462BFA8Ful
 #define EXT_FASTMAP 0x7791DB5Ful
 #define EXT_SETHOTBAR 0xB8703914ul
-#define EXT_MORETEXTURES 0xBFAA6298ul
-#define EXT_MOREBLOCKS 0xA349DCECul
 #define EXT_SETSPAWN 0x9149FD59ul
 #define EXT_VELCTRL 0xF8DF4FF7ul
 #define EXT_PARTICLE 0x0D732743ul
@@ -101,8 +98,8 @@ API cs_uint32 Proto_WriteClientPos(cs_char *data, Client *client, cs_bool extend
 ** ванильного протокола
 */
 
-NOINL void Vanilla_WriteHandshake(Client *client, cs_str name, cs_str motd);
-NOINL void Vanilla_WriteLvlInit(Client *client, cs_uint32 size);
+NOINL void Vanilla_WriteServerIdent(Client *client, cs_str name, cs_str motd);
+NOINL void Vanilla_WriteLvlInit(Client *client);
 NOINL void Vanilla_WriteLvlFin(Client *client, SVec *dims);
 NOINL void Vanilla_WriteSetBlock(Client *client, SVec *pos, BlockID block);
 NOINL void Vanilla_WriteSpawn(Client *client, Client *other);
@@ -139,7 +136,8 @@ NOINL void CPE_WriteDefineBlock(Client *client, BlockDef *block);
 NOINL void CPE_WriteUndefineBlock(Client *client, BlockID id);
 NOINL void CPE_WriteDefineExBlock(Client *client, BlockDef *block);
 NOINL void CPE_WriteBulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
-NOINL void CPE_WriteSetTextColor(Client *client, Color4* color, cs_char code);
+NOINL void CPE_WriteFastMapInit(Client *client, cs_uint32 size);
+NOINL void CPE_WriteAddTextColor(Client *client, Color4* color, cs_char code);
 NOINL void CPE_WriteSetHotBar(Client *client, cs_byte order, BlockID block);
 NOINL void CPE_WriteSetSpawnPoint(Client *client, Vec *pos, Ang *ang);
 NOINL void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_bool mode);
@@ -151,6 +149,8 @@ NOINL void CPE_WriteMapProperty(Client *client, cs_byte property, cs_int32 value
 NOINL void CPE_WriteSetEntityProperty(Client *client, Client *other, cs_int8 type, cs_int32 value);
 NOINL void CPE_WriteTwoWayPing(Client *client, cs_byte direction, cs_int16 num);
 NOINL void CPE_WriteSetModel(Client *client, Client *other);
+NOINL void CPE_WriteSetMapAppearanceV1(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl);
+NOINL void CPE_WriteSetMapAppearanceV2(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl, cs_int16 cllvl, cs_int16 maxview);
 NOINL void CPE_WriteBlockPerm(Client *client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy);
 
 void Packet_RegisterDefault(void);

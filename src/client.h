@@ -141,6 +141,7 @@ API cs_bool Client_IsOP(Client *client);
 
 API cs_bool Client_SetWeather(Client *client, cs_int8 type);
 API cs_bool Client_SetInvOrder(Client *client, cs_byte order, BlockID block);
+API cs_bool Client_SetServerIdent(Client *client, cs_str name, cs_str motd);
 API cs_bool Client_SetEnvProperty(Client *client, cs_byte property, cs_int32 value);
 API cs_bool Client_SetEnvColor(Client *client, cs_byte type, Color3* color);
 API cs_bool Client_SetTexturePack(Client *client, cs_str url);

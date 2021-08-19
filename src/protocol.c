@@ -195,7 +195,7 @@ cs_bool Proto_ReadClientPos(Client *client, cs_char *data) {
 	return changed;
 }
 
-void Vanilla_WriteHandshake(Client *client, cs_str name, cs_str motd) {
+void Vanilla_WriteServerIdent(Client *client, cs_str name, cs_str motd) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x00;
@@ -207,16 +207,12 @@ void Vanilla_WriteHandshake(Client *client, cs_str name, cs_str motd) {
 	PacketWriter_End(client, 131);
 }
 
-void Vanilla_WriteLvlInit(Client *client, cs_uint32 size) {
+void Vanilla_WriteLvlInit(Client *client) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x02;
-	if(Client_GetExtVer(client, EXT_FASTMAP)) {
-		*(cs_uint32 *)data = htonl(size);
-		PacketWriter_End(client, 5);
-	} else {
-		PacketWriter_End(client, 1);
-	}
+
+	PacketWriter_End(client, 1);
 }
 
 void Vanilla_WriteLvlFin(Client *client, SVec *dims) {
@@ -344,10 +340,10 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 	}
 
 	if(Client_CheckAuth(client)) {
-		cs_str name = Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY),
-		motd = Config_GetStrByKey(Server_Config, CFG_SERVERMOTD_KEY);
-
-		Vanilla_WriteHandshake(client, name, motd);
+		Client_SetServerIdent(client,
+			Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY),
+			Config_GetStrByKey(Server_Config, CFG_SERVERMOTD_KEY)
+		);
 	} else {
 		Client_Kick(client, Lang_Get(Lang_KickGrp, 4));
 		return true;
@@ -679,6 +675,32 @@ void CPE_WriteSetModel(Client *client, Client *other) {
 	PacketWriter_End(client, 66);
 }
 
+void CPE_WriteSetMapAppearanceV1(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x1E;
+	Proto_WriteString(&data, tex);
+	*data++ = side;
+	*data++ = edge;
+	*(cs_uint16 *)data = htons(sidelvl);
+
+	PacketWriter_End(client, 69);
+}
+
+void CPE_WriteSetMapAppearanceV2(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl, cs_int16 cllvl, cs_int16 maxview) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x1E;
+	Proto_WriteString(&data, tex);
+	*data++ = side;
+	*data++ = edge;
+	*(cs_uint16 *)data = htons(sidelvl); data += 2;
+	*(cs_uint16 *)data = htons(cllvl); data += 2;
+	*(cs_uint16 *)data = htons(maxview);
+
+	PacketWriter_End(client, 73);
+}
+
 void CPE_WriteWeatherType(Client *client, cs_int8 type) {
 	PacketWriter_Start(client);
 
@@ -742,7 +764,16 @@ void CPE_WriteBulkBlockUpdate(Client *client, BulkBlockUpdate *bbu) {
 	PacketWriter_End(client, 1282);
 }
 
-void CPE_WriteSetTextColor(Client *client, Color4* color, cs_char code) {
+void CPE_WriteFastMapInit(Client *client, cs_uint32 size) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x02;
+	*(cs_uint32 *)data = htonl(size);
+
+	PacketWriter_End(client, 5);
+}
+
+void CPE_WriteAddTextColor(Client *client, Color4* color, cs_char code) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x27;
@@ -962,7 +993,7 @@ cs_bool CPEHandler_TwoWayPing(Client *client, cs_char *data) {
 Packet *packetsList[256];
 
 void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler) {
-	Packet *tmp = Memory_Alloc(1, sizeof(Packet));
+	Packet *tmp = (Packet *)Memory_Alloc(1, sizeof(Packet));
 	tmp->id = id;
 	tmp->size = size;
 	tmp->handler = handler;
@@ -1001,7 +1032,7 @@ static const struct extReg {
 	{"SelectionCuboid", 1},
 	{"BlockPermissions", 1},
 	{"ChangeModel", 1},
-	// {"EnvMapAppearance", 1},
+	{"EnvMapAppearance", 2},
 	{"EnvWeatherType", 1},
 	{"HackControl", 1},
 	{"MessageTypes", 1},
@@ -1017,11 +1048,14 @@ static const struct extReg {
 	{"ExtEntityPositions", 1},
 	{"TwoWayPing", 1},
 	{"InventoryOrder", 1},
+	// {"ExtendedBlocks", 1},
 	{"FastMap", 1},
+	// {"ExtendedTextures", 1},
 	{"SetHotbar", 1},
 	{"SetSpawnpoint", 1},
 	{"VelocityControl", 1},
 	{"CustomParticles", 1},
+	// {"CustomModels", 2},
 
 	{NULL, 0}
 };

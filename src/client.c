@@ -284,24 +284,44 @@ cs_bool Client_ChangeWorld(Client *client, World *world) {
 void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 	if(!client->cpeData) return;
 	WorldInfo *wi = &world->info;
-	cs_byte modval = wi->modval,
-	modclr = wi->modclr;
-	cs_uint16 modprop = wi->modprop;
+	cs_byte modval = wi->modval;
 
-	if(updateAll || modval & MV_COLORS) {
-		for(cs_byte color = 0; color < WORLD_COLORS_COUNT; color++) {
-			if(updateAll || modclr & (2 ^ color))
-				Client_SetEnvColor(client, color, World_GetEnvColor(world, color));
+	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
+		cs_byte modclr = wi->modclr;
+		cs_uint16 modprop = wi->modprop;
+
+		if(updateAll || modval & MV_COLORS) {
+			for(cs_byte color = 0; color < WORLD_COLORS_COUNT; color++) {
+				if(updateAll || modclr & (2 ^ color))
+					CPE_WriteEnvColor(client, color, World_GetEnvColor(world, color));
+			}
 		}
-	}
-	if(updateAll || modval & MV_TEXPACK)
-		Client_SetTexturePack(client, wi->texturepack);
-	if(updateAll || modval & MV_PROPS) {
-		for(cs_byte prop = 0; prop < WORLD_PROPS_COUNT; prop++) {
-			if(updateAll || modprop & (2 ^ prop))
-				Client_SetEnvProperty(client, prop, World_GetProperty(world, prop));
+		if(updateAll || modval & MV_TEXPACK)
+			CPE_WriteTexturePack(client, wi->texturepack);
+		if(updateAll || modval & MV_PROPS) {
+			for(cs_byte prop = 0; prop < WORLD_PROPS_COUNT; prop++) {
+				if(updateAll || modprop & (2 ^ prop))
+					CPE_WriteMapProperty(client, prop, World_GetProperty(world, prop));
+			}
 		}
+	} else if(Client_GetExtVer(client, EXT_MAPPROPS) == 2) {
+		CPE_WriteSetMapAppearanceV2(
+			client, wi->texturepack,
+			(cs_byte)World_GetProperty(world, 0),
+			(cs_byte)World_GetProperty(world, 1),
+			(cs_int16)World_GetProperty(world, 2),
+			(cs_int16)World_GetProperty(world, 3),
+			(cs_int16)World_GetProperty(world, 4)
+		);
+	} else if(Client_GetExtVer(client, EXT_MAPPROPS) == 1) {
+		CPE_WriteSetMapAppearanceV1(
+			client, wi->texturepack,
+			(cs_byte)World_GetProperty(world, 0),
+			(cs_byte)World_GetProperty(world, 1),
+			(cs_int16)World_GetProperty(world, 2)
+		);
 	}
+	
 	if(updateAll || modval & MV_WEATHER)
 		Client_SetWeather(client, wi->weatherType);
 }
@@ -443,7 +463,7 @@ cs_bool Client_SetEnvProperty(Client *client, cs_byte property, cs_int32 value) 
 }
 
 cs_bool Client_SetEnvColor(Client *client, cs_byte type, Color3* color) {
-	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
+	if(Client_GetExtVer(client, EXT_ENVCOLOR)) {
 		CPE_WriteEnvColor(client, type, color);
 		return true;
 	}
@@ -476,10 +496,25 @@ cs_bool Client_SetInvOrder(Client *client, cs_byte order, BlockID block) {
 	return false;
 }
 
+cs_bool Client_SetServerIdent(Client *client, cs_str name, cs_str motd) {
+	if(Client_IsInGame(client) && !Client_GetExtVer(client, EXT_INSTANTMOTD))
+		return false;
+	Vanilla_WriteServerIdent(client, name, motd);
+	return true;
+}
+
 cs_bool Client_SetHeld(Client *client, BlockID block, cs_bool canChange) {
 	if(!Block_IsValid(block)) return false;
 	if(Client_GetExtVer(client, EXT_HELDBLOCK)) {
 		CPE_WriteHoldThis(client, block, canChange);
+		return true;
+	}
+	return false;
+}
+
+cs_bool Client_SetClickDistance(Client *client, cs_int16 dist) {
+	if(Client_GetExtVer(client, 0)) {
+		CPE_WriteClickDistance(client, dist);
 		return true;
 	}
 	return false;
@@ -635,7 +670,7 @@ cs_bool Client_UndefineBlock(Client *client, BlockID id) {
 
 cs_bool Client_AddTextColor(Client *client, Color4* color, cs_char code) {
 	if(Client_GetExtVer(client, EXT_TEXTCOLORS)) {
-		CPE_WriteSetTextColor(client, color, code);
+		CPE_WriteAddTextColor(client, color, code);
 		return true;
 	}
 	return false;
@@ -647,17 +682,20 @@ cs_bool Client_Update(Client *client) {
 	cs_byte updates = cpd->updates;
 	if(updates == PCU_NONE) return false;
 	cpd->updates = PCU_NONE;
+	cs_bool hasplsupport = Client_GetExtVer(client, EXT_PLAYERLIST) == 2,
+	hassmsupport = Client_GetExtVer(client, EXT_CHANGEMODEL) == 1,
+	hasentprop = Client_GetExtVer(client, EXT_ENTPROP) == 1;
 
 	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
 		Client *other = Clients_List[id];
 		if(other) {
-			if(updates & PCU_GROUP)
+			if(updates & PCU_GROUP && hasplsupport)
 				CPE_WriteAddName(other, client);
-			if(updates & PCU_MODEL)
+			if(updates & PCU_MODEL && hassmsupport)
 				CPE_WriteSetModel(other, client);
-			if(updates & PCU_SKIN)
+			if(updates & PCU_SKIN && hasplsupport)
 				CPE_WriteAddEntity2(other, client);
-			if(updates & PCU_ENTPROP)
+			if(updates & PCU_ENTPROP && hasentprop)
 				for(cs_int8 i = 0; i < 3; i++) {
 					CPE_WriteSetEntityProperty(other, client, i, cpd->rotation[i]);
 				}
@@ -816,7 +854,13 @@ static void WorldSendThread(Client *client, World *world) {
 		return;
 	}
 
-	Vanilla_WriteLvlInit(client, World_GetBlockArraySize(world));
+	cs_bool hasfastmap = Client_GetExtVer(client, EXT_FASTMAP) == 1;
+
+	if(hasfastmap)
+		CPE_WriteFastMapInit(client, World_GetBlockArraySize(world));
+	else
+		Vanilla_WriteLvlInit(client);
+
 	Mutex_Lock(client->mutex);
 
 	cs_byte *data = (cs_byte *)client->wrbuf;
@@ -831,7 +875,7 @@ static void WorldSendThread(Client *client, World *world) {
 		.opaque = Z_NULL
 	};
 
-	if(Client_GetExtVer(client, EXT_FASTMAP)) {
+	if(hasfastmap) {
 		stream.next_in = World_GetBlockArray(world, &stream.avail_in);
 		wndBits = -15;
 	} else {
@@ -970,7 +1014,7 @@ void Client_Tick(Client *client, cs_int32 delta) {
 		if(pd && pd->state > STATE_WLOADDONE) {
 			for(int i = 0; i < MAX_CLIENTS; i++) {
 				Client *other = Clients_List[i];
-				if(other && Client_GetExtVer(other, EXT_PLAYERLIST))
+				if(other && Client_GetExtVer(other, EXT_PLAYERLIST) == 2)
 					CPE_WriteRemoveName(other, client);
 			}
 			Event_Call(EVT_ONDISCONNECT, client);
