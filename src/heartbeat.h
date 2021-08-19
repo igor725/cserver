@@ -10,10 +10,10 @@ typedef struct _Heartbeat {
 	cs_str domain, playURL,
 	templ, secretfile;
 	cs_char secretkey[90];
-	cs_bool isPublic, isSecure, isPlayURLok, isOnline;
+	cs_bool isPublic, isSecure,
+	isPlayURLok, isOnline, freeAtEnd;
 	cs_uint16 delay;
 	Thread thread;
-	struct _Heartbeat *next;
 } Heartbeat;
 
 API cs_bool Heartbeat_VanillaKeyChecker(cs_str secret, Client *client);

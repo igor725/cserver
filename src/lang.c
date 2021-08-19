@@ -38,7 +38,7 @@ cs_bool Lang_Init(void) {
 	Lang_Set(Lang_KickGrp, 1, "Server is full");
 	Lang_Set(Lang_KickGrp, 2, "Invalid protocol version");
 	Lang_Set(Lang_KickGrp, 3, "This name is already in use");
-	Lang_Set(Lang_KickGrp, 4, "Auth failed");
+	Lang_Set(Lang_KickGrp, 4, "Authorization failed");
 	Lang_Set(Lang_KickGrp, 5, "Server stopped");
 	Lang_Set(Lang_KickGrp, 6, "World compression failed");
 	Lang_Set(Lang_KickGrp, 7, "Packet reading error");

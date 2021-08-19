@@ -99,11 +99,14 @@ cs_bool Heartbeat_VanillaKeyChecker(cs_str secret, Client *client) {
 
 THREAD_FUNC(HeartbeatThread) {
 	Heartbeat *hb = (Heartbeat *)param;
+
 	while(hb->isOnline) {
 		DoRequest(hb);
 		Thread_Sleep(hb->delay);
 		if(!Server_Active) break;
 	}
+
+	if(hb->freeAtEnd) Memory_Free((void *)hb);
 	return 0;
 }
 
@@ -197,9 +200,6 @@ cs_bool Heartbeat_Add(Heartbeat *hb) {
 
 cs_bool Heartbeat_Remove(Heartbeat *hb) {
 	hb->isOnline = false;
-	if(Thread_IsValid(hb->thread))
-		Thread_Join(hb->thread);
-
 	AListField *tmp;
 	List_Iter(tmp, headHeartbeat) {
 		if((Heartbeat *)tmp->value.ptr == hb) {
