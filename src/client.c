@@ -425,8 +425,7 @@ cs_bool Client_IsOP(Client *client) {
 }
 
 cs_bool Client_CheckAuth(Client *client) {
-	if(!Server_Heartbeat) return true;
-	return Server_Heartbeat->validate(Server_Heartbeat, client);
+	return Heartbeat_Validate(client);
 }
 
 cs_bool Client_SetBlock(Client *client, SVec *pos, BlockID id) {

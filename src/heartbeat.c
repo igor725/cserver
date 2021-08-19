@@ -9,6 +9,12 @@
 #include "lang.h"
 #include "hash.h"
 
+struct _HBKeyCheck {
+	heartbeatKeyChecker func;
+};
+
+AListField *headHeartbeat = NULL, *headKeyChecker = NULL;
+
 INL static void TrimReserved(cs_char *name, cs_int32 len) {
 	for(cs_int32 i = 0; i < len; i++) {
 		cs_char sym = name[i];
@@ -27,7 +33,7 @@ INL static cs_bool DoRequest(Heartbeat *hb) {
 	cs_uint16 port = (cs_uint16)Config_GetInt16ByKey(Server_Config, CFG_SERVERPORT_KEY);
 	cs_byte max = (cs_byte)Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
 	cs_byte count = Clients_GetCount(STATE_INGAME);
-	String_FormatBuf(reqstr, 512, hb->template,
+	String_FormatBuf(reqstr, 512, hb->templ,
 		name, port, count,
 		max, hb->secretkey,
 		hb->isPublic ? "true" : "false",
@@ -69,17 +75,16 @@ INL static cs_bool DoRequest(Heartbeat *hb) {
 
 static const cs_char hexchars[] = "0123456789abcdef";
 
-cs_bool Heartbeat_VanillaKeyChecker(Heartbeat *hb, Client *client) {
-	if(*hb->secretkey == '\0') return false;
+cs_bool Heartbeat_VanillaKeyChecker(cs_str secret, Client *client) {
 	cs_str key = client->playerData->key;
 	cs_str name =  client->playerData->name;
 
 	MD5_CTX ctx;
 	cs_byte hash[16];
-	cs_char hash_hex[16 * 2 + 1];
+	cs_char hash_hex[33];
 
 	MD5_Init(&ctx);
-	MD5_Update(&ctx, hb->secretkey, (cs_ulong)String_Length(hb->secretkey));
+	MD5_Update(&ctx, secret, (cs_ulong)String_Length(secret));
 	MD5_Update(&ctx, name, (cs_ulong)String_Length(name));
 	MD5_Final(hash, &ctx);
 
@@ -89,7 +94,7 @@ cs_bool Heartbeat_VanillaKeyChecker(Heartbeat *hb, Client *client) {
 		hash_hex[i * 2 + 1] = hexchars[b & 0xF];
 	}
 
-	return String_CaselessCompare2(hash_hex, key, 16 * 2);
+	return String_CaselessCompare2(hash_hex, key, 32);
 }
 
 THREAD_FUNC(HeartbeatThread) {
@@ -135,9 +140,42 @@ void Heartbeat_NewSecret(Heartbeat *hb, cs_uint32 length) {
 	}
 }
 
-cs_bool Heartbeat_Run(Heartbeat *hb) {
-	if(!hb->validate || !hb->template ||
-	!hb->playURL || !hb->domain
+void Heartbeat_AddKeyChecker(heartbeatKeyChecker checker) {
+	AList_AddField(&headKeyChecker, (void *)checker);
+}
+
+cs_bool Heartbeat_RemoveKeyChecker(heartbeatKeyChecker checker) {
+	AListField *tmp;
+	List_Iter(tmp, headKeyChecker) {
+		if(tmp->value.ptr == (void *)checker) {
+			AList_Remove(&headHeartbeat, tmp);
+			return true;
+		}
+	}
+	return false;
+}
+
+cs_bool Heartbeat_Validate(Client *client) {
+	if(!headKeyChecker || !headHeartbeat) return true;
+	AListField *kc;
+	cs_bool keyvalid = false;
+
+	List_Iter(kc, headKeyChecker) {
+		if(keyvalid) break;
+		AListField *hb;
+		List_Iter(hb, headHeartbeat) {
+			if(keyvalid) break;
+			Heartbeat *tmp = (Heartbeat *)hb->value.ptr;
+			if(*tmp->secretkey != '\0')
+				keyvalid = ((struct _HBKeyCheck *)&kc->value.ptr)->func(tmp->secretkey, client);
+		}
+	}
+
+	return keyvalid;
+}
+
+cs_bool Heartbeat_Add(Heartbeat *hb) {
+	if(!hb->templ || !hb->playURL || !hb->domain
 	|| !hb->secretfile || hb->delay < 1000) return false;
 	hb->isPlayURLok = false;
 	hb->isOnline = true;
@@ -152,6 +190,23 @@ cs_bool Heartbeat_Run(Heartbeat *hb) {
 	} else
 		Heartbeat_NewSecret(hb, 32);
 
-	Thread_Create(HeartbeatThread, (void *)hb, true);
+	hb->thread = Thread_Create(HeartbeatThread, (void *)hb, false);
+	AList_AddField(&headHeartbeat, (void *)hb);
 	return true;
+}
+
+cs_bool Heartbeat_Remove(Heartbeat *hb) {
+	hb->isOnline = false;
+	if(Thread_IsValid(hb->thread))
+		Thread_Join(hb->thread);
+
+	AListField *tmp;
+	List_Iter(tmp, headHeartbeat) {
+		if((Heartbeat *)tmp->value.ptr == hb) {
+			AList_Remove(&headHeartbeat, tmp);
+			return true;
+		}
+	}
+
+	return false;
 }

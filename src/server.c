@@ -194,19 +194,6 @@ cs_bool Server_Init(void) {
 	Config_SetComment(ent, "List of worlds to load at startup. (Can be \"*\" it means load all worlds in the folder.)");
 	Config_SetDefaultStr(ent, "world.cws:256x256x256:normal,flat_world.cws:256x256x256:flat");
 
-	ent = Config_NewEntry(cfg, CFG_HEARTBEATENABLED_KEY, CFG_TBOOL);
-	Config_SetComment(ent, "Enable ClassiCube heartbeat.");
-	Config_SetDefaultBool(ent, false);
-
-	ent = Config_NewEntry(cfg, CFG_HEARTBEATDELAY_KEY, CFG_TINT8);
-	Config_SetComment(ent, "Heartbeat request delay. [1-60]");
-	Config_SetLimit(ent, 1, 60);
-	Config_SetDefaultInt8(ent, 10);
-
-	ent = Config_NewEntry(cfg, CFG_HEARTBEATPUBLIC_KEY, CFG_TBOOL);
-	Config_SetComment(ent, "Show server in the ClassiCube server list.");
-	Config_SetDefaultBool(ent, false);
-
 	cfg->modified = true;
 	if(!Config_Load(cfg)) {
 		Config_PrintError(cfg);
@@ -310,23 +297,6 @@ cs_bool Server_Init(void) {
 		return false;
 	} else
 		Log_Info("%d world(-s) successfully loaded.", wIndex);
-
-	if(Config_GetBoolByKey(cfg, CFG_HEARTBEATENABLED_KEY)) {
-		Heartbeat classicube = {
-			.template = "/server/heartbeat/?name=%s&port=%d&users=%d&max=%d&salt=%s&public=%s&web=true&software=%s",
-			.playURL = "http://www.classicube.net/server/play/",
-			.domain = "classicube.net",
-			.secretfile = "secret.txt",
-			.validate = Heartbeat_VanillaKeyChecker,
-			.isSecure = true,
-
-			.delay = Config_GetInt8ByKey(cfg, CFG_HEARTBEATDELAY_KEY) * 1000,
-			.isPublic = Config_GetBoolByKey(Server_Config, CFG_HEARTBEATPUBLIC_KEY)
-		};
-
-		Heartbeat_Run(&classicube);
-		Server_Heartbeat = &classicube;
-	}
 
 	cs_str ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
 	cs_uint16 port = Config_GetInt16ByKey(cfg, CFG_SERVERPORT_KEY);

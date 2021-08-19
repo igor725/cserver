@@ -4,18 +4,22 @@
 #include "client.h"
 
 struct _Heartbeat;
-typedef cs_bool(*heartbeatKeyChecker)(struct _Heartbeat *hb, Client *client);
+typedef cs_bool(*heartbeatKeyChecker)(cs_str secret, Client *client);
 
 typedef struct _Heartbeat {
 	cs_str domain, playURL,
-	template, secretfile;
+	templ, secretfile;
 	cs_char secretkey[90];
-	heartbeatKeyChecker validate;
 	cs_bool isPublic, isSecure, isPlayURLok, isOnline;
 	cs_uint16 delay;
+	Thread thread;
+	struct _Heartbeat *next;
 } Heartbeat;
 
-API cs_bool Heartbeat_VanillaKeyChecker(Heartbeat *hb, Client *client);
+API cs_bool Heartbeat_VanillaKeyChecker(cs_str secret, Client *client);
+API void Heartbeat_AddKeyChecker(heartbeatKeyChecker checker);
 API void Heartbeat_NewSecret(Heartbeat *hb, cs_uint32 length);
-API cs_bool Heartbeat_Run(Heartbeat *hb);
+API cs_bool Heartbeat_Validate(Client *client);
+API cs_bool Heartbeat_Add(Heartbeat *hb);
+API cs_bool Heartbeat_Remove(Heartbeat *hb);
 #endif // HEARTBEAT_H
