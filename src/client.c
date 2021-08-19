@@ -17,7 +17,7 @@ AListField *headAssocType = NULL,
 Client *Broadcast = NULL;
 Client *Clients_List[MAX_CLIENTS] = {0};
 
-NOINL static AListField *AGetType(cs_uint16 type) {
+INL static AListField *AGetType(cs_uint16 type) {
 	AListField *ptr = NULL;
 
 	List_Iter(ptr, headAssocType)
@@ -26,7 +26,7 @@ NOINL static AListField *AGetType(cs_uint16 type) {
 	return NULL;
 }
 
-NOINL static KListField *AGetNode(Client *client, cs_uint16 type) {
+INL static KListField *AGetNode(Client *client, cs_uint16 type) {
 	KListField *ptr = NULL;
 
 	List_Iter(ptr, client->headNode)
@@ -417,7 +417,7 @@ NOINL static void HandlePacket(Client *client, cs_char *data, Packet *packet, cs
 		client->pps += 1;
 }
 
-NOINL static cs_uint16 GetPacketSizeFor(Packet *packet, Client *client, cs_bool *extended) {
+INL static cs_uint16 GetPacketSizeFor(Packet *packet, Client *client, cs_bool *extended) {
 	cs_uint16 packetSize = packet->size;
 	if(packet->haveCPEImp) {
 		*extended = Client_GetExtVer(client, packet->exthash) == packet->extVersion;
@@ -956,7 +956,7 @@ void Client_Loop(Client *client) {
 	}
 }
 
-NOINL static void SendSpawnPacket(Client *client, Client *other) {
+INL static void SendSpawnPacket(Client *client, Client *other) {
 	if(Client_GetExtVer(client, EXT_PLAYERLIST))
 		CPE_WriteAddEntity2(client, other);
 	else

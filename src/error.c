@@ -70,7 +70,7 @@ static void PrintCallStack(void) {
 }
 #endif
 
-NOINL static void getErrorStr(cs_int32 type, cs_int32 code, cs_char *errbuf, cs_size sz, va_list *args) {
+INL static void getErrorStr(cs_int32 type, cs_int32 code, cs_char *errbuf, cs_size sz, va_list *args) {
 	switch(type) {
 		case ET_SERVER:
 			if(!args)
