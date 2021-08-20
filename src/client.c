@@ -10,7 +10,7 @@
 #include "event.h"
 #include "heartbeat.h"
 #include "lang.h"
-#include <zlib.h>
+#include "compr.h"
 
 AListField *headAssocType = NULL,
 *headCGroup = NULL;
@@ -263,8 +263,6 @@ cs_bool Client_Despawn(Client *client) {
 	Event_Call(EVT_ONDESPAWN, client);
 	return true;
 }
-
-#define CHUNK_SIZE 1024
 
 cs_bool Client_ChangeWorld(Client *client, World *world) {
 	if(Client_IsInWorld(client, world)) return false;
@@ -740,6 +738,7 @@ void Client_Free(Client *client) {
 	Socket_Shutdown(client->sock, SD_SEND);
 	Socket_Close(client->sock);
 
+	Compr_Cleanup(&client->compr);
 	Memory_Free(client);
 }
 
@@ -846,8 +845,8 @@ INL static void PacketReceiverRaw(Client *client) {
 INL static void SendWorld(Client *client, World *world) {
 	PlayerData *pd = client->playerData;
 	
-	if(world->process == WP_LOADING)
-		Waitable_Wait(world->wait);
+	if(!world->loaded)
+		Waitable_Wait(world->waitable);
 
 	if(!world->loaded) {
 		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
@@ -866,79 +865,54 @@ INL static void SendWorld(Client *client, World *world) {
 	cs_byte *data = (cs_byte *)client->wrbuf;
 	*data++ = 0x03;
 	cs_uint16 *len = (cs_uint16 *)data++;
-	Bytef *out = ++data;
+	void *out = ++data;
 
-	cs_int32 ret, wndBits;
-	z_stream stream = {
-		.zalloc = Z_NULL,
-		.zfree = Z_NULL,
-		.opaque = Z_NULL
-	};
-
+	cs_bool compr_ok;
+	cs_uint32 wsize = 0;
 	if(hasfastmap) {
-		stream.next_in = World_GetBlockArray(world, &stream.avail_in);
-		wndBits = -15;
+		compr_ok = Compr_Init(&client->compr, COMPR_TYPE_DEFLATE);
+		cs_byte *map = World_GetBlockArray(world, &wsize);
+		if(compr_ok) Compr_SetInBuffer(&client->compr, map, wsize);
 	} else {
-		stream.next_in = World_GetData(world, &stream.avail_in);
-		wndBits = 31;
+		compr_ok = Compr_Init(&client->compr, COMPR_TYPE_GZIP);
+		cs_byte *map = World_GetData(world, &wsize);
+		if(compr_ok) Compr_SetInBuffer(&client->compr, map, wsize);
 	}
 
-	if((ret = deflateInit2(
-	&stream,
-	Z_DEFAULT_COMPRESSION,
-	Z_DEFLATED,
-	wndBits,
-	8,
-	Z_DEFAULT_STRATEGY)) != Z_OK) {
-		Log_Error("deflateInit2 error: %s", zError(ret));
-		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
-		return;
+	if(compr_ok) {
+		while(client->compr.state != COMPR_STATE_DONE) {
+			if(!compr_ok) break;
+			Compr_SetOutBuffer(&client->compr, out, 1024);
+			if((compr_ok = Compr_Update(&client->compr)) == true) {
+				if(client->closed) compr_ok = false;
+				if(client->compr.wr_size) {
+					*len = htons((cs_uint16)client->compr.wr_size);
+					compr_ok = Client_Send(client, 1028) == 1028;
+				}
+			}
+		}
+		Compr_Reset(&client->compr);
+		Mutex_Unlock(client->mutex);
+
+		if(compr_ok) {
+			pd->world = world;
+			pd->state = STATE_INGAME;
+			pd->position = world->info.spawnVec;
+			pd->angle = world->info.spawnAng;
+			Event_Call(EVT_PRELVLFIN, client);
+			if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
+				for(BlockID id = 0; id < 255; id++) {
+					BlockDef *bdef = Block_GetDefinition(id);
+					if(bdef) Client_DefineBlock(client, bdef);
+				}
+			}
+			Vanilla_WriteLvlFin(client, &world->info.dimensions);
+			Client_Spawn(client);
+			return;
+		}
 	}
 
-	cs_byte zstate = 0;
-	do {
-		stream.next_out = out;
-		stream.avail_out = CHUNK_SIZE;
-
-		if((ret = deflate(&stream, zstate == 0 ? Z_NO_FLUSH : Z_FINISH)) == Z_STREAM_ERROR) {
-			pd->state = STATE_WLOADERR;
-			goto world_send_end;
-		}
-
-		if(stream.avail_out == CHUNK_SIZE) {
-			if(zstate == 1)
-				zstate = 2;
-			else
-				zstate = 1;
-		} else {
-			*len = htons(CHUNK_SIZE - (cs_uint16)stream.avail_out);
-			if(client->closed || !Client_Send(client, CHUNK_SIZE + 4)) {
-				pd->state = STATE_WLOADERR;
-				goto world_send_end;
-			}
-		}
-	} while(zstate != 2);
-	pd->state = STATE_WLOADDONE;
-
-	world_send_end:
-	deflateEnd(&stream);
-	Mutex_Unlock(client->mutex);
-	if(pd->state == STATE_WLOADDONE) {
-		pd->world = world;
-		pd->state = STATE_INGAME;
-		pd->position = world->info.spawnVec;
-		pd->angle = world->info.spawnAng;
-		Event_Call(EVT_PRELVLFIN, client);
-		if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
-			for(BlockID id = 0; id < 255; id++) {
-				BlockDef *bdef = Block_GetDefinition(id);
-				if(bdef) Client_DefineBlock(client, bdef);
-			}
-		}
-		Vanilla_WriteLvlFin(client, &world->info.dimensions);
-		Client_Spawn(client);
-	} else
-		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
+	Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
 }
 
 void Client_Loop(Client *client) {
@@ -1011,7 +985,7 @@ void Client_Kick(Client *client, cs_str reason) {
 void Client_Tick(Client *client, cs_int32 delta) {
 	PlayerData *pd = client->playerData;
 	if(client->closed) {
-		if(pd && pd->state > STATE_WLOADDONE) {
+		if(pd && pd->state == STATE_INGAME) {
 			for(int i = 0; i < MAX_CLIENTS; i++) {
 				Client *other = Clients_List[i];
 				if(other && Client_GetExtVer(other, EXT_PLAYERLIST) == 2)

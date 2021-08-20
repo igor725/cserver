@@ -4,6 +4,7 @@
 
 cs_bool Hash_Init(void);
 void Hash_Uninit(void);
+cs_int32 CRC32_Gen(cs_byte *data, cs_uint32 len);
 
 #if defined(WINDOWS)
 #include <windows.h>

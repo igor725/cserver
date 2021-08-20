@@ -246,7 +246,7 @@ cs_bool Server_Init(void) {
 					skip_creating = false;
 					tmp = World_Create(buffer);
 					if(World_Load(tmp)) {
-						Waitable_Wait(tmp->wait);
+						Waitable_Wait(tmp->waitable);
 						if(World_IsReadyToPlay(tmp)) {
 							AList_AddField(&World_Head, tmp);
 							skip_creating = true;

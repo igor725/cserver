@@ -6,17 +6,18 @@
 #include "world.h"
 #include "event.h"
 #include "list.h"
-#include <zlib.h>
+#include "compr.h"
 
 AListField *World_Head = NULL;
 
 void Worlds_SaveAll(cs_bool join, cs_bool unload) {
+	if(!Server_Active) unload = true;
 	AListField *tmp;
 
 	List_Iter(tmp, World_Head) {
 		World *world = (World *)tmp->value.ptr;
 		if(World_Save(world, unload) && join) {
-			Waitable_Wait(world->wait);
+			Waitable_Wait(world->waitable);
 			if(!Server_Active)
 				World_Free(world);
 		}
@@ -25,10 +26,9 @@ void Worlds_SaveAll(cs_bool join, cs_bool unload) {
 
 World *World_Create(cs_str name) {
 	World *tmp = Memory_Alloc(1, sizeof(World));
-
 	tmp->name = String_AllocCopy(name);
-	tmp->wait = Waitable_Create();
-	tmp->process = WP_NOPROC;
+	tmp->waitable = Waitable_Create();
+	Waitable_Signal(tmp->waitable);
 
 	/*
 	** Устанавливаем дефолтные значения
@@ -59,8 +59,7 @@ cs_bool World_Add(World *world) {
 }
 
 cs_bool World_IsReadyToPlay(World *world) {
-	return world->wdata.ptr != NULL &&
-	world->process == WP_NOPROC && world->loaded;
+	return world->wdata.ptr != NULL && world->loaded;
 }
 
 World *World_GetByName(cs_str name) {
@@ -145,7 +144,6 @@ void World_AllocBlockArray(World *world) {
 	*(cs_uint32 *)data = htonl(world->wdata.size);
 	world->wdata.ptr = data;
 	world->wdata.blocks = (BlockID *)data + 4;
-	world->loaded = true;
 }
 
 BlockID *World_GetBlockArray(World *world, cs_uint32 *size) {
@@ -170,7 +168,8 @@ void World_Free(World *world) {
 			break;
 		}
 	}
-	Waitable_Free(world->wait);
+	Compr_Cleanup(&world->compr);
+	World_FreeBlockArray(world);
 	Memory_Free(world);
 }
 
@@ -249,171 +248,125 @@ static cs_bool ReadInfo(World *world, cs_file fp) {
 
 THREAD_FUNC(WorldSaveThread) {
 	World *world = (World *)param;
-	cs_bool succ = false;
-	cs_char path[256];
-	cs_char tmpname[256];
+	cs_uint32 wsize = 0;
+	cs_bool compr_ok;
+
+	if((compr_ok = Compr_Init(&world->compr, COMPR_TYPE_GZIP)) == false) {
+		ERROR_PRINT(ET_ZLIB, world->compr.ret, false);
+		Waitable_Signal(world->waitable);
+		return 0;
+	}
+
+	cs_byte *wdata = World_GetBlockArray(world, &wsize);
+	Compr_SetInBuffer(&world->compr, wdata, wsize);
+
+	cs_char path[256], tmpname[256], out[CHUNK_SIZE];
 	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
 	String_FormatBuf(tmpname, 256, "worlds" PATH_DELIM "%s.tmp", world->name);
 
 	cs_file fp = File_Open(tmpname, "wb");
 	if(!fp) {
 		Error_PrintSys(false);
-		goto world_save_end;
+		Compr_Reset(&world->compr);
+		Waitable_Signal(world->waitable);
+		return 0;
 	}
 
-	if(!WriteInfo(world, fp))
-		goto world_save_end;
-
-	Bytef out[CHUNK_SIZE];
-	cs_int32 ret;
-	z_stream stream = {
-		.zalloc = Z_NULL,
-		.zfree = Z_NULL,
-		.opaque = Z_NULL
-	};
-
-	if((ret = deflateInit2(
-		&stream,
-		Z_DEFAULT_COMPRESSION,
-		Z_DEFLATED,
-		31,
-		8,
-		Z_DEFAULT_STRATEGY
-	)) != Z_OK) {
-		ERROR_PRINT(ET_ZLIB, ret, false);
-		goto world_save_end;
+	if((compr_ok = WriteInfo(world, fp)) == true) {
+		do {
+			Compr_SetOutBuffer(&world->compr, out, CHUNK_SIZE);
+			if((compr_ok = Compr_Update(&world->compr)) == true) {
+				if(File_Write(out, 1, world->compr.wr_size, fp) != world->compr.wr_size) {
+					Error_PrintSys(false);
+					compr_ok = false;
+					break;
+				}
+			} else break;
+		} while(world->compr.state != COMPR_STATE_DONE);
 	}
 
-	stream.next_in = World_GetBlockArray(world, &stream.avail_in);
-
-	cs_byte zstate = 0;
-	do {
-		stream.next_out = out;
-		stream.avail_out = CHUNK_SIZE;
-
-		if((ret = deflate(&stream, zstate == 0 ? Z_NO_FLUSH : Z_FINISH)) == Z_STREAM_ERROR) {
-			ERROR_PRINT(ET_ZLIB, ret, false);
-			goto world_save_end;
-		}
-
-		if(stream.avail_out == CHUNK_SIZE) {
-			if(zstate == 1)
-				zstate = 2;
-			else
-				zstate = 1;
-		} else {
-			if(!File_Write(out, 1, CHUNK_SIZE - stream.avail_out, fp)) {
-				Error_PrintSys(false);
-				goto world_save_end;
-			}
-		}
-	} while(zstate != 2);
-	succ = (stream.avail_in == 0);
-
-	world_save_end:
 	File_Close(fp);
-	deflateEnd(&stream);
-	world->process = WP_NOPROC;
-	if(succ)
+	Compr_Reset(&world->compr);
+	if(compr_ok)
 		File_Rename(tmpname, path);
-	Waitable_Signal(world->wait);
-	if(world->saveUnload)
-		World_Unload(world);
+	Waitable_Signal(world->waitable);
 	return 0;
 }
 
 cs_bool World_Save(World *world, cs_bool unload) {
-	if(world->process != WP_NOPROC || !world->modified || !world->loaded)
-		return world->process == WP_SAVING;
-	world->process = WP_SAVING;
-	world->saveUnload = unload;
-	Waitable_Reset(world->wait);
+	if(!world->modified || !world->loaded)
+		return false;
+	Waitable_Reset(world->waitable);
 	Thread_Create(WorldSaveThread, world, true);
+	if(unload) World_Unload(world);
 	return true;
 }
 
 THREAD_FUNC(WorldLoadThread) {
 	World *world = (World *)param;
-	cs_bool error = true;
+	cs_bool compr_ok;
+
+	if((compr_ok = Compr_Init(&world->compr, COMPR_TYPE_UNGZIP)) == false) {
+		ERROR_PRINT(ET_ZLIB, world->compr.ret, false);
+		Waitable_Signal(world->waitable);
+		return 0;
+	}
+
 	cs_char path[256];
 	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
 
 	cs_file fp = File_Open(path, "rb");
 	if(!fp) {
 		Error_PrintSys(false);
-		goto world_load_done;
+		Compr_Reset(&world->compr);
+		Waitable_Signal(world->waitable);
+		return 0;
 	}
 
-	if(!ReadInfo(world, fp))
-		goto world_load_done;
-
-	World_AllocBlockArray(world);
-
-	cs_int32 ret;
-	Bytef in[CHUNK_SIZE];
-	z_stream stream = {
-		.zalloc = Z_NULL,
-		.zfree = Z_NULL,
-		.opaque = Z_NULL
-	};
-
-	if((ret = inflateInit2(&stream, 31)) != Z_OK) {
-		ERROR_PRINT(ET_ZLIB, ret, false);
-		goto world_load_done;
-	}
-
-	stream.next_out = World_GetBlockArray(world, NULL);
-
-	do {
-		stream.avail_in = (uLongf)File_Read(in, 1, CHUNK_SIZE, fp);
-		if(File_Error(fp)) {
-			Error_PrintSys(false);
-			goto world_load_done;
-		}
-
-		if(stream.avail_in == 0) break;
-		stream.next_in = in;
-
-		do {
-			stream.avail_out = CHUNK_SIZE;
-			if((ret = inflate(&stream, Z_NO_FLUSH)) == Z_NEED_DICT || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
-				ERROR_PRINT(ET_ZLIB, ret, false);
-				goto world_load_done;
+	if(ReadInfo(world, fp)) {
+		cs_uint32 wsize = 0;
+		cs_byte in[CHUNK_SIZE];
+		World_AllocBlockArray(world);
+		cs_byte *data = World_GetBlockArray(world, &wsize);
+		Compr_SetOutBuffer(&world->compr, data, wsize);
+		cs_uint32 indatasize;
+		while((indatasize = (cs_uint32)File_Read(in, 1, CHUNK_SIZE, fp)) > 0) {
+			Compr_SetInBuffer(&world->compr, in, indatasize);
+			if((compr_ok = Compr_Update(&world->compr)) == false) {
+				ERROR_PRINT(ET_ZLIB, world->compr.ret, false);
+				break;
 			}
-		} while(stream.avail_out == 0);
-	} while(ret != Z_STREAM_END);
-	error = false;
+		}
+	}
 
-	world_load_done:
 	if(fp) File_Close(fp);
-	inflateEnd(&stream);
-	world->process = WP_NOPROC;
+	Compr_Reset(&world->compr);
 	world->saveUnload = false;
-	if(error)
-		World_Unload(world);
-	Waitable_Signal(world->wait);
+	world->loaded = true;
+	Waitable_Signal(world->waitable);
 	return 0;
 }
 
 cs_bool World_Load(World *world) {
-	if(world->loaded) return false;
-	if(world->process != WP_NOPROC)
-		return world->process == WP_LOADING;
-	world->process = WP_LOADING;
-	Waitable_Reset(world->wait);
-	Thread_Create(WorldLoadThread, world, true);
+	if(world->loaded)
+		return false;
+	Waitable_Reset(world->waitable);
+	Thread_Create(WorldLoadThread, world, false);
 	return true;
 }
 
-void World_Unload(World *world) {
-	if(world->process != WP_NOPROC)
-		Waitable_Wait(world->wait);
+void World_FreeBlockArray(World *world) {
 	if(world->wdata.size) {
 		Memory_Free(world->wdata.ptr);
 		world->wdata.size = 0;
 		world->wdata.ptr = world->wdata.blocks = NULL;
 	}
 	world->loaded = false;
+}
+
+void World_Unload(World *world) {
+	Waitable_Wait(world->waitable);
+	World_FreeBlockArray(world);
 }
 
 cs_str World_GetName(World *world) {

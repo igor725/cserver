@@ -1,5 +1,11 @@
 #include "core.h"
 #include "hash.h"
+#include <zlib.h>
+
+// TODO: Own CRC32 implementation
+cs_int32 CRC32_Gen(cs_byte *data, cs_uint32 len) {
+	return crc32(0, data, len);
+}
 
 #if defined(WINDOWS)
 HCRYPTPROV hCryptProvider = 0;

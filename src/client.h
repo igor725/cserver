@@ -6,6 +6,7 @@
 #include "vector.h"
 #include "world.h"
 #include "websocket.h"
+#include "compr.h"
 
 enum {
 	MT_CHAT, // Сообщение в чате
@@ -21,8 +22,6 @@ enum {
 enum {
 	STATE_INITIAL, // Игрок только подключился
 	STATE_MOTD, // Игрок получает карту
-	STATE_WLOADDONE, // Карта была успешно получена
-	STATE_WLOADERR, // Ошибка при получении карты
 	STATE_INGAME // Игрок находится в игре
 };
 
@@ -91,6 +90,7 @@ typedef struct _Client {
 	ppstm, // Таймер для счётчика пакетов
 	addr; // ipv4 адрес клиента
 	Thread thread; // Потоки клиента
+	Compr compr; // Штука для сжатия карты
 	CPEData *cpeData; // В случае vanilla клиента эта структура не создаётся
 	PlayerData *playerData; // Создаётся при получении hanshake пакета
 	KListField *headNode; // Последняя созданная ассоциативная нода у клиента

@@ -4,6 +4,7 @@
 #include "platform.h"
 #include "vector.h"
 #include "list.h"
+#include "compr.h"
 
 /*
 ** Если какой-то из дефайнов ниже
@@ -83,10 +84,10 @@ typedef struct _World {
 	cs_str name;
 	WorldInfo info;
 	cs_bool modified;
-	Waitable *wait;
+	Waitable *waitable;
 	cs_bool loaded;
 	cs_bool saveUnload;
-	cs_int32 process;
+	Compr compr;
 	struct _WorldData {
 		cs_uint32 size;
 		void *ptr;
@@ -98,6 +99,7 @@ API void Worlds_SaveAll(cs_bool join, cs_bool unload);
 
 API World *World_Create(cs_str name);
 API void World_AllocBlockArray(World *world);
+API void World_FreeBlockArray(World *world);
 API void World_Free(World *world);
 API cs_bool World_Add(World *world);
 API cs_bool World_IsReadyToPlay(World *world);

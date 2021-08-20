@@ -9,7 +9,7 @@
 #include "platform.h"
 #include "command.h"
 #include "lang.h"
-#include <zlib.h>
+#include "hash.h"
 
 cs_uint16 extensionsCount;
 CPEExt *headExtension;
@@ -929,7 +929,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 		return false;
 	}
 
-	tmp->hash = crc32(0, (cs_byte*)tmp->name, (cs_uint32)String_Length(tmp->name));
+	tmp->hash = CRC32_Gen((cs_byte*)tmp->name, (cs_uint32)String_Length(tmp->name));
 	tmp->next = cpd->headExtension;
 	cpd->headExtension = tmp;
 
