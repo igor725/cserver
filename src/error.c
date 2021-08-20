@@ -29,13 +29,13 @@ NOINL static void PrintCallStack(void) {
 	HANDLE process = GetCurrentProcess();
 	SymInitialize(process, NULL, true);
 
-	cs_uint16 frames = CaptureStackBackTrace(0, 16, stack, NULL);
+	cs_uint16 frames = CaptureStackBackTrace(2, 16, stack, NULL);
 	IMAGEHLP_LINE line = {
 		.SizeOfStruct = sizeof(IMAGEHLP_LINE)
 	};
 
 	for(cs_int32 i = 0; i < frames; i++) {
-		SymFromAddr(process, (cs_uintptr)stack[i], 0, symbol);
+		SymFromAddr(process, (cs_uintptr)stack[i], NULL, symbol);
 		Log_Debug("Frame #%d: %s = 0x%0X", i, symbol->Name, symbol->Address);
 		if(SymGetLineFromAddr(process, symbol->Address, (void *)&stack[i], &line)) {
 			Log_Debug("\tin %s at line %d", line.FileName, line.LineNumber);
