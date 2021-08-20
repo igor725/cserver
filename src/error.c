@@ -21,29 +21,25 @@ static cs_str const ErrorStrings[] = {
 
 NOINL static void PrintCallStack(void) {
 	void *stack[16];
-	cs_uint16 frames;
-	SYMBOL_INFO symbol;
+	char buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME];
+	PSYMBOL_INFO symbol = (PSYMBOL_INFO)buffer;
+	symbol->MaxNameLen = MAX_SYM_NAME;
+	symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+
 	HANDLE process = GetCurrentProcess();
 	SymInitialize(process, NULL, true);
 
-	frames = CaptureStackBackTrace(0, 16, stack, NULL);
-
-	symbol.MaxNameLen = 255;
-	symbol.SizeOfStruct = sizeof(SYMBOL_INFO);
+	cs_uint16 frames = CaptureStackBackTrace(0, 16, stack, NULL);
+	IMAGEHLP_LINE line = {
+		.SizeOfStruct = sizeof(IMAGEHLP_LINE)
+	};
 
 	for(cs_int32 i = 0; i < frames; i++) {
-		SymFromAddr(process, (uintptr_t)stack[i], 0, &symbol);
-		if(i > 2) {
-			Log_Debug(Lang_Get(Lang_DbgGrp, 0), symbol.Name, symbol.Address);
-#if _MSC_VER
-			IMAGEHLP_LINE line = {0};
-			line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
-			if(SymGetLineFromAddr(process, (uintptr_t)symbol.Address, NULL, &line)) {
-				Log_Debug(Lang_Get(Lang_DbgGrp, 1), line.FileName, line.LineNumber);
-			}
-#endif
+		SymFromAddr(process, (cs_uintptr)stack[i], 0, symbol);
+		Log_Debug("Frame #%d: %s = 0x%0X", i, symbol->Name, symbol->Address);
+		if(SymGetLineFromAddr(process, symbol->Address, (void *)&stack[i], &line)) {
+			Log_Debug("\tin %s at line %d", line.FileName, line.LineNumber);
 		}
-		if(symbol.Name && String_Compare(symbol.Name, "main")) break;
 	}
 }
 #elif defined(__ANDROID__)
@@ -60,12 +56,8 @@ static void PrintCallStack(void) {
 
 	for(cs_int32 i = 0; i < frames; i++) {
 		Dl_info dli;
-		if(dladdr(stack[i], &dli)) {
-			if(i > 2) {
-				Log_Debug(Lang_Get(Lang_DbgGrp, 0), dli.dli_sname, dli.dli_saddr);
-			}
-			if(dli.dli_sname && String_Compare(dli.dli_sname, "main")) break;
-		}
+		if(dladdr(stack[i], &dli))
+			Log_Debug("Frame #%d: %s = 0x%0X", i, dli.dli_sname, dli.dli_saddr);
 	}
 }
 #endif

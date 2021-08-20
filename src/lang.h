@@ -8,7 +8,7 @@ typedef struct _LGroup {
 } LGroup;
 
 VAR LGroup *Lang_SwGrp, *Lang_ErrGrp, *Lang_ConGrp,
-*Lang_KickGrp, *Lang_CmdGrp, *Lang_DbgGrp;
+*Lang_KickGrp, *Lang_CmdGrp;
 
 cs_bool Lang_Init(void);
 

@@ -4,7 +4,7 @@
 
 LGroup *Lang_SwGrp = NULL, *Lang_ErrGrp = NULL,
 *Lang_ConGrp = NULL, *Lang_KickGrp = NULL,
-*Lang_CmdGrp = NULL, *Lang_DbgGrp = NULL;
+*Lang_CmdGrp = NULL;
 
 cs_bool Lang_Init(void) {
 	Lang_SwGrp = Lang_NewGroup(2);
@@ -53,11 +53,6 @@ cs_bool Lang_Init(void) {
 	Lang_Set(Lang_CmdGrp, 2, "Player not found.");
 	Lang_Set(Lang_CmdGrp, 3, "Unknown command.");
 	Lang_Set(Lang_CmdGrp, 4, "This command can't be called from console.");
-
-	Lang_DbgGrp = Lang_NewGroup(2);
-	if(!Lang_DbgGrp) return false;
-	Lang_Set(Lang_DbgGrp, 0, "Symbol: %s - 0x%0X");
-	Lang_Set(Lang_DbgGrp, 1, "\tFile: %s: %d");
 	return true;
 }
 
