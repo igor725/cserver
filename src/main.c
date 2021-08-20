@@ -7,8 +7,22 @@
 #include "error.h"
 #include "hash.h"
 
+INL static cs_bool Init(void) {
+	return Memory_Init() &&
+	Log_Init() && Error_Init() &&
+	Http_Init() && Hash_Init();
+}
+
+INL static void Uninit(void) {
+	Hash_Uninit();
+	Http_Uninit();
+	Error_Uninit();
+	Log_Uninit();
+	Memory_Uninit();
+}
+
 int main(int argc, char *argv[]) {
-	if(Memory_Init() && Log_Init() && Http_Init() && Hash_Init()) {
+	if(Init()) {
 		if(argc < 2 || !String_CaselessCompare(argv[1], "nochdir")) {
 			cs_char *lastSlash = (cs_char *)String_LastChar(argv[0], *PATH_DELIM);
 			if(lastSlash) {
@@ -24,10 +38,7 @@ int main(int argc, char *argv[]) {
 			Server_Cleanup();
 		}
 
-		Hash_Uninit();
-		Http_Uninit();
-		Log_Uninit();
-		Memory_Uninit();
+		Uninit();
 		return 0;
 	}
 

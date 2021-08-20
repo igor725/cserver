@@ -20,14 +20,12 @@ static cs_str const ErrorStrings[] = {
 #include <dbghelp.h>
 
 NOINL static void PrintCallStack(void) {
+	HANDLE process = GetCurrentProcess();
 	void *stack[16];
 	char buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME];
 	PSYMBOL_INFO symbol = (PSYMBOL_INFO)buffer;
 	symbol->MaxNameLen = MAX_SYM_NAME;
 	symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-
-	HANDLE process = GetCurrentProcess();
-	SymInitialize(process, NULL, true);
 
 	cs_uint16 frames = CaptureStackBackTrace(2, 16, stack, NULL);
 	IMAGEHLP_LINE line = {
@@ -42,10 +40,22 @@ NOINL static void PrintCallStack(void) {
 		}
 	}
 }
+
+cs_bool Error_Init(void) {
+	return SymInitialize(GetCurrentProcess(), NULL, true) != false;
+}
+
+void Error_Uninit(void) {
+	SymCleanup(GetCurrentProcess());
+}
+
 #elif defined(__ANDROID__)
 static void PrintCallStack(void) {
 	Log_Debug("Callstack printing for android not implemented yet");
 }
+
+cs_bool Error_Init(void) {return true};
+void Error_Uninit(void) {}
 #elif defined(UNIX)
 #include <dlfcn.h>
 #include <execinfo.h>
@@ -60,6 +70,9 @@ static void PrintCallStack(void) {
 			Log_Debug("Frame #%d: %s = 0x%0X", i, dli.dli_sname, dli.dli_saddr);
 	}
 }
+
+cs_bool Error_Init(void) {return true};
+void Error_Uninit(void) {}
 #endif
 
 INL static void getErrorStr(cs_int32 type, cs_int32 code, cs_char *errbuf, cs_size sz, va_list *args) {
