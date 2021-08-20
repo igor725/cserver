@@ -22,7 +22,7 @@ static cs_str const ErrorStrings[] = {
 NOINL static void PrintCallStack(void) {
 	void *stack[16];
 	cs_uint16 frames;
-	SYMBOL_INFO symbol = {0};
+	SYMBOL_INFO symbol;
 	HANDLE process = GetCurrentProcess();
 	SymInitialize(process, NULL, true);
 
@@ -97,20 +97,8 @@ cs_int32 Error_GetSysCode(void) {
 #endif
 }
 
-void Error_Print(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_str func) {
-	cs_char strbuf[384] = {0};
-	cs_char errbuf[256] = {0};
-
-	getErrorStr(type, code, errbuf, 256, NULL);
-	if(String_FormatBuf(strbuf, 384, Lang_Get(Lang_ErrGrp, 1), file, line, func, errbuf)) {
-		Log_Error("%s", strbuf);
-		PrintCallStack();
-	}
-}
-
-void Error_PrintF(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_str func, ...) {
-	cs_char strbuf[384] = {0};
-	cs_char errbuf[256] = {0};
+void Error_Print(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_str func, ...) {
+	cs_char strbuf[384], errbuf[256];
 
 	va_list args;
 	va_start(args, func);

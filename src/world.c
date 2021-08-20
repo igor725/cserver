@@ -237,7 +237,7 @@ static cs_bool ReadInfo(World *world, cs_file fp) {
 			case DT_END:
 				return true;
 			default:
-				Error_PrintF2(ET_SERVER, EC_FILECORR, false, world->name);
+				ERROR_PRINTF(ET_SERVER, EC_FILECORR, false, world->name);
 				return false;
 		}
 	}

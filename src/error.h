@@ -27,8 +27,8 @@ Error_Print(etype, ecode, __FILE__, __LINE__, __func__); \
 if(abort) { \
 	Process_Exit(ecode); \
 }
-#define Error_PrintF2(etype, ecode, abort, ...) \
-Error_PrintF(etype, ecode, __FILE__, __LINE__, __func__, ##__VA_ARGS__); \
+#define ERROR_PRINTF(etype, ecode, abort, ...) \
+Error_Print(etype, ecode, __FILE__, __LINE__, __func__, ##__VA_ARGS__); \
 if(abort) { \
 	Process_Exit(ecode); \
 }
@@ -38,7 +38,6 @@ if(abort) { \
 #  define Error_PrintSys(abort) ERROR_PRINT(ET_SYS, errno, abort);
 #endif
 
+API void Error_Print(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_str func, ...);
 API cs_int32 Error_GetSysCode(void);
-API void Error_Print(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_str func);
-API void Error_PrintF(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_str func, ...);
 #endif // ERROR_H

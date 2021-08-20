@@ -36,7 +36,7 @@ if(!checkNumber(value)) { \
 
 #define CFG_TYPE(expectedType) \
 if(ent->type != expectedType) { \
-	Error_PrintF2(ET_SERVER, EC_CFGINVGET, true, ent->key, ent->store->path, Config_TypeName(expectedType), Config_TypeName(ent->type)); \
+	ERROR_PRINTF(ET_SERVER, EC_CFGINVGET, true, ent->key, ent->store->path, Config_TypeName(expectedType), Config_TypeName(ent->type)); \
 }
 
 CStore *Config_NewStore(cs_str path) {
@@ -60,7 +60,7 @@ CEntry *Config_GetEntry(CStore *store, cs_str key) {
 CEntry *Config_CheckEntry(CStore *store, cs_str key) {
 	CEntry *ent = Config_GetEntry(store, key);
 	if(!ent) {
-		Error_PrintF2(ET_SERVER, EC_CFGUNK, true, key, store->path);
+		ERROR_PRINTF(ET_SERVER, EC_CFGUNK, true, key, store->path);
 	}
 	return ent;
 }
@@ -152,9 +152,9 @@ void Config_PrintError(CStore *store) {
 	switch (store->etype) {
 		case ET_SERVER:
 			if(store->eline > 0) {
-				Error_PrintF2(store->etype, store->ecode, false, store->eline, store->path);
+				ERROR_PRINTF(store->etype, store->ecode, false, store->eline, store->path);
 			} else {
-				Error_PrintF2(store->etype, store->ecode, false, store->path);
+				ERROR_PRINTF(store->etype, store->ecode, false, store->path);
 			}
 			break;
 		case ET_SYS:
