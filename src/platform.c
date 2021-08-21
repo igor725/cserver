@@ -4,6 +4,8 @@
 #include "error.h"
 #include <stdio.h>
 
+// #include "../../cs_detectmemleak.c"
+
 #if defined(WINDOWS)
 HANDLE hHeap = NULL;
 
@@ -495,31 +497,33 @@ void Thread_Sleep(cs_uint32 ms) {
 }
 #elif defined(UNIX)
 Thread Thread_Create(TFUNC func, TARG arg, cs_bool detach) {
-	Thread th = Memory_Alloc(1, sizeof(Thread));
-	if(pthread_create(th, NULL, func, arg) != 0) {
+	Thread th;
+	if(pthread_create(&th, NULL, func, arg) != 0) {
 		ERROR_PRINT(ET_SYS, errno, true);
-		return NULL;
+		return 0;
 	}
 
-	if(detach) Thread_Detach(th);
+	if(detach) {
+		Thread_Detach(th);
+		return (Thread)0;
+	}
+
 	return th;
 }
 
 cs_bool Thread_IsValid(Thread th) {
-	return th != NULL;
+	return th != (Thread)0;
 }
 
 void Thread_Detach(Thread th) {
-	pthread_detach(*th);
-	Memory_Free(th);
+	pthread_detach(th);
 }
 
 void Thread_Join(Thread th) {
-	cs_int32 ret = pthread_join(*th, NULL);
+	cs_int32 ret = pthread_join(th, NULL);
 	if(ret) {
 		ERROR_PRINT(ET_SYS, ret, true);
 	}
-	Memory_Free(th);
 }
 
 void Thread_Sleep(cs_uint32 ms) {

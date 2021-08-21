@@ -10,7 +10,7 @@ Plugin *Plugins_List[MAX_PLUGINS] = {0};
 cs_bool Plugin_LoadDll(cs_str name) {
 	cs_char path[256], error[512];
 	void *lib;
-	pluginFunc initSym;
+	pluginInitFunc initSym;
 	cs_int32 *apiVerSym;
 	cs_int32 *plugVerSym;
 	String_FormatBuf(path, 256, "plugins" PATH_DELIM "%s", name);
@@ -52,7 +52,7 @@ cs_bool Plugin_LoadDll(cs_str name) {
 		}
 
 		if(plugin->id == -1 || !initSym()) {
-			Plugin_UnloadDll(plugin);
+			Plugin_UnloadDll(plugin, true);
 			return false;
 		}
 
@@ -75,8 +75,8 @@ cs_bool Plugin_GetSymbol(Plugin *plugin, cs_str name, void *sym) {
 	return DLib_GetSym(plugin->lib, name, sym);
 }
 
-cs_bool Plugin_UnloadDll(Plugin *plugin) {
-	if(plugin->unload && !(*(pluginFunc)plugin->unload)())
+cs_bool Plugin_UnloadDll(Plugin *plugin, cs_bool force) {
+	if(plugin->unload && !(*(pluginUnloadFunc)plugin->unload)(force) && !force)
 		return false;
 	if(plugin->name)
 		Memory_Free((void *)plugin->name);
@@ -101,10 +101,9 @@ void Plugin_LoadAll(void) {
 	Iter_Close(&pIter);
 }
 
-void Plugin_UnloadAll(void) {
+void Plugin_UnloadAll(cs_bool force) {
 	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
 		Plugin *plugin = Plugins_List[i];
-		if(plugin && plugin->unload)
-			(*(pluginFunc)plugin->unload)();
+		if(plugin) Plugin_UnloadDll(plugin, force);
 	}
 }

@@ -27,7 +27,7 @@ typedef DWORD TSHND_PARAM;
 typedef DIR *ITER_DIR;
 typedef struct dirent *ITER_FILE;
 typedef void *TRET;
-typedef pthread_t *Thread;
+typedef pthread_t Thread;
 typedef pthread_mutex_t Mutex;
 typedef void TSHND_RET;
 typedef cs_int32 TSHND_PARAM;

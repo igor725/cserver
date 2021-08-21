@@ -170,6 +170,7 @@ void World_Free(World *world) {
 	}
 	Compr_Cleanup(&world->compr);
 	World_FreeBlockArray(world);
+	Waitable_Free(world->waitable);
 	Memory_Free(world);
 }
 
@@ -294,8 +295,8 @@ THREAD_FUNC(WorldSaveThread) {
 }
 
 cs_bool World_Save(World *world, cs_bool unload) {
-	if(!world->modified || !world->loaded)
-		return false;
+	if(!world->modified)
+		return world->loaded;
 	Waitable_Reset(world->waitable);
 	Thread_Create(WorldSaveThread, world, true);
 	if(unload) World_Unload(world);

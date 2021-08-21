@@ -442,6 +442,8 @@ void Config_EmptyStore(CStore *store) {
 	while(ent) {
 		prev = ent;
 		ent = ent->next;
+		if(prev->key)
+			Memory_Free((void *)prev->key);
 		if(prev->commentary)
 			Memory_Free((void *)prev->commentary);
 		if(prev->type == CFG_TSTR)

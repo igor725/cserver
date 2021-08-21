@@ -346,10 +346,12 @@ void Server_StartLoop(void) {
 void Server_Cleanup(void) {
 	Log_Info(Lang_Get(Lang_ConGrp, 4));
 	Clients_KickAll(Lang_Get(Lang_KickGrp, 5), true);
+	if(Broadcast && Broadcast->mutex) Mutex_Free(Broadcast->mutex);
+	if(Broadcast) Memory_Free(Broadcast);
 	Log_Info(Lang_Get(Lang_ConGrp, 5));
 	Worlds_SaveAll(true, true);
 	Socket_Close(Server_Socket);
 	Config_Save(Server_Config);
 	Config_DestroyStore(Server_Config);
-	Plugin_UnloadAll();
+	Plugin_UnloadAll(true);
 }
