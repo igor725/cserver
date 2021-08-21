@@ -112,7 +112,7 @@ void Compr_Reset(Compr *ctx) {
 			deflateEnd(ctx->stream);
 		else if(ctx->type == COMPR_TYPE_INFLATE || ctx->type == COMPR_TYPE_UNGZIP)
 			inflateEnd(ctx->stream);
-		Memory_Fill(ctx->stream, sizeof(z_stream), 0);
+		Memory_Zero(ctx->stream, sizeof(z_stream));
 	}
 	ctx->type = COMPR_TYPE_NOTSET;
 	ctx->state = COMPR_STATE_IDLE;

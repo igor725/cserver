@@ -3,7 +3,7 @@
 #include "core.h"
 #include "platform.h"
 
-enum {
+enum _ErrorTypes {
 	ET_NOERR = -1,
 	ET_SERVER,
 	ET_ZLIB,
@@ -11,7 +11,7 @@ enum {
 	ET_STR
 };
 
-enum {
+enum _ErrorCodes {
 	EC_OK,
 	EC_MAGIC,
 	EC_FILECORR,

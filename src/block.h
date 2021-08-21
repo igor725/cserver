@@ -56,12 +56,10 @@ typedef enum {
 	BLOCK_OBSIDIAN = 49,
 } BEBlocks;
 
-enum {
-	BDF_EXTENDED = BIT(0),
-	BDF_DYNALLOCED = BIT(1),
-	BDF_UPDATED = BIT(2),
-	BDF_UNDEFINED = BIT(3)
-};
+#define BDF_EXTENDED BIT(0)
+#define BDF_DYNALLOCED BIT(1)
+#define BDF_UPDATED BIT(2)
+#define BDF_UNDEFINED BIT(3)
 
 typedef enum {
 	BDSOL_WALK,

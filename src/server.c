@@ -136,7 +136,7 @@ INL static void Bind(cs_str ip, cs_uint16 port) {
 }
 
 cs_bool Server_Init(void) {
-	if(!Socket_Init() || !Lang_Init() || !Generators_Init()) return false;
+	if(!Generators_Init()) return false;
 
 	cs_ulong zflags = zlibCompileFlags();
 	if(zflags & BIT(17)) {
@@ -331,8 +331,7 @@ void Server_StartLoop(void) {
 			Server_LatestBadTick = Time_GetMSec();
 			Log_Warn(Lang_Get(Lang_ConGrp, 2));
 			delta = 0;
-		}
-		if(delta > 500) {
+		} else if(delta > 500) {
 			Server_LatestBadTick = Time_GetMSec();
 			Log_Warn(Lang_Get(Lang_ConGrp, 1), delta);
 			delta = 500;

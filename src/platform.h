@@ -108,6 +108,7 @@ cs_char *DLib_GetError(cs_char *buf, cs_size len);
 cs_bool DLib_GetSym(void *lib, cs_str sname, void *sym);
 
 cs_bool Socket_Init(void);
+void Socket_Uninit(void);
 API Socket Socket_New(void);
 API cs_int32 Socket_SetAddr(struct sockaddr_in *ssa, cs_str ip, cs_uint16 port);
 API cs_bool Socket_SetAddrGuess(struct sockaddr_in *ssa, cs_str host, cs_uint16 port);

@@ -54,7 +54,7 @@ static void PrintCallStack(void) {
 	Log_Debug("Callstack printing for android not implemented yet");
 }
 
-cs_bool Error_Init(void) {return true;};
+cs_bool Error_Init(void) {return true;}
 void Error_Uninit(void) {}
 #elif defined(UNIX)
 #include <dlfcn.h>
@@ -71,7 +71,7 @@ static void PrintCallStack(void) {
 	}
 }
 
-cs_bool Error_Init(void) {return true;};
+cs_bool Error_Init(void) {return true;}
 void Error_Uninit(void) {}
 #endif
 

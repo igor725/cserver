@@ -477,7 +477,7 @@ cs_bool normalgenerator(World *world, void *data) {
 	world->info.dimensions.y < 32)
 		return false;
 
-	Memory_Fill(&ctx, sizeof(ctx), 0);
+	Memory_Zero(&ctx, sizeof(ctx));
 	Random_SeedFromTime(&ctx.rnd);
 
 	ctx.dims = &world->info.dimensions;

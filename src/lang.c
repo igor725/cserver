@@ -56,11 +56,24 @@ cs_bool Lang_Init(void) {
 	return true;
 }
 
+void Lang_Uninit(void) {
+	if(Lang_SwGrp) Lang_FreeGroup(Lang_SwGrp);
+	if(Lang_ErrGrp) Lang_FreeGroup(Lang_ErrGrp);
+	if(Lang_ConGrp) Lang_FreeGroup(Lang_ConGrp);
+	if(Lang_KickGrp) Lang_FreeGroup(Lang_KickGrp);
+	if(Lang_CmdGrp) Lang_FreeGroup(Lang_CmdGrp);
+}
+
 LGroup *Lang_NewGroup(cs_uint32 size) {
 	LGroup *grp = Memory_Alloc(1, sizeof(struct _LGroup));
 	grp->size = size;
 	grp->strings = Memory_Alloc(size, sizeof(cs_str));
 	return grp;
+}
+
+void Lang_FreeGroup(LGroup *grp) {
+	if(grp->strings) Memory_Free(grp->strings);
+	Memory_Free(grp);
 }
 
 cs_uint32 Lang_ResizeGroup(LGroup *grp, cs_uint32 newsize) {

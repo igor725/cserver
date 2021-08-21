@@ -3,21 +3,25 @@
 #include "str.h"
 #include "http.h"
 #include "server.h"
+#include "lang.h"
 #include "log.h"
 #include "error.h"
 #include "hash.h"
 
 INL static cs_bool Init(void) {
 	return Memory_Init() &&
-	Log_Init() && Error_Init() &&
+	Lang_Init() && Log_Init() &&
+	Error_Init() && Socket_Init() &&
 	Http_Init() && Hash_Init();
 }
 
 INL static void Uninit(void) {
 	Hash_Uninit();
 	Http_Uninit();
+	Socket_Uninit();
 	Error_Uninit();
 	Log_Uninit();
+	Lang_Uninit();
 	Memory_Uninit();
 }
 

@@ -81,9 +81,7 @@ void *Memory_Realloc(void *buf, cs_size old, cs_size new) {
 	return ptr;
 }
 
-void Memory_Free(void *ptr) {
-	free(ptr);
-}
+void Memory_Free(void *ptr) {free(ptr);}
 #endif
 
 void Memory_Copy(void *dst, const void *src, cs_size count) {
@@ -175,14 +173,19 @@ cs_bool File_ProcClose(cs_file fp) {
 #endif
 }
 
-cs_bool Socket_Init(void) {
 #if defined(WINDOWS)
+cs_bool Socket_Init(void) {
 	WSADATA ws;
 	return WSAStartup(MAKEWORD(2, 2), &ws) != SOCKET_ERROR;
-#else
-	return true;
-#endif
 }
+
+void Socket_Uninit(void) {
+	WSACleanup();
+}
+#else
+cs_bool Socket_Init(void) {return true;}
+void Socket_Uninit(void) {}
+#endif
 
 cs_int32 Socket_SetAddr(struct sockaddr_in *ssa, cs_str ip, cs_uint16 port) {
 	ssa->sin_family = AF_INET;
@@ -685,7 +688,7 @@ cs_bool Console_BindSignalHandler(TSHND handler) {
 #if defined(WINDOWS)
 	return (cs_bool)SetConsoleCtrlHandler((PHANDLER_ROUTINE)handler, TRUE);
 #elif defined(UNIX)
-	return (cs_bool)(signal(SIGINT, (void(*)(int))handler) != SIG_ERR);
+	return (cs_bool)(signal(SIGINT, (sighandler_t)handler) != SIG_ERR);
 #endif
 }
 

@@ -14,11 +14,12 @@ THREAD_FUNC(ConsoleIOThread) {
 			if(!Command_Handle(buf, NULL))
 				Log_Info(Lang_Get(Lang_CmdGrp, 3));
 	}
+
 	return 0;
 }
 
 static TSHND_RET ConsoleIO_Handler(TSHND_PARAM signal) {
-  if(signal == CONSOLEIO_TERMINATE)Server_Active = false;
+  if(signal == CONSOLEIO_TERMINATE) Server_Active = false;
   return TSHND_OK;
 }
 
