@@ -1002,7 +1002,7 @@ void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler) {
 	packetsList[id] = tmp;
 }
 
-void Packet_RegisterCPE(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler) {
+void Packet_SetCPEHandler(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler) {
 	Packet *tmp = packetsList[id];
 	tmp->exthash = hash;
 	tmp->extVersion = ver;
@@ -1011,7 +1011,7 @@ void Packet_RegisterCPE(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size
 	tmp->haveCPEImp = true;
 }
 
-void Packet_RegisterExtension(cs_str name, cs_int32 version) {
+void Packet_RegisterServerExtension(cs_str name, cs_int32 version) {
 	CPEExt *tmp = Memory_Alloc(1, sizeof(struct _CPEExt));
 	tmp->name = name;
 	tmp->version = version;
@@ -1074,12 +1074,12 @@ void Packet_RegisterDefault(void) {
 
 	const struct extReg *ext;
 	for(ext = serverExtensions; ext->name; ext++) {
-		Packet_RegisterExtension(ext->name, ext->version);
+		Packet_RegisterServerExtension(ext->name, ext->version);
 	}
 
 	Packet_Register(0x10, 66, CPEHandler_ExtInfo);
 	Packet_Register(0x11, 68, CPEHandler_ExtEntry);
 	Packet_Register(0x2B,  3, CPEHandler_TwoWayPing);
 	Packet_Register(0x22, 14, CPEHandler_PlayerClick);
-	Packet_RegisterCPE(0x08, EXT_ENTPOS, 1, 15, NULL);
+	Packet_SetCPEHandler(0x08, EXT_ENTPOS, 1, 15, NULL);
 }

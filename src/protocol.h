@@ -71,8 +71,7 @@ typedef struct _Packet {
 
 API Packet *Packet_Get(cs_byte id);
 API void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler);
-API void Packet_RegisterCPE(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler);
-API void Packet_RegisterExtension(cs_str name, cs_int32 version);
+API void Packet_SetCPEHandler(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler);
 
 API cs_byte Proto_ReadString(cs_char **data, cs_str *dstptr);
 API cs_byte Proto_ReadStringNoAlloc(cs_char **data, cs_char *dst);
@@ -116,6 +115,7 @@ API cs_bool CPE_CheckModel(cs_int16 model);
 API void CPE_RegisterExtension(cs_str name, cs_int32 version);
 API cs_int16 CPE_GetModelNum(cs_str model);
 API cs_str CPE_GetModelStr(cs_int16 num);
+API void CPE_RegisterServerExtension(cs_str name, cs_int32 version);
 
 NOINL void CPE_WriteInfo(Client *client);
 NOINL void CPE_WriteExtEntry(Client *client, CPEExt *ext);
