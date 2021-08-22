@@ -761,7 +761,7 @@ cs_int32 Client_Send(Client *client, cs_int32 len) {
 	}
 
 	if(client->websock)
-		return WebSock_SendFrame(client->websock, 0x02, client->wrbuf, (cs_uint16)len);
+		return WebSock_SendFrame(client->websock, 0x02, client->wrbuf, (cs_uint16)len) ? len : 0;
 	else
 		return Socket_Send(client->sock, client->wrbuf, len);
 }
