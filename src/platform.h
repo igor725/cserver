@@ -10,7 +10,7 @@ typedef cs_uint32 TRET;
 typedef void Waitable;
 typedef CRITICAL_SECTION Mutex;
 typedef SOCKET Socket;
-typedef HANDLE *Thread, *ITER_DIR;
+typedef HANDLE Thread, ITER_DIR;
 typedef BOOL TSHND_RET;
 typedef DWORD TSHND_PARAM;
 #define TSHND_OK TRUE
@@ -50,7 +50,7 @@ typedef TSHND_RET(*TSHND)(TSHND_PARAM);
 #define THREAD_FUNC(N) \
 static TRET N(TARG param)
 
-enum {
+enum _EIterType {
 	ITER_INITIAL,
 	ITER_READY,
 	ITER_DONE,
@@ -59,11 +59,11 @@ enum {
 
 typedef struct _DirIter {
 	cs_byte state;
-  cs_char fmt[256];
-  cs_str cfile;
-  cs_bool isDir;
-  ITER_DIR dirHandle;
-  ITER_FILE fileHandle;
+	cs_char fmt[256];
+	cs_str cfile;
+	cs_bool isDir;
+	ITER_DIR dirHandle;
+	ITER_FILE fileHandle;
 } DirIter;
 
 #define Memory_Zero(p, c) Memory_Fill(p, c, 0)
