@@ -102,7 +102,7 @@ done
 
 echo -ne "done\nLinking..."
 if [ $PLUGIN_BUILD -eq 0 ]; then
-	LIBS="$LIBS -lpthread -ldl -lcrypto -lcurl -lz"
+	LIBS="$LIBS -lpthread -ldl -lcrypto -lz"
 fi
 
 $LNK $OBJDIR/*.o -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR &

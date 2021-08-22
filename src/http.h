@@ -13,7 +13,14 @@ typedef struct _Http {
 	HINTERNET conn, req;
 } Http;
 #elif defined(UNIX)
-#include <curl/curl.h>
+typedef void CURL;
+
+#define CURLOPT_WRITEDATA 10000 + 1
+#define CURLOPT_URL 10000 + 2
+#define CURLOPT_USERAGENT 10000 + 18
+#define CURLOPT_FOLLOWLOCATION 0 + 52
+#define CURLOPT_WRITEFUNCTION 20000 + 11
+#define CURLE_OK 0
 
 typedef struct _Http {
 	cs_bool secure;

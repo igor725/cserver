@@ -12,12 +12,11 @@ INL static cs_bool Init(void) {
 	return Memory_Init() &&
 	Lang_Init() && Log_Init() &&
 	Error_Init() && Socket_Init() &&
-	Http_Init() && Hash_Init();
+	Hash_Init();
 }
 
 INL static void Uninit(void) {
 	Hash_Uninit();
-	Http_Uninit();
 	Socket_Uninit();
 	Error_Uninit();
 	Log_Uninit();
