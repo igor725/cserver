@@ -400,8 +400,8 @@ NOINL static void HandlePacket(Client *client, cs_char *data, Packet *packet, cs
 	cs_bool ret = false;
 
 	if(extended)
-		if(packet->cpeHandler)
-			ret = packet->cpeHandler(client, data);
+		if(packet->extHandler)
+			ret = packet->extHandler(client, data);
 		else
 			ret = packet->handler(client, data);
 	else

@@ -66,10 +66,10 @@ typedef struct _Packet {
 	cs_uint32 exthash;
 	cs_int32 extVersion;
 	packetHandler handler;
-	packetHandler cpeHandler;
+	packetHandler extHandler;
 } Packet;
 
-Packet *Packet_Get(cs_byte id);
+API Packet *Packet_Get(cs_byte id);
 API void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler);
 API void Packet_RegisterCPE(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler);
 API void Packet_RegisterExtension(cs_str name, cs_int32 version);
@@ -80,7 +80,6 @@ API void Proto_ReadSVec(cs_char **dataptr, SVec *vec);
 API void Proto_ReadAng(cs_char **dataptr, Ang *ang);
 API void Proto_ReadFlSVec(cs_char **dataptr, Vec *vec);
 API void Proto_ReadFlVec(cs_char **dataptr, Vec *vec);
-API cs_bool Proto_ReadClientPos(Client *client, cs_char *data);
 
 API void Proto_WriteString(cs_char **dataptr, cs_str string);
 API void Proto_WriteFlVec(cs_char **dataptr, const Vec *vec);
@@ -91,7 +90,6 @@ API void Proto_WriteColor3(cs_char **dataptr, const Color3* color);
 API void Proto_WriteColor4(cs_char **dataptr, const Color4* color);
 API void Proto_WriteByteColor3(cs_char **dataptr, const Color3* color);
 API void Proto_WriteByteColor4(cs_char **dataptr, const Color4* color);
-API cs_uint32 Proto_WriteClientPos(cs_char *data, Client *client, cs_bool extended);
 
 /*
 ** Врайтеры и хендлеры

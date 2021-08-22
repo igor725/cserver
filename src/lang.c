@@ -72,7 +72,7 @@ LGroup *Lang_NewGroup(cs_uint32 size) {
 }
 
 void Lang_FreeGroup(LGroup *grp) {
-	if(grp->strings) Memory_Free(grp->strings);
+	if(grp->strings) Memory_Free((void *)grp->strings);
 	Memory_Free(grp);
 }
 

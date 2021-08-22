@@ -96,11 +96,6 @@ NOINL static cs_uint32 WriteExtEntityPos(cs_char **dataptr, Vec *vec, Ang *ang, 
 	return extended ? 12 : 6;
 }
 
-cs_uint32 Proto_WriteClientPos(cs_char *data, Client *client, cs_bool extended) {
-	PlayerData *pd = client->playerData;
-	return WriteExtEntityPos(&data, &pd->position, &pd->angle, extended);
-}
-
 cs_byte Proto_ReadString(cs_char **dataptr, cs_str *dstptr) {
 	cs_str data = *dataptr;
 	*dataptr += 64;
@@ -167,34 +162,6 @@ void Proto_ReadFlVec(cs_char **dataptr, Vec *vec) {
 	*dataptr = data;
 }
 
-cs_bool Proto_ReadClientPos(Client *client, cs_char *data) {
-	PlayerData *cpd = client->playerData;
-	Vec *vec = &cpd->position, newVec;
-	Ang *ang = &cpd->angle, newAng;
-	cs_bool changed = false;
-
-	if(Client_GetExtVer(client, EXT_ENTPOS))
-		Proto_ReadFlVec(&data, &newVec);
-	else
-		Proto_ReadFlSVec(&data, &newVec);
-
-	Proto_ReadAng(&data, &newAng);
-
-	if(newVec.x != vec->x || newVec.y != vec->y || newVec.z != vec->z) {
-		cpd->position = newVec;
-		Event_Call(EVT_ONMOVE, client);
-		changed = true;
-	}
-
-	if(newAng.yaw != ang->yaw || newAng.pitch != ang->pitch) {
-		cpd->angle = newAng;
-		Event_Call(EVT_ONROTATE, client);
-		changed = true;
-	}
-
-	return changed;
-}
-
 void Vanilla_WriteServerIdent(Client *client, cs_str name, cs_str motd) {
 	PacketWriter_Start(client);
 
@@ -234,6 +201,11 @@ void Vanilla_WriteSetBlock(Client *client, SVec *pos, BlockID block) {
 	PacketWriter_End(client, 8);
 }
 
+INL static cs_uint32 WriteClientPos(cs_char *data, Client *client, cs_bool extended) {
+	PlayerData *pd = client->playerData;
+	return WriteExtEntityPos(&data, &pd->position, &pd->angle, extended);
+}
+
 void Vanilla_WriteSpawn(Client *client, Client *other) {
 	PacketWriter_Start(client);
 
@@ -241,7 +213,7 @@ void Vanilla_WriteSpawn(Client *client, Client *other) {
 	*data++ = client == other ? CLIENT_SELF : other->id;
 	Proto_WriteString(&data, other->playerData->name);
 	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
-	cs_uint32 len = Proto_WriteClientPos(data, other, extended);
+	cs_uint32 len = WriteClientPos(data, other, extended);
 
 	PacketWriter_End(client, 68 + len);
 }
@@ -263,7 +235,7 @@ void Vanilla_WritePosAndOrient(Client *client, Client *other) {
 	*data++ = 0x08;
 	*data++ = client == other ? CLIENT_SELF : other->id;
 	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
-	cs_uint32 len = Proto_WriteClientPos(data, other, extended);
+	cs_uint32 len = WriteClientPos(data, other, extended);
 
 	PacketWriter_End(client, 4 + len);
 }
@@ -411,18 +383,48 @@ cs_bool Handler_SetBlock(Client *client, cs_char *data) {
 	return true;
 }
 
+INL static cs_bool ReadClientPos(Client *client, cs_char *data) {
+	PlayerData *cpd = client->playerData;
+	Vec *vec = &cpd->position, newVec;
+	Ang *ang = &cpd->angle, newAng;
+	cs_bool changed = false;
+
+	if(Client_GetExtVer(client, EXT_ENTPOS))
+		Proto_ReadFlVec(&data, &newVec);
+	else
+		Proto_ReadFlSVec(&data, &newVec);
+
+	Proto_ReadAng(&data, &newAng);
+
+	if(newVec.x != vec->x || newVec.y != vec->y || newVec.z != vec->z) {
+		cpd->position = newVec;
+		Event_Call(EVT_ONMOVE, client);
+		changed = true;
+	}
+
+	if(newAng.yaw != ang->yaw || newAng.pitch != ang->pitch) {
+		cpd->angle = newAng;
+		Event_Call(EVT_ONROTATE, client);
+		changed = true;
+	}
+
+	return changed;
+}
+
 cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
 	ValidateClientState(client, STATE_INGAME, false)
 
-	CPEData *cpd = client->cpeData;
 	BlockID cb = *data++;
 
-	if(cpd && cpd->heldBlock != cb) {
-		Event_OnHeldBlockChange(client, cpd->heldBlock, cb);
-		cpd->heldBlock = cb;
+	if(Client_GetExtVer(client, EXT_HELDBLOCK) == 1) {
+		CPEData *cpd = client->cpeData;
+		if(cpd->heldBlock != cb) {
+			Event_OnHeldBlockChange(client, cpd->heldBlock, cb);
+			cpd->heldBlock = cb;
+		}
 	}
 
-	if(Proto_ReadClientPos(client, data)) {
+	if(ReadClientPos(client, data)) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			Client *other = Clients_List[i];
 			if(other && client != other && Client_IsInGame(other) && Client_IsInSameWorld(client, other))
@@ -602,7 +604,7 @@ void CPE_WriteAddEntity2(Client *client, Client *other) {
 		Proto_WriteString(&data, Client_GetName(other));
 	Proto_WriteString(&data, Client_GetSkin(other));
 	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
-	cs_uint32 len = Proto_WriteClientPos(data, other, extended);
+	cs_uint32 len = WriteClientPos(data, other, extended);
 
 	PacketWriter_End(client, 132 + len);
 }
@@ -1004,7 +1006,7 @@ void Packet_RegisterCPE(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size
 	Packet *tmp = packetsList[id];
 	tmp->exthash = hash;
 	tmp->extVersion = ver;
-	tmp->cpeHandler = handler;
+	tmp->extHandler = handler;
 	tmp->extSize = size;
 	tmp->haveCPEImp = true;
 }
