@@ -105,7 +105,7 @@ IF "%BUILD_PLUGIN%"=="1" (
 	)
 	SET ZLIB_DYNAMIC=!ZLIB_LINK:~0,-3!dll
 	SET ZLIB_DEBUG=!ZLIB_LINK:~0,-3!pdb
-	SET MSVC_LIBS=%MSVC_LIBS% ws2_32.lib wininet.lib advapi32.lib !ZLIB_LINK!
+	SET MSVC_LIBS=%MSVC_LIBS% ws2_32.lib wininet.lib !ZLIB_LINK!
 	IF NOT EXIST "%SVOUTDIR%\!ZLIB_DYNAMIC!" (
 		COPY ".\zlib\lib%ARCH%\!ZLIB_DYNAMIC!" "%SVOUTDIR%"
 	)

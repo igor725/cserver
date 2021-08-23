@@ -7,8 +7,20 @@ void Hash_Uninit(void);
 cs_int32 CRC32_Gen(cs_byte *data, cs_uint32 len);
 
 #if defined(WINDOWS)
-#include <windows.h>
-#include <wincrypt.h>
+// Start of <wincrypt.h>
+#define HP_HASHVAL 0x0002
+#define MS_DEF_PROV "Microsoft Base Cryptographic Provider v1.0"
+#define CRYPT_VERIFYCONTEXT 0xF0000000
+#define PROV_RSA_FULL 1
+#define ALG_SID_MD5 3
+#define ALG_SID_SHA1 4
+#define ALG_CLASS_HASH (4 << 13)
+#define CALG_MD5 (ALG_CLASS_HASH | ALG_SID_MD5)
+#define CALG_SHA1 (ALG_CLASS_HASH | ALG_SID_SHA1)
+typedef cs_uintptr HCRYPTHASH, HCRYPTPROV, HCRYPTKEY;
+typedef cs_uint32 ALG_ID;
+typedef cs_int32 BOOL;
+// End of of <wincrypt.h>
 
 typedef struct _WinHash {
 	HCRYPTHASH hash;
@@ -23,7 +35,40 @@ cs_bool MD5_Init(MD5_CTX *ctx);
 cs_bool MD5_Update(MD5_CTX *ctx, const void *data, cs_ulong len);
 cs_bool MD5_Final(cs_byte *hash, MD5_CTX *ctx);
 #elif defined(UNIX)
-#include <openssl/md5.h>
-#include <openssl/sha.h>
+// Start of <openssl/md5.h>
+# define MD5_LONG unsigned int
+# define MD5_CBLOCK      64
+# define MD5_LBLOCK      (MD5_CBLOCK/4)
+
+typedef struct MD5state_st {
+    MD5_LONG A, B, C, D;
+    MD5_LONG Nl, Nh;
+    MD5_LONG data[MD5_LBLOCK];
+    unsigned int num;
+} MD5_CTX;
+// End of <openssl/md5.h>
+
+// Start of <openssl/sha.h>
+# define SHA_LONG unsigned int
+
+# define SHA_LBLOCK      16
+# define SHA_CBLOCK      (SHA_LBLOCK*4)
+# define SHA_LAST_BLOCK  (SHA_CBLOCK-8)
+
+typedef struct SHAstate_st {
+    SHA_LONG h0, h1, h2, h3, h4;
+    SHA_LONG Nl, Nh;
+    SHA_LONG data[SHA_LBLOCK];
+    unsigned int num;
+} SHA_CTX;
+// End of <openssl/sha.h>
 #endif
+
+cs_bool SHA1_Init(SHA_CTX *ctx);
+cs_bool SHA1_Update(SHA_CTX *ctx, const void *data, cs_ulong len);
+cs_bool SHA1_Final(cs_byte *hash, SHA_CTX *ctx);
+
+cs_bool MD5_Init(MD5_CTX *ctx);
+cs_bool MD5_Update(MD5_CTX *ctx, const void *data, cs_ulong len);
+cs_bool MD5_Final(cs_byte *hash, MD5_CTX *ctx);
 #endif // HASH_H

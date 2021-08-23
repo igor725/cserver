@@ -83,10 +83,14 @@ cs_bool Heartbeat_VanillaKeyChecker(cs_str secret, Client *client) {
 	cs_byte hash[16];
 	cs_char hash_hex[33];
 
-	MD5_Init(&ctx);
-	MD5_Update(&ctx, secret, (cs_ulong)String_Length(secret));
-	MD5_Update(&ctx, name, (cs_ulong)String_Length(name));
-	MD5_Final(hash, &ctx);
+	if(MD5_Init(&ctx)) {
+		MD5_Update(&ctx, secret, (cs_ulong)String_Length(secret));
+		MD5_Update(&ctx, name, (cs_ulong)String_Length(name));
+		MD5_Final(hash, &ctx);
+	} else {
+		Log_Error("VanillaKeyChecker: MD5_Init() returned false, can't check user key validity.");
+		return false;
+	}
 
 	for(cs_int32 i = 0; i < 16; i++) {
 		cs_byte b = hash[i];

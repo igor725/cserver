@@ -59,21 +59,25 @@ cs_bool WebSock_DoHandshake(WebSock *ws) {
 
 	if(validConnection && wskeylen > 0) {
 		SHA_CTX ctx;
-		SHA1_Init(&ctx);
-		SHA1_Update(&ctx, wskey, wskeylen);
-		SHA1_Update(&ctx, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", 36);
-		SHA1_Final(hash, &ctx);
-		String_ToB64(hash, 20, b64);
+		if(SHA1_Init(&ctx)) {
+			SHA1_Update(&ctx, wskey, wskeylen);
+			SHA1_Update(&ctx, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", 36);
+			SHA1_Final(hash, &ctx);
+		} else {
+			rsplen = String_FormatBuf(line, 1024, ws_err, 500, "Internal Server Error", 27);
+			Socket_Send(ws->sock, line, rsplen);
+			Socket_Send(ws->sock, "SHA1_Init() returned false.", 27);
+			return false;
+		}
 
+		String_ToB64(hash, 20, b64);
 		rsplen = String_FormatBuf(line, 1024, ws_resp, ws->proto, b64);
 		return Socket_Send(ws->sock, line, rsplen) == rsplen;
 	}
 
-	cs_str str = Lang_Get(Lang_ErrGrp, 4);
-	cs_int32 len = (cs_int32)String_Length(str);
-	rsplen = String_FormatBuf(line, 1024, ws_err, 400, "Bad request", len);
+	rsplen = String_FormatBuf(line, 1024, ws_err, 400, "Bad request", 27);
 	Socket_Send(ws->sock, line, rsplen);
-	Socket_Send(ws->sock, str, len);
+	Socket_Send(ws->sock, "Not a websocket connection.", 27);
 	return false;
 }
 

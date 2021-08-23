@@ -12,13 +12,12 @@ cs_bool Lang_Init(void) {
 	Lang_Set(Lang_SwGrp, 0, "&4disabled");
 	Lang_Set(Lang_SwGrp, 1, "&aenabled");
 
-	Lang_ErrGrp = Lang_NewGroup(7);
+	Lang_ErrGrp = Lang_NewGroup(4);
 	if(!Lang_ErrGrp) return false;
 	Lang_Set(Lang_ErrGrp, 0, "Unexpected error.");
 	Lang_Set(Lang_ErrGrp, 1, "%s:%d in function %s: %s");
 	Lang_Set(Lang_ErrGrp, 2, "Invalid packet 0x%02X from Client[%d]");
 	Lang_Set(Lang_ErrGrp, 3, "Heartbeat error: %s.");
-	Lang_Set(Lang_ErrGrp, 4, "Not a websocket connection.");
 
 	Lang_ConGrp = Lang_NewGroup(9);
 	if(!Lang_ConGrp) return false;

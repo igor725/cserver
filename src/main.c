@@ -11,8 +11,7 @@
 INL static cs_bool Init(void) {
 	return Memory_Init() &&
 	Lang_Init() && Log_Init() &&
-	Error_Init() && Socket_Init() &&
-	Hash_Init();
+	Error_Init() && Socket_Init();
 }
 
 INL static void Uninit(void) {
