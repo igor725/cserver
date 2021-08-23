@@ -4,7 +4,15 @@
 
 #define HTTP_USERAGENT "CServer/1.0"
 
+#ifndef HTTP_MANUAL_BACKEND
 #if defined(WINDOWS)
+#define HTTP_USE_WININET_BACKEND
+#elif defined(UNIX)
+#define HTTP_USE_CURL_BACKEND
+#endif
+#endif
+
+#if defined(HTTP_USE_WININET_BACKEND)
 #include <wininet.h>
 HINTERNET hInternet;
 
@@ -12,7 +20,7 @@ typedef struct _Http {
 	cs_bool secure;
 	HINTERNET conn, req;
 } Http;
-#elif defined(UNIX)
+#elif defined(HTTP_USE_CURL_BACKEND)
 typedef void CURL;
 
 #define CURLOPT_WRITEDATA 10000 + 1
@@ -25,10 +33,12 @@ typedef void CURL;
 typedef struct _Http {
 	cs_bool secure;
 	cs_str domain;
-	size_t buflen, rsplen;
+	cs_size buflen, rsplen;
 	cs_char *path, *buf;
 	CURL *handle;
 } Http;
+#else
+#error No HTTP backend selected
 #endif
 
 cs_bool Http_Init(void);

@@ -3,7 +3,7 @@
 #include "str.h"
 #include "http.h"
 
-#if defined(WINDOWS)
+#if defined(HTTP_USE_WININET_BACKEND)
 cs_bool Http_Init(void) {
 	hInternet = InternetOpenA(HTTP_USERAGENT,
 		INTERNET_OPEN_TYPE_PRECONFIG,
@@ -52,7 +52,17 @@ void Http_Cleanup(Http *http) {
 	InternetCloseHandle(http->conn);
 	InternetCloseHandle(http->req);
 }
-#elif defined(UNIX)
+#elif defined(HTTP_USE_CURL_BACKEND)
+#include "log.h"
+
+#if defined(UNIX)
+cs_str  libcurl = "libcurl.so.4",
+libcurl_alt = "libcurl.so.3";
+#elif defined(WINDOWS)
+cs_str libcurl = "curl.dll",
+libcurl_alt = "libcurl.dll";
+#endif
+
 struct _CURLFuncs {
 	void *lib;
 	CURL *(*easy_init)(void);
@@ -63,8 +73,12 @@ struct _CURLFuncs {
 
 cs_bool Http_Init(void) {
 	if(curl.lib) return true;
-	return (DLib_Load("libcurl.so.4", &curl.lib) || DLib_Load("libcurl.so.3", &curl.lib)) &&
-	DLib_GetSym(curl.lib, "curl_easy_init", &curl.easy_init) &&
+	if(!(DLib_Load(libcurl, &curl.lib) || DLib_Load(libcurl_alt, &curl.lib))) {
+		cs_char buf[512];
+		Log_Info("libcurl loading failed: %s", DLib_GetError(buf, 512));
+		return false;
+	}
+	return DLib_GetSym(curl.lib, "curl_easy_init", &curl.easy_init) &&
 	DLib_GetSym(curl.lib, "curl_easy_setopt", &curl.easy_setopt) &&
 	DLib_GetSym(curl.lib, "curl_easy_perform", &curl.easy_perform) &&
 	DLib_GetSym(curl.lib, "curl_easy_cleanup", &curl.easy_cleanup);
@@ -122,7 +136,7 @@ cs_ulong Http_ReadResponse(Http *http, cs_char *buf, cs_ulong sz) {
 	curl.easy_setopt(http->handle, CURLOPT_WRITEFUNCTION, writefunc);
 	curl.easy_setopt(http->handle, CURLOPT_WRITEDATA, (void *)http);
 	if(curl.easy_perform(http->handle) == CURLE_OK) {
-		return http->rsplen;
+		return (cs_ulong)http->rsplen;
 	}
 	return 0L;
 }
