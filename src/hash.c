@@ -22,9 +22,7 @@ struct _CryptLib {
 } Crypt;
 
 cs_bool Hash_Init(void) {
-	if(Crypt.lib)
-		return true;
-	else {
+	if(!Crypt.lib) {
 		if(!(DLib_Load("advapi32.dll", &Crypt.lib) &&
 			DLib_GetSym(Crypt.lib, "CryptAcquireContextA", &Crypt.AcquireContext) &&
 			DLib_GetSym(Crypt.lib, "CryptReleaseContext", &Crypt.ReleaseContext) &&
@@ -33,7 +31,7 @@ cs_bool Hash_Init(void) {
 			DLib_GetSym(Crypt.lib, "CryptGetHashParam", &Crypt.GetHashParam) &&
 			DLib_GetSym(Crypt.lib, "CryptDestroyHash", &Crypt.DestroyHash)
 		)) return false;
-	}
+	} else if(hCryptProvider) return true;
 	return (cs_bool)Crypt.AcquireContext(&hCryptProvider, NULL, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
 }
 

@@ -4,8 +4,30 @@
 #include "http.h"
 
 #if defined(HTTP_USE_WININET_BACKEND)
+struct _WinInet {
+	void *lib;
+
+	HINTERNET(*IOpen)(cs_str, cs_ulong, cs_str, cs_str, cs_ulong);
+	HINTERNET(*IConnect)(HINTERNET, cs_str, INTERNET_PORT, cs_str, cs_str, cs_ulong, cs_ulong, cs_uintptr);
+	HINTERNET(*IOpenRequest)(HINTERNET, cs_str, cs_str, cs_str, cs_str, cs_str *, cs_ulong, cs_uintptr);
+	HINTERNET(*IReadFile)(HINTERNET, void *, cs_ulong, cs_ulong *);
+	BOOL(*IClose)(HINTERNET);
+
+	BOOL(*HSendRequest)(HINTERNET, cs_str, cs_ulong, void *, cs_ulong);
+} WinInet;
+
 cs_bool Http_Init(void) {
-	hInternet = InternetOpenA(HTTP_USERAGENT,
+	if(!WinInet.lib) {
+		if(!(DLib_Load("wininet.dll", &WinInet.lib) &&
+			DLib_GetSym(WinInet.lib, "InternetOpenA", &WinInet.IOpen) &&
+			DLib_GetSym(WinInet.lib, "InternetConnectA", &WinInet.IConnect) &&
+			DLib_GetSym(WinInet.lib, "HttpOpenRequestA", &WinInet.IOpenRequest) &&
+			DLib_GetSym(WinInet.lib, "InternetReadFile", &WinInet.IReadFile) &&
+			DLib_GetSym(WinInet.lib, "InternetCloseHandle", &WinInet.IClose) &&
+			DLib_GetSym(WinInet.lib, "HttpSendRequestA", &WinInet.HSendRequest)
+		)) return false;
+	} else if(hInternet) return true;
+	hInternet = WinInet.IOpen(HTTP_USERAGENT,
 		INTERNET_OPEN_TYPE_PRECONFIG,
 		NULL, NULL, 0
 	);
@@ -14,33 +36,33 @@ cs_bool Http_Init(void) {
 
 void Http_Uninit(void) {
 	if(!hInternet) return;
-	InternetCloseHandle(hInternet);
+	WinInet.IClose(hInternet);
 	hInternet = NULL;
 }
 
 cs_bool Http_Open(Http *http, cs_str domain) {
 	if(!hInternet && !Http_Init()) return false;
-	http->conn = InternetConnectA(
+	http->conn = WinInet.IConnect(
 		hInternet, domain,
 		http->secure ? 443 : 80,
 		NULL, NULL, INTERNET_SERVICE_HTTP, 0, 1
 	);
-	return http->conn != INVALID_HANDLE_VALUE;
+	return http->conn != (HINTERNET)-1;
 }
 
 cs_bool Http_Request(Http *http, cs_str url) {
 	if(!hInternet) return false;
-	http->req = HttpOpenRequestA(
+	http->req = WinInet.IOpenRequest(
 		http->conn, "GET", url,
 		NULL, NULL, 0, http->secure ? INTERNET_FLAG_SECURE : 0, 1
 	);
-	return HttpSendRequest(http->req, NULL, 0, NULL, 0) == true;
+	return WinInet.HSendRequest(http->req, NULL, 0, NULL, 0) == true;
 }
 
 cs_ulong Http_ReadResponse(Http *http, cs_char *buf, cs_ulong sz) {
 	if(!hInternet) return 0L;
 	cs_ulong readed;
-	if(InternetReadFile(http->req, buf, sz - 1, &readed)) {
+	if(WinInet.IReadFile(http->req, buf, sz - 1, &readed)) {
 		buf[readed] = '\0';
 		return readed;
 	}
@@ -49,8 +71,8 @@ cs_ulong Http_ReadResponse(Http *http, cs_char *buf, cs_ulong sz) {
 
 void Http_Cleanup(Http *http) {
 	if(!hInternet) return;
-	InternetCloseHandle(http->conn);
-	InternetCloseHandle(http->req);
+	if(http->conn) WinInet.IClose(http->conn);
+	if(http->req) WinInet.IClose(http->req);
 }
 #elif defined(HTTP_USE_CURL_BACKEND)
 #include "log.h"

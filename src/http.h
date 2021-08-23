@@ -13,7 +13,15 @@
 #endif
 
 #if defined(HTTP_USE_WININET_BACKEND)
-#include <wininet.h>
+//#include <wininet.h>
+// Start of <wininet.h>
+#define INTERNET_SERVICE_HTTP 3
+#define INTERNET_OPEN_TYPE_PRECONFIG 0
+#define INTERNET_FLAG_SECURE 0x00800000
+typedef void *HINTERNET;
+typedef cs_uint16 INTERNET_PORT;
+// End of <wininet.h>
+
 HINTERNET hInternet;
 
 typedef struct _Http {
