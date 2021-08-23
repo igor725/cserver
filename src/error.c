@@ -35,7 +35,7 @@ NOINL static void PrintCallStack(void) {
 	for(cs_int32 i = 0; i < frames; i++) {
 		SymFromAddr(process, (cs_uintptr)stack[i], NULL, symbol);
 		Log_Debug("Frame #%d: %s = 0x%0X", i, symbol->Name, symbol->Address);
-		if(SymGetLineFromAddr(process, symbol->Address, (void *)&stack[i], &line)) {
+		if(SymGetLineFromAddr(process, (cs_uintptr)symbol->Address, (void *)&stack[i], &line)) {
 			Log_Debug("\tin %s at line %d", line.FileName, line.LineNumber);
 		}
 	}

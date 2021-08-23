@@ -16,7 +16,7 @@ struct _WinInet {
 	BOOL(*HSendRequest)(HINTERNET, cs_str, cs_ulong, void *, cs_ulong);
 } WinInet;
 
-cs_bool Http_Init(void) {
+INL static cs_bool InitBackend(void) {
 	if(!WinInet.lib) {
 		if(!(DLib_Load("wininet.dll", &WinInet.lib) &&
 			DLib_GetSym(WinInet.lib, "InternetOpenA", &WinInet.IOpen) &&
@@ -41,7 +41,7 @@ void Http_Uninit(void) {
 }
 
 cs_bool Http_Open(Http *http, cs_str domain) {
-	if(!hInternet && !Http_Init()) return false;
+	if(!hInternet && !InitBackend()) return false;
 	http->conn = WinInet.IConnect(
 		hInternet, domain,
 		http->secure ? 443 : 80,
@@ -56,6 +56,7 @@ cs_bool Http_Request(Http *http, cs_str url) {
 		http->conn, "GET", url,
 		NULL, NULL, 0, http->secure ? INTERNET_FLAG_SECURE : 0, 1
 	);
+	if(!http->req) return false;
 	return WinInet.HSendRequest(http->req, NULL, 0, NULL, 0) == true;
 }
 
@@ -93,7 +94,7 @@ struct _CURLFuncs {
 	void (*easy_cleanup)(CURL *);
 } curl;
 
-cs_bool Http_Init(void) {
+INL static cs_bool InitBackend(void) {
 	if(curl.lib) return true;
 	if(!(DLib_Load(libcurl, &curl.lib) || DLib_Load(libcurl_alt, &curl.lib))) {
 		cs_char buf[512];
@@ -117,7 +118,7 @@ void Http_Uninit(void) {
 }
 
 cs_bool Http_Open(Http *http, cs_str domain) {
-	if(!curl.lib && !Http_Init()) return false;
+	if(!curl.lib && !InitBackend()) return false;
 	http->domain = String_AllocCopy(domain);
 	http->handle = curl.easy_init();
 	if(http->handle) {

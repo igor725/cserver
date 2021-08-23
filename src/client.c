@@ -830,7 +830,7 @@ INL static void PacketReceiverRaw(Client *client) {
 		client->closed = true;
 }
 
-INL static void SendWorld(Client *client, World *world) {
+NOINL static void SendWorld(Client *client, World *world) {
 	PlayerData *pd = client->playerData;
 	
 	if(!world->loaded)

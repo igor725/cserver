@@ -49,9 +49,6 @@ typedef struct _Http {
 #error No HTTP backend selected
 #endif
 
-cs_bool Http_Init(void);
-void Http_Uninit(void);
-
 API cs_bool Http_Open(Http *http, cs_str domain);
 API cs_bool Http_Request(Http *http, cs_str url);
 API cs_ulong Http_ReadResponse(Http *http, cs_char *buf, cs_ulong sz);

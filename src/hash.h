@@ -2,9 +2,7 @@
 #define HASH_H
 #include "core.h"
 
-cs_bool Hash_Init(void);
 void Hash_Uninit(void);
-cs_int32 CRC32_Gen(cs_byte *data, cs_uint32 len);
 
 #if defined(WINDOWS)
 // Start of <wincrypt.h>
@@ -63,6 +61,8 @@ typedef struct SHAstate_st {
 } SHA_CTX;
 // End of <openssl/sha.h>
 #endif
+
+cs_int32 CRC32_Gen(cs_byte *data, cs_uint32 len);
 
 cs_bool SHA1_Init(SHA_CTX *ctx);
 cs_bool SHA1_Update(SHA_CTX *ctx, const void *data, cs_ulong len);

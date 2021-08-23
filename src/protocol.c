@@ -1012,7 +1012,7 @@ void Packet_SetCPEHandler(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 si
 	tmp->haveCPEImp = true;
 }
 
-void Packet_RegisterServerExtension(cs_str name, cs_int32 version) {
+void CPE_RegisterServerExtension(cs_str name, cs_int32 version) {
 	CPEExt *tmp = Memory_Alloc(1, sizeof(struct _CPEExt));
 	tmp->name = name;
 	tmp->version = version;
@@ -1075,7 +1075,7 @@ void Packet_RegisterDefault(void) {
 
 	const struct extReg *ext;
 	for(ext = serverExtensions; ext->name; ext++) {
-		Packet_RegisterServerExtension(ext->name, ext->version);
+		CPE_RegisterServerExtension(ext->name, ext->version);
 	}
 
 	Packet_Register(0x10, 66, CPEHandler_ExtInfo);

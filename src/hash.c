@@ -21,7 +21,7 @@ struct _CryptLib {
 	BOOL(*DestroyHash)(HCRYPTHASH);
 } Crypt;
 
-cs_bool Hash_Init(void) {
+INL static cs_bool InitBackend(void) {
 	if(!Crypt.lib) {
 		if(!(DLib_Load("advapi32.dll", &Crypt.lib) &&
 			DLib_GetSym(Crypt.lib, "CryptAcquireContextA", &Crypt.AcquireContext) &&
@@ -49,7 +49,7 @@ void Hash_Uninit(void) {
 }
 
 INL static cs_bool InitAlg(HASH_CTX *ctx, ALG_ID alg) {
-	if(!Crypt.lib && !Hash_Init()) return false;
+	if(!Crypt.lib && !InitBackend()) return false;
 	return (cs_bool)Crypt.CreateHash(hCryptProvider, alg, 0, 0, &ctx->hash);
 }
 
