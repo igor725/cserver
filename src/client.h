@@ -112,7 +112,7 @@ API CGroup *Group_Add(cs_int16 gid, cs_str gname, cs_byte grank);
 API CGroup *Group_GetByID(cs_int16 gid);
 API cs_bool Group_Remove(cs_int16 gid);
 
-API cs_byte Clients_GetCount(cs_int32 state);
+API cs_byte Clients_GetCount(EPlayerState state);
 API void Clients_KickAll(cs_str reason, cs_bool wait);
 API void Clients_UpdateWorldInfo(World *world);
 

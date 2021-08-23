@@ -123,7 +123,7 @@ cs_bool Group_Remove(cs_int16 gid) {
 	return true;
 }
 
-cs_byte Clients_GetCount(cs_int32 state) {
+cs_byte Clients_GetCount(EPlayerState state) {
 	cs_byte count = 0;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
