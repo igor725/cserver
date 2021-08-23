@@ -87,13 +87,11 @@ cnt=0
 for SOURCE in `find "$ROOT/src/" -type f -name "*.c"`; do
 	objpath="$OBJDIR/$(basename $SOURCE .c).o"
 	$CC -c $CFLAGS $COMMIT_SHA $WARN $OPT -I$ROOT/src $SOURCE -o$objpath 2>> $STDERR &
+	while test $(jobs -p | wc -w) -ge "$MAXWORKERS"; do
+		wait -n;
+	done
 	pids+=($!)
 	((cnt++))
-	#if [ $cnt -ge $MAXWORKERS ]; then
-		#TODO: Proper workers count limiter
-		#unset pids[-1]
-		#((cnt--))
-	#fi
 done
 
 for pid in ${pids[@]}; do
