@@ -52,11 +52,6 @@ INL static cs_bool DeflateStep(Compr *ctx) {
 	cs_uint32 avail = stream->avail_out;
 	ctx->wr_size = 0;
 
-	if(!stream->avail_in) {
-		ctx->state = COMPR_STATE_DONE;
-		return true;
-	}
-
 	ctx->ret = deflate(stream,
 		ctx->state == COMPR_STATE_INPROCESS ? Z_NO_FLUSH : Z_FINISH
 	);

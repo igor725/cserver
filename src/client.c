@@ -554,7 +554,7 @@ cs_bool Client_SetSkin(Client *client, cs_str skin) {
 	if(!cpd) return false;
 	if(cpd->skin)
 		Memory_Free((void *)cpd->skin);
-	cpd->skin = String_AllocCopy(skin);
+	String_Copy(cpd->skin, 65, skin);
 	cpd->updates |= PCU_SKIN;
 	return true;
 }
@@ -705,14 +705,7 @@ void Client_Free(Client *client) {
 
 	if(client->mutex) Mutex_Free(client->mutex);
 	if(client->websock) Memory_Free(client->websock);
-
-	PlayerData *pd = client->playerData;
-
-	if(pd) {
-		Memory_Free((void *)pd->name);
-		Memory_Free((void *)pd->key);
-		Memory_Free(pd);
-	}
+	if(client->playerData) Memory_Free(client->playerData);
 
 	CPEData *cpd = client->cpeData;
 
@@ -727,7 +720,6 @@ void Client_Free(Client *client) {
 		}
 
 		if(cpd->message) Memory_Free(cpd->message);
-		if(cpd->appName) Memory_Free((void *)cpd->appName);
 		Memory_Free(cpd);
 	}
 
@@ -876,7 +868,7 @@ INL static void SendWorld(Client *client, World *world) {
 	}
 
 	if(compr_ok) {
-		while(client->compr.state != COMPR_STATE_DONE) {
+		do {
 			if(!compr_ok) break;
 			Compr_SetOutBuffer(&client->compr, out, 1024);
 			if((compr_ok = Compr_Update(&client->compr)) == true) {
@@ -886,7 +878,7 @@ INL static void SendWorld(Client *client, World *world) {
 					compr_ok = Client_Send(client, 1028) == 1028;
 				}
 			}
-		}
+		} while(client->compr.state != COMPR_STATE_DONE);
 		Compr_Reset(&client->compr);
 		Mutex_Unlock(client->mutex);
 

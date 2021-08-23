@@ -300,8 +300,8 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 	if(client->addr == htonl(INADDR_LOOPBACK) && Config_GetBoolByKey(Server_Config, CFG_LOCALOP_KEY))
 		client->playerData->isOP = true;
 
-	if(!Proto_ReadString(&data, &client->playerData->name)) return false;
-	if(!Proto_ReadString(&data, &client->playerData->key)) return false;
+	if(!Proto_ReadStringNoAlloc(&data, client->playerData->name)) return false;
+	if(!Proto_ReadStringNoAlloc(&data, client->playerData->key)) return false;
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *other = Clients_List[i];
@@ -909,7 +909,7 @@ cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
 	ValidateClientState(client, STATE_INITIAL, false)
 
-	if(!Proto_ReadString(&data, &client->cpeData->appName)) return false;
+	if(!Proto_ReadStringNoAlloc(&data, client->cpeData->appName)) return false;
 	client->cpeData->_extCount = ntohs(*(cs_uint16 *)data);
 	return true;
 }

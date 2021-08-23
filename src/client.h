@@ -47,8 +47,8 @@ typedef struct _CPEHacks {
 
 typedef struct _CPEData {
 	CPEExt *headExtension; // Список дополнений клиента
-	cs_str appName, // Название игрового клиента
-	skin; // Скин игрока, может быть NULL [ExtPlayerList]
+	cs_char appName[65]; // Название игрового клиента
+	cs_char skin[65]; // Скин игрока, может быть NULL [ExtPlayerList]
 	cs_char *message; // Используется для получения длинных сообщений [LongerMessages]
 	BlockID heldBlock; // Выбранный игроком блок в данный момент [HeldBlock]
 	cs_int8 updates; // Обновлённые значения игрока
@@ -64,8 +64,8 @@ typedef struct _CPEData {
 } CPEData;
 
 typedef struct _PlayerData {
-	cs_str key, // Ключ, полученный от игрока
-	name; // Имя игрока
+	cs_char key[65]; // Ключ, полученный от игрока
+	cs_char name[65]; // Имя игрока
 	World *world, *reqWorldChange; // Мир, в котором игрок обитает
 	Vec position; // Позиция игрока
 	Ang angle; // Угол вращения игрока
