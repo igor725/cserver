@@ -8,6 +8,7 @@
 #include "protocol.h"
 #include "platform.h"
 #include "command.h"
+#include "heartbeat.h"
 #include "lang.h"
 #include "hash.h"
 
@@ -249,7 +250,7 @@ void Vanilla_WriteDespawn(Client *client, Client *other) {
 	PacketWriter_End(client, 2);
 }
 
-void Vanilla_WriteChat(Client *client, cs_byte type, cs_str mesg) {
+void Vanilla_WriteChat(Client *client, EMesgType type, cs_str mesg) {
 	PacketWriter_Start(client);
 	if(client == Broadcast) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
@@ -260,11 +261,11 @@ void Vanilla_WriteChat(Client *client, cs_byte type, cs_str mesg) {
 		return;
 	}
 
-	cs_char mesg_out[64] = {0};
-	String_Copy(mesg_out, 64, mesg);
+	cs_char mesg_out[65];
+	String_Copy(mesg_out, 65, mesg);
 
-	if(!Client_GetExtVer(client, EXT_CP437)) {
-		for(cs_int32 i = 0; i < 64; i++) {
+	if(Client_GetExtVer(client, EXT_CP437) != 1) {
+		for(cs_int32 i = 0; i < 65; i++) {
 			if(mesg_out[i] == '\0') break;
 			if(mesg_out[i] < ' ' || mesg_out[i] > '~')
 				mesg_out[i] = '?';
@@ -272,7 +273,7 @@ void Vanilla_WriteChat(Client *client, cs_byte type, cs_str mesg) {
 	}
 
 	*data++ = 0x0D;
-	*data++ = type;
+	*data++ = (cs_byte)type;
 	Proto_WriteString(&data, mesg_out);
 
 	PacketWriter_End(client, 66);
@@ -311,7 +312,7 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 		}
 	}
 
-	if(Client_CheckAuth(client)) {
+	if(Heartbeat_Validate(client)) {
 		Client_SetServerIdent(client,
 			Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY),
 			Config_GetStrByKey(Server_Config, CFG_SERVERMOTD_KEY)
@@ -804,7 +805,7 @@ void CPE_WriteMapProperty(Client *client, cs_byte property, cs_int32 value) {
 	PacketWriter_End(client, 6);
 }
 
-void CPE_WriteSetEntityProperty(Client *client, Client *other, cs_int8 type, cs_int32 value) {
+void CPE_WriteSetEntityProperty(Client *client, Client *other, EEntProp type, cs_int32 value) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x2A;

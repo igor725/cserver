@@ -3,7 +3,7 @@
 #include "core.h"
 #include "world.h"
 
-typedef enum {
+typedef enum _EBlockIDs {
 	BLOCK_AIR = 0,
 	BLOCK_STONE = 1,
 	BLOCK_GRASS = 2,
@@ -53,21 +53,21 @@ typedef enum {
 	BLOCK_TNT = 46,
 	BLOCK_BOOKSHELF = 47,
 	BLOCK_MOSSY_ROCKS = 48,
-	BLOCK_OBSIDIAN = 49,
-} BEBlocks;
+	BLOCK_OBSIDIAN = 49
+} EBlockIDs;
 
 #define BDF_EXTENDED BIT(0)
 #define BDF_DYNALLOCED BIT(1)
 #define BDF_UPDATED BIT(2)
 #define BDF_UNDEFINED BIT(3)
 
-typedef enum {
+typedef enum _EBlockSolidity {
 	BDSOL_WALK,
 	BDSOL_SWIM,
 	BDSOL_SOLID
-} BEBlockSol;
+} EBlockSolidity;
 
-typedef enum {
+typedef enum _EBlockSounds {
 	BDSND_NONE,
 	BDSND_WOOD,
 	BDSND_GRAVEL,
@@ -78,15 +78,15 @@ typedef enum {
 	BDSND_WOOL,
 	BDSND_SAND,
 	BDSND_SNOW
-} BEBlockSounds;
+} EBlockSounds;
 
-typedef enum {
+typedef enum _EBlockDrawTypes {
 	BDDRW_OPAQUE,
 	BDDRW_TRANSPARENT,
 	BDDRW_TRANSPARENT2,
 	BDDRW_TRANSLUCENT,
 	BDDRW_GAS
-} BEBlockDrawTypes;
+} EBlockDrawTypes;
 
 typedef struct _BlockDef {
 	cs_str name;

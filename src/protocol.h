@@ -59,6 +59,12 @@ return;
 
 typedef cs_bool(*packetHandler)(Client *, cs_char *);
 
+typedef enum _EEntProp {
+	ROT_X = 0, // Вращение модели по оси X
+	ROT_Y,
+	ROT_Z
+} EEntProp;
+
 typedef struct _Packet {
 	cs_byte id;
 	cs_bool haveCPEImp;
@@ -103,7 +109,7 @@ NOINL void Vanilla_WriteSpawn(Client *client, Client *other);
 NOINL void Vanilla_WriteTeleport(Client *client, Vec *pos, Ang *ang);
 NOINL void Vanilla_WritePosAndOrient(Client *client, Client *other);
 NOINL void Vanilla_WriteDespawn(Client *client, Client *other);
-NOINL void Vanilla_WriteChat(Client *client, cs_byte type, cs_str mesg);
+NOINL void Vanilla_WriteChat(Client *client, EMesgType type, cs_str mesg);
 NOINL void Vanilla_WriteKick(Client *client, cs_str reason);
 
 /*
@@ -144,7 +150,7 @@ NOINL void CPE_WriteSpawnEffect(Client *client, cs_byte id, Vec *pos, Vec *origi
 NOINL void CPE_WriteWeatherType(Client *client, cs_int8 type);
 NOINL void CPE_WriteTexturePack(Client *client, cs_str url);
 NOINL void CPE_WriteMapProperty(Client *client, cs_byte property, cs_int32 value);
-NOINL void CPE_WriteSetEntityProperty(Client *client, Client *other, cs_int8 type, cs_int32 value);
+NOINL void CPE_WriteSetEntityProperty(Client *client, Client *other, EEntProp type, cs_int32 value);
 NOINL void CPE_WriteTwoWayPing(Client *client, cs_byte direction, cs_int16 num);
 NOINL void CPE_WriteSetModel(Client *client, Client *other);
 NOINL void CPE_WriteSetMapAppearanceV1(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl);

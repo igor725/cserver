@@ -8,7 +8,7 @@
 #include "websocket.h"
 #include "compr.h"
 
-enum {
+typedef enum _EMesgType {
 	MT_CHAT, // Сообщение в чате
 	MT_STATUS1, // Правый верхний угол
 	MT_STATUS2,
@@ -17,27 +17,20 @@ enum {
 	MT_BRIGHT2,
 	MT_BRIGHT3,
 	MT_ANNOUNCE = 100 // Сообщение в середине экрана
-};
+} EMesgType;
 
-enum {
+typedef enum _EPlayerState {
 	STATE_INITIAL, // Игрок только подключился
 	STATE_MOTD, // Игрок получает карту
 	STATE_INGAME // Игрок находится в игре
-};
+} EPlayerState;
 
-enum {
-	PCU_NONE = BIT(0), // Ни одно из CPE-значений игрока не изменилось
-	PCU_GROUP = BIT(1), // Была обновлена группа игрока
-	PCU_MODEL = BIT(2), // Была изменена модель игрока
-	PCU_SKIN = BIT(3), // Был изменён скин игрока
-	PCU_ENTPROP = BIT(5) // Модель игрока была повёрнута
-};
 
-enum {
-	ROT_X = 0, // Вращение модели по оси X
-	ROT_Y = 1,
-	ROT_Z = 2,
-};
+#define PCU_NONE BIT(0), // Ни одно из CPE-значений игрока не изменилось
+#define PCU_GROUP BIT(1), // Была обновлена группа игрока
+#define PCU_MODEL BIT(2), // Была изменена модель игрока
+#define PCU_SKIN BIT(3), // Был изменён скин игрока
+#define PCU_ENTPROP BIT(5) // Модель игрока была повёрнута
 
 typedef struct _CGroup {
 	cs_int16 id;
@@ -70,13 +63,13 @@ typedef struct _CPEData {
 	cs_int32 rotation[3]; // Вращение модели игрока в градусах [EntityProperty]
 } CPEData;
 
-typedef struct _PData {
+typedef struct _PlayerData {
 	cs_str key, // Ключ, полученный от игрока
 	name; // Имя игрока
 	World *world, *reqWorldChange; // Мир, в котором игрок обитает
 	Vec position; // Позиция игрока
 	Ang angle; // Угол вращения игрока
-	cs_int32 state; // Текущее состояние игрока
+	EPlayerState state; // Текущее состояние игрока
 	cs_bool isOP, // Является ли игрок оператором
 	spawned, // Заспавнен ли игрок
 	firstSpawn; // Был лы этот спавн первым с момента захода на сервер
@@ -105,7 +98,6 @@ void Client_Loop(Client *client);
 void Client_Free(Client *client);
 
 NOINL cs_int32 Client_Send(Client *client, cs_int32 len);
-NOINL cs_bool Client_CheckAuth(Client *client);
 NOINL cs_bool Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
 NOINL cs_bool Client_DefineBlock(Client *client, BlockDef *block);
 NOINL cs_bool Client_UndefineBlock(Client *client, BlockID id);
@@ -125,7 +117,7 @@ API void Clients_KickAll(cs_str reason, cs_bool wait);
 API void Clients_UpdateWorldInfo(World *world);
 
 API cs_bool Client_ChangeWorld(Client *client, World *world);
-API void Client_Chat(Client *client, cs_byte type, cs_str message);
+API void Client_Chat(Client *client, EMesgType type, cs_str message);
 API void Client_Kick(Client *client, cs_str reason);
 API void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll);
 API cs_bool Client_Update(Client *client);

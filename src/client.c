@@ -377,7 +377,7 @@ INL static cs_uint32 copyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_
 	return len;
 }
 
-void Client_Chat(Client *client, cs_byte type, cs_str message) {
+void Client_Chat(Client *client, EMesgType type, cs_str message) {
 	cs_uint32 msgLen = (cs_uint32)String_Length(message);
 
 	if(msgLen > 62 && type == MT_CHAT) {
@@ -440,10 +440,6 @@ cs_bool Client_IsInWorld(Client *client, World *world) {
 cs_bool Client_IsOP(Client *client) {
 	PlayerData *pd = client->playerData;
 	return pd ? pd->isOP : false;
-}
-
-cs_bool Client_CheckAuth(Client *client) {
-	return Heartbeat_Validate(client);
 }
 
 cs_bool Client_SetBlock(Client *client, SVec *pos, BlockID id) {
