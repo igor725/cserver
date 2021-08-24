@@ -10,10 +10,9 @@ struct _WinInet {
 	HINTERNET(*IOpen)(cs_str, cs_ulong, cs_str, cs_str, cs_ulong);
 	HINTERNET(*IConnect)(HINTERNET, cs_str, INTERNET_PORT, cs_str, cs_str, cs_ulong, cs_ulong, cs_uintptr);
 	HINTERNET(*IOpenRequest)(HINTERNET, cs_str, cs_str, cs_str, cs_str, cs_str *, cs_ulong, cs_uintptr);
+	BOOL(*HSendRequest)(HINTERNET, cs_str, cs_ulong, void *, cs_ulong);
 	HINTERNET(*IReadFile)(HINTERNET, void *, cs_ulong, cs_ulong *);
 	BOOL(*IClose)(HINTERNET);
-
-	BOOL(*HSendRequest)(HINTERNET, cs_str, cs_ulong, void *, cs_ulong);
 } WinInet;
 
 INL static cs_bool InitBackend(void) {
@@ -35,9 +34,17 @@ INL static cs_bool InitBackend(void) {
 }
 
 void Http_Uninit(void) {
-	if(!hInternet) return;
-	WinInet.IClose(hInternet);
+	if(!WinInet.lib) return;
+	if(hInternet) WinInet.IClose(hInternet);
 	hInternet = NULL;
+	WinInet.IOpen = NULL;
+	WinInet.IConnect = NULL;
+	WinInet.IOpenRequest = NULL;
+	WinInet.IReadFile = NULL;
+	WinInet.IClose = NULL;
+	WinInet.HSendRequest = NULL;
+	DLib_Unload(WinInet.lib);
+	WinInet.lib = NULL;
 }
 
 cs_bool Http_Open(Http *http, cs_str domain) {
