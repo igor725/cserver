@@ -11,7 +11,7 @@ struct _WinInet {
 	HINTERNET(*IConnect)(HINTERNET, cs_str, INTERNET_PORT, cs_str, cs_str, cs_ulong, cs_ulong, cs_uintptr);
 	HINTERNET(*IOpenRequest)(HINTERNET, cs_str, cs_str, cs_str, cs_str, cs_str *, cs_ulong, cs_uintptr);
 	BOOL(*HSendRequest)(HINTERNET, cs_str, cs_ulong, void *, cs_ulong);
-	HINTERNET(*IReadFile)(HINTERNET, void *, cs_ulong, cs_ulong *);
+	BOOL(*IReadFile)(HINTERNET, void *, cs_ulong, cs_ulong *);
 	BOOL(*IClose)(HINTERNET);
 } WinInet;
 
@@ -21,9 +21,9 @@ INL static cs_bool InitBackend(void) {
 			DLib_GetSym(WinInet.lib, "InternetOpenA", &WinInet.IOpen) &&
 			DLib_GetSym(WinInet.lib, "InternetConnectA", &WinInet.IConnect) &&
 			DLib_GetSym(WinInet.lib, "HttpOpenRequestA", &WinInet.IOpenRequest) &&
+			DLib_GetSym(WinInet.lib, "HttpSendRequestA", &WinInet.HSendRequest) &&
 			DLib_GetSym(WinInet.lib, "InternetReadFile", &WinInet.IReadFile) &&
-			DLib_GetSym(WinInet.lib, "InternetCloseHandle", &WinInet.IClose) &&
-			DLib_GetSym(WinInet.lib, "HttpSendRequestA", &WinInet.HSendRequest)
+			DLib_GetSym(WinInet.lib, "InternetCloseHandle", &WinInet.IClose)
 		)) return false;
 	} else if(hInternet) return true;
 	hInternet = WinInet.IOpen(HTTP_USERAGENT,
