@@ -41,7 +41,6 @@ void Command_Unregister(Command *cmd) {
 	KListField *field;
 	List_Iter(field, headCmd) {
 		if(field->value.ptr == cmd) {
-			if(cmd->alias) Memory_Free((void *)cmd->alias);
 			Memory_Free(field->key.ptr);
 			KList_Remove(&headCmd, field);
 			Memory_Free(cmd);
@@ -54,7 +53,6 @@ void Command_UnregisterByFunc(cmdFunc func) {
 	List_Iter(field, headCmd) {
 		Command *cmd = field->value.ptr;
 		if(cmd->func == func) {
-			if(cmd->alias) Memory_Free((void *)cmd->alias);
 			Memory_Free(field->key.ptr);
 			KList_Remove(&headCmd, field);
 			Memory_Free(cmd);
