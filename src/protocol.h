@@ -16,7 +16,8 @@ cs_char *data = client->wrbuf; \
 Mutex_Lock(client->mutex);
 
 #define PacketWriter_End(client, size) \
-Client_Send(client, size); \
+if (Client_Send(client, size) != size) \
+	client->closed = true; \
 Mutex_Unlock(client->mutex);
 
 #define PacketWriter_Stop(client) \

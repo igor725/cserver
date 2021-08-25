@@ -928,8 +928,9 @@ INL static void SendSpawnPacket(Client *client, Client *other) {
 }
 
 cs_bool Client_Spawn(Client *client) {
+	if(client->closed) return false;
 	PlayerData *pd = client->playerData;
-	if(pd->spawned) return false;
+	if(!pd || pd->spawned) return false;
 
 	Client_UpdateWorldInfo(client, pd->world, true);
 

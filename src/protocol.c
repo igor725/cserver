@@ -88,7 +88,7 @@ void Proto_WriteByteColor4(cs_char **dataptr, const Color4* color) {
 	*dataptr = data;
 }
 
-NOINL static cs_uint32 WriteExtEntityPos(cs_char **dataptr, Vec *vec, Ang *ang, cs_bool extended) {
+NOINL static cs_int32 WriteExtEntityPos(cs_char **dataptr, Vec *vec, Ang *ang, cs_bool extended) {
 	if(extended)
 		Proto_WriteFlVec(dataptr, vec);
 	else
@@ -202,7 +202,7 @@ void Vanilla_WriteSetBlock(Client *client, SVec *pos, BlockID block) {
 	PacketWriter_End(client, 8);
 }
 
-INL static cs_uint32 WriteClientPos(cs_char *data, Client *client, cs_bool extended) {
+INL static cs_int32 WriteClientPos(cs_char *data, Client *client, cs_bool extended) {
 	PlayerData *pd = client->playerData;
 	return WriteExtEntityPos(&data, &pd->position, &pd->angle, extended);
 }
@@ -214,7 +214,7 @@ void Vanilla_WriteSpawn(Client *client, Client *other) {
 	*data++ = client == other ? CLIENT_SELF : other->id;
 	Proto_WriteString(&data, other->playerData->name);
 	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
-	cs_uint32 len = WriteClientPos(data, other, extended);
+	cs_int32 len = WriteClientPos(data, other, extended);
 
 	PacketWriter_End(client, 68 + len);
 }
@@ -225,7 +225,7 @@ void Vanilla_WriteTeleport(Client *client, Vec *pos, Ang *ang) {
 	*data++ = 0x08;
 	*data++ = CLIENT_SELF;
 	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
-	cs_uint32 len = WriteExtEntityPos(&data, pos, ang, extended);
+	cs_int32 len = WriteExtEntityPos(&data, pos, ang, extended);
 
 	PacketWriter_End(client, 4 + len);
 }
@@ -236,7 +236,7 @@ void Vanilla_WritePosAndOrient(Client *client, Client *other) {
 	*data++ = 0x08;
 	*data++ = client == other ? CLIENT_SELF : other->id;
 	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
-	cs_uint32 len = WriteClientPos(data, other, extended);
+	cs_int32 len = WriteClientPos(data, other, extended);
 
 	PacketWriter_End(client, 4 + len);
 }
@@ -605,7 +605,7 @@ void CPE_WriteAddEntity2(Client *client, Client *other) {
 		Proto_WriteString(&data, Client_GetName(other));
 	Proto_WriteString(&data, Client_GetSkin(other));
 	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
-	cs_uint32 len = WriteClientPos(data, other, extended);
+	cs_int32 len = WriteClientPos(data, other, extended);
 
 	PacketWriter_End(client, 132 + len);
 }
