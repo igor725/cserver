@@ -343,13 +343,24 @@ void Server_StartLoop(void) {
 	Event_Call(EVT_ONSTOP, NULL);
 }
 
+INL static void UnloadAllWorlds(void) {
+	AListField *tmp;
+
+	List_Iter(tmp, World_Head) {
+		World *world = (World *)tmp->value.ptr;
+		if(World_Save(world, true)) Waitable_Wait(world->waitable);
+		World_Free(world);
+		AList_Remove(&World_Head, tmp);
+	}
+}
+
 void Server_Cleanup(void) {
 	Log_Info(Lang_Get(Lang_ConGrp, 4));
 	Clients_KickAll(Lang_Get(Lang_KickGrp, 5), true);
 	if(Broadcast && Broadcast->mutex) Mutex_Free(Broadcast->mutex);
 	if(Broadcast) Memory_Free(Broadcast);
 	Log_Info(Lang_Get(Lang_ConGrp, 5));
-	Worlds_SaveAll(true, true);
+	UnloadAllWorlds();
 	Socket_Close(Server_Socket);
 	Config_Save(Server_Config);
 	Config_DestroyStore(Server_Config);

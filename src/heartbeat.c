@@ -68,8 +68,8 @@ INL static cs_bool DoRequest(Heartbeat *hb) {
 		Log_Error(Lang_Get(Lang_ErrGrp, 3), "Can't open HTTP connection");
 		return false;
 	}
-	Http_Cleanup(&h);
 
+	Http_Cleanup(&h);
 	return true;
 }
 

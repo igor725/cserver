@@ -10,20 +10,6 @@
 
 AListField *World_Head = NULL;
 
-void Worlds_SaveAll(cs_bool join, cs_bool unload) {
-	if(!Server_Active) unload = true;
-	AListField *tmp;
-
-	List_Iter(tmp, World_Head) {
-		World *world = (World *)tmp->value.ptr;
-		if(World_Save(world, unload) && join) {
-			Waitable_Wait(world->waitable);
-			if(!Server_Active)
-				World_Free(world);
-		}
-	}
-}
-
 World *World_Create(cs_str name) {
 	World *tmp = Memory_Alloc(1, sizeof(World));
 	tmp->name = String_AllocCopy(name);
@@ -161,16 +147,10 @@ cs_uint32 World_GetBlockArraySize(World *world) {
 }
 
 void World_Free(World *world) {
-	AListField *tmp;
-	List_Iter(tmp, World_Head) {
-		if(tmp->value.ptr == world) {
-			AList_Remove(&World_Head, tmp);
-			break;
-		}
-	}
 	Compr_Cleanup(&world->compr);
 	World_FreeBlockArray(world);
 	Waitable_Free(world->waitable);
+	if(world->name) Memory_Free((void *)world->name);
 	Memory_Free(world);
 }
 

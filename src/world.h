@@ -95,8 +95,6 @@ typedef struct _World {
 	} wdata;
 } World;
 
-API void Worlds_SaveAll(cs_bool join, cs_bool unload);
-
 API World *World_Create(cs_str name);
 API void World_AllocBlockArray(World *world);
 API void World_FreeBlockArray(World *world);
