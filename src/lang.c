@@ -81,7 +81,6 @@ cs_uint32 Lang_ResizeGroup(LGroup *grp, cs_uint32 newsize) {
 
 	cs_str *tmp = Memory_Realloc(
 		(void *)grp->strings,
-		grp->size * sizeof(cs_str),
 		newsize * sizeof(cs_str)
 	);
 

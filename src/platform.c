@@ -4,17 +4,13 @@
 #include "error.h"
 #include <stdio.h>
 
-// #include "../../cs_detectmemleak.c"
+//#include "../../cs_detectmemleak.c"
 
 #if defined(WINDOWS)
 HANDLE hHeap = NULL;
 
 cs_bool Memory_Init(void) {
-	hHeap = HeapCreate(
-		HEAP_NO_SERIALIZE,
-		0x01000, 0x00000
-	);
-	return hHeap != NULL;
+	return (hHeap = HeapCreate(0, 0, 0)) != NULL;
 }
 
 void Memory_Uninit(void) {
@@ -25,6 +21,11 @@ void *Memory_TryAlloc(cs_size num, cs_size size) {
 	return HeapAlloc(hHeap, HEAP_ZERO_MEMORY, num * size);
 }
 
+cs_size Memory_GetSize(void *ptr) {
+	if(!ptr) return 0;
+	return HeapSize(hHeap, 0, ptr);
+}
+
 void *Memory_Alloc(cs_size num, cs_size size) {
 	void *ptr = Memory_TryAlloc(num, size);
 	if(!ptr) {
@@ -33,17 +34,16 @@ void *Memory_Alloc(cs_size num, cs_size size) {
 	return ptr;
 }
 
-void *Memory_TryRealloc(void *buf, cs_size old, cs_size new) {
-	(void)old;
-	return HeapReAlloc(hHeap, HEAP_ZERO_MEMORY, buf, new);
+void *Memory_TryRealloc(void *oldptr, cs_size new) {
+	return HeapReAlloc(hHeap, HEAP_ZERO_MEMORY, oldptr, new);
 }
 
-void *Memory_Realloc(void *buf, cs_size old, cs_size new) {
-	void *ptr = Memory_TryRealloc(buf, old, new);
-	if(!ptr) {
+void *Memory_Realloc(void *oldptr, cs_size new) {
+	void *newptr = Memory_TryRealloc(oldptr, new);
+	if(!newptr) {
 		Error_PrintSys(true);
 	}
-	return ptr;
+	return newptr;
 }
 
 void Memory_Free(void *ptr) {
@@ -52,12 +52,17 @@ void Memory_Free(void *ptr) {
 #elif defined(UNIX)
 #include <stdlib.h>
 #include <signal.h>
+#include <malloc.h>
 
 cs_bool Memory_Init(void) {return true;}
 void Memory_Uninit(void) {}
 
 void *Memory_TryAlloc(cs_size num, cs_size size) {
 	return calloc(num, size);
+}
+
+cs_size Memory_GetSize(void *ptr) {
+	return malloc_usable_size(ptr);
 }
 
 void *Memory_Alloc(cs_size num, cs_size size) {
@@ -68,19 +73,21 @@ void *Memory_Alloc(cs_size num, cs_size size) {
 	return ptr;
 }
 
-void *Memory_TryRealloc(void *buf, cs_size old, cs_size new) {
-	void *pNew = realloc(buf, new);
-	if(!pNew) return NULL;
-	if(new > old) Memory_Zero(pNew + old, new - old);
-	return pNew;
+void *Memory_TryRealloc(void *oldptr, cs_size new) {
+	void *newptr = Memory_TryAlloc(1, new);
+	if(newptr) {
+		Memory_Copy(newptr, oldptr, min(Memory_GetSize(oldptr), new));
+		Memory_Free(oldptr);
+	}
+	return newptr;
 }
 
-void *Memory_Realloc(void *buf, cs_size old, cs_size new) {
-	void *ptr = Memory_TryRealloc(buf, old, new);
-	if(!ptr) {
+void *Memory_Realloc(void *oldptr, cs_size new) {
+	void *newptr = Memory_TryRealloc(oldptr, new);
+	if(!newptr) {
 		Error_PrintSys(true);
 	}
-	return ptr;
+	return newptr;
 }
 
 void Memory_Free(void *ptr) {free(ptr);}

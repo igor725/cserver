@@ -72,9 +72,10 @@ cs_bool Memory_Init(void);
 void Memory_Uninit(void);
 
 API void *Memory_TryAlloc(cs_size num, cs_size size);
-API void *Memory_TryRealloc(void *buf, cs_size old, cs_size new);
+API void *Memory_TryRealloc(void *oldptr, cs_size new);
+API cs_size Memory_GetSize(void *ptr);
 API void *Memory_Alloc(cs_size num, cs_size size);
-API void *Memory_Realloc(void *buf, cs_size old, cs_size new);
+API void *Memory_Realloc(void *oldptr, cs_size new);
 API void  Memory_Copy(void *dst, const void *src, cs_size count);
 API void  Memory_Fill(void *dst, cs_size count, cs_byte val);
 API void  Memory_Free(void *ptr);

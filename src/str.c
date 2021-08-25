@@ -63,10 +63,9 @@ cs_size String_Append(cs_char *dst, cs_size len, cs_str src) {
 }
 
 cs_char *String_Grow(cs_char *src, cs_size add, cs_size *new) {
-	cs_size curr = String_Length(src),
-	newp = curr + add + 1;
+	cs_size newp = String_Length(src) + add + 1;
 	if(new) *new = newp;
-	return Memory_Realloc(src, curr, newp);
+	return Memory_Realloc(src, newp);
 }
 
 cs_size String_Copy(cs_char *dst, cs_size len, cs_str src) {
