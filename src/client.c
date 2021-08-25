@@ -170,7 +170,7 @@ cs_str Client_GetAppName(Client *client) {
 
 cs_str Client_GetSkin(Client *client) {
 	CPEData *cpd = client->cpeData;
-	if(!cpd || !cpd->skin)
+	if(!cpd || *cpd->skin == '\0')
 		return Client_GetName(client);
 	return cpd->skin;
 }
@@ -552,8 +552,6 @@ cs_bool Client_SetModel(Client *client, cs_int16 model) {
 cs_bool Client_SetSkin(Client *client, cs_str skin) {
 	CPEData *cpd = client->cpeData;
 	if(!cpd) return false;
-	if(cpd->skin)
-		Memory_Free((void *)cpd->skin);
 	String_Copy(cpd->skin, 65, skin);
 	cpd->updates |= PCU_SKIN;
 	return true;
