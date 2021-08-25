@@ -277,7 +277,7 @@ THREAD_FUNC(WorldSaveThread) {
 		do {
 			Compr_SetOutBuffer(&world->compr, out, CHUNK_SIZE);
 			if((compr_ok = Compr_Update(&world->compr)) == true) {
-				if(File_Write(out, 1, world->compr.wr_size, fp) != world->compr.wr_size) {
+				if(File_Write(out, 1, world->compr.written, fp) != world->compr.written) {
 					Error_PrintSys(false);
 					compr_ok = false;
 					break;

@@ -13,7 +13,6 @@ typedef enum _ComprType {
 typedef enum _ComprState {
 	COMPR_STATE_IDLE,
 	COMPR_STATE_INPROCESS,
-	COMPR_STATE_FINISHING,
 	COMPR_STATE_DONE
 } ComprState;
 
@@ -21,7 +20,7 @@ typedef struct _Compr {
 	ComprState state;
 	ComprType type;
 	cs_int32 ret;
-	cs_uint32 wr_size;
+	cs_uint32 written, queued;
 	void *stream;
 } Compr;
 

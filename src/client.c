@@ -850,29 +850,33 @@ NOINL static void SendWorld(Client *client, World *world) {
 
 	cs_byte *data = (cs_byte *)client->wrbuf;
 	*data++ = 0x03;
-	cs_uint16 *len = (cs_uint16 *)data++;
-	void *out = ++data;
+	cs_uint16 *len = (cs_uint16 *)data; data += 2;
+	cs_byte *progr = data + 1024;
 
 	cs_bool compr_ok;
 	cs_uint32 wsize = 0;
 	if(hasfastmap) {
 		compr_ok = Compr_Init(&client->compr, COMPR_TYPE_DEFLATE);
-		cs_byte *map = World_GetBlockArray(world, &wsize);
-		if(compr_ok) Compr_SetInBuffer(&client->compr, map, wsize);
+		if(compr_ok) {
+			cs_byte *map = World_GetBlockArray(world, &wsize);
+			Compr_SetInBuffer(&client->compr, map, wsize);
+		}
 	} else {
 		compr_ok = Compr_Init(&client->compr, COMPR_TYPE_GZIP);
-		cs_byte *map = World_GetData(world, &wsize);
-		if(compr_ok) Compr_SetInBuffer(&client->compr, map, wsize);
+		if(compr_ok) {
+			cs_byte *map = World_GetData(world, &wsize);
+			Compr_SetInBuffer(&client->compr, map, wsize);
+		}
 	}
 
 	if(compr_ok) {
 		do {
-			if(!compr_ok) break;
-			Compr_SetOutBuffer(&client->compr, out, 1024);
+			if(!compr_ok || client->closed) break;
+			Compr_SetOutBuffer(&client->compr, data, 1024);
 			if((compr_ok = Compr_Update(&client->compr)) == true) {
-				if(client->closed) compr_ok = false;
-				if(client->compr.wr_size) {
-					*len = htons((cs_uint16)client->compr.wr_size);
+				if(!client->closed && client->compr.written) {
+					*len = htons((cs_uint16)client->compr.written);
+					*progr = 100 - (cs_byte)((cs_float)client->compr.queued / wsize * 100);
 					compr_ok = Client_Send(client, 1028) == 1028;
 				}
 			}

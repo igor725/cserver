@@ -1035,6 +1035,7 @@ static const struct extReg {
 	{"SelectionCuboid", 1},
 	{"BlockPermissions", 1},
 	{"ChangeModel", 1},
+	{"EnvMapAppearance", 1},
 	{"EnvMapAppearance", 2},
 	{"EnvWeatherType", 1},
 	{"HackControl", 1},

@@ -20,10 +20,10 @@
 #endif // PLUGIN_BUILD
 
 #if _MSC_VER
-typedef __int8 cs_int8;
-typedef __int16 cs_int16;
-typedef __int32 cs_int32;
-typedef __int64 cs_int64;
+typedef signed __int8 cs_int8;
+typedef signed __int16 cs_int16;
+typedef signed __int32 cs_int32;
+typedef signed __int64 cs_int64;
 typedef unsigned __int8 cs_byte;
 typedef unsigned __int16 cs_uint16;
 typedef unsigned __int32 cs_uint32;

@@ -25,8 +25,8 @@ cs_bool Compr_Init(Compr *ctx, ComprType type) {
 	if(type == COMPR_TYPE_DEFLATE || type == COMPR_TYPE_GZIP) {
 		ctx->ret = deflateInit2(
 			ctx->stream, Z_DEFAULT_COMPRESSION,
-			Z_DEFLATED, getWndBits(type), 8,
-			Z_DEFAULT_STRATEGY
+			Z_DEFLATED, getWndBits(type),
+			MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY
 		);
 	} else if(type == COMPR_TYPE_INFLATE || type == COMPR_TYPE_UNGZIP) {
 		ctx->ret = inflateInit2(ctx->stream, getWndBits(type));
@@ -49,27 +49,16 @@ void Compr_SetOutBuffer(Compr *ctx, void *data, cs_uint32 size) {
 
 INL static cs_bool DeflateStep(Compr *ctx) {
 	z_stream *stream = (z_stream *)ctx->stream;
-	cs_uint32 avail = stream->avail_out;
-	ctx->wr_size = 0;
+	cs_uint32 outbuf_size = stream->avail_out;
+	ctx->written = 0;
 
-	ctx->ret = deflate(stream,
-		ctx->state == COMPR_STATE_INPROCESS ? Z_NO_FLUSH : Z_FINISH
-	);
+	ctx->ret = deflate(stream, stream->avail_in > 0 ? Z_NO_FLUSH : Z_FINISH);
 
-	if(ctx->ret != Z_OK && ctx->ret == Z_STREAM_ERROR) return false;
-	ctx->wr_size = avail - stream->avail_out;
-	if(ctx->wr_size == 0) {
-		switch(ctx->state) {
-			case COMPR_STATE_INPROCESS:
-				ctx->state = COMPR_STATE_FINISHING;
-				break;
-			case COMPR_STATE_FINISHING:
-				ctx->state = COMPR_STATE_DONE;
-				break;
-			case COMPR_STATE_IDLE:
-			case COMPR_STATE_DONE:
-				return true;
-		}
+	if(stream->avail_out == outbuf_size)
+		ctx->state = COMPR_STATE_DONE;
+	else {
+		ctx->written = outbuf_size - stream->avail_out;
+		ctx->queued = stream->avail_in;
 	}
 
 	return true;
@@ -77,13 +66,13 @@ INL static cs_bool DeflateStep(Compr *ctx) {
 
 INL static cs_bool InflateStep(Compr *ctx) {
 	z_stream *stream = (z_stream *)ctx->stream;
-	ctx->wr_size = 0;
+	ctx->written = 0;
 
 	cs_uint32 avail = stream->avail_out;
 	ctx->ret = inflate(stream, Z_NO_FLUSH);
 	if(ctx->ret == Z_NEED_DICT || ctx->ret == Z_DATA_ERROR ||
 	ctx->ret == Z_MEM_ERROR) return false;
-	ctx->wr_size = avail - stream->avail_out;
+	ctx->written = avail - stream->avail_out;
 	return true;
 }
 
