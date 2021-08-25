@@ -50,13 +50,13 @@ void Compr_SetOutBuffer(Compr *ctx, void *data, cs_uint32 size) {
 INL static cs_bool DeflateStep(Compr *ctx) {
 	z_stream *stream = (z_stream *)ctx->stream;
 	cs_uint32 outbuf_size = stream->avail_out;
-	ctx->written = 0;
 
 	ctx->ret = deflate(stream, stream->avail_in > 0 ? Z_NO_FLUSH : Z_FINISH);
 
-	if(stream->avail_out == outbuf_size)
+	if(stream->avail_out == outbuf_size) {
 		ctx->state = COMPR_STATE_DONE;
-	else {
+		ctx->queued = ctx->written = 0;
+	} else {
 		ctx->written = outbuf_size - stream->avail_out;
 		ctx->queued = stream->avail_in;
 	}
@@ -73,6 +73,7 @@ INL static cs_bool InflateStep(Compr *ctx) {
 	if(ctx->ret == Z_NEED_DICT || ctx->ret == Z_DATA_ERROR ||
 	ctx->ret == Z_MEM_ERROR) return false;
 	ctx->written = avail - stream->avail_out;
+	ctx->queued = stream->avail_in;
 	return true;
 }
 
