@@ -18,9 +18,10 @@ Command *Command_Register(cs_str name, cmdFunc func, cs_byte flags) {
 	return tmp;
 }
 
-void Command_SetAlias(Command *cmd, cs_str alias) {
-	if(cmd->alias) Memory_Free((void *)cmd->alias);
-	cmd->alias = String_AllocCopy(alias);
+cs_bool Command_SetAlias(Command *cmd, cs_str alias) {
+	if(String_Length(alias) > 6) return false;
+	String_Copy(cmd->alias, 7, alias);
+	return true;
 }
 
 Command *Command_GetByName(cs_str name) {

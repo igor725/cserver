@@ -85,8 +85,7 @@ CGroup *Group_Add(cs_int16 gid, cs_str gname, cs_byte grank) {
 		gptr->field = AList_AddField(&headCGroup, gptr);
 	}
 
-	if(gptr->name) Memory_Free((void *)gptr->name);
-	gptr->name = String_AllocCopy(gname);
+	String_Copy(gptr->name, 65, gname);
 	gptr->rank = grank;
 	return gptr;
 }
@@ -116,10 +115,8 @@ cs_bool Group_Remove(cs_int16 gid) {
 			Client_SetGroup(client, -1);
 	}
 
-	Memory_Free((void *)cg->name);
-	Memory_Free(cg);
 	AList_Remove(&headCGroup, cg->field);
-
+	Memory_Free(cg);
 	return true;
 }
 

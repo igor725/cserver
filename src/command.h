@@ -66,7 +66,7 @@ typedef struct {
 typedef cs_bool(*cmdFunc)(CommandCallData *);
 
 typedef struct _Command {
-	cs_str alias;
+	cs_char alias[7];
 	cmdFunc func;
 	void *data;
 	cs_byte flags;
@@ -75,7 +75,7 @@ typedef struct _Command {
 cs_bool Command_Handle(cs_char *cmd, Client *caller);
 
 API Command *Command_Register(cs_str name, cmdFunc func, cs_byte flags);
-API void Command_SetAlias(Command *cmd, cs_str alias);
+API cs_bool Command_SetAlias(Command *cmd, cs_str alias);
 API Command *Command_GetByName(cs_str name);
 API void Command_Unregister(Command *cmd);
 API void Command_UnregisterByFunc(cmdFunc func);

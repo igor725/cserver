@@ -49,17 +49,15 @@ cs_str Block_GetName(BlockID id) {
 
 BlockDef *Block_New(BlockID id, cs_str name, cs_byte flags) {
 	BlockDef *bdef = Memory_Alloc(1, sizeof(BlockDef));
-	bdef->name = String_AllocCopy(name);
+	String_Copy(bdef->name, 65, name);
 	bdef->flags = BDF_DYNALLOCED | flags;
 	bdef->id = id;
 	return bdef;
 }
 
 void Block_Free(BlockDef *bdef) {
-	if(bdef->flags & BDF_DYNALLOCED) {
-		Memory_Free((void *)bdef->name);
+	if(bdef->flags & BDF_DYNALLOCED)
 		Memory_Free(bdef);
-	}
 }
 
 cs_bool Block_Define(BlockDef *bdef) {

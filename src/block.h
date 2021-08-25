@@ -89,7 +89,7 @@ typedef enum _EBlockDrawTypes {
 } EBlockDrawTypes;
 
 typedef struct _BlockDef {
-	cs_str name;
+	cs_char name[65];
 	BlockID id;
 	cs_byte flags;
 	union {

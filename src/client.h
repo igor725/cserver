@@ -35,7 +35,7 @@ typedef enum _EPlayerState {
 typedef struct _CGroup {
 	cs_int16 id;
 	cs_byte rank;
-	cs_str name;
+	cs_char name[65];
 	AListField *field;
 } CGroup;
 
