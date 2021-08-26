@@ -26,21 +26,21 @@ for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) { \
 } \
 return false;
 
-cs_bool Event_RegisterVoid(cs_uint32 type, evtVoidCallback func) {
+cs_bool Event_RegisterVoid(EventTypes type, evtVoidCallback func) {
 	rgPart1
 	evt->rtype = 0;
 	evt->func.fvoid = func;
 	rgPart2
 }
 
-cs_bool Event_RegisterBool(cs_uint32 type, evtBoolCallback func) {
+cs_bool Event_RegisterBool(EventTypes type, evtBoolCallback func) {
 	rgPart1
 	evt->rtype = 1;
 	evt->func.fbool = func;
 	rgPart2
 }
 
-cs_bool Event_Unregister(cs_uint32 type, cs_uintptr evtFuncPtr) {
+cs_bool Event_Unregister(EventTypes type, cs_uintptr evtFuncPtr) {
 	for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) {
 		Event *evt = Event_List[type][pos];
 
@@ -52,7 +52,7 @@ cs_bool Event_Unregister(cs_uint32 type, cs_uintptr evtFuncPtr) {
 	return false;
 }
 
-cs_bool Event_Call(cs_uint32 type, void *param) {
+cs_bool Event_Call(EventTypes type, void *param) {
 	cs_bool ret = true;
 
 	for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) {

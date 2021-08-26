@@ -31,7 +31,7 @@ Command *Command_GetByName(cs_str name) {
 			return field->value.ptr;
 
 		Command *cmd = field->value.ptr;
-		if(cmd->alias && String_CaselessCompare(cmd->alias, name))
+		if(String_CaselessCompare(cmd->alias, name))
 			return field->value.ptr;
 	}
 	return NULL;

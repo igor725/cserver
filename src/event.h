@@ -6,7 +6,7 @@
 typedef void(*evtVoidCallback)(void *);
 typedef cs_bool(*evtBoolCallback)(void *);
 
-enum {
+typedef enum _EventTypes {
 	EVT_POSTSTART,
 	EVT_ONTICK,
 	EVT_ONSTOP,
@@ -22,10 +22,11 @@ enum {
 	EVT_ONROTATE,
 	EVT_ONDISCONNECT,
 	EVT_ONWEATHER,
-	EVT_ONCOLOR
-};
+	EVT_ONCOLOR,
 
-#define EVENTS_TCOUNT 16
+	EVENTS_TCOUNT
+} EventTypes;
+
 #define EVENTS_FCOUNT 128
 
 typedef struct _onMessage {
@@ -55,13 +56,13 @@ typedef struct _onPlayerClick {
 	cs_char face;
 } onPlayerClick;
 
-API cs_bool Event_RegisterVoid(cs_uint32 type, evtVoidCallback func);
-API cs_bool Event_RegisterBool(cs_uint32 type, evtBoolCallback func);
-API cs_bool Event_Unregister(cs_uint32 type, cs_uintptr evtFuncPtr);
+API cs_bool Event_RegisterVoid(EventTypes type, evtVoidCallback func);
+API cs_bool Event_RegisterBool(EventTypes type, evtBoolCallback func);
+API cs_bool Event_Unregister(EventTypes type, cs_uintptr evtFuncPtr);
 #define EVENT_UNREGISTER(t, e) \
 Event_Unregister(t, (cs_uintptr)e);
 
-NOINL cs_bool Event_Call(cs_uint32 type, void *param);
+NOINL cs_bool Event_Call(EventTypes type, void *param);
 cs_bool Event_OnMessage(Client *client, cs_char *message, cs_byte *type);
 void Event_OnHeldBlockChange(Client *client, BlockID prev, BlockID curr);
 cs_bool Event_OnBlockPlace(Client *client, cs_byte mode, SVec *pos, BlockID *id);
