@@ -304,9 +304,6 @@ void Socket_Close(Socket sock) {
 #if defined(WINDOWS)
 #define ISDIR(h) (h.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 cs_bool Iter_Init(DirIter *iter, cs_str dir, cs_str ext) {
-	iter->state = ITER_INITIAL;
-	iter->dirHandle = INVALID_HANDLE_VALUE;
-
 	String_FormatBuf(iter->fmt, 256, "%s\\*.%s", dir, ext);
 	if((iter->dirHandle = FindFirstFileA(iter->fmt, &iter->fileHandle)) == INVALID_HANDLE_VALUE) {
 		if(GetLastError() == ERROR_FILE_NOT_FOUND)
@@ -326,7 +323,7 @@ cs_bool Iter_Next(DirIter *iter) {
 	if(iter->state != ITER_READY)
 		return false;
 
-	if(FindNextFile(iter->dirHandle, &iter->fileHandle)) {
+	if(FindNextFileA(iter->dirHandle, &iter->fileHandle)) {
 		iter->isDir = ISDIR(iter->fileHandle);
 		iter->cfile = iter->fileHandle.cFileName;
 		return true;
@@ -336,11 +333,9 @@ cs_bool Iter_Next(DirIter *iter) {
 	return false;
 }
 
-cs_bool Iter_Close(DirIter *iter) {
-	if(iter->state == ITER_INITIAL)
-		return false;
-	FindClose(iter->dirHandle);
-	return true;
+void Iter_Close(DirIter *iter) {
+	if(iter->dirHandle)
+		FindClose(iter->dirHandle);
 }
 #elif defined(UNIX)
 static cs_bool checkExtension(cs_str filename, cs_str ext) {
@@ -352,8 +347,6 @@ static cs_bool checkExtension(cs_str filename, cs_str ext) {
 }
 
 cs_bool Iter_Init(DirIter *iter, cs_str dir, cs_str ext) {
-	iter->state = ITER_INITIAL;
-	iter->fileHandle = NULL;
 	iter->dirHandle = opendir(dir);
 	if(!iter->dirHandle) {
 		iter->state = ITER_ERROR;
@@ -382,19 +375,17 @@ cs_bool Iter_Next(DirIter *iter) {
 	return true;
 }
 
-cs_bool Iter_Close(DirIter *iter) {
-	if(iter->state == ITER_INITIAL)
-		return false;
+void Iter_Close(DirIter *iter) {
 	if(iter->dirHandle)
 		closedir(iter->dirHandle);
-	return true;
 }
 #endif
 
 #if defined(WINDOWS)
 cs_bool Directory_Exists(cs_str path) {
-	cs_uint32 attr = GetFileAttributesA(path);
-	return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
+	cs_ulong attr = GetFileAttributesA(path);
+	if(attr == INVALID_FILE_ATTRIBUTES) return false;
+	return attr & FILE_ATTRIBUTE_DIRECTORY;
 }
 
 cs_bool Directory_SetCurrentDir(cs_str path) {
@@ -464,23 +455,17 @@ cs_bool DLib_GetSym(void *lib, cs_str sname, void *sym) {
 
 #if defined(WINDOWS)
 Thread Thread_Create(TFUNC func, TARG param, cs_bool detach) {
-	Thread th = CreateThread(
-		NULL,
-		0,
-		(LPTHREAD_START_ROUTINE)func,
-		param,
-		0,
-		NULL
-	);
+	Thread th;
 
-	if(!th) {
+	if((th = CreateThread(NULL, 0, func, param, 0, NULL)) == INVALID_HANDLE_VALUE) {
 		ERROR_PRINT(ET_SYS, GetLastError(), true);
 	}
 
 	if(detach) {
 		Thread_Detach(th);
-		th = NULL;
+		return NULL;
 	}
+
 	return th;
 }
 
@@ -507,19 +492,19 @@ Thread Thread_Create(TFUNC func, TARG arg, cs_bool detach) {
 	Thread th;
 	if(pthread_create(&th, NULL, func, arg) != 0) {
 		ERROR_PRINT(ET_SYS, errno, true);
-		return 0;
+		return (Thread)NULL;
 	}
 
 	if(detach) {
 		Thread_Detach(th);
-		return (Thread)0;
+		return (Thread)NULL;
 	}
 
 	return th;
 }
 
 cs_bool Thread_IsValid(Thread th) {
-	return th != (Thread)0;
+	return th != (Thread)NULL;
 }
 
 void Thread_Detach(Thread th) {
@@ -560,7 +545,7 @@ void Mutex_Unlock(Mutex *handle) {
 
 Waitable *Waitable_Create(void) {
 	Waitable *handle = CreateEventA(NULL, true, false, NULL);
-	if(!handle) {
+	if(handle == INVALID_HANDLE_VALUE) {
 		Error_PrintSys(true);
 	}
 	return handle;
@@ -697,9 +682,9 @@ cs_uint64 Time_GetMSec() {
 
 cs_bool Console_BindSignalHandler(TSHND handler) {
 #if defined(WINDOWS)
-	return (cs_bool)SetConsoleCtrlHandler((PHANDLER_ROUTINE)handler, TRUE);
+	return (cs_bool)SetConsoleCtrlHandler(handler, TRUE);
 #elif defined(UNIX)
-	return (cs_bool)(signal(SIGINT, (sighandler_t)handler) != SIG_ERR);
+	return (cs_bool)(signal(SIGINT, handler) != SIG_ERR);
 #endif
 }
 

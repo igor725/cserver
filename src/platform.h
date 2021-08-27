@@ -5,14 +5,13 @@
 
 #if defined(WINDOWS)
 #include <ws2tcpip.h>
-typedef WIN32_FIND_DATA ITER_FILE;
-typedef cs_uint32 TRET;
+typedef WIN32_FIND_DATAA ITER_FILE;
+typedef cs_ulong TRET, TSHND_PARAM;
 typedef void Waitable;
 typedef CRITICAL_SECTION Mutex;
 typedef SOCKET Socket;
 typedef HANDLE Thread, ITER_DIR;
 typedef BOOL TSHND_RET;
-typedef DWORD TSHND_PARAM;
 #define TSHND_OK TRUE
 #elif defined(UNIX)
 #include <pthread.h>
@@ -82,7 +81,7 @@ API void  Memory_Free(void *ptr);
 
 API cs_bool Iter_Init(DirIter *iter, cs_str path, cs_str ext);
 API cs_bool Iter_Next(DirIter *iter);
-API cs_bool Iter_Close(DirIter *iter);
+API void Iter_Close(DirIter *iter);
 
 API cs_bool File_Rename(cs_str path, cs_str newpath);
 API cs_file File_Open(cs_str path, cs_str mode);
