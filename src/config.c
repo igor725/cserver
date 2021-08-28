@@ -172,10 +172,10 @@ cs_bool Config_Load(CStore *store) {
 	}
 
 	cs_bool haveComment = false;
-	cs_int32 lnlen = 0, linenum = 0;
+	cs_int32 linenum = 0, lnret = 0;
 	cs_char line[CFG_MAX_LEN], comment[CFG_MAX_LEN];
 
-	while((lnlen = File_ReadLine(fp, line, CFG_MAX_LEN)) > 0 && ++linenum) {
+	while(++linenum && (lnret = File_ReadLine(fp, line, CFG_MAX_LEN)) > 0) {
 		if(!haveComment && *line == '#') {
 			haveComment = true;
 			String_Copy(comment, CFG_MAX_LEN, line + 1);
@@ -217,9 +217,8 @@ cs_bool Config_Load(CStore *store) {
 				break;
 		}
 	}
-
-	if(lnlen == -1) {
-		setError(store, ET_SERVER, EC_CFGEND, 0);
+	if(lnret == -1) {
+		setError(store, ET_SERVER, EC_CFGEND, linenum);
 		File_Close(fp);
 		return false;
 	}

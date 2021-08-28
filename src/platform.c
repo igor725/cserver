@@ -4,7 +4,7 @@
 #include "error.h"
 #include <stdio.h>
 
-//#include "../../cs_detectmemleak.c"
+// #include "../../cs_memleak.c"
 
 #if defined(WINDOWS)
 HANDLE hHeap = NULL;
@@ -129,16 +129,21 @@ cs_size File_Read(void *ptr, cs_size size, cs_size count, cs_file fp) {
 }
 
 cs_int32 File_ReadLine(cs_file fp, cs_char *line, cs_int32 len) {
-	cs_int32 bleft = len + 1;
-
-	while(--bleft) {
-		cs_int32 ch = File_GetChar(fp);
-		if(ch == '\n' || ch == EOF) break;
-		if(ch != '\r') *line++ = (cs_char)ch;
+	cs_int32 ch, ilen = len;
+	while(len > 1) {
+		ch = File_GetChar(fp);
+		if(ch == EOF)
+			return 0;
+		else if(ch == '\n')
+			break;
+		else if(ch != '\r') {
+			*line++ = (cs_char)ch;
+			len -= 1;
+		}
 	}
-
 	*line = '\0';
-	return len - bleft;
+	if(len == 1) return -1;
+	return ilen - len;
 }
 
 cs_size File_Write(const void *ptr, cs_size size, cs_size count, cs_file fp) {
