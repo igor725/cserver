@@ -462,7 +462,7 @@ cs_bool DLib_GetSym(void *lib, cs_str sname, void *sym) {
 Thread Thread_Create(TFUNC func, TARG param, cs_bool detach) {
 	Thread th;
 
-	if((th = CreateThread(NULL, 0, func, param, 0, NULL)) == INVALID_HANDLE_VALUE) {
+	if((th = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)func, param, 0, NULL)) == INVALID_HANDLE_VALUE) {
 		ERROR_PRINT(ET_SYS, GetLastError(), true);
 	}
 
@@ -687,7 +687,7 @@ cs_uint64 Time_GetMSec() {
 
 cs_bool Console_BindSignalHandler(TSHND handler) {
 #if defined(WINDOWS)
-	return (cs_bool)SetConsoleCtrlHandler(handler, TRUE);
+	return (cs_bool)SetConsoleCtrlHandler((PHANDLER_ROUTINE)handler, TRUE);
 #elif defined(UNIX)
 	return (cs_bool)(signal(SIGINT, handler) != SIG_ERR);
 #endif
