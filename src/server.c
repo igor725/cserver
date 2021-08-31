@@ -11,7 +11,6 @@
 #include "platform.h"
 #include "event.h"
 #include "plugin.h"
-#include "lang.h"
 #include "timer.h"
 #include "consoleio.h"
 #include <zlib.h>
@@ -46,7 +45,7 @@ THREAD_FUNC(ClientInitThread) {
 		else continue;
 
 		if(sameAddrCount > maxConnPerIP) {
-			Client_Kick(tmp, Lang_Get(Lang_KickGrp, 10));
+			Client_Kick(tmp, "Too many connections from one IP");
 			Client_Free(tmp);
 			return 0;
 		}
@@ -72,11 +71,11 @@ THREAD_FUNC(ClientInitThread) {
 
 	if(attempt < 10) {
 		if(!AddClient(tmp))
-			Client_Kick(tmp, Lang_Get(Lang_KickGrp, 1));
+			Client_Kick(tmp, "Server is full");
 		else
 			Client_Loop(tmp);
 	} else
-		Client_Kick(tmp, Lang_Get(Lang_KickGrp, 7));
+		Client_Kick(tmp, "Packet reading error");
 
 	Client_Tick(tmp, 0);
 	Client_Free(tmp);
@@ -129,7 +128,7 @@ INL static void Bind(cs_str ip, cs_uint16 port) {
 			break;
 	}
 
-	Log_Info(Lang_Get(Lang_ConGrp, 0), ip, port);
+	Log_Info("Server started on %s:%d.", ip, port);
 	if(!Socket_Bind(Server_Socket, &ssa)) {
 		Error_PrintSys(true);
 	}
@@ -303,7 +302,7 @@ cs_bool Server_Init(void) {
 	Bind(ip, port);
 	Event_Call(EVT_POSTSTART, NULL);
 	if(ConsoleIO_Init())
-		Log_Info(Lang_Get(Lang_ConGrp, 8));
+		Log_Info("Press Ctrl+C to stop the server.");
 	Thread_Create(SockAcceptThread, NULL, true);
 	Server_Ready = true;
 	return true;
@@ -329,11 +328,11 @@ void Server_StartLoop(void) {
 		delta = (cs_int32)(curr - last);
 		if(delta < 0) {
 			Server_LatestBadTick = Time_GetMSec();
-			Log_Warn(Lang_Get(Lang_ConGrp, 2));
+			Log_Warn("Time ran backwards? Time between last ticks < 0.");
 			delta = 0;
 		} else if(delta > 500) {
 			Server_LatestBadTick = Time_GetMSec();
-			Log_Warn(Lang_Get(Lang_ConGrp, 1), delta);
+			Log_Warn("Last server tick took %dms!", delta);
 			delta = 500;
 		}
 		DoStep(delta);
@@ -355,11 +354,11 @@ INL static void UnloadAllWorlds(void) {
 }
 
 void Server_Cleanup(void) {
-	Log_Info(Lang_Get(Lang_ConGrp, 4));
-	Clients_KickAll(Lang_Get(Lang_KickGrp, 5), true);
+	Log_Info("Kicking players...");
+	Clients_KickAll("Server stopped", true);
 	if(Broadcast && Broadcast->mutex) Mutex_Free(Broadcast->mutex);
 	if(Broadcast) Memory_Free(Broadcast);
-	Log_Info(Lang_Get(Lang_ConGrp, 5));
+	Log_Info("Saving worlds...");
 	UnloadAllWorlds();
 	Socket_Close(Server_Socket);
 	Config_Save(Server_Config);

@@ -3,7 +3,6 @@
 #include "log.h"
 #include "platform.h"
 #include "plugin.h"
-#include "lang.h"
 
 Plugin *Plugins_List[MAX_PLUGINS] = {0};
 
@@ -27,9 +26,9 @@ cs_bool Plugin_LoadDll(cs_str name) {
 		cs_int32 apiVer = *apiVerSym;
 		if(apiVer != PLUGIN_API_NUM) {
 			if(apiVer < PLUGIN_API_NUM)
-				Log_Error(Lang_Get(Lang_ConGrp, 6), name, PLUGIN_API_NUM, apiVer);
+				Log_Error("Plugin \"%s\" is deprecated. Server uses PluginAPI v%03d but plugin compiled for v%03d.", name, PLUGIN_API_NUM, apiVer);
 			else
-				Log_Error(Lang_Get(Lang_ConGrp, 7), name, apiVer, PLUGIN_API_NUM);
+				Log_Error("Please upgrade your server software. Plugin \"%s\" compiled for PluginAPI v%03d but server uses v%d.", name, apiVer, PLUGIN_API_NUM);
 
 			DLib_Unload(lib);
 			return false;

@@ -9,7 +9,6 @@
 #include "client.h"
 #include "event.h"
 #include "heartbeat.h"
-#include "lang.h"
 #include "compr.h"
 
 AListField *headAssocType = NULL,
@@ -406,8 +405,8 @@ NOINL static void HandlePacket(Client *client, cs_char *data, Packet *packet, cs
 			ret = packet->handler(client, data);
 
 	if(!ret) {
-		Log_Error(Lang_Get(Lang_ErrGrp, 2), packet->id, client->id);
-		Client_Kick(client, Lang_Get(Lang_KickGrp, 7));
+		Log_Error("Invalid packet 0x%02X from Client[%d]", packet->id, client->id);
+		Client_Kick(client, "Packet reading error");
 	} else
 		client->pps += 1;
 }
@@ -768,8 +767,8 @@ INL static void PacketReceiverWs(Client *client) {
 		packetId = *data++;
 		packet = Packet_Get(packetId);
 		if(!packet) {
-			Log_Error(Lang_Get(Lang_ErrGrp, 2), packetId, client->id);
-			Client_Kick(client, Lang_Get(Lang_KickGrp, 7));
+			Log_Error("Invalid packet 0x%02X from Client[%d]", packetId, client->id);
+			Client_Kick(client, "Packet reading error");
 			return;
 		}
 
@@ -792,7 +791,7 @@ INL static void PacketReceiverWs(Client *client) {
 
 			return;
 		} else
-			Client_Kick(client, Lang_Get(Lang_KickGrp, 7));
+			Client_Kick(client, "Packet reading error");
 	} else
 		client->closed = true;
 }
@@ -806,8 +805,8 @@ INL static void PacketReceiverRaw(Client *client) {
 	if(Socket_Receive(client->sock, (cs_char *)&packetId, 1, MSG_WAITALL) == 1) {
 		packet = Packet_Get(packetId);
 		if(!packet) {
-			Log_Error(Lang_Get(Lang_ErrGrp, 2), packetId, client->id);
-			Client_Kick(client, Lang_Get(Lang_KickGrp, 7));
+			Log_Error("Invalid packet 0x%02X from Client[%d]", packetId, client->id);
+			Client_Kick(client, "Packet reading error");
 			return;
 		}
 
@@ -832,7 +831,7 @@ NOINL static void SendWorld(Client *client, World *world) {
 		Waitable_Wait(world->waitable);
 
 	if(!world->loaded) {
-		Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
+		Client_Kick(client, "World compression failed");
 		return;
 	}
 
@@ -899,7 +898,7 @@ NOINL static void SendWorld(Client *client, World *world) {
 		}
 	}
 
-	Client_Kick(client, Lang_Get(Lang_KickGrp, 6));
+	Client_Kick(client, "World compression failed");
 }
 
 void Client_Loop(Client *client) {
@@ -965,7 +964,7 @@ cs_bool Client_Spawn(Client *client) {
 
 void Client_Kick(Client *client, cs_str reason) {
 	if(client->closed) return;
-	if(!reason) reason = Lang_Get(Lang_KickGrp, 0);
+	if(!reason) reason = "Kicked without reason";
 	Vanilla_WriteKick(client, reason);
 	client->closed = true;
 }
@@ -988,7 +987,7 @@ void Client_Tick(Client *client, cs_int32 delta) {
 	client->ppstm += delta;
 	if(client->ppstm > 1000) {
 		if(client->pps > MAX_CLIENT_PPS && Server_LatestBadTick + 5000 < Time_GetMSec()) {
-			Client_Kick(client, Lang_Get(Lang_KickGrp, 9));
+			Client_Kick(client, "Too many packets per second");
 			return;
 		}
 		client->pps = 0;

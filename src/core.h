@@ -153,6 +153,5 @@ EXP cs_int32 Plugin_ApiVer, Plugin_Version;
 #endif
 
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
-#define MODE(b) Lang_Get(Lang_SwGrp, b > 0)
 #define BIT(b) (1U << b)
 #endif

@@ -3,7 +3,6 @@
 #include "core.h"
 #include "str.h"
 #include "client.h"
-#include "lang.h"
 
 #define COMMAND_SETUSAGE(str) \
 cs_str cmdUsage = str;
@@ -27,7 +26,7 @@ String_Append(ccdata->out, MAX_CMD_OUT, buf);
 String_GetArgument(ccdata->args, a, s, n)
 
 #define COMMAND_PRINTUSAGE \
-COMMAND_PRINTF(Lang_Get(Lang_CmdGrp, 0), cmdUsage);
+COMMAND_PRINTF("Usage: %s.", cmdUsage);
 
 #define COMMAND_ARG2WN(wn, idx) \
 if(COMMAND_GETARG(wn, 64, idx)) { \

@@ -1,6 +1,5 @@
 #include "core.h"
 #include "log.h"
-#include "lang.h"
 #include "server.h"
 #include "command.h"
 #include "consoleio.h"
@@ -12,7 +11,7 @@ THREAD_FUNC(ConsoleIOThread) {
 	while(Server_Active) {
 		if(File_ReadLine(stdin, buf, 192))
 			if(!Command_Handle(buf, NULL))
-				Log_Info(Lang_Get(Lang_CmdGrp, 3));
+				Log_Info("Unknown command.");
 	}
 
 	return 0;

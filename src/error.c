@@ -1,7 +1,6 @@
 #include "core.h"
 #include "str.h"
 #include "log.h"
-#include "lang.h"
 #include "error.h"
 #include <zlib.h>
 
@@ -88,7 +87,7 @@ INL static void getErrorStr(cs_int32 type, cs_int32 code, cs_char *errbuf, cs_si
 			break;
 		case ET_SYS:
 			if(!String_FormatError(code, errbuf, sz, args)) {
-				String_Copy(errbuf, sz, Lang_Get(Lang_ErrGrp, 0));
+				String_Copy(errbuf, sz, "Unexpected error.");
 			}
 			break;
 	}
@@ -109,7 +108,7 @@ void Error_Print(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_s
 	va_start(args, func);
 	getErrorStr(type, code, errbuf, 256, &args);
 	va_end(args);
-	if(String_FormatBuf(strbuf, 384, Lang_Get(Lang_ErrGrp, 1), file, line, func, errbuf)) {
+	if(String_FormatBuf(strbuf, 384, "%s:%d in function %s: %s", file, line, func, errbuf)) {
 		Log_Error("%s", strbuf);
 		PrintCallStack();
 	}

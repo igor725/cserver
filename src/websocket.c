@@ -2,7 +2,6 @@
 #include "str.h"
 #include "platform.h"
 #include "websocket.h"
-#include "lang.h"
 #include "hash.h"
 
 cs_str ws_resp =

@@ -9,7 +9,6 @@
 #include "platform.h"
 #include "command.h"
 #include "heartbeat.h"
-#include "lang.h"
 #include "hash.h"
 
 cs_uint16 extensionsCount;
@@ -291,7 +290,7 @@ void Vanilla_WriteKick(Client *client, cs_str reason) {
 cs_bool Handler_Handshake(Client *client, cs_char *data) {
 	if(client->playerData) return false;
 	if(*data++ != 0x07) {
-		Client_Kick(client, Lang_Get(Lang_KickGrp, 2));
+		Client_Kick(client, "Invalid protocol version");
 		return true;
 	}
 
@@ -307,7 +306,7 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 		Client *other = Clients_List[i];
 		if(!other || !other->playerData || other == client) continue;
 		if(String_CaselessCompare(client->playerData->name, other->playerData->name)) {
-			Client_Kick(client, Lang_Get(Lang_KickGrp, 3));
+			Client_Kick(client, "This name is already in use");
 			return true;
 		}
 	}
@@ -318,7 +317,7 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 			Config_GetStrByKey(Server_Config, CFG_SERVERMOTD_KEY)
 		);
 	} else {
-		Client_Kick(client, Lang_Get(Lang_KickGrp, 4));
+		Client_Kick(client, "Authorization failed");
 		return true;
 	}
 
@@ -362,7 +361,7 @@ cs_bool Handler_SetBlock(Client *client, cs_char *data) {
 	switch(mode) {
 		case 0x01:
 			if(!Block_IsValid(block)) {
-				Client_Kick(client, Lang_Get(Lang_KickGrp, 8));
+				Client_Kick(client, "Invalid block ID");
 				return false;
 			}
 			if(Event_OnBlockPlace(client, mode, &pos, &block)) {
@@ -463,7 +462,7 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 
 		if(*messptr == '/') {
 			if(!Command_Handle(messptr, client))
-				Vanilla_WriteChat(client, type, Lang_Get(Lang_CmdGrp, 3));
+				Vanilla_WriteChat(client, type, "Unknown command.");
 		} else
 			Client_Chat(Broadcast, type, formatted);
 

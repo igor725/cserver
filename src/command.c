@@ -5,7 +5,6 @@
 #include "platform.h"
 #include "client.h"
 #include "command.h"
-#include "lang.h"
 
 KListField *headCmd = NULL;
 
@@ -97,11 +96,11 @@ cs_bool Command_Handle(cs_char *str, Client *caller) {
 	Command *cmd = Command_GetByName(str);
 	if(cmd) {
 		if(cmd->flags & CMDF_CLIENT && !caller) {
-			Client_Chat(caller, MT_CHAT, Lang_Get(Lang_CmdGrp, 4));
+			Client_Chat(caller, MT_CHAT, "This command can't be called from console.");
 			return true;
 		}
 		if(cmd->flags & CMDF_OP && (caller && !Client_IsOP(caller))) {
-			Client_Chat(caller, MT_CHAT, Lang_Get(Lang_CmdGrp, 1));
+			Client_Chat(caller, MT_CHAT, "Access denied.");
 			return true;
 		}
 
