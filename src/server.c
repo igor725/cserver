@@ -13,6 +13,7 @@
 #include "plugin.h"
 #include "timer.h"
 #include "consoleio.h"
+#include "strstor.h"
 #include <zlib.h>
 
 CStore *Server_Config = NULL;
@@ -45,7 +46,7 @@ THREAD_FUNC(ClientInitThread) {
 		else continue;
 
 		if(sameAddrCount > maxConnPerIP) {
-			Client_Kick(tmp, "Too many connections from one IP");
+			Client_Kick(tmp, Sstor_Get("KICK_MANYCONN"));
 			Client_Free(tmp);
 			return 0;
 		}
@@ -71,11 +72,11 @@ THREAD_FUNC(ClientInitThread) {
 
 	if(attempt < 10) {
 		if(!AddClient(tmp))
-			Client_Kick(tmp, "Server is full");
+			Client_Kick(tmp, Sstor_Get("KICK_FULL"));
 		else
 			Client_Loop(tmp);
 	} else
-		Client_Kick(tmp, "Packet reading error");
+		Client_Kick(tmp, Sstor_Get("KICK_PERR"));
 
 	Client_Tick(tmp, 0);
 	Client_Free(tmp);
@@ -128,24 +129,24 @@ INL static void Bind(cs_str ip, cs_uint16 port) {
 			break;
 	}
 
-	Log_Info("Server started on %s:%d.", ip, port);
+	Log_Info(Sstor_Get("SV_START"), ip, port);
 	if(!Socket_Bind(Server_Socket, &ssa)) {
 		Error_PrintSys(true);
 	}
 }
 
 cs_bool Server_Init(void) {
-	if(!Generators_Init()) return false;
+	if(!Generators_Init() || !Sstor_Defaults()) return false;
 
 	cs_ulong zflags = zlibCompileFlags();
 	if(zflags & BIT(17)) {
-		Log_Error("Your zlib installation has no gzip support.");
+		Log_Error(Sstor_Get("Z_NOGZ"));
 		return false;
 	}
 	if(zflags & BIT(21)) {
-		Log_Warn("Your zlib installation supports only one, lowest compression level!");
-		Log_Warn("This means less CPU load in deflate tasks, but the worlds will take much more space on your disk.");
-		Log_Warn("It also means a longer connection of players to the server.");
+		Log_Warn(Sstor_Get("Z_LVL1"));
+		Log_Warn(Sstor_Get("Z_LVL2"));
+		Log_Warn(Sstor_Get("Z_LVL3"));
 	}
 
 	CStore *cfg = Config_NewStore(MAINCFG);
@@ -156,42 +157,42 @@ cs_bool Server_Init(void) {
 	Server_Config = cfg;
 
 	ent = Config_NewEntry(cfg, CFG_SERVERIP_KEY, CFG_TSTR);
-	Config_SetComment(ent, "Bind server to specified IP address. \"0.0.0.0\" - means \"all available network adapters\".");
-	Config_SetDefaultStr(ent, "0.0.0.0");
+	Config_SetComment(ent, Sstor_Get("CFG_SVIP_COMM"));
+	Config_SetDefaultStr(ent, Sstor_Get("CFG_SVIP_DVAL"));
 
 	ent = Config_NewEntry(cfg, CFG_SERVERPORT_KEY, CFG_TINT16);
-	Config_SetComment(ent, "Use specified port to accept clients. [1-65535]");
+	Config_SetComment(ent, Sstor_Get("CFG_SVPORT_COMM"));
 	Config_SetLimit(ent, 1, 65535);
 	Config_SetDefaultInt16(ent, 25565);
 
 	ent = Config_NewEntry(cfg, CFG_SERVERNAME_KEY, CFG_TSTR);
-	Config_SetComment(ent, "Server name and MOTD will be shown to the player during map loading.");
-	Config_SetDefaultStr(ent, "Server name");
+	Config_SetComment(ent, Sstor_Get("CFG_SVNAME_COMM"));
+	Config_SetDefaultStr(ent, Sstor_Get("CFG_SVNAME_DVAL"));
 
 	ent = Config_NewEntry(cfg, CFG_SERVERMOTD_KEY, CFG_TSTR);
-	Config_SetDefaultStr(ent, "Server MOTD");
+	Config_SetDefaultStr(ent, Sstor_Get("CFG_SVMOTD_DVAL"));
 
 	ent = Config_NewEntry(cfg, CFG_LOGLEVEL_KEY, CFG_TSTR);
-	Config_SetComment(ent, "I - Info, C - Chat, W - Warnings, D - Debug.");
-	Config_SetDefaultStr(ent, "ICWD");
+	Config_SetComment(ent, Sstor_Get("CFG_LOGLVL_COMM"));
+	Config_SetDefaultStr(ent, Sstor_Get("CFG_LOGLVL_DVAL"));
 
 	ent = Config_NewEntry(cfg, CFG_LOCALOP_KEY, CFG_TBOOL);
-	Config_SetComment(ent, "Any player with ip address \"127.0.0.1\" will automatically become an operator.");
+	Config_SetComment(ent, Sstor_Get("CFG_LOP_COMM"));
 	Config_SetDefaultBool(ent, false);
 
 	ent = Config_NewEntry(cfg, CFG_MAXPLAYERS_KEY, CFG_TINT8);
-	Config_SetComment(ent, "Max players on server. [1-127]");
+	Config_SetComment(ent, Sstor_Get("CFG_MAXPL_COMM"));
 	Config_SetLimit(ent, 1, 127);
 	Config_SetDefaultInt8(ent, 10);
 
 	ent = Config_NewEntry(cfg, CFG_CONN_KEY, CFG_TINT8);
-	Config_SetComment(ent, "Max connections per one IP. [1-5]");
+	Config_SetComment(ent, Sstor_Get("CFG_MAXCON_COMM"));
 	Config_SetLimit(ent, 1, 5);
 	Config_SetDefaultInt8(ent, 5);
 
 	ent = Config_NewEntry(cfg, CFG_WORLDS_KEY, CFG_TSTR);
-	Config_SetComment(ent, "List of worlds to load at startup. (Can be \"*\" it means load all worlds in the folder.)");
-	Config_SetDefaultStr(ent, "world.cws:256x256x256:normal,flat_world.cws:256x256x256:flat");
+	Config_SetComment(ent, Sstor_Get("CFG_WORLDS_COMM"));
+	Config_SetDefaultStr(ent, Sstor_Get("CFG_WORLDS_DVAL"));
 
 	cfg->modified = true;
 	if(!Config_Load(cfg)) {
@@ -222,12 +223,13 @@ cs_bool Server_Init(void) {
 		Iter_Close(&wIter);
 
 		if(wIndex < 1) {
-			World *tmp = World_Create("world.cws");
+			cs_str wname = "world.cws";
+			World *tmp = World_Create(wname);
 			SVec defdims = {256, 256, 256};
 			World_SetDimensions(tmp, &defdims);
 			World_AllocBlockArray(tmp);
 			if(!Generators_Use(tmp, "normal", NULL))
-				Log_Error("Oh! Error happened in the world generator.");
+				Log_Error(Sstor_Get("WGEN_ERROR"), wname);
 			AList_AddField(&World_Head, tmp);
 		}
 	} else {
@@ -266,16 +268,16 @@ cs_bool Server_Init(void) {
 						AList_AddField(&World_Head, tmp);
 						wIndex++;
 					} else {
-						Log_Error("Invalid dimensions specified for \"%s\"", tmp->name);
+						Log_Error(Sstor_Get("WGEN_INVDIM"), tmp->name);
 						World_Free(tmp);
 					}
 				} else if(!skip_creating && state == 2) {
 					GeneratorRoutine gr = Generators_Get(buffer);
 					if(gr) {
 						if(!gr(tmp, NULL))
-							Log_Error("World generator failed for \"%s\"", tmp->name);
+							Log_Error(Sstor_Get("WGEN_ERROR"), tmp->name);
 					} else
-						Log_Error("Invalid generator specified for \"%s\"", tmp->name);
+						Log_Error(Sstor_Get("WGEN_NOGEN"), tmp->name);
 				}
 
 				if(*worlds == ':')
@@ -292,17 +294,17 @@ cs_bool Server_Init(void) {
 	}
 
 	if(!World_Head) {
-		Log_Error("No worlds loaded.");
+		Log_Error(Sstor_Get("SV_NOWORLDS"));
 		return false;
 	} else
-		Log_Info("%d world(-s) successfully loaded.", wIndex);
+		Log_Info(Sstor_Get("SV_WLDONE"), wIndex);
 
 	cs_str ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
 	cs_uint16 port = Config_GetInt16ByKey(cfg, CFG_SERVERPORT_KEY);
 	Bind(ip, port);
 	Event_Call(EVT_POSTSTART, NULL);
 	if(ConsoleIO_Init())
-		Log_Info("Press Ctrl+C to stop the server.");
+		Log_Info(Sstor_Get("SV_STOPNOTE"));
 	Thread_Create(SockAcceptThread, NULL, true);
 	Server_Ready = true;
 	return true;
@@ -326,13 +328,13 @@ void Server_StartLoop(void) {
 		last = curr;
 		curr = Time_GetMSec();
 		delta = (cs_int32)(curr - last);
-		if(delta < 0) {
+		if(curr < last) {
 			Server_LatestBadTick = Time_GetMSec();
-			Log_Warn("Time ran backwards? Time between last ticks < 0.");
+			Log_Warn(Sstor_Get("SV_BADTICK_BW"));
 			delta = 0;
 		} else if(delta > 500) {
 			Server_LatestBadTick = Time_GetMSec();
-			Log_Warn("Last server tick took %dms!", delta);
+			Log_Warn(Sstor_Get("SV_BADTICK"), delta);
 			delta = 500;
 		}
 		DoStep(delta);
@@ -354,14 +356,15 @@ INL static void UnloadAllWorlds(void) {
 }
 
 void Server_Cleanup(void) {
-	Log_Info("Kicking players...");
-	Clients_KickAll("Server stopped", true);
+	Log_Info(Sstor_Get("SV_STOP_PL"));
+	Clients_KickAll(Sstor_Get("KICK_STOP"), true);
 	if(Broadcast && Broadcast->mutex) Mutex_Free(Broadcast->mutex);
 	if(Broadcast) Memory_Free(Broadcast);
-	Log_Info("Saving worlds...");
+	Log_Info(Sstor_Get("SV_STOP_SW"));
 	UnloadAllWorlds();
 	Socket_Close(Server_Socket);
 	Config_Save(Server_Config);
 	Config_DestroyStore(Server_Config);
 	Plugin_UnloadAll(true);
+	Sstor_Cleanup();
 }

@@ -3,6 +3,7 @@
 #include "server.h"
 #include "command.h"
 #include "consoleio.h"
+#include "strstor.h"
 
 THREAD_FUNC(ConsoleIOThread) {
 	(void)param;
@@ -11,7 +12,7 @@ THREAD_FUNC(ConsoleIOThread) {
 	while(Server_Active) {
 		if(File_ReadLine(stdin, buf, 192))
 			if(!Command_Handle(buf, NULL))
-				Log_Info("Unknown command.");
+				Log_Info(Sstor_Get("CMD_UNK"));
 	}
 
 	return 0;

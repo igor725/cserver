@@ -2,6 +2,7 @@
 #include "str.h"
 #include "platform.h"
 #include "websocket.h"
+#include "strstor.h"
 #include "hash.h"
 
 cs_str ws_resp =
@@ -63,9 +64,11 @@ cs_bool WebSock_DoHandshake(WebSock *ws) {
 			SHA1_Update(&ctx, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", 36);
 			SHA1_Final(hash, &ctx);
 		} else {
-			rsplen = String_FormatBuf(line, 1024, ws_err, 500, "Internal Server Error", 27);
+			cs_str msg = Sstor_Get("WS_SHAERR");
+			cs_int32 msglen = (cs_int32)String_Length(msg);
+			rsplen = String_FormatBuf(line, 1024, ws_err, 500, "Internal Server Error", msglen);
 			Socket_Send(ws->sock, line, rsplen);
-			Socket_Send(ws->sock, "SHA1_Init() returned false.", 27);
+			Socket_Send(ws->sock, msg, msglen);
 			return false;
 		}
 
@@ -74,9 +77,11 @@ cs_bool WebSock_DoHandshake(WebSock *ws) {
 		return Socket_Send(ws->sock, line, rsplen) == rsplen;
 	}
 
-	rsplen = String_FormatBuf(line, 1024, ws_err, 400, "Bad request", 27);
+	cs_str msg = Sstor_Get("WS_NOTVALID");
+	cs_int32 msglen = (cs_int32)String_Length(msg);
+	rsplen = String_FormatBuf(line, 1024, ws_err, 400, "Bad request", msglen);
 	Socket_Send(ws->sock, line, rsplen);
-	Socket_Send(ws->sock, "Not a websocket connection.", 27);
+	Socket_Send(ws->sock, msg, msglen);
 	return false;
 }
 

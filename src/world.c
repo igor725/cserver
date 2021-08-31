@@ -7,6 +7,7 @@
 #include "event.h"
 #include "list.h"
 #include "compr.h"
+#include "strstor.h"
 
 AListField *World_Head = NULL;
 
@@ -351,7 +352,7 @@ void World_Unload(World *world) {
 }
 
 cs_str World_GetName(World *world) {
-	if(!world->name) return "unnamed";
+	if(!world->name) return Sstor_Get("NONAME");
 	return world->name;
 }
 

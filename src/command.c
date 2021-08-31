@@ -5,6 +5,7 @@
 #include "platform.h"
 #include "client.h"
 #include "command.h"
+#include "strstor.h"
 
 KListField *headCmd = NULL;
 
@@ -96,11 +97,12 @@ cs_bool Command_Handle(cs_char *str, Client *caller) {
 	Command *cmd = Command_GetByName(str);
 	if(cmd) {
 		if(cmd->flags & CMDF_CLIENT && !caller) {
-			Client_Chat(caller, MT_CHAT, "This command can't be called from console.");
+			Log_Error(Sstor_Get("CMD_NOCON"));
 			return true;
 		}
+
 		if(cmd->flags & CMDF_OP && (caller && !Client_IsOP(caller))) {
-			Client_Chat(caller, MT_CHAT, "Access denied.");
+			Client_Chat(caller, MT_CHAT, Sstor_Get("CMD_NOPERM"));
 			return true;
 		}
 

@@ -3,6 +3,7 @@
 #include "log.h"
 #include "platform.h"
 #include "plugin.h"
+#include "strstor.h"
 
 Plugin *Plugins_List[MAX_PLUGINS] = {0};
 
@@ -26,9 +27,9 @@ cs_bool Plugin_LoadDll(cs_str name) {
 		cs_int32 apiVer = *apiVerSym;
 		if(apiVer != PLUGIN_API_NUM) {
 			if(apiVer < PLUGIN_API_NUM)
-				Log_Error("Plugin \"%s\" is deprecated. Server uses PluginAPI v%03d but plugin compiled for v%03d.", name, PLUGIN_API_NUM, apiVer);
+				Log_Error(Sstor_Get("PLUG_DEPR"), name, PLUGIN_API_NUM, apiVer);
 			else
-				Log_Error("Please upgrade your server software. Plugin \"%s\" compiled for PluginAPI v%03d but server uses v%d.", name, apiVer, PLUGIN_API_NUM);
+				Log_Error(Sstor_Get("PLUG_DEPR_API"), name, apiVer, PLUGIN_API_NUM);
 
 			DLib_Unload(lib);
 			return false;
@@ -58,7 +59,7 @@ cs_bool Plugin_LoadDll(cs_str name) {
 		return true;
 	}
 
-	Log_Error("%s: %s", path, DLib_GetError(error, 512));
+	Log_Error(Sstor_Get("PLUG_LIBERR"), path, DLib_GetError(error, 512));
 	return false;
 }
 

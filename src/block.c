@@ -2,6 +2,7 @@
 #include "str.h"
 #include "client.h"
 #include "block.h"
+#include "strstor.h"
 
 static cs_str defaultBlockNames[] = {
 	"Air", "Stone", "Grass", "Dirt",
@@ -39,7 +40,7 @@ cs_bool Block_IsValid(BlockID id) {
 }
 
 cs_str Block_GetName(BlockID id) {
-	if(!Block_IsValid(id)) return "Unknown block";
+	if(!Block_IsValid(id)) return Sstor_Get("BLOCK_UNK");
 	BlockDef *bdef = definitionsList[id];
 	if(bdef)
 		return bdef->name;
