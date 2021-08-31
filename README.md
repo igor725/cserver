@@ -13,7 +13,7 @@ The goal of this project: create a stable, customizable and future-rich multipla
 * WebSocket client support ([More info](https://www.classicube.net/api/docs/server))
 * RCON server (Implemented in [base plugin](https://github.com/igor725/cs-base))
 * Own world generator (Written by [scaled](https://github.com/scaledteam) for [LuaClassic](https://github.com/igor725/LuaClassic), later ported to C by me)
-* Heartbeat Heartbeat API (ClassiCube heartbeat implemented in [base plugin](https://github.com/igor725/cs-base))
+* Heartbeat API (ClassiCube heartbeat implemented in [base plugin](https://github.com/igor725/cs-base))
 * Easy configurable
 
 ## Dependencies
