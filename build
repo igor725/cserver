@@ -82,10 +82,12 @@ if [ ! -d "$OBJDIR" ]; then mkdir $OBJDIR; fi
 echo -n "Compiling..."
 pids=()
 cnt=0
+OBJS=""
 
 > $STDERR
 for SOURCE in `find "$ROOT/src/" -type f -name "*.c"`; do
 	objpath="$OBJDIR/$(basename $SOURCE .c).o"
+	OBJS="$OBJS $objpath"
 	$CC -c $CFLAGS $COMMIT_SHA $WARN $OPT -I$ROOT/src $SOURCE -o$objpath 2>> $STDERR &
 	while test $(jobs -p | wc -w) -ge "$MAXWORKERS"; do
 		wait -n;
@@ -103,7 +105,7 @@ if [ $PLUGIN_BUILD -eq 0 ]; then
 	LIBS="$LIBS -lpthread -ldl -lz"
 fi
 
-$LNK $OBJDIR/*.o -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR &
+$LNK$OBJS -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR &
 waitfor $!
 
 if [ $DEBUG -eq 0 ]; then
