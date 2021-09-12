@@ -24,7 +24,8 @@ The goal of this project: create a stable, customizable and future-rich multipla
 
 ### On Windows
 1. zlib
-2. Several std libs (such as dbghelp, ws2_32, wininet, advapi)
+2. Several std libs (such as Kernel32, DbgHelp, WS2_32)
+3. WinInet, Advapi32 (will be loaded on demand)
 
 ## Building
 
