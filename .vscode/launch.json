@@ -12,16 +12,6 @@
             "preLaunchTask": "Build debug"
         },
         {
-            "name": "Launch release",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/out/x64/server.exe",
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/out/x64",
-            "console": "integratedTerminal",
-            "preLaunchTask": "Build release"
-        },
-        {
             "name": "Launch debug (Linux)",
             "type": "cppdbg",
             "request": "launch",
