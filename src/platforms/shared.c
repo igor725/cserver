@@ -108,6 +108,10 @@ cs_bool Socket_Bind(Socket sock, struct sockaddr_in *addr) {
 	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(cs_int32){1}, 4) == -1) {
 		return false;
 	}
+#elif defined(WINDOWS)
+	if(setsockopt(sock, SOL_SOCKET, SO_DONTLINGER, &(cs_int32){0}, 4) == -1) {
+		return false;
+	}
 #endif
 
 	if(bind(sock, (const struct sockaddr *)addr, sizeof(struct sockaddr_in)) == -1) {
