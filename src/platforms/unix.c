@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include "core.h"
 #include "platform.h"
-#include "error.h"
+#include "cserror.h"
 
 cs_bool Memory_Init(void) {return true;}
 void Memory_Uninit(void) {}

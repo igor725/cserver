@@ -2,7 +2,7 @@
 #include "platform.h"
 #include "str.h"
 #include "config.h"
-#include "error.h"
+#include "cserror.h"
 
 INL static void setError(CStore *store, cs_int32 etype, cs_int32 ecode, cs_int32 eline) {
 	store->etype = etype;

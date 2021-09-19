@@ -4,7 +4,7 @@
 #include "http.h"
 #include "server.h"
 #include "log.h"
-#include "error.h"
+#include "cserror.h"
 #include "hash.h"
 
 INL static cs_bool Init(void) {

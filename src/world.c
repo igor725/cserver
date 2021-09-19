@@ -1,6 +1,6 @@
 #include "core.h"
 #include "platform.h"
-#include "error.h"
+#include "cserror.h"
 #include "str.h"
 #include "server.h"
 #include "world.h"

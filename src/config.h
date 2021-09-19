@@ -37,8 +37,8 @@ typedef struct _CEntry {
 typedef struct _CStore {
 	cs_str path; // Путь до cfg-файла
 	cs_bool modified; // Было ли хранилище модифицировано во время работы сервера
-	cs_int32 etype; // Тип произошедшей ошибки ET_SYS/ET_SERVER (см. объявления в error.h)
-	cs_int32 ecode; // Код произошедшей ошибки (объявления также в error.h)
+	cs_int32 etype; // Тип произошедшей ошибки ET_SYS/ET_SERVER (см. объявления в cserror.h)
+	cs_int32 ecode; // Код произошедшей ошибки (объявления также в cserror.h)
 	cs_int32 eline; // Номер строки в файле, на которой произошла ошибка
 	CEntry *firstCfgEntry; // Первая запись в хранилище
 	CEntry *lastCfgEntry; // Последняя запись в хранилище
