@@ -95,6 +95,7 @@ libcurl_alt = "libcurl.dll";
 
 struct _CURLFuncs {
 	void *lib;
+
 	CURL *(*easy_init)(void);
 	cs_int32 (*easy_setopt)(CURL *, cs_int32, ...);
 	cs_int32 (*easy_perform)(CURL *);

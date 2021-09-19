@@ -4,14 +4,6 @@
 
 #define HTTP_USERAGENT "CServer/1.0"
 
-#ifndef HTTP_MANUAL_BACKEND
-#if defined(WINDOWS)
-#define HTTP_USE_WININET_BACKEND
-#elif defined(UNIX)
-#define HTTP_USE_CURL_BACKEND
-#endif
-#endif
-
 #if defined(HTTP_USE_WININET_BACKEND)
 //#include <wininet.h>
 // Start of <wininet.h>

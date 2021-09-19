@@ -96,6 +96,16 @@ typedef unsigned long cs_uintptr, cs_size;
 #define NULL ((void *)0)
 #endif
 
+#ifndef MANUAL_BACKENDS
+#if defined(WINDOWS)
+#define HTTP_USE_WININET_BACKEND
+#define HASH_USE_WINCRYPT_BACKEND
+#elif defined(UNIX)
+#define HTTP_USE_CURL_BACKEND
+#define HASH_USE_CRYPTO_BACKEND
+#endif
+#endif
+
 typedef char cs_char;
 typedef unsigned char cs_uchar;
 typedef unsigned long cs_ulong;

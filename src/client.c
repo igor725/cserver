@@ -777,13 +777,6 @@ INL static void PacketReceiverWs(Client *client) {
 
 		if(packetSize <= recvSize) {
 			HandlePacket(client, data, packet, extended);
-			/*
-			** Каждую ~секунду к фрейму с пакетом 0x08 (Teleport)
-			** приклеивается пакет 0x2B (TwoWayPing) и поскольку
-			** не исключено, что таких приклеиваний может быть
-			** много, пришлось использовать goto для обработки
-			** всех пакетов, входящих в фрейм.
-			*/
 			if(recvSize > packetSize) {
 				data += packetSize;
 				recvSize -= packetSize + 1;

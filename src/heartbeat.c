@@ -7,13 +7,13 @@
 #include "heartbeat.h"
 #include "http.h"
 #include "hash.h"
+#include "strstor.h"
 
 struct _HBKeyCheck {
 	heartbeatKeyChecker func;
 };
 
 AListField *headHeartbeat = NULL, *headKeyChecker = NULL;
-cs_str heartbeatErrorStr = "Heartbeat error: %s.";
 
 INL static void TrimReserved(cs_char *name, cs_int32 len) {
 	for(cs_int32 i = 0; i < len; i++) {
@@ -49,23 +49,23 @@ INL static cs_bool DoRequest(Heartbeat *hb) {
 			if(Http_ReadResponse(&h, rsp, 1024)) {
 				if(String_CaselessCompare2(rsp, hb->playURL, String_Length(hb->playURL))) {
 					if(!hb->isPlayURLok) {
-						Log_Info("Server play URL: %s.", rsp);
+						Log_Info(Sstor_Get("HBEAT_URL"), rsp);
 						hb->isPlayURLok = true;
 					}
 				} else {
-					Log_Error(heartbeatErrorStr, rsp);
+					Log_Error(Sstor_Get("HBEAT_ERR"), rsp);
 					return false;
 				}
 			} else {
-				Log_Error(heartbeatErrorStr, "Empty server response");
+				Log_Error(Sstor_Get("HBEAT_ERR"), Sstor_Get("HBEAT_ERR_ER"));
 				return false;
 			}
 		} else {
-			Log_Error(heartbeatErrorStr, "HTTP request failed");
+			Log_Error(Sstor_Get("HBEAT_ERR"), Sstor_Get("HBEAT_ERR_HF"));
 			return false;
 		}
 	} else {
-		Log_Error(heartbeatErrorStr, "Can't open HTTP connection");
+		Log_Error(Sstor_Get("HBEAT_ERR"), Sstor_Get("HBEAT_ERR_CF"));
 		return false;
 	}
 
@@ -88,7 +88,7 @@ cs_bool Heartbeat_VanillaKeyChecker(cs_str secret, Client *client) {
 		MD5_Update(&ctx, name, (cs_ulong)String_Length(name));
 		MD5_Final(hash, &ctx);
 	} else {
-		Log_Error("VanillaKeyChecker: MD5_Init() returned false, can't check user key validity.");
+		Log_Error(Sstor_Get("HBEAT_KEYCHECK_ERR"));
 		return false;
 	}
 
@@ -140,8 +140,10 @@ void Heartbeat_NewSecret(Heartbeat *hb, cs_uint32 length) {
 
 	cs_file sfile = File_Open(hb->secretfile, "w");
 	if(sfile) {
-		File_Write("#Remove this file if you want to generate new secret key.\n", 58, 1, sfile);
-		File_Write("#This key used by the heartbeat as server's \"salt\" for user authentication check.\n", 82, 1, sfile);
+		cs_str cm1 = Sstor_Get("HBEAT_SECRET_COMM1"),
+		cm2 = Sstor_Get("HBEAT_SECRET_COMM2");
+		File_Write(cm1, String_Length(cm1), 1, sfile);
+		File_Write(cm2, String_Length(cm2), 1, sfile);
 		File_Write(hb->secretkey, length, 1, sfile);
 		File_Close(sfile);
 	}

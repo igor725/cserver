@@ -8,7 +8,7 @@ cs_int32 CRC32_Gen(const cs_byte *data, cs_uint32 len) {
 	return crc32(0, data, len);
 }
 
-#if defined(WINDOWS)
+#if defined(HASH_USE_WINCRYPT_BACKEND)
 HCRYPTPROV hCryptProvider = 0;
 
 struct _CryptLib {
@@ -89,7 +89,7 @@ cs_bool MD5_Update(MD5_CTX *ctx, const void *data, cs_ulong len) {
 cs_bool MD5_Final(cs_byte *hash, MD5_CTX *ctx) {
 	return FinalHash(hash, ctx);
 }
-#elif defined(UNIX)
+#elif defined(HASH_USE_OPENSSL_BACKEND)
 struct _CryptLib {
 	void *lib;
 
@@ -102,12 +102,20 @@ struct _CryptLib {
 	cs_bool(*MD5Final)(cs_byte *, MD5_CTX *);
 } Crypt;
 
+#if defined(WINDOWS)
+cs_str libcrypto = "crypto.dll",
+libcrypto_alt = "libeay32.dll";
+#elif defined(UNIX)
+cs_str libcrypto = "libcrypto.so",
+libcrypto_alt = "libcrypto.so.1.1";
+#endif
+
 cs_bool Hash_Init(void) {
 	if(Crypt.lib)
 		return true;
 	else {
-		if(!((DLib_Load("libcrypto.so", &Crypt.lib) ||
-			DLib_Load("libcrypto.so.1.1", &Crypt.lib)) &&
+		if(!((DLib_Load(libcrypto, &Crypt.lib) ||
+			DLib_Load(libcrypto_alt, &Crypt.lib)) &&
 			DLib_GetSym(Crypt.lib, "SHA1_Init", &Crypt.SHA1Init) &&
 			DLib_GetSym(Crypt.lib, "SHA1_Update", &Crypt.SHA1Update) &&
 			DLib_GetSym(Crypt.lib, "SHA1_Final", &Crypt.SHA1Final) &&
