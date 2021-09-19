@@ -13,6 +13,7 @@ typedef SOCKET Socket;
 typedef HANDLE Thread, ITER_DIR;
 typedef BOOL TSHND_RET;
 #define TSHND_OK TRUE
+#define MSG_NOSIGNAL 0
 #elif defined(UNIX)
 #include <pthread.h>
 #include <sys/stat.h>
@@ -36,7 +37,6 @@ typedef struct {
 	cs_bool signalled;
 } Waitable;
 typedef cs_int32 Socket;
-
 #define INVALID_SOCKET (Socket)-1
 #define SD_SEND SHUT_WR
 #define TSHND_OK
