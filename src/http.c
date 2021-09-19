@@ -179,4 +179,6 @@ void Http_Cleanup(Http *http) {
 	if(http->handle) curl.easy_cleanup(http->handle);
 	Memory_Zero(http, sizeof(Http));
 }
+#else
+#error No HTTP backend selected!
 #endif

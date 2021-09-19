@@ -89,7 +89,7 @@ cs_bool MD5_Update(MD5_CTX *ctx, const void *data, cs_ulong len) {
 cs_bool MD5_Final(cs_byte *hash, MD5_CTX *ctx) {
 	return FinalHash(hash, ctx);
 }
-#elif defined(HASH_USE_OPENSSL_BACKEND)
+#elif defined(HASH_USE_CRYPTO_BACKEND)
 struct _CryptLib {
 	void *lib;
 
@@ -168,4 +168,6 @@ cs_bool MD5_Final(cs_byte *hash, MD5_CTX *ctx) {
 	if(!Crypt.MD5Final) return false;
 	return Crypt.MD5Final(hash, ctx);
 }
+#else
+#error No crypto backend selected!
 #endif

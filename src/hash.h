@@ -32,7 +32,7 @@ cs_bool SHA1_Final(cs_byte *hash, SHA_CTX *ctx);
 cs_bool MD5_Init(MD5_CTX *ctx);
 cs_bool MD5_Update(MD5_CTX *ctx, const void *data, cs_ulong len);
 cs_bool MD5_Final(cs_byte *hash, MD5_CTX *ctx);
-#elif defined(HASH_USE_OPENSSL_BACKEND)
+#elif defined(HASH_USE_CRYPTO_BACKEND)
 // Start of <openssl/md5.h>
 # define MD5_LONG unsigned int
 # define MD5_CBLOCK      64
