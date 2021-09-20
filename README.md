@@ -19,8 +19,7 @@ The goal of this project: create a stable, customizable and future-rich multipla
 ### On Linux
 1. zlib
 2. pthread
-3. libcrypto
-4. curl
+3. libcrypto, libcurl (will be loaded on demand)
 
 ### On Windows
 1. zlib
