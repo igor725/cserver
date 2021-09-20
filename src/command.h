@@ -1,7 +1,6 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 #include "core.h"
-#include "str.h"
 #include "client.h"
 
 #define COMMAND_SETUSAGE(str) \

@@ -3,7 +3,6 @@
 #include "core.h"
 #include "client.h"
 
-struct _Heartbeat;
 typedef cs_bool(*heartbeatKeyChecker)(cs_str secret, Client *client);
 
 typedef struct _Heartbeat {

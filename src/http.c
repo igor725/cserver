@@ -15,6 +15,8 @@ struct _WinInet {
 	BOOL(*IClose)(HINTERNET);
 } WinInet;
 
+HINTERNET hInternet = NULL;
+
 INL static cs_bool InitBackend(void) {
 	if(!WinInet.lib) {
 		if(!(DLib_Load("wininet.dll", &WinInet.lib) &&

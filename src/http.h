@@ -14,8 +14,6 @@ typedef void *HINTERNET;
 typedef cs_uint16 INTERNET_PORT;
 // End of <wininet.h>
 
-HINTERNET hInternet;
-
 typedef struct _Http {
 	cs_bool secure;
 	HINTERNET conn, req;

@@ -8,7 +8,6 @@
 #include "protocol.h"
 #include "client.h"
 #include "event.h"
-#include "heartbeat.h"
 #include "strstor.h"
 #include "compr.h"
 

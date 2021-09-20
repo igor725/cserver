@@ -3,7 +3,6 @@
 #include "core.h"
 #include "platform.h"
 #include "config.h"
-#include "heartbeat.h"
 
 #define CFG_SERVERIP_KEY "server-ip"
 #define CFG_SERVERPORT_KEY "server-port"
