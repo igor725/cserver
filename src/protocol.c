@@ -354,30 +354,31 @@ cs_bool Handler_SetBlock(Client *client, cs_char *data) {
 	World *world = Client_GetWorld(client);
 	if(!world) return false;
 
-	SVec pos;
-	Proto_ReadSVec(&data, &pos);
-	cs_byte mode = *data++;
-	BlockID block = *data;
+	onBlockPlace params;
+	params.client = client;
+	Proto_ReadSVec(&data, &params.pos);
+	params.mode = *data++;
+	params.id = *data;
 
-	switch(mode) {
+	switch(params.mode) {
 		case 0x01:
-			if(!Block_IsValid(block)) {
+			if(!Block_IsValid(params.id)) {
 				Client_Kick(client, Sstor_Get("KICK_UNKBID"));
 				return false;
 			}
-			if(Event_OnBlockPlace(client, mode, &pos, &block)) {
-				World_SetBlock(world, &pos, block);
-				UpdateBlock(world, &pos, block);
+			if(Event_Call(EVT_ONBLOCKPLACE, &params)) {
+				World_SetBlock(world, &params.pos, params.id);
+				UpdateBlock(world, &params.pos, params.id);
 			} else
-				Vanilla_WriteSetBlock(client, &pos, World_GetBlock(world, &pos));
+				Vanilla_WriteSetBlock(client, &params.pos, World_GetBlock(world, &params.pos));
 			break;
 		case 0x00:
-			block = BLOCK_AIR;
-			if(Event_OnBlockPlace(client, mode, &pos, &block)) {
-				World_SetBlock(world, &pos, block);
-				UpdateBlock(world, &pos, block);
+			params.id = BLOCK_AIR;
+			if(Event_Call(EVT_ONBLOCKPLACE, &params)) {
+				World_SetBlock(world, &params.pos, params.id);
+				UpdateBlock(world, &params.pos, params.id);
 			} else
-				Vanilla_WriteSetBlock(client, &pos, World_GetBlock(world, &pos));
+				Vanilla_WriteSetBlock(client, &params.pos, World_GetBlock(world, &params.pos));
 			break;
 	}
 
@@ -416,11 +417,15 @@ cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
 	ValidateClientState(client, STATE_INGAME, false)
 
 	BlockID cb = *data++;
-
 	if(Client_GetExtVer(client, EXT_HELDBLOCK) == 1) {
 		CPEData *cpd = client->cpeData;
 		if(cpd->heldBlock != cb) {
-			Event_OnHeldBlockChange(client, cpd->heldBlock, cb);
+			onHeldBlockChange params = {
+				.client = client,
+				.prev = cpd->heldBlock,
+				.curr = cb
+			};
+			Event_Call(EVT_ONHELDBLOCKCHNG, &params);
 			cpd->heldBlock = cb;
 		}
 	}
@@ -457,7 +462,13 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 		messptr = cpd->message;
 	}
 
-	if(Event_OnMessage(client, messptr, &type)) {
+	onMessage params = {
+		.client = client,
+		.message = messptr,
+		.type = &type
+	};
+
+	if(Event_Call(EVT_ONMESSAGE, &params)) {
 		cs_char formatted[320];
 		String_FormatBuf(formatted, 320, "<%s>: %s", Client_GetName(client), messptr);
 
@@ -948,21 +959,16 @@ cs_bool CPEHandler_PlayerClick(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
 	ValidateClientState(client, STATE_INGAME, false)
 
-	cs_char button = *data++, action = *data++;
-	cs_int16 yaw = ntohs(*(cs_int16 *)data); data += 2;
-	cs_int16 pitch = ntohs(*(cs_int16 *)data); data += 2;
-	ClientID tgID = *data++;
-	SVec tgBlockPos;
-	Proto_ReadSVec(&data, &tgBlockPos);
-	cs_char tgBlockFace = *data;
-
-	Event_OnClick(
-		client, button,
-		action, yaw,
-		pitch, tgID,
-		&tgBlockPos,
-		tgBlockFace
-	);
+	onPlayerClick params;
+	params.client = client;
+	params.button = *data++;
+	params.action = *data++;
+	params.yaw = ntohs(*(cs_int16 *)data); data += 2;
+	params.pitch = ntohs(*(cs_int16 *)data); data += 2;
+	params.tgid = *data++;
+	Proto_ReadSVec(&data, &params.tgpos);
+	params.tgface = *data;
+	Event_Call(EVT_ONCLICK, &params);
 
 	return true;
 }

@@ -43,8 +43,8 @@ typedef struct _onHeldBlockChange {
 typedef struct _onBlockPlace {
 	Client *client;
 	cs_byte mode;
-	SVec *pos;
-	BlockID *id;
+	SVec pos;
+	BlockID id;
 } onBlockPlace;
 
 typedef struct _onPlayerClick {
@@ -52,8 +52,8 @@ typedef struct _onPlayerClick {
 	cs_int8 button, action;
 	cs_int16 yaw, pitch;
 	ClientID tgid;
-	SVec *pos;
-	cs_char face;
+	SVec tgpos;
+	cs_char tgface;
 } onPlayerClick;
 
 API cs_bool Event_RegisterVoid(EventTypes type, evtVoidCallback func);
@@ -63,8 +63,4 @@ API cs_bool Event_Unregister(EventTypes type, cs_uintptr evtFuncPtr);
 Event_Unregister(t, (cs_uintptr)e);
 
 NOINL cs_bool Event_Call(EventTypes type, void *param);
-cs_bool Event_OnMessage(Client *client, cs_char *message, cs_byte *type);
-void Event_OnHeldBlockChange(Client *client, BlockID prev, BlockID curr);
-cs_bool Event_OnBlockPlace(Client *client, cs_byte mode, SVec *pos, BlockID *id);
-void Event_OnClick(Client *client, cs_char button, cs_char action, cs_int16 yaw, cs_int16 pitch, ClientID tgID, SVec *tgBlockPos, cs_char tgBlockFace);
 #endif // EVENT_H

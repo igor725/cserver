@@ -126,7 +126,7 @@ cs_bool Socket_Bind(Socket sock, struct sockaddr_in *addr) {
 		return false;
 	}
 #elif defined(WINDOWS)
-	if(setsockopt(sock, SOL_SOCKET, SO_DONTLINGER, &(cs_int32){0}, 4) == -1) {
+	if(setsockopt(sock, SOL_SOCKET, SO_DONTLINGER, (void*)&(cs_int32){0}, 4) == -1) {
 		return false;
 	}
 #endif
