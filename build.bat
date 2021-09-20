@@ -1,9 +1,10 @@
 @ECHO off
 setlocal enableextensions enabledelayedexpansion
+SET ARCH=%VSCMD_ARG_TGT_ARCH%
+IF "%ARCH%"=="" GOTO vcerror
 ECHO Changing working directory to "%~dp0"
 CD /D %~dp0
 
-SET ARCH=%VSCMD_ARG_TGT_ARCH%
 SET DEBUG=0
 SET PROJECT_ROOT=.
 SET BUILD_PLUGIN=0
@@ -71,7 +72,6 @@ SHIFT
 GOTO libloop
 
 :argsdone
-IF "%ARCH%"=="" GOTO vcerror
 ECHO Build configuration:
 ECHO Architecture: %ARCH%
 
