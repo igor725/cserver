@@ -22,24 +22,8 @@ cs_size Memory_GetSize(void *ptr) {
 	return HeapSize(hHeap, 0, ptr);
 }
 
-void *Memory_Alloc(cs_size num, cs_size size) {
-	void *ptr = Memory_TryAlloc(num, size);
-	if(!ptr) {
-		Error_PrintSys(true);
-	}
-	return ptr;
-}
-
 void *Memory_TryRealloc(void *oldptr, cs_size new) {
 	return HeapReAlloc(hHeap, HEAP_ZERO_MEMORY, oldptr, new);
-}
-
-void *Memory_Realloc(void *oldptr, cs_size new) {
-	void *newptr = Memory_TryRealloc(oldptr, new);
-	if(!newptr) {
-		Error_PrintSys(true);
-	}
-	return newptr;
 }
 
 void Memory_Free(void *ptr) {

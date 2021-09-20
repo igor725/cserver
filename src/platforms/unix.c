@@ -20,27 +20,11 @@ cs_size Memory_GetSize(void *ptr) {
 	return malloc_usable_size(ptr);
 }
 
-void *Memory_Alloc(cs_size num, cs_size size) {
-	void *ptr = Memory_TryAlloc(num, size);
-	if(!ptr) {
-		Error_PrintSys(true);
-	}
-	return ptr;
-}
-
 void *Memory_TryRealloc(void *oldptr, cs_size new) {
 	void *newptr = Memory_TryAlloc(1, new);
 	if(newptr) {
 		Memory_Copy(newptr, oldptr, min(Memory_GetSize(oldptr), new));
 		Memory_Free(oldptr);
-	}
-	return newptr;
-}
-
-void *Memory_Realloc(void *oldptr, cs_size new) {
-	void *newptr = Memory_TryRealloc(oldptr, new);
-	if(!newptr) {
-		Error_PrintSys(true);
 	}
 	return newptr;
 }

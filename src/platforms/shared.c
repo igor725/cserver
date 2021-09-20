@@ -3,6 +3,22 @@
 #include "platform.h"
 #include "str.h"
 
+void *Memory_Alloc(cs_size num, cs_size size) {
+	void *ptr = Memory_TryAlloc(num, size);
+	if(!ptr) {
+		Error_PrintSys(true);
+	}
+	return ptr;
+}
+
+void *Memory_Realloc(void *oldptr, cs_size new) {
+	void *newptr = Memory_TryRealloc(oldptr, new);
+	if(!newptr) {
+		Error_PrintSys(true);
+	}
+	return newptr;
+}
+
 void Memory_Copy(void *dst, const void *src, cs_size count) {
 	cs_byte *u8dst = (cs_byte *)dst,
 	*u8src = (cs_byte *)src;
