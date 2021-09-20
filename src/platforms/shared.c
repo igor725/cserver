@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "core.h"
 #include "platform.h"
+#include "cserror.h"
 #include "str.h"
 
 void *Memory_Alloc(cs_size num, cs_size size) {
