@@ -1,4 +1,7 @@
 #include "core.h"
+#ifdef UNIX
+#define _GNU_SOURCE
+#endif
 #include "str.h"
 #include "log.h"
 #include "cserror.h"

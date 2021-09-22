@@ -1,5 +1,6 @@
 #include "core.h"
 #include "str.h"
+#include "platform.h"
 #include "log.h"
 
 cs_byte Log_Level = LOG_ALL;

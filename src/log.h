@@ -1,7 +1,7 @@
 #ifndef LOG_H
 #define LOG_H
 #include "core.h"
-#include "platform.h"
+#include <stdio.h>
 
 enum {
 	LOG_QUIET,

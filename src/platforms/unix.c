@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <malloc.h>
-#include <dlfcn.h>
 #include <fcntl.h>
+#include <dlfcn.h>
 #include <poll.h>
 #include <unistd.h>
 #include "core.h"
