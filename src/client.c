@@ -173,8 +173,7 @@ Client *Client_GetByName(cs_str name) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
 		if(!client) continue;
-		PlayerData *pd = client->playerData;
-		if(pd && String_CaselessCompare(pd->name, name))
+		if(client->playerData && String_CaselessCompare(client->playerData->name, name))
 			return client;
 	}
 	return NULL;

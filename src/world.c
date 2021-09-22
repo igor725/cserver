@@ -160,18 +160,16 @@ NOINL static cs_bool WriteWData(cs_file fp, cs_byte dataType, void *ptr, cs_int3
 }
 
 INL static cs_bool WriteInfo(World *world, cs_file fp) {
-	cs_int32 magic = WORLD_MAGIC;
-	if(!File_Write((cs_char *)&magic, 4, 1, fp)) {
+	if(!File_Write((cs_char *)&(cs_int32){WORLD_MAGIC}, 4, 1, fp)) {
 		Error_PrintSys(false);
 		return false;
 	}
-	WorldInfo *wi = &world->info;
-	return WriteWData(fp, DT_DIM, &wi->dimensions, sizeof(SVec)) &&
-	WriteWData(fp, DT_SV, &wi->spawnVec, sizeof(Vec)) &&
-	WriteWData(fp, DT_SA, &wi->spawnAng, sizeof(Ang)) &&
-	WriteWData(fp, DT_WT, &wi->weatherType, 1) &&
-	WriteWData(fp, DT_PROPS, wi->props, 4 * WORLD_PROPS_COUNT) &&
-	WriteWData(fp, DT_COLORS, wi->colors, sizeof(Color3) * WORLD_COLORS_COUNT) &&
+	return WriteWData(fp, DT_DIM, &world->info.dimensions, sizeof(SVec)) &&
+	WriteWData(fp, DT_SV, &world->info.spawnVec, sizeof(Vec)) &&
+	WriteWData(fp, DT_SA, &world->info.spawnAng, sizeof(Ang)) &&
+	WriteWData(fp, DT_WT, &world->info.weatherType, 1) &&
+	WriteWData(fp, DT_PROPS, world->info.props, 4 * WORLD_PROPS_COUNT) &&
+	WriteWData(fp, DT_COLORS, world->info.colors, sizeof(Color3) * WORLD_COLORS_COUNT) &&
 	WriteWData(fp, DT_END, NULL, 0);
 }
 
@@ -187,7 +185,6 @@ static cs_bool ReadInfo(World *world, cs_file fp) {
 	}
 
 	SVec dims;
-	WorldInfo *wi = &world->info;
 	while(File_Read(&id, 1, 1, fp) == 1) {
 		switch (id) {
 			case DT_DIM:
@@ -196,23 +193,23 @@ static cs_bool ReadInfo(World *world, cs_file fp) {
 				World_SetDimensions(world, &dims);
 				break;
 			case DT_SV:
-				if(File_Read(&wi->spawnVec, sizeof(Vec), 1, fp) != 1)
+				if(File_Read(&world->info.spawnVec, sizeof(Vec), 1, fp) != 1)
 					return false;
 				break;
 			case DT_SA:
-				if(File_Read(&wi->spawnAng, sizeof(Ang), 1, fp) != 1)
+				if(File_Read(&world->info.spawnAng, sizeof(Ang), 1, fp) != 1)
 					return false;
 				break;
 			case DT_WT:
-				if(File_Read(&wi->weatherType, 1, 1, fp) != 1)
+				if(File_Read(&world->info.weatherType, 1, 1, fp) != 1)
 					return false;
 				break;
 			case DT_PROPS:
-				if(File_Read(wi->props, 4 * WORLD_PROPS_COUNT, 1, fp) != 1)
+				if(File_Read(world->info.props, 4 * WORLD_PROPS_COUNT, 1, fp) != 1)
 					return false;
 				break;
 			case DT_COLORS:
-				if(File_Read(wi->colors, sizeof(Color3) * WORLD_COLORS_COUNT, 1, fp) != 1)
+				if(File_Read(world->info.colors, sizeof(Color3) * WORLD_COLORS_COUNT, 1, fp) != 1)
 					return false;
 				break;
 			case DT_END:
@@ -276,8 +273,7 @@ THREAD_FUNC(WorldSaveThread) {
 }
 
 cs_bool World_Save(World *world, cs_bool unload) {
-	if(!world->modified)
-		return world->loaded;
+	if(!world->modified) return world->loaded;
 	Waitable_Reset(world->waitable);
 	Thread_Create(WorldSaveThread, world, true);
 	if(unload) World_Unload(world);
@@ -330,8 +326,7 @@ THREAD_FUNC(WorldLoadThread) {
 }
 
 cs_bool World_Load(World *world) {
-	if(world->loaded)
-		return false;
+	if(world->loaded) return false;
 	Waitable_Reset(world->waitable);
 	Thread_Create(WorldLoadThread, world, false);
 	return true;
@@ -352,8 +347,7 @@ void World_Unload(World *world) {
 }
 
 cs_str World_GetName(World *world) {
-	if(!world->name) return Sstor_Get("NONAME");
-	return world->name;
+	return world->name ? world->name : Sstor_Get("NONAME");
 }
 
 cs_uint32 World_GetOffset(World *world, SVec *pos) {
@@ -371,11 +365,9 @@ cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id) {
 }
 
 cs_bool World_SetBlock(World *world, SVec *pos, BlockID id) {
-	cs_uint32 offset = World_GetOffset(world, pos);
-	return World_SetBlockO(world, offset, id);
+	return World_SetBlockO(world, World_GetOffset(world, pos), id);
 }
 
 BlockID World_GetBlock(World *world, SVec *pos) {
-	cs_int32 offset = World_GetOffset(world, pos);
-	return world->wdata.blocks[offset];
+	return world->wdata.blocks[World_GetOffset(world, pos)];
 }

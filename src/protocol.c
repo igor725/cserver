@@ -203,8 +203,7 @@ void Vanilla_WriteSetBlock(Client *client, SVec *pos, BlockID block) {
 }
 
 INL static cs_int32 WriteClientPos(cs_char *data, Client *client, cs_bool extended) {
-	PlayerData *pd = client->playerData;
-	return WriteExtEntityPos(&data, &pd->position, &pd->angle, extended);
+	return WriteExtEntityPos(&data, &client->playerData->position, &client->playerData->angle, extended);
 }
 
 void Vanilla_WriteSpawn(Client *client, Client *other) {
@@ -386,9 +385,8 @@ cs_bool Handler_SetBlock(Client *client, cs_char *data) {
 }
 
 INL static cs_bool ReadClientPos(Client *client, cs_char *data) {
-	PlayerData *cpd = client->playerData;
-	Vec *vec = &cpd->position, newVec;
-	Ang *ang = &cpd->angle, newAng;
+	Vec *vec = &client->playerData->position, newVec;
+	Ang *ang = &client->playerData->angle, newAng;
 	cs_bool changed = false;
 
 	if(Client_GetExtVer(client, EXT_ENTPOS))
@@ -399,13 +397,13 @@ INL static cs_bool ReadClientPos(Client *client, cs_char *data) {
 	Proto_ReadAng(&data, &newAng);
 
 	if(newVec.x != vec->x || newVec.y != vec->y || newVec.z != vec->z) {
-		cpd->position = newVec;
+		client->playerData->position = newVec;
 		Event_Call(EVT_ONMOVE, client);
 		changed = true;
 	}
 
 	if(newAng.yaw != ang->yaw || newAng.pitch != ang->pitch) {
-		cpd->angle = newAng;
+		client->playerData->angle = newAng;
 		Event_Call(EVT_ONROTATE, client);
 		changed = true;
 	}
@@ -418,15 +416,14 @@ cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
 
 	BlockID cb = *data++;
 	if(Client_GetExtVer(client, EXT_HELDBLOCK) == 1) {
-		CPEData *cpd = client->cpeData;
-		if(cpd->heldBlock != cb) {
+		if(client->cpeData->heldBlock != cb) {
 			onHeldBlockChange params = {
 				.client = client,
-				.prev = cpd->heldBlock,
+				.prev = client->cpeData->heldBlock,
 				.curr = cb
 			};
 			Event_Call(EVT_ONHELDBLOCKCHNG, &params);
-			cpd->heldBlock = cb;
+			client->cpeData->heldBlock = cb;
 		}
 	}
 
@@ -455,11 +452,10 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 			message[i] = '&';
 	}
 
-	CPEData *cpd = client->cpeData;
-	if(cpd && Client_GetExtVer(client, EXT_LONGMSG)) {
-		if(!cpd->message) cpd->message = Memory_Alloc(1, 193);
-		if(String_Append(cpd->message, 193, message) && partial == 1) return true;
-		messptr = cpd->message;
+	if(client->cpeData && Client_GetExtVer(client, EXT_LONGMSG)) {
+		if(!client->cpeData->message) client->cpeData->message = Memory_Alloc(1, 193);
+		if(String_Append(client->cpeData->message, 193, message) && partial == 1) return true;
+		messptr = client->cpeData->message;
 	}
 
 	onMessage params = {
@@ -929,7 +925,6 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
 	ValidateClientState(client, STATE_INITIAL, false)
 
-	CPEData *cpd = client->cpeData;
 	CPEExt *tmp = Memory_Alloc(1, sizeof(struct _CPEExt));
 	if(!Proto_ReadString(&data, &tmp->name)) {
 		Memory_Free(tmp);
@@ -944,10 +939,10 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 	}
 
 	tmp->hash = CRC32_Gen((cs_byte*)tmp->name, (cs_uint32)String_Length(tmp->name));
-	tmp->next = cpd->headExtension;
-	cpd->headExtension = tmp;
+	tmp->next = client->cpeData->headExtension;
+	client->cpeData->headExtension = tmp;
 
-	if(--cpd->_extCount == 0) {
+	if(--client->cpeData->_extCount == 0) {
 		Event_Call(EVT_ONHANDSHAKEDONE, client);
 		Client_ChangeWorld(client, (World *)World_Head->value.ptr);
 	}
@@ -976,23 +971,22 @@ cs_bool CPEHandler_PlayerClick(Client *client, cs_char *data) {
 cs_bool CPEHandler_TwoWayPing(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
 
-	CPEData *cpd = client->cpeData;
 	cs_byte pingDirection = *data++;
 	cs_uint16 pingData = *(cs_uint16 *)data;
 
 	if(pingDirection == 0) {
 		CPE_WriteTwoWayPing(client, 0, pingData);
-		if(!cpd->pingStarted) {
-			CPE_WriteTwoWayPing(client, 1, cpd->pingData++);
-			cpd->pingStarted = true;
-			cpd->pingStart = Time_GetMSec();
+		if(!client->cpeData->pingStarted) {
+			CPE_WriteTwoWayPing(client, 1, client->cpeData->pingData++);
+			client->cpeData->pingStarted = true;
+			client->cpeData->pingStart = Time_GetMSec();
 		}
 		return true;
 	} else if(pingDirection == 1) {
-		if(cpd->pingStarted) {
-			cpd->pingStarted = false;
-			if(cpd->pingData == pingData)
-				cpd->pingTime = (cs_uint32)((Time_GetMSec() - cpd->pingStart) / 2);
+		if(client->cpeData->pingStarted) {
+			client->cpeData->pingStarted = false;
+			if(client->cpeData->pingData == pingData)
+				client->cpeData->pingTime = (cs_uint32)((Time_GetMSec() - client->cpeData->pingStart) / 2);
 			return true;
 		}
 	}
