@@ -124,8 +124,7 @@ cs_byte Clients_GetCount(EPlayerState state) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
 		if(!client) continue;
-		PlayerData *pd = client->playerData;
-		if(pd && pd->state == state) count++;
+		if(Client_CheckState(client, state)) count++;
 	}
 	return count;
 }
@@ -165,10 +164,9 @@ cs_str Client_GetAppName(Client *client) {
 }
 
 cs_str Client_GetSkin(Client *client) {
-	CPEData *cpd = client->cpeData;
-	if(!cpd || *cpd->skin == '\0')
+	if(!client->cpeData || *client->cpeData->skin == '\0')
 		return Client_GetName(client);
-	return cpd->skin;
+	return client->cpeData->skin;
 }
 
 Client *Client_GetByName(cs_str name) {
@@ -193,9 +191,8 @@ World *Client_GetWorld(Client *client) {
 }
 
 cs_int8 Client_GetFluidLevel(Client *client) {
-	PlayerData *pd = client->playerData;
-	World *world = pd->world;
-	SVec tpos; SVec_Copy(tpos, pd->position)
+	World *world = client->playerData->world;
+	SVec tpos; SVec_Copy(tpos, client->playerData->position)
 
 	BlockID id;
 	cs_byte level = 2;
@@ -238,21 +235,21 @@ BlockID Client_GetHeldBlock(Client *client) {
 }
 
 cs_int32 Client_GetExtVer(Client *client, cs_uint32 exthash) {
-	CPEData *cpd = client->cpeData;
-	if(!cpd) return false;
+	if(!client->cpeData) return false;
 
-	CPEExt *ptr = cpd->headExtension;
+	CPEExt *ptr = client->cpeData->headExtension;
 	while(ptr) {
 		if(ptr->hash == exthash) return ptr->version;
 		ptr = ptr->next;
 	}
+
 	return false;
 }
 
 cs_bool Client_Despawn(Client *client) {
-	PlayerData *pd = client->playerData;
-	if(!pd || !pd->spawned) return false;
-	pd->spawned = false;
+	if(!client->playerData || !client->playerData->spawned)
+		return false;
+	client->playerData->spawned = false;
 	Client *other;
 	for(cs_uint32 i = 0; (other = Clients_List[i]) != NULL; i++)
 		Vanilla_WriteDespawn(other, client);
@@ -261,17 +258,14 @@ cs_bool Client_Despawn(Client *client) {
 }
 
 cs_bool Client_ChangeWorld(Client *client, World *world) {
-	if(Client_IsInWorld(client, world)) return false;
-	PlayerData *pd = client->playerData;
-
-	if(pd->state != STATE_INITIAL && pd->state != STATE_INGAME)
+	if(Client_IsInWorld(client, world) || Client_CheckState(client, STATE_MOTD))
 		return false;
 
 	Client_Despawn(client);
-	pd->world = world;
-	pd->state = STATE_MOTD;
+	client->playerData->world = world;
+	client->playerData->state = STATE_MOTD;
 	if(!world->loaded) World_Load(world);
-	pd->reqWorldChange = world;
+	client->playerData->reqWorldChange = world;
 	return true;
 }
 
@@ -337,7 +331,7 @@ cs_bool Client_RemoveSelection(Client *client, cs_byte id) {
 }
 
 cs_bool Client_TeleportTo(Client *client, Vec *pos, Ang *ang) {
-	if(Client_IsInGame(client)) {
+	if(Client_CheckState(client, STATE_INGAME)) {
 		Vanilla_WriteTeleport(client, pos, ang);
 		return true;
 	}
@@ -407,22 +401,20 @@ NOINL static void HandlePacket(Client *client, cs_char *data, Packet *packet, cs
 	if(!ret) {
 		Log_Error(Sstor_Get("SV_PERR"), packet->id, client->id);
 		Client_Kick(client, Sstor_Get("KICK_PERR"));
-	} else
-		client->pps += 1;
+	} else client->pps += 1;
 }
 
 INL static cs_uint16 GetPacketSizeFor(Packet *packet, Client *client, cs_bool *extended) {
-	cs_uint16 packetSize = packet->size;
 	if(packet->haveCPEImp) {
 		*extended = Client_GetExtVer(client, packet->exthash) == packet->extVersion;
-		if(*extended) packetSize = packet->extSize;
+		if(*extended) return packet->extSize;
 	}
-	return packetSize;
+	return packet->size;
 }
 
-cs_bool Client_IsInGame(Client *client) {
+cs_bool Client_CheckState(Client *client, EPlayerState state) {
 	if(!client->playerData) return false;
-	return client->playerData->state == STATE_INGAME;
+	return client->playerData->state == state;
 }
 
 cs_bool Client_IsInSameWorld(Client *client, Client *other) {
@@ -430,16 +422,16 @@ cs_bool Client_IsInSameWorld(Client *client, Client *other) {
 }
 
 cs_bool Client_IsInWorld(Client *client, World *world) {
+	if(!Client_CheckState(client, STATE_INGAME)) return false;
 	return Client_GetWorld(client) == world;
 }
 
 cs_bool Client_IsOP(Client *client) {
-	PlayerData *pd = client->playerData;
-	return pd ? pd->isOP : false;
+	return client->playerData ? client->playerData->isOP : false;
 }
 
 cs_bool Client_SetBlock(Client *client, SVec *pos, BlockID id) {
-	if(client->playerData->state != STATE_INGAME) return false;
+	if(Client_CheckState(client, STATE_INGAME)) return false;
 	Vanilla_WriteSetBlock(client, pos, id);
 	return true;
 }
@@ -487,7 +479,7 @@ cs_bool Client_SetInvOrder(Client *client, cs_byte order, BlockID block) {
 }
 
 cs_bool Client_SetServerIdent(Client *client, cs_str name, cs_str motd) {
-	if(Client_IsInGame(client) && !Client_GetExtVer(client, EXT_INSTANTMOTD))
+	if(Client_CheckState(client, STATE_INGAME) && !Client_GetExtVer(client, EXT_INSTANTMOTD))
 		return false;
 	Vanilla_WriteServerIdent(client, name, motd);
 	return true;
@@ -537,19 +529,17 @@ cs_bool Client_SetBlockPerm(Client *client, BlockID block, cs_bool allowPlace, c
 }
 
 cs_bool Client_SetModel(Client *client, cs_int16 model) {
-	CPEData *cpd = client->cpeData;
-	if(!cpd) return false;
+	if(!client->cpeData) return false;
 	if(!CPE_CheckModel(model)) return false;
-	cpd->model = model;
-	cpd->updates |= PCU_MODEL;
+	client->cpeData->model = model;
+	client->cpeData->updates |= PCU_MODEL;
 	return true;
 }
 
 cs_bool Client_SetSkin(Client *client, cs_str skin) {
-	CPEData *cpd = client->cpeData;
-	if(!cpd) return false;
-	String_Copy(cpd->skin, 65, skin);
-	cpd->updates |= PCU_SKIN;
+	if(!client->cpeData) return false;
+	String_Copy(client->cpeData->skin, 65, skin);
+	client->cpeData->updates |= PCU_SKIN;
 	return true;
 }
 
@@ -594,10 +584,9 @@ cs_bool Client_SpawnParticle(Client *client, cs_byte id, Vec *pos, Vec *origin) 
 
 cs_bool Client_SetRotation(Client *client, cs_byte axis, cs_int32 value) {
 	if(axis > 2) return false;
-	CPEData *cpd = client->cpeData;
-	if(!cpd) return false;
-	cpd->rotation[axis] = value;
-	cpd->updates |= PCU_ENTPROP;
+	if(!client->cpeData) return false;
+	client->cpeData->rotation[axis] = value;
+	client->cpeData->updates |= PCU_ENTPROP;
 	return true;
 }
 
@@ -606,12 +595,9 @@ cs_bool Client_SetModelStr(Client *client, cs_str model) {
 }
 
 cs_bool Client_SetGroup(Client *client, cs_int16 gid) {
-	CPEData *cpd = client->cpeData;
-	PlayerData *pd = client->playerData;
-	if(!pd || !cpd)
-		return false;
-	cpd->group = gid;
-	cpd->updates |= PCU_GROUP;
+	if(!client->cpeData) return false;
+	client->cpeData->group = gid;
+	client->cpeData->updates |= PCU_GROUP;
 	return true;
 }
 
@@ -665,11 +651,10 @@ cs_bool Client_AddTextColor(Client *client, Color4* color, cs_char code) {
 }
 
 cs_bool Client_Update(Client *client) {
-	CPEData *cpd = client->cpeData;
-	if(!cpd) return false;
-	cs_byte updates = cpd->updates;
+	if(!client->cpeData) return false;
+	cs_byte updates = client->cpeData->updates;
 	if(updates == PCU_NONE) return false;
-	cpd->updates = PCU_NONE;
+	client->cpeData->updates = PCU_NONE;
 	cs_bool hasplsupport = Client_GetExtVer(client, EXT_PLAYERLIST) == 2,
 	hassmsupport = Client_GetExtVer(client, EXT_CHANGEMODEL) == 1,
 	hasentprop = Client_GetExtVer(client, EXT_ENTPROP) == 1;
@@ -685,7 +670,7 @@ cs_bool Client_Update(Client *client) {
 				CPE_WriteAddEntity2(other, client);
 			if(updates & PCU_ENTPROP && hasentprop)
 				for(cs_int8 i = 0; i < 3; i++) {
-					CPE_WriteSetEntityProperty(other, client, i, cpd->rotation[i]);
+					CPE_WriteSetEntityProperty(other, client, i, client->cpeData->rotation[i]);
 				}
 		}
 	}
@@ -701,10 +686,8 @@ void Client_Free(Client *client) {
 	if(client->websock) Memory_Free(client->websock);
 	if(client->playerData) Memory_Free(client->playerData);
 
-	CPEData *cpd = client->cpeData;
-
-	if(cpd) {
-		CPEExt *prev, *ptr = cpd->headExtension;
+	if(client->cpeData) {
+		CPEExt *prev, *ptr = client->cpeData->headExtension;
 
 		while(ptr) {
 			prev = ptr;
@@ -713,8 +696,9 @@ void Client_Free(Client *client) {
 			Memory_Free(prev);
 		}
 
-		if(cpd->message) Memory_Free(cpd->message);
-		Memory_Free(cpd);
+		if(client->cpeData->message)
+			Memory_Free(client->cpeData->message);
+		Memory_Free(client->cpeData);
 	}
 
 	Socket_Shutdown(client->sock, SD_SEND);
@@ -753,16 +737,15 @@ INL static void PacketReceiverWs(Client *client) {
 	Packet *packet;
 	cs_bool extended = false;
 	cs_uint16 packetSize, recvSize;
-	WebSock *ws = client->websock;
 	cs_char *data = client->rdbuf;
 
-	if(WebSock_ReceiveFrame(ws)) {
-		if(ws->opcode == 0x08) {
+	if(WebSock_ReceiveFrame(client->websock)) {
+		if(client->websock->opcode == 0x08) {
 			client->closed = true;
 			return;
 		}
 
-		recvSize = ws->plen - 1;
+		recvSize = client->websock->plen - 1;
 		packet_handle:
 		packetId = *data++;
 		packet = Packet_Get(packetId);
@@ -783,8 +766,7 @@ INL static void PacketReceiverWs(Client *client) {
 			}
 
 			return;
-		} else
-			Client_Kick(client, Sstor_Get("KICK_PERR"));
+		} else Client_Kick(client, Sstor_Get("KICK_PERR"));
 	} else
 		client->closed = true;
 }
@@ -810,18 +792,13 @@ INL static void PacketReceiverRaw(Client *client) {
 
 			if(packetSize == len)
 				HandlePacket(client, client->rdbuf, packet, extended);
-			else
-				client->closed = true;
+			else client->closed = true;
 		}
-	} else
-		client->closed = true;
+	} else client->closed = true;
 }
 
 NOINL static void SendWorld(Client *client, World *world) {
-	PlayerData *pd = client->playerData;
-	
-	if(!world->loaded)
-		Waitable_Wait(world->waitable);
+	if(!world->loaded) Waitable_Wait(world->waitable);
 
 	if(!world->loaded) {
 		Client_Kick(client, Sstor_Get("KICK_WCOMP"));
@@ -829,36 +806,32 @@ NOINL static void SendWorld(Client *client, World *world) {
 	}
 
 	cs_bool hasfastmap = Client_GetExtVer(client, EXT_FASTMAP) == 1;
-
-	if(hasfastmap)
-		CPE_WriteFastMapInit(client, World_GetBlockArraySize(world));
-	else
-		Vanilla_WriteLvlInit(client);
-
-	Mutex_Lock(client->mutex);
-
-	cs_byte *data = (cs_byte *)client->wrbuf;
-	*data++ = 0x03;
-	cs_uint16 *len = (cs_uint16 *)data; data += 2;
-	cs_byte *progr = data + 1024;
-
-	cs_bool compr_ok;
 	cs_uint32 wsize = 0;
+	cs_bool compr_ok;
+
 	if(hasfastmap) {
 		compr_ok = Compr_Init(&client->compr, COMPR_TYPE_DEFLATE);
 		if(compr_ok) {
 			cs_byte *map = World_GetBlockArray(world, &wsize);
 			Compr_SetInBuffer(&client->compr, map, wsize);
 		}
+		CPE_WriteFastMapInit(client, World_GetBlockArraySize(world));
 	} else {
 		compr_ok = Compr_Init(&client->compr, COMPR_TYPE_GZIP);
 		if(compr_ok) {
 			cs_byte *map = World_GetData(world, &wsize);
 			Compr_SetInBuffer(&client->compr, map, wsize);
 		}
+		Vanilla_WriteLvlInit(client);
 	}
 
 	if(compr_ok) {
+		Mutex_Lock(client->mutex);
+		cs_byte *data = (cs_byte *)client->wrbuf;
+		*data++ = 0x03;
+		cs_uint16 *len = (cs_uint16 *)data; data += 2;
+		cs_byte *progr = data + 1024;
+
 		do {
 			if(!compr_ok || client->closed) break;
 			Compr_SetOutBuffer(&client->compr, data, 1024);
@@ -874,10 +847,10 @@ NOINL static void SendWorld(Client *client, World *world) {
 		Mutex_Unlock(client->mutex);
 
 		if(compr_ok) {
-			pd->world = world;
-			pd->state = STATE_INGAME;
-			pd->position = world->info.spawnVec;
-			pd->angle = world->info.spawnAng;
+			client->playerData->world = world;
+			client->playerData->state = STATE_INGAME;
+			client->playerData->position = world->info.spawnVec;
+			client->playerData->angle = world->info.spawnAng;
 			Event_Call(EVT_PRELVLFIN, client);
 			if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
 				for(BlockID id = 0; id < 255; id++) {
@@ -901,10 +874,9 @@ void Client_Loop(Client *client) {
 		else
 			PacketReceiverRaw(client);
 
-		PlayerData *pd = client->playerData;
-		if(pd && pd->reqWorldChange) {
-			SendWorld(client, pd->reqWorldChange);
-			pd->reqWorldChange = NULL;
+		if(client->playerData && client->playerData->reqWorldChange) {
+			SendWorld(client, client->playerData->reqWorldChange);
+			client->playerData->reqWorldChange = NULL;
 		}
 	}
 }
@@ -917,17 +889,16 @@ INL static void SendSpawnPacket(Client *client, Client *other) {
 }
 
 cs_bool Client_Spawn(Client *client) {
-	if(client->closed) return false;
-	PlayerData *pd = client->playerData;
-	if(!pd || pd->spawned) return false;
+	if(client->closed || !client->playerData || client->playerData->spawned)
+		return false;
 
-	Client_UpdateWorldInfo(client, pd->world, true);
+	Client_UpdateWorldInfo(client, client->playerData->world, true);
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *other = Clients_List[i];
 		if(!other) continue;
 
-		if(pd->firstSpawn) {
+		if(client->playerData->firstSpawn) {
 			if(Client_GetExtVer(other, EXT_PLAYERLIST))
 				CPE_WriteAddName(other, client);
 			if(Client_GetExtVer(client, EXT_PLAYERLIST) && client != other)
@@ -950,8 +921,8 @@ cs_bool Client_Spawn(Client *client) {
 	}
 
 	Event_Call(EVT_ONSPAWN, client);
-	pd->firstSpawn = false;
-	pd->spawned = true;
+	client->playerData->firstSpawn = false;
+	client->playerData->spawned = true;
 	return true;
 }
 
@@ -963,9 +934,8 @@ void Client_Kick(Client *client, cs_str reason) {
 }
 
 void Client_Tick(Client *client, cs_int32 delta) {
-	PlayerData *pd = client->playerData;
 	if(client->closed) {
-		if(pd && pd->state == STATE_INGAME) {
+		if(Client_CheckState(client, STATE_INGAME)) {
 			for(int i = 0; i < MAX_CLIENTS; i++) {
 				Client *other = Clients_List[i];
 				if(other && Client_GetExtVer(other, EXT_PLAYERLIST) == 2)

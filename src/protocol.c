@@ -343,7 +343,7 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 static void UpdateBlock(World *world, SVec *pos, BlockID block) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
-		if(client && Client_IsInGame(client) && Client_IsInWorld(client, world))
+		if(client && Client_IsInWorld(client, world))
 			Vanilla_WriteSetBlock(client, pos, block);
 	}
 }
@@ -433,7 +433,7 @@ cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
 	if(ReadClientPos(client, data)) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			Client *other = Clients_List[i];
-			if(other && client != other && Client_IsInGame(other) && Client_IsInSameWorld(client, other))
+			if(other && client != other && Client_CheckState(other, STATE_INGAME) && Client_IsInSameWorld(client, other))
 				Vanilla_WritePosAndOrient(other, client);
 		}
 	}

@@ -4,7 +4,7 @@
 #include "client.h"
 
 #define ValidateClientState(client, st, ret) \
-if(!client->playerData || client->playerData->state != st) \
+if(!Client_CheckState(client, st)) \
 	return ret;
 
 #define ValidateCpeClient(client, ret) \

@@ -41,9 +41,8 @@ cs_bool Block_IsValid(BlockID id) {
 
 cs_str Block_GetName(BlockID id) {
 	if(!Block_IsValid(id)) return Sstor_Get("BLOCK_UNK");
-	BlockDef *bdef = definitionsList[id];
-	if(bdef)
-		return bdef->name;
+	if(definitionsList[id])
+		return definitionsList[id]->name;
 	else
 		return defaultBlockNames[id];
 }
