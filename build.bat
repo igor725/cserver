@@ -24,8 +24,8 @@ SET MSVC_LIBS=kernel32.lib dbghelp.lib
 
 git --version >nul
 IF "%ERRORLEVEL%"=="0" (
-	FOR /F "tokens=* USEBACKQ" %%F IN (`git rev-parse --short HEAD`) DO (
-		SET MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_SHA#\"%%F\"
+	FOR /F "tokens=* USEBACKQ" %%F IN (`git describe --tags HEAD`) DO (
+		SET MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_TAG#\"%%F\"
 	)
 )
 

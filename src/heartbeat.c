@@ -37,7 +37,7 @@ INL static cs_bool DoRequest(Heartbeat *hb) {
 		name, port, count,
 		max, hb->secretkey,
 		hb->isPublic ? "true" : "false",
-		SOFTWARE_NAME "%2F" GIT_COMMIT_SHA
+		SOFTWARE_NAME "%2F" GIT_COMMIT_TAG
 	);
 
 	Http h;

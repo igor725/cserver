@@ -15,7 +15,7 @@ CFLAGS="-pipe -fPIC"
 LIBS=""
 OUTBIN="server"
 if git --version >/dev/null 2>&1; then
-	COMMIT_SHA="-DGIT_COMMIT_SHA=\"$(git rev-parse --short HEAD)\""
+	CFLAGS="$CFLAGS -DGIT_COMMIT_TAG=\"$(git describe --tags HEAD)\""
 fi
 PLUGIN_BUILD=0
 PLUGIN_INSTALL=0
@@ -87,7 +87,7 @@ OBJS=""
 for SOURCE in `find "$ROOT/src/" -maxdepth 1 -type f -name "*.c"`; do
 	objpath="$OBJDIR/$(basename $SOURCE .c).o"
 	OBJS="$OBJS $objpath"
-	$CC -c $CFLAGS $COMMIT_SHA $WARN $OPT -I$ROOT/src $SOURCE -o$objpath 2>> $STDERR &
+	$CC -c $CFLAGS $WARN $OPT -I$ROOT/src $SOURCE -o$objpath 2>> $STDERR &
 	pids+=($!)
 	while test $(jobs -p | wc -w) -ge "$MAXWORKERS"; do
 		wait -n;

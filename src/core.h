@@ -144,8 +144,8 @@ typedef struct _CustomParticle {
 #define MAX_CLIENT_PPS 128
 #define MAX_CLIENTS 127
 
-#ifndef GIT_COMMIT_SHA
-#define GIT_COMMIT_SHA "0000000"
+#ifndef GIT_COMMIT_TAG
+#define GIT_COMMIT_TAG "????"
 #endif
 
 #ifdef PLUGIN_BUILD
@@ -155,7 +155,7 @@ EXP cs_int32 Plugin_ApiVer, Plugin_Version;
 #define Plugin_SetVersion(ver) cs_int32 Plugin_ApiVer = PLUGIN_API_NUM, Plugin_Version = ver;
 #else
 #define SOFTWARE_NAME "C-Server"
-#define SOFTWARE_FULLNAME SOFTWARE_NAME "/" GIT_COMMIT_SHA
+#define SOFTWARE_FULLNAME SOFTWARE_NAME "/" GIT_COMMIT_TAG
 #define TICKS_PER_SECOND 60
 #define MAINCFG "server.cfg"
 #define WORLD_MAGIC 0x54414457

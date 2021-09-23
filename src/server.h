@@ -17,6 +17,7 @@
 VAR cs_bool Server_Active, Server_Ready;
 VAR CStore *Server_Config;
 VAR cs_uint64 Server_StartTime;
+VAR cs_str Server_Version;
 extern cs_uint64 Server_LatestBadTick;
 extern Socket Server_Socket;
 

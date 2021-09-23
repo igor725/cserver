@@ -16,6 +16,7 @@
 #include "strstor.h"
 
 CStore *Server_Config = NULL;
+cs_str Server_Version = GIT_COMMIT_TAG;
 cs_bool Server_Active = false, Server_Ready = false;
 cs_uint64 Server_StartTime = 0, Server_LatestBadTick = 0;
 Socket Server_Socket = 0;
