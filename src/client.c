@@ -430,7 +430,7 @@ cs_bool Client_IsOP(Client *client) {
 }
 
 cs_bool Client_SetBlock(Client *client, SVec *pos, BlockID id) {
-	if(Client_CheckState(client, STATE_INGAME)) return false;
+	if(!Client_CheckState(client, STATE_INGAME)) return false;
 	Vanilla_WriteSetBlock(client, pos, id);
 	return true;
 }
