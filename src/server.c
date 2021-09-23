@@ -14,7 +14,6 @@
 #include "timer.h"
 #include "consoleio.h"
 #include "strstor.h"
-#include <zlib.h>
 
 CStore *Server_Config = NULL;
 cs_bool Server_Active = false, Server_Ready = false;
@@ -137,17 +136,6 @@ INL static void Bind(cs_str ip, cs_uint16 port) {
 
 cs_bool Server_Init(void) {
 	if(!Generators_Init() || !Sstor_Defaults()) return false;
-
-	cs_ulong zflags = zlibCompileFlags();
-	if(zflags & BIT(17)) {
-		Log_Error(Sstor_Get("Z_NOGZ"));
-		return false;
-	}
-	if(zflags & BIT(21)) {
-		Log_Warn(Sstor_Get("Z_LVL1"));
-		Log_Warn(Sstor_Get("Z_LVL2"));
-		Log_Warn(Sstor_Get("Z_LVL3"));
-	}
 
 	CStore *cfg = Config_NewStore(MAINCFG);
 	CEntry *ent;

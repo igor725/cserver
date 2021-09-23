@@ -1,18 +1,13 @@
 #include "core.h"
 #include "hash.h"
 #include "platform.h"
-#include <zlib.h>
-
-// TODO: Own CRC32 implementation
-cs_int32 CRC32_Gen(const cs_byte *data, cs_uint32 len) {
-	return crc32(0, data, len);
-}
 
 #if defined(HASH_USE_WINCRYPT_BACKEND)
 HCRYPTPROV hCryptProvider = 0;
 
 struct _CryptLib {
 	void *lib;
+
 	BOOL(*AcquireContext)(HCRYPTPROV *, cs_str, cs_str, cs_ulong, cs_ulong);
 	BOOL(*ReleaseContext)(HCRYPTPROV, cs_ulong);
 	BOOL(*CreateHash)(HCRYPTPROV, ALG_ID, HCRYPTKEY, cs_ulong, HCRYPTHASH *);
@@ -36,7 +31,7 @@ INL static cs_bool InitBackend(void) {
 }
 
 void Hash_Uninit(void) {
-	if(!Crypt.lib) return;
+	if(!Crypt.ReleaseContext) return;
 	if(hCryptProvider) Crypt.ReleaseContext(hCryptProvider, 0);
 	Crypt.AcquireContext = NULL;
 	Crypt.ReleaseContext = NULL;
@@ -48,18 +43,18 @@ void Hash_Uninit(void) {
 	Crypt.lib = NULL;
 }
 
-INL static cs_bool InitAlg(HASH_CTX *ctx, ALG_ID alg) {
-	if(!Crypt.lib && !InitBackend()) return false;
+static cs_bool InitAlg(HASH_CTX *ctx, ALG_ID alg) {
+	if(!Crypt.CreateHash && !InitBackend()) return false;
 	return (cs_bool)Crypt.CreateHash(hCryptProvider, alg, 0, 0, &ctx->hash);
 }
 
 INL static cs_bool UpdateHash(HASH_CTX *ctx, const void *data, cs_ulong len) {
-	if(!Crypt.lib) return false;
+	if(!Crypt.HashData) return false;
 	return (cs_bool)Crypt.HashData(ctx->hash, data, len, 0);
 }
 
 INL static cs_bool FinalHash(void *hash, HASH_CTX *ctx) {
-	if(!Crypt.lib) return false;
+	if(!Crypt.GetHashParam) return false;
 	return Crypt.GetHashParam(ctx->hash, HP_HASHVAL, hash, &ctx->hashLen, 0) &&
 	Crypt.DestroyHash(ctx->hash);
 }

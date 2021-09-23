@@ -62,8 +62,6 @@ typedef struct SHAstate_st {
 // End of <openssl/sha.h>
 #endif
 
-cs_int32 CRC32_Gen(const cs_byte *data, cs_uint32 len);
-
 cs_bool SHA1_Init(SHA_CTX *ctx);
 cs_bool SHA1_Update(SHA_CTX *ctx, const void *data, cs_ulong len);
 cs_bool SHA1_Final(cs_byte *hash, SHA_CTX *ctx);

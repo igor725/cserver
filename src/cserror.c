@@ -5,7 +5,7 @@
 #include "str.h"
 #include "log.h"
 #include "cserror.h"
-#include <zlib.h>
+#include "compr.h"
 
 static cs_str const ErrorStrings[] = {
 	"All ok.",
@@ -86,7 +86,7 @@ INL static void getErrorStr(cs_int32 type, cs_int32 code, cs_char *errbuf, cs_si
 				String_FormatBufVararg(errbuf, sz, ErrorStrings[code], args);
 			break;
 		case ET_ZLIB:
-			String_Copy(errbuf, sz, zError(code));
+			String_Copy(errbuf, sz, Compr_GetError(code));
 			break;
 		case ET_SYS:
 			if(!String_FormatError(code, errbuf, sz, args)) {

@@ -19,7 +19,7 @@ SET OBJDIR=objs\%ARCH%
 SET SVOUTDIR=.\%OUTDIR%
 
 SET MSVC_LINKER=/opt:ref
-SET MSVC_OPTS=/FC /MP /Oi /DZLIB_DLL /DZLIB_WINAPI
+SET MSVC_OPTS=/FC /MP /Oi
 SET MSVC_LIBS=kernel32.lib dbghelp.lib
 
 git --version >nul
@@ -99,11 +99,9 @@ IF "%BUILD_PLUGIN%"=="1" (
 ) else (
 	SET MSVC_LINKER=%MSVC_LINKER% /subsystem:console
 	IF NOT EXIST "%SVOUTDIR%" MKDIR %SVOUTDIR%
-	SET ZLIB_LINK=z.lib
-	FOR /F "tokens=* USEBACKQ" %%F IN (`DIR /B .\zlib\lib%ARCH%\*.lib`) DO (
-		SET ZLIB_LINK=%%F
+	FOR /F "tokens=* USEBACKQ" %%F IN (`DIR /B .\zlib\lib%ARCH%\*.dll`) DO (
+		SET ZLIB_DYNAMIC=%%F
 	)
-	SET ZLIB_DYNAMIC=!ZLIB_LINK:~0,-3!dll
 	SET ZLIB_DEBUG=!ZLIB_LINK:~0,-3!pdb
 	SET MSVC_LIBS=%MSVC_LIBS% ws2_32.lib !ZLIB_LINK!
 	IF NOT EXIST "%SVOUTDIR%\!ZLIB_DYNAMIC!" (
@@ -128,7 +126,7 @@ IF "%BUILD_PLUGIN%"=="1" (
 
 SET MSVC_OPTS=%MSVC_OPTS% %WARN_LEVEL% %OPT_LEVEL% /Fo%OBJDIR%\
 set MSVC_OPTS=%MSVC_OPTS% /I.\zlib\include\
-SET MSVC_OPTS=%MSVC_OPTS% /link /libpath:.\zlib\lib%ARCH%\ %MSVC_LINKER%
+SET MSVC_OPTS=%MSVC_OPTS% /link %MSVC_LINKER%
 SET SOURCES=%PROJECT_ROOT%\src\*.c
 
 IF EXIST %PROJECT_ROOT%\version.rc (

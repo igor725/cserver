@@ -1,7 +1,68 @@
 #include "core.h"
 #include "compr.h"
 #include "platform.h"
+#include "cserror.h"
+#include "strstor.h"
+#include "log.h"
 #include <zlib.h>
+
+static struct _ZLib {
+	void *lib;
+
+	unsigned long(*crc32)(unsigned long start, const unsigned char *data, unsigned int len);
+	unsigned long(*zflags)(void);
+	char *(*error)(int code);
+
+	int(*definit)(z_streamp strm, int level, int meth, int bits, int memlvl, int strat, const char *ver, int size);
+	int(*deflate)(z_streamp strm, int flush);
+	int(*defend)(z_streamp strm);
+
+	int(*infinit)(z_streamp strm, int bits, const char *ver, int size);
+	int(*inflate)(z_streamp strm, int flush);
+	int(*infend)(z_streamp strm);
+} zlib;
+
+#if defined(WINDOWS)
+cs_str zlibdll = "zlibwapi.dll",
+zlibdll_alt = "zlib1.dll";
+#elif defined(UNIX)
+cs_str zlibdll = "libz.so",
+zlibdll_alt = "libz.so.1";
+#else
+#error Unknown OS
+#endif
+
+INL static cs_bool InitBackend(void) {
+	if(!zlib.lib) {
+		if(!((DLib_Load(zlibdll, &zlib.lib) ||
+			DLib_Load(zlibdll_alt, &zlib.lib)) &&
+			DLib_GetSym(zlib.lib, "crc32", &zlib.crc32) &&
+			DLib_GetSym(zlib.lib, "zlibCompileFlags", &zlib.zflags) &&
+			DLib_GetSym(zlib.lib, "deflateInit2_", &zlib.definit) &&
+			DLib_GetSym(zlib.lib, "deflate", &zlib.deflate) &&
+			DLib_GetSym(zlib.lib, "deflateEnd", &zlib.defend) &&
+			DLib_GetSym(zlib.lib, "inflateInit2_", &zlib.infinit) &&
+			DLib_GetSym(zlib.lib, "inflate", &zlib.inflate) &&
+			DLib_GetSym(zlib.lib, "inflateEnd", &zlib.infend) &&
+			DLib_GetSym(zlib.lib, "zError", &zlib.error)
+		)) return false;
+	}
+	
+	cs_ulong flags = zlib.zflags();
+
+	if(flags & BIT(17)) {
+		Log_Error(Sstor_Get("Z_NOGZ"));
+		return false;
+	}
+
+	if(flags & BIT(21)) {
+		Log_Warn(Sstor_Get("Z_LVL1"));
+		Log_Warn(Sstor_Get("Z_LVL2"));
+		Log_Warn(Sstor_Get("Z_LVL3"));
+	}
+
+	return true;
+}
 
 INL static cs_int32 getWndBits(ComprType type) {
 	switch(type) {
@@ -18,40 +79,53 @@ INL static cs_int32 getWndBits(ComprType type) {
 }
 
 cs_bool Compr_Init(Compr *ctx, ComprType type) {
+	if(!zlib.lib && !InitBackend()) {
+		Error_PrintSys(true);
+		return false;
+	}
 	if(!ctx->stream) ctx->stream = Memory_Alloc(1, sizeof(z_stream));
 	ctx->state = COMPR_STATE_IDLE;
 	ctx->type = type;
 
 	if(type == COMPR_TYPE_DEFLATE || type == COMPR_TYPE_GZIP) {
-		ctx->ret = deflateInit2(
+		if(!zlib.definit) return false;
+		ctx->ret = zlib.definit(
 			ctx->stream, Z_DEFAULT_COMPRESSION,
 			Z_DEFLATED, getWndBits(type),
-			MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY
+			MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY,
+			ZLIB_VERSION, sizeof(z_stream)
 		);
 	} else if(type == COMPR_TYPE_INFLATE || type == COMPR_TYPE_UNGZIP) {
-		ctx->ret = inflateInit2(ctx->stream, getWndBits(type));
+		if(!zlib.infinit) return false;
+		ctx->ret = zlib.infinit(ctx->stream, getWndBits(type), ZLIB_VERSION, sizeof(z_stream));
 	}
 	
 	return ctx->ret == Z_OK;
 }
 
+cs_ulong Compr_CRC32(const cs_byte *data, cs_uint32 len) {
+	if(!zlib.crc32) return 0x00000000;
+	return zlib.crc32(0, data, len);
+}
+
 void Compr_SetInBuffer(Compr *ctx, void *data, cs_uint32 size) {
-	z_stream *stream = (z_stream *)ctx->stream;
+	z_streamp stream = (z_streamp )ctx->stream;
 	stream->avail_in = size;
 	stream->next_in = data;
 }
 
 void Compr_SetOutBuffer(Compr *ctx, void *data, cs_uint32 size) {
-	z_stream *stream = (z_stream *)ctx->stream;
+	z_streamp stream = (z_streamp )ctx->stream;
 	stream->avail_out = size;
 	stream->next_out = data;
 }
 
 INL static cs_bool DeflateStep(Compr *ctx) {
-	z_stream *stream = (z_stream *)ctx->stream;
+	if(!zlib.deflate) return false;
+	z_streamp stream = (z_streamp )ctx->stream;
 	cs_uint32 outbuf_size = stream->avail_out;
 
-	ctx->ret = deflate(stream, stream->avail_in > 0 ? Z_NO_FLUSH : Z_FINISH);
+	ctx->ret = zlib.deflate(stream, stream->avail_in > 0 ? Z_NO_FLUSH : Z_FINISH);
 
 	if(stream->avail_out == outbuf_size) {
 		ctx->state = COMPR_STATE_DONE;
@@ -65,11 +139,10 @@ INL static cs_bool DeflateStep(Compr *ctx) {
 }
 
 INL static cs_bool InflateStep(Compr *ctx) {
-	z_stream *stream = (z_stream *)ctx->stream;
-	ctx->written = 0;
-
+	z_streamp stream = (z_streamp)ctx->stream;
 	cs_uint32 avail = stream->avail_out;
-	ctx->ret = inflate(stream, Z_NO_FLUSH);
+	ctx->written = 0;
+	ctx->ret = zlib.inflate(stream, Z_NO_FLUSH);
 	if(ctx->ret == Z_NEED_DICT || ctx->ret == Z_DATA_ERROR ||
 	ctx->ret == Z_MEM_ERROR) return false;
 	ctx->written = avail - stream->avail_out;
@@ -91,12 +164,17 @@ cs_bool Compr_Update(Compr *ctx) {
 	return false;
 }
 
+cs_str Compr_GetError(cs_int32 code) {
+	if(!zlib.error) return "zlib not loaded correctly";
+	return zlib.error(code);
+}
+
 void Compr_Reset(Compr *ctx) {
 	if(ctx->stream) {
 		if(ctx->type == COMPR_TYPE_DEFLATE || ctx->type == COMPR_TYPE_GZIP)
-			deflateEnd(ctx->stream);
+			zlib.defend(ctx->stream);
 		else if(ctx->type == COMPR_TYPE_INFLATE || ctx->type == COMPR_TYPE_UNGZIP)
-			inflateEnd(ctx->stream);
+			zlib.infend(ctx->stream);
 		Memory_Zero(ctx->stream, sizeof(z_stream));
 	}
 	ctx->type = COMPR_TYPE_NOTSET;

@@ -10,7 +10,7 @@
 #include "command.h"
 #include "heartbeat.h"
 #include "strstor.h"
-#include "hash.h"
+#include "compr.h"
 
 cs_uint16 extensionsCount;
 CPEExt *headExtension;
@@ -938,7 +938,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 		return false;
 	}
 
-	tmp->hash = CRC32_Gen((cs_byte*)tmp->name, (cs_uint32)String_Length(tmp->name));
+	tmp->hash = Compr_CRC32((cs_byte*)tmp->name, (cs_uint32)String_Length(tmp->name));
 	tmp->next = client->cpeData->headExtension;
 	client->cpeData->headExtension = tmp;
 

@@ -25,9 +25,11 @@ typedef struct _Compr {
 } Compr;
 
 API cs_bool Compr_Init(Compr *ctx, ComprType type);
+API cs_ulong Compr_CRC32(const cs_byte *data, cs_uint32 len);
 API void Compr_SetInBuffer(Compr *ctx, void *data, cs_uint32 size);
 API void Compr_SetOutBuffer(Compr *ctx, void *data, cs_uint32 size);
 API cs_bool Compr_Update(Compr *ctx);
+API cs_str Compr_GetError(cs_int32 code);
 API void Compr_Reset(Compr *ctx);
 API void Compr_Cleanup(Compr *ctx);
 #endif
