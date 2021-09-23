@@ -100,7 +100,7 @@ done
 
 echo -ne "done\nLinking..."
 if [ $PLUGIN_BUILD -eq 0 ]; then
-	LIBS="$LIBS -lpthread -ldl -lz"
+	LIBS="$LIBS -lpthread -ldl"
 fi
 
 $LNK$OBJS -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR &
