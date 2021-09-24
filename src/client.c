@@ -123,17 +123,16 @@ cs_byte Clients_GetCount(EPlayerState state) {
 	cs_byte count = 0;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
-		if(!client) continue;
-		if(Client_CheckState(client, state)) count++;
+		if(client && Client_CheckState(client, state)) count++;
 	}
 	return count;
 }
 
 void Clients_UpdateWorldInfo(World *world) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client *cl = Clients_List[i];
-		if(cl && Client_IsInWorld(cl, world))
-			Client_UpdateWorldInfo(cl, world, false);
+		Client *client = Clients_List[i];
+		if(client && Client_IsInWorld(client, world))
+			Client_UpdateWorldInfo(client, world, false);
 	}
 	world->info.modval = MV_NONE;
 }
@@ -172,8 +171,7 @@ cs_str Client_GetSkin(Client *client) {
 Client *Client_GetByName(cs_str name) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
-		if(!client) continue;
-		if(client->playerData && String_CaselessCompare(client->playerData->name, name))
+		if(client && client->playerData && String_CaselessCompare(client->playerData->name, name))
 			return client;
 	}
 	return NULL;
