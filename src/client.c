@@ -180,8 +180,8 @@ Client *Client_GetByName(cs_str name) {
 }
 
 Client *Client_GetByID(ClientID id) {
-	if(id < 0) return NULL;
-	return id < MAX_CLIENTS ? Clients_List[id] : NULL;
+	if(id > 0 || id < MAX_CLIENTS) return NULL;
+	return Clients_List[id];
 }
 
 World *Client_GetWorld(Client *client) {
@@ -270,30 +270,25 @@ cs_bool Client_ChangeWorld(Client *client, World *world) {
 
 void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 	if(!client->cpeData) return;
-	WorldInfo *wi = &world->info;
-	cs_byte modval = wi->modval;
 
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
-		cs_byte modclr = wi->modclr;
-		cs_uint16 modprop = wi->modprop;
-
-		if(updateAll || modval & MV_COLORS) {
+		if(updateAll || world->info.modval & MV_COLORS) {
 			for(cs_byte color = 0; color < WORLD_COLORS_COUNT; color++) {
-				if(updateAll || modclr & (2 ^ color))
+				if(updateAll || world->info.modclr & (2 ^ color))
 					CPE_WriteEnvColor(client, color, World_GetEnvColor(world, color));
 			}
 		}
-		if(updateAll || modval & MV_TEXPACK)
-			CPE_WriteTexturePack(client, wi->texturepack);
-		if(updateAll || modval & MV_PROPS) {
+		if(updateAll || world->info.modval & MV_TEXPACK)
+			CPE_WriteTexturePack(client, world->info.texturepack);
+		if(updateAll || world->info.modval & MV_PROPS) {
 			for(cs_byte prop = 0; prop < WORLD_PROPS_COUNT; prop++) {
-				if(updateAll || modprop & (2 ^ prop))
+				if(updateAll || world->info.modprop & (2 ^ prop))
 					CPE_WriteMapProperty(client, prop, World_GetProperty(world, prop));
 			}
 		}
 	} else if(Client_GetExtVer(client, EXT_MAPPROPS) == 2) {
 		CPE_WriteSetMapAppearanceV2(
-			client, wi->texturepack,
+			client, world->info.texturepack,
 			(cs_byte)World_GetProperty(world, 0),
 			(cs_byte)World_GetProperty(world, 1),
 			(cs_int16)World_GetProperty(world, 2),
@@ -302,15 +297,15 @@ void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 		);
 	} else if(Client_GetExtVer(client, EXT_MAPPROPS) == 1) {
 		CPE_WriteSetMapAppearanceV1(
-			client, wi->texturepack,
+			client, world->info.texturepack,
 			(cs_byte)World_GetProperty(world, 0),
 			(cs_byte)World_GetProperty(world, 1),
 			(cs_int16)World_GetProperty(world, 2)
 		);
 	}
 	
-	if(updateAll || modval & MV_WEATHER)
-		Client_SetWeather(client, wi->weatherType);
+	if(updateAll || world->info.modval & MV_WEATHER)
+		Client_SetWeather(client, world->info.weatherType);
 }
 
 cs_bool Client_MakeSelection(Client *client, cs_byte id, SVec *start, SVec *end, Color4* color) {
@@ -468,9 +463,7 @@ cs_bool Client_SetWeather(Client *client, cs_int8 type) {
 }
 
 cs_bool Client_SetInvOrder(Client *client, cs_byte order, BlockID block) {
-	if(!Block_IsValid(block)) return false;
-
-	if(Client_GetExtVer(client, EXT_INVORDER)) {
+	if(Block_IsValid(block) && Client_GetExtVer(client, EXT_INVORDER)) {
 		CPE_WriteInventoryOrder(client, order, block);
 		return true;
 	}
@@ -485,8 +478,7 @@ cs_bool Client_SetServerIdent(Client *client, cs_str name, cs_str motd) {
 }
 
 cs_bool Client_SetHeld(Client *client, BlockID block, cs_bool canChange) {
-	if(!Block_IsValid(block)) return false;
-	if(Client_GetExtVer(client, EXT_HELDBLOCK)) {
+	if(Block_IsValid(block) && Client_GetExtVer(client, EXT_HELDBLOCK)) {
 		CPE_WriteHoldThis(client, block, canChange);
 		return true;
 	}
@@ -510,8 +502,7 @@ cs_bool Client_SetHotkey(Client *client, cs_str action, cs_int32 keycode, cs_int
 }
 
 cs_bool Client_SetHotbar(Client *client, cs_byte pos, BlockID block) {
-	if(!Block_IsValid(block) || pos > 8) return false;
-	if(Client_GetExtVer(client, EXT_SETHOTBAR)) {
+	if(Block_IsValid(block) && pos < 9 && Client_GetExtVer(client, EXT_SETHOTBAR)) {
 		CPE_WriteSetHotBar(client, pos, block);
 		return true;
 	}
@@ -519,8 +510,7 @@ cs_bool Client_SetHotbar(Client *client, cs_byte pos, BlockID block) {
 }
 
 cs_bool Client_SetBlockPerm(Client *client, BlockID block, cs_bool allowPlace, cs_bool allowDestroy) {
-	if(!Block_IsValid(block)) return false;
-	if(Client_GetExtVer(client, EXT_BLOCKPERM)) {
+	if(Block_IsValid(block) && Client_GetExtVer(client, EXT_BLOCKPERM)) {
 		CPE_WriteBlockPerm(client, block, allowPlace, allowDestroy);
 		return true;
 	}
@@ -528,8 +518,7 @@ cs_bool Client_SetBlockPerm(Client *client, BlockID block, cs_bool allowPlace, c
 }
 
 cs_bool Client_SetModel(Client *client, cs_int16 model) {
-	if(!client->cpeData) return false;
-	if(!CPE_CheckModel(model)) return false;
+	if(!client->cpeData || !CPE_CheckModel(model)) return false;
 	client->cpeData->model = model;
 	client->cpeData->updates |= PCU_MODEL;
 	return true;
@@ -582,8 +571,7 @@ cs_bool Client_SpawnParticle(Client *client, cs_byte id, Vec *pos, Vec *origin) 
 }
 
 cs_bool Client_SetRotation(Client *client, cs_byte axis, cs_int32 value) {
-	if(axis > 2) return false;
-	if(!client->cpeData) return false;
+	if(axis > 2 || !client->cpeData) return false;
 	client->cpeData->rotation[axis] = value;
 	client->cpeData->updates |= PCU_ENTPROP;
 	return true;
@@ -650,10 +638,7 @@ cs_bool Client_AddTextColor(Client *client, Color4* color, cs_char code) {
 }
 
 cs_bool Client_Update(Client *client) {
-	if(!client->cpeData) return false;
-	cs_byte updates = client->cpeData->updates;
-	if(updates == PCU_NONE) return false;
-	client->cpeData->updates = PCU_NONE;
+	if(!client->cpeData || client->cpeData->updates == PCU_NONE) return false;
 	cs_bool hasplsupport = Client_GetExtVer(client, EXT_PLAYERLIST) == 2,
 	hassmsupport = Client_GetExtVer(client, EXT_CHANGEMODEL) == 1,
 	hasentprop = Client_GetExtVer(client, EXT_ENTPROP) == 1;
@@ -661,19 +646,20 @@ cs_bool Client_Update(Client *client) {
 	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
 		Client *other = Clients_List[id];
 		if(other) {
-			if(updates & PCU_GROUP && hasplsupport)
+			if(client->cpeData->updates & PCU_GROUP && hasplsupport)
 				CPE_WriteAddName(other, client);
-			if(updates & PCU_MODEL && hassmsupport)
+			if(client->cpeData->updates & PCU_MODEL && hassmsupport)
 				CPE_WriteSetModel(other, client);
-			if(updates & PCU_SKIN && hasplsupport)
+			if(client->cpeData->updates & PCU_SKIN && hasplsupport)
 				CPE_WriteAddEntity2(other, client);
-			if(updates & PCU_ENTPROP && hasentprop)
+			if(client->cpeData->updates & PCU_ENTPROP && hasentprop)
 				for(cs_int8 i = 0; i < 3; i++) {
 					CPE_WriteSetEntityProperty(other, client, i, client->cpeData->rotation[i]);
 				}
 		}
 	}
 
+	client->cpeData->updates = PCU_NONE;
 	return true;
 }
 

@@ -6,19 +6,11 @@
 #include "log.h"
 #include "cserror.h"
 #include "hash.h"
+#include "compr.h"
 
 INL static cs_bool Init(void) {
-	return Memory_Init() &&
-	Log_Init() && Error_Init() &&
-	Socket_Init();
-}
-
-INL static void Uninit(void) {
-	Hash_Uninit();
-	Socket_Uninit();
-	Error_Uninit();
-	Log_Uninit();
-	Memory_Uninit();
+	return Memory_Init() && Log_Init()
+	&& Error_Init() && Socket_Init();
 }
 
 int main(int argc, char *argv[]) {
@@ -38,7 +30,13 @@ int main(int argc, char *argv[]) {
 			Server_Cleanup();
 		}
 
-		Uninit();
+		Compr_Uninit();
+		Http_Uninit();
+		Hash_Uninit();
+		Socket_Uninit();
+		Error_Uninit();
+		Log_Uninit();
+		Memory_Uninit();
 		return 0;
 	}
 

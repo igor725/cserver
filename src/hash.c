@@ -31,16 +31,9 @@ INL static cs_bool InitBackend(void) {
 }
 
 void Hash_Uninit(void) {
-	if(!Crypt.ReleaseContext) return;
 	if(hCryptProvider) Crypt.ReleaseContext(hCryptProvider, 0);
-	Crypt.AcquireContext = NULL;
-	Crypt.ReleaseContext = NULL;
-	Crypt.CreateHash = NULL;
-	Crypt.HashData = NULL;
-	Crypt.GetHashParam = NULL;
-	Crypt.DestroyHash = NULL;
 	DLib_Unload(Crypt.lib);
-	Crypt.lib = NULL;
+	Memory_Zero(&Crypt, sizeof(Crypt));
 }
 
 static cs_bool InitAlg(HASH_CTX *ctx, ALG_ID alg) {

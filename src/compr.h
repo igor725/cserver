@@ -32,4 +32,5 @@ API cs_bool Compr_Update(Compr *ctx);
 API cs_str Compr_GetError(cs_int32 code);
 API void Compr_Reset(Compr *ctx);
 API void Compr_Cleanup(Compr *ctx);
+void Compr_Uninit(void);
 #endif

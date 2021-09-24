@@ -187,3 +187,9 @@ void Compr_Cleanup(Compr *ctx) {
 		ctx->stream = NULL;
 	}
 }
+
+void Compr_Uninit(void) {
+	if(!zlib.lib) return;
+	DLib_Unload(zlib.lib);
+	Memory_Zero(&zlib, sizeof(zlib));
+}

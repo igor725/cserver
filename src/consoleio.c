@@ -19,11 +19,11 @@ THREAD_FUNC(ConsoleIOThread) {
 }
 
 static TSHND_RET ConsoleIO_Handler(TSHND_PARAM signal) {
-  if(signal == CONSOLEIO_TERMINATE) Server_Active = false;
-  return TSHND_OK;
+	if(signal == CONSOLEIO_TERMINATE) Server_Active = false;
+	return TSHND_OK;
 }
 
 cs_bool ConsoleIO_Init(void) {
-  Thread_Create(ConsoleIOThread, NULL, true);
+	Thread_Create(ConsoleIOThread, NULL, true);
 	return Console_BindSignalHandler(ConsoleIO_Handler);
 }

@@ -43,4 +43,5 @@ API cs_bool Http_Open(Http *http, cs_str domain);
 API cs_bool Http_Request(Http *http, cs_str url);
 API cs_ulong Http_ReadResponse(Http *http, cs_char *buf, cs_ulong sz);
 API void Http_Cleanup(Http *http);
+void Http_Uninit(void);
 #endif // HTTP_H

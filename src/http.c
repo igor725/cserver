@@ -28,25 +28,21 @@ INL static cs_bool InitBackend(void) {
 			DLib_GetSym(WinInet.lib, "InternetCloseHandle", &WinInet.IClose)
 		)) return false;
 	} else if(hInternet) return true;
-	hInternet = WinInet.IOpen(HTTP_USERAGENT,
+
+	return (hInternet = WinInet.IOpen(HTTP_USERAGENT,
 		INTERNET_OPEN_TYPE_PRECONFIG,
 		NULL, NULL, 0
-	);
-	return hInternet != NULL;
+	)) != NULL;
 }
 
 void Http_Uninit(void) {
 	if(!WinInet.lib) return;
-	if(hInternet) WinInet.IClose(hInternet);
-	hInternet = NULL;
-	WinInet.IOpen = NULL;
-	WinInet.IConnect = NULL;
-	WinInet.IOpenRequest = NULL;
-	WinInet.IReadFile = NULL;
-	WinInet.IClose = NULL;
-	WinInet.HSendRequest = NULL;
+	if(hInternet) {
+		WinInet.IClose(hInternet);
+		hInternet = NULL;
+	}
 	DLib_Unload(WinInet.lib);
-	WinInet.lib = NULL;
+	Memory_Zero(&WinInet, sizeof(WinInet));
 }
 
 cs_bool Http_Open(Http *http, cs_str domain) {
@@ -70,13 +66,10 @@ cs_bool Http_Request(Http *http, cs_str url) {
 }
 
 cs_ulong Http_ReadResponse(Http *http, cs_char *buf, cs_ulong sz) {
-	if(!hInternet) return 0L;
-	cs_ulong readed;
-	if(WinInet.IReadFile(http->req, buf, sz - 1, &readed)) {
+	cs_ulong readed = 0L;
+	if(hInternet && WinInet.IReadFile(http->req, buf, sz - 1, &readed))
 		buf[readed] = '\0';
-		return readed;
-	}
-	return 0L;
+	return readed;
 }
 
 void Http_Cleanup(Http *http) {
@@ -105,13 +98,8 @@ struct _CURLFuncs {
 } curl;
 
 INL static cs_bool InitBackend(void) {
-	if(curl.lib) return true;
-	if(!(DLib_Load(libcurl, &curl.lib) || DLib_Load(libcurl_alt, &curl.lib))) {
-		cs_char buf[512];
-		Log_Info("libcurl loading failed: %s", DLib_GetError(buf, 512));
-		return false;
-	}
-	return DLib_GetSym(curl.lib, "curl_easy_init", &curl.easy_init) &&
+	return (DLib_Load(libcurl, &curl.lib) || DLib_Load(libcurl_alt, &curl.lib)) &&
+	DLib_GetSym(curl.lib, "curl_easy_init", &curl.easy_init) &&
 	DLib_GetSym(curl.lib, "curl_easy_setopt", &curl.easy_setopt) &&
 	DLib_GetSym(curl.lib, "curl_easy_perform", &curl.easy_perform) &&
 	DLib_GetSym(curl.lib, "curl_easy_cleanup", &curl.easy_cleanup);
@@ -119,12 +107,8 @@ INL static cs_bool InitBackend(void) {
 
 void Http_Uninit(void) {
 	if(!curl.lib) return;
-	curl.easy_cleanup = NULL;
-	curl.easy_init = NULL;
-	curl.easy_perform = NULL;
-	curl.easy_setopt = NULL;
 	DLib_Unload(curl.lib);
-	curl.lib = NULL;
+	Memory_Zero(&curl, sizeof(curl));
 }
 
 cs_bool Http_Open(Http *http, cs_str domain) {
@@ -140,7 +124,7 @@ cs_bool Http_Open(Http *http, cs_str domain) {
 }
 
 cs_bool Http_Request(Http *http, cs_str url) {
-	if(!http->domain || !http->handle) return false;
+	if(!curl.lib || !http->domain || !http->handle) return false;
 	http->path = (cs_char *)(http->secure ? String_AllocCopy("https://") : String_AllocCopy("http://"));
 	cs_size memsize;
 	http->path = String_Grow(http->path, String_Length(http->domain) + String_Length(url), &memsize);
@@ -163,7 +147,7 @@ static cs_size writefunc(cs_char *ptr, cs_size sz, cs_size num, void *ud) {
 }
 
 cs_ulong Http_ReadResponse(Http *http, cs_char *buf, cs_ulong sz) {
-	if(!http->handle) return false;
+	if(!curl.lib || !http->handle) return false;
 	http->buf = buf;
 	http->buflen = sz;
 	curl.easy_setopt(http->handle, CURLOPT_WRITEFUNCTION, writefunc);
@@ -175,7 +159,7 @@ cs_ulong Http_ReadResponse(Http *http, cs_char *buf, cs_ulong sz) {
 }
 
 void Http_Cleanup(Http *http) {
-	if(!curl.easy_cleanup) return;
+	if(!curl.lib) return;
 	if(http->domain) Memory_Free((void *)http->domain);
 	if(http->path) Memory_Free((void *)http->path);
 	if(http->handle) curl.easy_cleanup(http->handle);
