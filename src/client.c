@@ -571,7 +571,7 @@ cs_bool Client_SpawnParticle(Client *client, cs_byte id, Vec *pos, Vec *origin) 
 }
 
 cs_bool Client_SetRotation(Client *client, cs_byte axis, cs_int32 value) {
-	if(axis > 2 || !client->cpeData) return false;
+	if(axis < 2 || !client->cpeData) return false;
 	client->cpeData->rotation[axis] = value;
 	client->cpeData->updates |= PCU_ENTPROP;
 	return true;
