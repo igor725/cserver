@@ -9,6 +9,7 @@ DEBUG=0
 OPT="-O2"
 WARN=""
 ROOT="."
+MACH=$($CC -dumpmachine)
 CC="$CC -fdiagnostics-color=always"
 LNK="$CC -rdynamic"
 CFLAGS="-pipe -fPIC"
@@ -19,7 +20,7 @@ if git --version >/dev/null 2>&1; then
 fi
 PLUGIN_BUILD=0
 PLUGIN_INSTALL=0
-SERVER_OUTROOT="$ROOT/out"
+SERVER_OUTROOT="$ROOT/out/$MACH"
 PLUGINS_DIR="$SERVER_OUTROOT/plugins"
 
 notaplugin () {
@@ -73,21 +74,21 @@ do
 done
 
 STDERR="$ROOT/out/stderr"
-OUTDIR="$ROOT/out"
-OBJDIR="$ROOT/objs"
+OUTDIR="$ROOT/out/$MACH"
+OBJDIR="$ROOT/objs/$MACH"
 
-if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi
-if [ ! -d "$OBJDIR" ]; then mkdir $OBJDIR; fi
+if [ ! -d "$OUTDIR" ]; then mkdir -p $OUTDIR; fi
+if [ ! -d "$OBJDIR" ]; then mkdir -p $OBJDIR; fi
 
 echo -n "Compiling..."
 pids=()
 OBJS=""
 
 > $STDERR
-for SOURCE in `find "$ROOT/src/" -maxdepth 1 -type f -name "*.c"`; do
-	objpath="$OBJDIR/$(basename $SOURCE .c).o"
+for cpath in `find "$ROOT/src/" -maxdepth 1 -type f -name "*.c"`; do
+	objpath="$OBJDIR/$(basename $cpath .c).o"
 	OBJS="$OBJS $objpath"
-	$CC -c $CFLAGS $WARN $OPT -I$ROOT/src $SOURCE -o$objpath 2>> $STDERR &
+	$CC -c $CFLAGS $WARN $OPT -I$ROOT/src $cpath -o$objpath 2>> $STDERR &
 	pids+=($!)
 	while test $(jobs -p | wc -w) -ge "$MAXWORKERS"; do
 		wait -n;
