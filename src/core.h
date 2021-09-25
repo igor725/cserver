@@ -1,15 +1,44 @@
 #ifndef CORE_H
 #define CORE_H
-#if defined(_WIN32)
+#ifndef CORE_MANUAL_BACKENDS
+#if defined(__MINGW32__)
+#define CORE_USE_WINDOWS_PATHS
+#define CORE_USE_UNIX_DEFINES
+#define CORE_USE_UNIX_TYPES
+#define HTTP_USE_WININET_BACKEND
+#define HASH_USE_WINCRYPT_BACKEND
+#elif defined(_WIN32)
+#define CORE_USE_WINDOWS_PATHS
+#define CORE_USE_WINDOWS_DEFINES
+#define CORE_USE_WINDOWS_TYPES
+#define HTTP_USE_WININET_BACKEND
+#define HASH_USE_WINCRYPT_BACKEND
+#elif defined(__unix__)
+#define CORE_USE_UNIX_PATHS
+#define CORE_USE_UNIX_DEFINES
+#define CORE_USE_UNIX_TYPES
+#define HTTP_USE_CURL_BACKEND
+#define HASH_USE_CRYPTO_BACKEND
+#endif // Platforms
+#endif
+
+#if defined(CORE_USE_WINDOWS_PATHS)
 #define WINDOWS
 #define PATH_DELIM "\\"
 #define DLIB_EXT "dll"
 #define _CRT_SECURE_NO_WARNINGS
 #define WIN32_LEAN_AND_MEAN
+#elif defined(CORE_USE_UNIX_PATHS)
+#define UNIX
+#define PATH_DELIM "/"
+#define DLIB_EXT "so"
+#else
+#error Paths format not selected
+#endif // CORE_USE_*_PATHS
 
-#define INL inline
+#if defined(CORE_USE_WINDOWS_DEFINES)
 #define NOINL __declspec(noinline)
-#ifndef PLUGIN_BUILD
+#ifndef CORE_BUILD_PLUGIN
 #define API __declspec(dllexport, noinline)
 #define VAR __declspec(dllexport) extern
 #else
@@ -17,8 +46,24 @@
 #define VAR __declspec(dllimport) extern
 #define EXP __declspec(dllexport) extern
 #define EXPF __declspec(dllexport)
-#endif // PLUGIN_BUILD
+#endif // CORE_BUILD_PLUGIN
+#elif defined(CORE_USE_UNIX_DEFINES)
+#define NOINL __attribute__((noinline))
+#ifndef CORE_BUILD_PLUGIN
+#define API __attribute__((__visibility__("default"), noinline))
+#define VAR __attribute__((__visibility__("default"))) extern
+#else
+#define API
+#define VAR extern
+#define EXP __attribute__((__visibility__("default"))) extern
+#define EXPF __attribute__((__visibility__("default"), noinline))
+#endif // CORE_BUILD_PLUGIN
+#define min(a, b) (((a)<(b))?(a):(b))
+#define max(a, b) (((a)>(b))?(a):(b))
+#define MAX_PATH  PATH_MAX
+#endif // CORE_USE_*_TYPES
 
+#if defined(CORE_USE_WINDOWS_TYPES)
 #if _MSC_VER
 typedef signed __int8 cs_int8;
 typedef signed __int16 cs_int16;
@@ -34,29 +79,9 @@ typedef unsigned __int64 cs_uintptr, cs_size;
 typedef unsigned int cs_uintptr, cs_size;
 #endif // _WIN64
 #else
-#define CSTYPES_ERROR
+#error CORE_USE_WINDOWS_TYPES can be used only with MSVC.
 #endif // _MSC_VER
-#elif defined(__unix__)
-#define UNIX
-#define PATH_DELIM "/"
-#define DLIB_EXT "so"
-
-#define INL inline
-#define NOINL __attribute__((noinline))
-#ifndef PLUGIN_BUILD
-#define API __attribute__((__visibility__("default"), noinline))
-#define VAR __attribute__((__visibility__("default"))) extern
-#else
-#define API
-#define VAR extern
-#define EXP __attribute__((__visibility__("default"))) extern
-#define EXPF __attribute__((__visibility__("default"), noinline))
-#endif // PLUGIN_BUILD
-
-#define min(a, b) (((a)<(b))?(a):(b))
-#define max(a, b) (((a)>(b))?(a):(b))
-#define MAX_PATH  PATH_MAX
-
+#elif defined(CORE_USE_UNIX_TYPES)
 #ifdef __INT8_TYPE__
 typedef __INT8_TYPE__ cs_int8;
 typedef __INT16_TYPE__ cs_int16;
@@ -68,13 +93,9 @@ typedef __UINT32_TYPE__ cs_uint32;
 typedef __UINT64_TYPE__ cs_uint64;
 typedef __UINTPTR_TYPE__ cs_uintptr, cs_size;
 #else
-#define CSTYPES_ERROR
+#error No __INT8_TYPE__ found.
 #endif //__INT8_TYPE__
-#else
-#error Unknown OS
-#endif // OS defines
-
-#ifdef CSTYPES_ERROR
+#elif defined(CORE_USE_GENERIC_TYPES)
 typedef signed char cs_int8;
 typedef signed short cs_int16;
 typedef signed int cs_int32;
@@ -84,25 +105,8 @@ typedef unsigned short cs_uint16;
 typedef unsigned int cs_uint32;
 typedef unsigned long long cs_uint64;
 typedef unsigned long cs_uintptr, cs_size;
-#endif
-
-#ifndef true
-#define true  1
-#define false 0
-#endif
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-#ifndef MANUAL_BACKENDS
-#if defined(WINDOWS)
-#define HTTP_USE_WININET_BACKEND
-#define HASH_USE_WINCRYPT_BACKEND
-#elif defined(UNIX)
-#define HTTP_USE_CURL_BACKEND
-#define HASH_USE_CRYPTO_BACKEND
-#endif
+#else
+#error C types cannot be detected.
 #endif
 
 typedef char cs_char;
@@ -138,17 +142,21 @@ typedef struct _CustomParticle {
 	gravity, baseLifetime, lifetimeVariation;
 } CustomParticle;
 
+#define true  1
+#define false 0
+#define NULL ((void *)0)
+#define INL inline
+
 #define PLUGIN_API_NUM 1
 #define MAX_PLUGINS 64
 #define	MAX_CMD_OUT 1024
 #define MAX_CLIENT_PPS 128
 #define MAX_CLIENTS 127
-
 #ifndef GIT_COMMIT_TAG
 #define GIT_COMMIT_TAG "????"
 #endif
 
-#ifdef PLUGIN_BUILD
+#ifdef CORE_BUILD_PLUGIN
 EXP cs_bool Plugin_Load(void);
 EXP cs_bool Plugin_Unload(cs_bool force);
 EXP cs_int32 Plugin_ApiVer, Plugin_Version;

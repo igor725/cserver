@@ -3,6 +3,18 @@ if [ "$CC" = "" ]; then
 	CC="gcc"
 fi
 
+OS=""
+case "$(uname -s)" in
+	Linux)
+		OS="linux"
+		;;
+	CYGWIN*|MINGW*|MSYS*|MINGW32*)
+		OS="win"
+		;;
+	*)
+		OS="unknown"
+		;;
+esac
 MAXWORKERS=$(nproc)
 RUN=0
 DEBUG=0
@@ -14,7 +26,11 @@ if [ $MACH = "" ]; then
 	MACH="unknown"
 fi
 CC="$CC -fdiagnostics-color=always"
-LNK="$CC -rdynamic"
+if [ "$OS" == "win" ]; then
+	LNK=$CC
+else
+	LNK="$CC -rdynamic"
+fi
 CFLAGS="-pipe -fPIC"
 LIBS=""
 OUTBIN="server"
@@ -53,7 +69,7 @@ do
 			if [ ! -d "../cs-$a" ]; then notaplugin; fi
 			if [ ! -d "../cs-$a/src" ]; then notaplugin; fi
 			PLUGIN_NAME="$a"
-			CFLAGS="$CFLAGS -DPLUGIN_BUILD -Isrc"
+			CFLAGS="$CFLAGS -DCORE_BUILD_PLUGIN -Isrc"
 			LNK="$LNK -shared"
 			OUTBIN="$a.so"
 			ROOT="../cs-$a"
@@ -104,7 +120,11 @@ done
 
 echo -ne "done\nLinking..."
 if [ $PLUGIN_BUILD -eq 0 ]; then
-	LIBS="$LIBS -lpthread -ldl"
+	if [ "$OS" == "win" ]; then
+		LIBS="$LIBS -lkernel32 -ldbghelp -lws2_32"
+	else
+		LIBS="$LIBS -lpthread -ldl"
+	fi
 fi
 
 $LNK$OBJS -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR &
