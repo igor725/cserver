@@ -33,10 +33,10 @@ static cs_str defaultBlockNames[] = {
 	"Stone Brick"
 };
 
-static BlockDef *definitionsList[255] = {0};
+static BlockDef *definitionsList[254] = {0};
 
 cs_bool Block_IsValid(BlockID id) {
-	return id < 50 || definitionsList[id] != NULL;
+	return id < 50 && id < 255 || definitionsList[id] != NULL;
 }
 
 cs_str Block_GetName(BlockID id) {

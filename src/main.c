@@ -7,6 +7,7 @@
 #include "cserror.h"
 #include "hash.h"
 #include "compr.h"
+// #include "tests.h"
 
 INL static cs_bool Init(void) {
 	return Memory_Init() && Log_Init()
@@ -25,10 +26,17 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
+#ifndef CORE_TEST_MODE
 		if(Server_Init()) {
 			Server_StartLoop();
 			Server_Cleanup();
 		}
+#else
+		if(Tests_PerformAll())
+			Log_Info("All tests passed!");
+		else
+			Log_Error("Some tests failed!");
+#endif
 
 		Compr_Uninit();
 		Http_Uninit();

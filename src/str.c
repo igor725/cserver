@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 cs_bool String_CaselessCompare(cs_str str1, cs_str str2) {
+	if(!str1 || !str2) return false;
 	cs_byte c1, c2;
 
 	while(true) {
@@ -17,6 +18,7 @@ cs_bool String_CaselessCompare(cs_str str1, cs_str str2) {
 }
 
 cs_bool String_CaselessCompare2(cs_str str1, cs_str str2, cs_size len) {
+	if(!str1 || !str2) return false;
 	cs_byte c1, c2;
 
 	while(len--) {
@@ -30,6 +32,7 @@ cs_bool String_CaselessCompare2(cs_str str1, cs_str str2, cs_size len) {
 }
 
 cs_bool String_Compare(cs_str str1, cs_str str2) {
+	if(!str1 || !str2) return false;
 	cs_byte c1, c2;
 
 	while(true) {
@@ -135,7 +138,9 @@ cs_str String_FromArgument(cs_str args, cs_int32 index) {
 	if(!args) return NULL;
 
 	do {
-		if(index > 0 && *args == ' ') --index;
+		if(index > 0 && *args == ' ') {
+			--index; ++args;
+		}
 		if(index == 0) return args;
 	} while(*args++ != '\0');
 

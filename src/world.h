@@ -50,6 +50,7 @@ enum {
 	DT_WT,
 	DT_PROPS,
 	DT_COLORS,
+	DT_TEXPACK,
 
 	DT_END = 0xFF
 };
@@ -121,9 +122,11 @@ API BlockID *World_GetBlockArray(World *world, cs_uint32 *size);
 API cs_uint32 World_GetBlockArraySize(World *world);
 API cs_uint32 World_GetOffset(World *world, SVec *pos);
 API BlockID World_GetBlock(World *world, SVec *pos);
+API BlockID World_GetBlockO(World *world, cs_uint32 offset);
 API cs_int32 World_GetProperty(World *world, cs_byte property);
 API Color3* World_GetEnvColor(World *world, cs_byte type);
 API cs_int8 World_GetWeather(World *world);
+API cs_str World_GetTexturePack(World *world);
 
 API World *World_GetByName(cs_str name);
 

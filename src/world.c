@@ -8,6 +8,7 @@
 #include "list.h"
 #include "compr.h"
 #include "strstor.h"
+#include "block.h"
 
 AListField *World_Head = NULL;
 
@@ -22,8 +23,8 @@ World *World_Create(cs_str name) {
 	** согласно документации по CPE.
 	*/
 	cs_int32 *props = tmp->info.props;
-	props[PROP_SIDEBLOCK] = 7;
-	props[PROP_EDGEBLOCK] = 8;
+	props[PROP_SIDEBLOCK] = BLOCK_BEDROCK;
+	props[PROP_EDGEBLOCK] = BLOCK_WATER;
 	props[PROP_FOGDIST] = 0;
 	props[PROP_SPDCLOUDS] = 256;
 	props[PROP_SPDWEATHER] = 256;
@@ -66,7 +67,6 @@ void World_SetDimensions(World *world, const SVec *dims) {
 
 cs_bool World_SetProperty(World *world, cs_byte property, cs_int32 value) {
 	if(property > WORLD_PROPS_COUNT) return false;
-
 	world->modified = true;
 	world->info.props[property] = value;
 	world->info.modval |= MV_PROPS;
@@ -86,7 +86,7 @@ cs_bool World_SetTexturePack(World *world, cs_str url) {
 	world->info.modval |= MV_TEXPACK;
 	if(!url || String_Length(url) > 64) {
 		world->info.texturepack[0] = '\0';
-		return true;
+		return url == NULL;
 	}
 	if(!String_Copy(world->info.texturepack, 65, url)) {
 		world->info.texturepack[0] = '\0';
@@ -112,7 +112,7 @@ cs_bool World_SetEnvColor(World *world, cs_byte type, Color3* color) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	world->info.modval |= MV_COLORS;
 	world->modified = true;
-	world->info.colors[type * 3] = *color;
+	world->info.colors[type] = *color;
 	Event_Call(EVT_ONCOLOR, world);
 	return true;
 }
@@ -170,6 +170,7 @@ INL static cs_bool WriteInfo(World *world, cs_file fp) {
 	WriteWData(fp, DT_WT, &world->info.weatherType, 1) &&
 	WriteWData(fp, DT_PROPS, world->info.props, 4 * WORLD_PROPS_COUNT) &&
 	WriteWData(fp, DT_COLORS, world->info.colors, sizeof(Color3) * WORLD_COLORS_COUNT) &&
+	WriteWData(fp, DT_TEXPACK, world->info.texturepack, sizeof(world->info.texturepack)) &&
 	WriteWData(fp, DT_END, NULL, 0);
 }
 
@@ -210,6 +211,10 @@ static cs_bool ReadInfo(World *world, cs_file fp) {
 				break;
 			case DT_COLORS:
 				if(File_Read(world->info.colors, sizeof(Color3) * WORLD_COLORS_COUNT, 1, fp) != 1)
+					return false;
+				break;
+			case DT_TEXPACK:
+				if(File_Read(world->info.texturepack, sizeof(world->info.texturepack), 1, fp) != 1)
 					return false;
 				break;
 			case DT_END:
@@ -354,11 +359,12 @@ cs_uint32 World_GetOffset(World *world, SVec *pos) {
 	if(pos->x < 0 || pos->y < 0 || pos->z < 0) return 0;
 	cs_uint32 offset = ((cs_uint32)pos->y * (cs_uint32)world->info.dimensions.z
 	+ (cs_uint32)pos->z) * (cs_uint32)world->info.dimensions.x + (cs_uint32)pos->x;
-	if(offset > world->wdata.size) return world->wdata.size;
+	if(offset >= world->wdata.size) return world->wdata.size;
 	return offset;
 }
 
 cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id) {
+	if(offset >= world->wdata.size) return false;
 	world->wdata.blocks[offset] = id;
 	world->modified = true;
 	return true;
@@ -366,6 +372,11 @@ cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id) {
 
 cs_bool World_SetBlock(World *world, SVec *pos, BlockID id) {
 	return World_SetBlockO(world, World_GetOffset(world, pos), id);
+}
+
+BlockID World_GetBlockO(World *world, cs_uint32 offset) {
+	if(offset >= world->wdata.size) return (BlockID)-1;
+	return world->wdata.blocks[offset];
 }
 
 BlockID World_GetBlock(World *world, SVec *pos) {
