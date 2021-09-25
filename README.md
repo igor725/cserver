@@ -1,5 +1,6 @@
 # cserver
 Another Minecraft Classic server in C. Not well written, but it may be useful for someone. Use this software carefully! The server MAY have many security holes.
+
 The goal of this project: create a stable, customizable and future-rich multiplatform Minecraft Classic server with a minimal dependencies count.
 
 
