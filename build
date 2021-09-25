@@ -26,10 +26,9 @@ if [ $MACH = "" ]; then
 	MACH="unknown"
 fi
 CC="$CC -fdiagnostics-color=always"
-if [ "$OS" == "win" ]; then
-	LNK=$CC
-else
-	LNK="$CC -rdynamic"
+LNK="$CC"
+if [ "$OS" != "win" ]; then
+	LNK="gcc -rdynamic"
 fi
 CFLAGS="-pipe -fPIC"
 LIBS=""
