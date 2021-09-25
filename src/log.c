@@ -72,6 +72,7 @@ void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 			getName(flag),
 			buf
 		);
+		File_Flush(stderr);
 		Mutex_Unlock(Log_Mutex);
 	}
 }
