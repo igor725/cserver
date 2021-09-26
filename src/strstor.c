@@ -46,7 +46,7 @@ cs_bool Strstro_Remove(cs_str key) {
 }
 
 void Sstor_Cleanup(void) {
-	KListField *tmp, *prev;
+	KListField *tmp, *prev = NULL;
 	List_Iter(tmp, storage) {
 		if(prev) KList_Remove(&storage, prev);
 		Memory_Free(tmp->key.ptr);

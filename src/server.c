@@ -334,7 +334,7 @@ void Server_StartLoop(void) {
 }
 
 INL static void UnloadAllWorlds(void) {
-	AListField *tmp, *prev;
+	AListField *tmp, *prev = NULL;
 
 	List_Iter(tmp, World_Head) {
 		if(prev) AList_Remove(&World_Head, prev);
@@ -343,6 +343,7 @@ INL static void UnloadAllWorlds(void) {
 		World_Free(world);
 		prev = tmp;
 	}
+
 	if(prev) AList_Remove(&World_Head, prev);
 }
 

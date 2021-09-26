@@ -44,6 +44,7 @@ void Command_Unregister(Command *cmd) {
 			Memory_Free(field->key.ptr);
 			KList_Remove(&headCmd, field);
 			Memory_Free(cmd);
+			break;
 		}
 	}
 }
@@ -56,6 +57,7 @@ void Command_UnregisterByFunc(cmdFunc func) {
 			Memory_Free(field->key.ptr);
 			KList_Remove(&headCmd, field);
 			Memory_Free(cmd);
+			break;
 		}
 	}
 }
