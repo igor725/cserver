@@ -64,6 +64,8 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("SV_START", "Server started on %s:%d.");
 	Sstor_Set("SV_NOWORLDS", "No worlds loaded.");
 	Sstor_Set("SV_WLOAD_ERR", "Failed to %s world %s: (%d, %d).");
+	Sstor_Set("SV_CFGL_ERR", "Failed to parse line %d from %s: (%d, %d).");
+	Sstor_Set("SV_CFG_ERR", "Failed to %s %s: (%d, %d).");
 	Sstor_Set("SV_WLDONE", "%d world(-s) successfully loaded.");
 	Sstor_Set("SV_STOPNOTE", "Press Ctrl+C to stop the server.");
 	Sstor_Set("SV_BADTICK_BW", "Time ran backwards? Time between the last two ticks < 0ms.");

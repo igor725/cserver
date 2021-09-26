@@ -179,7 +179,13 @@ cs_bool Server_Init(void) {
 
 	cfg->modified = true;
 	if(!Config_Load(cfg)) {
-		Config_PrintError(cfg);
+		cs_int32 line = 0;
+		ECExtra extra = CONFIG_EXTRA_NOINFO;
+		ECError code = Config_PopError(cfg, &extra, &line);
+		if(line > 0)
+			Log_Error(Sstor_Get("SV_CFGL_ERR"), line, MAINCFG, code, extra);
+		else
+			Log_Error(Sstor_Get("SV_CFG_ERR"), "parse", MAINCFG, code, extra);
 		return false;
 	}
 	Log_SetLevelStr(Config_GetStrByKey(cfg, CFG_LOGLEVEL_KEY));
@@ -360,7 +366,7 @@ INL static void UnloadAllWorlds(void) {
 			if(World_HasError(world)) {
 				EWorldExtra extra = WORLD_EXTRA_NOINFO;
 				EWorldError code = World_PopError(world, &extra);
-				Log_Error(Sstor_Get("SV_WLOAD_ERR"), "load", World_GetName(world), code, extra);
+				Log_Error(Sstor_Get("SV_WLOAD_ERR"), "save", World_GetName(world), code, extra);
 			}
 		}
 		World_Free(world);

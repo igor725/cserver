@@ -11,6 +11,18 @@ cs_bool Tests_Config(void) {
 	Tests_Assert(Config_TypeNameToEnum(Config_TypeName(ent->type)) == ent->type, "");
 	Config_SetComment(ent, "_test_CoMment1");
 	Config_SetDefaultBool(ent, true);
+
+	Tests_Assert((ent = Config_NewEntry(store, "test-key-i32", CONFIG_TYPE_INT32)) != NULL, "create i32 entry");
+	Tests_Assert(Config_TypeNameToEnum(Config_TypeName(ent->type)) == ent->type, "");
+	Config_SetComment(ent, "_test_CoMment1-i32_");
+	Config_SetDefaultInt32(ent, 40);
+	Config_SetLimit(ent, 10, 80);
+
+	Tests_Assert((ent = Config_NewEntry(store, "test-key-i16", CONFIG_TYPE_INT32)) != NULL, "create i16 entry");
+	Tests_Assert(Config_TypeNameToEnum(Config_TypeName(ent->type)) == ent->type, "");
+	Config_SetComment(ent, "_test_CoMment1-i16-=_");
+	Config_SetDefaultInt32(ent, 40);
+	Config_SetLimit(ent, 10, 80);
 	store->modified = true;
 	
 	Tests_NewTask("Save config store");

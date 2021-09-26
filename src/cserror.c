@@ -7,14 +7,6 @@
 #include "cserror.h"
 #include "compr.h"
 
-static cs_str const ErrorStrings[] = {
-	"All ok.",
-	"Can't read line %d from \"%s\", line buffer overflowed.",
-	"Can't parse line %d from file \"%s\".",
-	"Entry \"%s\" is not registred for \"%s\".",
-	"Trying to get entry \"%s\" from file \"%s\" as \"%s\", but the variable has type \"%s\"."
-};
-
 #if defined(WINDOWS)
 #include <dbghelp.h>
 
@@ -76,12 +68,6 @@ void Error_Uninit(void) {}
 
 INL static void getErrorStr(cs_int32 type, cs_int32 code, cs_char *errbuf, cs_size sz, va_list *args) {
 	switch(type) {
-		case ET_SERVER:
-			if(!args)
-				String_Copy(errbuf, sz, ErrorStrings[code]);
-			else
-				String_FormatBufVararg(errbuf, sz, ErrorStrings[code], args);
-			break;
 		case ET_ZLIB:
 			String_Copy(errbuf, sz, Compr_GetError(code));
 			break;
