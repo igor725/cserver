@@ -836,7 +836,7 @@ NOINL static void SendWorld(Client *client, World *world) {
 			client->playerData->angle = world->info.spawnAng;
 			Event_Call(EVT_PRELVLFIN, client);
 			if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
-				for(BlockID id = 0; id < 255; id++) {
+				for(BlockID id = 0; id < 254; id++) {
 					BlockDef *bdef = Block_GetDefinition(id);
 					if(bdef) Client_DefineBlock(client, bdef);
 				}

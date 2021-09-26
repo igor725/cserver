@@ -68,7 +68,7 @@ cs_bool Block_Define(BlockDef *bdef) {
 }
 
 BlockDef *Block_GetDefinition(BlockID id) {
-	return definitionsList[id];
+	return id > 254 ? NULL: definitionsList[id];
 }
 
 cs_bool Block_Undefine(BlockID id) {
@@ -82,7 +82,7 @@ cs_bool Block_Undefine(BlockID id) {
 }
 
 void Block_UpdateDefinitions(void) {
-	for(BlockID id = 0; id < 255; id++) {
+	for(BlockID id = 0; id < 254; id++) {
 		BlockDef *bdef = definitionsList[id];
 		if(bdef && (bdef->flags & BDF_UPDATED) != BDF_UPDATED) {
 			bdef->flags |= BDF_UPDATED;
