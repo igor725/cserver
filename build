@@ -95,7 +95,7 @@ done
 
 STDERR="$ROOT/out/stderr"
 OUTDIR="$ROOT/out/$MACH"
-OBJDIR="$ROOT/objs/$MACH"
+OBJDIR="$OUTDIR/objs"
 
 if [ $SAN -eq 1 ]; then
 	LIBS="-lasan -lubsan $LIBS"
