@@ -32,7 +32,7 @@ INL static cs_bool DoRequest(Heartbeat *hb) {
 
 	cs_uint16 port = (cs_uint16)Config_GetInt16ByKey(Server_Config, CFG_SERVERPORT_KEY);
 	cs_byte max = (cs_byte)Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
-	cs_byte count = Clients_GetCount(STATE_INGAME);
+	cs_byte count = Clients_GetCount(PLAYER_STATE_INGAME);
 	String_FormatBuf(reqstr, 512, hb->templ,
 		name, port, count,
 		max, hb->secretkey,

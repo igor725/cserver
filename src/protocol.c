@@ -348,7 +348,7 @@ static void UpdateBlock(World *world, SVec *pos, BlockID block) {
 }
 
 cs_bool Handler_SetBlock(Client *client, cs_char *data) {
-	ValidateClientState(client, STATE_INGAME, false)
+	ValidateClientState(client, PLAYER_STATE_INGAME, false)
 
 	World *world = Client_GetWorld(client);
 	if(!world) return false;
@@ -412,7 +412,7 @@ INL static cs_bool ReadClientPos(Client *client, cs_char *data) {
 }
 
 cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
-	ValidateClientState(client, STATE_INGAME, false)
+	ValidateClientState(client, PLAYER_STATE_INGAME, false)
 
 	BlockID cb = *data++;
 	if(Client_GetExtVer(client, EXT_HELDBLOCK) == 1) {
@@ -430,7 +430,7 @@ cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
 	if(ReadClientPos(client, data)) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			Client *other = Clients_List[i];
-			if(other && client != other && Client_CheckState(other, STATE_INGAME) && Client_IsInSameWorld(client, other))
+			if(other && client != other && Client_CheckState(other, PLAYER_STATE_INGAME) && Client_IsInSameWorld(client, other))
 				Vanilla_WritePosAndOrient(other, client);
 		}
 	}
@@ -438,7 +438,7 @@ cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
 }
 
 cs_bool Handler_Message(Client *client, cs_char *data) {
-	ValidateClientState(client, STATE_INGAME, true)
+	ValidateClientState(client, PLAYER_STATE_INGAME, true)
 
 	cs_char message[65],
 	*messptr = message;
@@ -914,7 +914,7 @@ void CPE_WriteSpawnEffect(Client *client, cs_byte id, Vec *pos, Vec *origin) {
 
 cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
-	ValidateClientState(client, STATE_INITIAL, false)
+	ValidateClientState(client, PLAYER_STATE_INITIAL, false)
 
 	if(!Proto_ReadStringNoAlloc(&data, client->cpeData->appName)) return false;
 	client->cpeData->_extCount = ntohs(*(cs_uint16 *)data);
@@ -923,7 +923,7 @@ cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
 
 cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
-	ValidateClientState(client, STATE_INITIAL, false)
+	ValidateClientState(client, PLAYER_STATE_INITIAL, false)
 
 	CPEExt *tmp = Memory_Alloc(1, sizeof(struct _CPEExt));
 	if(!Proto_ReadString(&data, &tmp->name)) {
@@ -952,7 +952,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 
 cs_bool CPEHandler_PlayerClick(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
-	ValidateClientState(client, STATE_INGAME, false)
+	ValidateClientState(client, PLAYER_STATE_INGAME, false)
 
 	onPlayerClick params;
 	params.client = client;

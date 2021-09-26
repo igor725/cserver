@@ -2,13 +2,13 @@
 #define CONFIG_H
 #include "core.h"
 
-typedef enum _CETypes {
-	CFG_TBOOL,
-	CFG_TINT32,
-	CFG_TINT16,
-	CFG_TINT8,
-	CFG_TSTR
-} CETypes;
+typedef enum _ECTypes {
+	CONFIG_TYPE_BOOL,
+	CONFIG_TYPE_INT32,
+	CONFIG_TYPE_INT16,
+	CONFIG_TYPE_INT8,
+	CONFIG_TYPE_STR
+} ECTypes;
 
 typedef union _CUValue {
 	cs_bool vbool;
@@ -24,7 +24,7 @@ typedef union _CUValue {
 #define CFG_FHAVELIMITS BIT(2) // Применимо только для integer типов
 
 typedef struct _CEntry {
-	CETypes type; // Тип cfg-записи
+	ECTypes type; // Тип cfg-записи
 	cs_byte flags; // Флаги cfg-записи
 	cs_str commentary; // Комментарий к записи
 	cs_str key; // Ключ, присваиваемый записи при создании
@@ -40,12 +40,12 @@ typedef struct _CStore {
 	cs_int32 etype; // Тип произошедшей ошибки ET_SYS/ET_SERVER (см. объявления в cserror.h)
 	cs_int32 ecode; // Код произошедшей ошибки (объявления также в cserror.h)
 	cs_int32 eline; // Номер строки в файле, на которой произошла ошибка
-	CEntry *firstCfgEntry; // Первая запись в хранилище
-	CEntry *lastCfgEntry; // Последняя запись в хранилище
+	CEntry *firstCfgEntry, // Первая запись в хранилище
+	*lastCfgEntry; // Последняя запись в хранилище
 } CStore;
 
-API cs_str Config_TypeName(CETypes type);
-API CETypes Config_TypeNameToEnum(cs_str name);
+API cs_str Config_TypeName(ECTypes type);
+API ECTypes Config_TypeNameToEnum(cs_str name);
 API cs_byte Config_ToStr(CEntry *ent, cs_char *value, cs_byte len);
 API void Config_PrintError(CStore *store);
 

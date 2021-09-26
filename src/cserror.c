@@ -9,13 +9,10 @@
 
 static cs_str const ErrorStrings[] = {
 	"All ok.",
-	"Invalid magic.",
-	"File \"%s\" corrupted.",
 	"Can't read line %d from \"%s\", line buffer overflowed.",
 	"Can't parse line %d from file \"%s\".",
 	"Entry \"%s\" is not registred for \"%s\".",
-	"Trying to get entry \"%s\" from file \"%s\" as \"%s\", but the variable has type \"%s\".",
-	"Invalid IPv4 address passed to Socket_SetAddr."
+	"Trying to get entry \"%s\" from file \"%s\" as \"%s\", but the variable has type \"%s\"."
 };
 
 #if defined(WINDOWS)

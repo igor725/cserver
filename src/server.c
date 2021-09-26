@@ -114,25 +114,19 @@ THREAD_FUNC(SockAcceptThread) {
 	return 0;
 }
 
-INL static void Bind(cs_str ip, cs_uint16 port) {
+INL static cs_bool Bind(cs_str ip, cs_uint16 port) {
 	Server_Socket = Socket_New();
 	if(!Server_Socket) {
 		Error_PrintSys(true);
 	}
 	struct sockaddr_in ssa;
-	switch (Socket_SetAddr(&ssa, ip, port)) {
-		case 0:
-			ERROR_PRINT(ET_SERVER, EC_INVALIDIP, true);
-			break;
-		case -1:
-			Error_PrintSys(true);
-			break;
+	
+	if(Socket_SetAddr(&ssa, ip, port) > 0 && Socket_Bind(Server_Socket, &ssa)) {
+		Log_Info(Sstor_Get("SV_START"), ip, port);
+		return true;
 	}
 
-	Log_Info(Sstor_Get("SV_START"), ip, port);
-	if(!Socket_Bind(Server_Socket, &ssa)) {
-		Error_PrintSys(true);
-	}
+	return false;
 }
 
 cs_bool Server_Init(void) {
@@ -145,41 +139,41 @@ cs_bool Server_Init(void) {
 	Server_Active = true;
 	Server_Config = cfg;
 
-	ent = Config_NewEntry(cfg, CFG_SERVERIP_KEY, CFG_TSTR);
+	ent = Config_NewEntry(cfg, CFG_SERVERIP_KEY, CONFIG_TYPE_STR);
 	Config_SetComment(ent, Sstor_Get("CFG_SVIP_COMM"));
 	Config_SetDefaultStr(ent, Sstor_Get("CFG_SVIP_DVAL"));
 
-	ent = Config_NewEntry(cfg, CFG_SERVERPORT_KEY, CFG_TINT16);
+	ent = Config_NewEntry(cfg, CFG_SERVERPORT_KEY, CONFIG_TYPE_INT16);
 	Config_SetComment(ent, Sstor_Get("CFG_SVPORT_COMM"));
 	Config_SetLimit(ent, 1, 65535);
 	Config_SetDefaultInt16(ent, 25565);
 
-	ent = Config_NewEntry(cfg, CFG_SERVERNAME_KEY, CFG_TSTR);
+	ent = Config_NewEntry(cfg, CFG_SERVERNAME_KEY, CONFIG_TYPE_STR);
 	Config_SetComment(ent, Sstor_Get("CFG_SVNAME_COMM"));
 	Config_SetDefaultStr(ent, Sstor_Get("CFG_SVNAME_DVAL"));
 
-	ent = Config_NewEntry(cfg, CFG_SERVERMOTD_KEY, CFG_TSTR);
+	ent = Config_NewEntry(cfg, CFG_SERVERMOTD_KEY, CONFIG_TYPE_STR);
 	Config_SetDefaultStr(ent, Sstor_Get("CFG_SVMOTD_DVAL"));
 
-	ent = Config_NewEntry(cfg, CFG_LOGLEVEL_KEY, CFG_TSTR);
+	ent = Config_NewEntry(cfg, CFG_LOGLEVEL_KEY, CONFIG_TYPE_STR);
 	Config_SetComment(ent, Sstor_Get("CFG_LOGLVL_COMM"));
 	Config_SetDefaultStr(ent, Sstor_Get("CFG_LOGLVL_DVAL"));
 
-	ent = Config_NewEntry(cfg, CFG_LOCALOP_KEY, CFG_TBOOL);
+	ent = Config_NewEntry(cfg, CFG_LOCALOP_KEY, CONFIG_TYPE_BOOL);
 	Config_SetComment(ent, Sstor_Get("CFG_LOP_COMM"));
 	Config_SetDefaultBool(ent, false);
 
-	ent = Config_NewEntry(cfg, CFG_MAXPLAYERS_KEY, CFG_TINT8);
+	ent = Config_NewEntry(cfg, CFG_MAXPLAYERS_KEY, CONFIG_TYPE_INT8);
 	Config_SetComment(ent, Sstor_Get("CFG_MAXPL_COMM"));
 	Config_SetLimit(ent, 1, 127);
 	Config_SetDefaultInt8(ent, 10);
 
-	ent = Config_NewEntry(cfg, CFG_CONN_KEY, CFG_TINT8);
+	ent = Config_NewEntry(cfg, CFG_CONN_KEY, CONFIG_TYPE_INT8);
 	Config_SetComment(ent, Sstor_Get("CFG_MAXCON_COMM"));
 	Config_SetLimit(ent, 1, 5);
 	Config_SetDefaultInt8(ent, 5);
 
-	ent = Config_NewEntry(cfg, CFG_WORLDS_KEY, CFG_TSTR);
+	ent = Config_NewEntry(cfg, CFG_WORLDS_KEY, CONFIG_TYPE_STR);
 	Config_SetComment(ent, Sstor_Get("CFG_WORLDS_COMM"));
 	Config_SetDefaultStr(ent, Sstor_Get("CFG_WORLDS_DVAL"));
 
@@ -204,9 +198,19 @@ cs_bool Server_Init(void) {
 			do {
 				if(wIter.isDir || !wIter.cfile) continue;
 				World *tmp = World_Create(wIter.cfile);
-				if(!World_Load(tmp) || !World_Add(tmp))
-					World_Free(tmp);
-				else wIndex++;
+				if(World_Load(tmp)) {
+					Waitable_Wait(tmp->waitable);
+					if(World_HasError(tmp)) {
+						EWorldExtra extra = WORLD_EXTRA_NOINFO;
+						EWorldError code = World_PopError(tmp, &extra);
+						Log_Error(Sstor_Get("SV_WLOAD_ERR"), "load", World_GetName(tmp), code, extra);
+						World_FreeBlockArray(tmp);
+						World_Free(tmp);
+					} else {
+						World_Add(tmp);
+						wIndex++;
+					}
+				} else World_Free(tmp);
 			} while(Iter_Next(&wIter));
 		}
 		Iter_Close(&wIter);
@@ -237,10 +241,19 @@ cs_bool Server_Init(void) {
 					tmp = World_Create(buffer);
 					if(World_Load(tmp)) {
 						Waitable_Wait(tmp->waitable);
-						if(World_IsReadyToPlay(tmp)) {
-							AList_AddField(&World_Head, tmp);
+						if(World_HasError(tmp)) {
 							skip_creating = true;
-							wIndex++;
+							EWorldExtra extra = WORLD_EXTRA_NOINFO;
+							EWorldError code = World_PopError(tmp, &extra);
+							Log_Error(Sstor_Get("SV_WLOAD_ERR"), "load", World_GetName(tmp), code, extra);
+							World_FreeBlockArray(tmp);
+							World_Free(tmp);
+						} else {
+							if(World_IsReadyToPlay(tmp)) {
+								AList_AddField(&World_Head, tmp);
+								skip_creating = true;
+								wIndex++;
+							}
 						}
 					}
 				} else if(!skip_creating && state == 1) {
@@ -290,13 +303,16 @@ cs_bool Server_Init(void) {
 
 	cs_str ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
 	cs_uint16 port = Config_GetInt16ByKey(cfg, CFG_SERVERPORT_KEY);
-	Bind(ip, port);
-	Event_Call(EVT_POSTSTART, NULL);
-	if(ConsoleIO_Init())
-		Log_Info(Sstor_Get("SV_STOPNOTE"));
-	Thread_Create(SockAcceptThread, NULL, true);
-	Server_Ready = true;
-	return true;
+	if(Bind(ip, port)) {
+		Event_Call(EVT_POSTSTART, NULL);
+		if(ConsoleIO_Init())
+			Log_Info(Sstor_Get("SV_STOPNOTE"));
+		Thread_Create(SockAcceptThread, NULL, true);
+		Server_Ready = true;
+		return true;
+	}
+
+	return false;
 }
 
 INL static void DoStep(cs_int32 delta) {
@@ -339,7 +355,14 @@ INL static void UnloadAllWorlds(void) {
 	List_Iter(tmp, World_Head) {
 		if(prev) AList_Remove(&World_Head, prev);
 		World *world = (World *)tmp->value.ptr;
-		if(World_Save(world, true)) Waitable_Wait(world->waitable);
+		if(World_Save(world, true)) {
+			Waitable_Wait(world->waitable);
+			if(World_HasError(world)) {
+				EWorldExtra extra = WORLD_EXTRA_NOINFO;
+				EWorldError code = World_PopError(world, &extra);
+				Log_Error(Sstor_Get("SV_WLOAD_ERR"), "load", World_GetName(world), code, extra);
+			}
+		}
 		World_Free(world);
 		prev = tmp;
 	}

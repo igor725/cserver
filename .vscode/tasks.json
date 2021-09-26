@@ -10,7 +10,7 @@
 			"linux": {
 				"command": "./build"
 			},
-			"args": ["wall", "dbg", "san"],
+			"args": ["wall", "dbg"],
 			"group": {
 				"kind": "build",
 				"isDefault": true

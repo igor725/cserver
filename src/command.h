@@ -46,14 +46,13 @@ Command_Register(#N, (cmdFunc)svcmd_##N, F);
 #define COMMAND_REMOVE(N) \
 Command_UnregisterByFunc((cmdFunc)svcmd_##N);
 
-enum {
-	CMDF_NONE,
-	CMDF_OP = BIT(0),
-	CMDF_CLIENT = BIT(1),
-	CMDF_RESERVED0 = BIT(2),
-	CMDF_RESERVED1 = BIT(3),
-	CMDF_RESERVED2 = BIT(4)
-};
+
+#define CMDF_NONE      0x00
+#define CMDF_OP        BIT(0)
+#define CMDF_CLIENT    BIT(1)
+#define CMDF_RESERVED0 BIT(2)
+#define CMDF_RESERVED1 BIT(3)
+#define CMDF_RESERVED2 BIT(4)
 
 typedef struct {
 	struct _Command *command;

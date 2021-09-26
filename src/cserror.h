@@ -7,19 +7,15 @@ enum _ErrorTypes {
 	ET_NOERR = -1,
 	ET_SERVER,
 	ET_ZLIB,
-	ET_SYS,
-	ET_STR
+	ET_SYS
 };
 
 enum _ErrorCodes {
 	EC_OK,
-	EC_MAGIC,
-	EC_FILECORR,
 	EC_CFGEND,
 	EC_CFGLINEPARSE,
 	EC_CFGUNK,
-	EC_CFGINVGET,
-	EC_INVALIDIP
+	EC_CFGINVGET
 };
 
 #define ERROR_PRINT(etype, ecode, abort) \

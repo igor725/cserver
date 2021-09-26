@@ -1,6 +1,5 @@
 #include "core.h"
 #include "platform.h"
-#include "cserror.h"
 #include "str.h"
 #include "server.h"
 #include "world.h"
@@ -9,6 +8,18 @@
 #include "compr.h"
 #include "strstor.h"
 #include "block.h"
+
+enum _EWorldDataItems {
+	DT_DIM,
+	DT_SV,
+	DT_SA,
+	DT_WT,
+	DT_PROPS,
+	DT_COLORS,
+	DT_TEXPACK,
+
+	DT_END = 0xFF
+};
 
 AListField *World_Head = NULL;
 
@@ -23,14 +34,14 @@ World *World_Create(cs_str name) {
 	** согласно документации по CPE.
 	*/
 	cs_int32 *props = tmp->info.props;
-	props[PROP_SIDEBLOCK] = BLOCK_BEDROCK;
-	props[PROP_EDGEBLOCK] = BLOCK_WATER;
-	props[PROP_FOGDIST] = 0;
-	props[PROP_SPDCLOUDS] = 256;
-	props[PROP_SPDWEATHER] = 256;
-	props[PROP_FADEWEATHER] = 128;
-	props[PROP_EXPFOG] = 0;
-	props[PROP_SIDEOFFSET] = -2;
+	props[WORLD_PROP_SIDEBLOCK] = BLOCK_BEDROCK;
+	props[WORLD_PROP_EDGEBLOCK] = BLOCK_WATER;
+	props[WORLD_PROP_FOGDIST] = 0;
+	props[WORLD_PROP_SPDCLOUDS] = 256;
+	props[WORLD_PROP_SPDWEATHER] = 256;
+	props[WORLD_PROP_FADEWEATHER] = 128;
+	props[WORLD_PROP_EXPFOG] = 0;
+	props[WORLD_PROP_SIDEOFFSET] = -2;
 
 	Color3* colors = tmp->info.colors;
 	for(int i = 0; i < WORLD_COLORS_COUNT; i++) {
@@ -42,8 +53,8 @@ World *World_Create(cs_str name) {
 	return tmp;
 }
 
-cs_bool World_Add(World *world) {
-	return AList_AddField(&World_Head, world) != NULL;
+void World_Add(World *world) {
+	AList_AddField(&World_Head, world);
 }
 
 cs_bool World_IsReadyToPlay(World *world) {
@@ -65,7 +76,7 @@ void World_SetDimensions(World *world, const SVec *dims) {
 	world->wdata.size = dims->x * dims->y * dims->z;
 }
 
-cs_bool World_SetProperty(World *world, cs_byte property, cs_int32 value) {
+cs_bool World_SetProperty(World *world, EWorldProp property, cs_int32 value) {
 	if(property > WORLD_PROPS_COUNT) return false;
 	world->modified = true;
 	world->info.props[property] = value;
@@ -74,7 +85,7 @@ cs_bool World_SetProperty(World *world, cs_byte property, cs_int32 value) {
 	return true;
 }
 
-cs_int32 World_GetProperty(World *world, cs_byte property) {
+cs_int32 World_GetProperty(World *world, EWorldProp property) {
 	if(property > WORLD_PROPS_COUNT) return 0;
 	return world->info.props[property];
 }
@@ -99,8 +110,8 @@ cs_str World_GetTexturePack(World *world) {
 	return world->info.texturepack;
 }
 
-cs_bool World_SetWeather(World *world, cs_int8 type) {
-	if(type > 2) return false;
+cs_bool World_SetWeather(World *world, EWorldWeather type) {
+	if(type > WORLD_WEATHER_SNOW) return false;
 	world->info.weatherType = type;
 	world->modified = true;
 	world->info.modval |= MV_WEATHER;
@@ -108,7 +119,7 @@ cs_bool World_SetWeather(World *world, cs_int8 type) {
 	return true;
 }
 
-cs_bool World_SetEnvColor(World *world, cs_byte type, Color3* color) {
+cs_bool World_SetEnvColor(World *world, EWorldColors type, Color3* color) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	world->info.modval |= MV_COLORS;
 	world->modified = true;
@@ -117,12 +128,12 @@ cs_bool World_SetEnvColor(World *world, cs_byte type, Color3* color) {
 	return true;
 }
 
-Color3* World_GetEnvColor(World *world, cs_byte type) {
+Color3* World_GetEnvColor(World *world, EWorldColors type) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	return &world->info.colors[type];
 }
 
-cs_int8 World_GetWeather(World *world) {
+EWorldWeather World_GetWeather(World *world) {
 	return world->info.weatherType;
 }
 
@@ -131,6 +142,7 @@ void World_AllocBlockArray(World *world) {
 	*(cs_uint32 *)data = htonl(world->wdata.size);
 	world->wdata.ptr = data;
 	world->wdata.blocks = (BlockID *)data + 4;
+	world->loaded = true;
 }
 
 BlockID *World_GetBlockArray(World *world, cs_uint32 *size) {
@@ -161,7 +173,8 @@ NOINL static cs_bool WriteWData(cs_file fp, cs_byte dataType, void *ptr, cs_int3
 
 INL static cs_bool WriteInfo(World *world, cs_file fp) {
 	if(!File_Write((cs_char *)&(cs_int32){WORLD_MAGIC}, 4, 1, fp)) {
-		Error_PrintSys(false);
+		world->error.code = WORLD_ERROR_IOFAIL;
+		world->error.extra = WORLD_EXTRA_IO_WRITE;
 		return false;
 	}
 	return WriteWData(fp, DT_DIM, &world->info.dimensions, sizeof(SVec)) &&
@@ -181,7 +194,7 @@ static cs_bool ReadInfo(World *world, cs_file fp) {
 		return false;
 
 	if(WORLD_MAGIC != magic) {
-		ERROR_PRINT(ET_SERVER, EC_MAGIC, true);
+		world->error.code = WORLD_ERROR_INFOREAD;
 		return false;
 	}
 
@@ -220,7 +233,8 @@ static cs_bool ReadInfo(World *world, cs_file fp) {
 			case DT_END:
 				return true;
 			default:
-				ERROR_PRINTF(ET_SERVER, EC_FILECORR, false, world->name);
+				world->error.code = WORLD_ERROR_INFOREAD;
+				world->error.extra = WORLD_EXTRA_UNKNOWN_DATA_TYPE;
 				return false;
 		}
 	}
@@ -236,7 +250,8 @@ THREAD_FUNC(WorldSaveThread) {
 	cs_bool compr_ok;
 
 	if((compr_ok = Compr_Init(&world->compr, COMPR_TYPE_GZIP)) == false) {
-		ERROR_PRINT(ET_ZLIB, world->compr.ret, false);
+		world->error.code = WORLD_ERROR_COMPR;
+		world->error.extra = WORLD_EXTRA_COMPR_INIT;
 		Waitable_Signal(world->waitable);
 		return 0;
 	}
@@ -250,7 +265,8 @@ THREAD_FUNC(WorldSaveThread) {
 
 	cs_file fp = File_Open(tmpname, "wb");
 	if(!fp) {
-		Error_PrintSys(false);
+		world->error.code = WORLD_ERROR_IOFAIL;
+		world->error.extra = WORLD_EXTRA_IO_OPEN;
 		Compr_Reset(&world->compr);
 		Waitable_Signal(world->waitable);
 		return 0;
@@ -261,7 +277,8 @@ THREAD_FUNC(WorldSaveThread) {
 			Compr_SetOutBuffer(&world->compr, out, CHUNK_SIZE);
 			if((compr_ok = Compr_Update(&world->compr)) == true) {
 				if(File_Write(out, 1, world->compr.written, fp) != world->compr.written) {
-					Error_PrintSys(false);
+					world->error.code = WORLD_ERROR_IOFAIL;
+					world->error.extra = WORLD_EXTRA_IO_WRITE;
 					compr_ok = false;
 					break;
 				}
@@ -273,6 +290,9 @@ THREAD_FUNC(WorldSaveThread) {
 	Compr_Reset(&world->compr);
 	if(compr_ok)
 		File_Rename(tmpname, path);
+	
+	world->error.code = WORLD_ERROR_SUCCESS;
+	world->error.extra = WORLD_EXTRA_NOINFO;
 	Waitable_Signal(world->waitable);
 	return 0;
 }
@@ -285,12 +305,25 @@ cs_bool World_Save(World *world, cs_bool unload) {
 	return true;
 }
 
+cs_bool World_HasError(World *world) {
+	return world->error.code != WORLD_ERROR_SUCCESS;
+}
+
+EWorldError World_PopError(World *world, EWorldExtra *extra) {
+	if(extra) *extra = world->error.extra;
+	EWorldError code = world->error.code;
+	world->error.code = WORLD_ERROR_SUCCESS;
+	world->error.extra = WORLD_EXTRA_NOINFO;
+	return code;
+}
+
 THREAD_FUNC(WorldLoadThread) {
 	World *world = (World *)param;
 	cs_bool compr_ok;
 
 	if((compr_ok = Compr_Init(&world->compr, COMPR_TYPE_UNGZIP)) == false) {
-		ERROR_PRINT(ET_ZLIB, world->compr.ret, false);
+		world->error.code = WORLD_ERROR_COMPR;
+		world->error.extra = WORLD_EXTRA_COMPR_INIT;
 		Waitable_Signal(world->waitable);
 		return 0;
 	}
@@ -300,7 +333,8 @@ THREAD_FUNC(WorldLoadThread) {
 
 	cs_file fp = File_Open(path, "rb");
 	if(!fp) {
-		Error_PrintSys(false);
+		world->error.code = WORLD_ERROR_IOFAIL;
+		world->error.extra = WORLD_EXTRA_IO_OPEN;
 		Compr_Reset(&world->compr);
 		Waitable_Signal(world->waitable);
 		return 0;
@@ -316,16 +350,18 @@ THREAD_FUNC(WorldLoadThread) {
 		while((indatasize = (cs_uint32)File_Read(in, 1, CHUNK_SIZE, fp)) > 0) {
 			Compr_SetInBuffer(&world->compr, in, indatasize);
 			if((compr_ok = Compr_Update(&world->compr)) == false) {
-				ERROR_PRINT(ET_ZLIB, world->compr.ret, false);
+				world->error.code = WORLD_ERROR_COMPR;
+				world->error.extra = WORLD_EXTRA_COMPR_PROC;
 				break;
 			}
 		}
+		world->error.code = WORLD_ERROR_SUCCESS;
+		world->error.extra = WORLD_EXTRA_NOINFO;
 	}
 
 	if(fp) File_Close(fp);
 	Compr_Reset(&world->compr);
 	world->saveUnload = false;
-	world->loaded = true;
 	Waitable_Signal(world->waitable);
 	return 0;
 }

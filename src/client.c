@@ -255,12 +255,12 @@ cs_bool Client_Despawn(Client *client) {
 }
 
 cs_bool Client_ChangeWorld(Client *client, World *world) {
-	if(Client_IsInWorld(client, world) || Client_CheckState(client, STATE_MOTD))
+	if(Client_IsInWorld(client, world) || Client_CheckState(client, PLAYER_STATE_MOTD))
 		return false;
 
 	Client_Despawn(client);
 	client->playerData->world = world;
-	client->playerData->state = STATE_MOTD;
+	client->playerData->state = PLAYER_STATE_MOTD;
 	if(!world->loaded) World_Load(world);
 	client->playerData->reqWorldChange = world;
 	return true;
@@ -323,7 +323,7 @@ cs_bool Client_RemoveSelection(Client *client, cs_byte id) {
 }
 
 cs_bool Client_TeleportTo(Client *client, Vec *pos, Ang *ang) {
-	if(Client_CheckState(client, STATE_INGAME)) {
+	if(Client_CheckState(client, PLAYER_STATE_INGAME)) {
 		Vanilla_WriteTeleport(client, pos, ang);
 		return true;
 	}
@@ -362,7 +362,7 @@ INL static cs_uint32 copyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_
 void Client_Chat(Client *client, EMesgType type, cs_str message) {
 	cs_uint32 msgLen = (cs_uint32)String_Length(message);
 
-	if(msgLen > 62 && type == MT_CHAT) {
+	if(msgLen > 62 && type == MESSAGE_TYPE_CHAT) {
 		cs_char color = 0, part[65] = {0};
 		cs_uint32 parts = (msgLen / 60) + 1;
 		for(cs_uint32 i = 0; i < parts; i++) {
@@ -414,7 +414,7 @@ cs_bool Client_IsInSameWorld(Client *client, Client *other) {
 }
 
 cs_bool Client_IsInWorld(Client *client, World *world) {
-	if(!Client_CheckState(client, STATE_INGAME)) return false;
+	if(!Client_CheckState(client, PLAYER_STATE_INGAME)) return false;
 	return Client_GetWorld(client) == world;
 }
 
@@ -423,7 +423,7 @@ cs_bool Client_IsOP(Client *client) {
 }
 
 cs_bool Client_SetBlock(Client *client, SVec *pos, BlockID id) {
-	if(!Client_CheckState(client, STATE_INGAME)) return false;
+	if(!Client_CheckState(client, PLAYER_STATE_INGAME)) return false;
 	Vanilla_WriteSetBlock(client, pos, id);
 	return true;
 }
@@ -469,7 +469,7 @@ cs_bool Client_SetInvOrder(Client *client, cs_byte order, BlockID block) {
 }
 
 cs_bool Client_SetServerIdent(Client *client, cs_str name, cs_str motd) {
-	if(Client_CheckState(client, STATE_INGAME) && !Client_GetExtVer(client, EXT_INSTANTMOTD))
+	if(Client_CheckState(client, PLAYER_STATE_INGAME) && !Client_GetExtVer(client, EXT_INSTANTMOTD))
 		return false;
 	Vanilla_WriteServerIdent(client, name, motd);
 	return true;
@@ -831,7 +831,7 @@ NOINL static void SendWorld(Client *client, World *world) {
 
 		if(compr_ok) {
 			client->playerData->world = world;
-			client->playerData->state = STATE_INGAME;
+			client->playerData->state = PLAYER_STATE_INGAME;
 			client->playerData->position = world->info.spawnVec;
 			client->playerData->angle = world->info.spawnAng;
 			Event_Call(EVT_PRELVLFIN, client);
@@ -918,7 +918,7 @@ void Client_Kick(Client *client, cs_str reason) {
 
 void Client_Tick(Client *client, cs_int32 delta) {
 	if(client->closed) {
-		if(Client_CheckState(client, STATE_INGAME)) {
+		if(Client_CheckState(client, PLAYER_STATE_INGAME)) {
 			for(int i = 0; i < MAX_CLIENTS; i++) {
 				Client *other = Clients_List[i];
 				if(other && Client_GetExtVer(other, EXT_PLAYERLIST) == 2)

@@ -9,20 +9,20 @@
 #include "compr.h"
 
 typedef enum _EMesgType {
-	MT_CHAT, // Сообщение в чате
-	MT_STATUS1, // Правый верхний угол
-	MT_STATUS2,
-	MT_STATUS3,
-	MT_BRIGHT1 = 11, // Правый нижний угол
-	MT_BRIGHT2,
-	MT_BRIGHT3,
-	MT_ANNOUNCE = 100 // Сообщение в середине экрана
+	MESSAGE_TYPE_CHAT, // Сообщение в чате
+	MESSAGE_TYPE_STATUS1, // Правый верхний угол
+	MESSAGE_TYPE_STATUS2,
+	MESSAGE_TYPE_STATUS3,
+	MESSAGE_TYPE_BRIGHT1 = 11, // Правый нижний угол
+	MESSAGE_TYPE_BRIGHT2,
+	MESSAGE_TYPE_BRIGHT3,
+	MESSAGE_TYPE_ANNOUNCE = 100 // Сообщение в середине экрана
 } EMesgType;
 
 typedef enum _EPlayerState {
-	STATE_INITIAL, // Игрок только подключился
-	STATE_MOTD, // Игрок получает карту
-	STATE_INGAME // Игрок находится в игре
+	PLAYER_STATE_INITIAL, // Игрок только подключился
+	PLAYER_STATE_MOTD, // Игрок получает карту
+	PLAYER_STATE_INGAME // Игрок находится в игре
 } EPlayerState;
 
 

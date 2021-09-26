@@ -104,7 +104,7 @@ cs_bool Command_Handle(cs_char *str, Client *caller) {
 		}
 
 		if(cmd->flags & CMDF_OP && (caller && !Client_IsOP(caller))) {
-			Client_Chat(caller, MT_CHAT, Sstor_Get("CMD_NOPERM"));
+			Client_Chat(caller, MESSAGE_TYPE_CHAT, Sstor_Get("CMD_NOPERM"));
 			return true;
 		}
 
