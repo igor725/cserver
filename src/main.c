@@ -7,7 +7,7 @@
 #include "cserror.h"
 #include "hash.h"
 #include "compr.h"
-// #include "tests.h"
+#include "tests.h"
 
 INL static cs_bool Init(void) {
 	return Memory_Init() && Log_Init()
@@ -16,7 +16,18 @@ INL static cs_bool Init(void) {
 
 int main(int argc, char *argv[]) {
 	if(Init()) {
-		if(argc < 2 || !String_CaselessCompare(argv[1], "nochdir")) {
+		cs_bool testmode = false, nochdir = false;
+
+		if(argc > 1) {
+			for(cs_int32 i = 1; i < argc; i++) {
+				if(String_CaselessCompare(argv[i], "testmode"))
+					testmode = true;
+				else if(String_CaselessCompare(argv[i], "nochdir"))
+					nochdir = true;
+			}
+		}
+
+		if(nochdir) {
 			cs_char *lastSlash = (cs_char *)String_LastChar(argv[0], *PATH_DELIM);
 			if(lastSlash) {
 				// Отсоединяем имя запускаемого файла и
@@ -26,17 +37,17 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-#ifndef CORE_TEST_MODE
-		if(Server_Init()) {
-			Server_StartLoop();
-			Server_Cleanup();
-		}
-#else
+	if(testmode) {
 		if(Tests_PerformAll())
 			Log_Info("All tests passed!");
 		else
 			Log_Error("Some tests failed!");
-#endif
+	} else {
+		if(Server_Init()) {
+			Server_StartLoop();
+			Server_Cleanup();
+		}
+	}
 
 		Compr_Uninit();
 		Http_Uninit();
