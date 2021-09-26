@@ -248,12 +248,14 @@ cs_bool Server_Init(void) {
 					if(World_Load(tmp)) {
 						Waitable_Wait(tmp->waitable);
 						if(World_HasError(tmp)) {
-							skip_creating = true;
 							EWorldExtra extra = WORLD_EXTRA_NOINFO;
 							EWorldError code = World_PopError(tmp, &extra);
-							Log_Error(Sstor_Get("SV_WLOAD_ERR"), "load", World_GetName(tmp), code, extra);
-							World_FreeBlockArray(tmp);
-							World_Free(tmp);
+							if(code != WORLD_ERROR_IOFAIL && extra != WORLD_EXTRA_IO_OPEN) {
+								skip_creating = true;
+								Log_Error(Sstor_Get("SV_WLOAD_ERR"), "load", World_GetName(tmp), code, extra);
+								World_FreeBlockArray(tmp);
+								World_Free(tmp);
+							}
 						} else {
 							if(World_IsReadyToPlay(tmp)) {
 								AList_AddField(&World_Head, tmp);
