@@ -290,7 +290,7 @@ void Config_SetComment(CEntry *ent, cs_str commentary) {
 }
 
 cs_bool Config_SetLimit(CEntry *ent, cs_int32 min, cs_int32 max) {
-	if(min > max) return false;
+	if(min > max || ent->type < CONFIG_TYPE_INT32 || ent->type > CONFIG_TYPE_INT8) return false;
 	ent->flags |= CFG_FHAVELIMITS;
 	ent->limits[1] = min;
 	ent->limits[0] = max;
@@ -298,25 +298,25 @@ cs_bool Config_SetLimit(CEntry *ent, cs_int32 min, cs_int32 max) {
 }
 
 cs_bool Config_SetDefaultInt32(CEntry *ent, cs_int32 value) {
-	if(ent->type == CONFIG_TYPE_STR) return false;
+	if(ent->type < CONFIG_TYPE_INT32 || ent->type > CONFIG_TYPE_INT8) return false;
 	ent->defvalue.vint = value;
 	return true;
 }
 
 cs_bool Config_SetDefaultInt8(CEntry *ent, cs_int8 value) {
-	if(ent->type == CONFIG_TYPE_STR) return false;
+	if(ent->type < CONFIG_TYPE_INT32 || ent->type > CONFIG_TYPE_INT8) return false;
 	ent->defvalue.vint8 = value;
 	return true;
 }
 
 cs_bool Config_SetDefaultInt16(CEntry *ent, cs_int16 value) {
-	if(ent->type == CONFIG_TYPE_STR) return false;
+	if(ent->type < CONFIG_TYPE_INT32 || ent->type > CONFIG_TYPE_INT8) return false;
 	ent->defvalue.vint16 = value;
 	return true;
 }
 
 cs_bool Config_SetInt32(CEntry *ent, cs_int32 value) {
-	if(ent->type == CONFIG_TYPE_STR) return false;
+	if(ent->type < CONFIG_TYPE_INT32 || ent->type > CONFIG_TYPE_INT8) return false;
 	if(Config_GetInt32(ent) != value) {
 		ent->flags |= CFG_FCHANGED;
 		if(ent->flags & CFG_FHAVELIMITS)
@@ -327,7 +327,7 @@ cs_bool Config_SetInt32(CEntry *ent, cs_int32 value) {
 }
 
 cs_bool Config_SetInt16(CEntry *ent, cs_int16 value) {
-	if(ent->type == CONFIG_TYPE_STR) return false;
+	if(ent->type < CONFIG_TYPE_INT32 || ent->type > CONFIG_TYPE_INT8) return false;
 	if(Config_GetInt16(ent) != value) {
 		ent->flags |= CFG_FCHANGED;
 		if(ent->flags & CFG_FHAVELIMITS)
@@ -339,7 +339,7 @@ cs_bool Config_SetInt16(CEntry *ent, cs_int16 value) {
 }
 
 cs_bool Config_SetInt8(CEntry *ent, cs_int8 value) {
-	if(ent->type == CONFIG_TYPE_STR) return false;
+	if(ent->type < CONFIG_TYPE_INT32 || ent->type > CONFIG_TYPE_INT8) return false;
 	if(Config_GetInt8(ent) != value) {
 		ent->flags |= CFG_FCHANGED;
 		if(ent->flags & CFG_FHAVELIMITS)
@@ -351,7 +351,7 @@ cs_bool Config_SetInt8(CEntry *ent, cs_int8 value) {
 }
 
 cs_int32 Config_GetInt32(CEntry *ent) {
-	if(ent->type == CONFIG_TYPE_STR) return 0;
+	if(ent->type < CONFIG_TYPE_INT32 || ent->type > CONFIG_TYPE_INT8) return 0;
 	return ent->flags & CFG_FCHANGED ? ent->value.vint : ent->defvalue.vint;
 }
 
@@ -361,7 +361,7 @@ cs_int32 Config_GetInt32ByKey(CStore *store, cs_str key) {
 }
 
 cs_int8 Config_GetInt8(CEntry *ent) {
-	if(ent->type == CONFIG_TYPE_STR) return 0;
+	if(ent->type < CONFIG_TYPE_INT32 || ent->type > CONFIG_TYPE_INT8) return 0;
 	return ent->flags & CFG_FCHANGED ? ent->value.vint8 : ent->defvalue.vint8;
 }
 
@@ -371,7 +371,7 @@ cs_int8 Config_GetInt8ByKey(CStore *store, cs_str key) {
 }
 
 cs_int16 Config_GetInt16(CEntry *ent) {
-	if(ent->type == CONFIG_TYPE_STR) return 0;
+	if(ent->type < CONFIG_TYPE_INT32 || ent->type > CONFIG_TYPE_INT8) return 0;
 	return ent->flags & CFG_FCHANGED ? ent->value.vint16 : ent->defvalue.vint16;
 }
 
