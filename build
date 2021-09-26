@@ -17,6 +17,7 @@ case "$(uname -s)" in
 esac
 MAXWORKERS=$(nproc)
 RUN=0
+SAN=0
 DEBUG=0
 OPT="-O2"
 WARN=""
@@ -88,12 +89,18 @@ do
 	if [ "$a" == "w0" ]; then WARN="-W0"; fi
 	if [ "$a" == "dbg" ]; then DEBUG=1; CFLAGS="$CFLAGS -g"; OPT="-O0"; fi
 	if [ "$a" == "od" ]; then OPT="-O0"; fi
+	if [ "$a" == "san" ]; then SAN=1; fi
 	if [[ "$a" == "run" || "$a" == "runsame" ]]; then RUN=1; fi
 done
 
 STDERR="$ROOT/out/stderr"
 OUTDIR="$ROOT/out/$MACH"
 OBJDIR="$ROOT/objs/$MACH"
+
+if [ $SAN -eq 1 ]; then
+	LIBS="-lasan -lubsan $LIBS"
+	CFLAGS="-fsanitize=undefined,address -fstack-protector-all $CFLAGS"
+fi
 
 if [ ! -d "$OUTDIR" ]; then mkdir -p $OUTDIR; fi
 if [ ! -d "$OBJDIR" ]; then mkdir -p $OBJDIR; fi
