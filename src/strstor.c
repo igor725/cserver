@@ -46,12 +46,14 @@ cs_bool Strstro_Remove(cs_str key) {
 }
 
 void Sstor_Cleanup(void) {
-	KListField *tmp;
+	KListField *tmp, *prev;
 	List_Iter(tmp, storage) {
+		if(prev) KList_Remove(&storage, prev);
 		Memory_Free(tmp->key.ptr);
 		Memory_Free(tmp->value.ptr);
-		KList_Remove(&storage, tmp);
+		prev = tmp;
 	}
+	if(prev) KList_Remove(&storage, prev);
 }
 
 cs_bool Sstor_Defaults(void) {

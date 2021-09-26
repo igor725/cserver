@@ -334,14 +334,16 @@ void Server_StartLoop(void) {
 }
 
 INL static void UnloadAllWorlds(void) {
-	AListField *tmp;
+	AListField *tmp, *prev;
 
 	List_Iter(tmp, World_Head) {
+		if(prev) AList_Remove(&World_Head, prev);
 		World *world = (World *)tmp->value.ptr;
 		if(World_Save(world, true)) Waitable_Wait(world->waitable);
 		World_Free(world);
-		AList_Remove(&World_Head, tmp);
+		prev = tmp;
 	}
+	if(prev) AList_Remove(&World_Head, prev);
 }
 
 void Server_Cleanup(void) {
