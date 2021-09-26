@@ -6,6 +6,7 @@ ECHO Changing working directory to "%~dp0"
 CD /D %~dp0
 
 SET DEBUG=0
+SET SAN=0
 SET PROJECT_ROOT=.
 SET BUILD_PLUGIN=0
 
@@ -40,6 +41,7 @@ IF "%1"=="wall" SET WARN_LEVEL=/Wall /wd4820 /wd5045
 IF "%1"=="w4" SET WARN_LEVEL=/W4
 IF "%1"=="w0" SET WARN_LEVEL=/W0
 IF "%1"=="wx" SET MSVC_OPTS=%MSVC_OPTS% /WX
+IF "%1"=="san" SET SAN=1
 IF "%1"=="pb" SET BUILD_PLUGIN=1
 IF "%1"=="pbu" SET BUILD_PLUGIN=2
 SHIFT
@@ -79,10 +81,15 @@ IF "%DEBUG%"=="0" (
 	set MSVC_OPTS=%MSVC_OPTS% /MT
 	ECHO Debug: disabled
 ) else (
-	SET OPT_LEVEL=/Od
-	SET MSVC_OPTS=%MSVC_OPTS% /Z7 /MTd
 	SET SVOUTDIR=%SVOUTDIR%dbg
 	SET OUTDIR=%OUTDIR%dbg
+	SET OPT_LEVEL=/Od
+	SET MSVC_OPTS=%MSVC_OPTS% /Z7 /MTd /DDEBUG
+	SET MSVC_LINKER=%MSVC_LINKER% /DEBUG
+	SET MSVC_OPTS=%MSVC_OPTS%
+	IF "!SAN!"=="1" (
+		SET MSVC_OPTS=%MSVC_OPTS% -fsanitize=address /Zi /Fd!SVOUTDIR!\server.pdb
+	)
 	ECHO Debug: enabled
 )
 
