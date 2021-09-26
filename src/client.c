@@ -178,7 +178,7 @@ Client *Client_GetByName(cs_str name) {
 }
 
 Client *Client_GetByID(ClientID id) {
-	if(id > 0 || id < MAX_CLIENTS) return NULL;
+	if(id < 0 || id > MAX_CLIENTS) return NULL;
 	return Clients_List[id];
 }
 
@@ -930,13 +930,14 @@ void Client_Tick(Client *client, cs_int32 delta) {
 		return;
 	}
 
-	client->ppstm += delta;
-	if(client->ppstm > 1000) {
-		if(client->pps > MAX_CLIENT_PPS && Server_LatestBadTick + 5000 < Time_GetMSec()) {
-			Client_Kick(client, Sstor_Get("KICK_PACKETSPAM"));
-			return;
-		}
-		client->pps = 0;
-		client->ppstm = 0;
-	}
+	// TODO: Fix this
+	// client->ppstm += delta;
+	// if(client->ppstm > 5000) {
+	// 	if(client->pps > MAX_CLIENT_PPS && Server_LatestBadTick + 5000 < Time_GetMSec()) {
+	// 		Client_Kick(client, Sstor_Get("KICK_PACKETSPAM"));
+	// 		return;
+	// 	}
+	// 	client->pps = 0;
+	// 	client->ppstm = 0;
+	// }
 }
