@@ -661,9 +661,6 @@ cs_bool Client_Update(Client *client) {
 }
 
 void Client_Free(Client *client) {
-	if(client->id >= 0)
-		Clients_List[client->id] = NULL;
-
 	if(client->mutex) Mutex_Free(client->mutex);
 	if(client->websock) Memory_Free(client->websock);
 	if(client->playerData) Memory_Free(client->playerData);
@@ -922,12 +919,13 @@ void Client_Tick(Client *client, cs_int32 delta) {
 		if(Client_CheckState(client, PLAYER_STATE_INGAME)) {
 			for(int i = 0; i < MAX_CLIENTS; i++) {
 				Client *other = Clients_List[i];
-				if(other && Client_GetExtVer(other, EXT_PLAYERLIST) == 2)
+				if(other && other != client && Client_GetExtVer(other, EXT_PLAYERLIST) == 2)
 					CPE_WriteRemoveName(other, client);
 			}
 			Event_Call(EVT_ONDISCONNECT, client);
 		}
 		Client_Despawn(client);
+		if(client->id >= 0) Clients_List[client->id] = NULL;
 		return;
 	}
 
