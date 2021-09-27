@@ -36,7 +36,7 @@ static cs_str defaultBlockNames[] = {
 static BlockDef *definitionsList[254] = {0};
 
 cs_bool Block_IsValid(BlockID id) {
-	return id < 255 && (id < 50 || definitionsList[id] != NULL);
+	return id < 254 && (id < 50 || definitionsList[id] != NULL);
 }
 
 cs_str Block_GetName(BlockID id) {

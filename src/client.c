@@ -178,8 +178,7 @@ Client *Client_GetByName(cs_str name) {
 }
 
 Client *Client_GetByID(ClientID id) {
-	if(id < 0 || id > MAX_CLIENTS) return NULL;
-	return Clients_List[id];
+	return id >= 0 && id < MAX_CLIENTS ? Clients_List[id] : NULL;
 }
 
 World *Client_GetWorld(Client *client) {
@@ -188,14 +187,14 @@ World *Client_GetWorld(Client *client) {
 }
 
 cs_int8 Client_GetFluidLevel(Client *client) {
-	World *world = client->playerData->world;
 	SVec tpos; SVec_Copy(tpos, client->playerData->position)
+	if(tpos.x < 0 || tpos.y < 0 || tpos.z < 0) return 0;
 
 	BlockID id;
 	cs_byte level = 2;
 
 	test_wtrlevel:
-	if((id = World_GetBlock(world, &tpos)) > 7 && id < 12) {
+	if((id = World_GetBlock(client->playerData->world, &tpos)) > 7 && id < 12) {
 		return level;
 	}
 
@@ -917,6 +916,7 @@ void Client_Kick(Client *client, cs_str reason) {
 }
 
 void Client_Tick(Client *client, cs_int32 delta) {
+	(void)delta;
 	if(client->closed) {
 		if(Client_CheckState(client, PLAYER_STATE_INGAME)) {
 			for(int i = 0; i < MAX_CLIENTS; i++) {

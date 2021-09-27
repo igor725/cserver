@@ -395,7 +395,7 @@ cs_uint32 World_GetOffset(World *world, SVec *pos) {
 	if(pos->x < 0 || pos->y < 0 || pos->z < 0) return 0;
 	cs_uint32 offset = ((cs_uint32)pos->y * (cs_uint32)world->info.dimensions.z
 	+ (cs_uint32)pos->z) * (cs_uint32)world->info.dimensions.x + (cs_uint32)pos->x;
-	if(offset >= world->wdata.size) return world->wdata.size;
+	if(offset >= world->wdata.size) return world->wdata.size - 1;
 	return offset;
 }
 

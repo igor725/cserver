@@ -422,7 +422,7 @@ THREAD_FUNC(treesThread) {
 	ctx.biomesWithTrees = Memory_Alloc(2, ctx.biomeSize);
 
 	cs_uint16 biomesWithTreesNum = 0;
-	for(cs_uint16 i = 0; i <= ctx.biomeSize; i++) {
+	for(cs_uint16 i = 0; i < ctx.biomeSize; i++) {
 		ENGenBiomes biome = ctx.biomes[i];
 		if(biome == NGEN_BIOME_TREES || biome == NGEN_BIOME_SAND)
 			ctx.biomesWithTrees[biomesWithTreesNum++] = i;

@@ -486,7 +486,7 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 ** Врайтеры и хендлеры
 ** CPE протокола
 */
-#define MODELS_COUNT 14
+#define MODELS_COUNT 15
 
 static cs_str validModelNames[MODELS_COUNT] = {
 	"humanoid",
@@ -502,7 +502,8 @@ static cs_str validModelNames[MODELS_COUNT] = {
 	"zombie",
 	"head",
 	"sit",
-	"chibi"
+	"chibi",
+	NULL
 };
 
 cs_bool CPE_CheckModel(cs_int16 model) {
