@@ -661,9 +661,19 @@ cs_bool Client_Update(Client *client) {
 }
 
 void Client_Free(Client *client) {
-	if(client->mutex) Mutex_Free(client->mutex);
-	if(client->websock) Memory_Free(client->websock);
-	if(client->playerData) Memory_Free(client->playerData);
+	if(client->mutex) {
+		Mutex_Free(client->mutex);
+		client->mutex = NULL;
+	}
+	if(client->websock) {
+		Memory_Free(client->websock);
+		client->websock = NULL;
+	}
+	if(client->playerData) {
+		Memory_Free(client->playerData);
+		client->playerData = NULL;
+	}
+	if(client->id >= 0) Clients_List[client->id] = NULL;
 
 	if(client->cpeData) {
 		CPEExt *prev, *ptr = client->cpeData->headExtension;
