@@ -300,7 +300,7 @@ void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 			(cs_int16)World_GetProperty(world, 2)
 		);
 	}
-	
+
 	if(updateAll || world->info.modval & MV_WEATHER)
 		Client_SetWeather(client, world->info.weatherType);
 }
@@ -808,15 +808,16 @@ NOINL static void SendWorld(Client *client, World *world) {
 	}
 
 	if(compr_ok) {
-		Mutex_Lock(client->mutex);
 		cs_byte *data = (cs_byte *)client->wrbuf;
-		*data++ = 0x03;
-		cs_uint16 *len = (cs_uint16 *)data; data += 2;
-		cs_byte *progr = data + 1024;
+		cs_uint16 *len = (cs_uint16 *)(data + 1);
+		cs_byte *cmpdata = data + 3;
+		cs_byte *progr = data + 1028;
 
 		do {
 			if(!compr_ok || client->closed) break;
-			Compr_SetOutBuffer(&client->compr, data, 1024);
+			Mutex_Lock(client->mutex);
+			*data = 0x03;
+			Compr_SetOutBuffer(&client->compr, cmpdata, 1024);
 			if((compr_ok = Compr_Update(&client->compr)) == true) {
 				if(!client->closed && client->compr.written) {
 					*len = htons((cs_uint16)client->compr.written);
@@ -824,9 +825,9 @@ NOINL static void SendWorld(Client *client, World *world) {
 					compr_ok = Client_Send(client, 1028) == 1028;
 				}
 			}
+			Mutex_Unlock(client->mutex);
 		} while(client->compr.state != COMPR_STATE_DONE);
 		Compr_Reset(&client->compr);
-		Mutex_Unlock(client->mutex);
 
 		if(compr_ok) {
 			client->playerData->world = world;
