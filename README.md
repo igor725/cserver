@@ -37,7 +37,7 @@ NOTE: This script uses gcc, but you can change it to another compiler by setting
 ### On Windows
 ``.\build.bat [args ...]``
 
-NOTE: This script must be runned in the Visual Studio Developer Command Prompt
+NOTE: This script must be runned in the Visual Studio Developer Command Prompt.
 
 ### Build script arguments
 * ``cls`` - Clear console window before compilation;
@@ -50,7 +50,8 @@ NOTE: This script must be runned in the Visual Studio Developer Command Prompt
 * ``od`` - Disable compiler optimizations;
 * ``san`` - Add LLVM sanitizers
 * ``run`` - Start the server after compilation;
-* ``runsame`` - Start the server after compilation in the same console window;
+* ``noprompt`` - Suppress zlib download prompt message (Windows only);
+* ``runsame`` - Start the server after compilation in the same console window (Windows only);
 * ``install`` - Copy plugin binary to the ``plugins`` directory after compilation (Can be used only with ``pb``).
 
 

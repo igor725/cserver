@@ -9,8 +9,9 @@ SET DEBUG=0
 SET SAN=0
 SET PROJECT_ROOT=.
 SET BUILD_PLUGIN=0
-
+SET NOPROMPT=0
 SET BINNAME=server.exe
+SET GITOK=0
 
 SET WARN_LEVEL=/W3
 SET OPT_LEVEL=/O2
@@ -25,6 +26,7 @@ SET MSVC_LIBS=kernel32.lib dbghelp.lib
 
 git --version >nul
 IF "%ERRORLEVEL%"=="0" (
+	SET GITOK=1
 	FOR /F "tokens=* USEBACKQ" %%F IN (`git describe --tags HEAD`) DO (
 		SET MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_TAG#\"%%F\"
 	)
@@ -35,6 +37,7 @@ IF "%1"=="" GOTO argsdone
 IF "%1"=="cls" cls
 IF "%1"=="dbg" SET DEBUG=1
 IF "%1"=="run" SET RUNMODE=0
+IF "%1"=="noprompt" SET NOPROMPT=1
 IF "%1"=="runsame" SET RUNMODE=1
 IF "%1"=="od" SET OPT_LEVEL=/Od
 IF "%1"=="wall" SET WARN_LEVEL=/Wall /wd4820 /wd5045
@@ -106,23 +109,13 @@ IF "%BUILD_PLUGIN%"=="1" (
 	ECHO Building plugin: %PLUGNAME%
 ) else (
 	SET MSVC_LINKER=%MSVC_LINKER% /subsystem:console
-	IF NOT EXIST "%SVOUTDIR%" MKDIR %SVOUTDIR%
-	FOR /F "tokens=* USEBACKQ" %%F IN (`DIR /B .\zlib\lib%ARCH%\*.dll`) DO (
-		SET ZLIB_DYNAMIC=%%F
-	)
-	SET ZLIB_DEBUG=!ZLIB_LINK:~0,-3!pdb
-	SET MSVC_LIBS=%MSVC_LIBS% ws2_32.lib !ZLIB_LINK!
-	IF NOT EXIST "%SVOUTDIR%\!ZLIB_DYNAMIC!" (
-		COPY ".\zlib\lib%ARCH%\!ZLIB_DYNAMIC!" "%SVOUTDIR%"
-	)
-	IF "%DEBUG%"=="1" IF NOT EXIST "%SVOUTDIR%\!ZLIB_DEBUG!" (
-		COPY ".\zlib\lib%ARCH%\!ZLIB_DEBUG!" "%SVOUTDIR%"
-	)
+	SET MSVC_LIBS=!MSVC_LIBS! ws2_32.lib
+	IF NOT EXIST !OUTDIR! MD !OUTDIR!
+	IF NOT EXIST !OBJDIR! MD !OBJDIR!
+	GOTO detectzlib
 )
 
-IF NOT EXIST !OUTDIR! MD !OUTDIR!
-IF NOT EXIST !OBJDIR! MD !OBJDIR!
-
+:zlibok
 SET BINPATH=%OUTDIR%\%BINNAME%
 IF "%BUILD_PLUGIN%"=="1" (
   SET MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DCORE_BUILD_PLUGIN /I.\src\
@@ -133,7 +126,6 @@ IF "%BUILD_PLUGIN%"=="1" (
 )
 
 SET MSVC_OPTS=%MSVC_OPTS% %WARN_LEVEL% %OPT_LEVEL% /Fo%OBJDIR%\
-set MSVC_OPTS=%MSVC_OPTS% /I.\zlib\include\
 SET MSVC_OPTS=%MSVC_OPTS% /link %MSVC_LINKER%
 SET SOURCES=%PROJECT_ROOT%\src\*.c
 
@@ -155,6 +147,70 @@ IF "%BUILD_PLUGIN%"=="1" (
 	)
   GOTO endok
 ) else GOTO binstart
+
+:detectzlib
+IF NOT EXIST ".\zlib\" GOTO nozlib
+IF NOT EXIST ".\zlib\zlib.h" GOTO nozlib
+IF NOT EXIST ".\zlib\zconf.h" GOTO nozlib
+set MSVC_OPTS=%MSVC_OPTS% /I.\zlib\
+FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R .\zlib\ z*.dll`) DO (
+	SET ZLIB_DYNAMIC=%%F
+)
+IF "%ZLIB_DYNAMIC%"=="" (
+	echo ZLIB empty
+	GOTO makezlib_st1
+) ELSE (
+	IF NOT EXIST "%ZLIB_DYNAMIC%" (
+		GOTO makezlib_st1
+	) ELSE (
+		GOTO copyzlib
+	)
+)
+
+:makezlib_st1
+IF NOT EXIST ".\zlib\win32\Makefile.msc" (
+	GOTO nozlib
+) ELSE (
+	GOTO makezlib_st2
+)
+
+:nozlib
+IF "%NOPROMPT%"=="0" (
+	ECHO zlib not found in root directory.
+	ECHO Would you like the script to automatically clone and build zlib library?
+	ECHO Note: The zlib repo will be cloned from Mark Adler's GitHub, then compiled.
+	ECHO Warning: If zlib directory exists it will be removed!
+	SET /P ZQUESTION="[Y/n]>"
+	IF "!ZQUESTION!"=="n" GOTO end
+	IF "!ZQUESTION!"=="N" GOTO end
+	IF "!ZQUESTION!"=="" GOTO downzlib
+	IF "!ZQUESTION!"=="y" GOTO downzlib
+	IF "!ZQUESTION!"=="Y" GOTO downzlib
+	GOTO end	
+)
+
+:downzlib
+IF "%GITOK%"=="0" (
+	ECHO Looks like you don't have Git for Windows
+	ECHO You can download it from https://git-scm.com/download/win
+) ELSE (
+	RMDIR /S /Q .\zlib
+	git clone https://github.com/madler/zlib
+	GOTO makezlib_st2
+)
+
+:makezlib_st2
+PUSHD ".\zlib\"
+nmake /f win32\Makefile.msc
+POPD
+GOTO detectzlib
+
+:copyzlib
+COPY "%ZLIB_DYNAMIC%" "%SVOUTDIR%"
+IF "%DEBUG%"=="1" (
+	COPY "!ZLIB_DYNAMIC:~0,-3!pdb" "%SVOUTDIR%"
+)
+goto zlibok
 
 :binstart
 IF "%RUNMODE%"=="0" start /D %OUTDIR% %BINNAME%

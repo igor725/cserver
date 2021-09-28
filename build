@@ -90,7 +90,7 @@ do
 	if [ "$a" == "dbg" ]; then DEBUG=1; CFLAGS="$CFLAGS -g"; OPT="-O0"; fi
 	if [ "$a" == "od" ]; then OPT="-O0"; fi
 	if [ "$a" == "san" ]; then SAN=1; fi
-	if [[ "$a" == "run" || "$a" == "runsame" ]]; then RUN=1; fi
+	if [ "$a" == "run" ]; then RUN=1; fi
 done
 
 STDERR="$ROOT/out/stderr"
