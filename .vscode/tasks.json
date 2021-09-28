@@ -10,7 +10,7 @@
 			"linux": {
 				"command": "./build"
 			},
-			"args": ["wall", "dbg"],
+			"args": ["wall", "dbg", "noprompt"],
 			"group": {
 				"kind": "build",
 				"isDefault": true
@@ -29,7 +29,7 @@
 			"linux": {
 				"command": "./build"
 			},
-			"args": ["wall"],
+			"args": ["wall", "noprompt"],
 			"group": "build",
 			"presentation": {
 				"reveal": "silent"

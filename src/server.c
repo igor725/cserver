@@ -76,7 +76,7 @@ THREAD_FUNC(ClientInitThread) {
 		else
 			Client_Loop(tmp);
 	} else
-		Client_Kick(tmp, Sstor_Get("KICK_PERR"));
+		Client_Kick(tmp, Sstor_Get("KICK_PERR_HS"));
 
 	Client_Tick(tmp, 0);
 	Client_Free(tmp);

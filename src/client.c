@@ -389,10 +389,9 @@ NOINL static void HandlePacket(Client *client, cs_char *data, Packet *packet, cs
 		if(packet->handler)
 			ret = packet->handler(client, data);
 
-	if(!ret) {
-		Log_Error(Sstor_Get("SV_PERR"), packet->id, client->id);
-		Client_Kick(client, Sstor_Get("KICK_PERR"));
-	} else client->pps += 1;
+	if(!ret)
+		Client_KickFormat(client, Sstor_Get("KICK_PERR_UNEXP"), packet->id);
+	else client->pps += 1;
 }
 
 INL static cs_uint16 GetPacketSizeFor(Packet *packet, Client *client, cs_bool *extended) {
@@ -739,8 +738,7 @@ INL static void PacketReceiverWs(Client *client) {
 		packetId = *data++;
 		packet = Packet_Get(packetId);
 		if(!packet) {
-			Log_Error(Sstor_Get("SV_PERR"), packetId, client->id);
-			Client_Kick(client, Sstor_Get("KICK_PERR"));
+			Client_KickFormat(client, Sstor_Get("KICK_PERR_NOHANDLER"), packetId);
 			return;
 		}
 
@@ -755,7 +753,7 @@ INL static void PacketReceiverWs(Client *client) {
 			}
 
 			return;
-		} else Client_Kick(client, Sstor_Get("KICK_PERR"));
+		} else Client_Kick(client, Sstor_Get("KICK_PERR_WS"));
 	} else
 		client->closed = true;
 }
@@ -769,8 +767,7 @@ INL static void PacketReceiverRaw(Client *client) {
 	if(Socket_Receive(client->sock, (cs_char *)&packetId, 1, MSG_WAITALL) == 1) {
 		packet = Packet_Get(packetId);
 		if(!packet) {
-			Log_Error(Sstor_Get("SV_PERR"), packetId, client->id);
-			Client_Kick(client, Sstor_Get("KICK_PERR"));
+			Client_KickFormat(client, Sstor_Get("KICK_PERR_NOHANDLER"), packetId);
 			return;
 		}
 
@@ -790,7 +787,7 @@ NOINL static void SendWorld(Client *client, World *world) {
 	if(!world->loaded) Waitable_Wait(world->waitable);
 
 	if(!world->loaded) {
-		Client_Kick(client, Sstor_Get("KICK_WCOMP"));
+		Client_Kick(client, Sstor_Get("KICK_INT"));
 		return;
 	}
 
@@ -834,7 +831,6 @@ NOINL static void SendWorld(Client *client, World *world) {
 			}
 			Mutex_Unlock(client->mutex);
 		} while(client->compr.state != COMPR_STATE_DONE);
-		Compr_Reset(&client->compr);
 
 		if(compr_ok) {
 			client->playerData->world = world;
@@ -850,11 +846,12 @@ NOINL static void SendWorld(Client *client, World *world) {
 			}
 			Vanilla_WriteLvlFin(client, &world->info.dimensions);
 			Client_Spawn(client);
-			return;
-		}
-	}
+		} else
+			Client_KickFormat(client, Sstor_Get("KICK_ZERR"), Compr_GetError(client->compr.ret));
 
-	Client_Kick(client, Sstor_Get("KICK_WCOMP"));
+		Compr_Reset(&client->compr);
+	} else
+		Client_KickFormat(client, Sstor_Get("KICK_ZERR"), Compr_GetError(client->compr.ret));
 }
 
 void Client_Loop(Client *client) {
@@ -921,6 +918,17 @@ void Client_Kick(Client *client, cs_str reason) {
 	if(!reason) reason = Sstor_Get("KICK_NOREASON");
 	Vanilla_WriteKick(client, reason);
 	client->closed = true;
+}
+
+void Client_KickFormat(Client *client, cs_str fmtreason, ...) {
+	char kickreason[65];
+	va_list args;
+	va_start(args, fmtreason);
+	if(String_FormatBufVararg(kickreason, 65, fmtreason, &args))
+		Client_Kick(client, kickreason);
+	else
+		Client_Kick(client, fmtreason);
+	va_end(args);
 }
 
 void Client_Tick(Client *client, cs_int32 delta) {

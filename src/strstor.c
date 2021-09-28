@@ -72,7 +72,6 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("SV_BADTICK", "Last server tick took %dms!");
 	Sstor_Set("SV_STOP_PL", "Kicking players...");
 	Sstor_Set("SV_STOP_SW", "Saving worlds...");
-	Sstor_Set("SV_PERR", "Invalid packet 0x%02X from Client[%d]");
 
 	Sstor_Set("CMD_UNK", "Unknown command.");
 	Sstor_Set("CMD_NOCON", "This command can't be called from console.");
@@ -86,15 +85,20 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("CL_VANILLA", "Vanilla client");
 
 	Sstor_Set("KICK_NOREASON", "Kicked without reason");
-	Sstor_Set("KICK_PROTOVER", "Invalid protocol version");
+	Sstor_Set("KICK_PROTOVER", "Invalid protocol version (e: 0x07, g: 0x%02X)");
 	Sstor_Set("KICK_NAMEINUSE", "This name is already in use");
 	Sstor_Set("KICK_AUTHFAIL", "Authorization failed");
 	Sstor_Set("KICK_MANYCONN", "Too many connections from one IP");
 	Sstor_Set("KICK_FULL", "Server is full");
 	Sstor_Set("KICK_PACKETSPAM", "Too many packets per second");
+	Sstor_Set("KICK_PERR_HS", "Handshake waiting timeout");
 	Sstor_Set("KICK_PERR", "Packet reading error");
-	Sstor_Set("KICK_UNKBID", "Invalid block ID");
-	Sstor_Set("KICK_WCOMP", "World compression failed");
+	Sstor_Set("KICK_PERR_WS", "WebSocket frame body smaller than expected");
+	Sstor_Set("KICK_PERR_UNEXP", "Unexpected packet 0x%02X received");
+	Sstor_Set("KICK_PERR_NOHANDLER", "Unknown opcode 0x%02X");
+	Sstor_Set("KICK_UNKBID", "Invalid block ID received: %d");
+	Sstor_Set("KICK_ZERR", "zlib error: %s");
+	Sstor_Set("KICK_INT", "Internal server error");
 	Sstor_Set("KICK_STOP", "Server stopped");
 
 	Sstor_Set("CFG_SVIP_COMM", "Bind server to specified IP address. \"0.0.0.0\" - means \"all available network adapters\".");
@@ -109,7 +113,7 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("CFG_MAXPL_COMM", "Max players on server. [1-127]");
 	Sstor_Set("CFG_MAXCON_COMM", "Max connections per one IP. [1-5]");
 	Sstor_Set("CFG_WORLDS_COMM", "List of worlds to load at startup. (Can be \"*\" it means load all worlds in the folder.)");
-	Sstor_Set("CFG_WORLDS_DVAL", "world.cws:256x256x256:normal,flat_world.cws:256x256x256:flat");
+	Sstor_Set("CFG_WORLDS_DVAL", "flat_world.cws:64x64x64:flat,world.cws:256x256x256:normal");
 
 	Sstor_Set("HBEAT_URL", "Server play URL: %s.");
 	Sstor_Set("HBEAT_ERR", "Heartbeat error: %s.");

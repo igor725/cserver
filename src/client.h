@@ -7,6 +7,7 @@
 #include "world.h"
 #include "websocket.h"
 #include "compr.h"
+#include <stdarg.h>
 
 typedef enum _EMesgType {
 	MESSAGE_TYPE_CHAT, // Сообщение в чате
@@ -82,7 +83,7 @@ typedef struct _Client {
 	cs_uint32 pps, // Количество пакетов, отправленных игроком за секунду
 	ppstm, // Таймер для счётчика пакетов
 	addr; // ipv4 адрес клиента
-	Thread thread; // Потоки клиента
+	Thread thread; // Поток клиента
 	Compr compr; // Штука для сжатия карты
 	CPEData *cpeData; // В случае vanilla клиента эта структура не создаётся
 	PlayerData *playerData; // Создаётся при получении hanshake пакета
@@ -119,6 +120,7 @@ API void Clients_UpdateWorldInfo(World *world);
 API cs_bool Client_ChangeWorld(Client *client, World *world);
 API void Client_Chat(Client *client, EMesgType type, cs_str message);
 API void Client_Kick(Client *client, cs_str reason);
+API void Client_KickFormat(Client *client, cs_str fmtreason, ...);
 API void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll);
 API cs_bool Client_Update(Client *client);
 API cs_bool Client_SendHacks(Client *client, CPEHacks *hacks);

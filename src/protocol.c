@@ -289,8 +289,9 @@ void Vanilla_WriteKick(Client *client, cs_str reason) {
 
 cs_bool Handler_Handshake(Client *client, cs_char *data) {
 	if(client->playerData) return false;
-	if(*data++ != 0x07) {
-		Client_Kick(client, Sstor_Get("KICK_PROTOVER"));
+	cs_byte protoVer = *data++;
+	if(protoVer != 0x07) {
+		Client_KickFormat(client, Sstor_Get("KICK_PROTOVER"), protoVer);
 		return true;
 	}
 
@@ -362,7 +363,7 @@ cs_bool Handler_SetBlock(Client *client, cs_char *data) {
 	switch(params.mode) {
 		case 0x01:
 			if(!Block_IsValid(params.id)) {
-				Client_Kick(client, Sstor_Get("KICK_UNKBID"));
+				Client_KickFormat(client, Sstor_Get("KICK_UNKBID"), params.id);
 				return false;
 			}
 			if(Event_Call(EVT_ONBLOCKPLACE, &params)) {
