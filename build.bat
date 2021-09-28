@@ -206,11 +206,14 @@ POPD
 GOTO detectzlib
 
 :copyzlib
+FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R !SVOUTDIR! z*.dll`) DO (
+	IF EXIST "%%F" GOTO zlibok
+)
 COPY "%ZLIB_DYNAMIC%" "%SVOUTDIR%"
 IF "%DEBUG%"=="1" (
 	COPY "!ZLIB_DYNAMIC:~0,-3!pdb" "%SVOUTDIR%"
 )
-goto zlibok
+GOTO zlibok
 
 :binstart
 IF "%RUNMODE%"=="0" start /D %OUTDIR% %BINNAME%
