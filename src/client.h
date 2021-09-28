@@ -83,7 +83,6 @@ typedef struct _Client {
 	cs_uint32 pps, // Количество пакетов, отправленных игроком за секунду
 	ppstm, // Таймер для счётчика пакетов
 	addr; // ipv4 адрес клиента
-	Thread thread; // Поток клиента
 	Compr compr; // Штука для сжатия карты
 	CPEData *cpeData; // В случае vanilla клиента эта структура не создаётся
 	PlayerData *playerData; // Создаётся при получении hanshake пакета
@@ -114,7 +113,7 @@ API CGroup *Group_GetByID(cs_int16 gid);
 API cs_bool Group_Remove(cs_int16 gid);
 
 API cs_byte Clients_GetCount(EPlayerState state);
-API void Clients_KickAll(cs_str reason, cs_bool wait);
+API void Clients_KickAll(cs_str reason);
 API void Clients_UpdateWorldInfo(World *world);
 
 API cs_bool Client_ChangeWorld(Client *client, World *world);
@@ -127,11 +126,13 @@ API cs_bool Client_SendHacks(Client *client, CPEHacks *hacks);
 API cs_bool Client_MakeSelection(Client *client, cs_byte id, SVec *start, SVec *end, Color4* color);
 API cs_bool Client_RemoveSelection(Client *client, cs_byte id);
 API cs_bool Client_TeleportTo(Client *client, Vec *pos, Ang *ang);
+API cs_bool Client_TeleportToSpawn(Client *client);
 API cs_bool Client_CheckState(Client *client, EPlayerState state);
 
 API cs_bool Client_IsInSameWorld(Client *client, Client *other);
 API cs_bool Client_IsInWorld(Client *client, World *world);
 API cs_bool Client_IsOP(Client *client);
+API cs_bool Client_IsFirstSpawn(Client *client);
 
 API cs_bool Client_SetWeather(Client *client, cs_int8 type);
 API cs_bool Client_SetInvOrder(Client *client, cs_byte order, BlockID block);
@@ -149,6 +150,7 @@ API cs_bool Client_SetHotkey(Client *client, cs_str action, cs_int32 keycode, cs
 API cs_bool Client_SetHotbar(Client *client, cs_byte pos, BlockID block);
 API cs_bool Client_SetSkin(Client *client, cs_str skin);
 API cs_bool Client_SetSpawn(Client *client, Vec *pos, Ang *ang);
+API cs_bool Client_SetOP(Client *client, cs_bool state);
 API cs_bool Client_SetVelocity(Client *client, Vec *velocity, cs_bool mode);
 API cs_bool Client_SetRotation(Client *client, cs_byte axis, cs_int32 value);
 API cs_bool Client_SetGroup(Client *client, cs_int16 gid);
@@ -165,7 +167,9 @@ API World *Client_GetWorld(Client *client);
 API cs_int8 Client_GetFluidLevel(Client *client);
 API cs_int16 Client_GetModel(Client *client);
 API BlockID Client_GetHeldBlock(Client *client);
+API cs_bool Client_GetPosition(Client *client, Vec *pos, Ang *ang);
 API cs_int32 Client_GetExtVer(Client *client, cs_uint32 exthash);
+API cs_uint32 Client_GetAddr(Client *client);
 API cs_int32 Client_GetPing(Client *client);
 API CGroup *Client_GetGroup(Client *client);
 API cs_int16 Client_GetGroupID(Client *client);

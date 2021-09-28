@@ -35,32 +35,32 @@ INL static cs_bool AddClient(Client *client) {
 }
 
 THREAD_FUNC(ClientInitThread) {
-	Client *tmp = (Client *)param;
+	Client *client = (Client *)param;
 	cs_int8 maxConnPerIP = Config_GetInt8ByKey(Server_Config, CFG_CONN_KEY),
 	sameAddrCount = 1;
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *other = Clients_List[i];
-		if(other && other->addr == tmp->addr)
+		if(other && other->addr == client->addr)
 			++sameAddrCount;
 		else continue;
 
 		if(sameAddrCount > maxConnPerIP) {
-			Client_Kick(tmp, Sstor_Get("KICK_MANYCONN"));
-			Client_Free(tmp);
+			Client_Kick(client, Sstor_Get("KICK_MANYCONN"));
+			Client_Free(client);
 			return 0;
 		}
 	}
 
 	cs_byte attempt = 0;
 	while(attempt < 10) {
-		if(Socket_Receive(tmp->sock, tmp->rdbuf, 5, MSG_PEEK) == 5) {
-			if(String_CaselessCompare2(tmp->rdbuf, "GET /", 5)) {
+		if(Socket_Receive(client->sock, client->rdbuf, 5, MSG_PEEK) == 5) {
+			if(String_CaselessCompare2(client->rdbuf, "GET /", 5)) {
 				WebSock *wscl = Memory_Alloc(1, sizeof(WebSock));
 				wscl->proto = "ClassiCube";
-				wscl->recvbuf = tmp->rdbuf;
-				wscl->sock = tmp->sock;
-				tmp->websock = wscl;
+				wscl->recvbuf = client->rdbuf;
+				wscl->sock = client->sock;
+				client->websock = wscl;
 				if(WebSock_DoHandshake(wscl))
 					break;
 				else attempt = 10;
@@ -71,15 +71,16 @@ THREAD_FUNC(ClientInitThread) {
 	}
 
 	if(attempt < 10) {
-		if(!AddClient(tmp))
-			Client_Kick(tmp, Sstor_Get("KICK_FULL"));
-		else
-			Client_Loop(tmp);
+		if(!AddClient(client))
+			Client_Kick(client, Sstor_Get("KICK_FULL"));
+		else {
+			Client_Loop(client);
+		}
 	} else
-		Client_Kick(tmp, Sstor_Get("KICK_PERR_HS"));
+		Client_Kick(client, Sstor_Get("KICK_PERR_HS"));
 
-	Client_Tick(tmp, 0);
-	Client_Free(tmp);
+	Client_Tick(client, 0);
+	Client_Free(client);
 	return 0;
 }
 
@@ -101,7 +102,7 @@ THREAD_FUNC(SockAcceptThread) {
 			tmp->id = CLIENT_SELF;
 			tmp->mutex = Mutex_Create();
 			tmp->addr = caddr.sin_addr.s_addr;
-			tmp->thread = Thread_Create(ClientInitThread, tmp, false);
+			Thread_Create(ClientInitThread, tmp, false);
 		} else
 			Socket_Close(fd);
 	}
@@ -380,7 +381,7 @@ INL static void UnloadAllWorlds(void) {
 
 void Server_Cleanup(void) {
 	Log_Info(Sstor_Get("SV_STOP_PL"));
-	Clients_KickAll(Sstor_Get("KICK_STOP"), true);
+	Clients_KickAll(Sstor_Get("KICK_STOP"));
 	if(Broadcast && Broadcast->mutex) Mutex_Free(Broadcast->mutex);
 	if(Broadcast) Memory_Free(Broadcast);
 	Log_Info(Sstor_Get("SV_STOP_SW"));

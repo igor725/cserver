@@ -40,6 +40,18 @@ CEntry *Config_GetEntry(CStore *store, cs_str key) {
 	return NULL;
 }
 
+ECTypes Config_GetEntryType(CEntry *ent) {
+	return ent->type;
+}
+
+cs_str Config_GetEntryTypeName(CEntry *ent) {
+	return Config_TypeName(ent->type);
+}
+
+cs_str Config_GetEntryKey(CEntry *ent) {
+	return ent->key;
+}
+
 CEntry *Config_NewEntry(CStore *store, cs_str key, cs_int32 type) {
 	CEntry *ent = Config_GetEntry(store, key);
 	if(ent) return ent;

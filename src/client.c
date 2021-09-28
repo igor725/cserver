@@ -137,13 +137,10 @@ void Clients_UpdateWorldInfo(World *world) {
 	world->info.modval = MV_NONE;
 }
 
-void Clients_KickAll(cs_str reason, cs_bool wait) {
+void Clients_KickAll(cs_str reason) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
-		if(client) {
-			Client_Kick(client, reason);
-			if(wait) Thread_Join(client->thread);
-		}
+		if(client) Client_Kick(client, reason);
 	}
 }
 
@@ -329,6 +326,14 @@ cs_bool Client_TeleportTo(Client *client, Vec *pos, Ang *ang) {
 	return false;
 }
 
+cs_bool Client_TeleportToSpawn(Client *client) {
+	if(!client->playerData || !client->playerData->world) return false;
+	return Client_TeleportTo(client,
+		&client->playerData->world->info.spawnVec,
+		&client->playerData->world->info.spawnAng
+	);
+}
+
 INL static cs_uint32 copyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_char *color) {
 	if(*msg == '\0') return 0;
 
@@ -418,6 +423,10 @@ cs_bool Client_IsInWorld(Client *client, World *world) {
 
 cs_bool Client_IsOP(Client *client) {
 	return client->playerData ? client->playerData->isOP : false;
+}
+
+cs_bool Client_IsFirstSpawn(Client *client) {
+	return client->playerData ? client->playerData->firstSpawn : false;
 }
 
 cs_bool Client_SetBlock(Client *client, SVec *pos, BlockID id) {
@@ -527,11 +536,30 @@ cs_bool Client_SetSkin(Client *client, cs_str skin) {
 	return true;
 }
 
+cs_uint32 Client_GetAddr(Client *client) {
+	return client->addr;
+}
+
 cs_int32 Client_GetPing(Client *client) {
 	if(Client_GetExtVer(client, EXT_TWOWAYPING)) {
 		return client->cpeData->pingTime;
 	}
 	return -1;
+}
+
+cs_bool Client_GetPosition(Client *client, Vec *pos, Ang *ang) {
+	if(client->playerData) {
+		if(pos) *pos = client->playerData->position;
+		if(ang) *ang = client->playerData->angle;
+		return true;
+	}
+	return false;
+}
+
+cs_bool Client_SetOP(Client *client, cs_bool state) {
+	if(!client->playerData) return false;
+	client->playerData->isOP = state;
+	return true;
 }
 
 cs_bool Client_SetSpawn(Client *client, Vec *pos, Ang *ang) {
