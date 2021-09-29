@@ -155,7 +155,7 @@ IF NOT EXIST ".\zlib\" GOTO nozlib
 IF NOT EXIST ".\zlib\zlib.h" GOTO nozlib
 IF NOT EXIST ".\zlib\zconf.h" GOTO nozlib
 set MSVC_OPTS=%MSVC_OPTS% /I.\zlib\
-FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R .\zlib\ z*.dll`) DO (
+FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R .\zlib\win32\!ARCH! z*.dll`) DO (
 	SET ZLIB_DYNAMIC=%%F
 )
 IF "%ZLIB_DYNAMIC%"=="" (
@@ -202,18 +202,19 @@ IF "%GITOK%"=="0" (
 )
 
 :makezlib_st2
-PUSHD ".\zlib\"
-nmake /f win32\Makefile.msc
+IF NOT EXIST ".\zlib\win32\!ARCH!" MD ".\zlib\win32\!ARCH!"
+PUSHD ".\zlib\win32\!ARCH!"
+NMAKE /F ..\Makefile.msc TOP=..\..\
 POPD
 GOTO detectzlib
 
 :copyzlib
-FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R !SVOUTDIR! z*.dll`) DO (
+FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R !SVOUTDIR! zlib1.dll`) DO (
 	IF EXIST "%%F" GOTO zlibok
 )
-COPY "%ZLIB_DYNAMIC%" "%SVOUTDIR%"
+COPY "%ZLIB_DYNAMIC%" "%SVOUTDIR%\zlib1.dll"
 IF "%DEBUG%"=="1" (
-	COPY "!ZLIB_DYNAMIC:~0,-3!pdb" "%SVOUTDIR%"
+	COPY "!ZLIB_DYNAMIC:~0,-3!pdb" "%SVOUTDIR%\zlib1.pdb"
 )
 GOTO zlibok
 
