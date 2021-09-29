@@ -78,34 +78,25 @@ INL static void ClearEntry(CEntry *ent) {
 	ent->value.vchar = NULL;
 }
 
+static cs_str TypeNames[CONFIG_MAX_TYPE] = {
+	"CONFIG_TYPE_BOOL",
+	"CONFIG_TYPE_INT32",
+	"CONFIG_TYPE_INT16",
+	"CONFIG_TYPE_INT8",
+	"CONFIG_TYPE_STR"
+};
+
 cs_str Config_TypeName(ECTypes type) {
-	switch (type) {
-		case CONFIG_TYPE_STR:
-			return "string";
-		case CONFIG_TYPE_INT32:
-			return "int32";
-		case CONFIG_TYPE_INT16:
-			return "int16";
-		case CONFIG_TYPE_INT8:
-			return "int8";
-		case CONFIG_TYPE_BOOL:
-			return "boolean";
-		default:
-			return NULL;
-	}
+	if(type < CONFIG_MAX_TYPE)
+		return TypeNames[type];
+	else
+		return NULL;
 }
 
 ECTypes Config_TypeNameToEnum(cs_str name) {
-	if(String_CaselessCompare(name, "string")) {
-		return CONFIG_TYPE_STR;
-	} else if(String_CaselessCompare(name, "int32")) {
-		return CONFIG_TYPE_INT32;
-	} else if(String_CaselessCompare(name, "int16")) {
-		return CONFIG_TYPE_INT16;
-	} else if(String_CaselessCompare(name, "int8")) {
-		return CONFIG_TYPE_INT8;
-	} else if(String_CaselessCompare(name, "boolean")) {
-		return CONFIG_TYPE_BOOL;
+	for(ECTypes i = 0; i < CONFIG_MAX_TYPE; i++) {
+		if(String_CaselessCompare(name, TypeNames[i]))
+			return i;
 	}
 	return -1;
 }
@@ -138,10 +129,9 @@ cs_byte Config_ToStr(CEntry *ent, cs_char *value, cs_byte len) {
 cs_bool Config_Load(CStore *store) {
 	cs_file fp = File_Open(store->path, "r");
 	if(!fp) {
-		if(errno == ENOENT) return true;
 		store->error.code = CONFIG_ERROR_IOFAIL;
-		store->error.extra = CONFIG_EXTRA_IO_OPEN;
-		store->error.line = 0;
+		store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
+		store->error.line = errno;
 		return false;
 	}
 
@@ -233,8 +223,8 @@ cs_bool Config_Save(CStore *store) {
 	cs_file fp = File_Open(tmpname, "w");
 	if(!fp) {
 		store->error.code = CONFIG_ERROR_IOFAIL;
-		store->error.extra = CONFIG_EXTRA_IO_OPEN;
-		store->error.line = 0;
+		store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
+		store->error.line = errno;
 		return false;
 	}
 
@@ -244,23 +234,23 @@ cs_bool Config_Save(CStore *store) {
 		if(ptr->commentary)
 			if(!File_WriteFormat(fp, "#%s\n", ptr->commentary)) {
 				store->error.code = CONFIG_ERROR_IOFAIL;
-				store->error.extra = CONFIG_EXTRA_IO_WRITE;
-				store->error.line = 0;
+				store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
+				store->error.line = errno;
 				File_Close(fp);
 				return false;
 			}
 		if(!File_Write(ptr->key, 1, String_Length(ptr->key), fp)) {
 			store->error.code = CONFIG_ERROR_IOFAIL;
-			store->error.extra = CONFIG_EXTRA_IO_WRITE;
-			store->error.line = 0;
+			store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
+			store->error.line = errno;
 			File_Close(fp);
 			return false;
 		}
 
 		if(!File_Write("=", 1, 1, fp)) {
 			store->error.code = CONFIG_ERROR_IOFAIL;
-			store->error.extra = CONFIG_EXTRA_IO_WRITE;
-			store->error.line = 0;
+			store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
+			store->error.line = errno;
 			File_Close(fp);
 			return false;
 		}
@@ -271,8 +261,8 @@ cs_bool Config_Save(CStore *store) {
 		if(written > 0) {
 			if(!File_Write(value, 1, written, fp)) {
 				store->error.code = CONFIG_ERROR_IOFAIL;
-				store->error.extra = CONFIG_EXTRA_IO_WRITE;
-				store->error.line = 0;
+				store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
+				store->error.line = errno;
 				File_Close(fp);
 				return false;
 			}
@@ -462,6 +452,36 @@ cs_bool Config_GetBoolByKey(CStore *store, cs_str key) {
 
 cs_bool Config_HasError(CStore *store) {
 	return store->error.code != CONFIG_ERROR_SUCCESS;
+}
+
+static cs_str ErrorStrings[CONFIG_MAX_ERROR] = {
+	"CONFIG_ERROR_SUCCESS",
+	"CONFIG_ERROR_IOFAIL",
+	"CONFIG_ERROR_PARSE"
+};
+
+cs_str Config_ErrorToString(ECError code) {
+	if(code < CONFIG_MAX_ERROR)
+		return ErrorStrings[code];
+	else
+		return NULL;
+}
+
+static cs_str ExtraStrings[CONFIG_MAX_EXTRA] = {
+	"CONFIG_EXTRA_NOINFO",
+	"CONFIG_EXTRA_IO_LINEASERROR",
+	"CONFIG_EXTRA_IO_FRENAME",
+	"CONFIG_EXTRA_PARSE_NOENTRY",
+	"CONFIG_EXTRA_PARSE_LINEFORMAT",
+	"CONFIG_EXTRA_PARSE_NUMBER",
+	"CONFIG_EXTRA_PARSE_END"
+};
+
+cs_str Config_ExtraToString(ECExtra extra) {
+	if(extra < CONFIG_MAX_EXTRA)
+		return ExtraStrings[extra];
+	else
+		return NULL;
 }
 
 ECError Config_PopError(CStore *store, ECExtra *extra, cs_int32 *line) {

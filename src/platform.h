@@ -90,7 +90,7 @@ API cs_size File_Read(void *ptr, cs_size size, cs_size count, cs_file fp);
 API cs_int32 File_ReadLine(cs_file fp, cs_char *line, cs_int32 len);
 API cs_size File_Write(const void *ptr, cs_size size, cs_size count, cs_file fp);
 API cs_int32 File_GetChar(cs_file fp);
-API cs_bool File_Error(cs_file fp);
+API cs_int32 File_Error(cs_file fp);
 API cs_bool File_WriteFormat(cs_file fp, cs_str fmt, ...);
 API cs_bool File_Flush(cs_file fp);
 API cs_int32 File_Seek(cs_file fp, long offset, cs_int32 origin);

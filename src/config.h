@@ -5,19 +5,22 @@
 typedef enum _ECError {
 	CONFIG_ERROR_SUCCESS = 0,
 	CONFIG_ERROR_IOFAIL,
-	CONFIG_ERROR_PARSE,
+	CONFIG_ERROR_PARSE
 } ECError;
+
+#define CONFIG_MAX_ERROR (CONFIG_ERROR_PARSE + 1)
 
 typedef enum _ECExtra {
 	CONFIG_EXTRA_NOINFO = 0,
-	CONFIG_EXTRA_IO_OPEN,
-	CONFIG_EXTRA_IO_WRITE,
+	CONFIG_EXTRA_IO_LINEASERROR,
 	CONFIG_EXTRA_IO_FRENAME,
 	CONFIG_EXTRA_PARSE_NOENTRY,
 	CONFIG_EXTRA_PARSE_LINEFORMAT,
 	CONFIG_EXTRA_PARSE_NUMBER,
-	CONFIG_EXTRA_PARSE_END,
+	CONFIG_EXTRA_PARSE_END
 } ECExtra;
+
+#define CONFIG_MAX_EXTRA (CONFIG_EXTRA_PARSE_END + 1)
 
 typedef enum _ECTypes {
 	CONFIG_TYPE_BOOL,
@@ -26,6 +29,8 @@ typedef enum _ECTypes {
 	CONFIG_TYPE_INT8,
 	CONFIG_TYPE_STR
 } ECTypes;
+
+#define CONFIG_MAX_TYPE (CONFIG_TYPE_STR + 1)
 
 typedef union _CUValue {
 	cs_bool vbool;
@@ -69,6 +74,8 @@ API ECError Config_PopError(CStore *store, ECExtra *extra, cs_int32 *line);
 API cs_str Config_TypeName(ECTypes type);
 API ECTypes Config_TypeNameToEnum(cs_str name);
 API cs_byte Config_ToStr(CEntry *ent, cs_char *value, cs_byte len);
+API cs_str Config_ErrorToString(ECError code);
+API cs_str Config_ExtraToString(ECExtra extra);
 
 API CStore *Config_NewStore(cs_str path);
 API void Config_EmptyStore(CStore *store);

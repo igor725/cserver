@@ -65,8 +65,8 @@ cs_int32 File_GetChar(cs_file fp) {
 	return fgetc(fp);
 }
 
-cs_bool File_Error(cs_file fp) {
-	return ferror(fp) != 0;
+cs_int32 File_Error(cs_file fp) {
+	return ferror(fp);
 }
 
 cs_bool File_WriteFormat(cs_file fp, cs_str fmt, ...) {
@@ -75,7 +75,7 @@ cs_bool File_WriteFormat(cs_file fp, cs_str fmt, ...) {
 	vfprintf(fp, fmt, args);
 	va_end(args);
 
-	return !File_Error(fp);
+	return File_Error(fp) == 0;
 }
 
 cs_bool File_Flush(cs_file fp) {

@@ -20,7 +20,6 @@ cs_str Server_Version = GIT_COMMIT_TAG;
 cs_bool Server_Active = false, Server_Ready = false;
 cs_uint64 Server_StartTime = 0, Server_LatestBadTick = 0;
 Socket Server_Socket = 0;
-Heartbeat *Server_Heartbeat = NULL;
 
 INL static cs_bool AddClient(Client *client) {
 	cs_int8 maxplayers = Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
@@ -183,11 +182,21 @@ cs_bool Server_Init(void) {
 		cs_int32 line = 0;
 		ECExtra extra = CONFIG_EXTRA_NOINFO;
 		ECError code = Config_PopError(cfg, &extra, &line);
-		if(line > 0)
-			Log_Error(Sstor_Get("SV_CFGL_ERR"), line, MAINCFG, code, extra);
-		else
-			Log_Error(Sstor_Get("SV_CFG_ERR"), "parse", MAINCFG, code, extra);
-		return false;
+		if(extra == CONFIG_EXTRA_IO_LINEASERROR) {
+			if(line != ENOENT) {
+				Log_Error(Sstor_Get("SV_CFG_ERR2"), "open", MAINCFG, Config_ErrorToString(code), extra);
+				return false;
+			}
+		} else {
+			cs_str scode = Config_ErrorToString(code), 
+			sextra = Config_ExtraToString(extra);
+			if(line > 0)
+				Log_Error(Sstor_Get("SV_CFGL_ERR"), line, MAINCFG, scode, sextra);
+			else
+				Log_Error(Sstor_Get("SV_CFG_ERR"), "parse", MAINCFG, scode, sextra);
+
+			return false;
+		}
 	}
 	Log_SetLevelStr(Config_GetStrByKey(cfg, CFG_LOGLEVEL_KEY));
 
