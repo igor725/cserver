@@ -88,7 +88,7 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("CL_VANILLA", "Vanilla client");
 
 	Sstor_Set("KICK_NOREASON", "Kicked without reason");
-	Sstor_Set("KICK_PROTOVER", "Invalid protocol version (e: 0x07, g: 0x%02X)");
+	Sstor_Set("KICK_PROTOVER", "Invalid protocol version (e: 0x%02X, g: 0x%02X)");
 	Sstor_Set("KICK_NAMEINUSE", "This name is already in use");
 	Sstor_Set("KICK_AUTHFAIL", "Authorization failed");
 	Sstor_Set("KICK_MANYCONN", "Too many connections from one IP");

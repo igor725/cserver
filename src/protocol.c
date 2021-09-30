@@ -167,7 +167,7 @@ void Vanilla_WriteServerIdent(Client *client, cs_str name, cs_str motd) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x00;
-	*data++ = 0x07;
+	*data++ = PROTOCOL_VERSION;
 	Proto_WriteString(&data, name);
 	Proto_WriteString(&data, motd);
 	*data = 0x00;
@@ -290,8 +290,8 @@ void Vanilla_WriteKick(Client *client, cs_str reason) {
 cs_bool Handler_Handshake(Client *client, cs_char *data) {
 	if(client->playerData) return false;
 	cs_byte protoVer = *data++;
-	if(protoVer != 0x07) {
-		Client_KickFormat(client, Sstor_Get("KICK_PROTOVER"), protoVer);
+	if(protoVer != PROTOCOL_VERSION) {
+		Client_KickFormat(client, Sstor_Get("KICK_PROTOVER"), PROTOCOL_VERSION, protoVer);
 		return true;
 	}
 

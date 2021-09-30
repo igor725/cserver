@@ -24,7 +24,8 @@ Mutex_Unlock(client->mutex);
 Mutex_Unlock(client->mutex); \
 return;
 
-#define CLIENT_SELF (cs_int8)-1
+#define PROTOCOL_VERSION 0x07
+#define CLIENT_SELF (ClientID)-1
 
 #define EXT_CLICKDIST 0x6DD2B567ul
 #define EXT_CUSTOMBLOCKS 0x98455F43ul
