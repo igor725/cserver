@@ -943,7 +943,7 @@ void Client_Kick(Client *client, cs_str reason) {
 	if(!reason) reason = Sstor_Get("KICK_NOREASON");
 	Vanilla_WriteKick(client, reason);
 	client->closed = true;
-	Socket_Shutdown(client->sock, SD_BOTH);
+	Socket_Shutdown(client->sock, SD_SEND);
 	while(Socket_Receive(client->sock, client->rdbuf, 134, 0) > 0);
 	Socket_Close(client->sock);
 }

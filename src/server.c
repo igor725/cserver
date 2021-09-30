@@ -49,7 +49,7 @@ THREAD_FUNC(ClientInitThread) {
 
 	Client_Tick(client, 0);
 	if(client->id >= 0)
-		ClientThreads[client->id] = NULL;
+		ClientThreads[client->id] = (Thread)0;
 	Client_Free(client);
 	return 0;
 }
