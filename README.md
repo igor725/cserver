@@ -23,7 +23,7 @@ The goal of this project: create a stable, customizable and future-rich multipla
 3. libcrypto, libcurl (will be loaded on demand)
 
 ### On Windows
-1. zlib
+1. zlib (will be automatically cloned and compiled during the building process)
 2. Several std libs (such as Kernel32, DbgHelp, WS2_32)
 3. WinInet, Advapi32 (will be loaded on demand)
 
@@ -66,8 +66,8 @@ NOTE: This script must be runned in the Visual Studio Developer Command Prompt.
 * Here is the [example plugin](https://github.com/igor725/cs-test) for this server software.
 * Your directory should have the following structure in order to compile plugins:
 ```
-  [root_folder]/cserver - Main server repository
-  [root_folder]/cs-base - Base server functionality
-  [root_folder]/cs-survival - Survival plugin
-  [root_folder]/cs-test - Test plugin
+	[root_folder]/cserver - Main server repository
+	[root_folder]/cs-base - Base server functionality
+	[root_folder]/cs-survival - Survival plugin
+	[root_folder]/cs-test - Test plugin
 ```

@@ -232,7 +232,7 @@ cs_bool Config_Save(CStore *store) {
 
 	while(ptr) {
 		if(ptr->commentary)
-			if(!File_WriteFormat(fp, "#%s\n", ptr->commentary)) {
+			if(File_WriteFormat(fp, "#%s\n", ptr->commentary) < 0) {
 				store->error.code = CONFIG_ERROR_IOFAIL;
 				store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
 				store->error.line = errno;

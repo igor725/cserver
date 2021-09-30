@@ -29,7 +29,7 @@ cs_bool Sstor_Set(cs_str key, cs_str value) {
 	if(Sstor_IsExists(key)) return false;
 	cs_str _key = String_AllocCopy(key),
 	_value = String_AllocCopy(value);
-	return KList_Add(&storage, (void *)_key, (void *)_value) != NULL;
+	return KList_AddField(&storage, (void *)_key, (void *)_value) != NULL;
 }
 
 cs_bool Strstro_Remove(cs_str key) {

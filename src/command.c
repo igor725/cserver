@@ -14,7 +14,7 @@ Command *Command_Register(cs_str name, cmdFunc func, cs_byte flags) {
 	Command *tmp = Memory_Alloc(1, sizeof(Command));
 	tmp->flags = flags;
 	tmp->func = func;
-	KList_Add(&headCmd, (void *)String_AllocCopy(name), tmp);
+	KList_AddField(&headCmd, (void *)String_AllocCopy(name), tmp);
 	return tmp;
 }
 

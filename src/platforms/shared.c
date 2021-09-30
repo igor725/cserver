@@ -69,13 +69,13 @@ cs_int32 File_Error(cs_file fp) {
 	return ferror(fp);
 }
 
-cs_bool File_WriteFormat(cs_file fp, cs_str fmt, ...) {
+cs_int32 File_WriteFormat(cs_file fp, cs_str fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
-	vfprintf(fp, fmt, args);
+	cs_int32 len = vfprintf(fp, fmt, args);
 	va_end(args);
 
-	return File_Error(fp) == 0;
+	return len;
 }
 
 cs_bool File_Flush(cs_file fp) {

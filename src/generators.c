@@ -17,7 +17,7 @@ cs_bool Generators_Init(void) {
 }
 
 cs_bool Generators_Add(cs_str name, GeneratorRoutine gr) {
-	return KList_Add(&Generators_List, (void *)name, (void *)gr) != NULL;
+	return KList_AddField(&Generators_List, (void *)name, (void *)gr) != NULL;
 }
 
 cs_bool Generators_Remove(cs_str name) {

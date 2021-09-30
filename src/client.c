@@ -56,7 +56,7 @@ cs_bool Assoc_DelType(cs_uint16 type, cs_bool freeData) {
 cs_bool Assoc_Set(Client *client, cs_uint16 type, void *ptr) {
 	if(AGetNode(client, type)) return false;
 	KListField *nptr = AGetNode(client, type);
-	if(!nptr) nptr = KList_Add(&client->headNode, NULL, NULL);
+	if(!nptr) nptr = KList_AddField(&client->headNode, NULL, NULL);
 	nptr->key.num16 = type;
 	nptr->value.ptr = ptr;
 	return true;
