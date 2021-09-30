@@ -293,10 +293,7 @@ THREAD_FUNC(terrainThread) {
 	return 0;
 }
 
-THREAD_FUNC(cavesThread) {
-	WThread *self = (WThread *)param;
-	self->debugname = "Caves worker";
-
+static INL void makeCave(void) {
 	cs_uint16 caveLength = (cs_uint16)Random_Range(&ctx.rnd, gen_cave_min_length, gen_cave_max_length);
 
 	SVec pos;
@@ -350,6 +347,14 @@ THREAD_FUNC(cavesThread) {
 			}
 		}
 	}
+}
+
+THREAD_FUNC(cavesThread) {
+	WThread *self = (WThread *)param;
+	self->debugname = "Caves worker";
+
+	for(cs_uint16 i = 0; i < ctx.numCaves; i++)
+		makeCave();
 
 	self->active = false;
 	return 0;
@@ -504,7 +509,7 @@ cs_bool normalgenerator(World *world, void *data) {
 		newGenThread(oresThread);
 	if(gen_enable_trees)
 		newGenThread(treesThread);
-	for(cs_uint16 i = 0; i < ctx.numCaves; i++)
+	if(gen_enable_caves)
 		newGenThread(cavesThread);
 	waitAll();
 
