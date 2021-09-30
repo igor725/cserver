@@ -717,9 +717,6 @@ void Client_Free(Client *client) {
 		Memory_Free(client->cpeData);
 	}
 
-	Socket_Shutdown(client->sock, SD_SEND);
-	Socket_Close(client->sock);
-
 	Compr_Cleanup(&client->compr);
 	Memory_Free(client);
 }
@@ -792,7 +789,7 @@ INL static void PacketReceiverRaw(Client *client) {
 	cs_byte packetId;
 	cs_bool extended = false;
 
-	if(Socket_Receive(client->sock, (cs_char *)&packetId, 1, MSG_WAITALL) == 1) {
+	if(Socket_Receive(client->sock, (cs_char *)&packetId, 1, 0) == 1) {
 		packet = Packet_Get(packetId);
 		if(!packet) {
 			Client_KickFormat(client, Sstor_Get("KICK_PERR_NOHANDLER"), packetId);
@@ -946,6 +943,9 @@ void Client_Kick(Client *client, cs_str reason) {
 	if(!reason) reason = Sstor_Get("KICK_NOREASON");
 	Vanilla_WriteKick(client, reason);
 	client->closed = true;
+	Socket_Shutdown(client->sock, SD_BOTH);
+	while(Socket_Receive(client->sock, client->rdbuf, 134, 0) > 0);
+	Socket_Close(client->sock);
 }
 
 void Client_KickFormat(Client *client, cs_str fmtreason, ...) {
@@ -971,7 +971,6 @@ void Client_Tick(Client *client, cs_int32 delta) {
 			Event_Call(EVT_ONDISCONNECT, client);
 		}
 		Client_Despawn(client);
-		if(client->id >= 0) Clients_List[client->id] = NULL;
 		return;
 	}
 

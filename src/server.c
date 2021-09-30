@@ -20,37 +20,10 @@ cs_str Server_Version = GIT_COMMIT_TAG;
 cs_bool Server_Active = false, Server_Ready = false;
 cs_uint64 Server_StartTime = 0, Server_LatestBadTick = 0;
 Socket Server_Socket = 0;
-
-INL static cs_bool AddClient(Client *client) {
-	cs_int8 maxplayers = Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
-	for(ClientID i = 0; i < min(maxplayers, MAX_CLIENTS); i++) {
-		if(!Clients_List[i]) {
-			client->id = i;
-			Clients_List[i] = client;
-			return true;
-		}
-	}
-	return false;
-}
+Thread ClientThreads[MAX_CLIENTS] = {0};
 
 THREAD_FUNC(ClientInitThread) {
 	Client *client = (Client *)param;
-	cs_int8 maxConnPerIP = Config_GetInt8ByKey(Server_Config, CFG_CONN_KEY),
-	sameAddrCount = 1;
-
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client *other = Clients_List[i];
-		if(other && other->addr == client->addr)
-			++sameAddrCount;
-		else continue;
-
-		if(sameAddrCount > maxConnPerIP) {
-			Client_Kick(client, Sstor_Get("KICK_MANYCONN"));
-			Client_Free(client);
-			return 0;
-		}
-	}
-
 	cs_byte attempt = 0;
 	while(attempt < 10) {
 		if(Socket_Receive(client->sock, client->rdbuf, 5, MSG_PEEK) == 5) {
@@ -69,18 +42,45 @@ THREAD_FUNC(ClientInitThread) {
 		attempt++;
 	}
 
-	if(attempt < 10) {
-		if(!AddClient(client))
-			Client_Kick(client, Sstor_Get("KICK_FULL"));
-		else {
-			Client_Loop(client);
-		}
-	} else
+	if(attempt < 10)
+		Client_Loop(client);
+	else
 		Client_Kick(client, Sstor_Get("KICK_PERR_HS"));
 
 	Client_Tick(client, 0);
+	if(client->id >= 0)
+		ClientThreads[client->id] = NULL;
 	Client_Free(client);
 	return 0;
+}
+
+INL static ClientID TryToGetIDFor(Client *client) {
+	cs_int8 maxConnPerIP = Config_GetInt8ByKey(Server_Config, CFG_CONN_KEY),
+	sameAddrCount = 1;
+	ClientID possibleId = CLIENT_SELF;
+
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		Client *other = Clients_List[i];
+		if(!other && possibleId == CLIENT_SELF) possibleId = i;
+		if(other && other->addr == client->addr)
+			++sameAddrCount;
+		else continue;
+
+		if(sameAddrCount > maxConnPerIP) {
+			Client_Kick(client, Sstor_Get("KICK_MANYCONN"));
+			return CLIENT_SELF;
+		}
+	}
+
+	return possibleId;
+}
+
+INL static void WaitAllClientThreads(void) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		Thread th = ClientThreads[i];
+		if(Thread_IsValid(th))
+			Thread_Join(th);
+	}
 }
 
 THREAD_FUNC(SockAcceptThread) {
@@ -98,10 +98,16 @@ THREAD_FUNC(SockAcceptThread) {
 		Client *tmp = Memory_TryAlloc(1, sizeof(Client));
 		if(tmp) {
 			tmp->sock = fd;
-			tmp->id = CLIENT_SELF;
 			tmp->mutex = Mutex_Create();
 			tmp->addr = caddr.sin_addr.s_addr;
-			Thread_Create(ClientInitThread, tmp, false);
+			tmp->id = TryToGetIDFor(tmp);
+			if(tmp->id != CLIENT_SELF) {
+				Clients_List[tmp->id] = tmp;
+				ClientThreads[tmp->id] = Thread_Create(ClientInitThread, tmp, false);
+			} else {
+				Client_Kick(tmp, Sstor_Get("KICK_FULL"));
+				Client_Free(tmp);
+			}
 		} else
 			Socket_Close(fd);
 	}
@@ -389,15 +395,19 @@ INL static void UnloadAllWorlds(void) {
 }
 
 void Server_Cleanup(void) {
+	Thread_Sleep(2000);
 	Log_Info(Sstor_Get("SV_STOP_PL"));
 	Clients_KickAll(Sstor_Get("KICK_STOP"));
+	WaitAllClientThreads();
 	if(Broadcast && Broadcast->mutex) Mutex_Free(Broadcast->mutex);
 	if(Broadcast) Memory_Free(Broadcast);
 	Log_Info(Sstor_Get("SV_STOP_SW"));
 	UnloadAllWorlds();
 	Socket_Close(Server_Socket);
+	Log_Info(Sstor_Get("SV_STOP_SC"));
 	Config_Save(Server_Config);
 	Config_DestroyStore(Server_Config);
+	Log_Info(Sstor_Get("SV_STOP_UP"));
 	Plugin_UnloadAll(true);
 	Sstor_Cleanup();
 }

@@ -73,6 +73,8 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("SV_BADTICK", "Last server tick took %dms!");
 	Sstor_Set("SV_STOP_PL", "Kicking players...");
 	Sstor_Set("SV_STOP_SW", "Saving worlds...");
+	Sstor_Set("SV_STOP_SC", "Saving server config...");
+	Sstor_Set("SV_STOP_UP", "Unloading plugins...");
 
 	Sstor_Set("CMD_UNK", "Unknown command.");
 	Sstor_Set("CMD_NOCON", "This command can't be called from console.");

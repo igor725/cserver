@@ -33,7 +33,8 @@ static struct {
 	SVec *dims;
 	WThread threads[MAX_THREADS];
 	cs_uint32 planeSize, biomesNum,
-	biomeSize, numCaves, worldSize;
+	biomeSize, numCaves, cavesPerThread,
+	worldSize;
 	cs_uint16 *biomes, *heightMap,
 	*biomesWithTrees, biomeSizeX,
 	biomeSizeZ, heightGrass,
@@ -353,11 +354,23 @@ THREAD_FUNC(cavesThread) {
 	WThread *self = (WThread *)param;
 	self->debugname = "Caves worker";
 
-	for(cs_uint16 i = 0; i < ctx.numCaves; i++)
+	for(cs_uint16 i = 0; i < ctx.cavesPerThread; i++)
 		makeCave();
 
 	self->active = false;
 	return 0;
+}
+
+INL static void makeSomeCaves(void) {
+	ctx.cavesPerThread = ctx.numCaves / MAX_THREADS;
+	
+	if(ctx.cavesPerThread > MAX_THREADS * 5) {
+		for(cs_int32 i = 0; i < MAX_THREADS; i++)
+			newGenThread(cavesThread);
+	} else {
+		for(cs_uint16 i = 0; i < ctx.numCaves; i++)
+			makeCave();
+	}
 }
 
 THREAD_FUNC(oresThread) {
@@ -495,10 +508,7 @@ cs_bool normalgenerator(World *world, void *data) {
 	ctx.heightStone = ctx.heightGrass - 3;
 
 	ctx.gravelVeinSize = min(gen_gravel_vein_size, ctx.heightGrass / 3);
-	if(gen_enable_caves)
-		ctx.numCaves = (cs_uint16)((cs_float)(ctx.planeSize * ctx.heightGrass) * gen_caves_count_mult);
-	else
-		ctx.numCaves = 0;
+	ctx.numCaves = (cs_uint16)((cs_float)(ctx.planeSize * ctx.heightGrass) * gen_caves_count_mult);
 
 	genBiomesAndHeightmap();
 	Memory_Fill(ctx.data, ctx.planeSize, BLOCK_BEDROCK);
@@ -510,7 +520,7 @@ cs_bool normalgenerator(World *world, void *data) {
 	if(gen_enable_trees)
 		newGenThread(treesThread);
 	if(gen_enable_caves)
-		newGenThread(cavesThread);
+		makeSomeCaves();
 	waitAll();
 
 	WorldInfo *wi = &world->info;
