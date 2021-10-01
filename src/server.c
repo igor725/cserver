@@ -24,6 +24,7 @@ Thread ClientThreads[MAX_CLIENTS] = {0};
 
 THREAD_FUNC(ClientInitThread) {
 	Client *client = (Client *)param;
+	client->canBeFreed = false;
 	cs_byte attempt = 0;
 	while(attempt < 10) {
 		if(Socket_Receive(client->sock, client->rdbuf, 5, MSG_PEEK) == 5) {
@@ -47,10 +48,10 @@ THREAD_FUNC(ClientInitThread) {
 	else
 		Client_Kick(client, Sstor_Get("KICK_PERR_HS"));
 
-	Client_Tick(client, 0);
 	if(client->id >= 0)
 		ClientThreads[client->id] = (Thread)0;
-	Client_Free(client);
+
+	client->canBeFreed = true;
 	return 0;
 }
 
@@ -98,6 +99,7 @@ THREAD_FUNC(SockAcceptThread) {
 		Client *tmp = Memory_TryAlloc(1, sizeof(Client));
 		if(tmp) {
 			tmp->sock = fd;
+			tmp->canBeFreed = true;
 			tmp->mutex = Mutex_Create();
 			tmp->addr = caddr.sin_addr.s_addr;
 			tmp->id = TryToGetIDFor(tmp);
@@ -344,7 +346,13 @@ INL static void DoStep(cs_int32 delta) {
 	Timer_Update(delta);
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
-		if(client) Client_Tick(client, delta);
+		if(client) {
+			Client_Tick(client, delta);
+			if(client->closed && client->canBeFreed) {
+				Clients_List[client->id] = NULL;
+				Client_Free(client);
+			}
+		}
 	}
 }
 

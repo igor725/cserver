@@ -700,7 +700,6 @@ void Client_Free(Client *client) {
 		Memory_Free(client->playerData);
 		client->playerData = NULL;
 	}
-	if(client->id >= 0) Clients_List[client->id] = NULL;
 
 	if(client->cpeData) {
 		CPEExt *prev, *ptr = client->cpeData->headExtension;
@@ -712,9 +711,13 @@ void Client_Free(Client *client) {
 			Memory_Free(prev);
 		}
 
-		if(client->cpeData->message)
+		if(client->cpeData->message) {
 			Memory_Free(client->cpeData->message);
+			client->cpeData->message = NULL;
+		}
+
 		Memory_Free(client->cpeData);
+		client->cpeData = NULL;
 	}
 
 	Compr_Cleanup(&client->compr);
@@ -943,9 +946,11 @@ void Client_Kick(Client *client, cs_str reason) {
 	if(!reason) reason = Sstor_Get("KICK_NOREASON");
 	Vanilla_WriteKick(client, reason);
 	client->closed = true;
+	Mutex_Lock(client->mutex);
 	Socket_Shutdown(client->sock, SD_SEND);
 	while(Socket_Receive(client->sock, client->rdbuf, 134, 0) > 0);
 	Socket_Close(client->sock);
+	Mutex_Unlock(client->mutex);
 }
 
 void Client_KickFormat(Client *client, cs_str fmtreason, ...) {

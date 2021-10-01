@@ -77,10 +77,11 @@ typedef struct _PlayerData {
 } PlayerData;
 
 typedef struct _Client {
-	cs_bool closed; // В случае значения true сервер прекращает общение с клиентом и удаляет его
+	cs_bool canBeFreed; // При значении true структура будет удалена
+	cs_bool closed; // В случае значения true сервер прекращает общение с клиентом
 	Socket sock; // Файловый дескриптор сокета клиента
 	ClientID id; // Используется в качестве entityid
-	cs_uint32 pps, // Количество пакетов, отправленных игроком за секунду
+	cs_ulong pps, // Количество пакетов, отправленных игроком за секунду
 	ppstm, // Таймер для счётчика пакетов
 	addr; // ipv4 адрес клиента
 	Compr compr; // Штука для сжатия карты
