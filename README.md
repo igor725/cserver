@@ -3,7 +3,6 @@ Another Minecraft Classic server in C. Not well written, but it may be useful fo
 
 The goal of this project: create a stable, customizable and future-rich multiplatform Minecraft Classic server with a minimal dependencies count.
 
-
 ## Features
 * Classic Protocol Extension
 * Multiplatform (Windows/Linux)
@@ -42,7 +41,7 @@ NOTE: This script must be runned in the Visual Studio Developer Command Prompt.
 ### Build script arguments
 * ``cls`` - Clear console window before compilation;
 * ``pb`` - Build a plugin (next argument must be a plugin name, without the "cs-" prefix);
-* ``pbu`` - Pull plugin repository and build it (This argument is used instead of ``pb``);
+* ``upd`` - Pull server (or plugin if ``pb`` passed AFTER ``upd``) repository before building;
 * ``dbg`` - Build with debug symbols;
 * ``wall`` - Enable all possible warnings;
 * ``wx`` - Treat warnings as errors;
@@ -54,11 +53,11 @@ NOTE: This script must be runned in the Visual Studio Developer Command Prompt.
 * ``runsame`` - Start the server after compilation in the same console window (Windows only);
 * ``install`` - Copy plugin binary to the ``plugins`` directory after compilation (Can be used only with ``pb``).
 
-
 ### Example
 * ``./build`` - Build the server release binary
-* ``./build dbg wall`` - Build the server with all warnings and debug symbols
+* ``./build dbg wall upd`` - Pull latest changes from this repository, then build the server with all warnings and debug symbols
 * ``./build dbg wall pb base install`` - Build the base plugin with all warnings and debug symbols, then copy binary to the plugins directory
+* ``./build dbg wall upd pb base install`` - Pull latest changes from cs-base repository, then build the base plugin and copy binary to the plugins directory
 
 ## Notes
 * My main OS - Windows 10. It means the Linux part of the server not well tested.

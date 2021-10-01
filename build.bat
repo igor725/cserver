@@ -2,7 +2,6 @@
 setlocal enableextensions enabledelayedexpansion
 SET ARCH=%VSCMD_ARG_TGT_ARCH%
 IF "%ARCH%"=="" GOTO vcerror
-ECHO Changing working directory to "%~dp0"
 CD /D %~dp0
 
 SET DEBUG=0
@@ -12,6 +11,7 @@ SET BUILD_PLUGIN=0
 SET NOPROMPT=0
 SET BINNAME=server.exe
 SET GITOK=0
+SET GITUPD=0
 
 SET WARN_LEVEL=/W3
 SET OPT_LEVEL=/O2
@@ -46,31 +46,24 @@ IF "%1"=="w0" SET WARN_LEVEL=/W0
 IF "%1"=="wx" SET MSVC_OPTS=%MSVC_OPTS% /WX
 IF "%1"=="san" SET SAN=1
 IF "%1"=="pb" SET BUILD_PLUGIN=1
-IF "%1"=="pbu" SET BUILD_PLUGIN=2
+IF "%1"=="upd" IF "!GITOK!"=="1" SET GITUPD=1
 SHIFT
-IF NOT "%BUILD_PLUGIN%"=="0" GOTO pluginbuild
+IF "%BUILD_PLUGIN%"=="1" GOTO pluginbuild
 GOTO argloop
 
 :pluginbuild
 SET PLUGNAME=%1
 SHIFT
 
-IF "%BUILD_PLUGIN%"=="2" (
-	PUSHD ..\cs-%PLUGNAME%
-	git pull
-	POPD
-	SET BUILD_PLUGIN=1
-)
-
-IF "%BUILD_PLUGIN%"=="1" (
-	SET MSVC_LINKER=%MSVC_LINKER% /DLL /NOENTRY
-	SET BINNAME=%PLUGNAME%.dll
-	SET PROJECT_ROOT=..\cs-%PLUGNAME%
+IF "!BUILD_PLUGIN!"=="1" (
+	SET MSVC_LINKER=!MSVC_LINKER! /DLL /NOENTRY
+	SET BINNAME=!PLUGNAME!.dll
+	SET PROJECT_ROOT=..\cs-!PLUGNAME!
 	SET OBJDIR=!PROJECT_ROOT!\!OBJDIR!
 	SET OUTDIR=!PROJECT_ROOT!\!OUTDIR!
 	IF NOT EXIST !PROJECT_ROOT! GOTO notaplugin
 	IF NOT EXIST !PROJECT_ROOT!\src GOTO notaplugin
-	ECHO Building plugin: %PLUGNAME%
+	ECHO Building plugin: !PLUGNAME!
 )
 
 IF "%1"=="" GOTO argsdone
@@ -88,6 +81,16 @@ SHIFT
 GOTO libloop
 
 :argsdone
+IF "!GITUPD!"=="1" (
+	IF "!PLUGIN_BUILD!"=="1" (
+		PUSHD ..\cs-!PLUGNAME!
+		git pull
+		POPD
+	) else (
+		git pull
+	)
+)
+
 ECHO Build configuration:
 ECHO Architecture: %ARCH%
 

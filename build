@@ -16,6 +16,8 @@ case "$(uname -s)" in
 		;;
 esac
 MAXWORKERS=$(nproc)
+GITOK=0
+GITUPD=0
 RUN=0
 SAN=0
 DEBUG=0
@@ -36,6 +38,7 @@ LIBS=""
 OUTBIN="server"
 if git --version >/dev/null 2>&1; then
 	CFLAGS="$CFLAGS -DGIT_COMMIT_TAG=\"$(git describe --tags HEAD)\""
+	GITOK=1
 fi
 PLUGIN_BUILD=0
 PLUGIN_INSTALL=0
@@ -57,7 +60,7 @@ waitfor () {
 
 for a in "$@"
 do
-	if [ $PLUGIN_BUILD -ne 0 ]; then
+	if [ $PLUGIN_BUILD -eq 1 ]; then
 		if [ -n "$PLUGIN_NAME" ]; then
 			if [ "$a" == "install" ]; then
 				PLUGIN_INSTALL=1
@@ -75,15 +78,9 @@ do
 			ROOT="../cs-$a"
 		fi
 	fi
-	if [ $PLUGIN_BUILD -eq 2 ]; then
-		pushd "../cs-$a"
-		git pull
-		popd
-		PLUGIN_BUILD=1
-	fi
+
 	if [ "$a" == "cls" ]; then clear; fi
 	if [ "$a" == "pb" ]; then PLUGIN_BUILD=1; fi
-	if [ "$a" == "pbu" ]; then PLUGIN_BUILD=2; fi
 	if [ "$a" == "wall" ]; then WARN="-Wall -Wextra"; fi
 	if [ "$a" == "wx" ]; then CFLAGS="$CFLAGS -Werror"; fi
 	if [ "$a" == "w0" ]; then WARN="-W0"; fi
@@ -91,7 +88,18 @@ do
 	if [ "$a" == "od" ]; then OPT="-O0"; fi
 	if [ "$a" == "san" ]; then SAN=1; fi
 	if [ "$a" == "run" ]; then RUN=1; fi
+	if [ "$a" == "upd" ] && [ $GITOK -eq 1 ]; then GITUPD=1; fi
 done
+
+if [ $GITUPD -eq 1 ]; then
+	if [ $PLUGIN_BUILD -eq 1 ]; then
+		pushd "../cs-$PLUGIN_NAME"
+		git pull
+		popd
+	else
+		git pull
+	fi
+fi
 
 STDERR="$ROOT/out/stderr"
 OUTDIR="$ROOT/out/$MACH"
