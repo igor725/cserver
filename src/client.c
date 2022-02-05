@@ -192,7 +192,7 @@ BlockID Client_GetStandBlock(Client *client) {
 	return World_GetBlock(client->playerData->world, &tpos);
 }
 
-cs_int8 Client_GetFluidLevel(Client *client) {
+cs_int8 Client_GetFluidLevel(Client *client, BlockID *fluid) {
 	if(!client->playerData) return 0;
 	SVec tpos; SVec_Copy(tpos, client->playerData->position)
 	if(tpos.x < 0 || tpos.y < 0 || tpos.z < 0) return 0;
@@ -202,6 +202,7 @@ cs_int8 Client_GetFluidLevel(Client *client) {
 
 	test_wtrlevel:
 	if((id = World_GetBlock(client->playerData->world, &tpos)) > 7 && id < 12) {
+		if(fluid) *fluid = id;
 		return level;
 	}
 

@@ -165,7 +165,7 @@ API Client *Client_GetByID(ClientID id);
 API Client *Client_GetByName(cs_str name);
 API World *Client_GetWorld(Client *client);
 API BlockID Client_GetStandBlock(Client *client);
-API cs_int8 Client_GetFluidLevel(Client *client);
+API cs_int8 Client_GetFluidLevel(Client *client, BlockID *fluid);
 API cs_int16 Client_GetModel(Client *client);
 API BlockID Client_GetHeldBlock(Client *client);
 API cs_bool Client_GetPosition(Client *client, Vec *pos, Ang *ang);
