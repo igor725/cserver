@@ -40,8 +40,8 @@ if(COMMAND_GETARG(wn, 64, idx)) { \
 #define COMMAND_FUNC(N) \
 static cs_bool svcmd_##N(CommandCallData *ccdata)
 
-#define COMMAND_ADD(N, F) \
-Command_Register(#N, (cmdFunc)svcmd_##N, F);
+#define COMMAND_ADD(N, F, H) \
+Command_Register(#N, H, (cmdFunc)svcmd_##N, F);
 
 #define COMMAND_REMOVE(N) \
 Command_UnregisterByFunc((cmdFunc)svcmd_##N);
@@ -66,13 +66,15 @@ typedef cs_bool(*cmdFunc)(CommandCallData *);
 typedef struct _Command {
 	cs_char alias[7];
 	cmdFunc func;
+	cs_str descr;
 	void *data;
 	cs_byte flags;
 } Command;
 
+void Command_RegisterDefault(void);
 cs_bool Command_Handle(cs_char *cmd, Client *caller);
 
-API Command *Command_Register(cs_str name, cmdFunc func, cs_byte flags);
+API Command *Command_Register(cs_str name, cs_str descr, cmdFunc func, cs_byte flags);
 API cs_bool Command_SetAlias(Command *cmd, cs_str alias);
 API Command *Command_GetByName(cs_str name);
 API void Command_Unregister(Command *cmd);

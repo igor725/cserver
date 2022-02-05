@@ -13,6 +13,7 @@
 #include "timer.h"
 #include "consoleio.h"
 #include "strstor.h"
+#include "command.h"
 
 CStore *Server_Config = NULL;
 cs_str Server_Version = GIT_COMMIT_TAG;
@@ -20,7 +21,6 @@ cs_bool Server_Active = false, Server_Ready = false;
 cs_uint64 Server_StartTime = 0;
 Socket Server_Socket = 0;
 Waitable *SyncClients = NULL;
-Thread ClientThreads[MAX_CLIENTS] = {0};
 
 THREAD_FUNC(ClientInitThread) {
 	Client *client = (Client *)param;
@@ -89,9 +89,8 @@ INL static ClientID TryToGetIDFor(Client *client) {
 
 INL static void WaitAllClientThreads(void) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Thread th = ClientThreads[i];
-		if(Thread_IsValid(th))
-			Thread_Join(th);
+		Client *client = Clients_List[i];
+		if(client) Waitable_Wait(client->waitend);
 	}
 }
 
@@ -117,7 +116,7 @@ THREAD_FUNC(SockAcceptThread) {
 			Waitable_Signal(tmp->waitend);
 			if(tmp->id != CLIENT_SELF) {
 				Clients_List[tmp->id] = tmp;
-				ClientThreads[tmp->id] = Thread_Create(ClientInitThread, tmp, false);
+				Thread_Create(ClientInitThread, tmp, true);
 			} else {
 				Client_Kick(tmp, Sstor_Get("KICK_FULL"));
 				Client_Free(tmp);
@@ -223,6 +222,7 @@ cs_bool Server_Init(void) {
 	SyncClients = Waitable_Create();
 	Broadcast = Memory_Alloc(1, sizeof(Client));
 	Broadcast->mutex = Mutex_Create();
+	Command_RegisterDefault();
 	Packet_RegisterDefault();
 	Plugin_LoadAll();
 
@@ -363,7 +363,6 @@ INL static void DoStep(cs_int32 delta) {
 		if(client && client->closed) {
 			Waitable_Wait(client->waitend);
 			Clients_List[client->id] = NULL;
-			ClientThreads[client->id] = (Thread)NULL;
 			Client_Free(client);
 		}
 	}

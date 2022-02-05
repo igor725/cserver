@@ -9,10 +9,11 @@
 
 KListField *headCmd = NULL;
 
-Command *Command_Register(cs_str name, cmdFunc func, cs_byte flags) {
+Command *Command_Register(cs_str name, cs_str descr, cmdFunc func, cs_byte flags) {
 	if(Command_GetByName(name)) return NULL;
 	Command *tmp = Memory_Alloc(1, sizeof(Command));
 	tmp->flags = flags;
+	tmp->descr = descr;
 	tmp->func = func;
 	KList_AddField(&headCmd, (void *)String_AllocCopy(name), tmp);
 	return tmp;
@@ -122,4 +123,32 @@ cs_bool Command_Handle(cs_char *str, Client *caller) {
 	}
 
 	return false;
+}
+
+static cs_str helpheader = "List of available commands:";
+COMMAND_FUNC(Help) {
+	KListField *tmp;
+	if(ccdata->caller)
+		Client_Chat(ccdata->caller, MESSAGE_TYPE_CHAT, helpheader);
+	else
+		Log_Info(helpheader);
+
+	List_Iter(tmp, headCmd) {
+		cs_str name = tmp->key.str;
+		Command *cmd = (Command *)tmp->value.ptr;
+		cs_str descr = cmd->descr;
+		if(ccdata->caller) {
+			if(cmd->flags & CMDF_OP && !Client_IsOP(ccdata->caller))
+				continue;
+			
+			String_FormatBuf(ccdata->out, MAX_CMD_OUT, "%s - %s", name, descr);
+			Client_Chat(ccdata->caller, MESSAGE_TYPE_CHAT, ccdata->out);
+		} else Log_Info("%s - %s", name, descr);
+	}
+
+	return false;
+}
+
+void Command_RegisterDefault(void) {
+	COMMAND_ADD(Help, CMDF_NONE, "Prints this message");
 }
