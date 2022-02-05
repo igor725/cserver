@@ -7,7 +7,6 @@
 #include "protocol.h"
 #include "config.h"
 #include "generators.h"
-#include "heartbeat.h"
 #include "platform.h"
 #include "event.h"
 #include "plugin.h"
@@ -18,13 +17,14 @@
 CStore *Server_Config = NULL;
 cs_str Server_Version = GIT_COMMIT_TAG;
 cs_bool Server_Active = false, Server_Ready = false;
-cs_uint64 Server_StartTime = 0, Server_LatestBadTick = 0;
+cs_uint64 Server_StartTime = 0;
 Socket Server_Socket = 0;
+Waitable *SyncClients = NULL;
 Thread ClientThreads[MAX_CLIENTS] = {0};
 
 THREAD_FUNC(ClientInitThread) {
 	Client *client = (Client *)param;
-	client->canBeFreed = false;
+	Waitable_Reset(client->waitend);
 	cs_byte attempt = 0;
 	while(attempt < 10) {
 		if(Socket_Receive(client->sock, client->rdbuf, 5, MSG_PEEK) == 5) {
@@ -43,15 +43,25 @@ THREAD_FUNC(ClientInitThread) {
 		attempt++;
 	}
 
-	if(attempt < 10)
-		Client_Loop(client);
-	else
+	if(attempt < 10) {
+		while(!client->closed) {
+			Waitable_Wait(SyncClients);
+			Client_Tick(client);
+		}
+
+		if(Client_CheckState(client, PLAYER_STATE_INGAME)) {
+			for(int i = 0; i < MAX_CLIENTS; i++) {
+				Client *other = Clients_List[i];
+				if(other && other != client && Client_GetExtVer(other, EXT_PLAYERLIST) == 2)
+					CPE_WriteRemoveName(other, client);
+			}
+			Event_Call(EVT_ONDISCONNECT, client);
+		}
+		Client_Despawn(client);
+	} else
 		Client_Kick(client, Sstor_Get("KICK_PERR_HS"));
 
-	if(client->id >= 0)
-		ClientThreads[client->id] = (Thread)0;
-
-	client->canBeFreed = true;
+	Waitable_Signal(client->waitend);
 	return 0;
 }
 
@@ -99,17 +109,15 @@ THREAD_FUNC(SockAcceptThread) {
 		Client *tmp = Memory_TryAlloc(1, sizeof(Client));
 		if(tmp) {
 			tmp->sock = fd;
-			tmp->canBeFreed = true;
 			tmp->mutex = Mutex_Create();
+			tmp->waitend = Waitable_Create();
 			tmp->addr = caddr.sin_addr.s_addr;
 			tmp->id = TryToGetIDFor(tmp);
+			Waitable_Signal(tmp->waitend);
 			if(tmp->id != CLIENT_SELF) {
 				Clients_List[tmp->id] = tmp;
 				ClientThreads[tmp->id] = Thread_Create(ClientInitThread, tmp, false);
-			} else {
-				Client_Kick(tmp, Sstor_Get("KICK_FULL"));
-				Client_Free(tmp);
-			}
+			} else Client_Kick(tmp, Sstor_Get("KICK_FULL"));
 		} else
 			Socket_Close(fd);
 	}
@@ -208,6 +216,7 @@ cs_bool Server_Init(void) {
 	}
 	Log_SetLevelStr(Config_GetStrByKey(cfg, CFG_LOGLEVEL_KEY));
 
+	SyncClients = Waitable_Create();
 	Broadcast = Memory_Alloc(1, sizeof(Client));
 	Broadcast->mutex = Mutex_Create();
 	Packet_RegisterDefault();
@@ -342,18 +351,19 @@ cs_bool Server_Init(void) {
 }
 
 INL static void DoStep(cs_int32 delta) {
+	Waitable_Reset(SyncClients);
 	Event_Call(EVT_ONTICK, &delta);
 	Timer_Update(delta);
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
-		if(client) {
-			Client_Tick(client, delta);
-			if(client->closed && client->canBeFreed) {
-				Clients_List[client->id] = NULL;
-				Client_Free(client);
-			}
+		if(client && client->closed) {
+			Waitable_Wait(client->waitend);
+			Clients_List[client->id] = NULL;
+			ClientThreads[client->id] = (Thread)NULL;
+			Client_Free(client);
 		}
 	}
+	Waitable_Signal(SyncClients);
 }
 
 void Server_StartLoop(void) {
@@ -366,11 +376,9 @@ void Server_StartLoop(void) {
 		curr = Time_GetMSec();
 		delta = (cs_int32)(curr - last);
 		if(curr < last) {
-			Server_LatestBadTick = Time_GetMSec();
 			Log_Warn(Sstor_Get("SV_BADTICK_BW"));
 			delta = 0;
 		} else if(delta > 500) {
-			Server_LatestBadTick = Time_GetMSec();
 			Log_Warn(Sstor_Get("SV_BADTICK"), delta);
 			delta = 500;
 		}

@@ -151,7 +151,7 @@ fi
 
 if [ $PLUGIN_INSTALL -eq 1 ]; then
 	echo -ne "done\nCopying to plugins directory..."
-	if [ ! -d "$PLUGINS_DIR" ]; then mkdir $PLUGINS_DIR; fi
+	if [ ! -d "$PLUGINS_DIR" ]; then mkdir -p $PLUGINS_DIR; fi
 	cp $OUTDIR/$OUTBIN $PLUGINS_DIR/$OUTBIN
 	echo "done"
 else

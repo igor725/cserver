@@ -77,7 +77,7 @@ typedef struct _PlayerData {
 } PlayerData;
 
 typedef struct _Client {
-	cs_bool canBeFreed; // При значении true структура будет удалена
+	Waitable *waitend; // Ожидание завершения потока клиента
 	cs_bool closed; // В случае значения true сервер прекращает общение с клиентом
 	Socket sock; // Файловый дескриптор сокета клиента
 	ClientID id; // Используется в качестве entityid
@@ -94,8 +94,7 @@ typedef struct _Client {
 	wrbuf[2048]; // Буфер для отправки пакетов клиенту
 } Client;
 
-void Client_Tick(Client *client, cs_int32 delta);
-void Client_Loop(Client *client);
+void Client_Tick(Client *client);
 void Client_Free(Client *client);
 
 NOINL cs_int32 Client_Send(Client *client, cs_int32 len);

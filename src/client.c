@@ -688,6 +688,10 @@ cs_bool Client_Update(Client *client) {
 }
 
 void Client_Free(Client *client) {
+	if(client->waitend) {
+		Waitable_Free(client->waitend);
+		client->waitend = NULL;
+	}
 	if(client->mutex) {
 		Mutex_Free(client->mutex);
 		client->mutex = NULL;
@@ -882,17 +886,15 @@ NOINL static void SendWorld(Client *client, World *world) {
 		Client_KickFormat(client, Sstor_Get("KICK_ZERR"), Compr_GetError(client->compr.ret));
 }
 
-void Client_Loop(Client *client) {
-	while(!client->closed) {
-		if(client->websock)
-			PacketReceiverWs(client);
-		else
-			PacketReceiverRaw(client);
+void Client_Tick(Client *client) {
+	if(client->websock)
+		PacketReceiverWs(client);
+	else
+		PacketReceiverRaw(client);
 
-		if(client->playerData && client->playerData->reqWorldChange) {
-			SendWorld(client, client->playerData->reqWorldChange);
-			client->playerData->reqWorldChange = NULL;
-		}
+	if(client->playerData && client->playerData->reqWorldChange) {
+		SendWorld(client, client->playerData->reqWorldChange);
+		client->playerData->reqWorldChange = NULL;
 	}
 }
 
@@ -962,31 +964,4 @@ void Client_KickFormat(Client *client, cs_str fmtreason, ...) {
 	else
 		Client_Kick(client, fmtreason);
 	va_end(args);
-}
-
-void Client_Tick(Client *client, cs_int32 delta) {
-	(void)delta;
-	if(client->closed) {
-		if(Client_CheckState(client, PLAYER_STATE_INGAME)) {
-			for(int i = 0; i < MAX_CLIENTS; i++) {
-				Client *other = Clients_List[i];
-				if(other && other != client && Client_GetExtVer(other, EXT_PLAYERLIST) == 2)
-					CPE_WriteRemoveName(other, client);
-			}
-			Event_Call(EVT_ONDISCONNECT, client);
-		}
-		Client_Despawn(client);
-		return;
-	}
-
-	// TODO: Fix this
-	// client->ppstm += delta;
-	// if(client->ppstm > 5000) {
-	// 	if(client->pps > MAX_CLIENT_PPS && Server_LatestBadTick + 5000 < Time_GetMSec()) {
-	// 		Client_Kick(client, Sstor_Get("KICK_PACKETSPAM"));
-	// 		return;
-	// 	}
-	// 	client->pps = 0;
-	// 	client->ppstm = 0;
-	// }
 }
