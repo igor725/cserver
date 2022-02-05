@@ -183,7 +183,17 @@ World *Client_GetWorld(Client *client) {
 	return client->playerData->world;
 }
 
+BlockID Client_GetStandBlock(Client *client) {
+	if(!client->playerData) return 0;
+	SVec tpos; SVec_Copy(tpos, client->playerData->position);
+	if(tpos.x < 0 || tpos.y < 0 || tpos.z < 0) return 0;
+	tpos.y -= 2;
+
+	return World_GetBlock(client->playerData->world, &tpos);
+}
+
 cs_int8 Client_GetFluidLevel(Client *client) {
+	if(!client->playerData) return 0;
 	SVec tpos; SVec_Copy(tpos, client->playerData->position)
 	if(tpos.x < 0 || tpos.y < 0 || tpos.z < 0) return 0;
 
