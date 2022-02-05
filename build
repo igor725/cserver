@@ -107,7 +107,7 @@ OBJDIR="$OUTDIR/objs"
 
 if [ $SAN -eq 1 ]; then
 	LIBS="-lasan -lubsan $LIBS"
-	CFLAGS="-fsanitize=undefined,address -fstack-protector-all $CFLAGS"
+	CFLAGS="-fsanitize=undefined,address -fstack-protector-all -fno-sanitize=alignment -fno-sanitize-recover=all $CFLAGS"
 fi
 
 if [ ! -d "$OUTDIR" ]; then mkdir -p $OUTDIR; fi
@@ -167,8 +167,8 @@ fi
 if [ $RUN -eq 1 ]; then
 	pushd $SERVER_OUTROOT
 	if [ $SAN -eq 1 ]; then
-		set -- /usr/lib/$MACH/libasan.so*
-		LD_PRELOAD=$1 ./server
+		set -- /usr/lib/$MACH/libasan.so* /lib/$MACH/libasan.so*;
+		LD_PRELOAD=$1 ./server;
 	else
 		./server
 	fi
