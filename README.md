@@ -8,7 +8,7 @@ The goal of this project: create a stable, customizable and future-rich multipla
 * Multiplatform (Windows/Linux)
 * Multithreaded clients processing
 * Plugins support
-* WebSocket client support ([More info](https://www.classicube.net/api/docs/server))
+* Web client support ([More info](https://www.classicube.net/api/docs/server))
 * RCON server (Implemented in [base plugin](https://github.com/igor725/cs-base))
 * Own world generator (Written by [scaled](https://github.com/scaledteam) for [LuaClassic](https://github.com/igor725/LuaClassic), later ported to C by me)
 * Heartbeat API (ClassiCube heartbeat implemented in [base plugin](https://github.com/igor725/cs-base))
@@ -47,7 +47,7 @@ NOTE: This script must be runned in the Visual Studio Developer Command Prompt.
 * ``wx`` - Treat warnings as errors;
 * ``w0`` - Disable all warnings;
 * ``od`` - Disable compiler optimizations;
-* ``san`` - Add LLVM sanitizers
+* ``san`` - Add LLVM sanitizers;
 * ``run`` - Start the server after compilation;
 * ``noprompt`` - Suppress zlib download prompt message (Windows only);
 * ``runsame`` - Start the server after compilation in the same console window (Windows only);
