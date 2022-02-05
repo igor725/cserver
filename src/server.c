@@ -46,7 +46,8 @@ THREAD_FUNC(ClientInitThread) {
 	if(attempt < 10) {
 		while(!client->closed) {
 			Waitable_Wait(SyncClients);
-			Client_Tick(client);
+			if(!client->closed)
+				Client_Tick(client);
 		}
 
 		if(Client_CheckState(client, PLAYER_STATE_INGAME)) {
