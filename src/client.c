@@ -426,7 +426,7 @@ cs_bool Client_IsOP(Client *client) {
 }
 
 cs_bool Client_IsFirstSpawn(Client *client) {
-	return client->playerData ? client->playerData->firstSpawn : false;
+	return client->playerData ? client->playerData->firstSpawn : true;
 }
 
 cs_bool Client_SetBlock(Client *client, SVec *pos, BlockID id) {

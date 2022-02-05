@@ -488,6 +488,17 @@ THREAD_FUNC(treesThread) {
 	return 0;
 }
 
+static cs_uint16 getFinalPointHeight(cs_uint16 x, cs_uint16 z) {
+	cs_uint16 y = ctx.dims->y;
+
+	do {
+		cs_uint32 offset = (y * ctx.dims->z + z) * ctx.dims->x + x;
+		if(ctx.data[offset] != BLOCK_AIR) break;
+	} while(--y > 0);
+
+	return y;
+}
+
 cs_bool normalgenerator(World *world, void *data) {
 	(void)data;
 	if(world->info.dimensions.x < 32 ||
@@ -526,7 +537,7 @@ cs_bool normalgenerator(World *world, void *data) {
 	WorldInfo *wi = &world->info;
 	cs_uint16 x = ctx.dims->x / 2, z = ctx.dims->z / 2;
 	wi->spawnVec.x = (cs_float)x;
-	wi->spawnVec.y = (cs_float)ctx.heightMap[ctx.biomeSizeX / 2 + ctx.biomeSizeZ / 2 * ctx.biomeSizeX] + 6.375f;
+	wi->spawnVec.y = (cs_float)getFinalPointHeight(x, z) + 1.59375f;
 	wi->spawnVec.z = (cs_float)z;
 	World_SetProperty(world, WORLD_PROP_SIDEBLOCK, BLOCK_AIR);
 	World_SetProperty(world, WORLD_PROP_EDGEBLOCK, BLOCK_WATER);
