@@ -33,7 +33,7 @@
 #define PATH_DELIM "/"
 #define DLIB_EXT "so"
 #else
-#error Paths format not selected
+#error This file wants to be hacked
 #endif // CORE_USE_*_PATHS
 
 #if defined(CORE_USE_WINDOWS_DEFINES)
@@ -106,7 +106,7 @@ typedef unsigned int cs_uint32;
 typedef unsigned long long cs_uint64;
 typedef unsigned long cs_uintptr, cs_size;
 #else
-#error C types cannot be detected.
+#error C types cannot be detected
 #endif
 
 typedef char cs_char;

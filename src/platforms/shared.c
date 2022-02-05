@@ -188,3 +188,19 @@ cs_bool Directory_Ensure(cs_str path) {
 	if(Directory_Exists(path)) return true;
 	return Directory_Create(path);
 }
+
+cs_bool DLib_LoadAll(cs_str lib[], cs_str symlist[], void **ctx) {
+	ctx[0] = NULL;
+	for(cs_uint32 i = 0; lib[i]; i++)
+		if(DLib_Load(lib[i], ctx)) break;
+	if(ctx[0] == NULL) return false;
+
+	for(cs_uint32 i = 0; symlist[i]; i++)
+		if(!DLib_GetSym(ctx[0], symlist[i], &ctx[i + 1])) {
+			DLib_Unload(ctx[0]);
+			ctx[0] = NULL;
+			return false;
+		}
+
+	return true;
+}

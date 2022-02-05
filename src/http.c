@@ -4,6 +4,13 @@
 #include "http.h"
 
 #if defined(HTTP_USE_WININET_BACKEND)
+static cs_str wisymlist[] = {
+	"InternetOpenA", "InternetConnectA",
+	"HttpOpenRequestA", "HttpSendRequestA",
+	"InternetReadFile", "InternetCloseHandle",
+	NULL
+};
+
 struct _WinInet {
 	void *lib;
 
@@ -18,16 +25,8 @@ struct _WinInet {
 HINTERNET hInternet = NULL;
 
 INL static cs_bool InitBackend(void) {
-	if(!WinInet.lib) {
-		if(!(DLib_Load("wininet.dll", &WinInet.lib) &&
-			DLib_GetSym(WinInet.lib, "InternetOpenA", &WinInet.IOpen) &&
-			DLib_GetSym(WinInet.lib, "InternetConnectA", &WinInet.IConnect) &&
-			DLib_GetSym(WinInet.lib, "HttpOpenRequestA", &WinInet.IOpenRequest) &&
-			DLib_GetSym(WinInet.lib, "HttpSendRequestA", &WinInet.HSendRequest) &&
-			DLib_GetSym(WinInet.lib, "InternetReadFile", &WinInet.IReadFile) &&
-			DLib_GetSym(WinInet.lib, "InternetCloseHandle", &WinInet.IClose)
-		)) return false;
-	} else if(hInternet) return true;
+	if(!WinInet.lib && !DLib_LoadAll(DLib_List("wininet.dll"), wisymlist, (void **)&WinInet))
+		return false;
 
 	return (hInternet = WinInet.IOpen(HTTP_USERAGENT,
 		INTERNET_OPEN_TYPE_PRECONFIG,
@@ -80,15 +79,26 @@ void Http_Cleanup(Http *http) {
 #elif defined(HTTP_USE_CURL_BACKEND)
 #include "log.h"
 
-#if defined(UNIX)
-cs_str  libcurl = "libcurl.so.4",
-libcurl_alt = "libcurl.so.3";
-#elif defined(WINDOWS)
-cs_str libcurl = "curl.dll",
-libcurl_alt = "libcurl.dll";
-#endif
+cs_str csymlist[] = {
+	"curl_easy_init", "curl_easy_setopt",
+	"curl_easy_perform", "curl_easy_cleanup",
+	NULL
+};
 
-struct _CURLFuncs {
+cs_str libcurl[] = {
+#if defined(UNIX)
+	"libcurl.so.4",
+	"libcurl.so.3",
+#elif defined(WINDOWS)
+	"curl.dll",
+	"libcurl.dll",
+#else
+#error This file wants to be hacked
+#endif
+	NULL
+};
+
+struct _cURLLib {
 	void *lib;
 
 	CURL *(*easy_init)(void);
@@ -98,11 +108,7 @@ struct _CURLFuncs {
 } curl;
 
 INL static cs_bool InitBackend(void) {
-	return (DLib_Load(libcurl, &curl.lib) || DLib_Load(libcurl_alt, &curl.lib)) &&
-	DLib_GetSym(curl.lib, "curl_easy_init", &curl.easy_init) &&
-	DLib_GetSym(curl.lib, "curl_easy_setopt", &curl.easy_setopt) &&
-	DLib_GetSym(curl.lib, "curl_easy_perform", &curl.easy_perform) &&
-	DLib_GetSym(curl.lib, "curl_easy_cleanup", &curl.easy_cleanup);
+	return DLib_LoadAll(libcurl, csymlist, (void **)&curl);
 }
 
 void Http_Uninit(void) {

@@ -102,10 +102,12 @@ API cs_bool Directory_Create(cs_str dir);
 API cs_bool Directory_Ensure(cs_str dir);
 API cs_bool Directory_SetCurrentDir(cs_str path);
 
+#define DLib_List(names) ((cs_str[]){names, NULL})
 cs_bool DLib_Load(cs_str path, void **lib);
 cs_bool DLib_Unload(void *lib);
 cs_char *DLib_GetError(cs_char *buf, cs_size len);
 cs_bool DLib_GetSym(void *lib, cs_str sname, void *sym);
+cs_bool DLib_LoadAll(cs_str lib[], cs_str symlist[], void **ctx);
 
 cs_bool Socket_Init(void);
 void Socket_Uninit(void);

@@ -5,7 +5,14 @@
 #if defined(HASH_USE_WINCRYPT_BACKEND)
 HCRYPTPROV hCryptProvider = 0;
 
-struct _CryptLib {
+static cs_str csymlist[] = {
+	"CryptAcquireContextA", "CryptReleaseContext",
+	"CryptCreateHash", "CryptHashData",
+	"CryptGetHashParam", "CryptDestroyHash",
+	NULL
+};
+
+static struct _CryptLib {
 	void *lib;
 
 	BOOL(*AcquireContext)(HCRYPTPROV *, cs_str, cs_str, cs_ulong, cs_ulong);
@@ -17,17 +24,17 @@ struct _CryptLib {
 } Crypt;
 
 INL static cs_bool InitBackend(void) {
-	if(!Crypt.lib) {
-		if(!(DLib_Load("advapi32.dll", &Crypt.lib) &&
-			DLib_GetSym(Crypt.lib, "CryptAcquireContextA", &Crypt.AcquireContext) &&
-			DLib_GetSym(Crypt.lib, "CryptReleaseContext", &Crypt.ReleaseContext) &&
-			DLib_GetSym(Crypt.lib, "CryptCreateHash", &Crypt.CreateHash) &&
-			DLib_GetSym(Crypt.lib, "CryptHashData", &Crypt.HashData) &&
-			DLib_GetSym(Crypt.lib, "CryptGetHashParam", &Crypt.GetHashParam) &&
-			DLib_GetSym(Crypt.lib, "CryptDestroyHash", &Crypt.DestroyHash)
-		)) return false;
-	} else if(hCryptProvider) return true;
-	return (cs_bool)Crypt.AcquireContext(&hCryptProvider, NULL, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
+	if(!Crypt.lib && !DLib_LoadAll(DLib_List("advapi32.dll"), csymlist, (void **)&Crypt))
+		return false;
+
+	if(!hCryptProvider)
+		return (cs_bool)Crypt.AcquireContext(
+			&hCryptProvider, NULL,
+			MS_DEF_PROV, PROV_RSA_FULL,
+			CRYPT_VERIFYCONTEXT
+		);
+	
+	return true;
 }
 
 void Hash_Uninit(void) {
@@ -37,17 +44,17 @@ void Hash_Uninit(void) {
 }
 
 static cs_bool InitAlg(HASH_CTX *ctx, ALG_ID alg) {
-	if(!Crypt.CreateHash && !InitBackend()) return false;
+	if(!Crypt.lib && !InitBackend()) return false;
 	return (cs_bool)Crypt.CreateHash(hCryptProvider, alg, 0, 0, &ctx->hash);
 }
 
 INL static cs_bool UpdateHash(HASH_CTX *ctx, const void *data, cs_ulong len) {
-	if(!Crypt.HashData) return false;
+	if(!Crypt.lib) return false;
 	return (cs_bool)Crypt.HashData(ctx->hash, data, len, 0);
 }
 
 INL static cs_bool FinalHash(void *hash, HASH_CTX *ctx) {
-	if(!Crypt.GetHashParam) return false;
+	if(!Crypt.lib) return false;
 	return Crypt.GetHashParam(ctx->hash, HP_HASHVAL, hash, &ctx->hashLen, 0) &&
 	Crypt.DestroyHash(ctx->hash);
 }
@@ -78,7 +85,13 @@ cs_bool MD5_Final(cs_byte *hash, MD5_CTX *ctx) {
 	return FinalHash(hash, ctx);
 }
 #elif defined(HASH_USE_CRYPTO_BACKEND)
-struct _CryptLib {
+static cs_str csymlist[] = {
+	"SHA1_Init", "SHA1_Update", "SHA1_Final",
+	"MD5_Init", "MD5_Update", "MD5_Final",
+	NULL
+};
+
+static struct _CryptLib {
 	void *lib;
 
 	cs_bool(*SHA1Init)(SHA_CTX *);
@@ -90,29 +103,19 @@ struct _CryptLib {
 	cs_bool(*MD5Final)(cs_byte *, MD5_CTX *);
 } Crypt;
 
+static cs_str cryptodll[] = {
 #if defined(WINDOWS)
-cs_str libcrypto = "crypto.dll",
-libcrypto_alt = "libeay32.dll";
+	"crypto.dll", "libeay32.dll",
 #elif defined(UNIX)
-cs_str libcrypto = "libcrypto.so",
-libcrypto_alt = "libcrypto.so.1.1";
+	"libcrypto.so", "libcrypto.so.1.1",
+#else
+#error This file wants to be hacked
 #endif
+	NULL
+};
 
 cs_bool Hash_Init(void) {
-	if(Crypt.lib)
-		return true;
-	else {
-		if(!((DLib_Load(libcrypto, &Crypt.lib) ||
-			DLib_Load(libcrypto_alt, &Crypt.lib)) &&
-			DLib_GetSym(Crypt.lib, "SHA1_Init", &Crypt.SHA1Init) &&
-			DLib_GetSym(Crypt.lib, "SHA1_Update", &Crypt.SHA1Update) &&
-			DLib_GetSym(Crypt.lib, "SHA1_Final", &Crypt.SHA1Final) &&
-			DLib_GetSym(Crypt.lib, "MD5_Init", &Crypt.MD5Init) &&
-			DLib_GetSym(Crypt.lib, "MD5_Update", &Crypt.MD5Update) &&
-			DLib_GetSym(Crypt.lib, "MD5_Final", &Crypt.MD5Final)
-		)) return false;
-	}
-	return true;
+	return Crypt.lib != NULL || DLib_LoadAll(cryptodll, csymlist, (void **)&Crypt);
 }
 
 void Hash_Uninit(void) {
@@ -128,34 +131,34 @@ void Hash_Uninit(void) {
 }
 
 cs_bool SHA1_Init(SHA_CTX *ctx) {
-	if(!Crypt.SHA1Init && !Hash_Init()) return false;
+	if(!Crypt.lib && !Hash_Init()) return false;
 	return Crypt.SHA1Init(ctx);
 }
 
 cs_bool SHA1_Update(SHA_CTX *ctx, const void *data, cs_ulong len) {
-	if(!Crypt.SHA1Update) return false;
+	if(!Crypt.lib) return false;
 	return Crypt.SHA1Update(ctx, data, len);
 }
 
 cs_bool SHA1_Final(cs_byte *hash, SHA_CTX *ctx) {
-	if(!Crypt.SHA1Final) return false;
+	if(!Crypt.lib) return false;
 	return Crypt.SHA1Final(hash, ctx);
 }
 
 cs_bool MD5_Init(MD5_CTX *ctx) {
-	if(!Crypt.MD5Init && !Hash_Init()) return false;
+	if(!Crypt.lib && !Hash_Init()) return false;
 	return Crypt.MD5Init(ctx);
 }
 
 cs_bool MD5_Update(MD5_CTX *ctx, const void *data, cs_ulong len) {
-	if(!Crypt.MD5Update) return false;
+	if(!Crypt.lib) return false;
 	return Crypt.MD5Update(ctx, data, len);
 }
 
 cs_bool MD5_Final(cs_byte *hash, MD5_CTX *ctx) {
-	if(!Crypt.MD5Final) return false;
+	if(!Crypt.lib) return false;
 	return Crypt.MD5Final(hash, ctx);
 }
 #else
-#error No crypto backend selected!
+#error This file wants to be hacked
 #endif

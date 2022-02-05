@@ -167,8 +167,8 @@ fi
 if [ $RUN -eq 1 ]; then
 	pushd $SERVER_OUTROOT
 	if [ $SAN -eq 1 ]; then
-		set -- /usr/lib/$MACH/libasan.so* /lib/$MACH/libasan.so*;
-		LD_PRELOAD=$1 ./server;
+		set -- /usr/lib/$MACH/libasan.so* /lib/$MACH/libasan.so*
+		LD_PRELOAD=$1 ./server
 	else
 		./server
 	fi

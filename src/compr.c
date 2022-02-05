@@ -6,6 +6,13 @@
 #include "log.h"
 #include <zlib.h>
 
+static cs_str zsmylist[] = {
+	"crc32", "zlibCompileFlags", "zError",
+	"deflateInit2_", "deflate", "deflateEnd",
+	"inflateInit2_", "inflate", "inflateEnd",
+	NULL
+};
+
 static struct _ZLib {
 	void *lib;
 
@@ -22,31 +29,22 @@ static struct _ZLib {
 	int(*infend)(z_streamp strm);
 } zlib;
 
+cs_str zlibdll[] = {
 #if defined(WINDOWS)
-cs_str zlibdll = "zlibwapi.dll",
-zlibdll_alt = "zlib1.dll";
+	"zlibwapi.dll",
+	"zlib1.dll",
 #elif defined(UNIX)
-cs_str zlibdll = "libz.so",
-zlibdll_alt = "libz.so.1";
+	"libz.so",
+	"libz.so.1",
 #else
-#error Unknown OS
+#error This file wants to be hacked
 #endif
+	NULL
+};
 
 INL static cs_bool InitBackend(void) {
-	if(!zlib.lib) {
-		if(!((DLib_Load(zlibdll, &zlib.lib) ||
-			DLib_Load(zlibdll_alt, &zlib.lib)) &&
-			DLib_GetSym(zlib.lib, "crc32", &zlib.crc32) &&
-			DLib_GetSym(zlib.lib, "zlibCompileFlags", &zlib.zflags) &&
-			DLib_GetSym(zlib.lib, "deflateInit2_", &zlib.definit) &&
-			DLib_GetSym(zlib.lib, "deflate", &zlib.deflate) &&
-			DLib_GetSym(zlib.lib, "deflateEnd", &zlib.defend) &&
-			DLib_GetSym(zlib.lib, "inflateInit2_", &zlib.infinit) &&
-			DLib_GetSym(zlib.lib, "inflate", &zlib.inflate) &&
-			DLib_GetSym(zlib.lib, "inflateEnd", &zlib.infend) &&
-			DLib_GetSym(zlib.lib, "zError", &zlib.error)
-		)) return false;
-	}
+	if(!zlib.lib && !DLib_LoadAll(zlibdll, zsmylist, (void **)&zlib))
+		return false;
 	
 	cs_ulong flags = zlib.zflags();
 

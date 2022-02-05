@@ -2,10 +2,9 @@
 #define HTTP_H
 #include "core.h"
 
-#define HTTP_USERAGENT "CServer/1.0"
+#define HTTP_USERAGENT SOFTWARE_FULLNAME
 
 #if defined(HTTP_USE_WININET_BACKEND)
-//#include <wininet.h>
 // Start of <wininet.h>
 #define INTERNET_SERVICE_HTTP 3
 #define INTERNET_OPEN_TYPE_PRECONFIG 0
