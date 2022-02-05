@@ -254,9 +254,10 @@ cs_bool Client_Despawn(Client *client) {
 	if(!client->playerData || !client->playerData->spawned)
 		return false;
 	client->playerData->spawned = false;
-	Client *other;
-	for(cs_uint32 i = 0; (other = Clients_List[i]) != NULL; i++)
-		Vanilla_WriteDespawn(other, client);
+	for(cs_uint32 i = 0; i < MAX_CLIENTS; i++) {
+		Client *other = Clients_List[i];
+		if(other) Vanilla_WriteDespawn(other, client);
+	}
 	Event_Call(EVT_ONDESPAWN, client);
 	return true;
 }
