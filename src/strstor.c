@@ -76,7 +76,7 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("SV_STOP_SC", "Saving server config...");
 	Sstor_Set("SV_STOP_UP", "Unloading plugins...");
 
-	Sstor_Set("CMD_UNK", "Unknown command");
+	Sstor_Set("CMD_UNK", "Unknown command, type /help for more info");
 	Sstor_Set("CMD_NOCON", "This command can't be called from console");
 	Sstor_Set("CMD_NOPERM", "Access denied");
 
