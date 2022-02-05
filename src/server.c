@@ -117,7 +117,10 @@ THREAD_FUNC(SockAcceptThread) {
 			if(tmp->id != CLIENT_SELF) {
 				Clients_List[tmp->id] = tmp;
 				ClientThreads[tmp->id] = Thread_Create(ClientInitThread, tmp, false);
-			} else Client_Kick(tmp, Sstor_Get("KICK_FULL"));
+			} else {
+				Client_Kick(tmp, Sstor_Get("KICK_FULL"));
+				Client_Free(tmp);
+			}
 		} else
 			Socket_Close(fd);
 	}
