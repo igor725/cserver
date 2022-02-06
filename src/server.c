@@ -261,7 +261,7 @@ cs_bool Server_Init(void) {
 			World_AllocBlockArray(tmp);
 			if(!Generators_Use(tmp, "normal", NULL))
 				Log_Error(Sstor_Get("WGEN_ERROR"), wname);
-			AList_AddField(&World_Head, tmp);
+			World_Add(tmp);
 		}
 	} else {
 		cs_bool skip_creating = false;
@@ -290,8 +290,8 @@ cs_bool Server_Init(void) {
 							}
 						} else {
 							if(World_IsReadyToPlay(tmp)) {
-								AList_AddField(&World_Head, tmp);
 								skip_creating = true;
+								World_Add(tmp);
 								wIndex++;
 							}
 						}
@@ -307,7 +307,7 @@ cs_bool Server_Init(void) {
 					if(tmp && dims.x > 0 && dims.y > 0 && dims.z > 0) {
 						World_SetDimensions(tmp, &dims);
 						World_AllocBlockArray(tmp);
-						AList_AddField(&World_Head, tmp);
+						World_Add(tmp);
 						wIndex++;
 					} else {
 						Log_Error(Sstor_Get("WGEN_INVDIM"), tmp->name);

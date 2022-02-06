@@ -4,27 +4,27 @@ Another Minecraft Classic server in C. Not well written, but it may be useful fo
 The goal of this project: create a stable, customizable and future-rich multiplatform Minecraft Classic server with a minimal dependencies count.
 
 ## Features
-* Classic Protocol Extension
-* Multiplatform (Windows/Linux)
-* Multithreaded clients processing
-* Plugins support
-* Web client support ([More info](https://www.classicube.net/api/docs/server))
-* RCON server (Implemented in [base plugin](https://github.com/igor725/cs-base))
-* Own world generator (Written by [scaled](https://github.com/scaledteam) for [LuaClassic](https://github.com/igor725/LuaClassic), later ported to C by me)
-* Heartbeat API (ClassiCube heartbeat implemented in [base plugin](https://github.com/igor725/cs-base))
-* Easy configurable
+* Classic Protocol Extension;
+* Multiplatform (Windows/Linux);
+* Multithreaded clients processing;
+* Plugins support;
+* Web client support ([More info](https://www.classicube.net/api/docs/server));
+* RCON server (Implemented in [base plugin](https://github.com/igor725/cs-base));
+* Own world generator (Written by [scaled](https://github.com/scaledteam) for [LuaClassic](https://github.com/igor725/LuaClassic), later ported to C by me);
+* Heartbeat API (ClassiCube heartbeat implemented in [base plugin](https://github.com/igor725/cs-base));
+* Easy configurable.
 
 ## Dependencies
 
 ### On Linux
-1. zlib
-2. pthread
-3. libcrypto, libcurl (will be loaded on demand)
+1. zlib;
+2. pthread;
+3. libcurl, libcrypto (will be loaded on demand).
 
 ### On Windows
-1. zlib (will be automatically cloned and compiled during the building process)
-2. Several std libs (such as Kernel32, DbgHelp, WS2_32)
-3. WinInet, Advapi32 (will be loaded on demand)
+1. zlib (will be automatically cloned and compiled during the building process);
+2. Several std libs (such as Kernel32, DbgHelp, WS2_32);
+3. WinInet, Advapi32 (will be loaded on demand).
 
 ## Building
 
@@ -54,10 +54,10 @@ NOTE: This script must be runned in the Visual Studio Developer Command Prompt.
 * ``install`` - Copy plugin binary to the ``plugins`` directory after compilation (Can be used only with ``pb``).
 
 ### Example
-* ``./build`` - Build the server release binary
-* ``./build dbg wall upd`` - Pull latest changes from this repository, then build the server with all warnings and debug symbols
-* ``./build dbg wall pb base install`` - Build the base plugin with all warnings and debug symbols, then copy binary to the plugins directory
-* ``./build dbg wall upd pb base install`` - Pull latest changes from cs-base repository, then build the base plugin and copy binary to the plugins directory
+* ``./build`` - Build the server release binary;
+* ``./build dbg wall upd`` - Pull latest changes from this repository, then build the server with all warnings and debug symbols;
+* ``./build dbg wall pb base install`` - Build the base plugin with all warnings and debug symbols, then copy binary to the plugins directory;
+* ``./build dbg wall upd pb base install`` - Pull latest changes from cs-base repository, then build the base plugin and copy binary to the plugins directory.
 
 ## Notes
 * STRONGLY recommended to recompile all plugins every time you update the server because the final version of API not yet been formed, it means your server may not work properly.

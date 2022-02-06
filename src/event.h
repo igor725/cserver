@@ -23,6 +23,7 @@ typedef enum _EventTypes {
 	EVT_ONDISCONNECT,
 	EVT_ONWEATHER,
 	EVT_ONCOLOR,
+	EVT_WORLDADDED,
 
 	EVENTS_TCOUNT
 } EventTypes;

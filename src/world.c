@@ -54,7 +54,8 @@ World *World_Create(cs_str name) {
 }
 
 void World_Add(World *world) {
-	AList_AddField(&World_Head, world);
+	if(AList_AddField(&World_Head, world))
+		Event_Call(EVT_WORLDADDED, world);
 }
 
 cs_bool World_IsReadyToPlay(World *world) {
@@ -388,7 +389,11 @@ void World_Unload(World *world) {
 }
 
 cs_str World_GetName(World *world) {
-	return world->name ? world->name : Sstor_Get("NONAME");
+	return world->name;
+}
+
+void World_GetDimensions(World *world, SVec *dims) {
+	if(dims) *dims = world->info.dimensions;
 }
 
 cs_uint32 World_GetOffset(World *world, SVec *pos) {

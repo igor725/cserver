@@ -43,7 +43,6 @@ typedef enum _EWorldWeather {
 	WORLD_WEATHER_SNOW
 } EWorldWeather;
 
-
 #define MV_NONE    0x00
 #define MV_COLORS  BIT(0)
 #define MV_PROPS   BIT(1)
@@ -126,6 +125,7 @@ API void *World_GetData(World *world, cs_uint32 *size);
 API BlockID *World_GetBlockArray(World *world, cs_uint32 *size);
 API cs_uint32 World_GetBlockArraySize(World *world);
 API cs_uint32 World_GetOffset(World *world, SVec *pos);
+API void World_GetDimensions(World *world, SVec *dims);
 API BlockID World_GetBlock(World *world, SVec *pos);
 API BlockID World_GetBlockO(World *world, cs_uint32 offset);
 API cs_int32 World_GetProperty(World *world, EWorldProp property);
