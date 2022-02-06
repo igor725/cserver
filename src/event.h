@@ -31,8 +31,8 @@ typedef enum _EventTypes {
 
 typedef struct _onMessage {
 	Client *client;
-	cs_str message;
-	cs_byte *type;
+	cs_char *message;
+	cs_byte type;
 } onMessage;
 
 typedef struct _onHeldBlockChange {

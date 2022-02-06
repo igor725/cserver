@@ -222,6 +222,7 @@ cs_bool Server_Init(void) {
 	SyncClients = Waitable_Create();
 	Broadcast = Memory_Alloc(1, sizeof(Client));
 	Broadcast->mutex = Mutex_Create();
+	Broadcast->id = CLIENT_SELF;
 	Command_RegisterDefault();
 	Packet_RegisterDefault();
 	Plugin_LoadAll();

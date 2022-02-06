@@ -443,8 +443,7 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 
 	cs_char message[65],
 	*messptr = message;
-	cs_byte type = 0,
-	partial = *data++,
+	cs_byte partial = *data++,
 	len = Proto_ReadStringNoAlloc(&data, message);
 	if(len == 0) return false;
 
@@ -462,18 +461,18 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 	onMessage params = {
 		.client = client,
 		.message = messptr,
-		.type = &type
+		.type = 0
 	};
 
 	if(Event_Call(EVT_ONMESSAGE, &params)) {
 		cs_char formatted[320];
-		String_FormatBuf(formatted, 320, "<%s>: %s", Client_GetName(client), messptr);
+		String_FormatBuf(formatted, 320, "<%s>: %s", Client_GetName(client), params.message);
 
-		if(*messptr == '/') {
-			if(!Command_Handle(messptr, client))
-				Vanilla_WriteChat(client, type, Sstor_Get("CMD_UNK"));
+		if(*params.message == '/') {
+			if(!Command_Handle(params.message, client))
+				Vanilla_WriteChat(client, params.type, Sstor_Get("CMD_UNK"));
 		} else
-			Client_Chat(Broadcast, type, formatted);
+			Client_Chat(Broadcast, params.type, formatted);
 
 		Log_Chat(formatted);
 	}
