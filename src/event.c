@@ -39,6 +39,25 @@ cs_bool Event_RegisterBool(EventTypes type, evtBoolCallback func) {
 	rgPart2
 }
 
+cs_bool Event_RegisterBunch(EventRegBunch *bunch) {
+	for(cs_int32 i = 0; bunch[i].evtfunc; i++) {
+		switch(bunch[i].ret) {
+			case 'b':
+				if(!Event_RegisterBool(bunch[i].type, (evtBoolCallback)bunch[i].evtfunc))
+					return false;
+				break;
+			case 'v':
+				if(!Event_RegisterVoid(bunch[i].type, (evtVoidCallback)bunch[i].evtfunc))
+					return false;
+				break;
+			default:
+				return false;
+		}
+	}
+
+	return true;
+}
+
 cs_bool Event_Unregister(EventTypes type, cs_uintptr evtFuncPtr) {
 	for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) {
 		Event *evt = Event_List[type][pos];
@@ -49,6 +68,15 @@ cs_bool Event_Unregister(EventTypes type, cs_uintptr evtFuncPtr) {
 		}
 	}
 	return false;
+}
+
+cs_bool Event_UnregisterBunch(EventRegBunch *bunch) {
+	for(cs_int32 i = 0; bunch[i].evtfunc; i++) {
+		if(!Event_Unregister(bunch[i].type, (cs_uintptr)bunch[i].evtfunc))
+			return false;
+	}
+
+	return true;
 }
 
 cs_bool Event_Call(EventTypes type, void *param) {

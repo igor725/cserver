@@ -26,7 +26,7 @@ String_Append(ccdata->out, MAX_CMD_OUT, buf);
 String_GetArgument(ccdata->args, a, s, n)
 
 #define COMMAND_PRINTUSAGE \
-COMMAND_PRINTF("Usage: %s.", cmdUsage);
+COMMAND_PRINTF("Usage: %s", cmdUsage);
 
 #define COMMAND_ARG2WN(wn, idx) \
 if(COMMAND_GETARG(wn, 64, idx)) { \
