@@ -81,6 +81,7 @@ cs_bool Compr_Init(Compr *ctx, ComprType type) {
 		Error_PrintSys(true);
 		return false;
 	}
+
 	if(!ctx->stream) ctx->stream = Memory_Alloc(1, sizeof(z_stream));
 	ctx->state = COMPR_STATE_IDLE;
 	ctx->type = type;
@@ -120,18 +121,18 @@ void Compr_SetOutBuffer(Compr *ctx, void *data, cs_uint32 size) {
 
 INL static cs_bool DeflateStep(Compr *ctx) {
 	if(!zlib.deflate) return false;
-	z_streamp stream = (z_streamp )ctx->stream;
+	z_streamp stream = (z_streamp)ctx->stream;
 	cs_uint32 outbuf_size = stream->avail_out;
 
-	ctx->ret = zlib.deflate(stream, stream->avail_in > 0 ? Z_NO_FLUSH : Z_FINISH);
+	ctx->ret = zlib.deflate(stream, ctx->state == COMPR_STATE_FINISHING ? Z_FINISH : Z_NO_FLUSH);
 
-	if(stream->avail_out == outbuf_size) {
+	if(ctx->state == COMPR_STATE_FINISHING && stream->avail_out == outbuf_size)
 		ctx->state = COMPR_STATE_DONE;
-		ctx->queued = ctx->written = 0;
-	} else {
-		ctx->written = outbuf_size - stream->avail_out;
-		ctx->queued = stream->avail_in;
-	}
+	else if(ctx->state == COMPR_STATE_INPROCESS && stream->avail_out > 0)
+		ctx->state = COMPR_STATE_FINISHING;
+
+	ctx->written = outbuf_size - stream->avail_out;
+	ctx->queued = stream->avail_in;
 
 	return true;
 }

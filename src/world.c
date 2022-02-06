@@ -364,6 +364,7 @@ THREAD_FUNC(WorldLoadThread) {
 	Compr_Reset(&world->compr);
 	world->saveUnload = false;
 	Waitable_Signal(world->waitable);
+	Event_Call(EVT_WORLDLOADED, world);
 	return 0;
 }
 
@@ -386,6 +387,7 @@ void World_FreeBlockArray(World *world) {
 void World_Unload(World *world) {
 	Waitable_Wait(world->waitable);
 	World_FreeBlockArray(world);
+	Event_Call(EVT_WORLDUNLOADED, world);
 }
 
 cs_str World_GetName(World *world) {

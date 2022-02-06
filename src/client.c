@@ -848,15 +848,15 @@ NOINL static void SendWorld(Client *client, World *world) {
 		if(compr_ok) {
 			cs_byte *map = World_GetBlockArray(world, &wsize);
 			Compr_SetInBuffer(&client->compr, map, wsize);
+			CPE_WriteFastMapInit(client, wsize);
 		}
-		CPE_WriteFastMapInit(client, World_GetBlockArraySize(world));
 	} else {
 		compr_ok = Compr_Init(&client->compr, COMPR_TYPE_GZIP);
 		if(compr_ok) {
 			cs_byte *map = World_GetData(world, &wsize);
 			Compr_SetInBuffer(&client->compr, map, wsize);
+			Vanilla_WriteLvlInit(client);
 		}
-		Vanilla_WriteLvlInit(client);
 	}
 
 	if(compr_ok) {

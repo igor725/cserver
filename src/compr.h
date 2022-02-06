@@ -13,6 +13,7 @@ typedef enum _ComprType {
 typedef enum _ComprState {
 	COMPR_STATE_IDLE,
 	COMPR_STATE_INPROCESS,
+	COMPR_STATE_FINISHING,
 	COMPR_STATE_DONE
 } ComprState;
 

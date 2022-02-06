@@ -394,10 +394,8 @@ void Server_StartLoop(void) {
 }
 
 INL static void UnloadAllWorlds(void) {
-	AListField *tmp, *prev = NULL;
-
-	List_Iter(tmp, World_Head) {
-		if(prev) AList_Remove(&World_Head, prev);
+	AListField *tmp;
+	while((tmp = World_Head) != NULL) {
 		World *world = (World *)tmp->value.ptr;
 		if(World_Save(world, true)) {
 			Waitable_Wait(world->waitable);
@@ -407,11 +405,9 @@ INL static void UnloadAllWorlds(void) {
 				Log_Error(Sstor_Get("SV_WLOAD_ERR"), "save", World_GetName(world), code, extra);
 			}
 		}
+		AList_Remove(&World_Head, tmp);
 		World_Free(world);
-		prev = tmp;
 	}
-
-	if(prev) AList_Remove(&World_Head, prev);
 }
 
 void Server_Cleanup(void) {
