@@ -161,6 +161,7 @@ API cs_str Client_GetName(Client *client);
 API cs_str Client_GetAppName(Client *client);
 API cs_str Client_GetKey(Client *client);
 API cs_str Client_GetSkin(Client *client);
+API ClientID Client_GetID(Client *client);
 API Client *Client_GetByID(ClientID id);
 API Client *Client_GetByName(cs_str name);
 API World *Client_GetWorld(Client *client);

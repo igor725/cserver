@@ -178,6 +178,10 @@ Client *Client_GetByID(ClientID id) {
 	return id >= 0 && id < MAX_CLIENTS ? Clients_List[id] : NULL;
 }
 
+ClientID Client_GetID(Client *client) {
+	return client->id;
+}
+
 World *Client_GetWorld(Client *client) {
 	if(!client->playerData) return NULL;
 	return client->playerData->world;
