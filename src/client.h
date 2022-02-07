@@ -102,12 +102,6 @@ NOINL cs_bool Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
 NOINL cs_bool Client_DefineBlock(Client *client, BlockDef *block);
 NOINL cs_bool Client_UndefineBlock(Client *client, BlockID id);
 
-API cs_uint16 Assoc_NewType(void);
-API cs_bool Assoc_DelType(cs_uint16 type, cs_bool freeData);
-API cs_bool Assoc_Set(Client *client, cs_uint16 type, void *ptr);
-API void *Assoc_GetPtr(Client *client, cs_uint16 type);
-API cs_bool Assoc_Remove(Client *client, cs_uint16 type, cs_bool freeData);
-
 API CGroup *Group_Add(cs_int16 gid, cs_str gname, cs_byte grank);
 API CGroup *Group_GetByID(cs_int16 gid);
 API cs_bool Group_Remove(cs_int16 gid);

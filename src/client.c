@@ -11,70 +11,9 @@
 #include "strstor.h"
 #include "compr.h"
 
-AListField *headAssocType = NULL,
-*headCGroup = NULL;
 Client *Broadcast = NULL;
+AListField *headCGroup = NULL;
 Client *Clients_List[MAX_CLIENTS] = {0};
-
-INL static AListField *AGetType(cs_uint16 type) {
-	AListField *ptr = NULL;
-
-	List_Iter(ptr, headAssocType)
-		if(ptr->value.num16 == type) return ptr;
-
-	return NULL;
-}
-
-INL static KListField *AGetNode(Client *client, cs_uint16 type) {
-	KListField *ptr = NULL;
-
-	List_Iter(ptr, client->headNode)
-		if(ptr->key.num16 == type) return ptr;
-
-	return NULL;
-}
-
-cs_uint16 Assoc_NewType(void) {
-	cs_uint16 next_id = headAssocType ? headAssocType->value.num16 + 1 : 0;
-	AList_AddField(&headAssocType, NULL)->value.num16 = next_id;
-	return next_id;
-}
-
-cs_bool Assoc_DelType(cs_uint16 type, cs_bool freeData) {
-	AListField *tptr = AGetType(type);
-	if(!tptr) return false;
-
-	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
-		if(Clients_List[id])
-			Assoc_Remove(Clients_List[id], type, freeData);
-	}
-
-	AList_Remove(&headAssocType, tptr);
-	return true;
-}
-
-cs_bool Assoc_Set(Client *client, cs_uint16 type, void *ptr) {
-	if(AGetNode(client, type)) return false;
-	KListField *nptr = AGetNode(client, type);
-	if(!nptr) nptr = KList_AddField(&client->headNode, NULL, NULL);
-	nptr->key.num16 = type;
-	nptr->value.ptr = ptr;
-	return true;
-}
-
-void *Assoc_GetPtr(Client *client, cs_uint16 type) {
-	KListField *nptr = AGetNode(client, type);
-	if(nptr) return nptr->value.ptr;
-	return NULL;
-}
-
-cs_bool Assoc_Remove(Client *client, cs_uint16 type, cs_bool freeData) {
-	KListField *nptr = AGetNode(client, type);
-	if(!nptr) return false;
-	if(freeData) Memory_Free(nptr->value.ptr);
-	KList_Remove(&client->headNode, nptr);
-	return true;
-}
 
 CGroup *Group_Add(cs_int16 gid, cs_str gname, cs_byte grank) {
 	CGroup *gptr = Group_GetByID(gid);

@@ -86,6 +86,7 @@ typedef struct _World {
 	cs_bool loaded;
 	cs_bool saveUnload;
 	Compr compr;
+	KListField *headNode;
 	struct _WorldError {
 		EWorldError code;
 		EWorldExtra extra;
