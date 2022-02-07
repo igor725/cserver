@@ -97,7 +97,7 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("KICK_PERR_HS", "Handshake waiting timeout");
 	Sstor_Set("KICK_PERR", "Packet reading error");
 	Sstor_Set("KICK_PERR_WS", "WebSocket frame body smaller than expected");
-	Sstor_Set("KICK_PERR_UNEXP", "Unexpected packet 0x%02X received");
+	Sstor_Set("KICK_PERR_UNEXP", "Failed to handle packet 0x%02X");
 	Sstor_Set("KICK_PERR_NOHANDLER", "Unknown opcode 0x%02X");
 	Sstor_Set("KICK_UNKBID", "Invalid block ID received: %d");
 	Sstor_Set("KICK_ZERR", "zlib error: %s");

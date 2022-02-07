@@ -86,6 +86,8 @@ cs_bool Assoc_DelType(AssocType type) {
 void *Assoc_AllocFor(void *target, AssocType type, cs_size num, cs_size size) {
 	AssocBind *bind = NULL;
 	if(!AGetType(type, &bind) || AGetNode(target, bind)) return NULL;
+	void *memptr = Memory_TryAlloc(num, size);
+	if(!memptr) return NULL;
 	KListField *anode = NULL;
 
 	switch(bind->type) {
@@ -99,9 +101,9 @@ void *Assoc_AllocFor(void *target, AssocType type, cs_size num, cs_size size) {
 		default: return NULL;
 	}
 
-	anode->value.ptr = Memory_Alloc(num, size);
+	anode->value.ptr = memptr;
 	anode->key.num16 = type;
-	return anode->value.ptr;
+	return memptr;
 }
 
 void *Assoc_GetPtr(void *target, AssocType type) {

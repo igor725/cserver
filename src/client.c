@@ -724,7 +724,7 @@ INL static void PacketReceiverWs(Client *client) {
 
 		if(packetSize <= recvSize) {
 			HandlePacket(client, data, packet, extended);
-			if(recvSize > packetSize) {
+			if(recvSize > packetSize && !client->closed) {
 				data += packetSize;
 				recvSize -= packetSize + 1;
 				goto packet_handle;

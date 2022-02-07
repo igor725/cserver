@@ -333,7 +333,8 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 			ptr = ptr->next;
 		}
 	} else {
-		Event_Call(EVT_ONHANDSHAKEDONE, client);
+		if(!Event_Call(EVT_ONHANDSHAKEDONE, client))
+			return false;
 		Client_ChangeWorld(client, (World *)World_Head->value.ptr);
 	}
 
@@ -944,7 +945,8 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 	client->cpeData->headExtension = tmp;
 
 	if(--client->cpeData->_extCount == 0) {
-		Event_Call(EVT_ONHANDSHAKEDONE, client);
+		if(!Event_Call(EVT_ONHANDSHAKEDONE, client))
+			return false;
 		Client_ChangeWorld(client, (World *)World_Head->value.ptr);
 	}
 
