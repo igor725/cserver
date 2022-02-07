@@ -6,29 +6,29 @@ CD /D %~dp0
 
 SET DEBUG=0
 SET SAN=0
-SET PROJECT_ROOT=.
-SET BUILD_PLUGIN=0
+SET ROOT=.
+SET PLUGIN_BUILD=0
 SET NOPROMPT=0
-SET BINNAME=server.exe
+SET OUTBIN=server.exe
 SET GITOK=0
 SET GITUPD=0
 
-SET WARN_LEVEL=/W3
-SET OPT_LEVEL=/O2
+SET WARN=/W3
+SET OPT=/O2
 
 SET OUTDIR=out\%ARCH%
 SET OBJDIR=%OUTDIR%\objs
-SET SVOUTDIR=.\%OUTDIR%
+SET SERVER_OUTROOT=.\%OUTDIR%
 
-SET MSVC_LINKER=/opt:ref
-SET MSVC_OPTS=/FC /MP /Oi
-SET MSVC_LIBS=kernel32.lib dbghelp.lib
+SET LDFLAGS=/opt:ref
+SET CFLAGS=/FC /MP /Oi
+SET LIBS=kernel32.lib dbghelp.lib
 
 git --version >nul
 IF "%ERRORLEVEL%"=="0" (
 	SET GITOK=1
 	FOR /F "tokens=* USEBACKQ" %%F IN (`git describe --tags HEAD`) DO (
-		SET MSVC_OPTS=%MSVC_OPTS% /DGIT_COMMIT_TAG#\"%%F\"
+		SET CFLAGS=%CFLAGS% /DGIT_COMMIT_TAG#\"%%F\"
 	)
 )
 
@@ -39,44 +39,42 @@ IF "%1"=="dbg" SET DEBUG=1
 IF "%1"=="run" SET RUNMODE=0
 IF "%1"=="noprompt" SET NOPROMPT=1
 IF "%1"=="runsame" SET RUNMODE=1
-IF "%1"=="od" SET OPT_LEVEL=/Od
-IF "%1"=="wall" SET WARN_LEVEL=/Wall /wd4820 /wd5045
-IF "%1"=="w4" SET WARN_LEVEL=/W4
-IF "%1"=="w0" SET WARN_LEVEL=/W0
-IF "%1"=="wx" SET MSVC_OPTS=%MSVC_OPTS% /WX
+IF "%1"=="od" SET OPT=/Od
+IF "%1"=="wall" SET WARN=/Wall /wd4820 /wd5045
+IF "%1"=="w4" SET WARN=/W4
+IF "%1"=="w0" SET WARN=/W0
+IF "%1"=="wx" SET CFLAGS=%CFLAGS% /WX
 IF "%1"=="san" SET SAN=1
-IF "%1"=="pb" SET BUILD_PLUGIN=1
+IF "%1"=="pb" SET PLUGIN_BUILD=1
 IF "%1"=="upd" IF "!GITOK!"=="1" SET GITUPD=1
 SHIFT
-IF "%BUILD_PLUGIN%"=="1" GOTO pluginbuild
+IF "%PLUGIN_BUILD%"=="1" GOTO pluginbuild
 GOTO argloop
 
 :pluginbuild
 SET PLUGNAME=%1
 SHIFT
 
-IF "!BUILD_PLUGIN!"=="1" (
-	SET MSVC_LINKER=!MSVC_LINKER! /DLL /NOENTRY
-	SET BINNAME=!PLUGNAME!.dll
-	SET PROJECT_ROOT=..\cs-!PLUGNAME!
-	SET OBJDIR=!PROJECT_ROOT!\!OBJDIR!
-	SET OUTDIR=!PROJECT_ROOT!\!OUTDIR!
-	IF NOT EXIST !PROJECT_ROOT! GOTO notaplugin
-	IF NOT EXIST !PROJECT_ROOT!\src GOTO notaplugin
+IF "!PLUGIN_BUILD!"=="1" (
+	SET LDFLAGS=!LDFLAGS! /DLL /NOENTRY
+	SET OUTBIN=!PLUGNAME!.dll
+	SET ROOT=..\cs-!PLUGNAME!
+	SET OBJDIR=!ROOT!\!OBJDIR!
+	SET OUTDIR=!ROOT!\!OUTDIR!
+	IF NOT EXIST !ROOT! GOTO notaplugin
+	IF NOT EXIST !ROOT!\src GOTO notaplugin
 	ECHO Building plugin: !PLUGNAME!
 )
 
 IF "%1"=="" GOTO argsdone
 
-:libloop
+:subargloop
 IF "%1"=="install" (
 	SET PLUGIN_INSTALL=1
 	SHIFT
 )
 IF "%1"=="" GOTO argsdone
-SET MSVC_LIBS=%MSVC_LIBS% %1.lib
 
-:libloop_shift
 SHIFT
 GOTO libloop
 
@@ -95,54 +93,59 @@ ECHO Build configuration:
 ECHO Architecture: %ARCH%
 
 IF "%DEBUG%"=="0" (
-	set MSVC_OPTS=%MSVC_OPTS% /MT
+	set CFLAGS=%CFLAGS% /MT
 	ECHO Debug: disabled
 ) else (
-	SET SVOUTDIR=%SVOUTDIR%dbg
+	SET SERVER_OUTROOT=%SERVER_OUTROOT%dbg
 	SET OUTDIR=%OUTDIR%dbg
 	SET OBJDIR=!OUTDIR!\objs
-	SET OPT_LEVEL=/Od
-	SET MSVC_OPTS=%MSVC_OPTS% /Z7 /MTd /DDEBUG
-	SET MSVC_LINKER=%MSVC_LINKER% /DEBUG
-	SET MSVC_OPTS=%MSVC_OPTS%
+	SET OPT=/Od
+	SET CFLAGS=%CFLAGS% /Z7 /MTd /DDEBUG
+	SET LDFLAGS=%LDFLAGS% /DEBUG
+	SET CFLAGS=%CFLAGS%
 	IF "!SAN!"=="1" (
-		SET MSVC_OPTS=%MSVC_OPTS% -fsanitize=address /Zi /Fd!SVOUTDIR!\server.pdb
+		SET CFLAGS=%CFLAGS% -fsanitize=address /Zi /Fd!SERVER_OUTROOT!\server.pdb
 	)
 	ECHO Debug: enabled
 )
 
 IF NOT EXIST !OBJDIR! MD !OBJDIR!
 
-IF "%BUILD_PLUGIN%"=="0" (
-	SET MSVC_LINKER=%MSVC_LINKER% /subsystem:console
-	SET MSVC_LIBS=!MSVC_LIBS! ws2_32.lib
+IF "%PLUGIN_BUILD%"=="0" (
+	SET LDFLAGS=%LDFLAGS% /subsystem:console
+	SET LIBS=!LIBS! ws2_32.lib
 	GOTO detectzlib
 )
 
 :zlibok
-SET BINPATH=%OUTDIR%\%BINNAME%
-IF "%BUILD_PLUGIN%"=="1" (
-  SET MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH% /DCORE_BUILD_PLUGIN /I.\src\
-  SET MSVC_LIBS=server.lib %MSVC_LIBS%
-	SET MSVC_LINKER=%MSVC_LINKER% /libpath:%SVOUTDIR%
+SET BINPATH=%OUTDIR%\%OUTBIN%
+IF "%PLUGIN_BUILD%"=="1" (
+  SET CFLAGS=%CFLAGS% /Fe%BINPATH% /DCORE_BUILD_PLUGIN /I.\src\
+  SET LIBS=server.lib %LIBS%
+	SET LDFLAGS=%LDFLAGS% /libpath:%SERVER_OUTROOT%
 ) else (
-	SET MSVC_OPTS=%MSVC_OPTS% /Fe%BINPATH%
+	SET CFLAGS=%CFLAGS% /Fe%BINPATH%
 )
 
-SET MSVC_OPTS=%MSVC_OPTS% %WARN_LEVEL% %OPT_LEVEL% /Fo%OBJDIR%\
-SET MSVC_OPTS=%MSVC_OPTS% /link %MSVC_LINKER%
-SET SOURCES=%PROJECT_ROOT%\src\*.c
+SET CFLAGS=%CFLAGS% %WARN% %OPT% /Fo%OBJDIR%\
+SET SOURCES=%ROOT%\src\*.c
 
-IF EXIST %PROJECT_ROOT%\version.rc (
-	RC /nologo /Fo%OBJDIR%\version.res %PROJECT_ROOT%\version.rc
+IF EXIST %ROOT%\version.rc (
+	RC /nologo /Fo%OBJDIR%\version.res %ROOT%\version.rc
 	SET SOURCES=%SOURCES% %OBJDIR%\version.res
 )
 
-CL %SOURCES% /I%PROJECT_ROOT%\src %MSVC_OPTS% %MSVC_LIBS%
+IF EXIST %ROOT%\vars.bat (
+	CALL !ROOT!\vars.bat
+	IF NOT "!ERRORLEVEL!"=="0" GOTO compileerror
+)
+
+SET CFLAGS=%CFLAGS% /link %LDFLAGS%
+CL %SOURCES% /I%ROOT%\src %CFLAGS% %LIBS%
 IF NOT "%ERRORLEVEL%"=="0" GOTO compileerror
 
-IF "%BUILD_PLUGIN%"=="1" (
-	SET SVPLUGDIR=!SVOUTDIR!\plugins
+IF "%PLUGIN_BUILD%"=="1" (
+	SET SVPLUGDIR=!SERVER_OUTROOT!\plugins
 	IF "%PLUGIN_INSTALL%"=="1" (
 		IF NOT EXIST !SVPLUGDIR! MD !SVPLUGDIR!
 		COPY /Y !OUTDIR!\%PLUGNAME%.dll !SVPLUGDIR!
@@ -157,7 +160,7 @@ IF "%BUILD_PLUGIN%"=="1" (
 IF NOT EXIST ".\zlib\" GOTO nozlib
 IF NOT EXIST ".\zlib\zlib.h" GOTO nozlib
 IF NOT EXIST ".\zlib\zconf.h" GOTO nozlib
-set MSVC_OPTS=%MSVC_OPTS% /I.\zlib\
+set CFLAGS=%CFLAGS% /I.\zlib\
 FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R .\zlib\win32\!ARCH! z*.dll`) DO (
 	SET ZLIB_DYNAMIC=%%F
 )
@@ -212,23 +215,23 @@ POPD
 GOTO detectzlib
 
 :copyzlib
-FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R !SVOUTDIR! zlib1.dll`) DO (
+FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R !SERVER_OUTROOT! zlib1.dll`) DO (
 	IF EXIST "%%F" GOTO zlibok
 )
-COPY "%ZLIB_DYNAMIC%" "%SVOUTDIR%\zlib1.dll"
+COPY "%ZLIB_DYNAMIC%" "%SERVER_OUTROOT%\zlib1.dll"
 IF "%DEBUG%"=="1" (
-	COPY "!ZLIB_DYNAMIC:~0,-3!pdb" "%SVOUTDIR%\zlib1.pdb"
+	COPY "!ZLIB_DYNAMIC:~0,-3!pdb" "%SERVER_OUTROOT%\zlib1.pdb"
 )
 GOTO zlibok
 
 :binstart
-IF "%RUNMODE%"=="0" start /D %OUTDIR% %BINNAME%
+IF "%RUNMODE%"=="0" start /D %OUTDIR% %OUTBIN%
 IF "%RUNMODE%"=="1" GOTO onerun
 GOTO endok
 
 :onerun
 PUSHD %OUTDIR%
-%BINNAME%
+%OUTBIN%
 POPD
 GOTO endok
 

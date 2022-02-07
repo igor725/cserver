@@ -64,8 +64,6 @@ do
 		if [ -n "$PLUGIN_NAME" ]; then
 			if [ "$a" == "install" ]; then
 				PLUGIN_INSTALL=1
-			else
-				LIBS="$LIBS -l$a"
 			fi
 			continue
 		else
@@ -112,6 +110,10 @@ fi
 
 if [ ! -d "$OUTDIR" ]; then mkdir -p $OUTDIR; fi
 if [ ! -d "$OBJDIR" ]; then mkdir -p $OBJDIR; fi
+
+if [ -f "$ROOT/vars.sh" ]; then
+	. "$ROOT/vars.sh"
+fi
 
 echo -n "Compiling..."
 pids=()
