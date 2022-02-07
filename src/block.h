@@ -3,6 +3,15 @@
 #include "core.h"
 #include "world.h"
 
+typedef enum _EBlockFace {
+	BLOCK_FACE_AWAY_X,
+	BLOCK_FACE_TOWARDS_X,
+	BLOCK_FACE_AWAY_Y,
+	BLOCK_FACE_TOWARDS_Y,
+	BLOCK_FACE_AWAY_Z,
+	BLOCK_FACE_TOWARDS_Z
+} EBlockFace;
+
 typedef enum _EBlockIDs {
 	BLOCK_AIR = 0,
 	BLOCK_STONE = 1,

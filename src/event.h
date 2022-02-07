@@ -62,7 +62,7 @@ typedef struct _onPlayerClick {
 	cs_int16 yaw, pitch;
 	ClientID tgid;
 	SVec tgpos;
-	cs_char tgface;
+	EBlockFace tgface;
 } onPlayerClick;
 
 API cs_bool Event_RegisterVoid(EventTypes type, evtVoidCallback func);
