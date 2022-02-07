@@ -2,18 +2,21 @@
 #define CORE_H
 #ifndef CORE_MANUAL_BACKENDS
 #if defined(__MINGW32__)
+#define CORE_USE_WINDOWS
 #define CORE_USE_WINDOWS_PATHS
 #define CORE_USE_UNIX_DEFINES
 #define CORE_USE_UNIX_TYPES
 #define HTTP_USE_WININET_BACKEND
 #define HASH_USE_WINCRYPT_BACKEND
 #elif defined(_WIN32)
+#define CORE_USE_WINDOWS
 #define CORE_USE_WINDOWS_PATHS
 #define CORE_USE_WINDOWS_DEFINES
 #define CORE_USE_WINDOWS_TYPES
 #define HTTP_USE_WININET_BACKEND
 #define HASH_USE_WINCRYPT_BACKEND
 #elif defined(__unix__)
+#define CORE_USE_UNIX
 #define CORE_USE_UNIX_PATHS
 #define CORE_USE_UNIX_DEFINES
 #define CORE_USE_UNIX_TYPES
@@ -23,13 +26,11 @@
 #endif
 
 #if defined(CORE_USE_WINDOWS_PATHS)
-#define WINDOWS
 #define PATH_DELIM "\\"
 #define DLIB_EXT "dll"
 #define _CRT_SECURE_NO_WARNINGS
 #define WIN32_LEAN_AND_MEAN
 #elif defined(CORE_USE_UNIX_PATHS)
-#define UNIX
 #define PATH_DELIM "/"
 #define DLIB_EXT "so"
 #else

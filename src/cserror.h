@@ -19,9 +19,9 @@ Error_Print(etype, ecode, __FILE__, __LINE__, __func__, ##__VA_ARGS__); \
 if(abort) { \
 	Process_Exit(ecode); \
 }
-#if defined(WINDOWS)
+#if defined(CORE_USE_WINDOWS)
 #  define Error_PrintSys(abort) ERROR_PRINT(ET_SYS, GetLastError(), abort);
-#elif defined(UNIX)
+#elif defined(CORE_USE_UNIX)
 #  define Error_PrintSys(abort) ERROR_PRINT(ET_SYS, errno, abort);
 #endif
 

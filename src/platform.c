@@ -4,8 +4,8 @@
 // #include "../../cs_memleak.c"
 #include "platforms/shared.c"
 
-#if defined(WINDOWS)
+#if defined(CORE_USE_WINDOWS)
 #include "platforms/windows.c"
-#elif defined(UNIX)
+#elif defined(CORE_USE_UNIX)
 #include "platforms/unix.c"
 #endif

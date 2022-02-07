@@ -81,7 +81,7 @@ cs_size String_Copy(cs_char *dst, cs_size len, cs_str src) {
 }
 
 cs_uint32 String_FormatError(cs_uint32 code, cs_char *buf, cs_size buflen, va_list *args) {
-#if defined(WINDOWS)
+#if defined(CORE_USE_WINDOWS)
 	cs_int32 len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, (cs_uint32)buflen, args);
 	if(len > 0) {
 		while(*buf++ != '\0') {
@@ -92,16 +92,16 @@ cs_uint32 String_FormatError(cs_uint32 code, cs_char *buf, cs_size buflen, va_li
 		}
 	}
 	return len;
-#elif defined(UNIX)
+#elif defined(CORE_USE_UNIX)
 	(void)args;
 	return String_Copy(buf, buflen, strerror(code));
 #endif
 }
 
 cs_int32 String_FormatBufVararg(cs_char *buf, cs_size len, cs_str str, va_list *args) {
-#if defined(WINDOWS)
+#if defined(CORE_USE_WINDOWS)
 	return vsprintf_s(buf, len, str, *args);
-#elif defined(UNIX)
+#elif defined(CORE_USE_UNIX)
 	return vsnprintf(buf, len, str, *args);
 #endif
 }

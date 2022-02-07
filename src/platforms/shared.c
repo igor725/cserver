@@ -121,11 +121,11 @@ Socket Socket_New(void) {
 }
 
 cs_bool Socket_Bind(Socket sock, struct sockaddr_in *addr) {
-#if defined(UNIX)
+#if defined(CORE_USE_UNIX)
 	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(cs_int32){1}, 4) == -1) {
 		return false;
 	}
-#elif defined(WINDOWS)
+#elif defined(CORE_USE_WINDOWS)
 	if(setsockopt(sock, SOL_SOCKET, SO_DONTLINGER, (void*)&(cs_int32){0}, 4) == -1) {
 		return false;
 	}

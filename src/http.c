@@ -86,10 +86,10 @@ cs_str csymlist[] = {
 };
 
 cs_str libcurl[] = {
-#if defined(UNIX)
+#if defined(CORE_USE_UNIX)
 	"libcurl.so.4",
 	"libcurl.so.3",
-#elif defined(WINDOWS)
+#elif defined(CORE_USE_WINDOWS)
 	"curl.dll",
 	"libcurl.dll",
 #else

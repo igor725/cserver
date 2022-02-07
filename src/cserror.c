@@ -1,5 +1,5 @@
 #include "core.h"
-#ifdef UNIX
+#ifdef CORE_USE_UNIX
 #define _GNU_SOURCE
 #endif
 #include "str.h"
@@ -7,7 +7,7 @@
 #include "cserror.h"
 #include "compr.h"
 
-#if defined(WINDOWS)
+#if defined(CORE_USE_WINDOWS)
 #include <dbghelp.h>
 
 NOINL static void PrintCallStack(void) {
@@ -47,7 +47,7 @@ static void PrintCallStack(void) {
 
 cs_bool Error_Init(void) {return true;}
 void Error_Uninit(void) {}
-#elif defined(UNIX)
+#elif defined(CORE_USE_UNIX)
 #include <dlfcn.h>
 #include <execinfo.h>
 
@@ -80,9 +80,9 @@ INL static void getErrorStr(cs_int32 type, cs_int32 code, cs_char *errbuf, cs_si
 }
 
 cs_int32 Error_GetSysCode(void) {
-#if defined(WINDOWS)
+#if defined(CORE_USE_WINDOWS)
 	return GetLastError();
-#elif defined(UNIX)
+#elif defined(CORE_USE_UNIX)
 	return errno;
 #endif
 }

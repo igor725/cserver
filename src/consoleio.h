@@ -2,9 +2,9 @@
 #define CONSOLEIO_H
 #include "core.h"
 
-#if defined(WINDOWS)
+#if defined(CORE_USE_WINDOWS)
 #define CONSOLEIO_TERMINATE CTRL_C_EVENT
-#elif defined(UNIX)
+#elif defined(CORE_USE_UNIX)
 #include <signal.h>
 #define CONSOLEIO_TERMINATE SIGINT
 #endif

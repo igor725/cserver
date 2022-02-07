@@ -104,9 +104,9 @@ static struct _CryptLib {
 } Crypt;
 
 static cs_str cryptodll[] = {
-#if defined(WINDOWS)
+#if defined(CORE_USE_WINDOWS)
 	"crypto.dll", "libeay32.dll",
-#elif defined(UNIX)
+#elif defined(CORE_USE_UNIX)
 	"libcrypto.so", "libcrypto.so.1.1",
 #else
 #error This file wants to be hacked

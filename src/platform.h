@@ -3,7 +3,7 @@
 #include "core.h"
 #include <stdio.h>
 
-#if defined(WINDOWS)
+#if defined(CORE_USE_WINDOWS)
 #include <ws2tcpip.h>
 typedef WIN32_FIND_DATAA ITER_FILE;
 typedef cs_ulong TRET, TSHND_PARAM;
@@ -14,7 +14,7 @@ typedef HANDLE Thread, ITER_DIR;
 typedef BOOL TSHND_RET;
 #define TSHND_OK TRUE
 #define MSG_NOSIGNAL 0
-#elif defined(UNIX)
+#elif defined(CORE_USE_UNIX)
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/time.h>

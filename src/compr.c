@@ -30,10 +30,12 @@ static struct _ZLib {
 } zlib;
 
 cs_str zlibdll[] = {
-#if defined(WINDOWS)
+#if defined(CORE_USE_WINDOWS)
 	"zlibwapi.dll",
 	"zlib1.dll",
-#elif defined(UNIX)
+	"zlib.dll",
+	"libz.dll",
+#elif defined(CORE_USE_UNIX)
 	"libz.so",
 	"libz.so.1",
 #else
