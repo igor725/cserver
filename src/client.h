@@ -122,6 +122,7 @@ API cs_bool Client_TeleportTo(Client *client, Vec *pos, Ang *ang);
 API cs_bool Client_TeleportToSpawn(Client *client);
 API cs_bool Client_CheckState(Client *client, EPlayerState state);
 
+API cs_bool Client_IsLocal(Client *client);
 API cs_bool Client_IsInSameWorld(Client *client, Client *other);
 API cs_bool Client_IsInWorld(Client *client, World *world);
 API cs_bool Client_IsOP(Client *client);

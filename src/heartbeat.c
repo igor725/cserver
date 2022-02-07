@@ -166,6 +166,7 @@ cs_bool Heartbeat_RemoveKeyChecker(heartbeatKeyChecker checker) {
 
 cs_bool Heartbeat_Validate(Client *client) {
 	if(!headKeyChecker || !headHeartbeat) return true;
+	if(Client_IsLocal(client)) return true;
 	AListField *kc;
 	cs_bool keyvalid = false;
 

@@ -297,7 +297,7 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 
 	client->playerData = Memory_Alloc(1, sizeof(PlayerData));
 	client->playerData->firstSpawn = true;
-	if(client->addr == htonl(INADDR_LOOPBACK) && Config_GetBoolByKey(Server_Config, CFG_LOCALOP_KEY))
+	if(Client_IsLocal(client) && Config_GetBoolByKey(Server_Config, CFG_LOCALOP_KEY))
 		client->playerData->isOP = true;
 
 	if(!Proto_ReadStringNoAlloc(&data, client->playerData->name)) return false;

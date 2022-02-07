@@ -358,6 +358,10 @@ cs_bool Client_CheckState(Client *client, EPlayerState state) {
 	return client->playerData->state == state;
 }
 
+cs_bool Client_IsLocal(Client *client) {
+	return client->addr == 0x7f000001;
+}
+
 cs_bool Client_IsInSameWorld(Client *client, Client *other) {
 	return Client_GetWorld(client) == Client_GetWorld(other);
 }
