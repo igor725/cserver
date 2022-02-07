@@ -541,6 +541,7 @@ cs_bool normalgenerator(World *world, void *data) {
 	wi->spawnVec.z = (cs_float)z;
 	World_SetProperty(world, WORLD_PROP_SIDEBLOCK, BLOCK_AIR);
 	World_SetProperty(world, WORLD_PROP_EDGEBLOCK, BLOCK_WATER);
+	World_SetProperty(world, WORLD_PROP_CLOUDSLEVEL, ctx.dims->y + 2);
 	World_SetProperty(world, WORLD_PROP_EDGELEVEL, ctx.heightWater + 1);
 	World_SetProperty(world, WORLD_PROP_SIDEOFFSET, 0);
 
