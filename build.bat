@@ -115,6 +115,9 @@ IF "%PLUGIN_BUILD%"=="0" (
 	SET LDFLAGS=%LDFLAGS% /subsystem:console
 	SET LIBS=!LIBS! ws2_32.lib
 	GOTO detectzlib
+) else (
+	IF NOT EXIST !SERVER_OUTROOT! GOTO noserver
+	IF NOT EXIST !SERVER_OUTROOT!\server.lib GOTO noserver
 )
 
 :zlibok
@@ -242,6 +245,10 @@ GOTO end
 
 :notaplugin
 ECHO Looks like the specified directory is not a plugin.
+GOTO end
+
+:noserver
+ECHO Before compiling plugins, you must compile the server.
 GOTO end
 
 :compileerror
