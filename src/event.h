@@ -26,6 +26,7 @@ typedef enum _EventTypes {
 	EVT_WORLDADDED,
 	EVT_WORLDLOADED,
 	EVT_WORLDUNLOADED,
+	EVT_ONLOG,
 
 	EVENTS_TCOUNT
 } EventTypes;

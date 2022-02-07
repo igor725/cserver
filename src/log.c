@@ -2,6 +2,7 @@
 #include "str.h"
 #include "platform.h"
 #include "log.h"
+#include "event.h"
 
 cs_byte Log_Level = LOG_ALL;
 Mutex *Log_Mutex;
@@ -56,23 +57,42 @@ void Log_SetLevelStr(cs_str str) {
 	Log_Level = level;
 }
 
+static LogBuffer buffer;
+
 void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 	if(Log_Level & flag) {
 		Mutex_Lock(Log_Mutex);
-		cs_char time[13], buf[8192];
-		Time_Format(time, 13);
+
+		cs_int32 ret;
+		if((ret = Time_Format(buffer.data, LOG_BUFSIZE)) > 0)
+			buffer.offset = ret;
+
+		if((ret = String_FormatBuf(buffer.data + buffer.offset,
+			LOG_BUFSIZE - buffer.offset, " [%s] ", getName(flag)
+		)) > 0)
+			buffer.offset += ret;
 
 		if(args)
-			String_FormatBufVararg(buf, 8192, str, args);
+			if((ret = String_FormatBufVararg(
+				buffer.data + buffer.offset,
+				LOG_BUFSIZE - buffer.offset - 2, str, args
+			)) > 0)
+				buffer.offset += ret;
 		else
-			String_Copy(buf, 8192, str);
+			if((ret = (cs_int32)String_Append(
+				buffer.data + buffer.offset,
+				LOG_BUFSIZE - buffer.offset - 2, str
+			)) > 0)
+				buffer.offset += ret;
 
-		File_WriteFormat(stderr, "%s [%s] %s\n",
-			time,
-			getName(flag),
-			buf
-		);
-		File_Flush(stderr);
+		buffer.data[buffer.offset++] = '\n';
+		buffer.data[buffer.offset] = '\0';
+
+		if(Event_Call(EVT_ONLOG, &buffer)) {
+			File_Write(buffer.data, buffer.offset, 1, stderr);
+			File_Flush(stderr);
+		}
+
 		Mutex_Unlock(Log_Mutex);
 	}
 }

@@ -140,7 +140,7 @@ API void Waitable_Signal(Waitable *handle);
 API void Waitable_Wait(Waitable *handle);
 API void Waitable_Reset(Waitable *handle);
 
-API void Time_Format(cs_char *buf, cs_size len);
+API cs_int32 Time_Format(cs_char *buf, cs_size len);
 API cs_uint64 Time_GetMSec(void);
 
 API cs_bool Console_BindSignalHandler(TSHND handler);

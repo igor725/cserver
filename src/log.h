@@ -3,15 +3,20 @@
 #include "core.h"
 #include <stdio.h>
 
-enum {
-	LOG_QUIET,
-	LOG_ERROR = BIT(0),
-	LOG_INFO = BIT(1),
-	LOG_CHAT = BIT(2),
-	LOG_WARN = BIT(3),
-	LOG_DEBUG = BIT(4),
-	LOG_ALL = 0x0F
-};
+#define LOG_QUIET 0x00
+#define LOG_ERROR BIT(0)
+#define LOG_INFO BIT(1)
+#define LOG_CHAT BIT(2)
+#define LOG_WARN BIT(3)
+#define LOG_DEBUG BIT(4)
+#define LOG_ALL 0x0F
+
+#define LOG_BUFSIZE 8192
+
+typedef struct _LogBuffer {
+	cs_char data[LOG_BUFSIZE];
+	cs_size offset;
+} LogBuffer;
 
 cs_bool Log_Init(void);
 void Log_Uninit(void);

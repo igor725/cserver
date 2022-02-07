@@ -228,20 +228,17 @@ void Waitable_Wait(Waitable *handle) {
 	Mutex_Unlock(handle->mutex);
 }
 
-void Time_Format(cs_char *buf, cs_size buflen) {
+cs_int32 Time_Format(cs_char *buf, cs_size buflen) {
 	struct timeval tv;
 	struct tm *tm;
 	gettimeofday(&tv, NULL);
 	tm = localtime(&tv.tv_sec);
-
-	if(buflen > 12) {
-		sprintf(buf, "%02d:%02d:%02d.%03d",
-			tm->tm_hour,
-			tm->tm_min,
-			tm->tm_sec,
-			(cs_int32) (tv.tv_usec / 1000)
-		);
-	}
+	return snprintf(buf, buflen, "%02d:%02d:%02d.%03d",
+		tm->tm_hour,
+		tm->tm_min,
+		tm->tm_sec,
+		(cs_int32) (tv.tv_usec / 1000)
+	);
 }
 
 cs_uint64 Time_GetMSec() {
