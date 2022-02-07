@@ -75,16 +75,17 @@ void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 		if(args)
 			if((ret = String_FormatBufVararg(
 				buffer.data + buffer.offset,
-				LOG_BUFSIZE - buffer.offset - 2, str, args
+				LOG_BUFSIZE - buffer.offset - 3, str, args
 			)) > 0)
 				buffer.offset += ret;
 		else
 			if((ret = (cs_int32)String_Append(
 				buffer.data + buffer.offset,
-				LOG_BUFSIZE - buffer.offset - 2, str
+				LOG_BUFSIZE - buffer.offset - 3, str
 			)) > 0)
 				buffer.offset += ret;
 
+		buffer.data[buffer.offset++] = '\r';
 		buffer.data[buffer.offset++] = '\n';
 		buffer.data[buffer.offset] = '\0';
 
