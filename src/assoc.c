@@ -126,7 +126,7 @@ cs_bool Assoc_Remove(void *target, AssocType type) {
 			KList_Remove(&((World *)target)->headNode, anode);
 			break;
 		
-		default: return FALSE;
+		default: return false;
 	}
 	Memory_Free(anodeptr);
 	return true;
