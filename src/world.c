@@ -123,6 +123,7 @@ cs_bool World_SetWeather(World *world, EWorldWeather type) {
 cs_bool World_SetEnvColor(World *world, EWorldColors type, Color3* color) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	world->info.modval |= MV_COLORS;
+	world->info.modclr |= (1 << type);
 	world->modified = true;
 	world->info.colors[type] = *color;
 	Event_Call(EVT_ONCOLOR, world);

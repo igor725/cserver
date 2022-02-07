@@ -223,7 +223,7 @@ void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
 		if(updateAll || world->info.modval & MV_COLORS) {
 			for(cs_byte color = 0; color < WORLD_COLORS_COUNT; color++) {
-				if(updateAll || world->info.modclr & (2 ^ color))
+				if(updateAll || world->info.modclr & (1 << color))
 					CPE_WriteEnvColor(client, color, World_GetEnvColor(world, color));
 			}
 		}
@@ -231,7 +231,7 @@ void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 			CPE_WriteTexturePack(client, world->info.texturepack);
 		if(updateAll || world->info.modval & MV_PROPS) {
 			for(cs_byte prop = 0; prop < WORLD_PROPS_COUNT; prop++) {
-				if(updateAll || world->info.modprop & (2 ^ prop))
+				if(updateAll || world->info.modprop & (1 << prop))
 					CPE_WriteMapProperty(client, prop, World_GetProperty(world, prop));
 			}
 		}
