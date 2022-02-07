@@ -107,7 +107,7 @@ API void World_FreeBlockArray(World *world);
 API void World_Free(World *world);
 API void World_Add(World *world);
 API cs_bool World_IsReadyToPlay(World *world);
-API void World_UpdateClients(World *world);
+API void World_FinishEnvUpdate(World *world);
 
 API cs_bool World_Load(World *world);
 API void World_Unload(World *world);

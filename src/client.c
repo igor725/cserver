@@ -67,15 +67,6 @@ cs_byte Clients_GetCount(EPlayerState state) {
 	return count;
 }
 
-void Clients_UpdateWorldInfo(World *world) {
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client *client = Clients_List[i];
-		if(client && Client_IsInWorld(client, world))
-			Client_UpdateWorldInfo(client, world, false);
-	}
-	world->info.modval = MV_NONE;
-}
-
 void Clients_KickAll(cs_str reason) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];

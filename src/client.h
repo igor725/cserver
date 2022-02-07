@@ -108,7 +108,6 @@ API cs_bool Group_Remove(cs_int16 gid);
 
 API cs_byte Clients_GetCount(EPlayerState state);
 API void Clients_KickAll(cs_str reason);
-API void Clients_UpdateWorldInfo(World *world);
 
 API cs_bool Client_ChangeWorld(Client *client, World *world);
 API void Client_Chat(Client *client, EMesgType type, cs_str message);

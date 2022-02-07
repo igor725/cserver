@@ -130,6 +130,17 @@ cs_bool World_SetEnvColor(World *world, EWorldColors type, Color3* color) {
 	return true;
 }
 
+void World_FinishEnvUpdate(World *world) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		Client *client = Clients_List[i];
+		if(client && Client_IsInWorld(client, world))
+			Client_UpdateWorldInfo(client, world, false);
+	}
+	world->info.modclr = 0x00;
+	world->info.modprop = 0x00;
+	world->info.modval = MV_NONE;
+}
+
 Color3* World_GetEnvColor(World *world, EWorldColors type) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	return &world->info.colors[type];
