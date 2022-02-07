@@ -223,24 +223,24 @@ void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 		if(updateAll || world->info.modval & MV_PROPS) {
 			for(cs_byte prop = 0; prop < WORLD_PROPS_COUNT; prop++) {
 				if(updateAll || world->info.modprop & (1 << prop))
-					CPE_WriteMapProperty(client, prop, World_GetProperty(world, prop));
+					CPE_WriteMapProperty(client, prop, World_GetEnvProp(world, prop));
 			}
 		}
 	} else if(Client_GetExtVer(client, EXT_MAPPROPS) == 2) {
 		CPE_WriteSetMapAppearanceV2(
 			client, world->info.texturepack,
-			(cs_byte)World_GetProperty(world, 0),
-			(cs_byte)World_GetProperty(world, 1),
-			(cs_int16)World_GetProperty(world, 2),
-			(cs_int16)World_GetProperty(world, 3),
-			(cs_int16)World_GetProperty(world, 4)
+			(cs_byte)World_GetEnvProp(world, 0),
+			(cs_byte)World_GetEnvProp(world, 1),
+			(cs_int16)World_GetEnvProp(world, 2),
+			(cs_int16)World_GetEnvProp(world, 3),
+			(cs_int16)World_GetEnvProp(world, 4)
 		);
 	} else if(Client_GetExtVer(client, EXT_MAPPROPS) == 1) {
 		CPE_WriteSetMapAppearanceV1(
 			client, world->info.texturepack,
-			(cs_byte)World_GetProperty(world, 0),
-			(cs_byte)World_GetProperty(world, 1),
-			(cs_int16)World_GetProperty(world, 2)
+			(cs_byte)World_GetEnvProp(world, 0),
+			(cs_byte)World_GetEnvProp(world, 1),
+			(cs_int16)World_GetEnvProp(world, 2)
 		);
 	}
 

@@ -12,8 +12,8 @@ cs_bool flatgenerator(World *world, void *data) {
 	for(cs_uint32 i = 0; i < dirtEnd + dims->x * dims->z; i++)
 		blocks[i] = i < dirtEnd ? BLOCK_DIRT : BLOCK_GRASS;
 
-	World_SetProperty(world, WORLD_PROP_CLOUDSLEVEL, dims->y + 2);
-	World_SetProperty(world, WORLD_PROP_EDGELEVEL, dims->y / 2);
+	World_SetEnvProp(world, WORLD_PROP_CLOUDSLEVEL, dims->y + 2);
+	World_SetEnvProp(world, WORLD_PROP_EDGELEVEL, dims->y / 2);
 
 	wi->spawnVec.x = (float)dims->x / 2;
 	wi->spawnVec.y = (float)(dims->y / 2) + 1.59375f;

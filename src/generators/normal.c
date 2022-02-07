@@ -539,11 +539,11 @@ cs_bool normalgenerator(World *world, void *data) {
 	wi->spawnVec.x = (cs_float)x;
 	wi->spawnVec.y = (cs_float)getFinalPointHeight(x, z) + 1.59375f;
 	wi->spawnVec.z = (cs_float)z;
-	World_SetProperty(world, WORLD_PROP_SIDEBLOCK, BLOCK_AIR);
-	World_SetProperty(world, WORLD_PROP_EDGEBLOCK, BLOCK_WATER);
-	World_SetProperty(world, WORLD_PROP_CLOUDSLEVEL, ctx.dims->y + 2);
-	World_SetProperty(world, WORLD_PROP_EDGELEVEL, ctx.heightWater + 1);
-	World_SetProperty(world, WORLD_PROP_SIDEOFFSET, 0);
+	World_SetEnvProp(world, WORLD_PROP_SIDEBLOCK, BLOCK_AIR);
+	World_SetEnvProp(world, WORLD_PROP_EDGEBLOCK, BLOCK_WATER);
+	World_SetEnvProp(world, WORLD_PROP_CLOUDSLEVEL, ctx.dims->y + 2);
+	World_SetEnvProp(world, WORLD_PROP_EDGELEVEL, ctx.heightWater + 1);
+	World_SetEnvProp(world, WORLD_PROP_SIDEOFFSET, 0);
 
 	if(ctx.biomes) Memory_Free(ctx.biomes);
 	if(ctx.heightMap) Memory_Free(ctx.heightMap);

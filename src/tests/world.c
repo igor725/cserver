@@ -22,16 +22,16 @@ cs_bool Tests_World(void) {
 	Tests_Assert(String_CaselessCompare(World_GetName(world), worldname), "check world name");
 
 	Tests_NewTask("Change world properties");
-	Tests_Assert(World_SetProperty(world, WORLD_PROP_SIDEBLOCK, BLOCK_DIRT), "set side block");
-	Tests_Assert(World_SetProperty(world, WORLD_PROP_EDGEBLOCK, BLOCK_GRASS), "set edge block");
-	Tests_Assert(World_SetProperty(world, WORLD_PROP_EDGELEVEL, 40), "set edge level");
-	Tests_Assert(World_SetProperty(world, WORLD_PROP_CLOUDSLEVEL, 228), "set clouds level");
-	Tests_Assert(World_SetProperty(world, WORLD_PROP_FOGDIST, 10), "set fog distance");
-	Tests_Assert(World_SetProperty(world, WORLD_PROP_SPDCLOUDS, 100), "set clouds speed");
-	Tests_Assert(World_SetProperty(world, WORLD_PROP_SPDWEATHER, 250), "set weather speed");
-	Tests_Assert(World_SetProperty(world, WORLD_PROP_FADEWEATHER, 250), "set weather fade");
-	Tests_Assert(World_SetProperty(world, WORLD_PROP_EXPFOG, 1), "set exponential fog");
-	Tests_Assert(World_SetProperty(world, WORLD_PROP_SIDEOFFSET, -6), "set map sides offset");
+	Tests_Assert(World_SetEnvProp(world, WORLD_PROP_SIDEBLOCK, BLOCK_DIRT), "set side block");
+	Tests_Assert(World_SetEnvProp(world, WORLD_PROP_EDGEBLOCK, BLOCK_GRASS), "set edge block");
+	Tests_Assert(World_SetEnvProp(world, WORLD_PROP_EDGELEVEL, 40), "set edge level");
+	Tests_Assert(World_SetEnvProp(world, WORLD_PROP_CLOUDSLEVEL, 228), "set clouds level");
+	Tests_Assert(World_SetEnvProp(world, WORLD_PROP_FOGDIST, 10), "set fog distance");
+	Tests_Assert(World_SetEnvProp(world, WORLD_PROP_SPDCLOUDS, 100), "set clouds speed");
+	Tests_Assert(World_SetEnvProp(world, WORLD_PROP_SPDWEATHER, 250), "set weather speed");
+	Tests_Assert(World_SetEnvProp(world, WORLD_PROP_FADEWEATHER, 250), "set weather fade");
+	Tests_Assert(World_SetEnvProp(world, WORLD_PROP_EXPFOG, 1), "set exponential fog");
+	Tests_Assert(World_SetEnvProp(world, WORLD_PROP_SIDEOFFSET, -6), "set map sides offset");
 	Tests_Assert(World_SetTexturePack(world, "http://test.texture/pack.zip"), "set texture pack");
 	Tests_Assert(World_SetWeather(world, WORLD_WEATHER_SNOW), "set weather");
 	Color3 skycol = {1, 2, 3}, cloudcol = {4, 5, 6},
@@ -61,16 +61,16 @@ cs_bool Tests_World(void) {
 	Waitable_Wait(world->waitable);
 
 	Tests_NewTask("Checking world properties");
-	Tests_Assert(World_GetProperty(world, WORLD_PROP_SIDEBLOCK) == BLOCK_DIRT, "check side block");
-	Tests_Assert(World_GetProperty(world, WORLD_PROP_EDGEBLOCK) == BLOCK_GRASS, "check edge block");
-	Tests_Assert(World_GetProperty(world, WORLD_PROP_EDGELEVEL) == 40, "check edge level");
-	Tests_Assert(World_GetProperty(world, WORLD_PROP_CLOUDSLEVEL) == 228, "check clouds level");
-	Tests_Assert(World_GetProperty(world, WORLD_PROP_FOGDIST) == 10, "check fog distance");
-	Tests_Assert(World_GetProperty(world, WORLD_PROP_SPDCLOUDS) == 100, "check clouds speed");
-	Tests_Assert(World_GetProperty(world, WORLD_PROP_SPDWEATHER) == 250, "check weather speed");
-	Tests_Assert(World_GetProperty(world, WORLD_PROP_FADEWEATHER) == 250, "check weather fade");
-	Tests_Assert(World_GetProperty(world, WORLD_PROP_EXPFOG) == 1, "check exponential fog");
-	Tests_Assert(World_GetProperty(world, WORLD_PROP_SIDEOFFSET) == -6, "check map sides offset");
+	Tests_Assert(World_GetEnvProp(world, WORLD_PROP_SIDEBLOCK) == BLOCK_DIRT, "check side block");
+	Tests_Assert(World_GetEnvProp(world, WORLD_PROP_EDGEBLOCK) == BLOCK_GRASS, "check edge block");
+	Tests_Assert(World_GetEnvProp(world, WORLD_PROP_EDGELEVEL) == 40, "check edge level");
+	Tests_Assert(World_GetEnvProp(world, WORLD_PROP_CLOUDSLEVEL) == 228, "check clouds level");
+	Tests_Assert(World_GetEnvProp(world, WORLD_PROP_FOGDIST) == 10, "check fog distance");
+	Tests_Assert(World_GetEnvProp(world, WORLD_PROP_SPDCLOUDS) == 100, "check clouds speed");
+	Tests_Assert(World_GetEnvProp(world, WORLD_PROP_SPDWEATHER) == 250, "check weather speed");
+	Tests_Assert(World_GetEnvProp(world, WORLD_PROP_FADEWEATHER) == 250, "check weather fade");
+	Tests_Assert(World_GetEnvProp(world, WORLD_PROP_EXPFOG) == 1, "check exponential fog");
+	Tests_Assert(World_GetEnvProp(world, WORLD_PROP_SIDEOFFSET) == -6, "check map sides offset");
 	Tests_Assert(String_Compare(World_GetTexturePack(world), "http://test.texture/pack.zip"), "check texture pack");
 	Tests_Assert(World_GetWeather(world) == WORLD_WEATHER_SNOW, "check weather");
 	Color3 *cskycol = World_GetEnvColor(world, WORLD_COLOR_SKY),

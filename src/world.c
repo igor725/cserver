@@ -77,7 +77,7 @@ void World_SetDimensions(World *world, const SVec *dims) {
 	world->wdata.size = dims->x * dims->y * dims->z;
 }
 
-cs_bool World_SetProperty(World *world, EWorldProp property, cs_int32 value) {
+cs_bool World_SetEnvProp(World *world, EWorldProp property, cs_int32 value) {
 	if(property > WORLD_PROPS_COUNT) return false;
 	world->modified = true;
 	world->info.props[property] = value;
@@ -86,7 +86,7 @@ cs_bool World_SetProperty(World *world, EWorldProp property, cs_int32 value) {
 	return true;
 }
 
-cs_int32 World_GetProperty(World *world, EWorldProp property) {
+cs_int32 World_GetEnvProp(World *world, EWorldProp property) {
 	if(property > WORLD_PROPS_COUNT) return 0;
 	return world->info.props[property];
 }
