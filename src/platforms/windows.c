@@ -201,6 +201,31 @@ void Waitable_Wait(Waitable *handle) {
 	WaitForSingleObject(handle, INFINITE);
 }
 
+Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max) {
+	return CreateSemaphore(
+		NULL, initial,
+		max, NULL
+	);
+}
+
+cs_bool Semaphore_TryWait(Semaphore *sem, cs_ulong timeout) {
+	return WaitForSingleObject(sem, timeout) == WAIT_OBJECT_0;
+}
+
+void Semaphore_Wait(Semaphore *sem) {
+	WaitForSingleObject(sem, INFINITE);
+}
+
+void Semaphore_Post(Semaphore *sem) {
+	ReleaseSemaphore(sem, 1, NULL);
+}
+
+void Semaphore_Free(Semaphore *sem) {
+	if(!CloseHandle(sem)) {
+		Error_PrintSys(true);
+	}
+}
+
 cs_int32 Time_Format(cs_char *buf, cs_size buflen) {
 	SYSTEMTIME time;
 	GetSystemTime(&time);

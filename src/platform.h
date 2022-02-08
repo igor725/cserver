@@ -7,7 +7,7 @@
 #include <ws2tcpip.h>
 typedef WIN32_FIND_DATAA ITER_FILE;
 typedef cs_ulong TRET, TSHND_PARAM;
-typedef void Waitable;
+typedef void Waitable, Semaphore;
 typedef CRITICAL_SECTION Mutex;
 typedef SOCKET Socket;
 typedef HANDLE Thread, ITER_DIR;
@@ -16,6 +16,7 @@ typedef BOOL TSHND_RET;
 #define MSG_NOSIGNAL 0
 #elif defined(CORE_USE_UNIX)
 #include <pthread.h>
+#include <semaphore.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/socket.h>
@@ -29,6 +30,7 @@ typedef struct dirent *ITER_FILE;
 typedef void *TRET;
 typedef pthread_t Thread;
 typedef pthread_mutex_t Mutex;
+typedef sem_t Semaphore;
 typedef void TSHND_RET;
 typedef cs_int32 TSHND_PARAM;
 typedef struct {
@@ -139,6 +141,12 @@ API void Waitable_Free(Waitable *handle);
 API void Waitable_Signal(Waitable *handle);
 API void Waitable_Wait(Waitable *handle);
 API void Waitable_Reset(Waitable *handle);
+
+API Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max);
+API cs_bool Semaphore_TryWait(Semaphore *sem, cs_ulong timeout);
+API void Semaphore_Wait(Semaphore *sem);
+API void Semaphore_Post(Semaphore *sem);
+API void Semaphore_Free(Semaphore *sem);
 
 API cs_int32 Time_Format(cs_char *buf, cs_size len);
 API cs_uint64 Time_GetMSec(void);

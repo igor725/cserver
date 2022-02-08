@@ -766,10 +766,11 @@ INL static void PacketReceiverRaw(Client *client) {
 }
 
 NOINL static void SendWorld(Client *client, World *world) {
-	if(!world->loaded) Waitable_Wait(world->waitable);
+	World_Lock(world, 0);
 
 	if(!world->loaded) {
 		Client_Kick(client, Sstor_Get("KICK_INT"));
+		World_Unlock(world);
 		return;
 	}
 
@@ -834,6 +835,8 @@ NOINL static void SendWorld(Client *client, World *world) {
 		Compr_Reset(&client->compr);
 	} else
 		Client_KickFormat(client, Sstor_Get("KICK_ZERR"), Compr_GetError(client->compr.ret));
+
+	World_Unlock(world);
 }
 
 void Client_Tick(Client *client) {

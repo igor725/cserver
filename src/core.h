@@ -113,6 +113,7 @@ typedef unsigned long cs_uintptr, cs_size;
 typedef char cs_char;
 typedef unsigned char cs_uchar;
 typedef unsigned long cs_ulong;
+typedef long cs_long;
 typedef float cs_float;
 typedef const cs_char *cs_str;
 typedef cs_byte cs_bool;

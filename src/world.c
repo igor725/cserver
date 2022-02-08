@@ -22,12 +22,12 @@ enum _EWorldDataItems {
 };
 
 AListField *World_Head = NULL;
+World *World_Main = NULL;
 
 World *World_Create(cs_str name) {
 	World *tmp = Memory_Alloc(1, sizeof(World));
 	tmp->name = String_AllocCopy(name);
-	tmp->waitable = Waitable_Create();
-	Waitable_Signal(tmp->waitable);
+	tmp->sem = Semaphore_Create(1, 1);
 
 	/*
 	** Устанавливаем дефолтные значения
@@ -54,8 +54,10 @@ World *World_Create(cs_str name) {
 }
 
 void World_Add(World *world) {
-	if(AList_AddField(&World_Head, world))
+	if(AList_AddField(&World_Head, world)) {
+		if(!World_Main) World_Main = world;
 		Event_Call(EVT_WORLDADDED, world);
+	}
 }
 
 cs_bool World_IsReadyToPlay(World *world) {
@@ -175,7 +177,7 @@ cs_uint32 World_GetBlockArraySize(World *world) {
 void World_Free(World *world) {
 	Compr_Cleanup(&world->compr);
 	World_FreeBlockArray(world);
-	Waitable_Free(world->waitable);
+	Semaphore_Free(world->sem);
 	if(world->name) Memory_Free((void *)world->name);
 	Memory_Free(world);
 }
@@ -265,7 +267,7 @@ THREAD_FUNC(WorldSaveThread) {
 	if((compr_ok = Compr_Init(&world->compr, COMPR_TYPE_GZIP)) == false) {
 		world->error.code = WORLD_ERROR_COMPR;
 		world->error.extra = WORLD_EXTRA_COMPR_INIT;
-		Waitable_Signal(world->waitable);
+		World_Unlock(world);
 		return 0;
 	}
 
@@ -281,7 +283,7 @@ THREAD_FUNC(WorldSaveThread) {
 		world->error.code = WORLD_ERROR_IOFAIL;
 		world->error.extra = WORLD_EXTRA_IO_OPEN;
 		Compr_Reset(&world->compr);
-		Waitable_Signal(world->waitable);
+		World_Unlock(world);
 		return 0;
 	}
 
@@ -306,13 +308,28 @@ THREAD_FUNC(WorldSaveThread) {
 	
 	world->error.code = WORLD_ERROR_SUCCESS;
 	world->error.extra = WORLD_EXTRA_NOINFO;
-	Waitable_Signal(world->waitable);
+	World_Unlock(world);
 	return 0;
+}
+
+void World_Lock(World *world, cs_ulong timeout) {
+	if(timeout > 0) {
+		if(Semaphore_TryWait(world->sem, timeout))
+			world->isBusy = true;
+	} else {
+		Semaphore_Wait(world->sem);
+		world->isBusy = true;
+	}
+}
+
+void World_Unlock(World *world) {
+	world->isBusy = false;
+	Semaphore_Post(world->sem);
 }
 
 cs_bool World_Save(World *world, cs_bool unload) {
 	if(!world->modified) return world->loaded;
-	Waitable_Reset(world->waitable);
+	World_Lock(world, 0);
 	Thread_Create(WorldSaveThread, world, true);
 	if(unload) World_Unload(world);
 	return true;
@@ -337,7 +354,7 @@ THREAD_FUNC(WorldLoadThread) {
 	if((compr_ok = Compr_Init(&world->compr, COMPR_TYPE_UNGZIP)) == false) {
 		world->error.code = WORLD_ERROR_COMPR;
 		world->error.extra = WORLD_EXTRA_COMPR_INIT;
-		Waitable_Signal(world->waitable);
+		World_Unlock(world);
 		return 0;
 	}
 
@@ -349,7 +366,7 @@ THREAD_FUNC(WorldLoadThread) {
 		world->error.code = WORLD_ERROR_IOFAIL;
 		world->error.extra = WORLD_EXTRA_IO_OPEN;
 		Compr_Reset(&world->compr);
-		Waitable_Signal(world->waitable);
+		World_Unlock(world);
 		return 0;
 	}
 
@@ -374,15 +391,14 @@ THREAD_FUNC(WorldLoadThread) {
 
 	if(fp) File_Close(fp);
 	Compr_Reset(&world->compr);
-	world->saveUnload = false;
-	Waitable_Signal(world->waitable);
+	World_Unlock(world);
 	Event_Call(EVT_WORLDLOADED, world);
 	return 0;
 }
 
 cs_bool World_Load(World *world) {
 	if(world->loaded) return false;
-	Waitable_Reset(world->waitable);
+	World_Lock(world, 0);
 	Thread_Create(WorldLoadThread, world, false);
 	return true;
 }
@@ -397,8 +413,9 @@ void World_FreeBlockArray(World *world) {
 }
 
 void World_Unload(World *world) {
-	Waitable_Wait(world->waitable);
+	World_Lock(world, 0);
 	World_FreeBlockArray(world);
+	World_Unlock(world);
 	Event_Call(EVT_WORLDUNLOADED, world);
 }
 

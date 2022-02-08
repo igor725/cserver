@@ -58,7 +58,8 @@ cs_bool Tests_World(void) {
 	world = World_Create(worldname);
 	Tests_Assert(world != NULL, "create world structure");
 	Tests_Assert(World_Load(world), "load world");
-	Waitable_Wait(world->waitable);
+	World_Lock(world, 0);
+	World_Unlock(world);
 
 	Tests_NewTask("Checking world properties");
 	Tests_Assert(World_GetEnvProp(world, WORLD_PROP_SIDEBLOCK) == BLOCK_DIRT, "check side block");

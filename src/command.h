@@ -28,11 +28,11 @@ String_GetArgument(ccdata->args, a, s, n)
 #define COMMAND_PRINTUSAGE \
 COMMAND_PRINTF("Usage: %s", cmdUsage);
 
-#define COMMAND_ARG2WN(wn, idx) \
-if(COMMAND_GETARG(wn, 64, idx)) { \
+#define COMMAND_ARG2WN(wn, sz, idx) \
+if(COMMAND_GETARG(wn, sz, idx)) { \
 	cs_str wndot = String_LastChar(wn, '.'); \
 	if(!wndot || !String_CaselessCompare(wndot, ".cws")) \
-		String_Append(wn, 64, ".cws"); \
+		String_Append(wn, sz, ".cws"); \
 } else { \
 	COMMAND_PRINTUSAGE; \
 }

@@ -237,7 +237,7 @@ cs_bool Server_Init(void) {
 				if(wIter.isDir || !wIter.cfile) continue;
 				World *tmp = World_Create(wIter.cfile);
 				if(World_Load(tmp)) {
-					Waitable_Wait(tmp->waitable);
+					World_Lock(tmp, 0);
 					if(World_HasError(tmp)) {
 						EWorldExtra extra = WORLD_EXTRA_NOINFO;
 						EWorldError code = World_PopError(tmp, &extra);
@@ -248,6 +248,7 @@ cs_bool Server_Init(void) {
 						World_Add(tmp);
 						wIndex++;
 					}
+					World_Unlock(tmp);
 				} else World_Free(tmp);
 			} while(Iter_Next(&wIter));
 		}
@@ -278,7 +279,7 @@ cs_bool Server_Init(void) {
 					skip_creating = false;
 					tmp = World_Create(buffer);
 					if(World_Load(tmp)) {
-						Waitable_Wait(tmp->waitable);
+						World_Lock(tmp, 0);
 						if(World_HasError(tmp)) {
 							EWorldExtra extra = WORLD_EXTRA_NOINFO;
 							EWorldError code = World_PopError(tmp, &extra);
@@ -295,6 +296,7 @@ cs_bool Server_Init(void) {
 								wIndex++;
 							}
 						}
+						World_Unlock(tmp);
 					}
 				} else if(!skip_creating && state == 1) {
 					cs_char *del = buffer, *prev = buffer;
@@ -398,12 +400,13 @@ INL static void UnloadAllWorlds(void) {
 	while((tmp = World_Head) != NULL) {
 		World *world = (World *)tmp->value.ptr;
 		if(World_Save(world, true)) {
-			Waitable_Wait(world->waitable);
+			World_Lock(world, 0);
 			if(World_HasError(world)) {
 				EWorldExtra extra = WORLD_EXTRA_NOINFO;
 				EWorldError code = World_PopError(world, &extra);
 				Log_Error(Sstor_Get("SV_WLOAD_ERR"), "save", World_GetName(world), code, extra);
 			}
+			World_Unlock(world);
 		}
 		AList_Remove(&World_Head, tmp);
 		World_Free(world);

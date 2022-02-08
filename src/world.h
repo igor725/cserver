@@ -82,9 +82,9 @@ typedef struct _World {
 	cs_str name;
 	WorldInfo info;
 	cs_bool modified;
-	Waitable *waitable;
+	Semaphore *sem;
+	cs_bool isBusy;
 	cs_bool loaded;
-	cs_bool saveUnload;
 	Compr compr;
 	KListField *headNode;
 	struct _WorldError {
@@ -113,6 +113,9 @@ API cs_bool World_Load(World *world);
 API void World_Unload(World *world);
 API cs_bool World_Save(World *world, cs_bool unload);
 
+API void World_Lock(World *world, cs_ulong timeout);
+API void World_Unlock(World *world);
+
 API void World_SetDimensions(World *world, const SVec *dims);
 API cs_bool World_SetBlock(World *world, SVec *pos, BlockID id);
 API cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id);
@@ -136,5 +139,6 @@ API cs_str World_GetTexturePack(World *world);
 
 API World *World_GetByName(cs_str name);
 
+VAR World *World_Main;
 VAR AListField *World_Head;
 #endif // WORLD_H
