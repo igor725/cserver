@@ -116,7 +116,7 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("CFG_MAXPL_COMM", "Max players on server. [1-127]");
 	Sstor_Set("CFG_MAXCON_COMM", "Max connections per one IP. [1-5]");
 	Sstor_Set("CFG_WORLDS_COMM", "List of worlds to load at startup. (Can be \"*\" it means load all worlds in the folder)");
-	Sstor_Set("CFG_WORLDS_DVAL", "flat_world.cws:64x64x64:flat,world.cws:256x256x256:normal");
+	Sstor_Set("CFG_WORLDS_DVAL", "world.cws:256x256x256:normal,flat_world.cws:64x64x64:flat");
 
 	Sstor_Set("HBEAT_URL", "Server play URL: %s");
 	Sstor_Set("HBEAT_ERR", "Heartbeat error: %s");
