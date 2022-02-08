@@ -918,7 +918,10 @@ cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
 	ValidateClientState(client, PLAYER_STATE_INITIAL, false)
 
-	if(!Proto_ReadStringNoAlloc(&data, client->cpeData->appName)) return false;
+	if(!Proto_ReadStringNoAlloc(&data, client->cpeData->appName)) {
+		String_Copy(client->cpeData->appName, 65, "(unknown)");
+		return true;
+	}
 	client->cpeData->_extCount = ntohs(*(cs_uint16 *)data);
 	return true;
 }

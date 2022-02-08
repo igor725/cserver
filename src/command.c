@@ -125,13 +125,13 @@ cs_bool Command_Handle(cs_char *str, Client *caller) {
 	return false;
 }
 
-static cs_str helpheader = "List of available commands:";
+static cs_str helpheader = "&eList of available commands:";
 COMMAND_FUNC(Help) {
 	KListField *tmp;
 	if(ccdata->caller)
 		Client_Chat(ccdata->caller, MESSAGE_TYPE_CHAT, helpheader);
 	else
-		Log_Info(helpheader);
+		Log_Info(helpheader + 2); // TODO: Не делать вот так
 
 	List_Iter(tmp, headCmd) {
 		cs_str name = tmp->key.str;
