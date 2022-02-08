@@ -93,18 +93,17 @@ ECHO Build configuration:
 ECHO Architecture: %ARCH%
 
 IF "%DEBUG%"=="0" (
-	set CFLAGS=%CFLAGS% /MT
+	set CFLAGS=!CFLAGS! /MT
 	ECHO Debug: disabled
 ) else (
-	SET SERVER_OUTROOT=%SERVER_OUTROOT%dbg
-	SET OUTDIR=%OUTDIR%dbg
+	SET SERVER_OUTROOT=!SERVER_OUTROOT!dbg
+	SET OUTDIR=!OUTDIR!dbg
 	SET OBJDIR=!OUTDIR!\objs
 	SET OPT=/Od
-	SET CFLAGS=%CFLAGS% /Z7 /MTd /DDEBUG
-	SET LDFLAGS=%LDFLAGS% /DEBUG
-	SET CFLAGS=%CFLAGS%
+	SET CFLAGS=!CFLAGS! /Z7 /MTd /DDEBUG
+	SET LDFLAGS=!LDFLAGS! /DEBUG
 	IF "!SAN!"=="1" (
-		SET CFLAGS=%CFLAGS% -fsanitize=address /Zi /Fd!SERVER_OUTROOT!\server.pdb
+		SET CFLAGS=!CFLAGS! -fsanitize=address /Zi /Fd!SERVER_OUTROOT!\server.pdb
 	)
 	ECHO Debug: enabled
 )
@@ -112,7 +111,7 @@ IF "%DEBUG%"=="0" (
 IF NOT EXIST !OBJDIR! MD !OBJDIR!
 
 IF "%PLUGIN_BUILD%"=="0" (
-	SET LDFLAGS=%LDFLAGS% /subsystem:console
+	SET LDFLAGS=!LDFLAGS! /subsystem:console
 	SET LIBS=!LIBS! ws2_32.lib
 	GOTO detectzlib
 ) else (
@@ -123,19 +122,19 @@ IF "%PLUGIN_BUILD%"=="0" (
 :zlibok
 SET BINPATH=%OUTDIR%\%OUTBIN%
 IF "%PLUGIN_BUILD%"=="1" (
-  SET CFLAGS=%CFLAGS% /Fe%BINPATH% /DCORE_BUILD_PLUGIN /I.\src\
-  SET LIBS=server.lib %LIBS%
-	SET LDFLAGS=%LDFLAGS% /libpath:%SERVER_OUTROOT%
+  SET CFLAGS=!CFLAGS! /Fe!BINPATH! /DCORE_BUILD_PLUGIN /I.\src\
+  SET LIBS=server.lib !LIBS!
+	SET LDFLAGS=!LDFLAGS! /libpath:!SERVER_OUTROOT!
 ) else (
-	SET CFLAGS=%CFLAGS% /Fe%BINPATH%
+	SET CFLAGS=!CFLAGS! /Fe!BINPATH!
 )
 
 SET CFLAGS=%CFLAGS% %WARN% %OPT% /Fo%OBJDIR%\
 SET SOURCES=%ROOT%\src\*.c
 
 IF EXIST %ROOT%\version.rc (
-	RC /nologo /Fo%OBJDIR%\version.res %ROOT%\version.rc
-	SET SOURCES=%SOURCES% %OBJDIR%\version.res
+	RC /nologo /Fo!OBJDIR!\version.res !ROOT!\version.rc
+	SET SOURCES=!SOURCES! !OBJDIR!\version.res
 )
 
 IF EXIST %ROOT%\vars.bat (
@@ -149,11 +148,11 @@ IF NOT "%ERRORLEVEL%"=="0" GOTO compileerror
 
 IF "%PLUGIN_BUILD%"=="1" (
 	SET SVPLUGDIR=!SERVER_OUTROOT!\plugins
-	IF "%PLUGIN_INSTALL%"=="1" (
+	IF "!PLUGIN_INSTALL!"=="1" (
 		IF NOT EXIST !SVPLUGDIR! MD !SVPLUGDIR!
-		COPY /Y !OUTDIR!\%PLUGNAME%.dll !SVPLUGDIR!
-		IF "%DEBUG%"=="1" (
-			COPY /Y !OUTDIR!\%PLUGNAME%.pdb !SVPLUGDIR!
+		COPY /Y !OUTDIR!\!PLUGNAME!.dll !SVPLUGDIR!
+		IF "!DEBUG!"=="1" (
+			COPY /Y !OUTDIR!\!PLUGNAME!.pdb !SVPLUGDIR!
 		)
 	)
   GOTO endok
@@ -171,7 +170,7 @@ IF "%ZLIB_DYNAMIC%"=="" (
 	echo ZLIB empty
 	GOTO makezlib_st1
 ) ELSE (
-	IF NOT EXIST "%ZLIB_DYNAMIC%" (
+	IF NOT EXIST "!ZLIB_DYNAMIC!" (
 		GOTO makezlib_st1
 	) ELSE (
 		GOTO copyzlib
@@ -223,7 +222,7 @@ FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R !SERVER_OUTROOT! zlib1.dll`) DO (
 )
 COPY "%ZLIB_DYNAMIC%" "%SERVER_OUTROOT%\zlib1.dll"
 IF "%DEBUG%"=="1" (
-	COPY "!ZLIB_DYNAMIC:~0,-3!pdb" "%SERVER_OUTROOT%\zlib1.pdb"
+	COPY "!ZLIB_DYNAMIC:~0,-3!pdb" "!SERVER_OUTROOT!\zlib1.pdb"
 )
 GOTO zlibok
 
