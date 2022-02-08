@@ -233,6 +233,7 @@ Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max) {
 	if(sem_init(sem, max, initial) == 0)
 		return sem;
 	Error_PrintSys(true);
+	return NULL;
 }
 
 cs_bool Semaphore_TryWait(Semaphore *sem, cs_ulong timeout) {
