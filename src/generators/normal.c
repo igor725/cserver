@@ -488,7 +488,7 @@ THREAD_FUNC(treesThread) {
 	return 0;
 }
 
-static cs_int16 getHeightInPoint(cs_int16 x, cs_int16 z) {
+static cs_float getHeightInPoint(cs_int16 x, cs_int16 z) {
 	cs_int16 y;
 
 	for(y = 0; y < ctx.dims->y; y++) {
@@ -496,7 +496,7 @@ static cs_int16 getHeightInPoint(cs_int16 x, cs_int16 z) {
 		if(ctx.data[offset] == BLOCK_AIR) break;
 	}
 
-	return y + 1.59375f;
+	return (cs_float)y + 1.59375f;
 }
 
 cs_bool normalgenerator(World *world, void *data) {
@@ -537,7 +537,7 @@ cs_bool normalgenerator(World *world, void *data) {
 	WorldInfo *wi = &world->info;
 	cs_int16 x = ctx.dims->x / 2, z = ctx.dims->z / 2;
 	wi->spawnVec.x = (cs_float)x;
-	wi->spawnVec.y = (cs_float)getHeightInPoint(x, z);
+	wi->spawnVec.y = getHeightInPoint(x, z);
 	wi->spawnVec.z = (cs_float)z;
 	World_SetEnvProp(world, WORLD_PROP_SIDEBLOCK, BLOCK_AIR);
 	World_SetEnvProp(world, WORLD_PROP_EDGEBLOCK, BLOCK_WATER);
