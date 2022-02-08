@@ -414,7 +414,7 @@ INL static cs_bool ReadClientPos(Client *client, cs_char *data) {
 }
 
 cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
-	ValidateClientState(client, PLAYER_STATE_INGAME, false)
+	ValidateClientState(client, PLAYER_STATE_INGAME, true)
 
 	BlockID cb = *data++;
 	if(Client_GetExtVer(client, EXT_HELDBLOCK) == 1) {

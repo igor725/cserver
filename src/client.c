@@ -197,7 +197,7 @@ cs_bool Client_Despawn(Client *client) {
 }
 
 cs_bool Client_ChangeWorld(Client *client, World *world) {
-	if(Client_IsInWorld(client, world) || Client_CheckState(client, PLAYER_STATE_MOTD))
+	if(Client_CheckState(client, PLAYER_STATE_MOTD))
 		return false;
 
 	Client_Despawn(client);

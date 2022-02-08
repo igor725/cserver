@@ -32,5 +32,6 @@ static inline cs_bool Ang_Compare(const Ang *a, const Ang *b) {
 #define Vec_Set(v, vx, vy, vz) (v).x = vx, (v).y = vy, (v).z = vz;
 #define Vec_IsInvalid(v) ((v)->x == -1 && (v)->y == -1 && (v)->z == -1)
 #define Vec_IsZero(v) ((v).x == 0 && (v).y == 0 && (v).z == 0)
+#define Vec_HaveZero(v) ((v).x == 0 || (v).y == 0 || (v).z == 0)
 #define Vec_Scale(v, s) (v).x *= s, (v).y *= s, (v).z *= s;
 #endif // VECTOR_H

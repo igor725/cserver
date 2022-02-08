@@ -61,6 +61,23 @@ void World_Add(World *world) {
 	}
 }
 
+cs_bool World_Remove(World *world) {
+	if(world == World_Main) return false;
+	World_WaitAllTasks(world);
+	World_Lock(world, 0);
+	AListField *tmp;
+	List_Iter(tmp, World_Head) {
+		if(AList_GetValue(tmp).ptr == world) {
+			AList_Remove(&World_Head, tmp);
+			break;
+		}
+	}
+	World_Unload(world);
+	World_Free(world);
+	World_Unlock(world);	
+	return true;
+}
+
 cs_bool World_IsReadyToPlay(World *world) {
 	return world->wdata.ptr != NULL && world->loaded;
 }
@@ -159,6 +176,15 @@ void World_AllocBlockArray(World *world) {
 	world->wdata.ptr = data;
 	world->wdata.blocks = (BlockID *)data + 4;
 	world->loaded = true;
+}
+
+cs_bool World_CleanBlockArray(World *world) {
+	if(world->loaded && world->wdata.blocks) {
+		Memory_Fill(world->wdata.blocks, world->wdata.size, 0);
+		return true;
+	}
+
+	return false;
 }
 
 BlockID *World_GetBlockArray(World *world, cs_uint32 *size) {
@@ -350,7 +376,11 @@ cs_bool World_Save(World *world, cs_bool unload) {
 	if(!world->modified) return world->loaded;
 	World_Lock(world, 0);
 	Thread_Create(WorldSaveThread, world, true);
-	if(unload) World_Unload(world);
+	if(unload) {
+		World_Lock(world, 0);
+		World_Unload(world);
+		World_Unlock(world);
+	}
 	return true;
 }
 
@@ -410,8 +440,8 @@ THREAD_FUNC(WorldLoadThread) {
 
 	if(fp) File_Close(fp);
 	Compr_Reset(&world->compr);
-	World_Unlock(world);
 	Event_Call(EVT_WORLDLOADED, world);
+	World_Unlock(world);
 	return 0;
 }
 
@@ -433,9 +463,7 @@ void World_FreeBlockArray(World *world) {
 
 void World_Unload(World *world) {
 	World_WaitAllTasks(world);
-	World_Lock(world, 0);
 	World_FreeBlockArray(world);
-	World_Unlock(world);
 	Event_Call(EVT_WORLDUNLOADED, world);
 }
 

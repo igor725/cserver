@@ -496,7 +496,7 @@ static cs_float getHeightInPoint(cs_int16 x, cs_int16 z) {
 		if(ctx.data[offset] != BLOCK_AIR) break;
 	}
 
-	return (cs_float)y + 1.59375f;
+	return (cs_float)y + 2.59375f;
 }
 
 cs_bool normalgenerator(World *world, void *data) {

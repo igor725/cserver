@@ -105,9 +105,11 @@ API EWorldError World_PopError(World *world, EWorldExtra *extra);
 
 API World *World_Create(cs_str name);
 API void World_AllocBlockArray(World *world);
+API cs_bool World_CleanBlockArray(World *world);
 API void World_FreeBlockArray(World *world);
 API void World_Free(World *world);
 API void World_Add(World *world);
+API cs_bool World_Remove(World *world);
 API cs_bool World_IsReadyToPlay(World *world);
 API void World_FinishEnvUpdate(World *world);
 
