@@ -491,9 +491,9 @@ THREAD_FUNC(treesThread) {
 static cs_float getHeightInPoint(cs_int16 x, cs_int16 z) {
 	cs_int16 y;
 
-	for(y = 0; y < ctx.dims->y; y++) {
-		cs_uint32 offset = (y * ctx.dims->z + z) * ctx.dims->x + x;
-		if(ctx.data[offset] == BLOCK_AIR) break;
+	for(y = ctx.dims->y; y > 0;) {
+		cs_uint32 offset = (--y * ctx.dims->z + z) * ctx.dims->x + x;
+		if(ctx.data[offset] != BLOCK_AIR) break;
 	}
 
 	return (cs_float)y + 1.59375f;
