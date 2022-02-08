@@ -83,6 +83,8 @@ typedef struct _World {
 	WorldInfo info;
 	cs_bool modified;
 	Semaphore *sem;
+	Mutex *taskm;
+	cs_uint32 taskc;
 	cs_bool isBusy;
 	cs_bool loaded;
 	Compr compr;
@@ -115,6 +117,9 @@ API cs_bool World_Save(World *world, cs_bool unload);
 
 API void World_Lock(World *world, cs_ulong timeout);
 API void World_Unlock(World *world);
+API void World_AddTask(World *world);
+API void World_EndTask(World *world);
+API void World_WaitAllTasks(World *world);
 
 API void World_SetDimensions(World *world, const SVec *dims);
 API cs_bool World_SetBlock(World *world, SVec *pos, BlockID id);
