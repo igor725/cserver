@@ -93,9 +93,36 @@ if [ $GITUPD -eq 1 ]; then
 	if [ $PLUGIN_BUILD -eq 1 ]; then
 		pushd "../cs-$PLUGIN_NAME"
 		git pull
+		if [ $? -ne 0 ]; then
+			echo "!!! Failed to update $PLUGIN_NAME"
+			popd
+			exit 1
+		fi
 		popd
 	else
-		git pull
+		git fetch origin
+		if [ $? -ne 0 ]; then
+			echo "!!! Failed to fetch main repo"
+			exit 1
+		fi
+		BUILDALERTED=0
+		BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+		for file in `git diff --stat --name-only HEAD origin/$BRANCH`; do
+			if [ "$file" = "build" ]; then
+				BUILDALERTED=1
+				break
+			fi
+		done
+
+		git merge --ff-only
+		if [ $? -ne 0 ]; then
+			echo "!!! Failed to update server core"
+			exit 1
+		elif [ $BUILDALERTED -eq 1 ]; then
+			echo "!!! Build script has been updated, you need to run it again"
+			exit 1
+		fi
 	fi
 fi
 
