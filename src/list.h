@@ -22,7 +22,7 @@ typedef struct _KListField {
 } KListField;
 
 #define List_Iter(field, head) \
-for(field = head; field || (field && field->prev); field = field->prev)
+for(field = head; field != NULL; field = field->prev)
 
 API AListField *AList_AddField(AListField **head, void *value);
 API cs_bool AList_Iter(AListField **head, void *ud, cs_bool(*callback)(AListField *, AListField **, void *));
