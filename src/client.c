@@ -203,7 +203,6 @@ cs_bool Client_ChangeWorld(Client *client, World *world) {
 	Client_Despawn(client);
 	client->playerData->world = world;
 	client->playerData->state = PLAYER_STATE_MOTD;
-	if(!world->loaded) World_Load(world);
 	client->playerData->reqWorldChange = world;
 	return true;
 }
@@ -775,13 +774,16 @@ INL static void PacketReceiverRaw(Client *client) {
 }
 
 NOINL static void SendWorld(Client *client, World *world) {
-	World_AddTask(world);
-
 	if(!world->loaded) {
-		Client_Kick(client, Sstor_Get("KICK_INT"));
+		if(!World_Load(world)) {
+			Client_Kick(client, Sstor_Get("KICK_INT"));
+			return;
+		}
+		World_Lock(world, 0);
 		World_Unlock(world);
-		return;
 	}
+
+	World_StartTask(world);
 
 	cs_bool hasfastmap = Client_GetExtVer(client, EXT_FASTMAP) == 1;
 	cs_uint32 wsize = 0;

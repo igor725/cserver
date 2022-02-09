@@ -345,14 +345,18 @@ THREAD_FUNC(WorldSaveThread) {
 	return 0;
 }
 
-void World_Lock(World *world, cs_ulong timeout) {
+cs_bool World_Lock(World *world, cs_ulong timeout) {
 	if(timeout > 0) {
 		if(Semaphore_TryWait(world->sem, timeout))
 			world->isBusy = true;
+		else
+			return false;
 	} else {
 		Semaphore_Wait(world->sem);
 		world->isBusy = true;
 	}
+
+	return true;
 }
 
 void World_Unlock(World *world) {
@@ -360,7 +364,7 @@ void World_Unlock(World *world) {
 	Semaphore_Post(world->sem);
 }
 
-void World_AddTask(World *world) {
+void World_StartTask(World *world) {
 	if(!world->taskc++)
 		Mutex_Lock(world->taskm);
 }

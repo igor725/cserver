@@ -118,9 +118,9 @@ API cs_bool World_Load(World *world);
 API void World_Unload(World *world);
 API cs_bool World_Save(World *world);
 
-API void World_Lock(World *world, cs_ulong timeout);
+API cs_bool World_Lock(World *world, cs_ulong timeout);
 API void World_Unlock(World *world);
-API void World_AddTask(World *world);
+API void World_StartTask(World *world);
 API void World_EndTask(World *world);
 API void World_WaitAllTasks(World *world);
 

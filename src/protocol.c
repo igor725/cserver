@@ -345,7 +345,7 @@ cs_bool Handler_SetBlock(Client *client, cs_char *data) {
 	ValidateClientState(client, PLAYER_STATE_INGAME, false)
 
 	World *world = Client_GetWorld(client);
-	if(!world) return false;
+	if(!world || !World_IsReadyToPlay(world)) return false;
 
 	onBlockPlace params;
 	params.client = client;
