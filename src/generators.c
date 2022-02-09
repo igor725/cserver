@@ -8,7 +8,7 @@ static cs_bool normalgenerator(World *world, void *data);
 #include "generators/flat.c"
 #include "generators/normal.c"
 
-KListField *headGenerator = NULL;
+static KListField *headGenerator = NULL;
 struct _GenRoutineStruct {GeneratorRoutine func;};
 
 cs_bool Generators_Init(void) {

@@ -41,7 +41,7 @@ NOTE: This script must be runned in the Visual Studio Developer Command Prompt.
 ### Build script arguments
 * ``cls`` - Clear console window before compilation;
 * ``pb`` - Build a plugin (next argument must be a plugin name, without the "cs-" prefix);
-* ``upd`` - Pull server (or plugin if ``pb`` passed AFTER ``upd``) repository before building;
+* ``upd`` - Update local server (or plugin if ``pb`` passed AFTER ``upd``) repository before building;
 * ``dbg`` - Build with debug symbols;
 * ``wall`` - Enable all possible warnings;
 * ``wx`` - Treat warnings as errors;

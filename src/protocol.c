@@ -12,8 +12,8 @@
 #include "strstor.h"
 #include "compr.h"
 
-cs_uint16 extensionsCount;
-CPEExt *headExtension;
+static cs_uint16 extensionsCount = 0;
+static CPEExt *headExtension = NULL;
 
 void Proto_WriteString(cs_char **dataptr, cs_str string) {
 	cs_size size = 0;

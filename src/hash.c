@@ -3,7 +3,7 @@
 #include "platform.h"
 
 #if defined(HASH_USE_WINCRYPT_BACKEND)
-HCRYPTPROV hCryptProvider = 0;
+static HCRYPTPROV hCryptProvider = 0;
 
 static cs_str csymlist[] = {
 	"CryptAcquireContextA", "CryptReleaseContext",

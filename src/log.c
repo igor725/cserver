@@ -5,7 +5,7 @@
 #include "event.h"
 
 cs_byte Log_Level = LOG_ALL;
-Mutex *Log_Mutex;
+static Mutex *logMutex = NULL;
 
 INL static cs_str getName(cs_byte flag) {
 	switch(flag) {
@@ -24,11 +24,11 @@ INL static cs_str getName(cs_byte flag) {
 }
 
 cs_bool Log_Init(void) {
-	return (Log_Mutex = Mutex_Create()) != NULL;
+	return (logMutex = Mutex_Create()) != NULL;
 }
 
 void Log_Uninit(void) {
-	if(Log_Mutex) Mutex_Free(Log_Mutex);
+	if(logMutex) Mutex_Free(logMutex);
 }
 
 void Log_SetLevelStr(cs_str str) {
@@ -61,7 +61,7 @@ static LogBuffer buffer;
 
 void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 	if(Log_Level & flag) {
-		Mutex_Lock(Log_Mutex);
+		Mutex_Lock(logMutex);
 
 		cs_int32 ret;
 		if((ret = Time_Format(buffer.data, LOG_BUFSIZE)) > 0)
@@ -95,7 +95,7 @@ void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 			File_Flush(stderr);
 		}
 
-		Mutex_Unlock(Log_Mutex);
+		Mutex_Unlock(logMutex);
 	}
 }
 

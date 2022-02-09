@@ -22,7 +22,7 @@ struct _WinInet {
 	BOOL(*IClose)(HINTERNET);
 } WinInet;
 
-HINTERNET hInternet = NULL;
+static HINTERNET hInternet = NULL;
 
 INL static cs_bool InitBackend(void) {
 	if(!WinInet.lib && !DLib_LoadAll(DLib_List("wininet.dll"), wisymlist, (void **)&WinInet))
@@ -79,13 +79,13 @@ void Http_Cleanup(Http *http) {
 #elif defined(HTTP_USE_CURL_BACKEND)
 #include "log.h"
 
-cs_str csymlist[] = {
+static cs_str csymlist[] = {
 	"curl_easy_init", "curl_easy_setopt",
 	"curl_easy_perform", "curl_easy_cleanup",
 	NULL
 };
 
-cs_str libcurl[] = {
+static cs_str libcurl[] = {
 #if defined(CORE_USE_UNIX)
 	"libcurl.so.4",
 	"libcurl.so.3",
@@ -98,7 +98,7 @@ cs_str libcurl[] = {
 	NULL
 };
 
-struct _cURLLib {
+static struct _cURLLib {
 	void *lib;
 
 	CURL *(*easy_init)(void);

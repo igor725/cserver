@@ -12,8 +12,8 @@
 #include "compr.h"
 
 Client *Broadcast = NULL;
-AListField *headCGroup = NULL;
 Client *Clients_List[MAX_CLIENTS] = {0};
+static AListField *headCGroup = NULL;
 
 CGroup *Group_Add(cs_int16 gid, cs_str gname, cs_byte grank) {
 	CGroup *gptr = Group_GetByID(gid);

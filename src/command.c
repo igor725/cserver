@@ -7,7 +7,7 @@
 #include "command.h"
 #include "strstor.h"
 
-KListField *headCmd = NULL;
+static KListField *headCmd = NULL;
 
 Command *Command_Register(cs_str name, cs_str descr, cmdFunc func, cs_byte flags) {
 	if(Command_GetByName(name)) return NULL;

@@ -13,7 +13,7 @@ struct _HBKeyCheck {
 	heartbeatKeyChecker func;
 };
 
-AListField *headHeartbeat = NULL, *headKeyChecker = NULL;
+static AListField *headHeartbeat = NULL, *headKeyChecker = NULL;
 
 INL static void TrimReserved(cs_char *name, cs_int32 len) {
 	for(cs_int32 i = 0; i < len; i++) {
