@@ -689,17 +689,26 @@ cs_int32 Client_Send(Client *client, cs_int32 len) {
 				if(bClient->websock)
 					WebSock_SendFrame(bClient->websock, 0x02, client->wrbuf, (cs_uint16)len);
 				else
-					Socket_Send(client->sock, client->wrbuf, len);
+					Socket_Send(bClient->sock, client->wrbuf, len);
 				Mutex_Unlock(bClient->mutex);
 			}
 		}
 		return len;
 	}
 
-	if(client->websock)
-		return WebSock_SendFrame(client->websock, 0x02, client->wrbuf, (cs_uint16)len) ? len : 0;
-	else
-		return Socket_Send(client->sock, client->wrbuf, len);
+	if(client->websock) {
+		if(!WebSock_SendFrame(client->websock, 0x02, client->wrbuf, (cs_uint16)len)) {
+			client->closed = true;
+			return 0;
+		}
+	} else {
+		if(Socket_Send(client->sock, client->wrbuf, len) != len) {
+			client->closed = true;
+			return 0;
+		}
+	}
+
+	return len;
 }
 
 INL static void PacketReceiverWs(Client *client) {

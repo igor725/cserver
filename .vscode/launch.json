@@ -15,9 +15,9 @@
             "name": "Launch debug (Linux)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/out/server",
+            "program": "${workspaceFolder}/out/x86_64-linux-gnu/server",
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/out/",
+            "cwd": "${workspaceFolder}/out/x86_64-linux-gnu",
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [

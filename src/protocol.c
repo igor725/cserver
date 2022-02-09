@@ -251,14 +251,6 @@ void Vanilla_WriteDespawn(Client *client, Client *other) {
 
 void Vanilla_WriteChat(Client *client, EMesgType type, cs_str mesg) {
 	PacketWriter_Start(client);
-	if(client == Broadcast) {
-		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-			Client *tg = Clients_List[i];
-			if(tg) Vanilla_WriteChat(tg, type, mesg);
-		}
-		PacketWriter_Stop(client);
-		return;
-	}
 
 	cs_char mesg_out[65];
 	String_Copy(mesg_out, 65, mesg);
