@@ -397,19 +397,36 @@ void Server_StartLoop(void) {
 
 INL static void UnloadAllWorlds(void) {
 	AListField *tmp;
+	cs_int32 attempt = 0;
+
 	while((tmp = World_Head) != NULL) {
 		World *world = (World *)tmp->value.ptr;
-		if(World_Save(world, true)) {
+		cs_str wname = World_GetName(world);
+
+		if(World_Save(world)) {
+			World_WaitAllTasks(world);
 			World_Lock(world, 0);
 			if(World_HasError(world)) {
 				EWorldExtra extra = WORLD_EXTRA_NOINFO;
 				EWorldError code = World_PopError(world, &extra);
-				Log_Error(Sstor_Get("SV_WLOAD_ERR"), "save", World_GetName(world), code, extra);
+				Log_Error(Sstor_Get("SV_WLOAD_ERR"), "save", wname, code, extra);
+				World_Unlock(world);
+			} else {
+				Event_Call(EVT_ONWORLDREMOVED, world);
+				AList_Remove(&World_Head, tmp);
+				World_Free(world);
+				attempt = 0;
+				continue;
 			}
-			World_Unlock(world);
 		}
-		AList_Remove(&World_Head, tmp);
-		World_Free(world);
+
+		if(attempt > 10) {
+			AList_Remove(&World_Head, tmp);
+			World_Free(world);
+		} else {
+			Thread_Sleep(500);
+			attempt++;
+		}
 	}
 }
 
@@ -427,5 +444,10 @@ void Server_Cleanup(void) {
 	Config_DestroyStore(Server_Config);
 	Log_Info(Sstor_Get("SV_STOP_UP"));
 	Plugin_UnloadAll(true);
+	Packet_UnregisterAll();
+	Command_UnregisterAll();
+	Generators_UnregisterAll();
+	Event_UnregisterAll();
+	Timer_RemoveAll();
 	Sstor_Cleanup();
 }

@@ -11,15 +11,15 @@ typedef struct {
 	} func;
 } Event;
 
-Event *Event_List[EVENTS_TCOUNT][EVENTS_FCOUNT];
+static Event *regEvents[EVENTS_TCOUNT][EVENTS_FCOUNT] = {0};
 
 #define rgPart1 \
 for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) { \
-	if(!Event_List[type][pos]) { \
+	if(!regEvents[type][pos]) { \
 		Event *evt = Memory_Alloc(1, sizeof(Event));
 
 #define rgPart2 \
-		Event_List[type][pos] = evt; \
+		regEvents[type][pos] = evt; \
 		return true; \
 	} \
 } \
@@ -60,10 +60,11 @@ cs_bool Event_RegisterBunch(EventRegBunch *bunch) {
 
 cs_bool Event_Unregister(EventTypes type, cs_uintptr evtFuncPtr) {
 	for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) {
-		Event *evt = Event_List[type][pos];
+		Event *evt = regEvents[type][pos];
 
 		if(evt && evt->func.fptr == evtFuncPtr) {
-			Event_List[type][pos] = NULL;
+			Memory_Free(regEvents[type][pos]);
+			regEvents[type][pos] = NULL;
 			return true;
 		}
 	}
@@ -79,11 +80,20 @@ cs_bool Event_UnregisterBunch(EventRegBunch *bunch) {
 	return true;
 }
 
+void Event_UnregisterAll(void) {
+	for(cs_int32 type = 0; type < EVENTS_TCOUNT; type++) {
+		for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) {
+			Memory_Free(regEvents[type][pos]);
+			regEvents[type][pos] = NULL;
+		}
+	}
+}
+
 cs_bool Event_Call(EventTypes type, void *param) {
 	cs_bool ret = true;
 
 	for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) {
-		Event *evt = Event_List[type][pos];
+		Event *evt = regEvents[type][pos];
 		if(!evt) continue;
 
 		if(evt->rtype == 1)

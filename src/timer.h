@@ -12,6 +12,7 @@ typedef struct _Timer {
 	void *userdata;
 } Timer;
 
+void Timer_RemoveAll(void);
 void Timer_Update(cs_int32 delta);
 
 API Timer *Timer_Add(cs_int32 ticks, cs_uint32 delay, TimerCallback callback, void *ud);

@@ -62,6 +62,7 @@ typedef enum _EWorldExtra {
 	WORLD_EXTRA_UNKNOWN_DATA_TYPE,
 	WORLD_EXTRA_IO_OPEN,
 	WORLD_EXTRA_IO_WRITE,
+	WORLD_EXTRA_IO_RENAME,
 	WORLD_EXTRA_COMPR_INIT,
 	WORLD_EXTRA_COMPR_PROC
 } EWorldExtra;
@@ -115,7 +116,7 @@ API void World_FinishEnvUpdate(World *world);
 
 API cs_bool World_Load(World *world);
 API void World_Unload(World *world);
-API cs_bool World_Save(World *world, cs_bool unload);
+API cs_bool World_Save(World *world);
 
 API void World_Lock(World *world, cs_ulong timeout);
 API void World_Unlock(World *world);

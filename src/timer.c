@@ -44,3 +44,10 @@ void Timer_Update(cs_int32 delta) {
 		}
 	}
 }
+
+void Timer_RemoveAll(void) {
+	while(headTimer) {
+		Memory_Free(headTimer->value.ptr);
+		AList_Remove(&headTimer, headTimer);
+	}
+}

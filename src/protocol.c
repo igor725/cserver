@@ -991,7 +991,7 @@ cs_bool CPEHandler_TwoWayPing(Client *client, cs_char *data) {
 	return false;
 }
 
-Packet *packetsList[256];
+Packet *packetsList[255] = {NULL};
 
 void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler) {
 	Packet *tmp = (Packet *)Memory_Alloc(1, sizeof(Packet));
@@ -1082,4 +1082,20 @@ void Packet_RegisterDefault(void) {
 	Packet_Register(0x2B,  3, CPEHandler_TwoWayPing);
 	Packet_Register(0x22, 14, CPEHandler_PlayerClick);
 	Packet_SetCPEHandler(0x08, EXT_ENTPOS, 1, 15, NULL);
+}
+
+void Packet_UnregisterAll(void) {
+	while(headExtension != NULL) {
+		CPEExt *tmp = headExtension;
+		headExtension = headExtension->next;
+		Memory_Free(tmp);
+	}
+
+	for(cs_int32 i = 0; i < 255; i++) {
+		Packet *packet = packetsList[i];
+		if(packet) {
+			Memory_Free(packet);
+			packetsList[i] = NULL;
+		}
+	}
 }

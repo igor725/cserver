@@ -57,7 +57,7 @@ World *World_Create(cs_str name) {
 void World_Add(World *world) {
 	if(AList_AddField(&World_Head, world)) {
 		if(!World_Main) World_Main = world;
-		Event_Call(EVT_WORLDADDED, world);
+		Event_Call(EVT_ONWORLDADDED, world);
 	}
 }
 
@@ -74,7 +74,8 @@ cs_bool World_Remove(World *world) {
 	}
 	World_Unload(world);
 	World_Free(world);
-	World_Unlock(world);	
+	Event_Call(EVT_ONWORLDREMOVED, world);
+	World_Unlock(world);
 	return true;
 }
 
@@ -331,8 +332,12 @@ THREAD_FUNC(WorldSaveThread) {
 
 	File_Close(fp);
 	Compr_Reset(&world->compr);
-	if(compr_ok)
-		File_Rename(tmpname, path);
+	if(compr_ok && !File_Rename(tmpname, path)) {
+		world->error.code = WORLD_ERROR_IOFAIL;
+		world->error.extra = WORLD_EXTRA_IO_RENAME;
+		World_Unlock(world);
+		return 0;
+	}
 	
 	world->error.code = WORLD_ERROR_SUCCESS;
 	world->error.extra = WORLD_EXTRA_NOINFO;
@@ -372,15 +377,10 @@ void World_WaitAllTasks(World *world) {
 	}
 }
 
-cs_bool World_Save(World *world, cs_bool unload) {
+cs_bool World_Save(World *world) {
 	if(!world->modified) return world->loaded;
 	World_Lock(world, 0);
 	Thread_Create(WorldSaveThread, world, true);
-	if(unload) {
-		World_Lock(world, 0);
-		World_Unload(world);
-		World_Unlock(world);
-	}
 	return true;
 }
 
@@ -440,7 +440,7 @@ THREAD_FUNC(WorldLoadThread) {
 
 	if(fp) File_Close(fp);
 	Compr_Reset(&world->compr);
-	Event_Call(EVT_WORLDLOADED, world);
+	Event_Call(EVT_ONWORLDLOADED, world);
 	World_Unlock(world);
 	return 0;
 }
@@ -464,7 +464,7 @@ void World_FreeBlockArray(World *world) {
 void World_Unload(World *world) {
 	World_WaitAllTasks(world);
 	World_FreeBlockArray(world);
-	Event_Call(EVT_WORLDUNLOADED, world);
+	Event_Call(EVT_ONWORLDUNLOADED, world);
 }
 
 cs_str World_GetName(World *world) {

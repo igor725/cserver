@@ -152,3 +152,11 @@ COMMAND_FUNC(Help) {
 void Command_RegisterDefault(void) {
 	COMMAND_ADD(Help, CMDF_NONE, "Prints this message");
 }
+
+void Command_UnregisterAll(void) {
+	while(headCmd) {
+		Memory_Free(headCmd->value.ptr);
+		Memory_Free(headCmd->key.ptr);
+		KList_Remove(&headCmd, headCmd);
+	}
+}

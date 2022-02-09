@@ -63,6 +63,7 @@ typedef struct _Command {
 } Command;
 
 void Command_RegisterDefault(void);
+void Command_UnregisterAll(void);
 cs_bool Command_Handle(cs_char *cmd, Client *caller);
 
 API Command *Command_Register(cs_str name, cs_str descr, cmdFunc func, cs_byte flags);

@@ -80,6 +80,7 @@ typedef struct _Packet {
 API Packet *Packet_Get(cs_byte id);
 API void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler);
 API void Packet_SetCPEHandler(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler);
+void Packet_UnregisterAll(void);
 
 API cs_byte Proto_ReadString(cs_char **data, cs_str *dstptr);
 API cs_byte Proto_ReadStringNoAlloc(cs_char **data, cs_char *dst);

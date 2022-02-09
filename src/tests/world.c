@@ -51,7 +51,7 @@ cs_bool Tests_World(void) {
 	Tests_Assert(World_SetBlockO(world, wsize, BLOCK_WATER) == false, "set fourth block outside of world");
 
 	Tests_NewTask("Saving world");
-	Tests_Assert(World_Save(world, true), "unload world");
+	Tests_Assert(World_Save(world), "unload world");
 	World_Free(world);
 
 	Tests_NewTask("Load world");
