@@ -7,31 +7,41 @@
 #include "command.h"
 #include "strstor.h"
 
-static KListField *headCmd = NULL;
+static AListField *headCmd = NULL;
 
 Command *Command_Register(cs_str name, cs_str descr, cmdFunc func, cs_byte flags) {
 	if(Command_GetByName(name)) return NULL;
 	Command *tmp = Memory_Alloc(1, sizeof(Command));
+	tmp->name = String_AllocCopy(name);
 	tmp->flags = flags;
 	tmp->descr = descr;
 	tmp->func = func;
-	KList_AddField(&headCmd, (void *)String_AllocCopy(name), tmp);
+	AList_AddField(&headCmd, tmp);
 	return tmp;
 }
 
-cs_bool Command_SetAlias(Command *cmd, cs_str alias) {
-	if(String_Length(alias) > 6) return false;
+cs_str Command_GetName(Command *cmd) {
+	return cmd->name;
+}
+
+void Command_SetAlias(Command *cmd, cs_str alias) {
 	String_Copy(cmd->alias, 7, alias);
-	return true;
+}
+
+void Command_SetUserData(Command *cmd, void *ud) {
+	cmd->data = ud;
+}
+
+void *Command_GetUserData(Command *cmd) {
+	return cmd->data;
 }
 
 Command *Command_GetByName(cs_str name) {
-	KListField *field;
+	AListField *field;
 	List_Iter(field, headCmd) {
-		if(String_CaselessCompare(field->key.str, name))
-			return field->value.ptr;
-
 		Command *cmd = field->value.ptr;
+		if(String_CaselessCompare(cmd->name, name))
+			return field->value.ptr;
 		if(String_CaselessCompare(cmd->alias, name))
 			return field->value.ptr;
 	}
@@ -39,11 +49,11 @@ Command *Command_GetByName(cs_str name) {
 }
 
 void Command_Unregister(Command *cmd) {
-	KListField *field;
+	AListField *field;
 	List_Iter(field, headCmd) {
 		if(field->value.ptr == cmd) {
-			Memory_Free(field->key.ptr);
-			KList_Remove(&headCmd, field);
+			AList_Remove(&headCmd, field);
+			Memory_Free((void *)cmd->name);
 			Memory_Free(cmd);
 			break;
 		}
@@ -51,12 +61,12 @@ void Command_Unregister(Command *cmd) {
 }
 
 void Command_UnregisterByFunc(cmdFunc func) {
-	KListField *field;
+	AListField *field;
 	List_Iter(field, headCmd) {
 		Command *cmd = field->value.ptr;
 		if(cmd->func == func) {
-			Memory_Free(field->key.ptr);
-			KList_Remove(&headCmd, field);
+			AList_Remove(&headCmd, field);
+			Memory_Free((void *)cmd->name);
 			Memory_Free(cmd);
 			break;
 		}
@@ -127,23 +137,21 @@ cs_bool Command_Handle(cs_char *str, Client *caller) {
 
 static cs_str helpheader = "&eList of available commands:";
 COMMAND_FUNC(Help) {
-	KListField *tmp;
+	AListField *tmp;
 	if(ccdata->caller)
 		Client_Chat(ccdata->caller, MESSAGE_TYPE_CHAT, helpheader);
 	else
 		Log_Info(helpheader + 2); // TODO: Не делать вот так
 
 	List_Iter(tmp, headCmd) {
-		cs_str name = tmp->key.str;
 		Command *cmd = (Command *)tmp->value.ptr;
-		cs_str descr = cmd->descr;
 		if(ccdata->caller) {
 			if(cmd->flags & CMDF_OP && !Client_IsOP(ccdata->caller))
 				continue;
 			
-			String_FormatBuf(ccdata->out, MAX_CMD_OUT, "%s - %s", name, descr);
+			String_FormatBuf(ccdata->out, MAX_CMD_OUT, "%s - %s", cmd->name, cmd->descr);
 			Client_Chat(ccdata->caller, MESSAGE_TYPE_CHAT, ccdata->out);
-		} else Log_Info("%s - %s", name, descr);
+		} else Log_Info("%s - %s", cmd->name, cmd->descr);
 	}
 
 	return false;
@@ -155,8 +163,9 @@ void Command_RegisterDefault(void) {
 
 void Command_UnregisterAll(void) {
 	while(headCmd) {
-		Memory_Free(headCmd->value.ptr);
-		Memory_Free(headCmd->key.ptr);
-		KList_Remove(&headCmd, headCmd);
+		Command *cmd = (Command *)headCmd->value.ptr;
+		Memory_Free((void *)cmd->name);
+		Memory_Free(cmd);
+		AList_Remove(&headCmd, headCmd);
 	}
 }
