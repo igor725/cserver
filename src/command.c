@@ -91,7 +91,7 @@ INL static void SendOutput(Client *caller, cs_char *ret) {
 }
 
 cs_bool Command_Handle(cs_char *str, Client *caller) {
-	if(*str == '/') ++str;
+	if(*str == '/' && *++str == '\0') return false;
 
 	cs_char ret[MAX_CMD_OUT];
 	cs_char *args = str;

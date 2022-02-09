@@ -975,7 +975,7 @@ cs_bool CPEHandler_TwoWayPing(Client *client, cs_char *data) {
 	if(pingDirection == 0) {
 		CPE_WriteTwoWayPing(client, 0, pingData);
 		if(!client->cpeData->pingStarted) {
-			CPE_WriteTwoWayPing(client, 1, client->cpeData->pingData++);
+			CPE_WriteTwoWayPing(client, 1, ++client->cpeData->pingData);
 			client->cpeData->pingStarted = true;
 			client->cpeData->pingStart = Time_GetMSec();
 		}
