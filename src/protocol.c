@@ -906,6 +906,20 @@ void CPE_WriteSpawnEffect(Client *client, cs_byte id, Vec *pos, Vec *origin) {
 	PacketWriter_End(client, 26);
 }
 
+// void CPE_WriteDefineModel(Client *client, ...) {}
+// void CPE_WriteDefineModelPart(Client *client, ...) {}
+// void CPE_WriteUndefineModel(Client *client, ...) {}
+
+void CPE_WritePluginMessage(Client *client, cs_byte channel, cs_str message) {
+	PacketWriter_Start(client);
+
+	*data++ = 0x35;
+	*data++ = channel;
+	Proto_WriteString(&data, message);
+
+	PacketWriter_End(client, 66);
+}
+
 cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
 	ValidateClientState(client, PLAYER_STATE_INITIAL, false)
@@ -949,7 +963,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 }
 
 cs_bool CPEHandler_PlayerClick(Client *client, cs_char *data) {
-	ValidateCpeClient(client, false)
+	if(Client_GetExtVer(client, EXT_PLAYERCLICK) < 1) return false;
 	ValidateClientState(client, PLAYER_STATE_INGAME, false)
 
 	onPlayerClick params;
@@ -967,7 +981,7 @@ cs_bool CPEHandler_PlayerClick(Client *client, cs_char *data) {
 }
 
 cs_bool CPEHandler_TwoWayPing(Client *client, cs_char *data) {
-	ValidateCpeClient(client, false)
+	if(Client_GetExtVer(client, EXT_TWOWAYPING) < 1) return false;
 
 	cs_byte pingDirection = *data++;
 	cs_uint16 pingData = *(cs_uint16 *)data;
@@ -989,6 +1003,18 @@ cs_bool CPEHandler_TwoWayPing(Client *client, cs_char *data) {
 		}
 	}
 	return false;
+}
+
+cs_bool CPEHandler_PluginMessage(Client *client, cs_char *data) {
+	if(Client_GetExtVer(client, EXT_PLUGINMESSAGE) < 1) return false;
+
+	onPluginMessage pmesg = {
+		.client = client,
+		.channel = *data++
+	};
+
+	Proto_ReadStringNoAlloc(&data, pmesg.message);
+	return Event_Call(EVT_ONPLUGINMESSAGE, &pmesg);
 }
 
 Packet *packetsList[255] = {NULL};
@@ -1058,6 +1084,7 @@ static const struct extReg {
 	{"VelocityControl", 1},
 	{"CustomParticles", 1},
 	// {"CustomModels", 2},
+	{"PluginMessages", 1},
 
 	{NULL, 0}
 };

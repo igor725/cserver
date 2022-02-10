@@ -58,6 +58,8 @@ return;
 #define EXT_SETSPAWN 0x9149FD59ul
 #define EXT_VELCTRL 0xF8DF4FF7ul
 #define EXT_PARTICLE 0x0D732743ul
+#define EXT_CUSTOMMODEL 0xB27EFA32ul
+#define EXT_PLUGINMESSAGE 0x59FA7285ul
 
 typedef cs_bool(*packetHandler)(Client *, cs_char *);
 
@@ -159,6 +161,7 @@ NOINL void CPE_WriteSetModel(Client *client, Client *other);
 NOINL void CPE_WriteSetMapAppearanceV1(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl);
 NOINL void CPE_WriteSetMapAppearanceV2(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl, cs_int16 cllvl, cs_int16 maxview);
 NOINL void CPE_WriteBlockPerm(Client *client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy);
+NOINL void CPE_WritePluginMessage(Client *client, cs_byte channel, cs_str message);
 
 void Packet_RegisterDefault(void);
 #endif // PROTOCOL_H

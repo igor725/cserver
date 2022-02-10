@@ -27,6 +27,7 @@ typedef enum _EventTypes {
 	EVT_ONWORLDUNLOADED,
 	EVT_ONWORLDREMOVED,
 	EVT_ONLOG,
+	EVT_ONPLUGINMESSAGE,
 
 	EVENTS_TCOUNT
 } EventTypes;
@@ -65,6 +66,12 @@ typedef struct _onPlayerClick {
 	SVec tgpos;
 	EBlockFace tgface;
 } onPlayerClick;
+
+typedef struct _onPluginMessage {
+	Client *client;
+	cs_byte channel;
+	cs_char message[65];
+} onPluginMessage;
 
 API cs_bool Event_RegisterVoid(EventTypes type, evtVoidCallback func);
 API cs_bool Event_RegisterBool(EventTypes type, evtBoolCallback func);
