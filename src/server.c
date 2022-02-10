@@ -56,9 +56,9 @@ THREAD_FUNC(ClientInitThread) {
 				if(other && other != client && Client_GetExtVer(other, EXT_PLAYERLIST) == 2)
 					CPE_WriteRemoveName(other, client);
 			}
+			Client_Despawn(client);
 			Event_Call(EVT_ONDISCONNECT, client);
 		}
-		Client_Despawn(client);
 	} else
 		Client_Kick(client, Sstor_Get("KICK_PERR_HS"));
 
