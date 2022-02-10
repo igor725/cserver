@@ -365,8 +365,10 @@ INL static void DoStep(cs_int32 delta) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
 		if(client && client->closed) {
-			Waitable_Wait(client->waitend);
 			Clients_List[client->id] = NULL;
+			Waitable_Wait(client->waitend);
+			Mutex_Lock(client->mutex);
+			Mutex_Unlock(client->mutex);
 			Client_Free(client);
 		}
 	}
