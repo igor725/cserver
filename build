@@ -108,6 +108,13 @@ if [ $GITUPD -eq 1 ]; then
 		BUILDALERTED=0
 		BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
+		if [ -f "$SERVER_OUTROOT/$OUTBIN" ]; then
+			if [ $(git rev-list HEAD..origin/$BRANCH --count) -eq 0 ]; then
+				echo "Nothing updated"
+				exit 0
+			fi
+		fi
+
 		for file in `git diff --stat --name-only HEAD origin/$BRANCH`; do
 			if [ "$file" = "build" ]; then
 				BUILDALERTED=1
