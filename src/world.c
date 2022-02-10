@@ -203,6 +203,10 @@ cs_uint32 World_GetBlockArraySize(World *world) {
 }
 
 void World_Free(World *world) {
+	while(world->headNode) {
+		Memory_Free(world->headNode->value.ptr);
+		KList_Remove(&world->headNode, world->headNode);
+	}
 	Compr_Cleanup(&world->compr);
 	World_FreeBlockArray(world);
 	Semaphore_Free(world->sem);

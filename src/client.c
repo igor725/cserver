@@ -681,6 +681,11 @@ void Client_Free(Client *client) {
 		client->cpeData = NULL;
 	}
 
+	while(client->headNode) {
+		Memory_Free(client->headNode->value.ptr);
+		KList_Remove(&client->headNode, client->headNode);
+	}
+
 	Compr_Cleanup(&client->compr);
 	Memory_Free(client);
 }
