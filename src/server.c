@@ -14,6 +14,7 @@
 #include "consoleio.h"
 #include "strstor.h"
 #include "command.h"
+#include "heartbeat.h"
 
 CStore *Server_Config = NULL;
 cs_str Server_Version = GIT_COMMIT_TAG;
@@ -448,6 +449,9 @@ void Server_Cleanup(void) {
 	Command_UnregisterAll();
 	Generators_UnregisterAll();
 	Event_UnregisterAll();
+	Heartbeat_StopAll();
 	Timer_RemoveAll();
+
+	// Должна всегда вызываться последней
 	Sstor_Cleanup();
 }

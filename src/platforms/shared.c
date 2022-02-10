@@ -40,21 +40,19 @@ cs_size File_Read(void *ptr, cs_size size, cs_size count, cs_file fp) {
 }
 
 cs_int32 File_ReadLine(cs_file fp, cs_char *line, cs_int32 len) {
-	cs_int32 ch, ilen = len;
-	while(len > 1) {
-		ch = File_GetChar(fp);
-		if(ch == EOF)
-			return 0;
-		else if(ch == '\n')
-			break;
-		else if(ch != '\r') {
-			*line++ = (cs_char)ch;
-			len -= 1;
-		}
+	cs_char *sym;
+
+	for(sym = line; (sym - line) < len; sym++) {
+		cs_int32 ch = File_GetChar(fp);
+		if(ch == EOF || ch == '\n') {
+			*sym = '\0';
+			return (cs_int32)(sym - line);
+		} else if(ch != '\r')
+			*sym = (cs_char)ch;
 	}
-	*line = '\0';
-	if(len == 1) return -1;
-	return ilen - len;
+
+	*sym = '\0';
+	return -1;
 }
 
 cs_size File_Write(const void *ptr, cs_size size, cs_size count, cs_file fp) {
