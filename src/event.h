@@ -61,7 +61,7 @@ typedef struct _onBlockPlace {
 typedef struct _onPlayerClick {
 	Client *client;
 	cs_int8 button, action;
-	cs_int16 yaw, pitch;
+	Ang angle;
 	ClientID tgid;
 	SVec tgpos;
 	EBlockFace tgface;

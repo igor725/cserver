@@ -970,8 +970,8 @@ cs_bool CPEHandler_PlayerClick(Client *client, cs_char *data) {
 	params.client = client;
 	params.button = *data++;
 	params.action = *data++;
-	params.yaw = ntohs(*(cs_int16 *)data); data += 2;
-	params.pitch = ntohs(*(cs_int16 *)data); data += 2;
+	params.angle.yaw = (cs_float)((cs_int16)ntohs(*(cs_uint16 *)data)) / 32767.0f * 360.0f; data += 2;
+	params.angle.pitch = (cs_float)((cs_int16)ntohs(*(cs_uint16 *)data)) / 32767.0f * 360.0f; data += 2;
 	params.tgid = *data++;
 	Proto_ReadSVec(&data, &params.tgpos);
 	params.tgface = *data;
