@@ -105,30 +105,30 @@ if [ $GITUPD -eq 1 ]; then
 			echo "!!! Failed to fetch main repo"
 			exit 1
 		fi
+
 		BUILDALERTED=0
 		BRANCH=$(git rev-parse --abbrev-ref HEAD)
-
-		if [ -f "$SERVER_OUTROOT/$OUTBIN" ]; then
+		if [ -f "$SERVER_OUTROOT/$OUTBIN" ] && [ "$CSBUILD_NOUPDATE" != "ignore" ]; then
 			if [ $(git rev-list HEAD..origin/$BRANCH --count) -eq 0 ]; then
 				echo "Nothing updated"
 				exit 0
 			fi
-		fi
 
-		for file in `git diff --stat --name-only HEAD origin/$BRANCH`; do
-			if [ "$file" = "build" ]; then
-				BUILDALERTED=1
-				break
+			for file in `git diff --stat --name-only HEAD origin/$BRANCH`; do
+				if [ "$file" = "build" ]; then
+					BUILDALERTED=1
+					break
+				fi
+			done
+
+			git merge --ff-only
+			if [ $? -ne 0 ]; then
+				echo "!!! Failed to update server core"
+				exit 1
+			elif [ $BUILDALERTED -eq 1 ]; then
+				echo "Bash script has been updated, restarting..."
+				CSBUILD_NOUPDATE=ignore exec $0 $@
 			fi
-		done
-
-		git merge --ff-only
-		if [ $? -ne 0 ]; then
-			echo "!!! Failed to update server core"
-			exit 1
-		elif [ $BUILDALERTED -eq 1 ]; then
-			echo "!!! Build script has been updated, you need to run it again"
-			exit 1
 		fi
 	fi
 fi
