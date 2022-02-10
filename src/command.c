@@ -6,6 +6,7 @@
 #include "client.h"
 #include "command.h"
 #include "strstor.h"
+#include "server.h"
 
 static AListField *headCmd = NULL;
 
@@ -157,8 +158,15 @@ COMMAND_FUNC(Help) {
 	return false;
 }
 
+COMMAND_FUNC(Stop) {
+	(void)ccdata;
+	Server_Active = false;
+	return false;
+}
+
 void Command_RegisterDefault(void) {
 	COMMAND_ADD(Help, CMDF_NONE, "Prints this message");
+	COMMAND_ADD(Stop, CMDF_OP, "Stops a server");
 }
 
 void Command_UnregisterAll(void) {

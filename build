@@ -137,6 +137,12 @@ STDERR="$ROOT/out/stderr"
 OUTDIR="$ROOT/out/$MACH"
 OBJDIR="$OUTDIR/objs"
 
+pkg-config --silence-errors --validate readline 2>&1 >/dev/null
+if [ $? -eq 0 ]; then
+	LIBS="$(pkg-config --libs readline) $LIBS"
+	CFLAGS="$(pkg-config --cflags readline) -DCIO_USE_READLINE $CFLAGS"
+fi
+
 if [ $SAN -eq 1 ]; then
 	LIBS="-lasan -lubsan $LIBS"
 	CFLAGS="-fsanitize=undefined,address -fstack-protector-all -fno-sanitize=alignment -fno-sanitize-recover=all $CFLAGS"
