@@ -908,9 +908,9 @@ cs_bool Client_Spawn(Client *client) {
 		}
 	}
 
+	client->playerData->spawned = true;
 	Event_Call(EVT_ONSPAWN, client);
 	client->playerData->firstSpawn = false;
-	client->playerData->spawned = true;
 	return true;
 }
 
