@@ -37,18 +37,17 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-	if(testmode) {
-		if(Tests_PerformAll())
-			Log_Info("All tests passed!");
-		else
-			Log_Error("Some tests failed!");
-	} else {
-		if(Server_Init()) {
-			Server_StartLoop();
-			Server_Cleanup();
+		if(testmode) {
+			if(Tests_PerformAll())
+				Log_Info("All tests passed!");
+			else
+				Log_Error("Some tests failed!");
+		} else {
+			if(Server_Init())
+				Server_StartLoop();
 		}
-	}
 
+		Server_Cleanup();
 		Compr_Uninit();
 		Http_Uninit();
 		Hash_Uninit();

@@ -62,6 +62,7 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("WGEN_NOGEN", "Invalid generator specified for \"%s\"");
 
 	Sstor_Set("SV_START", "Server started on %s:%d");
+	Sstor_Set("SV_BIND_FAIL", "Failed to bind port %d");
 	Sstor_Set("SV_NOWORLDS", "No worlds loaded");
 	Sstor_Set("SV_WLOAD_ERR", "Failed to %s world %s: (%d, %d)");
 	Sstor_Set("SV_CFGL_ERR", "Failed to parse line %d from %s: (%s, %s)");

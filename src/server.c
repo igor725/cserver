@@ -139,14 +139,10 @@ INL static cs_bool Bind(cs_str ip, cs_uint16 port) {
 	if(!Server_Socket) {
 		Error_PrintSys(true);
 	}
-	struct sockaddr_in ssa;
-	
-	if(Socket_SetAddr(&ssa, ip, port) > 0 && Socket_Bind(Server_Socket, &ssa)) {
-		Log_Info(Sstor_Get("SV_START"), ip, port);
-		return true;
-	}
 
-	return false;
+	struct sockaddr_in ssa;
+	return Socket_SetAddr(&ssa, ip, port) > 0 &&
+	Socket_Bind(Server_Socket, &ssa);
 }
 
 cs_bool Server_Init(void) {
@@ -219,6 +215,7 @@ cs_bool Server_Init(void) {
 		}
 	}
 	Log_SetLevelStr(Config_GetStrByKey(cfg, CFG_LOGLEVEL_KEY));
+	Config_Save(Server_Config);
 
 	SyncClients = Waitable_Create();
 	Broadcast = Memory_Alloc(1, sizeof(Client));
@@ -347,6 +344,7 @@ cs_bool Server_Init(void) {
 	cs_str ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
 	cs_uint16 port = Config_GetInt16ByKey(cfg, CFG_SERVERPORT_KEY);
 	if(Bind(ip, port)) {
+		Log_Info(Sstor_Get("SV_START"), ip, port);
 		Event_Call(EVT_POSTSTART, NULL);
 		if(ConsoleIO_Init())
 			Log_Info(Sstor_Get("SV_STOPNOTE"));
@@ -355,6 +353,7 @@ cs_bool Server_Init(void) {
 		return true;
 	}
 
+	Log_Error(Sstor_Get("SV_BIND_FAIL"), port);
 	return false;
 }
 
