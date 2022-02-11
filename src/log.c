@@ -3,6 +3,7 @@
 #include "platform.h"
 #include "log.h"
 #include "event.h"
+#include "consoleio.h"
 
 cs_byte Log_Level = LOG_ALL;
 static Mutex *logMutex = NULL;
@@ -91,8 +92,10 @@ void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 		buffer.data[buffer.offset] = '\0';
 
 		if(Event_Call(EVT_ONLOG, &buffer)) {
+			ConsoleIO_PrePrint();
 			File_Write(buffer.data, buffer.offset, 1, stderr);
 			File_Flush(stderr);
+			ConsoleIO_AfterPrint();
 		}
 
 		Mutex_Unlock(logMutex);

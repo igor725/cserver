@@ -9,5 +9,7 @@
 #define CONSOLEIO_TERMINATE SIGINT
 #endif
 
+void ConsoleIO_PrePrint(void);
+void ConsoleIO_AfterPrint(void);
 cs_bool ConsoleIO_Init(void);
 #endif
