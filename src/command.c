@@ -8,7 +8,7 @@
 #include "strstor.h"
 #include "server.h"
 
-static AListField *headCmd = NULL;
+AListField *Command_Head = NULL;
 
 Command *Command_Register(cs_str name, cs_str descr, cmdFunc func, cs_byte flags) {
 	if(Command_GetByName(name)) return NULL;
@@ -17,7 +17,7 @@ Command *Command_Register(cs_str name, cs_str descr, cmdFunc func, cs_byte flags
 	tmp->flags = flags;
 	tmp->descr = descr;
 	tmp->func = func;
-	AList_AddField(&headCmd, tmp);
+	AList_AddField(&Command_Head, tmp);
 	return tmp;
 }
 
@@ -39,7 +39,7 @@ void *Command_GetUserData(Command *cmd) {
 
 Command *Command_GetByName(cs_str name) {
 	AListField *field;
-	List_Iter(field, headCmd) {
+	List_Iter(field, Command_Head) {
 		Command *cmd = field->value.ptr;
 		if(String_CaselessCompare(cmd->name, name))
 			return field->value.ptr;
@@ -51,9 +51,9 @@ Command *Command_GetByName(cs_str name) {
 
 void Command_Unregister(Command *cmd) {
 	AListField *field;
-	List_Iter(field, headCmd) {
+	List_Iter(field, Command_Head) {
 		if(field->value.ptr == cmd) {
-			AList_Remove(&headCmd, field);
+			AList_Remove(&Command_Head, field);
 			Memory_Free((void *)cmd->name);
 			Memory_Free(cmd);
 			break;
@@ -63,10 +63,10 @@ void Command_Unregister(Command *cmd) {
 
 void Command_UnregisterByFunc(cmdFunc func) {
 	AListField *field;
-	List_Iter(field, headCmd) {
+	List_Iter(field, Command_Head) {
 		Command *cmd = field->value.ptr;
 		if(cmd->func == func) {
-			AList_Remove(&headCmd, field);
+			AList_Remove(&Command_Head, field);
 			Memory_Free((void *)cmd->name);
 			Memory_Free(cmd);
 			break;
@@ -144,7 +144,7 @@ COMMAND_FUNC(Help) {
 	else
 		Log_Info(helpheader + 2); // TODO: Не делать вот так
 
-	List_Iter(tmp, headCmd) {
+	List_Iter(tmp, Command_Head) {
 		Command *cmd = (Command *)tmp->value.ptr;
 		if(ccdata->caller) {
 			if(cmd->flags & CMDF_OP && !Client_IsOP(ccdata->caller))
@@ -170,10 +170,10 @@ void Command_RegisterDefault(void) {
 }
 
 void Command_UnregisterAll(void) {
-	while(headCmd) {
-		Command *cmd = (Command *)headCmd->value.ptr;
+	while(Command_Head) {
+		Command *cmd = (Command *)Command_Head->value.ptr;
 		Memory_Free((void *)cmd->name);
 		Memory_Free(cmd);
-		AList_Remove(&headCmd, headCmd);
+		AList_Remove(&Command_Head, Command_Head);
 	}
 }

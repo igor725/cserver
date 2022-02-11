@@ -76,4 +76,6 @@ API cs_str Command_GetName(Command *cmd);
 API void Command_SetAlias(Command *cmd, cs_str alias);
 API void Command_SetUserData(Command *cmd, void *ud);
 API void *Command_GetUserData(Command *cmd);
+
+VAR AListField *Command_Head;
 #endif // COMMAND_H
