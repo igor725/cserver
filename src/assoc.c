@@ -27,7 +27,7 @@ static AListField *AGetType(AssocType type, AssocBind **bind) {
 }
 
 static KListField *AGetNode(void *target, AssocBind *bind) {
-	KListField *ptr = NULL;
+	KListField *ptr;
 
 	switch(bind->type) {
 		case ASSOC_BIND_CLIENT:

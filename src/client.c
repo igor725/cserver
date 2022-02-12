@@ -142,7 +142,7 @@ cs_int8 Client_GetFluidLevel(Client *client, BlockID *fluid) {
 
 	if(level > 1) {
 		level--;
-		tpos.y -= 1;
+		tpos.y--;
 		goto test_wtrlevel;
 	}
 
@@ -440,7 +440,7 @@ cs_bool Client_SetHeld(Client *client, BlockID block, cs_bool canChange) {
 }
 
 cs_bool Client_SetClickDistance(Client *client, cs_int16 dist) {
-	if(Client_GetExtVer(client, 0)) {
+	if(Client_GetExtVer(client, EXT_CLICKDIST)) {
 		CPE_WriteClickDistance(client, dist);
 		return true;
 	}
@@ -500,7 +500,7 @@ cs_float Client_GetAvgPing(Client *client) {
 	if(Client_GetExtVer(client, EXT_TWOWAYPING)) {
 		return client->cpeData->pingAvgTime;
 	}
-	return -1;
+	return -1.0f;
 }
 
 cs_bool Client_GetPosition(Client *client, Vec *pos, Ang *ang) {
