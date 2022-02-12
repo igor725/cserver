@@ -161,6 +161,7 @@ typedef struct _CustomParticle {
 #ifdef CORE_BUILD_PLUGIN
 EXP cs_bool Plugin_Load(void);
 EXP cs_bool Plugin_Unload(cs_bool force);
+EXP cs_bool Plugin_GetInterface(cs_str name, void **);
 EXP cs_int32 Plugin_ApiVer, Plugin_Version;
 #define Plugin_SetVersion(ver) cs_int32 Plugin_ApiVer = PLUGIN_API_NUM, Plugin_Version = ver;
 #else

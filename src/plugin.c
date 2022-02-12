@@ -23,7 +23,6 @@ cs_bool Plugin_LoadDll(cs_str name) {
 			return false;
 		}
 
-		DLib_GetSym(lib, "Plugin_Version", (void *)&plugVerSym);
 		cs_int32 apiVer = *apiVerSym;
 		if(apiVer != PLUGIN_API_NUM) {
 			if(apiVer < PLUGIN_API_NUM)
@@ -39,7 +38,9 @@ cs_bool Plugin_LoadDll(cs_str name) {
 		DLib_GetSym(lib, "Plugin_Unload", (void *)&plugin->unload);
 
 		plugin->name = String_AllocCopy(name);
-		if(plugVerSym) plugin->version = *plugVerSym;
+		DLib_GetSym(lib, "Plugin_GetInterface", (void *)&plugin->iface);
+		if(DLib_GetSym(lib, "Plugin_Version", (void *)&plugVerSym))
+			plugin->version = *plugVerSym;
 		plugin->lib = lib;
 		plugin->id = -1;
 
@@ -71,8 +72,11 @@ Plugin *Plugin_Get(cs_str name) {
 	return NULL;
 }
 
-cs_bool Plugin_GetSymbol(Plugin *plugin, cs_str name, void *sym) {
-	return DLib_GetSym(plugin->lib, name, sym);
+cs_bool Plugin_RequestInterface(cs_str pname, cs_str iname, void **ptr) {
+	if(!pname || !iname || !ptr) return false;
+	Plugin *plugin = Plugin_Get(pname);
+	if(!plugin || !plugin->iface) return false;
+	return plugin->iface(iname, ptr);
 }
 
 cs_bool Plugin_UnloadDll(Plugin *plugin, cs_bool force) {
