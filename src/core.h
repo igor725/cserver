@@ -172,7 +172,7 @@ EXP cs_int32 Plugin_ApiVer, Plugin_Version;
 #define Plugin_DeclareInterfaces(_N) EXP PluginInterface Plugin_Interfaces[_N]; \
 PluginInterface Plugin_Interfaces[_N] = 
 #define Plugin_SetVersion(ver) cs_int32 Plugin_ApiVer = PLUGIN_API_NUM, Plugin_Version = ver;
-#define PLUGIN_IFACE_DONE {NULL, NULL, 0}
+#define PLUGIN_IFACE_END {NULL, NULL, 0}
 #define PLUGIN_IFACE_ADD(n, i) {n, &(i), sizeof(i)},
 #else
 #define SOFTWARE_NAME "C-Server"
