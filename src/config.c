@@ -121,6 +121,9 @@ cs_byte Config_ToStr(CEntry *ent, cs_char *value, cs_byte len) {
 		case CONFIG_TYPE_STR:
 			written = (cs_byte)String_Copy(value, len, Config_GetStr(ent));
 			break;
+		
+		case CONFIG_MAX_TYPE:
+		default: return 0;
 	}
 	
 	return written;
@@ -188,6 +191,13 @@ cs_bool Config_Load(CStore *store) {
 			case CONFIG_TYPE_BOOL:
 				Config_SetBool(ent, String_Compare(value, "True"));
 				break;
+
+			case CONFIG_MAX_TYPE:
+			default:
+				store->error.code = CONFIG_ERROR_INTERNAL;
+				store->error.extra = CONFIG_EXTRA_NOINFO;
+				File_Close(fp);
+				return false;
 		}
 	}
 	if(lnret == -1) {
