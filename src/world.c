@@ -1,12 +1,10 @@
 #include "core.h"
 #include "platform.h"
 #include "str.h"
-#include "server.h"
 #include "world.h"
 #include "event.h"
 #include "list.h"
 #include "compr.h"
-#include "strstor.h"
 #include "block.h"
 
 enum _EWorldDataItems {
