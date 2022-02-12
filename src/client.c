@@ -496,6 +496,13 @@ cs_int32 Client_GetPing(Client *client) {
 	return -1;
 }
 
+cs_float Client_GetAvgPing(Client *client) {
+	if(Client_GetExtVer(client, EXT_TWOWAYPING)) {
+		return client->cpeData->pingAvgTime;
+	}
+	return -1;
+}
+
 cs_bool Client_GetPosition(Client *client, Vec *pos, Ang *ang) {
 	if(client->playerData) {
 		if(pos) *pos = client->playerData->position;

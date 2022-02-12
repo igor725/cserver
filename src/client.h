@@ -60,6 +60,8 @@ typedef struct _CPEData {
 	group; // Текущая группа игрока [ExtPlayerList]
 	cs_uint16 pingData; // Данные, цепляемые к пинг-запросу
 	cs_uint32 pingTime; // Сам пинг, в миллисекундах
+	cs_float pingAvgTime; // Средний пинг, в миллисекундах
+	cs_uint32 _pingAvgSize; // Количество значений в текущем среднем пинга
 	cs_uint64 pingStart; // Время начала пинг-запроса
 	cs_int32 rotation[3]; // Вращение модели игрока в градусах [EntityProperty]
 } CPEData;
@@ -167,6 +169,7 @@ API cs_bool Client_GetPosition(Client *client, Vec *pos, Ang *ang);
 API cs_int32 Client_GetExtVer(Client *client, cs_uint32 exthash);
 API cs_uint32 Client_GetAddr(Client *client);
 API cs_int32 Client_GetPing(Client *client);
+API cs_float Client_GetAvgPing(Client *client);
 API CGroup *Client_GetGroup(Client *client);
 API cs_int16 Client_GetGroupID(Client *client);
 
