@@ -12,6 +12,17 @@
             "preLaunchTask": "Build debug"
         },
         {
+            "name": "Launch testmode",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/out/x64dbg/server.exe",
+            "args": ["testmode"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/out/x64dbg",
+            "console": "integratedTerminal",
+            "preLaunchTask": "Build debug"
+        },
+        {
             "name": "Launch debug (Linux)",
             "type": "cppdbg",
             "request": "launch",

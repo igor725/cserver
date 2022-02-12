@@ -37,6 +37,7 @@ World *World_Create(cs_str name) {
 	cs_int32 *props = tmp->info.props;
 	props[WORLD_PROP_SIDEBLOCK] = BLOCK_BEDROCK;
 	props[WORLD_PROP_EDGEBLOCK] = BLOCK_WATER;
+	props[WORLD_PROP_CLOUDSLEVEL] = 256;
 	props[WORLD_PROP_FOGDIST] = 0;
 	props[WORLD_PROP_SPDCLOUDS] = 256;
 	props[WORLD_PROP_SPDWEATHER] = 256;

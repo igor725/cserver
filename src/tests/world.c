@@ -52,6 +52,8 @@ cs_bool Tests_World(void) {
 
 	Tests_NewTask("Saving world");
 	Tests_Assert(World_Save(world), "unload world");
+	World_Lock(world, 0);
+	World_Unlock(world);
 	World_Free(world);
 
 	Tests_NewTask("Load world");

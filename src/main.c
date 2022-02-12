@@ -42,6 +42,8 @@ int main(int argc, char *argv[]) {
 				Log_Info("All tests passed!");
 			else
 				Log_Error("Some tests failed!");
+			
+			Process_Exit(1);
 		} else {
 			if(Server_Init())
 				Server_StartLoop();
