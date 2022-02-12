@@ -103,7 +103,7 @@ cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname) {
 		
 		if(!answerer && cplugin != requester) {
 			Plugin_Lock(cplugin);
-			for(iface = cplugin->ifaces; iface->iname; iface++) {
+			for(iface = cplugin->ifaces; iface && iface->iname; iface++) {
 				if(String_Compare(iface->iname, iname)) {
 					answerer = cplugin;
 					break;
