@@ -997,8 +997,9 @@ cs_bool CPEHandler_TwoWayPing(Client *client, cs_char *data) {
 			client->cpeData->pingStarted = false;
 			if(client->cpeData->pingData == pingData) {
 				client->cpeData->pingTime = (cs_uint32)((Time_GetMSec() - client->cpeData->pingStart) / 2);
-				client->cpeData->pingAvgTime = ((client->cpeData->_pingAvgSize - 1) * client->cpeData->pingAvgTime +
-				(cs_float)client->cpeData->pingTime) / ++client->cpeData->_pingAvgSize;
+				client->cpeData->pingAvgTime = (client->cpeData->_pingAvgSize * client->cpeData->pingAvgTime +
+				(cs_float)client->cpeData->pingTime) / (client->cpeData->_pingAvgSize + 1);
+				client->cpeData->_pingAvgSize += 1;
 			}
 			return true;
 		}

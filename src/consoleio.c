@@ -95,8 +95,6 @@ static char **cmd_completion(cs_str in, cs_int32 start, cs_int32 end) {
 		return ReadLine.match(in, cmd_generator);
 	else
 		return ReadLine.match(in, arg_generator);
-	
-	return NULL;
 }
 
 void ConsoleIO_PrePrint(void) {
@@ -123,6 +121,7 @@ static TSHND_RET sighand(TSHND_PARAM signal) {
 }
 
 THREAD_FUNC(ConsoleIOThread) {
+	(void)param;
 	while(Server_Active) {
 		if(ReadLine.lib) {
 			rlalive = true;
@@ -147,7 +146,7 @@ THREAD_FUNC(ConsoleIOThread) {
 
 cs_bool ConsoleIO_Init(void) {
 	if(DLib_LoadAll(rllib, syms, (void **)&ReadLine))
-		*ReadLine.attemptfunc = cmd_completion;
+		*ReadLine.attemptfunc = (void *)cmd_completion;
 
 	Thread_Create(ConsoleIOThread, NULL, true);
 	return Console_BindSignalHandler(sighand);
