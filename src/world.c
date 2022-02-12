@@ -485,15 +485,17 @@ void World_GetDimensions(World *world, SVec *dims) {
 }
 
 cs_uint32 World_GetOffset(World *world, SVec *pos) {
-	if(pos->x < 0 || pos->y < 0 || pos->z < 0) return 0;
+	if(pos->x < 0 || pos->y < 0 || pos->z < 0) return (cs_uint32)-1;
+	if(pos->x >= world->info.dimensions.x ||
+	pos->y >= world->info.dimensions.y ||
+	pos->z >= world->info.dimensions.z) return (cs_uint32)-1;
 	cs_uint32 offset = ((cs_uint32)pos->y * (cs_uint32)world->info.dimensions.z
 	+ (cs_uint32)pos->z) * (cs_uint32)world->info.dimensions.x + (cs_uint32)pos->x;
-	if(offset >= world->wdata.size) return world->wdata.size - 1;
-	return offset;
+	return offset < world->wdata.size ? offset : (cs_uint32)-1;
 }
 
 cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id) {
-	if(offset >= world->wdata.size) return false;
+	if(world->wdata.size <= offset) return false;
 	world->wdata.blocks[offset] = id;
 	world->modified = true;
 	return true;
@@ -509,5 +511,5 @@ BlockID World_GetBlockO(World *world, cs_uint32 offset) {
 }
 
 BlockID World_GetBlock(World *world, SVec *pos) {
-	return world->wdata.blocks[World_GetOffset(world, pos)];
+	return World_GetBlockO(world, World_GetOffset(world, pos));
 }

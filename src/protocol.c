@@ -359,18 +359,16 @@ cs_bool Handler_SetBlock(Client *client, cs_char *data) {
 				Client_KickFormat(client, Sstor_Get("KICK_UNKBID"), params.id);
 				return false;
 			}
-			if(Event_Call(EVT_ONBLOCKPLACE, &params)) {
-				World_SetBlock(world, &params.pos, params.id);
+			if(Event_Call(EVT_ONBLOCKPLACE, &params) && World_SetBlock(world, &params.pos, params.id))
 				UpdateBlock(world, &params.pos, params.id);
-			} else
+			else
 				Vanilla_WriteSetBlock(client, &params.pos, World_GetBlock(world, &params.pos));
 			break;
 		case 0x00:
 			params.id = BLOCK_AIR;
-			if(Event_Call(EVT_ONBLOCKPLACE, &params)) {
-				World_SetBlock(world, &params.pos, params.id);
+			if(Event_Call(EVT_ONBLOCKPLACE, &params) && World_SetBlock(world, &params.pos, params.id))
 				UpdateBlock(world, &params.pos, params.id);
-			} else
+			else
 				Vanilla_WriteSetBlock(client, &params.pos, World_GetBlock(world, &params.pos));
 			break;
 	}

@@ -44,11 +44,13 @@ cs_bool Tests_World(void) {
 
 	Tests_NewTask("Place blocks in world");
 	SVec p1 = {.x = 1, .y = 3, .z = 3},
-	p2 = {.x = 2, .y = 2, .z = 8};
+	p2 = {.x = 2, .y = 2, .z = 8},
+	p3 = {.x = dims.x, .y = 0, .z = 0};
 	Tests_Assert(World_SetBlock(world, &p1, BLOCK_BEDROCK), "set first block");
 	Tests_Assert(World_SetBlock(world, &p2, BLOCK_LOG), "set second block");
 	Tests_Assert(World_SetBlockO(world, wsize - 1, BLOCK_WATER_STILL), "set third block by offset");
 	Tests_Assert(World_SetBlockO(world, wsize, BLOCK_WATER) == false, "set fourth block outside of world");
+	Tests_Assert(World_SetBlock(world, &p3, BLOCK_DIRT) == false, "set fifth block");
 
 	Tests_NewTask("Saving world");
 	Tests_Assert(World_Save(world), "unload world");
