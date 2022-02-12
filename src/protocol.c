@@ -317,6 +317,7 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 	if(*data == 0x42) {
 		client->cpeData = Memory_Alloc(1, sizeof(CPEData));
 		client->cpeData->model = 256; // Humanoid model id
+		client->cpeData->clickDist = 160; // Default click distance
 
 		CPE_WriteInfo(client);
 		CPEExt *ptr = headExtension;
@@ -546,11 +547,11 @@ void CPE_WriteExtEntry(Client *client, CPEExt *ext) {
 	PacketWriter_End(client, 69);
 }
 
-void CPE_WriteClickDistance(Client *client, cs_int16 dist) {
+void CPE_WriteClickDistance(Client *client, cs_uint16 dist) {
 	PacketWriter_Start(client);
 
 	*data++ = 0x12;
-	*(cs_int16 *)data = dist;
+	*(cs_uint16 *)data = htons(dist);
 
 	PacketWriter_End(client, 3);
 }

@@ -172,6 +172,16 @@ BlockID Client_GetHeldBlock(Client *client) {
 	return client->cpeData->heldBlock;
 }
 
+cs_uint16 Client_GetClickDistance(Client *client) {
+	if(!client->cpeData) return 160;
+	return client->cpeData->clickDist;
+}
+
+cs_float Client_GetClickDistanceInBlocks(Client *client) {
+	if(!client->cpeData) return 5.0f;
+	return client->cpeData->clickDist / 32.0f;
+}
+
 cs_int32 Client_GetExtVer(Client *client, cs_uint32 exthash) {
 	if(!client->cpeData) return false;
 
@@ -431,7 +441,7 @@ cs_bool Client_SetServerIdent(Client *client, cs_str name, cs_str motd) {
 	return true;
 }
 
-cs_bool Client_SetHeld(Client *client, BlockID block, cs_bool canChange) {
+cs_bool Client_SetHeldBlock(Client *client, BlockID block, cs_bool canChange) {
 	if(Block_IsValid(block) && Client_GetExtVer(client, EXT_HELDBLOCK)) {
 		CPE_WriteHoldThis(client, block, canChange);
 		return true;
@@ -439,9 +449,10 @@ cs_bool Client_SetHeld(Client *client, BlockID block, cs_bool canChange) {
 	return false;
 }
 
-cs_bool Client_SetClickDistance(Client *client, cs_int16 dist) {
+cs_bool Client_SetClickDistance(Client *client, cs_uint16 dist) {
 	if(Client_GetExtVer(client, EXT_CLICKDIST)) {
 		CPE_WriteClickDistance(client, dist);
+		client->cpeData->clickDist = dist;
 		return true;
 	}
 	return false;

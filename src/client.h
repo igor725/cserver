@@ -64,6 +64,7 @@ typedef struct _CPEData {
 	cs_uint32 _pingAvgSize; // Количество значений в текущем среднем пинга
 	cs_uint64 pingStart; // Время начала пинг-запроса
 	cs_int32 rotation[3]; // Вращение модели игрока в градусах [EntityProperty]
+	cs_uint16 clickDist; // Расстояние клика игрока
 } CPEData;
 
 typedef struct _PlayerData {
@@ -141,7 +142,8 @@ API cs_bool Client_SetBlock(Client *client, SVec *pos, BlockID id);
 API cs_bool Client_SetModel(Client *client, cs_int16 model);
 API cs_bool Client_SetModelStr(Client *client, cs_str model);
 API cs_bool Client_SetBlockPerm(Client *client, BlockID block, cs_bool allowPlace, cs_bool allowDestroy);
-API cs_bool Client_SetHeld(Client *client, BlockID block, cs_bool canChange);
+API cs_bool Client_SetHeldBlock(Client *client, BlockID block, cs_bool canChange);
+API cs_bool Client_SetClickDistance(Client *client, cs_uint16 dist);
 API cs_bool Client_SetHotkey(Client *client, cs_str action, cs_int32 keycode, cs_int8 keymod);
 API cs_bool Client_SetHotbar(Client *client, cs_byte pos, BlockID block);
 API cs_bool Client_SetSkin(Client *client, cs_str skin);
@@ -165,6 +167,8 @@ API BlockID Client_GetStandBlock(Client *client);
 API cs_int8 Client_GetFluidLevel(Client *client, BlockID *fluid);
 API cs_int16 Client_GetModel(Client *client);
 API BlockID Client_GetHeldBlock(Client *client);
+API cs_uint16 Client_GetClickDistance(Client *client);
+API cs_float Client_GetClickDistanceInBlocks(Client *client);
 API cs_bool Client_GetPosition(Client *client, Vec *pos, Ang *ang);
 API cs_int32 Client_GetExtVer(Client *client, cs_uint32 exthash);
 API cs_uint32 Client_GetAddr(Client *client);
