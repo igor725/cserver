@@ -4,9 +4,42 @@
 #include "command.h"
 #include "consoleio.h"
 #include "strstor.h"
-#ifdef CIO_USE_READLINE
-#include <readline/readline.h>
-#include <readline/history.h>
+
+static struct {
+	void *lib;
+
+	cs_char *(*start)(cs_str *prompt);
+	cs_int32 (*clear)(void);
+	cs_int32 (*reset)(void);
+	void (*draw)(void);
+	cs_char **(*match)(cs_str text, char *(*)(cs_str, cs_int32));
+	void (*tohistory)(cs_str text);
+	
+	void **attemptfunc;
+	int *complatt;
+} ReadLine;
+
+static cs_str rllib[] = {
+#if defined(CORE_USE_WINDOWS)
+	"libreadline8.dll",
+	"readline8.dll",
+#elif defined(CORE_USE_UNIX)
+	"libreadline.so.8.1",
+	"libreadline.so.8",
+	"libreadline.so", // Опасненько
+#endif
+	NULL
+};
+
+static cs_str syms[] = {
+	"readline", "rl_clear_visible_line",
+	"rl_reset_line_state", "rl_redisplay",
+	"rl_completion_matches", "add_history",
+	"rl_attempted_completion_function",
+	"rl_attempted_completion_over",
+
+	NULL
+};
 
 cs_bool rlalive = false,
 rlupdated = false;
@@ -57,71 +90,65 @@ static char *arg_generator(cs_str text, cs_int32 state) {
 
 static char **cmd_completion(cs_str in, cs_int32 start, cs_int32 end) {
 	(void)end;
-	rl_attempted_completion_over = 1;
+	*ReadLine.complatt = 1;
 	if(start == 0)
-		return rl_completion_matches(in, cmd_generator);
+		return ReadLine.match(in, cmd_generator);
 	else
-		return rl_completion_matches(in, arg_generator);
+		return ReadLine.match(in, arg_generator);
 	
 	return NULL;
 }
-#endif
+
+void ConsoleIO_PrePrint(void) {
+	if(ReadLine.lib && rlalive) {
+		ReadLine.clear();
+		ReadLine.draw();
+		// TODO: Избавиться от этого непотребства
+		File_Write("\x1B[2K\r", 5, 1, stderr);
+		rlupdated = true;
+	}
+}
+
+void ConsoleIO_AfterPrint(void) {
+	if(ReadLine.lib && rlupdated) {
+		rlupdated = false;
+		ReadLine.reset();
+		ReadLine.draw();
+	}
+}
+
+static TSHND_RET sighand(TSHND_PARAM signal) {
+	if(signal == CONSOLEIO_TERMINATE) Server_Active = false;
+	return TSHND_OK;
+}
 
 THREAD_FUNC(ConsoleIOThread) {
-	(void)param;
-
 	while(Server_Active) {
-#ifdef CIO_USE_READLINE
-		rlalive = true;
-		cs_char *buf = readline(NULL);
-		rlalive = false;
-		if(buf && *buf != '\0') {
-			add_history(buf);
-			if(Command_Handle(buf, NULL))
-				continue;
+		if(ReadLine.lib) {
+			rlalive = true;
+			cs_char *buf = ReadLine.start(NULL);
+			rlalive = false;
+			if(buf && *buf != '\0') {
+				ReadLine.tohistory(buf);
+				if(Command_Handle(buf, NULL))
+					continue;
+			}
+		} else {
+			cs_char buf[192];
+			if(File_ReadLine(stdin, buf, 192) > 0)
+				if(Command_Handle(buf, NULL)) continue;
 		}
-#else
-		cs_char buf[192];
-		if(File_ReadLine(stdin, buf, 192))
-			if(Command_Handle(buf, NULL)) continue;
-#endif
+
 		Log_Info(Sstor_Get("CMD_UNK"));
 	}
 
 	return 0;
 }
 
-static TSHND_RET ConsoleIO_Handler(TSHND_PARAM signal) {
-	if(signal == CONSOLEIO_TERMINATE) Server_Active = false;
-	return TSHND_OK;
-}
-
-void ConsoleIO_PrePrint(void) {
-#ifdef CIO_USE_READLINE
-	if(rlalive) {
-		rl_clear_visible_line();
-		rl_redisplay();
-		// TODO: Избавиться от этого непотребства
-		File_Write("\x1B[2K\r", 5, 1, stderr);
-		rlupdated = true;
-	}
-#endif
-}
-
-void ConsoleIO_AfterPrint(void) {
-#ifdef CIO_USE_READLINE
-	if(rlupdated) {
-		rl_reset_line_state();
-		rl_redisplay();
-		rlupdated = false;
-	}
-#endif
-}
-
 cs_bool ConsoleIO_Init(void) {
-#ifdef CIO_USE_READLINE
-	rl_attempted_completion_function = cmd_completion;
-#endif
+	if(DLib_LoadAll(rllib, syms, (void **)&ReadLine))
+		*ReadLine.attemptfunc = cmd_completion;
+
 	Thread_Create(ConsoleIOThread, NULL, true);
-	return Console_BindSignalHandler(ConsoleIO_Handler);
+	return Console_BindSignalHandler(sighand);
 }

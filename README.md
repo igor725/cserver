@@ -20,7 +20,7 @@ The goal of this project: create a stable, customizable and future-rich multipla
 1. zlib;
 2. pthread;
 3. libcurl, libcrypto (will be loaded on demand);
-4. libreadline (will be linked if available).
+4. libreadline (will be loaded if available).
 
 ### On Windows
 1. zlib (will be automatically cloned and compiled during the building process);
