@@ -144,6 +144,12 @@ typedef struct _CustomParticle {
 	gravity, baseLifetime, lifetimeVariation;
 } CustomParticle;
 
+typedef struct _PluginInterface {
+	cs_str iname;
+	void *iptr;
+	cs_size isize;
+} PluginInterface;
+
 #define true  1
 #define false 0
 #define NULL ((void *)0)
@@ -159,11 +165,13 @@ typedef struct _CustomParticle {
 #endif
 
 #ifdef CORE_BUILD_PLUGIN
-EXP cs_bool Plugin_Load(void);
+EXP cs_bool Plugin_Load(void *);
 EXP cs_bool Plugin_Unload(cs_bool force);
-EXP cs_bool Plugin_GetInterface(cs_str name, void **);
+EXP void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size);
 EXP cs_int32 Plugin_ApiVer, Plugin_Version;
 #define Plugin_SetVersion(ver) cs_int32 Plugin_ApiVer = PLUGIN_API_NUM, Plugin_Version = ver;
+#define PLUGIN_IFACE_DONE {NULL, NULL, 0}
+#define PLUGIN_IFACE_ADD(n, i) {n, &(i), sizeof(i)},
 #else
 #define SOFTWARE_NAME "C-Server"
 #define SOFTWARE_FULLNAME SOFTWARE_NAME "/" GIT_COMMIT_TAG
