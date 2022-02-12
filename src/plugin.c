@@ -53,7 +53,7 @@ cs_bool Plugin_LoadDll(cs_str name) {
 			}
 		}
 
-		if(plugin->id == -1 || !initSym((void *)plugin)) {
+		if(plugin->id == -1 || !initSym()) {
 			Plugin_UnloadDll(plugin, true);
 			return false;
 		}
@@ -66,16 +66,17 @@ cs_bool Plugin_LoadDll(cs_str name) {
 	return false;
 }
 
-Plugin *Plugin_Get(cs_str name) {
+cs_bool Plugin_IsLoaded(cs_str name) {
 	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
 		Plugin *ptr = Plugins_List[i];
-		if(ptr && String_Compare(ptr->name, name)) return ptr;
+		if(ptr && String_Compare(ptr->name, name)) return true;
 	}
-	return NULL;
+
+	return false;
 }
 
-cs_bool Plugin_RequestInterface(void *rptr, cs_str iname) {
-	if(!rptr || !iname) return false;
+cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname) {
+	if(!irecv || !iname) return false;
 
 	PluginInterface *iface = NULL;
 	Plugin *requester = NULL,
@@ -85,9 +86,8 @@ cs_bool Plugin_RequestInterface(void *rptr, cs_str iname) {
 		Plugin *cplugin = Plugins_List[i];
 		if(!cplugin) continue;
 
-		if(!requester && rptr == cplugin && cplugin != answerer) {
+		if(!requester && irecv == cplugin->irecv && cplugin != answerer) {
 			requester = cplugin;
-			if(!requester->irecv) return false;
 			AListField *tmp;
 			Plugin_Lock(requester);
 			List_Iter(tmp, requester->ireqHead) {

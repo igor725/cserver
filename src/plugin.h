@@ -4,7 +4,7 @@
 #include "list.h"
 #include "platform.h"
 
-typedef cs_bool(*pluginInitFunc)(void *);
+typedef cs_bool(*pluginInitFunc)(void);
 typedef cs_bool(*pluginUnloadFunc)(cs_bool);
 typedef void(*pluginReceiveIface)(cs_str name, void *ptr, cs_size size);
 typedef struct _Plugin {
@@ -27,6 +27,6 @@ void Plugin_UnloadAll(cs_bool force);
 API cs_bool Plugin_LoadDll(cs_str name);
 API cs_bool Plugin_UnloadDll(Plugin *plugin, cs_bool force);
 API Plugin *Plugin_Get(cs_str name);
-API cs_bool Plugin_RequestInterface(void *rptr, cs_str iname);
+API cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname);
 VAR Plugin *Plugins_List[MAX_PLUGINS];
 #endif // PLUGIN_H

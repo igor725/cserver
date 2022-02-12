@@ -165,7 +165,7 @@ typedef struct _PluginInterface {
 #endif
 
 #ifdef CORE_BUILD_PLUGIN
-EXP cs_bool Plugin_Load(void *);
+EXP cs_bool Plugin_Load(void);
 EXP cs_bool Plugin_Unload(cs_bool force);
 EXP void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size);
 EXP cs_int32 Plugin_ApiVer, Plugin_Version;
