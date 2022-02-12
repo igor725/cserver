@@ -66,13 +66,13 @@ cs_bool Plugin_LoadDll(cs_str name) {
 	return false;
 }
 
-cs_bool Plugin_IsLoaded(cs_str name) {
+Plugin *Plugin_Get(cs_str name) {
 	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
 		Plugin *ptr = Plugins_List[i];
-		if(ptr && String_Compare(ptr->name, name)) return true;
+		if(ptr && String_Compare(ptr->name, name)) return ptr;
 	}
 
-	return false;
+	return NULL;
 }
 
 cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname) {
