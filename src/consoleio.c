@@ -14,18 +14,27 @@ static struct {
 	void (*draw)(void);
 	cs_char **(*match)(cs_str text, char *(*)(cs_str, cs_int32));
 	void (*tohistory)(cs_str text);
-	
+
 	void **attemptfunc;
 	int *complatt;
 } ReadLine;
 
+/*
+** Пока как-то не охота, учить винду
+** искусству ридлайна, да и порт
+** был чето заброшен на 5ой версии,
+** так что ну прям мегалень.
+*/
+
 static cs_str rllib[] = {
-#if defined(CORE_USE_WINDOWS)
-	"libreadline8.dll",
-	"readline8.dll",
-#elif defined(CORE_USE_UNIX)
+#ifdef CORE_USE_UNIX
 	"libreadline.so.8.1",
 	"libreadline.so.8",
+	"libreadline.so.7",
+	"libreadline.so.6",
+	"libreadline.so.5",
+	"libreadline.so.4",
+	// Ниже 4ой версии нет completion api
 	"libreadline.so", // Опасненько
 #endif
 	NULL
