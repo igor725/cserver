@@ -146,6 +146,10 @@ cs_bool Thread_IsValid(Thread th) {
 	return th != (Thread)NULL;
 }
 
+cs_bool Thread_Signal(Thread th, cs_int32 sig) {
+	return pthread_kill(th, sig) == 0;
+}
+
 void Thread_Detach(Thread th) {
 	pthread_detach(th);
 }

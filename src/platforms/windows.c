@@ -141,6 +141,11 @@ cs_bool Thread_IsValid(Thread th) {
 	return th != (Thread)NULL;
 }
 
+cs_bool Thread_Signal(Thread th, cs_int32 sig) {
+	(void)th, sig;
+	return false;
+}
+
 void Thread_Detach(Thread th) {
 	if(!CloseHandle(th)) {
 		Error_PrintSys(true);

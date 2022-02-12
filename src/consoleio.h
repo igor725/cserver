@@ -12,4 +12,5 @@
 void ConsoleIO_PrePrint(void);
 void ConsoleIO_AfterPrint(void);
 cs_bool ConsoleIO_Init(void);
+void ConsoleIO_Uninit(void);
 #endif

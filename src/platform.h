@@ -127,6 +127,7 @@ API void Socket_Close(Socket sock);
 
 API Thread Thread_Create(TFUNC func, const TARG param, cs_bool detach);
 API cs_bool Thread_IsValid(Thread th);
+API cs_bool Thread_Signal(Thread th, cs_int32 sig);
 API void Thread_Detach(Thread th);
 API void Thread_Join(Thread th);
 API void Thread_Sleep(cs_uint32 ms);

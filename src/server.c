@@ -433,6 +433,7 @@ INL static void UnloadAllWorlds(void) {
 }
 
 void Server_Cleanup(void) {
+	ConsoleIO_Uninit();
 	Log_Info(Sstor_Get("SV_STOP_PL"));
 	Clients_KickAll(Sstor_Get("KICK_STOP"));
 	WaitAllClientThreads();

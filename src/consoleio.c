@@ -16,8 +16,24 @@ static struct {
 	void (*tohistory)(cs_str text);
 
 	void **attemptfunc;
-	int *complatt;
+	cs_int32 *complatt;
+
+	void (*prep)(cs_int32 meta);
+	void (*deprep)(void);
 } ReadLine;
+
+static cs_str syms[] = {
+	"readline", "rl_clear_visible_line",
+	"rl_reset_line_state", "rl_redisplay",
+	"rl_completion_matches", "add_history",
+
+	"rl_attempted_completion_function",
+	"rl_attempted_completion_over",
+
+	"rl_prep_terminal", "rl_deprep_terminal",
+
+	NULL
+};
 
 /*
 ** Пока как-то не охота, учить винду
@@ -40,16 +56,7 @@ static cs_str rllib[] = {
 	NULL
 };
 
-static cs_str syms[] = {
-	"readline", "rl_clear_visible_line",
-	"rl_reset_line_state", "rl_redisplay",
-	"rl_completion_matches", "add_history",
-	"rl_attempted_completion_function",
-	"rl_attempted_completion_over",
-
-	NULL
-};
-
+Thread inputThread = (Thread)NULL;
 cs_bool rlalive = false,
 rlupdated = false;
 
@@ -138,9 +145,13 @@ THREAD_FUNC(ConsoleIOThread) {
 			rlalive = false;
 			if(buf && *buf != '\0') {
 				ReadLine.tohistory(buf);
-				if(Command_Handle(buf, NULL))
+				if(Command_Handle(buf, NULL)) {
+					Memory_Free(buf);
 					continue;
-			}
+				}
+			} else if(!buf)
+				Server_Active = false;
+			if(buf) Memory_Free(buf);
 		} else {
 			cs_char buf[192];
 			if(File_ReadLine(stdin, buf, 192) > 0)
@@ -157,6 +168,19 @@ cs_bool ConsoleIO_Init(void) {
 	if(DLib_LoadAll(rllib, syms, (void **)&ReadLine))
 		*ReadLine.attemptfunc = (void *)cmd_completion;
 
-	Thread_Create(ConsoleIOThread, NULL, true);
+	inputThread = Thread_Create(ConsoleIOThread, NULL, false);
 	return Console_BindSignalHandler(sighand);
+}
+
+/*
+** TODO:
+** Возможно нужны дополнительные действия.
+** Также тут возможен рейскондишн. Изучить
+** получше ридлайн, чтобы понять, как
+** правильно его убивать.
+*/
+
+void ConsoleIO_Uninit(void) {
+	if(ReadLine.lib)
+		ReadLine.deprep();
 }
