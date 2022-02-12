@@ -38,7 +38,7 @@ static KListField *AGetNode(void *target, AssocBind *bind) {
 			List_Iter(ptr, ((World *)target)->headNode)
 				if(ptr->key.num16 == bind->id) return ptr;
 			break;
-		
+
 		default: return NULL;
 	}
 
@@ -74,7 +74,7 @@ cs_bool Assoc_DelType(AssocType type) {
 			List_Iter(witer, World_Head)
 				Assoc_Remove(witer->value.ptr, type);
 			break;
-		
+
 		default: return false;
 	}
 
@@ -97,7 +97,7 @@ void *Assoc_AllocFor(void *target, AssocType type, cs_size num, cs_size size) {
 		case ASSOC_BIND_WORLD:
 			anode = KList_AddField(&((World *)target)->headNode, NULL, NULL);
 			break;
-		
+
 		default: return NULL;
 	}
 
@@ -120,6 +120,7 @@ cs_bool Assoc_Remove(void *target, AssocType type) {
 	KListField *anode = AGetNode(target, bind);
 	if(!anode) return false;
 	void *anodeptr = anode->value.ptr;
+
 	switch(bind->type) {
 		case ASSOC_BIND_CLIENT:
 			KList_Remove(&((Client *)target)->headNode, anode);
@@ -127,9 +128,10 @@ cs_bool Assoc_Remove(void *target, AssocType type) {
 		case ASSOC_BIND_WORLD:
 			KList_Remove(&((World *)target)->headNode, anode);
 			break;
-		
+
 		default: return false;
 	}
+
 	Memory_Free(anodeptr);
 	return true;
 }

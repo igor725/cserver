@@ -196,7 +196,7 @@ IF "%NOPROMPT%"=="0" (
 	IF "!ZQUESTION!"=="" GOTO downzlib
 	IF "!ZQUESTION!"=="y" GOTO downzlib
 	IF "!ZQUESTION!"=="Y" GOTO downzlib
-	GOTO end	
+	GOTO end
 )
 
 :downzlib

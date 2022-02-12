@@ -341,7 +341,7 @@ THREAD_FUNC(WorldSaveThread) {
 		World_Unlock(world);
 		return 0;
 	}
-	
+
 	world->error.code = WORLD_ERROR_SUCCESS;
 	world->error.extra = WORLD_EXTRA_NOINFO;
 	World_Unlock(world);

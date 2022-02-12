@@ -363,7 +363,7 @@ THREAD_FUNC(cavesThread) {
 
 INL static void makeSomeCaves(void) {
 	ctx.cavesPerThread = ctx.numCaves / MAX_THREADS;
-	
+
 	if(ctx.cavesPerThread > MAX_THREADS * 5) {
 		for(cs_int32 i = 0; i < MAX_THREADS; i++)
 			newGenThread(cavesThread);

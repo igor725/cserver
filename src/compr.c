@@ -47,7 +47,7 @@ cs_str zlibdll[] = {
 INL static cs_bool InitBackend(void) {
 	if(!zlib.lib && !DLib_LoadAll(zlibdll, zsmylist, (void **)&zlib))
 		return false;
-	
+
 	cs_ulong flags = zlib.zflags();
 
 	if(flags & BIT(17)) {
@@ -100,7 +100,7 @@ cs_bool Compr_Init(Compr *ctx, ComprType type) {
 		if(!zlib.infinit) return false;
 		ctx->ret = zlib.infinit(ctx->stream, getWndBits(type), ZLIB_VERSION, sizeof(z_stream));
 	}
-	
+
 	return ctx->ret == Z_OK;
 }
 
@@ -161,7 +161,7 @@ cs_bool Compr_Update(Compr *ctx) {
 		return DeflateStep(ctx);
 	else if(ctx->type == COMPR_TYPE_INFLATE || ctx->type == COMPR_TYPE_UNGZIP)
 		return InflateStep(ctx);
-	
+
 	return false;
 }
 

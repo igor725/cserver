@@ -23,7 +23,7 @@ cs_bool Tests_Config(void) {
 	Config_SetComment(ent, "_test_CoMment1-i16-=_");
 	Config_SetDefaultInt32(ent, 40);
 	Config_SetLimit(ent, 10, 80);
-	
+
 	Tests_NewTask("Check main config module functions");
 	ent = Config_GetEntry(store, "test-key");
 	Tests_Assert(Config_SetDefaultStr(ent, "true") == false, "set default string value to boolean entry");

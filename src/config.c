@@ -121,11 +121,11 @@ cs_byte Config_ToStr(CEntry *ent, cs_char *value, cs_byte len) {
 		case CONFIG_TYPE_STR:
 			written = (cs_byte)String_Copy(value, len, Config_GetStr(ent));
 			break;
-		
+
 		case CONFIG_MAX_TYPE:
 		default: return 0;
 	}
-	
+
 	return written;
 }
 

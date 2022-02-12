@@ -149,7 +149,7 @@ COMMAND_FUNC(Help) {
 		if(ccdata->caller) {
 			if(cmd->flags & CMDF_OP && !Client_IsOP(ccdata->caller))
 				continue;
-			
+
 			String_FormatBuf(ccdata->out, MAX_CMD_OUT, "%s - %s", cmd->name, cmd->descr);
 			Client_Chat(ccdata->caller, MESSAGE_TYPE_CHAT, ccdata->out);
 		} else Log_Info("%s - %s", cmd->name, cmd->descr);

@@ -33,7 +33,7 @@ INL static cs_bool InitBackend(void) {
 			MS_DEF_PROV, PROV_RSA_FULL,
 			CRYPT_VERIFYCONTEXT
 		);
-	
+
 	return true;
 }
 

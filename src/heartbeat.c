@@ -132,7 +132,7 @@ static void MakeHeartbeatRequest(Heartbeat *self) {
 		Log_Error(Sstor_Get("HBEAT_ERR"), Sstor_Get("HBEAT_ERR_HF"));
 		goto httpend;
 	}
-	
+
 	if(Http_ReadResponse(&h, rsp, 1024) == 0) {
 		Log_Error(Sstor_Get("HBEAT_ERR"), Sstor_Get("HBEAT_ERR_ER"));
 		goto httpend;
@@ -204,7 +204,7 @@ cs_bool Heartbeat_SetKeyChecker(Heartbeat *self, heartbeatKeyChecker func) {
 cs_bool Heartbeat_Run(Heartbeat *self) {
 	if(self->started || !self->playurl || !self->domain)
 		return false;
-	
+
 	if(!inited)
 		initHeartbeatModule();
 	if(!self->checker)
