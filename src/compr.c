@@ -165,8 +165,12 @@ cs_bool Compr_Update(Compr *ctx) {
 	return false;
 }
 
+cs_str Compr_GetLastError(Compr *ctx) {
+	return Compr_GetError(ctx->ret);
+}
+
 cs_str Compr_GetError(cs_int32 code) {
-	if(!zlib.error) return "zlib not loaded correctly";
+	if(!zlib.error) return "zlib is not loaded correctly";
 	return zlib.error(code);
 }
 

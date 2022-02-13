@@ -38,9 +38,46 @@ typedef struct _Http {
 #error No HTTP backend selected
 #endif
 
-API cs_bool Http_Open(Http *http, cs_str domain);
-API cs_bool Http_Request(Http *http, cs_str url);
-API cs_ulong Http_ReadResponse(Http *http, cs_char *buf, cs_ulong sz);
-API void Http_Cleanup(Http *http);
 void Http_Uninit(void);
+
+/**
+ * @brief Устанавливает соединение с указанным сервером
+ * по HTTP протоколу.
+ * 
+ * @param http контекст http
+ * @param domain домен сервера
+ * @return true - подключение успешно, false - произошла внутренняя ошибка
+ */
+API cs_bool Http_Open(Http *http, cs_str domain);
+
+/**
+ * @brief Выполняет запрос к серверу с указанным URL.
+ * 
+ * @param http контекст http
+ * @param url URL запроса
+ * @return true - запрос успешен, false - ошибка при выполнении запроса
+ */
+API cs_bool Http_Request(Http *http, cs_str url);
+
+/**
+ * @brief Читает ответ сервера в указанный буфер.
+ * На данный момент, если буфера не хватает для чтения
+ * ответа от сервера, то данные, на которые не хватило
+ * места ПОТЕРЯЮТСЯ.
+ * 
+ * @param http контекст http
+ * @param buf буфер для ответа
+ * @param sz размер буфера для ответа
+ * @return количество прочтённых байт
+ */
+API cs_ulong Http_ReadResponse(Http *http, cs_char *buf, cs_ulong sz);
+
+/**
+ * @brief Возвращает контекст в неинициализированное состояние,
+ * в котором он находился до вызова Http_Open.
+ * 
+ * @param http контекст http
+ * @return API 
+ */
+API void Http_Cleanup(Http *http);
 #endif // HTTP_H

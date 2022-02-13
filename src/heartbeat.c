@@ -173,10 +173,10 @@ Heartbeat *Heartbeat_New(void) {
 	return Memory_Alloc(1, sizeof(Heartbeat));
 }
 
-cs_bool Heartbeat_SetDomain(Heartbeat *self, cs_str url) {
+cs_bool Heartbeat_SetDomain(Heartbeat *self, cs_str domain) {
 	if(self->started) return false;
 	if(self->domain) Memory_Free((void *)self->domain);
-	self->domain = String_AllocCopy(url);
+	self->domain = String_AllocCopy(domain);
 	return true;
 }
 

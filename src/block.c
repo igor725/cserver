@@ -71,14 +71,11 @@ BlockDef *Block_GetDefinition(BlockID id) {
 	return id > 254 ? NULL: definitionsList[id];
 }
 
-cs_bool Block_Undefine(BlockID id) {
-	BlockDef *bdef = definitionsList[id];
-	if(bdef) {
-		bdef->flags |= BDF_UNDEFINED;
-		bdef->flags &= ~BDF_UPDATED;
-		return true;
-	}
-	return false;
+cs_bool Block_Undefine(BlockDef *bdef) {
+	if(!definitionsList[bdef->id]) return false;
+	bdef->flags |= BDF_UNDEFINED;
+	bdef->flags &= ~BDF_UPDATED;
+	return true;
 }
 
 void Block_UpdateDefinitions(void) {

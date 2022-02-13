@@ -871,11 +871,11 @@ NOINL static void SendWorld(Client *client, World *world) {
 			Vanilla_WriteLvlFin(client, &world->info.dimensions);
 			Client_Spawn(client);
 		} else
-			Client_KickFormat(client, Sstor_Get("KICK_ZERR"), Compr_GetError(client->compr.ret));
+			Client_KickFormat(client, Sstor_Get("KICK_ZERR"), Compr_GetLastError(&client->compr));
 
 		Compr_Reset(&client->compr);
 	} else
-		Client_KickFormat(client, Sstor_Get("KICK_ZERR"), Compr_GetError(client->compr.ret));
+		Client_KickFormat(client, Sstor_Get("KICK_ZERR"), Compr_GetLastError(&client->compr));
 
 	World_EndTask(world);
 }

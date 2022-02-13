@@ -63,13 +63,21 @@ Command_UnregisterByFunc((cmdFunc)svcmd_##N);
 #define CMDF_RESERVED1 BIT(3)
 #define CMDF_RESERVED2 BIT(4)
 
+/**
+ * @brief Структура с информацией о вызове команды.
+ * 
+ */
 typedef struct {
-	struct _Command *command;
-	cs_str args;
-	Client *caller;
-	cs_char *out;
+	struct _Command *command; /** Вызванная команда */
+	cs_str args; /** Аргументы с которыми команда была вызвана */
+	Client *caller; /** Игрок, вызвавший команду, NULL в случае вызова из консоли*/
+	cs_char *out; /* Массив, в который команда будет записывать вывод*/
 } CommandCallData;
 
+/**
+ * @brief Функция команды.
+ * 
+ */
 typedef cs_bool(*cmdFunc)(CommandCallData *);
 
 typedef struct _Command {
@@ -85,15 +93,71 @@ void Command_RegisterDefault(void);
 void Command_UnregisterAll(void);
 cs_bool Command_Handle(cs_char *cmd, Client *caller);
 
+/**
+ * @brief Регистрирует новую команду.
+ * 
+ * @param name название команды
+ * @param descr описание команды
+ * @param func функция команды
+ * @param flags флаги команды
+ * @return указатель на структуру команды
+ */
 API Command *Command_Register(cs_str name, cs_str descr, cmdFunc func, cs_byte flags);
+
+/**
+ * @brief Возвращает указатель на структуру команды по её имени.
+ * 
+ * @param name имя команды
+ * @return указатель на структуру команды
+ */
 API Command *Command_GetByName(cs_str name);
+
+/**
+ * @brief Удаляет зарегистрированную ранее команду.
+ * 
+ * @param cmd указатель на структуру команды
+ */
 API void Command_Unregister(Command *cmd);
+
+/**
+ * @brief Удаляет зарегистрированную ранее команду.
+ * 
+ * @param func функция команды
+ */
 API void Command_UnregisterByFunc(cmdFunc func);
 
+/**
+ * @brief Возвращает имя команды.
+ * 
+ * @param cmd указатель на структуру команды
+ * @return имя команды
+ */
 API cs_str Command_GetName(Command *cmd);
+
+/**
+ * @brief Устанавливает короткое имя для команды.
+ * Короткое имя не может быть длиннее 6 символов.
+ * 
+ * @param cmd указатель на структуру команды
+ */
 API void Command_SetAlias(Command *cmd, cs_str alias);
+
+/**
+ * @brief Присваивает команде указатель для различных целей.
+ * 
+ * @param cmd указатель на структуру команды
+ * @param ud указатель на данные
+ * @return API 
+ */
 API void Command_SetUserData(Command *cmd, void *ud);
+
+/**
+ * @brief Возвращает ранее установленный команде указатель.
+ * 
+ * @param cmd указатель на структуру команды
+ * @return указатель на данные
+ */
 API void *Command_GetUserData(Command *cmd);
 
-VAR AListField *Command_Head;
+VAR AListField *Command_Head; /** Список зарегистрированных команд */
 #endif // COMMAND_H

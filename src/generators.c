@@ -17,7 +17,12 @@ cs_bool Generators_Init(void) {
 }
 
 cs_bool Generators_Add(cs_str name, GeneratorRoutine gr) {
-	return KList_AddField(&headGenerator, (void *)name, (void *)gr) != NULL;
+	KListField *tmp;
+	List_Iter(tmp, headGenerator)
+		if(String_CaselessCompare(tmp->key.str, name)) return false;
+
+	KList_AddField(&headGenerator, (void *)name, (void *)gr);
+	return true;
 }
 
 cs_bool Generators_Remove(cs_str name) {
