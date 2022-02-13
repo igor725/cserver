@@ -27,7 +27,7 @@ String_Append(ccdata->out, MAX_CMD_OUT, buf);
 String_GetArgument(ccdata->args, a, s, n)
 
 #define COMMAND_TESTOP() \
-if(!Client_IsOP(ccdata->caller)) { \
+if(ccdata->caller && !Client_IsOP(ccdata->caller)) { \
 	COMMAND_PRINT(Sstor_Get("CMD_NOPERM")); \
 }
 
