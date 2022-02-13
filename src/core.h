@@ -144,12 +144,6 @@ typedef struct _CustomParticle {
 	gravity, baseLifetime, lifetimeVariation;
 } CustomParticle;
 
-typedef struct _PluginInterface {
-	cs_str iname;
-	void *iptr;
-	cs_size isize;
-} PluginInterface;
-
 #define true  1
 #define false 0
 #define NULL ((void *)0)
@@ -158,23 +152,12 @@ typedef struct _PluginInterface {
 #define PLUGIN_API_NUM 1
 #define MAX_PLUGINS 64
 #define	MAX_CMD_OUT 1024
-#define MAX_CLIENT_PPS 128
 #define MAX_CLIENTS 127
 #ifndef GIT_COMMIT_TAG
 #define GIT_COMMIT_TAG "????"
 #endif
 
-#ifdef CORE_BUILD_PLUGIN
-EXP cs_bool Plugin_Load(void);
-EXP cs_bool Plugin_Unload(cs_bool force);
-EXP void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size);
-EXP cs_int32 Plugin_ApiVer, Plugin_Version;
-#define Plugin_DeclareInterfaces(_N) EXP PluginInterface Plugin_Interfaces[_N]; \
-PluginInterface Plugin_Interfaces[_N] = 
-#define Plugin_SetVersion(ver) cs_int32 Plugin_ApiVer = PLUGIN_API_NUM, Plugin_Version = ver;
-#define PLUGIN_IFACE_END {NULL, NULL, 0}
-#define PLUGIN_IFACE_ADD(n, i) {n, &(i), sizeof(i)},
-#else
+#ifndef CORE_BUILD_PLUGIN
 #define SOFTWARE_NAME "C-Server"
 #define SOFTWARE_FULLNAME SOFTWARE_NAME "/" GIT_COMMIT_TAG
 #define TICKS_PER_SECOND 60
