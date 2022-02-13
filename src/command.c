@@ -136,23 +136,28 @@ cs_bool Command_Handle(cs_char *str, Client *caller) {
 	return false;
 }
 
-static cs_str helpheader = "&eList of available commands:";
 COMMAND_FUNC(Help) {
 	AListField *tmp;
-	if(ccdata->caller)
-		Client_Chat(ccdata->caller, MESSAGE_TYPE_CHAT, helpheader);
-	else
-		Log_Info(helpheader + 2); // TODO: Не делать вот так
+
+	cs_char availarg[6];
+	cs_bool availOnly = COMMAND_GETARG(availarg, 6, 0) &&
+	String_CaselessCompare(availarg, "avail");
+
+	if(availOnly) {
+		COMMAND_PRINTLINE("&eList of available commands:");
+	} else {
+		COMMAND_PRINTLINE("&eList of all commands:");
+	}
 
 	List_Iter(tmp, Command_Head) {
 		Command *cmd = (Command *)tmp->value.ptr;
-		if(ccdata->caller) {
-			if(cmd->flags & CMDF_OP && !Client_IsOP(ccdata->caller))
-				continue;
+		cs_bool isAvailable = true;
+		if(ccdata->caller && cmd->flags & CMDF_OP)
+			isAvailable = Client_IsOP(ccdata->caller);
+		if(!isAvailable && availOnly)
+			continue;
 
-			String_FormatBuf(ccdata->out, MAX_CMD_OUT, "%s - %s", cmd->name, cmd->descr);
-			Client_Chat(ccdata->caller, MESSAGE_TYPE_CHAT, ccdata->out);
-		} else Log_Info("%s - %s", cmd->name, cmd->descr);
+		COMMAND_PRINTFLINE("%s%s&f - %s", isAvailable?"&2":"&4", cmd->name, cmd->descr);
 	}
 
 	return false;

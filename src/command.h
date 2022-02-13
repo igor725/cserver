@@ -26,6 +26,19 @@ String_Append(ccdata->out, MAX_CMD_OUT, buf);
 #define COMMAND_GETARG(a, s, n) \
 String_GetArgument(ccdata->args, a, s, n)
 
+#define COMMAND_PRINTLINE(line) \
+if(ccdata->caller) \
+	Client_Chat(ccdata->caller, MESSAGE_TYPE_CHAT, line); \
+else \
+	Log_Info(line);
+
+#define COMMAND_PRINTFLINE(f, ...) \
+if(ccdata->caller) { \
+	String_FormatBuf(ccdata->out, MAX_CMD_OUT, f, ##__VA_ARGS__); \
+	Client_Chat(ccdata->caller, MESSAGE_TYPE_CHAT, ccdata->out); \
+} else \
+	Log_Info(f, ##__VA_ARGS__);
+
 #define COMMAND_TESTOP() \
 if(ccdata->caller && !Client_IsOP(ccdata->caller)) { \
 	COMMAND_PRINT(Sstor_Get("CMD_NOPERM")); \
