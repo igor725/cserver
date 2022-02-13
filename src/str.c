@@ -167,6 +167,16 @@ cs_size String_GetArgument(cs_str args, cs_char *arg, cs_size len, cs_int32 inde
 	return len - avail;
 }
 
+cs_uint32 String_CountArguments(cs_str args) {
+	if(!args || *args == '\0') return 0;
+	cs_uint32 cnt = 1;
+
+	while(*args++ != '\0')
+		if(*args == ' ') cnt++;
+
+	return cnt;
+}
+
 size_t String_SizeOfB64(size_t inlen) {
 	if (inlen % 3 != 0)
 		inlen += 3 - (inlen % 3);

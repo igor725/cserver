@@ -18,6 +18,7 @@ API cs_str String_LastChar(cs_str str, cs_char sym);
 API cs_str String_FirstChar(cs_str str, cs_char sym);
 API cs_str String_AllocCopy(cs_str str);
 API cs_size String_GetArgument(cs_str args, cs_char *arg, cs_size len, cs_int32 index);
+API cs_uint32 String_CountArguments(cs_str args);
 API cs_str String_FromArgument(cs_str args, cs_int32 index);
 API cs_int32 String_ToInt(cs_str str);
 API cs_int32 String_HexToInt(cs_str str);

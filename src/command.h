@@ -3,6 +3,7 @@
 #include "core.h"
 #include "str.h"
 #include "client.h"
+#include "strstor.h"
 
 #define COMMAND_SETUSAGE(str) \
 cs_str cmdUsage = str;
@@ -25,6 +26,11 @@ String_Append(ccdata->out, MAX_CMD_OUT, buf);
 #define COMMAND_GETARG(a, s, n) \
 String_GetArgument(ccdata->args, a, s, n)
 
+#define COMMAND_TESTOP() \
+if(!Client_IsOP(ccdata->caller)) { \
+	COMMAND_PRINT(Sstor_Get("CMD_NOPERM")); \
+}
+
 #define COMMAND_PRINTUSAGE \
 COMMAND_PRINTF("Usage: %s", cmdUsage);
 
@@ -36,7 +42,6 @@ Command_Register(#N, H, (cmdFunc)svcmd_##N, F);
 
 #define COMMAND_REMOVE(N) \
 Command_UnregisterByFunc((cmdFunc)svcmd_##N);
-
 
 #define CMDF_NONE      0x00
 #define CMDF_OP        BIT(0)
