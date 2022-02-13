@@ -58,7 +58,9 @@ void Log_SetLevelStr(cs_str str) {
 	Log_Level = level;
 }
 
-static LogBuffer buffer;
+static LogBuffer buffer = {
+	.offset = 0
+};
 
 void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 	if(Log_Level & flag) {
@@ -85,6 +87,16 @@ void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 				LOG_BUFSIZE - buffer.offset - 3, str
 			)) > 0)
 				buffer.offset += ret;
+		}
+
+		for(cs_size i = 0; i < buffer.offset; i++) {
+			if((buffer.data[i] == '&' || buffer.data[i] == '%') && buffer.data[i + 1] != '\0') {
+				for(cs_size j = i + 2; i < buffer.offset; j++) {
+					buffer.data[j - 2] = buffer.data[j];
+					if(buffer.data[j] == '\0') break;
+				}
+				buffer.offset -= 2;
+			}
 		}
 
 		buffer.data[buffer.offset++] = '\r';
