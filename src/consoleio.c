@@ -80,7 +80,7 @@ static char *arg_generator(cs_str text, cs_int32 state) {
 	cs_size tlen = String_Length(text);
 	if(tlen < 1) return NULL;
 
-	for(cs_int32 i = 0; i < MAX_CLIENTS; i++) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
 		if(!client) continue;
 		cs_str name = Client_GetName(client);
