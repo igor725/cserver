@@ -83,6 +83,7 @@ typedef struct _PlayerData {
 typedef struct _Client {
 	Waitable *waitend; // Ожидание завершения потока клиента
 	cs_bool closed; // В случае значения true сервер прекращает общение с клиентом
+	cs_bool noflush; // Приостанавливает отправку пакетов клиенту, что приводит к заполнению буфера
 	Socket sock; // Файловый дескриптор сокета клиента
 	ClientID id; // Используется в качестве entityid
 	cs_ulong pps; // Количество пакетов, отправленных игроком за секунду
@@ -102,10 +103,11 @@ void Client_Tick(Client *client);
 void Client_Free(Client *client);
 
 NOINL cs_bool Client_RawSend(Client *client, cs_char *buf, cs_int32 len);
+API void Client_SetNoFlush(Client *client, cs_bool state);
 NOINL cs_bool Client_SendAnytimeData(Client *client, cs_int32 size);
 NOINL cs_bool Client_FlushBuffer(Client *client);
 
-API cs_bool Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
+API void Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
 NOINL cs_bool Client_DefineBlock(Client *client, BlockDef *block);
 NOINL cs_bool Client_UndefineBlock(Client *client, BlockID id);
 

@@ -591,12 +591,22 @@ cs_bool Client_SendHacks(Client *client, CPEHacks *hacks) {
 	return false;
 }
 
-cs_bool Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu) {
+void Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu) {
 	if(Client_GetExtVer(client, EXT_BULKUPDATE)) {
 		CPE_WriteBulkBlockUpdate(client, bbu);
-		return true;
+	} else {
+		World *world = Client_GetWorld(client);
+		SVec d = {0, 0, 0}, p = {0, 0, 0};
+		World_GetDimensions(world, &d);
+		cs_uint32 *offsets = (cs_uint32 *)bbu->data.offsets;
+		for(cs_uint32 i = 0; i < bbu->data.count; i++) {
+			cs_uint32 offset = ntohl(offsets[i]);
+			p.x = (cs_int16)(offset % (cs_uint32)d.x);
+			p.y = (cs_int16)((offset / (cs_uint32)d.x) / (cs_uint32)d.z);
+			p.z = (cs_int16)((offset / (cs_uint32)d.x) % (cs_uint32)d.z);
+			Vanilla_WriteSetBlock(client, &p, bbu->data.ids[i]);
+		}
 	}
-	return false;
 }
 
 cs_bool Client_DefineBlock(Client *client, BlockDef *block) {
@@ -737,12 +747,18 @@ cs_bool Client_RawSend(Client *client, cs_char *buf, cs_int32 len) {
 	return true;
 }
 
+void Client_SetNoFlush(Client *client, cs_bool state) {
+	client->noflush = state;
+	if(!state) Client_FlushBuffer(client);
+}
+
 cs_bool Client_SendAnytimeData(Client *client, cs_int32 size) {
 	cs_char *data = GrowingBuffer_GetCurrentPoint(&client->gb);
 	return Client_RawSend(client, data, size);
 }
 
 cs_bool Client_FlushBuffer(Client *client) {
+	if(client->noflush) return 0;
 	cs_uint32 size = 0;
 	cs_char *data = GrowingBuffer_PopFullData(&client->gb, &size);
 	return Client_RawSend(client, data, size);
