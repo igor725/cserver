@@ -144,6 +144,50 @@ typedef struct _CustomParticle {
 	gravity, baseLifetime, lifetimeVariation;
 } CustomParticle;
 
+/**
+ * @brief Структура, описывающая создаваемый блок.
+ * 
+ */
+typedef struct _BlockDef {
+	cs_char name[65]; /** Название блока */
+	BlockID id; /** Уникальный номер блока */
+	cs_byte flags; /** Флаги блока */
+	union {
+		struct _BlockParamsExt {
+			cs_byte solidity; /** Прочность блока */
+			cs_byte moveSpeed; /** Скорость передвижения по блоку или внутри него */
+			cs_byte topTex; /** Текстура верхней границы блока */
+			cs_byte leftTex; /** Текстура левой границы блока */
+			cs_byte rightTex; /** Текстура правой границы блока */
+			cs_byte frontTex; /** Текстура передней границы блока */
+			cs_byte backTex; /** Текстура задней границы блока */
+			cs_byte bottomTex; /** Текстура нижней границы блока */
+			cs_byte transmitsLight; /** Пропускает ли блок свет */
+			cs_byte walkSound; /** Звук хождения по блоку */
+			cs_bool fullBright; /** Действуют ли тени на блок */
+			cs_byte minX, minY, minZ;
+			cs_byte maxX, maxY, maxZ;
+			cs_byte blockDraw; /** Тип прозрачности блока */
+			cs_byte fogDensity; /** Плотность тумана внутри блока */
+			cs_byte fogR, fogG, fogB; /** Цвет тумана */
+		} ext; /** Расширенная структура блока */
+		struct _BlockParams {
+			cs_byte solidity; /** Прочность блока */
+			cs_byte moveSpeed; /** Скорость передвижения по блоку или внутри него */
+			cs_byte topTex; /** Текстура верхней границы блока */
+			cs_byte sideTex; /** Текстура боковых границ блока */
+			cs_byte bottomTex; /** Текстура нижней границы блока */
+			cs_byte transmitsLight; /** Пропускает ли блок свет */
+			cs_byte walkSound; /** Звук хождения по блоку */
+			cs_byte fullBright; /** Действуют ли тени на блок */
+			cs_byte shape; /** Высота блока */
+			cs_byte blockDraw; /** Тип прозрачности блока */
+			cs_byte fogDensity; /** Плотность тумана внутри блока */
+			cs_byte fogR, fogG, fogB; /** Цвет тумана */
+		} nonext; /** Обычная структура блока */
+	} params; /** Объединение параметров блока */
+} BlockDef;
+
 #define true  1
 #define false 0
 #define NULL ((void *)0)

@@ -54,11 +54,11 @@ typedef struct _CPEData {
 	cs_char *message; // Используется для получения длинных сообщений [LongerMessages]
 	BlockID heldBlock; // Выбранный игроком блок в данный момент [HeldBlock]
 	cs_int8 updates; // Обновлённые значения игрока
-	cs_bool hideDisplayName, // Будет ли ник игрока скрыт [ExtPlayerList]
-	pingStarted; // Начат ли процесс пингования [TwoWayPing]
-	cs_int16 _extCount, // Переменная используется при получении списка дополнений
-	model, // Текущая модель игрока [ChangeModel]
-	group; // Текущая группа игрока [ExtPlayerList]
+	cs_bool hideDisplayName; // Будет ли ник игрока скрыт [ExtPlayerList]
+	cs_bool pingStarted; // Начат ли процесс пингования [TwoWayPing]
+	cs_int16 _extCount; // Переменная используется при получении списка дополнений
+	cs_int16 model; // Текущая модель игрока [ChangeModel]
+	cs_int16 group; // Текущая группа игрока [ExtPlayerList]
 	cs_uint16 pingData; // Данные, цепляемые к пинг-запросу
 	cs_uint32 pingTime; // Сам пинг, в миллисекундах
 	cs_float pingAvgTime; // Средний пинг, в миллисекундах
@@ -75,9 +75,9 @@ typedef struct _PlayerData {
 	Vec position; // Позиция игрока
 	Ang angle; // Угол вращения игрока
 	EPlayerState state; // Текущее состояние игрока
-	cs_bool isOP, // Является ли игрок оператором
-	spawned, // Заспавнен ли игрок
-	firstSpawn; // Был лы этот спавн первым с момента захода на сервер
+	cs_bool isOP; // Является ли игрок оператором
+	cs_bool spawned; // Заспавнен ли игрок
+	cs_bool firstSpawn; // Был лы этот спавн первым с момента захода на сервер
 } PlayerData;
 
 typedef struct _Client {
@@ -85,9 +85,9 @@ typedef struct _Client {
 	cs_bool closed; // В случае значения true сервер прекращает общение с клиентом
 	Socket sock; // Файловый дескриптор сокета клиента
 	ClientID id; // Используется в качестве entityid
-	cs_ulong pps, // Количество пакетов, отправленных игроком за секунду
-	ppstm, // Таймер для счётчика пакетов
-	addr; // ipv4 адрес клиента
+	cs_ulong pps; // Количество пакетов, отправленных игроком за секунду
+	cs_ulong ppstm; // Таймер для счётчика пакетов
+	cs_ulong addr; // ipv4 адрес клиента
 	Compr compr; // Штука для сжатия карты
 	CPEData *cpeData; // В случае vanilla клиента эта структура не создаётся
 	PlayerData *playerData; // Создаётся при получении hanshake пакета
@@ -95,7 +95,7 @@ typedef struct _Client {
 	WebSock *websock; // Создаётся, если клиент был определён как браузерный
 	Mutex *mutex; // Мьютекс записи, на время отправки пакета клиенту он лочится
 	cs_char rdbuf[134]; // Буфер для получения пакетов от клиента
-	GrowingBuffer gb;
+	GrowingBuffer gb; // Буфер отправки пакетов клиенту
 } Client;
 
 void Client_Tick(Client *client);
@@ -105,7 +105,7 @@ NOINL cs_bool Client_RawSend(Client *client, cs_char *buf, cs_int32 len);
 NOINL cs_bool Client_SendAnytimeData(Client *client, cs_int32 size);
 NOINL cs_bool Client_FlushBuffer(Client *client);
 
-NOINL cs_bool Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
+API cs_bool Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
 NOINL cs_bool Client_DefineBlock(Client *client, BlockDef *block);
 NOINL cs_bool Client_UndefineBlock(Client *client, BlockID id);
 
@@ -146,7 +146,7 @@ API void Client_SetBlock(Client *client, SVec *pos, BlockID id);
 API cs_bool Client_SetModel(Client *client, cs_int16 model);
 API cs_bool Client_SetModelStr(Client *client, cs_str model);
 API cs_bool Client_SetBlockPerm(Client *client, BlockID block, cs_bool allowPlace, cs_bool allowDestroy);
-API cs_bool Client_SetHeldBlock(Client *client, BlockID block, cs_bool canChange);
+API cs_bool Client_SetHeldBlock(Client *client, BlockID block, cs_bool preventChange);
 API cs_bool Client_SetClickDistance(Client *client, cs_uint16 dist);
 API cs_bool Client_SetHotkey(Client *client, cs_str action, cs_int32 keycode, cs_int8 keymod);
 API cs_bool Client_SetHotbar(Client *client, cs_byte pos, BlockID block);

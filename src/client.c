@@ -211,7 +211,6 @@ cs_bool Client_ChangeWorld(Client *client, World *world) {
 		return false;
 
 	Client_Despawn(client);
-	client->playerData->world = world;
 	client->playerData->state = PLAYER_STATE_MOTD;
 	client->playerData->reqWorldChange = world;
 	return true;
@@ -424,7 +423,7 @@ cs_bool Client_SetWeather(Client *client, cs_int8 type) {
 }
 
 cs_bool Client_SetInvOrder(Client *client, cs_byte order, BlockID block) {
-	if(Block_IsValid(block) && Client_GetExtVer(client, EXT_INVORDER)) {
+	if(Block_IsValid(Client_GetWorld(client), block) && Client_GetExtVer(client, EXT_INVORDER)) {
 		CPE_WriteInventoryOrder(client, order, block);
 		return true;
 	}
@@ -438,9 +437,9 @@ cs_bool Client_SetServerIdent(Client *client, cs_str name, cs_str motd) {
 	return true;
 }
 
-cs_bool Client_SetHeldBlock(Client *client, BlockID block, cs_bool canChange) {
-	if(Block_IsValid(block) && Client_GetExtVer(client, EXT_HELDBLOCK)) {
-		CPE_WriteHoldThis(client, block, canChange);
+cs_bool Client_SetHeldBlock(Client *client, BlockID block, cs_bool preventChange) {
+	if(Block_IsValid(Client_GetWorld(client), block) && Client_GetExtVer(client, EXT_HELDBLOCK)) {
+		CPE_WriteHoldThis(client, block, preventChange);
 		return true;
 	}
 	return false;
@@ -464,7 +463,7 @@ cs_bool Client_SetHotkey(Client *client, cs_str action, cs_int32 keycode, cs_int
 }
 
 cs_bool Client_SetHotbar(Client *client, cs_byte pos, BlockID block) {
-	if(Block_IsValid(block) && pos < 9 && Client_GetExtVer(client, EXT_SETHOTBAR)) {
+	if(Block_IsValid(Client_GetWorld(client), block) && pos < 9 && Client_GetExtVer(client, EXT_SETHOTBAR)) {
 		CPE_WriteSetHotBar(client, pos, block);
 		return true;
 	}
@@ -472,7 +471,7 @@ cs_bool Client_SetHotbar(Client *client, cs_byte pos, BlockID block) {
 }
 
 cs_bool Client_SetBlockPerm(Client *client, BlockID block, cs_bool allowPlace, cs_bool allowDestroy) {
-	if(Block_IsValid(block) && Client_GetExtVer(client, EXT_BLOCKPERM)) {
+	if(Block_IsValid(Client_GetWorld(client), block) && Client_GetExtVer(client, EXT_BLOCKPERM)) {
 		CPE_WriteBlockPerm(client, block, allowPlace, allowDestroy);
 		return true;
 	}
@@ -480,7 +479,7 @@ cs_bool Client_SetBlockPerm(Client *client, BlockID block, cs_bool allowPlace, c
 }
 
 cs_bool Client_SetModel(Client *client, cs_int16 model) {
-	if(!client->cpeData || !CPE_CheckModel(model)) return false;
+	if(!client->cpeData || !CPE_CheckModel(client, model)) return false;
 	client->cpeData->model = model;
 	client->cpeData->updates |= PCU_MODEL;
 	return true;
@@ -851,16 +850,21 @@ NOINL static void SendWorld(Client *client, World *world) {
 		cs_byte *cmpdata = data + 3;
 		cs_byte *progr = data + 1028;
 
+		if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
+			World *oldworld = client->playerData->world;
+			for(BlockID id = 0; id < 254; id++) {
+				BlockDef *newbdef = Block_GetDefinition(world, id);
+				if(oldworld) {
+					BlockDef *unbdef = Block_GetDefinition(oldworld, id);
+					if(unbdef) Client_UndefineBlock(client, unbdef->id);
+				}
+				if(newbdef) Client_DefineBlock(client, newbdef);
+			}
+		}
+
 		client->playerData->world = world;
 		client->playerData->position = world->info.spawnVec;
 		client->playerData->angle = world->info.spawnAng;
-
-		if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
-			for(BlockID id = 0; id < 254; id++) {
-				BlockDef *bdef = Block_GetDefinition(id);
-				if(bdef) Client_DefineBlock(client, bdef);
-			}
-		}
 
 		do {
 			if(!compr_ok || client->closed) break;

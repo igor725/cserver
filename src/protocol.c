@@ -361,7 +361,7 @@ cs_bool Handler_SetBlock(Client *client, cs_char *data) {
 
 	switch(params.mode) {
 		case 0x01:
-			if(!Block_IsValid(params.id)) {
+			if(!Block_IsValid(world, params.id)) {
 				Client_KickFormat(client, Sstor_Get("KICK_UNKBID"), params.id);
 				return false;
 			}
@@ -503,8 +503,10 @@ static cs_str validModelNames[MODELS_COUNT] = {
 	NULL
 };
 
-cs_bool CPE_CheckModel(cs_int16 model) {
-	if(model < 256) return Block_IsValid((BlockID)model);
+cs_bool CPE_CheckModel(Client *client, cs_int16 model) {
+	World *world = Client_GetWorld(client);
+	if(world && model < 256)
+		return Block_IsValid(world, (BlockID)model);
 	return model - 256 < MODELS_COUNT;
 }
 

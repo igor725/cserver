@@ -133,7 +133,7 @@ NOINL void Vanilla_WriteKick(Client *client, cs_str reason);
 ** CPE протокола и прочие,
 ** связанные с CPE вещи
 */
-API cs_bool CPE_CheckModel(cs_int16 model);
+API cs_bool CPE_CheckModel(Client *client, cs_int16 model);
 API void CPE_RegisterExtension(cs_str name, cs_int32 version);
 API cs_int16 CPE_GetModelNum(cs_str model);
 API cs_str CPE_GetModelStr(cs_int16 num);

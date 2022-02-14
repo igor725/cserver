@@ -125,50 +125,6 @@ typedef enum _EBlockDrawTypes {
 	BDDRW_GAS /** Полностью прозрачный (н-р воздух) */
 } EBlockDrawTypes;
 
-/**
- * @brief Структура, описывающая создаваемый блок.
- * 
- */
-typedef struct _BlockDef {
-	cs_char name[65]; /** Название блока */
-	BlockID id; /** Уникальный номер блока */
-	cs_byte flags; /** Флаги блока */
-	union {
-		struct _BlockParamsExt {
-			cs_byte solidity; /** Прочность блока */
-			cs_byte moveSpeed; /** Скорость передвижения по блоку или внутри него */
-			cs_byte topTex; /** Текстура верхней границы блока */
-			cs_byte leftTex; /** Текстура левой границы блока */
-			cs_byte rightTex; /** Текстура правой границы блока */
-			cs_byte frontTex; /** Текстура передней границы блока */
-			cs_byte backTex; /** Текстура задней границы блока */
-			cs_byte bottomTex; /** Текстура нижней границы блока */
-			cs_byte transmitsLight; /** Пропускает ли блок свет */
-			cs_byte walkSound; /** Звук хождения по блоку */
-			cs_bool fullBright; /** Действуют ли тени на блок */
-			cs_byte minX, minY, minZ;
-			cs_byte maxX, maxY, maxZ;
-			cs_byte blockDraw; /** Тип прозрачности блока */
-			cs_byte fogDensity; /** Плотность тумана внутри блока */
-			cs_byte fogR, fogG, fogB; /** Цвет тумана */
-		} ext; /** Расширенная структура блока */
-		struct _BlockParams {
-			cs_byte solidity; /** Прочность блока */
-			cs_byte moveSpeed; /** Скорость передвижения по блоку или внутри него */
-			cs_byte topTex; /** Текстура верхней границы блока */
-			cs_byte sideTex; /** Текстура боковых границ блока */
-			cs_byte bottomTex; /** Текстура нижней границы блока */
-			cs_byte transmitsLight; /** Пропускает ли блок свет */
-			cs_byte walkSound; /** Звук хождения по блоку */
-			cs_byte fullBright; /** Действуют ли тени на блок */
-			cs_byte shape; /** Высота блока */
-			cs_byte blockDraw; /** Тип прозрачности блока */
-			cs_byte fogDensity; /** Плотность тумана внутри блока */
-			cs_byte fogR, fogG, fogB; /** Цвет тумана */
-		} nonext; /** Обычная структура блока */
-	} params; /** Объединение параметров блока */
-} BlockDef;
-
 typedef struct _BulkBlockUpdate {
 	World *world; /** Мир, игрокам которого будет отослан пакет */
 	cs_bool autosend; /** Автоматически отправлять пакет в случае переполнения буфера блоков */
@@ -182,19 +138,21 @@ typedef struct _BulkBlockUpdate {
 /**
  * @brief Проверяет, существует ли блок под указанным номером.
  * 
+ * @param world целевой мир
  * @param id уникальный номер блока
  * @return true - блок существует, false - блок не существует
  */
-API cs_bool Block_IsValid(BlockID id);
+API cs_bool Block_IsValid(World *world, BlockID id);
 
 /**
  * @brief Возвращает имя указанного блока. В случае, если блок
  * не существует вернёт строку "Unknown block".
  * 
+ * @param world целевой мир
  * @param id уникальный номер блока
  * @return строка с именем блока
  */
-API cs_str Block_GetName(BlockID id);
+API cs_str Block_GetName(World *world, BlockID id);
 
 /**
  * @brief Создаёт новый блок в динамической памяти.
@@ -209,7 +167,7 @@ API BlockDef *Block_New(BlockID id, cs_str name, cs_byte flags);
 /**
  * @brief Высвобождает память, выделенную под динамический блок.
  * Данную функцию следует вызывать после функций Block_Undefine
- * и Block_UpdateDefinitions если блок уже был отправлен игрокам,
+ * и Block_UpdateDefinition если блок уже был отправлен игрокам,
  * иначе они не будут знать о том, что этот блок более не существует.
  * 
  * @param bdef структура, описывающая блок
@@ -217,34 +175,48 @@ API BlockDef *Block_New(BlockID id, cs_str name, cs_byte flags);
 API void Block_Free(BlockDef *bdef);
 
 /**
- * @brief Очищает у блока флаги UPDATED и UNDEFINED
+ * @brief Очищает у блока флаги UPDATED и UNDEFINED и
+ * добавляет его к массиву указанного мира.
  * 
+ * @param world целевой мир
  * @param bdef структура, описывающая блока
  * @return true - регистрация прошла успешно, false - блок с таким id уже зарегистрирован
  */
-API cs_bool Block_Define(BlockDef *bdef);
+API cs_bool Block_Define(World *world, BlockDef *bdef);
 
 /**
  * @brief Возвращает структуру блока по его номеру.
  * 
+ * @param world целевой мир
  * @param id уникальный номер блока
  * @return структура, описывающая, блок
  */
-API BlockDef *Block_GetDefinition(BlockID id);
+API BlockDef *Block_GetDefinition(World *world, BlockID id);
 
 /**
- * @brief Очищает у указанного блока 
+ * @brief Удаляет указанный блок для одного мира
+ * 
+ * @param world целевой мир
+ * @param bdef структура, описывающая блок
+ * @return true - блок удалён, false - блок не был зарегистрирован
+ */
+API cs_bool Block_Undefine(World *world, BlockDef *bdef);
+
+/**
+ * @brief Устанавливает указанному блоку флаг UNDEFINED
  * 
  * @param bdef структура, описывающая блок
- * @return true - флаги блока обновлены, false - блок не был зарегистрирован
  */
-API cs_bool Block_Undefine(BlockDef *bdef);
+API void Block_UndefineGlobal(BlockDef *bdef);
 
 /**
- * @brief Рассылает всем клиентам пакеты регистрации блоков.
+ * @brief Рассылает всем клиентам миров, для которых
+ * данным блок зарегистрирован обновления состояния
+ * блока.
  * 
+ * @param bdef структура, описывающая блок
  */
-API void Block_UpdateDefinitions(void);
+API void Block_UpdateDefinition(BlockDef *bdef);
 
 /**
  * @brief Добавляет блок в кучу.
