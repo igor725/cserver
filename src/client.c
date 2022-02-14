@@ -846,7 +846,7 @@ NOINL static void SendWorld(Client *client, World *world) {
 	}
 
 	if(compr_ok) {
-		cs_byte data[1028] = {0x03};
+		cs_byte data[1029] = {0x03};
 		cs_uint16 *len = (cs_uint16 *)(data + 1);
 		cs_byte *cmpdata = data + 3;
 		cs_byte *progr = data + 1028;
