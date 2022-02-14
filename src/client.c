@@ -376,7 +376,6 @@ cs_bool Client_IsInSameWorld(Client *client, Client *other) {
 }
 
 cs_bool Client_IsInWorld(Client *client, World *world) {
-	if(!Client_CheckState(client, PLAYER_STATE_INGAME)) return false;
 	return Client_GetWorld(client) == world;
 }
 
@@ -388,10 +387,8 @@ cs_bool Client_IsFirstSpawn(Client *client) {
 	return client->playerData ? client->playerData->firstSpawn : true;
 }
 
-cs_bool Client_SetBlock(Client *client, SVec *pos, BlockID id) {
-	if(!Client_CheckState(client, PLAYER_STATE_INGAME)) return false;
+void Client_SetBlock(Client *client, SVec *pos, BlockID id) {
 	Vanilla_WriteSetBlock(client, pos, id);
-	return true;
 }
 
 cs_bool Client_SetEnvProperty(Client *client, cs_byte property, cs_int32 value) {
@@ -704,41 +701,52 @@ void Client_Free(Client *client) {
 		KList_Remove(&client->headNode, client->headNode);
 	}
 
+	GrowingBuffer_Cleanup(&client->gb);
 	Compr_Cleanup(&client->compr);
 	Memory_Free(client);
 }
 
-cs_int32 Client_Send(Client *client, cs_int32 len) {
-	if(client->closed) return 0;
+cs_bool Client_RawSend(Client *client, cs_char *buf, cs_int32 len) {
+	if(client->closed || len < 1) return false;
+
 	if(client == Broadcast) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			Client *bClient = Clients_List[i];
 
 			if(bClient && !bClient->closed) {
 				Mutex_Lock(bClient->mutex);
-				if(bClient->websock)
-					WebSock_SendFrame(bClient->websock, 0x02, client->wrbuf, (cs_uint16)len);
-				else
-					Socket_Send(bClient->sock, client->wrbuf, len);
+				Client_RawSend(bClient, buf, len);
 				Mutex_Unlock(bClient->mutex);
 			}
 		}
-		return len;
+
+		return true;
 	}
 
 	if(client->websock) {
-		if(!WebSock_SendFrame(client->websock, 0x02, client->wrbuf, (cs_uint16)len)) {
+		if(!WebSock_SendFrame(client->websock, 0x02, buf, (cs_uint16)len)) {
 			client->closed = true;
-			return 0;
+			return false;
 		}
 	} else {
-		if(Socket_Send(client->sock, client->wrbuf, len) != len) {
+		if(Socket_Send(client->sock, buf, len) != len) {
 			client->closed = true;
-			return 0;
+			return false;
 		}
 	}
 
-	return len;
+	return true;
+}
+
+cs_bool Client_SendAnytimeData(Client *client, cs_int32 size) {
+	cs_char *data = GrowingBuffer_GetCurrentPoint(&client->gb);
+	return Client_RawSend(client, data, size);
+}
+
+cs_bool Client_FlushBuffer(Client *client) {
+	cs_uint32 size = 0;
+	cs_char *data = GrowingBuffer_PopFullData(&client->gb, &size);
+	return Client_RawSend(client, data, size);
 }
 
 INL static void PacketReceiverWs(Client *client) {
@@ -810,6 +818,7 @@ NOINL static void SendWorld(Client *client, World *world) {
 			Client_Kick(client, Sstor_Get("KICK_INT"));
 			return;
 		}
+
 		World_Lock(world, 0);
 		World_Unlock(world);
 	}
@@ -837,38 +846,40 @@ NOINL static void SendWorld(Client *client, World *world) {
 	}
 
 	if(compr_ok) {
-		cs_byte *data = (cs_byte *)client->wrbuf;
+		cs_byte data[1028] = {0x03};
 		cs_uint16 *len = (cs_uint16 *)(data + 1);
 		cs_byte *cmpdata = data + 3;
 		cs_byte *progr = data + 1028;
 
+		client->playerData->world = world;
+		client->playerData->position = world->info.spawnVec;
+		client->playerData->angle = world->info.spawnAng;
+
+		if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
+			for(BlockID id = 0; id < 254; id++) {
+				BlockDef *bdef = Block_GetDefinition(id);
+				if(bdef) Client_DefineBlock(client, bdef);
+			}
+		}
+
 		do {
 			if(!compr_ok || client->closed) break;
 			Mutex_Lock(client->mutex);
-			*data = 0x03;
 			Compr_SetOutBuffer(&client->compr, cmpdata, 1024);
 			if((compr_ok = Compr_Update(&client->compr)) == true) {
 				if(!client->closed && client->compr.written) {
 					*len = htons((cs_uint16)client->compr.written);
 					*progr = 100 - (cs_byte)((cs_float)client->compr.queued / wsize * 100);
-					compr_ok = Client_Send(client, 1028) == 1028;
+					compr_ok = Client_RawSend(client, (cs_char *)data, 1028);
 				}
 			}
 			Mutex_Unlock(client->mutex);
 		} while(client->compr.state != COMPR_STATE_DONE);
 
 		if(compr_ok) {
-			client->playerData->world = world;
-			client->playerData->state = PLAYER_STATE_INGAME;
-			client->playerData->position = world->info.spawnVec;
-			client->playerData->angle = world->info.spawnAng;
-			if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
-				for(BlockID id = 0; id < 254; id++) {
-					BlockDef *bdef = Block_GetDefinition(id);
-					if(bdef) Client_DefineBlock(client, bdef);
-				}
-			}
 			Vanilla_WriteLvlFin(client, &world->info.dimensions);
+			client->playerData->state = PLAYER_STATE_INGAME;
+			Client_FlushBuffer(client);
 			Client_Spawn(client);
 		} else
 			Client_KickFormat(client, Sstor_Get("KICK_ZERR"), Compr_GetLastError(&client->compr));

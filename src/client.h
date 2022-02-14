@@ -7,6 +7,7 @@
 #include "world.h"
 #include "websocket.h"
 #include "compr.h"
+#include "growingbuffer.h"
 #include <stdarg.h>
 
 typedef enum _EMesgType {
@@ -93,14 +94,17 @@ typedef struct _Client {
 	KListField *headNode; // Последняя созданная ассоциативная нода у клиента
 	WebSock *websock; // Создаётся, если клиент был определён как браузерный
 	Mutex *mutex; // Мьютекс записи, на время отправки пакета клиенту он лочится
-	cs_char rdbuf[134], // Буфер для получения пакетов от клиента
-	wrbuf[2048]; // Буфер для отправки пакетов клиенту
+	cs_char rdbuf[134]; // Буфер для получения пакетов от клиента
+	GrowingBuffer gb;
 } Client;
 
 void Client_Tick(Client *client);
 void Client_Free(Client *client);
 
-NOINL cs_int32 Client_Send(Client *client, cs_int32 len);
+NOINL cs_bool Client_RawSend(Client *client, cs_char *buf, cs_int32 len);
+NOINL cs_bool Client_SendAnytimeData(Client *client, cs_int32 size);
+NOINL cs_bool Client_FlushBuffer(Client *client);
+
 NOINL cs_bool Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
 NOINL cs_bool Client_DefineBlock(Client *client, BlockDef *block);
 NOINL cs_bool Client_UndefineBlock(Client *client, BlockID id);
@@ -138,7 +142,7 @@ API cs_bool Client_SetEnvProperty(Client *client, cs_byte property, cs_int32 val
 API cs_bool Client_SetEnvColor(Client *client, cs_byte type, Color3* color);
 API cs_bool Client_SetTexturePack(Client *client, cs_str url);
 API cs_bool Client_AddTextColor(Client *client, Color4* color, cs_char code);
-API cs_bool Client_SetBlock(Client *client, SVec *pos, BlockID id);
+API void Client_SetBlock(Client *client, SVec *pos, BlockID id);
 API cs_bool Client_SetModel(Client *client, cs_int16 model);
 API cs_bool Client_SetModelStr(Client *client, cs_str model);
 API cs_bool Client_SetBlockPerm(Client *client, BlockID block, cs_bool allowPlace, cs_bool allowDestroy);

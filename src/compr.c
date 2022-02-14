@@ -79,10 +79,7 @@ INL static cs_int32 getWndBits(ComprType type) {
 }
 
 cs_bool Compr_Init(Compr *ctx, ComprType type) {
-	if(!zlib.lib && !InitBackend()) {
-		Error_PrintSys(true);
-		return false;
-	}
+	if(!zlib.lib && !InitBackend()) return false;
 
 	if(!ctx->stream) ctx->stream = Memory_Alloc(1, sizeof(z_stream));
 	ctx->state = COMPR_STATE_IDLE;

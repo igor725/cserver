@@ -66,19 +66,6 @@ cs_bool Error_Init(void) {return true;}
 void Error_Uninit(void) {}
 #endif
 
-INL static void getErrorStr(cs_int32 type, cs_int32 code, cs_char *errbuf, cs_size sz, va_list *args) {
-	switch(type) {
-		case ET_ZLIB:
-			String_Copy(errbuf, sz, Compr_GetError(code));
-			break;
-		case ET_SYS:
-			if(!String_FormatError(code, errbuf, sz, args)) {
-				String_Copy(errbuf, sz, "Unexpected error.");
-			}
-			break;
-	}
-}
-
 cs_int32 Error_GetSysCode(void) {
 #if defined(CORE_USE_WINDOWS)
 	return GetLastError();
@@ -87,15 +74,13 @@ cs_int32 Error_GetSysCode(void) {
 #endif
 }
 
-void Error_Print(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_str func, ...) {
-	cs_char strbuf[384], errbuf[256];
+void Error_Print(cs_int32 code, cs_str file, cs_uint32 line, cs_str func, ...) {
+	cs_char strbuf[384];
 
+	cs_int32 fmtpos = String_FormatBuf(strbuf, 384, "%s:%d in function %s: ", file, line, func);
 	va_list args;
 	va_start(args, func);
-	getErrorStr(type, code, errbuf, 256, &args);
+	String_FormatError(code, strbuf + fmtpos, 384 - fmtpos, &args);
 	va_end(args);
-	if(String_FormatBuf(strbuf, 384, "%s:%d in function %s: %s", file, line, func, errbuf)) {
-		Log_Error("%s", strbuf);
-		PrintCallStack();
-	}
+	PrintCallStack();
 }

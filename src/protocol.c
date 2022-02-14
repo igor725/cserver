@@ -88,13 +88,12 @@ void Proto_WriteByteColor4(cs_char **dataptr, const Color4* color) {
 	*dataptr = data;
 }
 
-NOINL static cs_int32 WriteExtEntityPos(cs_char **dataptr, Vec *vec, Ang *ang, cs_bool extended) {
+NOINL static void WriteExtEntityPos(cs_char **dataptr, Vec *vec, Ang *ang, cs_bool extended) {
 	if(extended)
 		Proto_WriteFlVec(dataptr, vec);
 	else
 		Proto_WriteFlSVec(dataptr, vec);
 	Proto_WriteAng(dataptr, ang);
-	return extended ? 12 : 6;
 }
 
 cs_byte Proto_ReadString(cs_char **dataptr, cs_str *dstptr) {
@@ -164,93 +163,99 @@ void Proto_ReadFlVec(cs_char **dataptr, Vec *vec) {
 }
 
 void Vanilla_WriteServerIdent(Client *client, cs_str name, cs_str motd) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 131);
 
 	*data++ = 0x00;
 	*data++ = PROTOCOL_VERSION;
 	Proto_WriteString(&data, name);
 	Proto_WriteString(&data, motd);
-	*data = 0x00;
+	*data++ = 0x00;
 
-	PacketWriter_End(client, 131);
+	PacketWriter_EndAnytime(client);
 }
 
 void Vanilla_WriteLvlInit(Client *client) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 1);
 
 	*data++ = 0x02;
 
-	PacketWriter_End(client, 1);
+	PacketWriter_EndAnytime(client);
 }
 
 void Vanilla_WriteLvlFin(Client *client, SVec *dims) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 7);
 
 	*data++ = 0x04;
 	Proto_WriteSVec(&data, dims);
 
-	PacketWriter_End(client, 7);
+	PacketWriter_EndAnytime(client);
 }
 
 void Vanilla_WriteSetBlock(Client *client, SVec *pos, BlockID block) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 8);
 
 	*data++ = 0x06;
 	Proto_WriteSVec(&data, pos);
 	*data++ = block;
 
-	PacketWriter_End(client, 8);
-}
-
-INL static cs_int32 WriteClientPos(cs_char *data, Client *client, cs_bool extended) {
-	return WriteExtEntityPos(&data, &client->playerData->position, &client->playerData->angle, extended);
+	PacketWriter_EndIngame(client);
 }
 
 void Vanilla_WriteSpawn(Client *client, Client *other) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 80);
 
 	*data++ = 0x07;
 	*data++ = client == other ? CLIENT_SELF : other->id;
 	Proto_WriteString(&data, other->playerData->name);
-	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
-	cs_int32 len = WriteClientPos(data, other, extended);
+	WriteExtEntityPos(
+		&data,
+		&other->playerData->position,
+		&other->playerData->angle,
+		Client_GetExtVer(client, EXT_ENTPOS) > 0
+	);
 
-	PacketWriter_End(client, 68 + len);
+	PacketWriter_EndIngame(client);
 }
 
 void Vanilla_WriteTeleport(Client *client, Vec *pos, Ang *ang) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 18);
 
 	*data++ = 0x08;
 	*data++ = CLIENT_SELF;
-	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
-	cs_int32 len = WriteExtEntityPos(&data, pos, ang, extended);
+	WriteExtEntityPos(
+		&data, pos, ang,
+		Client_GetExtVer(client, EXT_ENTPOS) > 0
+	);
 
-	PacketWriter_End(client, 4 + len);
+	PacketWriter_EndIngame(client);
 }
 
 void Vanilla_WritePosAndOrient(Client *client, Client *other) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 18);
 
 	*data++ = 0x08;
 	*data++ = client == other ? CLIENT_SELF : other->id;
-	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
-	cs_int32 len = WriteClientPos(data, other, extended);
+	WriteExtEntityPos(
+		&data,
+		&other->playerData->position,
+		&other->playerData->angle,
+		Client_GetExtVer(client, EXT_ENTPOS) > 0
+	);
 
-	PacketWriter_End(client, 4 + len);
+	PacketWriter_EndIngame(client);
 }
 
 void Vanilla_WriteDespawn(Client *client, Client *other) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 2);
 
 	*data++ = 0x0C;
 	*data++ = client == other ? CLIENT_SELF : other->id;
 
-	PacketWriter_End(client, 2);
+	PacketWriter_EndIngame(client);
 }
 
 void Vanilla_WriteChat(Client *client, EMesgType type, cs_str mesg) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 66);
 
 	cs_char mesg_out[65];
 	String_Copy(mesg_out, 65, mesg);
@@ -267,16 +272,16 @@ void Vanilla_WriteChat(Client *client, EMesgType type, cs_str mesg) {
 	*data++ = (cs_byte)type;
 	Proto_WriteString(&data, mesg_out);
 
-	PacketWriter_End(client, 66);
+	PacketWriter_EndAnytime(client);
 }
 
 void Vanilla_WriteKick(Client *client, cs_str reason) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 65);
 
 	*data++ = 0x0E;
 	Proto_WriteString(&data, reason);
 
-	PacketWriter_End(client, 65);
+	PacketWriter_EndAnytime(client);
 }
 
 cs_bool Handler_Handshake(Client *client, cs_char *data) {
@@ -528,60 +533,63 @@ cs_str CPE_GetModelStr(cs_int16 num) {
 }
 
 void CPE_WriteInfo(Client *client) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 67);
 
 	*data++ = 0x10;
 	Proto_WriteString(&data, SOFTWARE_FULLNAME);
 	*(cs_uint16 *)data = htons(extensionsCount);
+	data += 2;
 
-	PacketWriter_End(client, 67);
+	PacketWriter_EndAnytime(client);
 }
 
 void CPE_WriteExtEntry(Client *client, CPEExt *ext) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 69);
 
 	*data++ = 0x11;
 	Proto_WriteString(&data, ext->name);
 	*(cs_uint32 *)data = htonl(ext->version);
+	data += 4;
 
-	PacketWriter_End(client, 69);
+	PacketWriter_EndAnytime(client);
 }
 
 void CPE_WriteClickDistance(Client *client, cs_uint16 dist) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 3);
 
 	*data++ = 0x12;
 	*(cs_uint16 *)data = htons(dist);
+	data += 2;
 
-	PacketWriter_End(client, 3);
+	PacketWriter_EndIngame(client);
 }
 
 // 0x13 - CustomBlocksSupportLevel
 
 void CPE_WriteHoldThis(Client *client, BlockID block, cs_bool preventChange) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 3);
 
 	*data++ = 0x14;
 	*data++ = block;
-	*data   = (cs_char)preventChange;
+	*data++ = (cs_char)preventChange;
 
-	PacketWriter_End(client, 3);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteSetHotKey(Client *client, cs_str action, cs_int32 keycode, cs_int8 keymod) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 134);
 
 	*data++ = 0x15;
 	Proto_WriteString(&data, NULL); // Label
 	Proto_WriteString(&data, action);
 	*(cs_int32 *)data = htonl(keycode); data += 4;
-	*data = keymod;
+	*data++ = keymod;
 
-	PacketWriter_End(client, 134);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteAddName(Client *client, Client *other) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 196);
 
 	*data = 0x16; data += 2;
 	*data++ = client == other ? CLIENT_SELF : other->id;
@@ -589,13 +597,13 @@ void CPE_WriteAddName(Client *client, Client *other) {
 	Proto_WriteString(&data, Client_GetName(other));
 	CGroup *group = Client_GetGroup(other);
 	Proto_WriteString(&data, group->name);
-	*data = group->rank;
+	*data++ = group->rank;
 
-	PacketWriter_End(client, 196);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteAddEntity2(Client *client, Client *other) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 144);
 
 	*data++ = 0x21;
 	*data++ = client == other ? CLIENT_SELF : other->id;
@@ -604,33 +612,37 @@ void CPE_WriteAddEntity2(Client *client, Client *other) {
 	else
 		Proto_WriteString(&data, Client_GetName(other));
 	Proto_WriteString(&data, Client_GetSkin(other));
-	cs_bool extended = Client_GetExtVer(client, EXT_ENTPOS) != 0;
-	cs_int32 len = WriteClientPos(data, other, extended);
+	WriteExtEntityPos(
+		&data,
+		&other->playerData->position,
+		&other->playerData->angle,
+		Client_GetExtVer(client, EXT_ENTPOS) > 0
+	);
 
-	PacketWriter_End(client, 132 + len);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteRemoveName(Client *client, Client *other) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 3);
 
 	*data = 0x18; data += 2;
-	*data = client == other ? CLIENT_SELF : other->id;
+	*data++ = client == other ? CLIENT_SELF : other->id;
 
-	PacketWriter_End(client, 3);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteEnvColor(Client *client, cs_byte type, Color3* col) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 8);
 
 	*data++ = 0x19;
 	*data++ = type;
 	Proto_WriteColor3(&data, col);
 
-	PacketWriter_End(client, 8);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteMakeSelection(Client *client, cs_byte id, SVec *start, SVec *end, Color4* color) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 86);
 
 	*data++ = 0x1A;
 	*data++ = id;
@@ -639,31 +651,31 @@ void CPE_WriteMakeSelection(Client *client, cs_byte id, SVec *start, SVec *end, 
 	Proto_WriteSVec(&data, end);
 	Proto_WriteColor4(&data, color);
 
-	PacketWriter_End(client, 86);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteRemoveSelection(Client *client, cs_byte id) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 2);
 
 	*data++ = 0x1B;
-	*data   = id;
+	*data++ = id;
 
-	PacketWriter_End(client, 2);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteBlockPerm(Client *client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 4);
 
 	*data++ = 0x1C;
 	*data++ = id;
 	*data++ = (cs_char)allowPlace;
-	*data   = (cs_char)allowDestroy;
+	*data++ = (cs_char)allowDestroy;
 
-	PacketWriter_End(client, 4);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteSetModel(Client *client, Client *other) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 66);
 
 	*data++ = 0x1D;
 	*data++ = client == other ? CLIENT_SELF : other->id;
@@ -675,23 +687,24 @@ void CPE_WriteSetModel(Client *client, Client *other) {
 	} else
 		Proto_WriteString(&data, CPE_GetModelStr(model - 256));
 
-	PacketWriter_End(client, 66);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteSetMapAppearanceV1(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 69);
 
 	*data++ = 0x1E;
 	Proto_WriteString(&data, tex);
 	*data++ = side;
 	*data++ = edge;
 	*(cs_uint16 *)data = htons(sidelvl);
+	data += 2;
 
-	PacketWriter_End(client, 69);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteSetMapAppearanceV2(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl, cs_int16 cllvl, cs_int16 maxview) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 73);
 
 	*data++ = 0x1E;
 	Proto_WriteString(&data, tex);
@@ -699,22 +712,22 @@ void CPE_WriteSetMapAppearanceV2(Client *client, cs_str tex, cs_byte side, cs_by
 	*data++ = edge;
 	*(cs_uint16 *)data = htons(sidelvl); data += 2;
 	*(cs_uint16 *)data = htons(cllvl); data += 2;
-	*(cs_uint16 *)data = htons(maxview);
+	*(cs_uint16 *)data = htons(maxview); data += 2;
 
-	PacketWriter_End(client, 73);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteWeatherType(Client *client, cs_int8 type) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 2);
 
 	*data++ = 0x1F;
-	*data   = type;
+	*data++ = type;
 
-	PacketWriter_End(client, 2);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteHackControl(Client *client, CPEHacks *hacks) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 8);
 
 	*data++ = 0x20;
 	*data++ = (cs_char)hacks->flying;
@@ -723,159 +736,163 @@ void CPE_WriteHackControl(Client *client, CPEHacks *hacks) {
 	*data++ = (cs_char)hacks->spawnControl;
 	*data++ = (cs_char)hacks->tpv;
 	*(cs_int16 *)data = htons(hacks->jumpHeight);
+	data += 2;
 
-	PacketWriter_End(client, 8);
+	PacketWriter_EndAnytime(client);
 }
 
 void CPE_WriteDefineBlock(Client *client, BlockDef *block) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 80);
 
 	*data++ = 0x23;
 	*data++ = block->id;
 	Proto_WriteString(&data, block->name);
 	*(struct _BlockParams *)data = block->params.nonext;
+	data += sizeof(block->params.nonext);
 
-	PacketWriter_End(client, 80);
+	PacketWriter_EndAnytime(client);
 }
 
 void CPE_WriteUndefineBlock(Client *client, BlockID id) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 2);
 
 	*data++ = 0x24;
-	*data = id;
+	*data++ = id;
 
-	PacketWriter_End(client, 2);
+	PacketWriter_EndAnytime(client);
 }
 
 void CPE_WriteDefineExBlock(Client *client, BlockDef *block) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 88);
 
 	*data++ = 0x25;
 	*data++ = block->id;
 	Proto_WriteString(&data, block->name);
 	*(struct _BlockParamsExt *)data = block->params.ext;
+	data += sizeof(block->params.ext);
 
-	PacketWriter_End(client, 88);
+	PacketWriter_EndAnytime(client);
 }
 
 void CPE_WriteBulkBlockUpdate(Client *client, BulkBlockUpdate *bbu) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 1282);
 
 	*data++ = 0x26;
 	*(struct _BBUData *)data = bbu->data;
+	data += sizeof(bbu->data);
 
-	PacketWriter_End(client, 1282);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteFastMapInit(Client *client, cs_uint32 size) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 5);
 
 	*data++ = 0x02;
 	*(cs_uint32 *)data = htonl(size);
+	data += 4;
 
-	PacketWriter_End(client, 5);
+	PacketWriter_EndAnytime(client);
 }
 
 void CPE_WriteAddTextColor(Client *client, Color4* color, cs_char code) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 6);
 
 	*data++ = 0x27;
 	Proto_WriteByteColor4(&data, color);
-	*data = code;
+	*data++ = code;
 
-	PacketWriter_End(client, 6);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteTexturePack(Client *client, cs_str url) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 65);
 
 	*data++ = 0x28;
 	Proto_WriteString(&data, url);
 
-	PacketWriter_End(client, 65);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteMapProperty(Client *client, cs_byte property, cs_int32 value) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 6);
 
 	*data++ = 0x29;
 	*data++ = property;
 	*(cs_int32 *)data = htonl(value);
+	data += 4;
 
-	PacketWriter_End(client, 6);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteSetEntityProperty(Client *client, Client *other, EEntProp type, cs_int32 value) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 7);
 
 	*data++ = 0x2A;
 	*data++ = client == other ? CLIENT_SELF : other->id;
 	*data++ = type;
 	*(cs_int32 *)data = htonl(value);
+	data += 4;
 
-	PacketWriter_End(client, 7);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteTwoWayPing(Client *client, cs_byte direction, cs_int16 num) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 4);
 
 	*data++ = 0x2B;
 	*data++ = direction;
 	*(cs_uint16 *)data = num;
+	data += 2;
 
-	PacketWriter_End(client, 4);
+	PacketWriter_EndAnytime(client);
 }
 
 void CPE_WriteInventoryOrder(Client *client, cs_byte order, BlockID block) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 3);
 
 	*data++ = 0x2C;
 	*data++ = block;
-	*data   = order;
+	*data++ = order;
 
-	PacketWriter_End(client, 3);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteSetHotBar(Client *client, cs_byte order, BlockID block) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 3);
 
 	*data++ = 0x2D;
 	*data++ = block;
-	*data   = order;
+	*data++ = order;
 
-	PacketWriter_End(client, 3);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteSetSpawnPoint(Client *client, Vec *pos, Ang *ang) {
-	PacketWriter_Start(client);
-
-	cs_int32 len;
+	PacketWriter_Start(client, 15);
 
 	*data++ = 0x2E;
-	if(Client_GetExtVer(client, EXT_ENTPOS)) {
+	if(Client_GetExtVer(client, EXT_ENTPOS))
 		Proto_WriteFlVec(&data, pos);
-		len = 15;
-	} else {
+	else
 		Proto_WriteFlSVec(&data, pos);
-		len = 9;
-	}
 	Proto_WriteAng(&data, ang);
 
-	PacketWriter_End(client, len);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_bool mode) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 16);
 
 	*data++ = 0x2F;
 	Proto_WriteFlVec(&data, velocity);
 	*(cs_uint32 *)data = mode ? 0x01010101 : 0x00000000; // Why not?
+	data += 4;
 
-	PacketWriter_End(client, 16);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteDefineEffect(Client *client, CustomParticle *e) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 36);
 
 	*data++ = 0x30;
 	*(struct TextureRec *)data = e->rec;
@@ -889,20 +906,20 @@ void CPE_WriteDefineEffect(Client *client, CustomParticle *e) {
 	*(cs_uint32 *)data = htonl((cs_uint32)(e->baseLifetime * 10000.0f)); data += 4;
 	*(cs_uint32 *)data = htonl((cs_uint32)(e->lifetimeVariation * 10000.0f)); data += 4;
 	*data++ = e->collideFlags;
-	*data = e->fullBright;
+	*data++ = e->fullBright;
 
-	PacketWriter_End(client, 36);
+	PacketWriter_EndIngame(client);
 }
 
 void CPE_WriteSpawnEffect(Client *client, cs_byte id, Vec *pos, Vec *origin) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 26);
 
 	*data++ = 0x31;
 	*data++ = id;
 	Proto_WriteFlVec(&data, pos);
 	Proto_WriteFlVec(&data, origin);
 
-	PacketWriter_End(client, 26);
+	PacketWriter_EndIngame(client);
 }
 
 // void CPE_WriteDefineModel(Client *client, ...) {}
@@ -910,13 +927,13 @@ void CPE_WriteSpawnEffect(Client *client, cs_byte id, Vec *pos, Vec *origin) {
 // void CPE_WriteUndefineModel(Client *client, ...) {}
 
 void CPE_WritePluginMessage(Client *client, cs_byte channel, cs_str message) {
-	PacketWriter_Start(client);
+	PacketWriter_Start(client, 66);
 
 	*data++ = 0x35;
 	*data++ = channel;
 	Proto_WriteString(&data, message);
 
-	PacketWriter_End(client, 66);
+	PacketWriter_EndAnytime(client);
 }
 
 cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {

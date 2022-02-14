@@ -3,31 +3,27 @@
 #include "core.h"
 #include "platform.h"
 
-enum _ErrorTypes {
-	ET_NOERR = -1,
-	ET_ZLIB,
-	ET_SYS
-};
+#define ERROR_PRINT(ecode, abort) \
+Error_Print(ecode, __FILE__, __LINE__, __func__); \
+if(abort) { \
+	Process_Exit(ecode); \
+}
 
-#define ERROR_PRINT(etype, ecode, abort) \
-Error_Print(etype, ecode, __FILE__, __LINE__, __func__); \
+#define ERROR_PRINTF(ecode, abort, ...) \
+Error_Print(ecode, __FILE__, __LINE__, __func__, ##__VA_ARGS__); \
 if(abort) { \
 	Process_Exit(ecode); \
 }
-#define ERROR_PRINTF(etype, ecode, abort, ...) \
-Error_Print(etype, ecode, __FILE__, __LINE__, __func__, ##__VA_ARGS__); \
-if(abort) { \
-	Process_Exit(ecode); \
-}
+
 #if defined(CORE_USE_WINDOWS)
-#  define Error_PrintSys(abort) ERROR_PRINT(ET_SYS, GetLastError(), abort);
+#  define Error_PrintSys(abort) ERROR_PRINT(GetLastError(), abort);
 #elif defined(CORE_USE_UNIX)
-#  define Error_PrintSys(abort) ERROR_PRINT(ET_SYS, errno, abort);
+#  define Error_PrintSys(abort) ERROR_PRINT(errno, abort);
 #endif
 
 cs_bool Error_Init(void);
 void Error_Uninit(void);
 
-API void Error_Print(cs_int32 type, cs_int32 code, cs_str file, cs_uint32 line, cs_str func, ...);
+API void Error_Print(cs_int32 code, cs_str file, cs_uint32 line, cs_str func, ...);
 API cs_int32 Error_GetSysCode(void);
 #endif // ERROR_H

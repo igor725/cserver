@@ -126,7 +126,7 @@ Thread Thread_Create(TFUNC func, TARG param, cs_bool detach) {
 	Thread th;
 
 	if((th = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)func, param, 0, NULL)) == INVALID_HANDLE_VALUE) {
-		ERROR_PRINT(ET_SYS, GetLastError(), true);
+		Error_PrintSys(true);
 	}
 
 	if(detach) {

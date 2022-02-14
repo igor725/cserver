@@ -82,7 +82,8 @@ cs_size String_Copy(cs_char *dst, cs_size len, cs_str src) {
 
 cs_uint32 String_FormatError(cs_uint32 code, cs_char *buf, cs_size buflen, va_list *args) {
 #if defined(CORE_USE_WINDOWS)
-	cs_int32 len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, (cs_uint32)buflen, args);
+	cs_int32 len = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+	NULL, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, (cs_uint32)buflen, args);
 	if(len > 0) {
 		while(*buf++ != '\0') {
 			if(*buf == '\r' || *buf == '\n') {

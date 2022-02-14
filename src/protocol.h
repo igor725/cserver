@@ -10,19 +10,30 @@ if(!Client_CheckState(client, st)) \
 #define ValidateCpeClient(client, ret) \
 if(!client->cpeData) return ret;
 
-#define PacketWriter_Start(client) \
-if(client->closed) return; \
-cs_char *data = client->wrbuf; \
-Mutex_Lock(client->mutex);
+#define PacketWriter_Start(cl, msz) \
+if(cl->closed) return; \
+Mutex_Lock(cl->mutex); \
+if(!GrowingBuffer_Ensure(&cl->gb, msz)) { \
+	cl->closed = true; \
+	Mutex_Unlock(cl->mutex); \
+	return; \
+} \
+cs_char *data = GrowingBuffer_GetCurrentPoint(&cl->gb);
 
-#define PacketWriter_End(client, size) \
-if (Client_Send(client, size) != size) \
-	client->closed = true; \
-Mutex_Unlock(client->mutex);
+#define PacketWriter_EndAnytime(cl) \
+cs_uint32 written = GrowingBuffer_GetDiff(&cl->gb, data); \
+if(written > 0) Client_SendAnytimeData(cl, written); \
+Mutex_Unlock(cl->mutex); \
 
-#define PacketWriter_Stop(client) \
-Mutex_Unlock(client->mutex); \
-return;
+#define PacketWriter_EndIngame(cl) \
+cs_uint32 written = GrowingBuffer_GetDiff(&cl->gb, data); \
+if(written > 0) { \
+	GrowingBuffer_Commit(&cl->gb, written); \
+	if(Client_CheckState(cl, PLAYER_STATE_INGAME)) { \
+		Client_FlushBuffer(cl); \
+	} \
+} \
+Mutex_Unlock(cl->mutex);
 
 #define PROTOCOL_VERSION 0x07
 #define CLIENT_SELF (ClientID)-1

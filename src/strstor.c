@@ -105,20 +105,6 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("KICK_INT", "Internal server error");
 	Sstor_Set("KICK_STOP", "Server stopped");
 
-	Sstor_Set("CFG_SVIP_COMM", "Bind server to specified IP address. \"0.0.0.0\" - means \"all available network adapters\"");
-	Sstor_Set("CFG_SVIP_DVAL", "0.0.0.0");
-	Sstor_Set("CFG_SVPORT_COMM", "Use specified port to accept clients. [1-65535]");
-	Sstor_Set("CFG_SVNAME_COMM", "Server name and MOTD will be shown to the player during map loading");
-	Sstor_Set("CFG_SVNAME_DVAL", "Server name");
-	Sstor_Set("CFG_SVMOTD_DVAL", "Server MOTD");
-	Sstor_Set("CFG_LOGLVL_COMM", "I - Info, C - Chat, W - Warnings, D - Debug");
-	Sstor_Set("CFG_LOGLVL_DVAL", "ICWD");
-	Sstor_Set("CFG_LOP_COMM", "Any player with ip address \"127.0.0.1\" will automatically become an operator");
-	Sstor_Set("CFG_MAXPL_COMM", "Max players on server. [1-127]");
-	Sstor_Set("CFG_MAXCON_COMM", "Max connections per one IP. [1-5]");
-	Sstor_Set("CFG_WORLDS_COMM", "List of worlds to load at startup. (Can be \"*\" it means load all worlds in the folder)");
-	Sstor_Set("CFG_WORLDS_DVAL", "world.cws:256x256x256:normal,flat_world.cws:64x64x64:flat");
-
 	Sstor_Set("HBEAT_URL", "Server play URL: %s");
 	Sstor_Set("HBEAT_ERR", "Heartbeat error: %s");
 	Sstor_Set("HBEAT_ERR_ER", "Empty server response");
@@ -130,7 +116,6 @@ cs_bool Sstor_Defaults(void) {
 
 	Sstor_Set("PLUG_DEPR_API", "Please upgrade your server software. Plugin \"%s\" compiled for PluginAPI v%03d, but server uses v%d");
 	Sstor_Set("PLUG_DEPR", "Plugin \"%s\" is deprecated. Server uses PluginAPI v%03d but plugin compiled for v%03d");
-	Sstor_Set("PLUG_LIBERR", "%s: %s");
 
 	Sstor_Set("BLOCK_UNK", "Unknown block");
 

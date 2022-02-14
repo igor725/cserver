@@ -62,7 +62,7 @@ cs_bool Plugin_LoadDll(cs_str name) {
 		return true;
 	}
 
-	Log_Error(Sstor_Get("PLUG_LIBERR"), path, DLib_GetError(error, 512));
+	Log_Error("%s: %s", path, DLib_GetError(error, 512));
 	return false;
 }
 
@@ -100,7 +100,7 @@ cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname) {
 
 			continue;
 		}
-		
+
 		if(!answerer && cplugin != requester) {
 			Plugin_Lock(cplugin);
 			for(iface = cplugin->ifaces; iface && iface->iname; iface++) {
