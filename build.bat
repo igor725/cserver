@@ -116,6 +116,7 @@ IF "%PLUGIN_BUILD%"=="0" (
 	SET LIBS=!LIBS! ws2_32.lib
 	GOTO detectzlib
 ) else (
+	set LIBS=!LIBS! vcruntime.lib
 	IF NOT EXIST !SERVER_OUTROOT! GOTO noserver
 	IF NOT EXIST !SERVER_OUTROOT!\server.lib GOTO noserver
 )

@@ -44,7 +44,7 @@ typedef cs_int32 Socket;
 #define TSHND_OK
 #endif
 
-typedef errno_t cs_error;
+typedef cs_int32 cs_error;
 typedef FILE *cs_file;
 typedef void *TARG;
 typedef TRET(*TFUNC)(TARG);
