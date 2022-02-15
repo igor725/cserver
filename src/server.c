@@ -29,6 +29,8 @@ Waitable *SyncClients = NULL;
 THREAD_FUNC(ClientInitThread) {
 	Client *client = (Client *)param;
 	Waitable_Reset(client->waitend);
+	Socket_SetRecvTimeout(client->sock, 500);
+
 	cs_byte attempt = 0;
 	while(attempt < 10) {
 		if(Socket_Receive(client->sock, client->rdbuf, 5, MSG_PEEK) == 5) {
@@ -48,6 +50,8 @@ THREAD_FUNC(ClientInitThread) {
 	}
 
 	if(attempt < 10) {
+		Socket_SetRecvTimeout(client->sock, 30000);
+
 		while(!client->closed) {
 			Waitable_Wait(SyncClients);
 			if(!client->closed)
@@ -91,15 +95,20 @@ INL static ClientID TryToGetIDFor(Client *client) {
 	return possibleId;
 }
 
+INL static void CloseCient(Client *client) {
+	Waitable_Wait(client->waitend);
+	Mutex_Lock(client->mutex);
+	Socket_Close(client->sock);
+	Mutex_Unlock(client->mutex);
+	Client_Free(client);
+}
+
 INL static void WaitAllClientThreads(void) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
 		if(client) {
 			Clients_List[i] = NULL;
-			Waitable_Wait(client->waitend);
-			Mutex_Lock(client->mutex);
-			Mutex_Unlock(client->mutex);
-			Client_Free(client);
+			CloseCient(client);
 		}
 	}
 }
@@ -374,10 +383,7 @@ INL static void DoStep(cs_int32 delta) {
 		Client *client = Clients_List[i];
 		if(client && client->closed) {
 			Clients_List[client->id] = NULL;
-			Waitable_Wait(client->waitend);
-			Mutex_Lock(client->mutex);
-			Mutex_Unlock(client->mutex);
-			Client_Free(client);
+			CloseCient(client);
 		}
 	}
 	Waitable_Signal(SyncClients);

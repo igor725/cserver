@@ -822,10 +822,8 @@ INL static void PacketReceiverRaw(Client *client) {
 
 		if(packetSize > 0) {
 			cs_int32 len = Socket_Receive(client->sock, client->rdbuf, packetSize, MSG_WAITALL);
-
-			if(packetSize == len)
+			if((client->closed = packetSize != len) != true)
 				HandlePacket(client, client->rdbuf, packet, extended);
-			else client->closed = true;
 		}
 	} else client->closed = true;
 }
@@ -980,7 +978,6 @@ void Client_Kick(Client *client, cs_str reason) {
 	Socket_SetRecvTimeout(client->sock, 150);
 	Socket_Shutdown(client->sock, SD_SEND);
 	while(Socket_Receive(client->sock, client->rdbuf, 134, 0) > 0);
-	Socket_Close(client->sock);
 	Mutex_Unlock(client->mutex);
 }
 
