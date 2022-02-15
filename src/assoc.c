@@ -2,6 +2,8 @@
 #include "client.h"
 #include "world.h"
 #include "assoc.h"
+#include "platform.h"
+#include "list.h"
 
 AListField *headAssocType = NULL;
 

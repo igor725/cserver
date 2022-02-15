@@ -6,6 +6,7 @@
 #include "list.h"
 #include "compr.h"
 #include "block.h"
+#include "client.h"
 
 enum _EWorldDataItems {
 	DT_DIM,

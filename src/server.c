@@ -15,6 +15,9 @@
 #include "strstor.h"
 #include "command.h"
 #include "heartbeat.h"
+#include "websock.h"
+#include "world.h"
+#include "list.h"
 
 CStore *Server_Config = NULL;
 cs_str Server_Version = GIT_COMMIT_TAG;

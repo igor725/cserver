@@ -1,7 +1,9 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 #include "core.h"
-#include "client.h"
+#include "types/cpe.h"
+#include "types/client.h"
+#include "types/protocol.h"
 
 #define ValidateClientState(client, st, ret) \
 if(!Client_CheckState(client, st)) \
@@ -71,24 +73,6 @@ Mutex_Unlock(cl->mutex);
 #define EXT_PARTICLE 0x0D732743ul
 #define EXT_CUSTOMMODEL 0xB27EFA32ul
 #define EXT_PLUGINMESSAGE 0x59FA7285ul
-
-typedef cs_bool(*packetHandler)(Client *, cs_char *);
-
-typedef enum _EEntProp {
-	ROT_X = 0, // Вращение модели по оси X
-	ROT_Y,
-	ROT_Z
-} EEntProp;
-
-typedef struct _Packet {
-	cs_byte id;
-	cs_bool haveCPEImp;
-	cs_uint16 size, extSize;
-	cs_uint32 exthash;
-	cs_int32 extVersion;
-	packetHandler handler;
-	packetHandler extHandler;
-} Packet;
 
 API Packet *Packet_Get(cs_byte id);
 API void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler);

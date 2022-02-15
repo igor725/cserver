@@ -1,5 +1,6 @@
 #include "core.h"
 #include "str.h"
+#include "list.h"
 #include "generators.h"
 
 static cs_bool flatgenerator(World *world, void *data);

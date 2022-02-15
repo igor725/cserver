@@ -4,6 +4,7 @@
 #include "platform.h"
 #include "plugin.h"
 #include "strstor.h"
+#include "list.h"
 
 Plugin *Plugins_List[MAX_PLUGINS] = {0};
 

@@ -1,8 +1,8 @@
 #ifndef SERVER_H
 #define SERVER_H
 #include "core.h"
-#include "platform.h"
-#include "config.h"
+#include "types/platform.h"
+#include "types/config.h"
 
 #define CFG_SERVERIP_KEY "server-ip"
 #define CFG_SERVERPORT_KEY "server-port"

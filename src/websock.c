@@ -1,7 +1,7 @@
 #include "core.h"
 #include "str.h"
 #include "platform.h"
-#include "websocket.h"
+#include "websock.h"
 #include "strstor.h"
 #include "hash.h"
 

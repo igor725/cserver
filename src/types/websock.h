@@ -1,5 +1,5 @@
-#ifndef WEBSOCKET_H
-#define WEBSOCKET_H
+#ifndef WEBSOCKTYPES_H
+#define WEBSOCKTYPES_H
 #include "core.h"
 
 enum _WebSockState {
@@ -30,8 +30,4 @@ typedef struct _WebSock {
 	header[2],
 	mask[4];
 } WebSock;
-
-API cs_bool WebSock_DoHandshake(WebSock *ws);
-API cs_bool WebSock_ReceiveFrame(WebSock *ws);
-API cs_bool WebSock_SendFrame(WebSock *ws, cs_byte opcode, const cs_char *buf, cs_uint16 len);
-#endif // WEBSOCKET_H
+#endif

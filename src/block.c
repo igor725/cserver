@@ -1,8 +1,11 @@
 #include "core.h"
 #include "str.h"
+#include "world.h"
 #include "client.h"
 #include "block.h"
 #include "strstor.h"
+#include "platform.h"
+#include "list.h"
 
 static cs_str defaultBlockNames[] = {
 	"Air", "Stone", "Grass", "Dirt",

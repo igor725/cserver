@@ -5,11 +5,14 @@
 #include "platform.h"
 #include "block.h"
 #include "server.h"
+#include "growingbuffer.h"
 #include "protocol.h"
 #include "client.h"
 #include "event.h"
 #include "strstor.h"
 #include "compr.h"
+#include "world.h"
+#include "websock.h"
 
 Client *Broadcast = NULL;
 Client *Clients_List[MAX_CLIENTS] = {0};

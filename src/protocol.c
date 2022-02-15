@@ -5,12 +5,15 @@
 #include "client.h"
 #include "event.h"
 #include "server.h"
+#include "growingbuffer.h"
 #include "protocol.h"
 #include "platform.h"
 #include "command.h"
 #include "heartbeat.h"
 #include "strstor.h"
 #include "compr.h"
+#include "world.h"
+#include "config.h"
 
 static cs_uint16 extensionsCount = 0;
 static CPEExt *headExtension = NULL;

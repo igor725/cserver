@@ -1,7 +1,7 @@
 #ifndef HEARTBEAT_H
 #define HEARTBEAT_H
 #include "core.h"
-#include "client.h"
+#include "types/client.h"
 
 typedef cs_bool(*heartbeatKeyChecker)(cs_str secret, Client *client);
 

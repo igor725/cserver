@@ -1,14 +1,7 @@
 #ifndef GROWINGBUFFER_H
 #define GROWINGBUFFER_H
 #include "core.h"
-
-#define GROWINGBUFFER_ADDITIONAL 512
-
-typedef struct _GrowingBuffer {
-	cs_uint32 offset, size;
-	cs_uint32 maxsize;
-	cs_char *buffer;
-} GrowingBuffer;
+#include "types/growingbuffer.h"
 
 API void GrowingBuffer_SetMaxSize(GrowingBuffer *self, cs_uint32 maxsize);
 API cs_bool GrowingBuffer_Ensure(GrowingBuffer *self, cs_uint32 size);

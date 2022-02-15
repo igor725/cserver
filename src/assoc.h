@@ -1,21 +1,7 @@
 #ifndef ASSOC_H
 #define ASSOC_H
-#include <core.h>
-
-/**
- * @brief Перечисление возможных объектов для создания ассоцииации
- * 
- */
-typedef enum _EAssocBindType {
-	ASSOC_BIND_WORLD, /** Тип используется для ассоциации с мирами */
-	ASSOC_BIND_CLIENT /** Тип используется для ассоциации с игроками */
-} EAssocBindType;
-
-/**
- * @brief Уникальный номер ассоциативного типа
- * 
- */
-typedef cs_int16 AssocType;
+#include "core.h"
+#include "types/assoc.h"
 
 /**
  * @brief Создаёт новый ассоциативный тип.
@@ -51,7 +37,7 @@ API cs_bool Assoc_DelType(AssocType type);
  * @param size размер выделяемого блока (в байтах)
  * @return указатель на выделенную память
  */
-API void *Assoc_AllocFor(void *target, AssocType type, cs_size num, cs_size size);
+API AssocMem Assoc_AllocFor(void *target, AssocType type, cs_size num, cs_size size);
 
 /**
  * @brief Ищет выделенную ранее память для указанного объекта.
@@ -60,7 +46,7 @@ API void *Assoc_AllocFor(void *target, AssocType type, cs_size num, cs_size size
  * @param type ассоциативный тип
  * @return указатель на выделенную память, либо NULL, если она не выделялась
  */
-API void *Assoc_GetPtr(void *target, AssocType type);
+API AssocMem Assoc_GetPtr(void *target, AssocType type);
 
 /**
  * @brief Высвобождает выделенную ранее память для указанного объекта.

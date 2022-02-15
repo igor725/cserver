@@ -4,6 +4,10 @@
 #include "command.h"
 #include "consoleio.h"
 #include "strstor.h"
+#include "client.h"
+#include "world.h"
+#include "list.h"
+#include "platform.h"
 
 static struct {
 	void *lib;

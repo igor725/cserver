@@ -8,6 +8,9 @@
 #include "http.h"
 #include "hash.h"
 #include "strstor.h"
+#include "list.h"
+#include "client.h"
+#include "config.h"
 
 #define SECRET_LENGTH 32
 #define REQUEST "/server/heartbeat/?name=%s&port=%d&users=%d&max=%d&salt=%s&public=%s&web=true&software=%s"
