@@ -86,10 +86,10 @@ cs_bool WebSock_DoHandshake(WebSock *ws) {
 }
 
 cs_bool WebSock_ReceiveFrame(WebSock *ws) {
-	if(ws->state == WS_ST_DONE)
-		ws->state = WS_ST_HDR;
+	if(ws->state == WS_STATE_DONE)
+		ws->state = WS_STATE_HDR;
 
-	if(ws->state == WS_ST_HDR) {
+	if(ws->state == WS_STATE_HDR) {
 		cs_int32 len = Socket_Receive(ws->sock, ws->header, 2, MSG_WAITALL);
 
 		if(len == 2) {
@@ -101,39 +101,39 @@ cs_bool WebSock_ReceiveFrame(WebSock *ws) {
 				ws->plen = plen;
 
 				if(plen == 126) {
-					ws->state = WS_ST_PLEN;
+					ws->state = WS_STATE_PLEN;
 				} else if(plen < 126) {
-					ws->state = WS_ST_MASK;
+					ws->state = WS_STATE_MASK;
 				} else {
-					ws->error = WS_ERR_PAYLOAD_TOO_BIG;
+					ws->error = WS_ERROR_PAYLOAD_TOO_BIG;
 					return false;
 				}
 			} else {
-				ws->error = WS_ERR_MASK;
+				ws->error = WS_ERROR_MASK;
 				return false;
 			}
 		}
 	}
 
-	if(ws->state == WS_ST_PLEN) {
+	if(ws->state == WS_STATE_PLEN) {
 		cs_int32 len = Socket_Receive(ws->sock, (cs_char *)&ws->plen, 2, MSG_WAITALL);
 
 		if(len == 2) {
 			ws->plen = ntohs(ws->plen);
 			if(ws->plen > 131) {
-				ws->error = WS_ERR_PAYLOAD_TOO_BIG;
+				ws->error = WS_ERROR_PAYLOAD_TOO_BIG;
 				return false;
 			}
-			ws->state = WS_ST_MASK;
+			ws->state = WS_STATE_MASK;
 		}
 	}
 
-	if(ws->state == WS_ST_MASK) {
+	if(ws->state == WS_STATE_MASK) {
 		if(Socket_Receive(ws->sock, ws->mask, 4, MSG_WAITALL) == 4)
-			ws->state = WS_ST_RECVPL;
+			ws->state = WS_STATE_RECVPL;
 	}
 
-	if(ws->state == WS_ST_RECVPL) {
+	if(ws->state == WS_STATE_RECVPL) {
 		if(ws->plen > 0) {
 			cs_int32 len = Socket_Receive(ws->sock, ws->recvbuf, ws->plen, MSG_WAITALL);
 
@@ -141,16 +141,16 @@ cs_bool WebSock_ReceiveFrame(WebSock *ws) {
 				for(cs_int32 i = 0; i < len; i++)
 					ws->recvbuf[i] ^= ws->mask[i % 4];
 			} else {
-				ws->error = WS_ERR_PAYLOAD_LEN_MISMATCH;
+				ws->error = WS_ERROR_PAYLOAD_LEN_MISMATCH;
 				return false;
 			}
 		}
 
-		ws->state = WS_ST_DONE;
+		ws->state = WS_STATE_DONE;
 		return true;
 	}
 
-	ws->error = WS_ERR_UNKNOWN;
+	ws->error = WS_ERROR_UNKNOWN;
 	return false;
 }
 
