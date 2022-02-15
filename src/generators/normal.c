@@ -295,7 +295,7 @@ THREAD_FUNC(terrainThread) {
 	return 0;
 }
 
-static INL void makeCave(void) {
+static void makeCave(void) {
 	cs_uint16 caveLength = (cs_uint16)Random_Range(&ctx.rnd, gen_cave_min_length, gen_cave_max_length);
 
 	SVec pos;
@@ -489,7 +489,7 @@ THREAD_FUNC(treesThread) {
 	return 0;
 }
 
-static cs_float getHeightInPoint(cs_int16 x, cs_int16 z) {
+INL static cs_float getHeightInPoint(cs_int16 x, cs_int16 z) {
 	cs_int16 y;
 
 	for(y = ctx.dims->y; y > 0;) {

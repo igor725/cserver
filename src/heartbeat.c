@@ -20,7 +20,7 @@ static Mutex *gLock = NULL;
 static cs_bool inited = false;
 cs_char secretKey[SECRET_LENGTH * 4];
 
-static void NewSecret(void) {
+INL static void NewSecret(void) {
 	RNGState secrnd;
 	Random_SeedFromTime(&secrnd);
 
@@ -55,7 +55,7 @@ static void NewSecret(void) {
 	}
 }
 
-static void initHeartbeatModule(void) {
+INL static void initHeartbeatModule(void) {
 	gLock = Mutex_Create();
 	inited = true;
 
@@ -104,7 +104,7 @@ INL static void TrimReserved(cs_char *name) {
 	}
 }
 
-static void MakeHeartbeatRequest(Heartbeat *self) {
+INL static void MakeHeartbeatRequest(Heartbeat *self) {
 	cs_char reqstr[512], name[65], rsp[1024];
 	String_Copy(name, 65, Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY));
 	TrimReserved(name);
@@ -223,7 +223,7 @@ cs_bool Heartbeat_Run(Heartbeat *self) {
 	return true;
 }
 
-static void freeMemory(Heartbeat *self) {
+INL static void freeMemory(Heartbeat *self) {
 	if(self->started) {
 		self->started = false;
 		Waitable_Wait(self->isdone);

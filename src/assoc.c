@@ -16,7 +16,7 @@ INL static AssocBind *GetBind(AListField *a) {
 	return a ? (AssocBind *)a->value.ptr : NULL;
 }
 
-static AListField *AGetType(AssocType type, AssocBind **bind) {
+INL static AListField *AGetType(AssocType type, AssocBind **bind) {
 	AListField *ptr = NULL;
 
 	List_Iter(ptr, headAssocType) {
@@ -28,7 +28,7 @@ static AListField *AGetType(AssocType type, AssocBind **bind) {
 	return NULL;
 }
 
-static KListField *AGetNode(void *target, AssocBind *bind) {
+INL static KListField *AGetNode(void *target, AssocBind *bind) {
 	KListField *ptr;
 
 	switch(bind->type) {

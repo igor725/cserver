@@ -342,7 +342,7 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 	return true;
 }
 
-static void UpdateBlock(World *world, SVec *pos, BlockID block) {
+INL static void UpdateBlock(World *world, SVec *pos, BlockID block) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
 		if(client && Client_IsInWorld(client, world))

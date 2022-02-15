@@ -94,6 +94,7 @@ ECHO Architecture: %ARCH%
 
 IF "%DEBUG%"=="0" (
 	set CFLAGS=!CFLAGS! /MT
+	set LDFLAGS=!LDFLAGS! /RELEASE
 	ECHO Debug: disabled
 ) else (
 	SET SERVER_OUTROOT=!SERVER_OUTROOT!dbg
