@@ -68,6 +68,7 @@ API cs_bool Thread_Signal(Thread th, cs_int32 sig);
 API void Thread_Detach(Thread th);
 API void Thread_Join(Thread th);
 API void Thread_Sleep(cs_uint32 ms);
+API cs_error Thread_GetError(void);
 
 API Mutex *Mutex_Create(void);
 API void Mutex_Free(Mutex *handle);

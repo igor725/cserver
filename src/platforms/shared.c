@@ -202,3 +202,7 @@ cs_bool DLib_LoadAll(cs_str lib[], cs_str symlist[], void **ctx) {
 
 	return true;
 }
+
+cs_error Thread_GetError(void) {
+	return errno;
+}
