@@ -131,7 +131,7 @@ BlockID Client_GetStandBlock(Client *client) {
 
 cs_int8 Client_GetFluidLevel(Client *client, BlockID *fluid) {
 	if(!client->playerData) return 0;
-	SVec tpos; SVec_Copy(tpos, client->playerData->position)
+	SVec tpos; SVec_Copy(tpos, client->playerData->position);
 	if(tpos.x < 0 || tpos.y < 0 || tpos.z < 0) return 0;
 
 	BlockID id;
