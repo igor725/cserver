@@ -974,6 +974,7 @@ void Client_Kick(Client *client, cs_str reason) {
 	Vanilla_WriteKick(client, reason);
 	client->closed = true;
 	Mutex_Lock(client->mutex);
+	Socket_SetRecvTimeout(client->sock, 150);
 	Socket_Shutdown(client->sock, SD_SEND);
 	while(Socket_Receive(client->sock, client->rdbuf, 134, 0) > 0);
 	Socket_Close(client->sock);

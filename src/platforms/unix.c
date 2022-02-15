@@ -49,6 +49,12 @@ cs_bool Socket_Init(void) {
 	return true;
 }
 
+cs_bool Socket_SetRecvTimeout(Socket n, cs_ulong msec) {
+	struct timeval tv;
+	tv.tv_usec = msec * 1000;
+	return setsockopt(n, SOL_SOCKET, SO_RCVTIMEO, (const char *)&tv, sizeof(tv)) != 0;
+}
+
 void Socket_Close(Socket n) {
 	close(n);
 }

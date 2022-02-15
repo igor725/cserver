@@ -47,6 +47,10 @@ cs_bool Socket_Init(void) {
 	return WSAStartup(MAKEWORD(2, 2), &ws) != SOCKET_ERROR;
 }
 
+cs_bool Socket_SetRecvTimeout(Socket n, cs_ulong msec) {
+	return setsockopt(n, SOL_SOCKET, SO_RCVTIMEO, (const char *)&msec, sizeof(msec)) != SOCKET_ERROR;
+}
+
 void Socket_Close(Socket n) {
 	closesocket(n);
 }

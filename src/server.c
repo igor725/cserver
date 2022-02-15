@@ -91,7 +91,13 @@ INL static ClientID TryToGetIDFor(Client *client) {
 INL static void WaitAllClientThreads(void) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
-		if(client) Waitable_Wait(client->waitend);
+		if(client) {
+			Clients_List[i] = NULL;
+			Waitable_Wait(client->waitend);
+			Mutex_Lock(client->mutex);
+			Mutex_Unlock(client->mutex);
+			Client_Free(client);
+		}
 	}
 }
 
