@@ -2,6 +2,9 @@
 #define LISTTYPES_H
 #include "core.h"
 
+#define List_Iter(field, head) \
+for(field = head; field != NULL; field = field->prev)
+
 typedef union _MultiValue {
 	cs_byte num8;
 	cs_uint16 num16;

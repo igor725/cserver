@@ -3,9 +3,6 @@
 #include "core.h"
 #include "types/list.h"
 
-#define List_Iter(field, head) \
-for(field = head; field != NULL; field = field->prev)
-
 API AListField *AList_AddField(AListField **head, void *value);
 API cs_bool AList_Iter(AListField **head, void *ud, cs_bool(*callback)(AListField *, AListField **, void *));
 API UMultiValue AList_GetValue(AListField *field);

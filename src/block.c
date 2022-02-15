@@ -3,9 +3,8 @@
 #include "world.h"
 #include "client.h"
 #include "block.h"
-#include "strstor.h"
 #include "platform.h"
-#include "list.h"
+#include "types/list.h"
 
 static cs_str defaultBlockNames[] = {
 	"Air", "Stone", "Grass", "Dirt",
@@ -42,7 +41,7 @@ cs_bool Block_IsValid(World *world, BlockID id) {
 
 cs_str Block_GetName(World *world, BlockID id) {
 	if(!Block_IsValid(world, id))
-		return Sstor_Get("BLOCK_UNK");
+		return "Unknown block";
 
 	if(world->info.bdefines[id])
 		return world->info.bdefines[id]->name;

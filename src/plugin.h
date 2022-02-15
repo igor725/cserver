@@ -2,7 +2,6 @@
 #define PLUGIN_H
 #include "core.h"
 #include "platform.h"
-#include "types/list.h"
 #include "types/plugin.h"
 
 #define Plugin_Lock(_p) Mutex_Lock((_p)->mutex)

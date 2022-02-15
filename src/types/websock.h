@@ -1,6 +1,7 @@
 #ifndef WEBSOCKTYPES_H
 #define WEBSOCKTYPES_H
 #include "core.h"
+#include "types/platform.h"
 
 enum _WebSockState {
 	WS_ST_HDR,

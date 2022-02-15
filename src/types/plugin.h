@@ -1,6 +1,8 @@
 #ifndef PLUGINTYPES_H
 #define PLUGINTYPES_H
 #include "core.h"
+#include "types/platform.h"
+#include "types/list.h"
 
 typedef struct _PluginInterface {
 	cs_str iname;

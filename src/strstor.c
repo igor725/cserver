@@ -117,8 +117,6 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("PLUG_DEPR_API", "Please upgrade your server software. Plugin \"%s\" compiled for PluginAPI v%03d, but server uses v%d");
 	Sstor_Set("PLUG_DEPR", "Plugin \"%s\" is deprecated. Server uses PluginAPI v%03d but plugin compiled for v%03d");
 
-	Sstor_Set("BLOCK_UNK", "Unknown block");
-
 	Sstor_Set("Z_NOGZ", "Your zlib installation has no gzip support");
 	Sstor_Set("Z_LVL1", "Your zlib installation supports only one, lowest compression level!");
 	Sstor_Set("Z_LVL2", "This means less CPU load in deflate tasks, but the worlds will take much more space on your disk");
