@@ -45,6 +45,12 @@ typedef struct _onHandshakeDone {
 	World *world;
 } onHandshakeDone;
 
+typedef struct _onSpawn {
+	Client *client;
+	Vec *position;
+	Ang *angle;
+} onSpawn;
+
 typedef struct _onMessage {
 	Client *client;
 	cs_char *message;

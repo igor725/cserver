@@ -954,6 +954,12 @@ cs_bool Client_Spawn(Client *client) {
 	if(client->closed || !client->playerData || client->playerData->spawned)
 		return false;
 
+	onSpawn evt = {
+		.client = client,
+		.position = &client->playerData->position,
+		.angle = &client->playerData->angle
+	};
+	Event_Call(EVT_ONSPAWN, &evt);
 	Client_UpdateWorldInfo(client, client->playerData->world, true);
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
@@ -983,7 +989,6 @@ cs_bool Client_Spawn(Client *client) {
 	}
 
 	client->playerData->spawned = true;
-	Event_Call(EVT_ONSPAWN, client);
 	client->playerData->firstSpawn = false;
 	return true;
 }
