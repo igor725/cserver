@@ -169,9 +169,23 @@ COMMAND_FUNC(Stop) {
 	return false;
 }
 
+COMMAND_FUNC(Say) {
+	COMMAND_SETUSAGE("/say <message ...>")
+	if(ccdata->args) {
+		cs_char message[256];
+		if(String_FormatBuf(message, 256, "&eServer&f: %s", ccdata->args)) {
+			Client_Chat(Broadcast, MESSAGE_TYPE_CHAT, message);
+			return false;
+		}
+	}
+
+	COMMAND_PRINTUSAGE;
+}
+
 void Command_RegisterDefault(void) {
 	COMMAND_ADD(Help, CMDF_NONE, "Prints this message");
 	COMMAND_ADD(Stop, CMDF_OP, "Stops a server");
+	COMMAND_ADD(Say, CMDF_OP, "Sends a message to all players");
 }
 
 void Command_UnregisterAll(void) {
