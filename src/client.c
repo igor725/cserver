@@ -210,11 +210,10 @@ cs_bool Client_Despawn(Client *client) {
 }
 
 cs_bool Client_ChangeWorld(Client *client, World *world) {
-	if(Client_CheckState(client, PLAYER_STATE_MOTD))
+	if(!world || Client_CheckState(client, PLAYER_STATE_MOTD))
 		return false;
 
 	Client_Despawn(client);
-	client->playerData->state = PLAYER_STATE_MOTD;
 	client->playerData->reqWorldChange = world;
 	return true;
 }
@@ -844,7 +843,6 @@ NOINL static void SendWorld(Client *client, World *world) {
 	}
 
 	World_StartTask(world);
-
 	cs_bool hasfastmap = Client_GetExtVer(client, EXT_FASTMAP) == 1;
 	cs_bool isfallbackneeded = Client_GetExtVer(client, EXT_BLOCKDEF) < 1 ||
 	Client_GetExtVer(client, EXT_BLOCKDEF2) < 1 ||
@@ -887,6 +885,7 @@ NOINL static void SendWorld(Client *client, World *world) {
 		}
 
 		client->playerData->world = world;
+		client->playerData->state = PLAYER_STATE_MOTD;
 		client->playerData->position = world->info.spawnVec;
 		client->playerData->angle = world->info.spawnAng;
 
