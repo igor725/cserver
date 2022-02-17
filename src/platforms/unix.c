@@ -173,69 +173,75 @@ void Thread_Sleep(cs_uint32 ms) {
 
 Mutex *Mutex_Create(void) {
 	Mutex *ptr = Memory_Alloc(1, sizeof(Mutex));
-	cs_int32 ret = pthread_mutex_init(ptr, NULL);
-	if(ret) {
+	cs_int32 ret;
+
+	if((ret = pthread_mutexattr_settype(&ptr->attr, PTHREAD_MUTEX_RECURSIVE)) != 0) {
 		ERROR_PRINT(ret, true);
 	}
+
+	if((ret = pthread_mutex_init(&ptr->handle, &ptr->attr)) != 0) {
+		ERROR_PRINT(ret, true);
+	}
+
 	return ptr;
 }
 
-void Mutex_Free(Mutex *handle) {
-	cs_int32 ret = pthread_mutex_destroy(handle);
+void Mutex_Free(Mutex *mtx) {
+	cs_int32 ret = pthread_mutex_destroy(&mtx->handle);
 	if(ret) {
 		ERROR_PRINT(ret, true);
 	}
-	Memory_Free(handle);
+	Memory_Free(mtx);
 }
 
-void Mutex_Lock(Mutex *handle) {
-	cs_int32 ret = pthread_mutex_lock(handle);
+void Mutex_Lock(Mutex *mtx) {
+	cs_int32 ret = pthread_mutex_lock(&mtx->handle);
 	if(ret) {
 		ERROR_PRINT(ret, true);
 	}
 }
 
-void Mutex_Unlock(Mutex *handle) {
-	cs_int32 ret = pthread_mutex_unlock(handle);
+void Mutex_Unlock(Mutex *mtx) {
+	cs_int32 ret = pthread_mutex_unlock(&mtx->handle);
 	if(ret) {
 		ERROR_PRINT(ret, true);
 	}
 }
 
 Waitable *Waitable_Create(void) {
-	Waitable *handle = Memory_Alloc(1, sizeof(Waitable));
-	pthread_cond_init(&handle->cond, NULL);
-	handle->mutex = Mutex_Create();
-	handle->signalled = false;
-	return handle;
+	Waitable *wte = Memory_Alloc(1, sizeof(Waitable));
+	pthread_cond_init(&wte->cond, NULL);
+	wte->mutex = Mutex_Create();
+	wte->signalled = false;
+	return wte;
 }
 
-void Waitable_Free(Waitable *handle) {
-	pthread_cond_destroy(&handle->cond);
-	Mutex_Free(handle->mutex);
-	Memory_Free(handle);
+void Waitable_Free(Waitable *wte) {
+	pthread_cond_destroy(&wte->cond);
+	Mutex_Free(wte->mutex);
+	Memory_Free(wte);
 }
 
-void Waitable_Signal(Waitable *handle) {
-	Mutex_Lock(handle->mutex);
-	if(!handle->signalled) {
-		handle->signalled = true;
-		pthread_cond_signal(&handle->cond);
+void Waitable_Signal(Waitable *wte) {
+	Mutex_Lock(wte->mutex);
+	if(!wte->signalled) {
+		wte->signalled = true;
+		pthread_cond_signal(&wte->cond);
 	}
-	Mutex_Unlock(handle->mutex);
+	Mutex_Unlock(wte->mutex);
 }
 
-void Waitable_Reset(Waitable *handle) {
-	Mutex_Lock(handle->mutex);
-	handle->signalled = false;
-	Mutex_Unlock(handle->mutex);
+void Waitable_Reset(Waitable *wte) {
+	Mutex_Lock(wte->mutex);
+	wte->signalled = false;
+	Mutex_Unlock(wte->mutex);
 }
 
-void Waitable_Wait(Waitable *handle) {
-	Mutex_Lock(handle->mutex);
-	while(!handle->signalled)
-		pthread_cond_wait(&handle->cond, handle->mutex);
-	Mutex_Unlock(handle->mutex);
+void Waitable_Wait(Waitable *wte) {
+	Mutex_Lock(wte->mutex);
+	while(!wte->signalled)
+		pthread_cond_wait(&wte->cond, &wte->mutex->handle);
+	Mutex_Unlock(wte->mutex);
 }
 
 Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max) {

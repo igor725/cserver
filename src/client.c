@@ -883,7 +883,7 @@ NOINL static void SendWorld(Client *client, World *world) {
 	}
 
 	if(compr_ok) {
-		cs_byte indata[4096], data[1029] = {0x03};
+		cs_byte indata[10240] = {0}, data[1029] = {0x03};
 		cs_uint16 *len = (cs_uint16 *)(data + 1);
 		cs_byte *cmpdata = data + 3;
 		cs_byte *progr = data + 1028;
@@ -907,21 +907,20 @@ NOINL static void SendWorld(Client *client, World *world) {
 		client->playerData->angle = world->info.spawnAng;
 
 		while(compr_ok && !client->closed && !Compr_IsInState(&client->compr, COMPR_STATE_DONE)) {
-			cs_uint32 avail = min(wsize - sent, 4096);
+			cs_uint32 avail = min(wsize - sent, 10240);
 			if(avail > 0) {
 				Memory_Copy(indata, map + sent, avail);
-				if(isfallbackneeded) {
-					for(cs_uint32 i = 0; i < avail; i++)
-						indata[i] = Block_GetFallbackFor(world, indata[i]);
-				}
+				for(cs_uint32 i = 0; isfallbackneeded && i < avail; i++)
+					indata[i] = Block_GetFallbackFor(world, indata[i]);
 				Compr_SetInBuffer(&client->compr, indata, avail);
+				sent += avail;
 			}
 
 			do {
 				Mutex_Lock(client->mutex);
 				Compr_SetOutBuffer(&client->compr, cmpdata, 1024);
 				if((compr_ok = Compr_Update(&client->compr)) == true) {
-					if(!client->closed && avail > 0) {
+					if(!client->closed && client->compr.written > 0) {
 						*len = htons((cs_uint16)client->compr.written);
 						*progr = (cs_byte)(((cs_float)sent / wsize) * 100);
 						compr_ok = Client_RawSend(client, (cs_char *)data, 1028);
@@ -929,7 +928,6 @@ NOINL static void SendWorld(Client *client, World *world) {
 				}
 				Mutex_Unlock(client->mutex);
 			} while(compr_ok && Compr_IsInState(&client->compr, COMPR_STATE_INPROCESS));
-			sent += avail;
 		}
 
 		if(compr_ok) {

@@ -29,7 +29,10 @@ typedef DIR *ITER_DIR;
 typedef struct dirent *ITER_FILE;
 typedef void *TRET;
 typedef pthread_t Thread;
-typedef pthread_mutex_t Mutex;
+typedef struct _UMutex {
+	pthread_mutex_t handle;
+	pthread_mutexattr_t attr;
+} Mutex;
 typedef sem_t Semaphore;
 typedef void TSHND_RET;
 typedef cs_int32 TSHND_PARAM;

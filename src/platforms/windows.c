@@ -171,17 +171,17 @@ Mutex *Mutex_Create(void) {
 	return ptr;
 }
 
-void Mutex_Free(Mutex *handle) {
-	DeleteCriticalSection(handle);
-	Memory_Free(handle);
+void Mutex_Free(Mutex *mtx) {
+	DeleteCriticalSection(mtx);
+	Memory_Free(mtx);
 }
 
-void Mutex_Lock(Mutex *handle) {
-	EnterCriticalSection(handle);
+void Mutex_Lock(Mutex *mtx) {
+	EnterCriticalSection(mtx);
 }
 
-void Mutex_Unlock(Mutex *handle) {
-	LeaveCriticalSection(handle);
+void Mutex_Unlock(Mutex *mtx) {
+	LeaveCriticalSection(mtx);
 }
 
 Waitable *Waitable_Create(void) {
@@ -192,22 +192,22 @@ Waitable *Waitable_Create(void) {
 	return handle;
 }
 
-void Waitable_Free(Waitable *handle) {
-	if(!CloseHandle(handle)) {
+void Waitable_Free(Waitable *wte) {
+	if(!CloseHandle(wte)) {
 		Error_PrintSys(true);
 	}
 }
 
-void Waitable_Reset(Waitable *handle) {
-	ResetEvent(handle);
+void Waitable_Reset(Waitable *wte) {
+	ResetEvent(wte);
 }
 
-void Waitable_Signal(Waitable *handle) {
-	SetEvent(handle);
+void Waitable_Signal(Waitable *wte) {
+	SetEvent(wte);
 }
 
-void Waitable_Wait(Waitable *handle) {
-	WaitForSingleObject(handle, INFINITE);
+void Waitable_Wait(Waitable *wte) {
+	WaitForSingleObject(wte, INFINITE);
 }
 
 Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max) {

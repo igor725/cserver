@@ -71,15 +71,15 @@ API void Thread_Sleep(cs_uint32 ms);
 API cs_error Thread_GetError(void);
 
 API Mutex *Mutex_Create(void);
-API void Mutex_Free(Mutex *handle);
-API void Mutex_Lock(Mutex *handle);
-API void Mutex_Unlock(Mutex *handle);
+API void Mutex_Free(Mutex *mtx);
+API void Mutex_Lock(Mutex *mtx);
+API void Mutex_Unlock(Mutex *mtx);
 
 API Waitable *Waitable_Create(void);
-API void Waitable_Free(Waitable *handle);
-API void Waitable_Signal(Waitable *handle);
-API void Waitable_Wait(Waitable *handle);
-API void Waitable_Reset(Waitable *handle);
+API void Waitable_Free(Waitable *wte);
+API void Waitable_Signal(Waitable *wte);
+API void Waitable_Wait(Waitable *wte);
+API void Waitable_Reset(Waitable *wte);
 
 API Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max);
 API cs_bool Semaphore_TryWait(Semaphore *sem, cs_ulong timeout);
