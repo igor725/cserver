@@ -23,7 +23,7 @@ SAN=0
 DEBUG=0
 OPT="-O2"
 WARN=""
-ROOT="."
+ROOT=$(dirname "$(readlink -f "$0")")
 MACH=$($CC -dumpmachine)
 if [ $MACH = "" ]; then
 	MACH="unknown"
@@ -92,7 +92,19 @@ done
 if [ $GITUPD -eq 1 ]; then
 	if [ $PLUGIN_BUILD -eq 1 ]; then
 		pushd "../cs-$PLUGIN_NAME"
-		git pull
+		git fetch origin
+		if [ $? -ne 0 ]; then
+			echo "!!! Failed to fetch $PLUGIN_NAME repo"
+			exit 1
+		fi
+		BRANCH=$(git rev-parse --abbrev-ref HEAD)
+		if [ -f "$PLUGINS_DIR/$OUTBIN" ] && [ "$CSBUILD_NOUPDATE" != "ignore" ]; then
+			if [ $(git rev-list HEAD..origin/$BRANCH --count) -eq 0 ]; then
+				echo "Nothing updated"
+				exit 0
+			fi
+		fi
+		git merge --ff-only
 		if [ $? -ne 0 ]; then
 			echo "!!! Failed to update $PLUGIN_NAME"
 			popd
