@@ -39,6 +39,7 @@ typedef struct _PlayerData {
 } PlayerData;
 
 typedef struct _Client {
+	cs_str kickReason; // Причина кика, если имеется
 	Waitable *waitend; // Ожидание завершения потока клиента
 	cs_bool closed; // В случае значения true сервер прекращает общение с клиентом
 	cs_bool noflush; // Приостанавливает отправку пакетов клиенту, что приводит к заполнению буфера

@@ -691,6 +691,10 @@ void Client_Free(Client *client) {
 		Memory_Free(client->playerData);
 		client->playerData = NULL;
 	}
+	if(client->kickReason) {
+		Memory_Free((void *)client->kickReason);
+		client->kickReason = false;
+	}
 
 	if(client->cpeData) {
 		CPEExt *prev, *ptr = client->cpeData->headExtension;
@@ -1009,10 +1013,15 @@ cs_bool Client_Spawn(Client *client) {
 	return true;
 }
 
+cs_str Client_GetDisconnectReason(Client *client) {
+	return client->kickReason ? client->kickReason : "Disconnect";
+}
+
 void Client_Kick(Client *client, cs_str reason) {
 	if(client->closed) return;
 	if(!reason) reason = Sstor_Get("KICK_NOREASON");
 	Vanilla_WriteKick(client, reason);
+	client->kickReason = String_AllocCopy(reason);
 	client->closed = true;
 	Mutex_Lock(client->mutex);
 	Socket_SetRecvTimeout(client->sock, 150);
