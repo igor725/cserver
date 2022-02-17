@@ -287,6 +287,16 @@ void Vanilla_WriteKick(Client *client, cs_str reason) {
 	PacketWriter_EndAnytime(client);
 }
 
+INL static cs_bool FinishHandshake(Client *client) {
+	onHandshakeDone evt = {
+		.client = client,
+		.world = World_Main
+	};
+
+	return Event_Call(EVT_ONHANDSHAKEDONE, &evt) &&
+	Client_ChangeWorld(client, evt.world);
+}
+
 cs_bool Handler_Handshake(Client *client, cs_char *data) {
 	if(client->playerData) return false;
 	cs_byte protoVer = *data++;
@@ -333,11 +343,8 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 			CPE_WriteExtEntry(client, ptr);
 			ptr = ptr->next;
 		}
-	} else {
-		if(!Event_Call(EVT_ONHANDSHAKEDONE, client))
-			return false;
-		Client_ChangeWorld(client, World_Main);
-	}
+		CPE_CustomBlockSupportLevel(client, 1);
+	} else return FinishHandshake(client);
 
 	return true;
 }
@@ -346,7 +353,7 @@ INL static void UpdateBlock(World *world, SVec *pos, BlockID block) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
 		if(client && Client_IsInWorld(client, world))
-			Vanilla_WriteSetBlock(client, pos, block);
+			Client_SetBlock(client, pos, block);
 	}
 }
 
@@ -569,7 +576,14 @@ void CPE_WriteClickDistance(Client *client, cs_uint16 dist) {
 	PacketWriter_EndIngame(client);
 }
 
-// 0x13 - CustomBlocksSupportLevel
+void CPE_CustomBlockSupportLevel(Client *client, cs_byte level) {
+	PacketWriter_Start(client, 2);
+
+	*data++ = 0x13;
+	*data++ = level;
+
+	PacketWriter_EndAnytime(client);
+}
 
 void CPE_WriteHoldThis(Client *client, BlockID block, cs_bool preventChange) {
 	PacketWriter_Start(client, 3);
@@ -975,12 +989,21 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 	client->cpeData->headExtension = tmp;
 
 	if(--client->cpeData->_extCount == 0) {
-		if(!Event_Call(EVT_ONHANDSHAKEDONE, client))
-			return false;
-		Client_ChangeWorld(client, World_Main);
+		if(Client_GetExtVer(client, EXT_CUSTOMBLOCKS))
+			return true;
+
+		return FinishHandshake(client);
 	}
 
 	return true;
+}
+
+cs_bool CPEHandler_SetCBVer(Client *client, cs_char *data) {
+	ValidateCpeClient(client, false)
+	ValidateClientState(client, PLAYER_STATE_INITIAL, false)
+	if(Client_GetExtVer(client, EXT_CUSTOMBLOCKS) < 1) return false;
+	client->cpeData->cbLevel = *data;
+	return FinishHandshake(client);
 }
 
 cs_bool CPEHandler_PlayerClick(Client *client, cs_char *data) {
@@ -1075,7 +1098,7 @@ static const struct extReg {
 	cs_int32 version;
 } serverExtensions[] = {
 	{"ClickDistance", 1},
-	// {"CustomBlocks", 1},
+	{"CustomBlocks", 1},
 	{"HeldBlock", 1},
 	{"EmoteFix", 1},
 	{"TextHotKey", 1},
@@ -1131,6 +1154,7 @@ void Packet_RegisterDefault(void) {
 
 	Packet_Register(0x10, 66, CPEHandler_ExtInfo);
 	Packet_Register(0x11, 68, CPEHandler_ExtEntry);
+	Packet_Register(0x13, 1, CPEHandler_SetCBVer);
 	Packet_Register(0x2B,  3, CPEHandler_TwoWayPing);
 	Packet_Register(0x22, 14, CPEHandler_PlayerClick);
 	Packet_SetCPEHandler(0x08, EXT_ENTPOS, 1, 15, NULL);

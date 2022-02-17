@@ -35,6 +35,7 @@ typedef struct _CustomParticle {
 typedef struct _BlockDef {
 	cs_char name[65]; /** Название блока */
 	BlockID id; /** Уникальный номер блока */
+	BlockID fallback; /** Блок-замена, если клиент не поддерживает дополнение */
 	cs_byte flags; /** Флаги блока */
 	union {
 		struct _BlockParamsExt {
@@ -91,6 +92,7 @@ typedef struct _CPEData {
 	cs_uint64 pingStart; // Время начала пинг-запроса
 	cs_int32 rotation[3]; // Вращение модели игрока в градусах [EntityProperty]
 	cs_uint16 clickDist; // Расстояние клика игрока
+	cs_byte cbLevel; // Уровень дополнения CustomBlocks, пока не используется
 } CPEData;
 
 typedef struct _CGroup {

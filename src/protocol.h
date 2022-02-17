@@ -126,6 +126,7 @@ API void CPE_RegisterServerExtension(cs_str name, cs_int32 version);
 NOINL void CPE_WriteInfo(Client *client);
 NOINL void CPE_WriteExtEntry(Client *client, CPEExt *ext);
 NOINL void CPE_WriteClickDistance(Client *client, cs_uint16 dist);
+NOINL void CPE_CustomBlockSupportLevel(Client *client, cs_byte level);
 NOINL void CPE_WriteInventoryOrder(Client *client, cs_byte order, BlockID block);
 NOINL void CPE_WriteHoldThis(Client *client, BlockID block, cs_bool preventChange);
 NOINL void CPE_WriteSetHotKey(Client *client, cs_str action, cs_int32 keycode, cs_int8 keymod);

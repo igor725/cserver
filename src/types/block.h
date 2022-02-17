@@ -70,7 +70,25 @@ typedef enum _EBlockIDs {
 	BLOCK_TNT = 46, /** Динамит */
 	BLOCK_BOOKSHELF = 47, /** Книжная полка */
 	BLOCK_MOSSY_ROCKS = 48, /** Замшелый булыжник */
-	BLOCK_OBSIDIAN = 49 /** Обсидиан */
+	BLOCK_OBSIDIAN = 49, /** Обсидиан */
+
+	/** Блоки из CPE расширения CustomBlocks */
+	BLOCK_COBBLESLAB = 50,
+	BLOCK_ROPE = 51,
+	BLOCK_SANDSTONE = 52,
+	BLOCK_SNOW = 53,
+	BLOCK_FIRE = 54,
+	BLOCK_LIGHTPINK = 55,
+	BLOCK_FORESTGREEN = 56,
+	BLOCK_BROWN = 57,
+	BLOCK_DEEPBLUE = 58,
+	BLOCK_TURQUOISE = 59,
+	BLOCK_ICE = 60,
+	BLOCK_CERAMICTILE = 61,
+	BLOCK_MAGMA = 62,
+	BLOCK_PILLAR = 63,
+	BLOCK_CRATE = 64,
+	BLOCK_STONEBRICK = 65
 } EBlockIDs;
 
 typedef struct _BulkBlockUpdate {

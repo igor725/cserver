@@ -101,6 +101,10 @@ cs_bool Compr_Init(Compr *ctx, ComprType type) {
 	return ctx->ret == Z_OK;
 }
 
+cs_bool Compr_IsInState(Compr *ctx, ComprState state) {
+	return ctx->state == state;
+}
+
 cs_ulong Compr_CRC32(const cs_byte *data, cs_uint32 len) {
 	if(!zlib.crc32) return 0x00000000;
 	return zlib.crc32(0, data, len);
@@ -108,6 +112,7 @@ cs_ulong Compr_CRC32(const cs_byte *data, cs_uint32 len) {
 
 void Compr_SetInBuffer(Compr *ctx, void *data, cs_uint32 size) {
 	z_streamp stream = (z_streamp )ctx->stream;
+	ctx->state = COMPR_STATE_INPROCESS;
 	stream->avail_in = size;
 	stream->next_in = data;
 }
@@ -169,6 +174,14 @@ cs_str Compr_GetLastError(Compr *ctx) {
 cs_str Compr_GetError(cs_int32 code) {
 	if(!zlib.error) return "zlib is not loaded correctly";
 	return zlib.error(code);
+}
+
+cs_uint32 Compr_GetQueuedSize(Compr *ctx) {
+	return ctx->queued;
+}
+
+cs_uint32 Compr_GetWrittenSize(Compr *ctx) {
+	return ctx->written;
 }
 
 void Compr_Reset(Compr *ctx) {

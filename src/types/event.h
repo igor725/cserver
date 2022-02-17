@@ -40,6 +40,11 @@ typedef struct _EventRegBunch {
 	void *evtfunc;
 } EventRegBunch;
 
+typedef struct _onHandshakeDone {
+	Client *client;
+	World *world;
+} onHandshakeDone;
+
 typedef struct _onMessage {
 	Client *client;
 	cs_char *message;

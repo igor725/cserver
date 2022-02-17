@@ -390,6 +390,10 @@ cs_bool Client_IsFirstSpawn(Client *client) {
 }
 
 void Client_SetBlock(Client *client, SVec *pos, BlockID id) {
+	if(Client_GetExtVer(client, EXT_CUSTOMBLOCKS) < 1 ||
+	(Client_GetExtVer(client, EXT_BLOCKDEF) || Client_GetExtVer(client, EXT_BLOCKDEF2)) < 1)
+		id = Block_GetFallbackFor(Client_GetWorld(client), id);
+
 	Vanilla_WriteSetBlock(client, pos, id);
 }
 
@@ -842,30 +846,33 @@ NOINL static void SendWorld(Client *client, World *world) {
 	World_StartTask(world);
 
 	cs_bool hasfastmap = Client_GetExtVer(client, EXT_FASTMAP) == 1;
+	cs_bool isfallbackneeded = Client_GetExtVer(client, EXT_BLOCKDEF) < 1 ||
+	Client_GetExtVer(client, EXT_BLOCKDEF2) < 1 ||
+	Client_GetExtVer(client, EXT_CUSTOMBLOCKS) < 1;
+	cs_byte *map = NULL;
 	cs_uint32 wsize = 0;
 	cs_bool compr_ok;
 
 	if(hasfastmap) {
 		compr_ok = Compr_Init(&client->compr, COMPR_TYPE_DEFLATE);
 		if(compr_ok) {
-			cs_byte *map = World_GetBlockArray(world, &wsize);
-			Compr_SetInBuffer(&client->compr, map, wsize);
+			map = World_GetBlockArray(world, &wsize);
 			CPE_WriteFastMapInit(client, wsize);
 		}
 	} else {
 		compr_ok = Compr_Init(&client->compr, COMPR_TYPE_GZIP);
 		if(compr_ok) {
-			cs_byte *map = World_GetData(world, &wsize);
-			Compr_SetInBuffer(&client->compr, map, wsize);
+			map = World_GetData(world, &wsize);
 			Vanilla_WriteLvlInit(client);
 		}
 	}
 
 	if(compr_ok) {
-		cs_byte data[1029] = {0x03};
+		cs_byte indata[4096], data[1029] = {0x03};
 		cs_uint16 *len = (cs_uint16 *)(data + 1);
 		cs_byte *cmpdata = data + 3;
 		cs_byte *progr = data + 1028;
+		cs_uint32 sent = 0;
 
 		if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
 			World *oldworld = client->playerData->world;
@@ -883,19 +890,31 @@ NOINL static void SendWorld(Client *client, World *world) {
 		client->playerData->position = world->info.spawnVec;
 		client->playerData->angle = world->info.spawnAng;
 
-		do {
-			if(!compr_ok || client->closed) break;
-			Mutex_Lock(client->mutex);
-			Compr_SetOutBuffer(&client->compr, cmpdata, 1024);
-			if((compr_ok = Compr_Update(&client->compr)) == true) {
-				if(!client->closed && client->compr.written) {
-					*len = htons((cs_uint16)client->compr.written);
-					*progr = 100 - (cs_byte)((cs_float)client->compr.queued / wsize * 100);
-					compr_ok = Client_RawSend(client, (cs_char *)data, 1028);
+		while(compr_ok && !client->closed && !Compr_IsInState(&client->compr, COMPR_STATE_DONE)) {
+			cs_uint32 avail = min(wsize - sent, 4096);
+			if(avail > 0) {
+				Memory_Copy(indata, map + sent, avail);
+				if(isfallbackneeded) {
+					for(cs_uint32 i = 0; i < avail; i++)
+						indata[i] = Block_GetFallbackFor(world, indata[i]);
 				}
+				Compr_SetInBuffer(&client->compr, indata, avail);
 			}
-			Mutex_Unlock(client->mutex);
-		} while(client->compr.state != COMPR_STATE_DONE);
+
+			do {
+				Mutex_Lock(client->mutex);
+				Compr_SetOutBuffer(&client->compr, cmpdata, 1024);
+				if((compr_ok = Compr_Update(&client->compr)) == true) {
+					if(!client->closed && avail > 0) {
+						*len = htons((cs_uint16)client->compr.written);
+						*progr = (cs_byte)(((cs_float)sent / wsize) * 100);
+						compr_ok = Client_RawSend(client, (cs_char *)data, 1028);
+					}
+				}
+				Mutex_Unlock(client->mutex);
+			} while(Compr_IsInState(&client->compr, COMPR_STATE_INPROCESS));
+			sent += avail;
+		}
 
 		if(compr_ok) {
 			Vanilla_WriteLvlFin(client, &world->info.dimensions);

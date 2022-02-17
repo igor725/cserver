@@ -13,6 +13,15 @@
 API cs_bool Compr_Init(Compr *ctx, ComprType type);
 
 /**
+ * @brief Проверяет, находится ли архиватор в указанном состоянии.
+ * 
+ * @param ctx указатель на контекст архиватора
+ * @param state ожидаемое состояние
+ * @return true - находится, false - нет
+ */
+API cs_bool Compr_IsInState(Compr *ctx, ComprState state);
+
+/**
  * @brief Возвращает CRC32 хеш для переданных данных.
  * 
  * @param data указатель на данные
@@ -62,6 +71,27 @@ API cs_str Compr_GetError(cs_int32 code);
  * @return строка с ошибкой
  */
 API cs_str Compr_GetLastError(Compr *ctx);
+
+/**
+ * @brief Возвращает количество (в байтах) данных,
+ * которые в данный момент необходимо сжать.
+ * 
+ * Обновляется ТОЛЬКО после полного шага архиватора!
+ * 
+ * @param ctx указатель на контекст архиватора
+ * @return количество запланированных на сжатие данных
+ */
+API cs_uint32 Compr_GetQueuedSize(Compr *ctx);
+
+/**
+ * @brief Возвращает количество (в байтах) данных,
+ * которые были записаны в выходной буфер с момента
+ * последнего исполнения функции Compr_Update.
+ * 
+ * @param ctx 
+ * @return API 
+ */
+API cs_uint32 Compr_GetWrittenSize(Compr *ctx);
 
 /**
  * @brief Возвращает архиватор в начальное состояние.

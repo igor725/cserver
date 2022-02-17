@@ -32,11 +32,40 @@ static cs_str defaultBlockNames[] = {
 	"Forest-Green Wool", "Brown Wool",
 	"Deep-Blue Wool", "Turquoise Wool", "Ice",
 	"Ceramic Tile", "Magma", "Pillar", "Crate",
-	"Stone Brick"
+	"Stone Brick", "Cobblestone Slab", "Rope",
+	"Sandstone", "Snow", "Fire", "Light Pink Wool",
+	"Forest Green Wool", "Brown Wool", "Deep Blue",
+	"Turquoise Wool", "Ice", "Ceramic Tile", "Magma",
+	"Pillar", "Crate", "Stone Brick"
 };
 
 cs_bool Block_IsValid(World *world, BlockID id) {
-	return id < 254 && (id < 50 || world->info.bdefines[id] != NULL);
+	return id < 254 && (id < 66 || world->info.bdefines[id] != NULL);
+}
+
+BlockID Block_GetFallbackFor(World *world, BlockID id) {
+	if(world->info.bdefines[id])
+		return world->info.bdefines[id]->fallback;
+
+	switch(id) {
+		case BLOCK_COBBLESLAB: return BLOCK_SLAB;
+		case BLOCK_ROPE: return BLOCK_BROWN_SHROOM;
+		case BLOCK_SANDSTONE: return BLOCK_SAND;
+		case BLOCK_SNOW: return BLOCK_AIR;
+		case BLOCK_FIRE: return BLOCK_LAVA;
+		case BLOCK_LIGHTPINK: return BLOCK_PINK;
+		case BLOCK_FORESTGREEN: return BLOCK_GREEN;
+		case BLOCK_BROWN: return BLOCK_DIRT;
+		case BLOCK_DEEPBLUE: return BLOCK_BLUE;
+		case BLOCK_TURQUOISE: return BLOCK_CYAN;
+		case BLOCK_ICE: return BLOCK_GLASS;
+		case BLOCK_CERAMICTILE: return BLOCK_IRON;
+		case BLOCK_MAGMA: return BLOCK_OBSIDIAN;
+		case BLOCK_PILLAR: return BLOCK_WHITE;
+		case BLOCK_CRATE: return BLOCK_WOOD;
+		case BLOCK_STONEBRICK: return BLOCK_STONE;
+		default: return id;
+	}
 }
 
 cs_str Block_GetName(World *world, BlockID id) {
