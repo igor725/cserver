@@ -755,7 +755,11 @@ cs_bool Client_RawSend(Client *client, cs_char *buf, cs_int32 len) {
 
 void Client_SetNoFlush(Client *client, cs_bool state) {
 	client->noflush = state;
-	if(!state) Client_FlushBuffer(client);
+	if(!state) {
+		Mutex_Lock(client->mutex);
+		Client_FlushBuffer(client);
+		Mutex_Unlock(client->mutex);
+	}
 }
 
 cs_bool Client_SendAnytimeData(Client *client, cs_int32 size) {
@@ -811,7 +815,7 @@ INL static void PacketReceiverWs(Client *client) {
 INL static void PacketReceiverRaw(Client *client) {
 	Packet *packet;
 	cs_uint16 packetSize;
-	cs_byte packetId;
+	cs_byte packetId = 0xFF;
 	cs_bool extended = false;
 
 	if(Socket_Receive(client->sock, (cs_char *)&packetId, 1, 0) == 1) {
@@ -824,11 +828,24 @@ INL static void PacketReceiverRaw(Client *client) {
 		packetSize = GetPacketSizeFor(packet, client, &extended);
 
 		if(packetSize > 0) {
-			cs_int32 len = Socket_Receive(client->sock, client->rdbuf, packetSize, MSG_WAITALL);
-			if((client->closed = packetSize != len) != true)
-				HandlePacket(client, client->rdbuf, packet, extended);
+			cs_uint32 offset = 0;
+			while(Server_Active) {
+				cs_int32 len = Socket_Receive(client->sock, client->rdbuf + offset, packetSize - offset, MSG_WAITALL);
+
+				if(len > 0) {
+					offset += len;
+
+					if(offset == packetSize) {
+						HandlePacket(client, client->rdbuf, packet, extended);
+						break;
+					}
+				} else if(Thread_GetError() != EAGAIN) {
+					client->closed = true;
+					break;
+				}
+			}
 		}
-	} else client->closed = true;
+	} else client->closed = Thread_GetError() != EAGAIN;
 }
 
 NOINL static void SendWorld(Client *client, World *world) {
@@ -911,14 +928,16 @@ NOINL static void SendWorld(Client *client, World *world) {
 					}
 				}
 				Mutex_Unlock(client->mutex);
-			} while(Compr_IsInState(&client->compr, COMPR_STATE_INPROCESS));
+			} while(compr_ok && Compr_IsInState(&client->compr, COMPR_STATE_INPROCESS));
 			sent += avail;
 		}
 
 		if(compr_ok) {
 			Vanilla_WriteLvlFin(client, &world->info.dimensions);
+			Mutex_Lock(client->mutex);
 			client->playerData->state = PLAYER_STATE_INGAME;
 			Client_FlushBuffer(client);
+			Mutex_Unlock(client->mutex);
 			Client_Spawn(client);
 		} else
 			Client_KickFormat(client, Sstor_Get("KICK_ZERR"), Compr_GetLastError(&client->compr));

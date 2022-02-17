@@ -52,7 +52,7 @@ THREAD_FUNC(ClientInitThread) {
 	if(attempt < 10) {
 		Socket_SetRecvTimeout(client->sock, 30000);
 
-		while(!client->closed) {
+		while(!client->closed && Server_Active) {
 			Waitable_Wait(SyncClients);
 			if(!client->closed)
 				Client_Tick(client);
