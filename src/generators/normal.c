@@ -11,7 +11,8 @@ gen_enable_ores = true;
 static cs_uint16 gen_cave_radius = 3,
 gen_cave_min_length = 100,
 gen_cave_max_length = 500,
-gen_ore_vein_size = 3,
+gen_ore_vein_min_size = 4,
+gen_ore_vein_max_size = 9,
 gen_gravel_vein_size = 14,
 gen_biome_step = 20,
 gen_biome_radius = 5;
@@ -382,21 +383,20 @@ THREAD_FUNC(oresThread) {
 
 	SVec pos, tmp;
 	for(; oreCount > 0; oreCount--) {
-		pos.x = (cs_int16)Random_Range(&ctx.rnd, 0, ctx.dims->x - gen_ore_vein_size);
-		pos.z = (cs_int16)Random_Range(&ctx.rnd, 0, ctx.dims->z - gen_ore_vein_size);
+		cs_uint16 vein_size = (cs_uint16)Random_Range(&ctx.rnd, gen_ore_vein_min_size, gen_ore_vein_max_size);
+		pos.x = (cs_int16)Random_Range(&ctx.rnd, 0, ctx.dims->x - vein_size);
+		pos.z = (cs_int16)Random_Range(&ctx.rnd, 0, ctx.dims->z - vein_size);
 		pos.y = (cs_int16)(3.0f * Random_Float(&ctx.rnd) *
-		(cs_float)min(ctx.dims->y - gen_ore_vein_size, ctx.heightGrass + 15));
+		(cs_float)min(ctx.dims->y - vein_size, ctx.heightGrass + 15));
 
 		BlockID id = (BlockID)Random_Range(&ctx.rnd, BLOCK_GOLD_ORE, BLOCK_COAL_ORE);
-		for(tmp.x = 0; tmp.x < gen_ore_vein_size; tmp.x++) {
-			for(tmp.y = 0; tmp.y < gen_ore_vein_size; tmp.y++) {
-				for(tmp.z = 0; tmp.z < gen_ore_vein_size; tmp.z++) {
-					pos.x += tmp.x;
-					pos.y += tmp.y;
-					pos.z += tmp.z;
-					if(pos.x < ctx.dims->x && pos.y < ctx.dims->y && pos.z < ctx.dims->z)
-						if(Random_Float(&ctx.rnd) > 0.7f && getBlock(pos) == 1)
-							setBlock(pos, id);
+		for(tmp.x = -vein_size; tmp.x < vein_size; tmp.x++) {
+			for(tmp.y = -vein_size; tmp.y < vein_size; tmp.y++) {
+				for(tmp.z = -vein_size; tmp.z < vein_size; tmp.z++) {
+					pos.x += tmp.x; pos.y += tmp.y; pos.z += tmp.z;
+					if(pos.x < ctx.dims->x && pos.y < ctx.dims->y && pos.z < ctx.dims->z &&
+					pos.x > 0 && pos.y > 0 && pos.z > 0)
+						if(getBlock(pos) == 1) setBlock(pos, id);
 				}
 			}
 		}

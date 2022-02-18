@@ -68,5 +68,5 @@ cs_float Random_Float(RNGState *seed) {
 }
 
 cs_int32 Random_Range(RNGState *rnd, cs_int32 min, cs_int32 max) {
-	return min + Random_Next(rnd, max - min);
+	return min + Random_Next(rnd, max + 1 - min);
 }
