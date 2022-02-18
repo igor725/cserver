@@ -143,11 +143,7 @@ COMMAND_FUNC(Help) {
 	cs_bool availOnly = COMMAND_GETARG(availarg, 6, 0) &&
 	String_CaselessCompare(availarg, "avail");
 
-	if(availOnly) {
-		COMMAND_PRINTLINE("&eList of available commands:");
-	} else {
-		COMMAND_PRINTLINE("&eList of all commands:");
-	}
+	COMMAND_PRINTFLINE("&eList of %s commands:", availOnly?"available":"all");
 
 	List_Iter(tmp, Command_Head) {
 		Command *cmd = (Command *)tmp->value.ptr;

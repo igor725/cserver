@@ -52,10 +52,11 @@ THREAD_FUNC(ClientInitThread) {
 	if(attempt < 10) {
 		Socket_SetRecvTimeout(client->sock, 30000);
 
-		while(!client->closed && Server_Active) {
-			Waitable_Wait(SyncClients);
-			if(!client->closed)
+		while(Server_Active) {
+			if(!client->closed) {
+				Waitable_Wait(SyncClients);
 				Client_Tick(client);
+			} else break;
 		}
 
 		if(Client_CheckState(client, PLAYER_STATE_INGAME)) {
@@ -96,11 +97,13 @@ INL static ClientID TryToGetIDFor(Client *client) {
 }
 
 INL static void CloseCient(Client *client) {
+	Waitable_Signal(SyncClients);
 	Waitable_Wait(client->waitend);
 	Mutex_Lock(client->mutex);
 	Socket_Close(client->sock);
 	Mutex_Unlock(client->mutex);
 	Client_Free(client);
+	Waitable_Reset(SyncClients);
 }
 
 INL static void WaitAllClientThreads(void) {
