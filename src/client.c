@@ -858,9 +858,6 @@ NOINL static void SendWorld(Client *client, World *world) {
 			Client_Kick(client, Sstor_Get("KICK_INT"));
 			return;
 		}
-
-		World_Lock(world, 0);
-		World_Unlock(world);
 	}
 
 	World_StartTask(world);

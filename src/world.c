@@ -369,13 +369,17 @@ void World_Unlock(World *world) {
 }
 
 void World_StartTask(World *world) {
+	World_Lock(world, 0);
 	if(!world->taskc++)
 		Mutex_Lock(world->taskm);
+	World_Unlock(world);
 }
 
 void World_EndTask(World *world) {
+	World_Lock(world, 0);
 	if(--world->taskc == 0)
 		Mutex_Unlock(world->taskm);
+	World_Unlock(world);
 }
 
 void World_WaitAllTasks(World *world) {
