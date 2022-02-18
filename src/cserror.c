@@ -81,6 +81,7 @@ void Error_Print(cs_int32 code, cs_str file, cs_uint32 line, cs_str func, ...) {
 	va_list args;
 	va_start(args, func);
 	String_FormatError(code, strbuf + fmtpos, 384 - fmtpos, &args);
+	Log_Info("%s", strbuf);
 	va_end(args);
 	PrintCallStack();
 }
