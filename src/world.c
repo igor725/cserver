@@ -350,21 +350,14 @@ THREAD_FUNC(WorldSaveThread) {
 }
 
 cs_bool World_Lock(World *world, cs_ulong timeout) {
-	if(timeout > 0) {
-		if(Semaphore_TryWait(world->sem, timeout))
-			world->isBusy = true;
-		else
-			return false;
-	} else {
-		Semaphore_Wait(world->sem);
-		world->isBusy = true;
-	}
+	if(timeout > 0 && !Semaphore_TryWait(world->sem, timeout))
+		return false;
+	else Semaphore_Wait(world->sem);
 
 	return true;
 }
 
 void World_Unlock(World *world) {
-	world->isBusy = false;
 	Semaphore_Post(world->sem);
 }
 

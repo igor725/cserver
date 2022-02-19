@@ -3,6 +3,55 @@
 #include "core.h"
 #include "types/list.h"
 
+#define PCU_NONE 0x00 // Ни одно из CPE-значений игрока не изменилось
+#define PCU_GROUP BIT(0) // Была обновлена группа игрока
+#define PCU_MODEL BIT(1) // Была изменена модель игрока
+#define PCU_SKIN BIT(2) // Был изменён скин игрока
+#define PCU_ENTPROP BIT(3) // Модель игрока была повёрнута
+
+#define MV_NONE    0x00
+#define MV_COLORS  BIT(0)
+#define MV_PROPS   BIT(1)
+#define MV_TEXPACK BIT(2)
+#define MV_WEATHER BIT(3)
+
+/*
+** Если какой-то из дефайнов ниже
+** вырос, удостовериться, что
+** int-типа в структуре _WorldInfo
+** хватает для представления всех
+** этих значений в степени двойки.
+*/
+#define WORLD_PROPS_COUNT 10
+#define WORLD_COLORS_COUNT 5
+
+typedef enum _EWorldColor {
+	WORLD_COLOR_SKY,
+	WORLD_COLOR_CLOUD,
+	WORLD_COLOR_FOG,
+	WORLD_COLOR_AMBIENT,
+	WORLD_COLOR_DIFFUSE
+} EWorldColors;
+
+typedef enum _EWorldProp {
+	WORLD_PROP_SIDEBLOCK,
+	WORLD_PROP_EDGEBLOCK,
+	WORLD_PROP_EDGELEVEL,
+	WORLD_PROP_CLOUDSLEVEL,
+	WORLD_PROP_FOGDIST,
+	WORLD_PROP_SPDCLOUDS,
+	WORLD_PROP_SPDWEATHER,
+	WORLD_PROP_FADEWEATHER,
+	WORLD_PROP_EXPFOG,
+	WORLD_PROP_SIDEOFFSET
+} EWorldProp;
+
+typedef enum _EWorldWeather {
+	WORLD_WEATHER_SUN,
+	WORLD_WEATHER_RAIN,
+	WORLD_WEATHER_SNOW
+} EWorldWeather;
+
 typedef struct {
 	cs_int16 r, g, b, a;
 } Color4;

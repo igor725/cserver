@@ -3,11 +3,6 @@
 #include "core.h"
 #include "types/event.h"
 
-#define EVENTS_FCOUNT 128
-
-#define EVENT_UNREGISTER(t, e) \
-Event_Unregister(t, (cs_uintptr)e);
-
 API cs_bool Event_RegisterVoid(EventTypes type, evtVoidCallback func);
 API cs_bool Event_RegisterBool(EventTypes type, evtBoolCallback func);
 API cs_bool Event_RegisterBunch(EventRegBunch *bunch);

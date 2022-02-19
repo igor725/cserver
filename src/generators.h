@@ -4,7 +4,7 @@
 #include "types/list.h"
 #include "types/world.h"
 
-typedef cs_bool(*GeneratorRoutine)(World *, void *);
+typedef cs_bool(*GeneratorRoutine)(World *world, void *unused);
 
 cs_bool Generators_Init(void);
 void Generators_UnregisterAll(void);

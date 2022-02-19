@@ -93,8 +93,8 @@ ECHO Build configuration:
 ECHO Architecture: %ARCH%
 
 IF "%DEBUG%"=="0" (
-	set CFLAGS=!CFLAGS! /MT
-	set LDFLAGS=!LDFLAGS! /RELEASE
+	SET CFLAGS=!CFLAGS! /MT
+	SET LDFLAGS=!LDFLAGS! /RELEASE
 	ECHO Debug: disabled
 ) else (
 	SET SERVER_OUTROOT=!SERVER_OUTROOT!dbg
@@ -116,7 +116,7 @@ IF "%PLUGIN_BUILD%"=="0" (
 	SET LIBS=!LIBS! ws2_32.lib
 	GOTO detectzlib
 ) else (
-	set LIBS=!LIBS! vcruntime.lib
+	SET LIBS=!LIBS! vcruntime.lib
 	IF NOT EXIST !SERVER_OUTROOT! GOTO noserver
 	IF NOT EXIST !SERVER_OUTROOT!\server.lib GOTO noserver
 )
@@ -161,15 +161,33 @@ IF "%PLUGIN_BUILD%"=="1" (
 ) else GOTO binstart
 
 :detectzlib
-IF NOT EXIST ".\zlib\" GOTO nozlib
-IF NOT EXIST ".\zlib\zlib.h" GOTO nozlib
-IF NOT EXIST ".\zlib\zconf.h" GOTO nozlib
-set CFLAGS=%CFLAGS% /I.\zlib\
-FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R .\zlib\win32\!ARCH! z*.dll`) DO (
+SET ZFOLDER=..\zlib
+IF EXIST ".\zlib.path" (
+	FOR /f "delims=" %%F IN (.\zlib.path) DO (
+		IF NOT "%%F"=="" SET ZFOLDER=%%F
+	)
+) else (
+	ECHO Type absolute or relative path ^(without quotes^) to the folder that containing zlib repo.
+	ECHO If specified folder is empty or does not contain zlib source code, it will be cloned and
+	ECHO builded by this script automatically.
+	ECHO Hint: If you leave the path field empty, the script will use "!ZFOLDER!" by default.
+	:zfolderloop
+	SET /p UZF="zlib path> "
+	IF NOT "!UZF!"=="" (
+		IF NOT EXIST "!UZF!" MD "!UZF!"
+		SET ZFOLDER=!UZF!
+	)
+	ECHO !ZFOLDER!>.\zlib.path
+)
+
+IF NOT EXIST "!ZFOLDER!\" GOTO nozlib
+IF NOT EXIST "!ZFOLDER!\zlib.h" GOTO nozlib
+IF NOT EXIST "!ZFOLDER!\zconf.h" GOTO nozlib
+SET INCLUDE=%INCLUDE%;!ZFOLDER!\
+FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R "!ZFOLDER!\win32\!ARCH!" z*.dll`) DO (
 	SET ZLIB_DYNAMIC=%%F
 )
 IF "%ZLIB_DYNAMIC%"=="" (
-	echo ZLIB empty
 	GOTO makezlib_st1
 ) ELSE (
 	IF NOT EXIST "!ZLIB_DYNAMIC!" (
@@ -180,7 +198,7 @@ IF "%ZLIB_DYNAMIC%"=="" (
 )
 
 :makezlib_st1
-IF NOT EXIST ".\zlib\win32\Makefile.msc" (
+IF NOT EXIST "!ZFOLDER!\win32\Makefile.msc" (
 	GOTO nozlib
 ) ELSE (
 	GOTO makezlib_st2
@@ -188,10 +206,10 @@ IF NOT EXIST ".\zlib\win32\Makefile.msc" (
 
 :nozlib
 IF "%NOPROMPT%"=="0" (
-	ECHO zlib not found in root directory.
+	ECHO zlib not found in "!ZFOLDER!".
 	ECHO Would you like the script to automatically clone and build zlib library?
 	ECHO Note: The zlib repo will be cloned from Mark Adler's GitHub, then compiled.
-	ECHO Warning: If zlib directory exists it will be removed!
+	ECHO Warning: If "!ZFOLDER!" exists it will be removed!
 	SET /P ZQUESTION="[Y/n]>"
 	IF "!ZQUESTION!"=="n" GOTO end
 	IF "!ZQUESTION!"=="N" GOTO end
@@ -206,14 +224,14 @@ IF "%GITOK%"=="0" (
 	ECHO Looks like you don't have Git for Windows
 	ECHO You can download it from https://git-scm.com/download/win
 ) ELSE (
-	RMDIR /S /Q .\zlib
-	git clone https://github.com/madler/zlib
+	RMDIR /S /Q "!ZFOLDER!"
+	git clone https://github.com/madler/zlib "!ZFOLDER!"
 	GOTO makezlib_st2
 )
 
 :makezlib_st2
-IF NOT EXIST ".\zlib\win32\!ARCH!" MD ".\zlib\win32\!ARCH!"
-PUSHD ".\zlib\win32\!ARCH!"
+IF NOT EXIST "!ZFOLDER!\win32\!ARCH!" MD "!ZFOLDER!\win32\!ARCH!"
+PUSHD "!ZFOLDER!\win32\!ARCH!"
 NMAKE /F ..\Makefile.msc TOP=..\..\
 POPD
 GOTO detectzlib
@@ -239,9 +257,14 @@ PUSHD %OUTDIR%
 POPD
 GOTO endok
 
+:zclonefail
+ECHO Error: Failed to clone zlib repo
+GOTO end
+
 :vcerror
-ECHO Error: Script must be runned from VS Native Tools Command Prompt.
-ECHO Note: Also you can call "vcvars64" or "vcvars32" to configure VS env.
+ECHO Error: Script must be runned via Native Tools Command Prompt for Visual Studio.
+ECHO Note: If you don't have Visual Studio C++ installed, you can download it here:
+ECHO https://visualstudio.microsoft.com/downloads/
 GOTO end
 
 :notaplugin

@@ -7,49 +7,6 @@
 #include "types/compr.h"
 #include "types/cpe.h"
 
-#define MV_NONE    0x00
-#define MV_COLORS  BIT(0)
-#define MV_PROPS   BIT(1)
-#define MV_TEXPACK BIT(2)
-#define MV_WEATHER BIT(3)
-
-/*
-** Если какой-то из дефайнов ниже
-** вырос, удостовериться, что
-** int-типа в структуре _WorldInfo
-** хватает для представления всех
-** этих значений в степени двойки.
-*/
-#define WORLD_PROPS_COUNT 10
-#define WORLD_COLORS_COUNT 5
-
-typedef enum _EWorldColor {
-	WORLD_COLOR_SKY,
-	WORLD_COLOR_CLOUD,
-	WORLD_COLOR_FOG,
-	WORLD_COLOR_AMBIENT,
-	WORLD_COLOR_DIFFUSE
-} EWorldColors;
-
-typedef enum _EWorldProp {
-	WORLD_PROP_SIDEBLOCK,
-	WORLD_PROP_EDGEBLOCK,
-	WORLD_PROP_EDGELEVEL,
-	WORLD_PROP_CLOUDSLEVEL,
-	WORLD_PROP_FOGDIST,
-	WORLD_PROP_SPDCLOUDS,
-	WORLD_PROP_SPDWEATHER,
-	WORLD_PROP_FADEWEATHER,
-	WORLD_PROP_EXPFOG,
-	WORLD_PROP_SIDEOFFSET
-} EWorldProp;
-
-typedef enum _EWorldWeather {
-	WORLD_WEATHER_SUN,
-	WORLD_WEATHER_RAIN,
-	WORLD_WEATHER_SNOW
-} EWorldWeather;
-
 typedef enum _EWorldError {
 	WORLD_ERROR_SUCCESS = 0,
 	WORLD_ERROR_IOFAIL,
@@ -88,7 +45,6 @@ typedef struct _World {
 	Semaphore *sem;
 	Mutex *taskm;
 	cs_uint32 taskc;
-	cs_bool isBusy;
 	cs_bool loaded;
 	Compr compr;
 	KListField *headNode;

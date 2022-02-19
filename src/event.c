@@ -11,6 +11,8 @@ typedef struct {
 	} func;
 } Event;
 
+#define EVENTS_FCOUNT 128
+
 static Event *regEvents[EVENTS_TCOUNT][EVENTS_FCOUNT] = {0};
 
 #define rgPart1 \
