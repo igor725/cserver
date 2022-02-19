@@ -137,14 +137,16 @@ void Block_UpdateDefinition(BlockDef *bdef) {
 }
 
 cs_bool Block_BulkUpdateAdd(BulkBlockUpdate *bbu, cs_uint32 offset, BlockID id) {
+	((cs_uint32 *)bbu->data.offsets)[bbu->data.count] = htonl(offset);
+	bbu->data.ids[bbu->data.count] = id;
+
 	if(bbu->data.count == 255) {
 		if(bbu->autosend) {
 			Block_BulkUpdateSend(bbu);
 			Block_BulkUpdateClean(bbu);
 		} else return false;
-	}
-	((cs_uint32 *)bbu->data.offsets)[bbu->data.count++] = htonl(offset);
-	bbu->data.ids[bbu->data.count] = id;
+	} else bbu->data.count++;
+
 	return true;
 }
 
