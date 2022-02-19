@@ -27,7 +27,8 @@ World *World_Create(cs_str name) {
 	World *tmp = Memory_Alloc(1, sizeof(World));
 	tmp->name = String_AllocCopy(name);
 	tmp->sem = Semaphore_Create(1, 1);
-	tmp->taskm = Mutex_Create();
+	tmp->taskw = Waitable_Create();
+	Waitable_Signal(tmp->taskw);
 
 	/*
 	** Устанавливаем дефолтные значения
@@ -210,7 +211,7 @@ void World_Free(World *world) {
 	Compr_Cleanup(&world->compr);
 	World_FreeBlockArray(world);
 	Semaphore_Free(world->sem);
-	Mutex_Free(world->taskm);
+	Waitable_Free(world->taskw);
 	if(world->name) Memory_Free((void *)world->name);
 	Memory_Free(world);
 }
@@ -364,22 +365,19 @@ void World_Unlock(World *world) {
 void World_StartTask(World *world) {
 	World_Lock(world, 0);
 	if(!world->taskc++)
-		Mutex_Lock(world->taskm);
+		Waitable_Reset(world->taskw);
 	World_Unlock(world);
 }
 
 void World_EndTask(World *world) {
 	World_Lock(world, 0);
 	if(--world->taskc == 0)
-		Mutex_Unlock(world->taskm);
+		Waitable_Signal(world->taskw);
 	World_Unlock(world);
 }
 
 void World_WaitAllTasks(World *world) {
-	if(world->taskc > 0) {
-		Mutex_Lock(world->taskm);
-		Mutex_Unlock(world->taskm);
-	}
+	Waitable_Wait(world->taskw);
 }
 
 cs_bool World_Save(World *world) {

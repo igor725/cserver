@@ -43,7 +43,7 @@ typedef struct _World {
 	WorldInfo info;
 	cs_bool modified;
 	Semaphore *sem;
-	Mutex *taskm;
+	Waitable *taskw;
 	cs_uint32 taskc;
 	cs_bool loaded;
 	Compr compr;
