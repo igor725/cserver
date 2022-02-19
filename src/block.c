@@ -40,7 +40,7 @@ static cs_str defaultBlockNames[] = {
 };
 
 cs_bool Block_IsValid(World *world, BlockID id) {
-	return id < 254 && (id < 66 || world->info.bdefines[id] != NULL);
+	return id < 66 || world->info.bdefines[id] != NULL;
 }
 
 BlockID Block_GetFallbackFor(World *world, BlockID id) {

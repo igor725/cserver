@@ -529,19 +529,26 @@ cs_int16 CPE_GetModelNum(cs_str model) {
 			break;
 		}
 	}
+
 	if(modelnum == -1) {
-		cs_int32 tmp = String_ToInt(model);
-		if(tmp < 0 || tmp > 255)
+		if(ISNUM(*model)) {
+			cs_int32 tmp = String_ToInt(model);
+			if(tmp >= 0 && tmp < 256)
+				modelnum = (cs_int16)tmp;
+		} else
 			modelnum = 256;
-		else
-			modelnum = (cs_int16)tmp;
 	}
 
 	return modelnum;
 }
 
-cs_str CPE_GetModelStr(cs_int16 num) {
-	return num >= 0 && num < MODELS_COUNT ? validModelNames[num] : NULL;
+cs_uint32 CPE_GetModelStr(cs_int16 num, char *buffer, cs_uint32 buflen) {
+	if(num > 255) {
+		cs_str mdl = validModelNames[num % 256];
+		return mdl ? (cs_uint32)String_Copy(buffer, buflen, mdl) : 0;
+	}
+	cs_int32 ret = String_FormatBuf(buffer, buflen, "%d", num);
+	return max(0, ret);
 }
 
 void CPE_WriteInfo(Client *client) {
@@ -698,13 +705,12 @@ void CPE_WriteSetModel(Client *client, Client *other) {
 
 	*data++ = 0x1D;
 	*data++ = client == other ? CLIENT_SELF : other->id;
-	cs_int16 model = Client_GetModel(other);
-	if(model < 256) {
-		cs_char modelname[4];
-		String_FormatBuf(modelname, 4, "%d", model);
-		Proto_WriteString(&data, modelname);
-	} else
-		Proto_WriteString(&data, CPE_GetModelStr(model - 256));
+
+	cs_char model[64] = {0};
+	if(CPE_GetModelStr(Client_GetModel(other), model, 64))
+		Proto_WriteString(&data, model);
+	else
+		Proto_WriteString(&data, validModelNames[0]);
 
 	PacketWriter_EndIngame(client);
 }

@@ -120,7 +120,7 @@ NOINL void Vanilla_WriteKick(Client *client, cs_str reason);
 API cs_bool CPE_CheckModel(Client *client, cs_int16 model);
 API void CPE_RegisterExtension(cs_str name, cs_int32 version);
 API cs_int16 CPE_GetModelNum(cs_str model);
-API cs_str CPE_GetModelStr(cs_int16 num);
+API cs_uint32 CPE_GetModelStr(cs_int16 num, char *buffer, cs_uint32 buflen);
 API void CPE_RegisterServerExtension(cs_str name, cs_int32 version);
 
 NOINL void CPE_WriteInfo(Client *client);

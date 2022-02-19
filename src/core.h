@@ -142,5 +142,6 @@ typedef cs_int8 ClientID;
 #endif
 
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
+#define ISNUM(ch) (ch >= '0' && ch <= '9')
 #define BIT(b) (1U << b)
 #endif

@@ -892,10 +892,10 @@ NOINL static void SendWorld(Client *client, World *world) {
 
 		if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
 			World *oldworld = client->playerData->world;
-			for(BlockID id = 0; id < 254; id++) {
-				BlockDef *newbdef = Block_GetDefinition(world, id);
+			for(cs_uint16 id = 0; id < 256; id++) {
+				BlockDef *newbdef = Block_GetDefinition(world, (BlockID)id);
 				if(oldworld) {
-					BlockDef *unbdef = Block_GetDefinition(oldworld, id);
+					BlockDef *unbdef = Block_GetDefinition(oldworld, (BlockID)id);
 					if(unbdef) Client_UndefineBlock(client, unbdef->id);
 				}
 				if(newbdef) Client_DefineBlock(client, newbdef);

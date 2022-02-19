@@ -27,7 +27,7 @@ typedef enum _EWorldExtra {
 
 typedef struct _WorldInfo {
 	SVec dimensions;
-	BlockDef *bdefines[255];
+	BlockDef *bdefines[256];
 	Color3 colors[WORLD_COLORS_COUNT];
 	cs_int32 props[WORLD_PROPS_COUNT];
 	cs_char texturepack[65];
