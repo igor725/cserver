@@ -73,10 +73,10 @@ cs_bool World_Remove(World *world) {
 			break;
 		}
 	}
-	World_Unload(world);
-	World_Free(world);
 	Event_Call(EVT_ONWORLDREMOVED, world);
+	World_Unload(world);
 	World_Unlock(world);
+	World_Free(world);
 	return true;
 }
 
