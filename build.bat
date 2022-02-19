@@ -25,12 +25,7 @@ SET CFLAGS=/FC /MP /Oi
 SET LIBS=kernel32.lib dbghelp.lib
 
 git --version >nul
-IF "%ERRORLEVEL%"=="0" (
-	SET GITOK=1
-	FOR /F "tokens=* USEBACKQ" %%F IN (`git describe --tags HEAD`) DO (
-		SET CFLAGS=%CFLAGS% /DGIT_COMMIT_TAG#\"%%F\"
-	)
-)
+IF "%ERRORLEVEL%"=="0" SET GITOK=1
 
 :argloop
 IF "%1"=="" GOTO argsdone
@@ -79,13 +74,19 @@ SHIFT
 GOTO libloop
 
 :argsdone
-IF "!GITUPD!"=="1" (
-	IF "!PLUGIN_BUILD!"=="1" (
-		PUSHD ..\cs-!PLUGNAME!
-		git pull
-		POPD
-	) else (
-		git pull
+IF "!GITOK!"=="1" (
+	IF "!GITUPD!"=="1" (
+		IF "!PLUGIN_BUILD!"=="1" (
+			PUSHD ..\cs-!PLUGNAME!
+			git pull
+			POPD
+		) else (
+			git pull
+		)
+	)
+
+	FOR /F "tokens=* USEBACKQ" %%F IN (`git describe --tags HEAD`) DO (
+		SET CFLAGS=%CFLAGS% /DGIT_COMMIT_TAG#\"%%F\"
 	)
 )
 
