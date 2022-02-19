@@ -31,9 +31,9 @@ typedef enum _EWorldColor {
 	WORLD_COLOR_FOG,
 	WORLD_COLOR_AMBIENT,
 	WORLD_COLOR_DIFFUSE
-} EWorldColors;
+} EColors;
 
-typedef enum _EWorldProp {
+typedef enum _EProp {
 	WORLD_PROP_SIDEBLOCK,
 	WORLD_PROP_EDGEBLOCK,
 	WORLD_PROP_EDGELEVEL,
@@ -44,13 +44,13 @@ typedef enum _EWorldProp {
 	WORLD_PROP_FADEWEATHER,
 	WORLD_PROP_EXPFOG,
 	WORLD_PROP_SIDEOFFSET
-} EWorldProp;
+} EProp;
 
-typedef enum _EWorldWeather {
+typedef enum _EWeather {
 	WORLD_WEATHER_SUN,
 	WORLD_WEATHER_RAIN,
 	WORLD_WEATHER_SNOW
-} EWorldWeather;
+} EWeather;
 
 typedef struct {
 	cs_int16 r, g, b, a;

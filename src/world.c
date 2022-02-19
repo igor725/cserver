@@ -99,7 +99,7 @@ void World_SetDimensions(World *world, const SVec *dims) {
 	world->wdata.size = (cs_uint32)dims->x * (cs_uint32)dims->y * (cs_uint32)dims->z;
 }
 
-cs_bool World_SetEnvProp(World *world, EWorldProp property, cs_int32 value) {
+cs_bool World_SetEnvProp(World *world, EProp property, cs_int32 value) {
 	if(property > WORLD_PROPS_COUNT) return false;
 	world->modified = true;
 	world->info.props[property] = value;
@@ -108,7 +108,7 @@ cs_bool World_SetEnvProp(World *world, EWorldProp property, cs_int32 value) {
 	return true;
 }
 
-cs_int32 World_GetEnvProp(World *world, EWorldProp property) {
+cs_int32 World_GetEnvProp(World *world, EProp property) {
 	if(property > WORLD_PROPS_COUNT) return 0;
 	return world->info.props[property];
 }
@@ -133,7 +133,7 @@ cs_str World_GetTexturePack(World *world) {
 	return world->info.texturepack;
 }
 
-cs_bool World_SetWeather(World *world, EWorldWeather type) {
+cs_bool World_SetWeather(World *world, EWeather type) {
 	if(type > WORLD_WEATHER_SNOW) return false;
 	world->info.weatherType = type;
 	world->modified = true;
@@ -142,7 +142,7 @@ cs_bool World_SetWeather(World *world, EWorldWeather type) {
 	return true;
 }
 
-cs_bool World_SetEnvColor(World *world, EWorldColors type, Color3* color) {
+cs_bool World_SetEnvColor(World *world, EColors type, Color3* color) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	world->info.modval |= MV_COLORS;
 	world->info.modclr |= (1 << type);
@@ -163,12 +163,12 @@ void World_FinishEnvUpdate(World *world) {
 	world->info.modval = MV_NONE;
 }
 
-Color3* World_GetEnvColor(World *world, EWorldColors type) {
+Color3* World_GetEnvColor(World *world, EColors type) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	return &world->info.colors[type];
 }
 
-EWorldWeather World_GetWeather(World *world) {
+EWeather World_GetWeather(World *world) {
 	return world->info.weatherType;
 }
 
