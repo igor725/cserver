@@ -96,7 +96,7 @@ World *World_GetByName(cs_str name) {
 
 void World_SetDimensions(World *world, const SVec *dims) {
 	world->info.dimensions = *dims;
-	world->wdata.size = dims->x * dims->y * dims->z;
+	world->wdata.size = (cs_uint32)dims->x * (cs_uint32)dims->y * (cs_uint32)dims->z;
 }
 
 cs_bool World_SetEnvProp(World *world, EWorldProp property, cs_int32 value) {
