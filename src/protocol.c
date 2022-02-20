@@ -287,6 +287,15 @@ void Vanilla_WriteKick(Client *client, cs_str reason) {
 	PacketWriter_EndAnytime(client);
 }
 
+void Vanilla_WriteUserType(Client *client, cs_byte type) {
+	PacketWriter_Start(client, 2);
+
+	*data++ = 0x0F;
+	*data++ = type;
+
+	PacketWriter_EndIngame(client);
+}
+
 INL static cs_bool FinishHandshake(Client *client) {
 	onHandshakeDone evt = {
 		.client = client,

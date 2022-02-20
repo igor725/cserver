@@ -111,6 +111,7 @@ NOINL void Vanilla_WritePosAndOrient(Client *client, Client *other);
 NOINL void Vanilla_WriteDespawn(Client *client, Client *other);
 NOINL void Vanilla_WriteChat(Client *client, EMesgType type, cs_str mesg);
 NOINL void Vanilla_WriteKick(Client *client, cs_str reason);
+NOINL void Vanilla_WriteUserType(Client *client, cs_byte type);
 
 /*
 ** Врайтеры и хендлеры
