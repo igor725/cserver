@@ -380,8 +380,13 @@ void World_WaitAllTasks(World *world) {
 	Waitable_Wait(world->taskw);
 }
 
+void World_SetInMemory(World *world, cs_bool state) {
+	world->inmemory = state;
+}
+
 cs_bool World_Save(World *world) {
-	if(!world->modified) return world->loaded;
+	if(world->inmemory || !world->modified)
+		return world->loaded;
 	World_Lock(world, 0);
 	Thread_Create(WorldSaveThread, world, true);
 	return true;
@@ -449,7 +454,8 @@ THREAD_FUNC(WorldLoadThread) {
 }
 
 cs_bool World_Load(World *world) {
-	if(world->loaded) return false;
+	if(world->loaded || world->inmemory)
+		return false;
 	World_Lock(world, 0);
 	Thread_Create(WorldLoadThread, world, false);
 	return true;

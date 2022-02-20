@@ -237,7 +237,7 @@ void Semaphore_Free(Semaphore *sem) {
 
 cs_int32 Time_Format(cs_char *buf, cs_size buflen) {
 	SYSTEMTIME time;
-	GetSystemTime(&time);
+	GetLocalTime(&time);
 	return sprintf_s(buf, buflen, "%02d:%02d:%02d.%03d",
 		time.wHour,
 		time.wMinute,

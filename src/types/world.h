@@ -41,6 +41,7 @@ typedef struct _WorldInfo {
 typedef struct _World {
 	cs_str name;
 	WorldInfo info;
+	cs_bool inmemory;
 	cs_bool modified;
 	Semaphore *sem;
 	Waitable *taskw;
