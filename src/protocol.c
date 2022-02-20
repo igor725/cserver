@@ -28,25 +28,25 @@ void Proto_WriteString(cs_char **dataptr, cs_str string) {
 
 void Proto_WriteFlVec(cs_char **dataptr, const Vec *vec) {
 	cs_char *data = *dataptr;
-	*(cs_int32 *)data = htonl((cs_int32)(vec->x * 32)); data += 4;
-	*(cs_int32 *)data = htonl((cs_int32)(vec->y * 32)); data += 4;
-	*(cs_int32 *)data = htonl((cs_int32)(vec->z * 32)); data += 4;
+	*(cs_int32 *)data = htonl((cs_uint32)(vec->x * 32)); data += 4;
+	*(cs_int32 *)data = htonl((cs_uint32)(vec->y * 32)); data += 4;
+	*(cs_int32 *)data = htonl((cs_uint32)(vec->z * 32)); data += 4;
 	*dataptr = data;
 }
 
 void Proto_WriteFlSVec(cs_char **dataptr, const Vec *vec) {
 	cs_char *data = *dataptr;
-	*(cs_int16 *)data = htons((cs_int16)(vec->x * 32)); data += 2;
-	*(cs_int16 *)data = htons((cs_int16)(vec->y * 32)); data += 2;
-	*(cs_int16 *)data = htons((cs_int16)(vec->z * 32)); data += 2;
+	*(cs_int16 *)data = htons((cs_uint16)(vec->x * 32)); data += 2;
+	*(cs_int16 *)data = htons((cs_uint16)(vec->y * 32)); data += 2;
+	*(cs_int16 *)data = htons((cs_uint16)(vec->z * 32)); data += 2;
 	*dataptr = data;
 }
 
 void Proto_WriteSVec(cs_char **dataptr, const SVec *vec) {
 	cs_char *data = *dataptr;
-	*(cs_int16 *)data = htons(vec->x); data += 2;
-	*(cs_int16 *)data = htons(vec->y); data += 2;
-	*(cs_int16 *)data = htons(vec->z); data += 2;
+	*(cs_int16 *)data = htons((cs_uint16)vec->x); data += 2;
+	*(cs_int16 *)data = htons((cs_uint16)vec->y); data += 2;
+	*(cs_int16 *)data = htons((cs_uint16)vec->z); data += 2;
 	*dataptr = data;
 }
 
@@ -59,9 +59,9 @@ void Proto_WriteAng(cs_char **dataptr, const Ang *ang) {
 
 void Proto_WriteColor3(cs_char **dataptr, const Color3* color) {
 	cs_char *data = *dataptr;
-	*(cs_int16 *)data = htons(color->r); data += 2;
-	*(cs_int16 *)data = htons(color->g); data += 2;
-	*(cs_int16 *)data = htons(color->b); data += 2;
+	*(cs_int16 *)data = htons((cs_uint16)color->r); data += 2;
+	*(cs_int16 *)data = htons((cs_uint16)color->g); data += 2;
+	*(cs_int16 *)data = htons((cs_uint16)color->b); data += 2;
 	*dataptr = data;
 }
 
