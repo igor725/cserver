@@ -13,7 +13,7 @@
 #include "config.h"
 
 #define SECRET_LENGTH 32
-#define REQUEST "/server/heartbeat/?name=%s&port=%d&users=%d&max=%d&salt=%s&public=%s&web=true&software=%s"
+#define REQUEST "%s?name=%s&port=%d&users=%d&max=%d&salt=%s&public=%s&web=true&software=%s&version=7"
 
 static AListField *headHeartbeat = NULL;
 static Mutex *gLock = NULL;
@@ -114,8 +114,8 @@ INL static void MakeHeartbeatRequest(Heartbeat *self) {
 	cs_byte count = Clients_GetCount(PLAYER_STATE_INGAME);
 
 	if(String_FormatBuf(reqstr, 512, REQUEST,
-		name, port, count, max, secretKey,
-		self->ispublic ? "true" : "false",
+		self->reqpath, name, port, count,
+		max, secretKey, self->ispublic ? "True" : "False",
 		SOFTWARE_NAME "%2F" GIT_COMMIT_TAG
 	) == -1) {
 		Log_Info(Sstor_Get("HBEAT_ERR"), "String_FormatBuf failed");
@@ -183,6 +183,13 @@ cs_bool Heartbeat_SetDomain(Heartbeat *self, cs_str domain) {
 	return true;
 }
 
+cs_bool Heartbeat_SetRequestPath(Heartbeat *self, cs_str path) {
+	if(self->started) return false;
+	if(self->reqpath) Memory_Free((void *)self->reqpath);
+	self->reqpath = String_AllocCopy(path);
+	return true;
+}
+
 cs_bool Heartbeat_SetPlayURL(Heartbeat *self, cs_str url) {
 	if(self->started) return false;
 	if(self->playurl) Memory_Free((void *)self->playurl);
@@ -205,7 +212,7 @@ cs_bool Heartbeat_SetKeyChecker(Heartbeat *self, heartbeatKeyChecker func) {
 }
 
 cs_bool Heartbeat_Run(Heartbeat *self) {
-	if(self->started || !self->playurl || !self->domain)
+	if(self->started || !self->playurl || !self->domain || !self->reqpath)
 		return false;
 
 	if(!inited)

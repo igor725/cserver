@@ -7,7 +7,7 @@ typedef cs_bool(*heartbeatKeyChecker)(cs_str secret, Client *client);
 
 typedef struct _Heartbeat {
 	heartbeatKeyChecker checker;
-	cs_str domain, playurl;
+	cs_str domain, playurl, reqpath;
 	Waitable *isdone;
 	cs_bool started,
 	ispublic, issecure,
@@ -18,27 +18,38 @@ typedef struct _Heartbeat {
 void Heartbeat_StopAll(void);
 
 /**
- * @brief Создаёт новый heartbeat
+ * @brief Создаёт новый heartbeat.
  * 
  * @return указатель на heartbeat
  */
 API Heartbeat *Heartbeat_New(void);
 
 /**
- * @brief Устанавливает домен для heartbeat
+ * @brief Устанавливает домен для heartbeat.
  * 
  * @param self указатель на heartbeat
- * @param domain домен
+ * @param domain целевой сервер для отправки hearbeat запросов
  * @return true - домен установлен, false - heartbeat уже запущен
  */
 API cs_bool Heartbeat_SetDomain(Heartbeat *self, cs_str domain);
+
+/**
+ * @brief Устанавливает путь запроса.
+ * Стоковый heartbeat игры имеет следующий путь:
+ * /heartbeat.jsp
+ * 
+ * @param self указатель на heartbeat
+ * @param path путь запроса
+ * @return true - путь установлен, false - heartbeat уже запущен
+ */
+API cs_bool Heartbeat_SetRequestPath(Heartbeat *self, cs_str path);
 
 /**
  * @brief Устанавливает строку, которая будет использована
  * при поиске игровой ссылки, в ответе от heartbeat сервера.
  * 
  * @param self указатель на heartbeat
- * @param url ссылка
+ * @param url кусок ссылки, который нужно найти в ответе от сервера
  * @return true - ссылка установлена, false - heartbeat уже запущен
  */
 API cs_bool Heartbeat_SetPlayURL(Heartbeat *self, cs_str url);
