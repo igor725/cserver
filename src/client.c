@@ -528,8 +528,8 @@ cs_bool Client_GetPosition(Client *client, Vec *pos, Ang *ang) {
 cs_bool Client_SetOP(Client *client, cs_bool state) {
 	if(!client->playerData) return false;
 	client->playerData->isOP = state;
-	if(Client_CheckState(client, PLAYER_STATE_INGAME))
-		Vanilla_WriteUserType(client, client->playerData->isOP ? 0x64 : 0x00);
+	// if(Client_CheckState(client, PLAYER_STATE_INGAME))
+	// 	Vanilla_WriteUserType(client, state ? 0x64 : 0x00);
 	return true;
 }
 
@@ -979,7 +979,7 @@ cs_bool Client_Spawn(Client *client) {
 		.angle = &client->playerData->angle
 	};
 	Event_Call(EVT_ONSPAWN, &evt);
-	Vanilla_WriteUserType(client, client->playerData->isOP ? 0x64 : 0x00);
+	// Vanilla_WriteUserType(client, client->playerData->isOP ? 0x64 : 0x00);
 	Client_UpdateWorldInfo(client, client->playerData->world, true);
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
