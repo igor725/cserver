@@ -313,7 +313,7 @@ THREAD_FUNC(WorldSaveThread) {
 	Compr_SetInBuffer(&world->compr, wdata, wsize);
 
 	cs_char path[256], tmpname[256], out[CHUNK_SIZE];
-	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
+	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s.cws", world->name);
 	String_FormatBuf(tmpname, 256, "worlds" PATH_DELIM "%s.tmp", world->name);
 
 	cs_file fp = File_Open(tmpname, "wb");
@@ -425,7 +425,7 @@ THREAD_FUNC(WorldLoadThread) {
 	}
 
 	cs_char path[256];
-	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s", world->name);
+	String_FormatBuf(path, 256, "worlds" PATH_DELIM "%s.cws", world->name);
 
 	cs_file fp = File_Open(path, "rb");
 	if(!fp) {

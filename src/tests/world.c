@@ -9,7 +9,7 @@
 
 cs_bool Tests_World(void) {
 	Tests_NewTask("Create world");
-	cs_str worldname = "__test.cws";
+	cs_str worldname = "__test";
 	World *world = World_Create(worldname);
 	Tests_Assert(world != NULL, "create world structure");
 	SVec dims = {1024, 64, 1024};

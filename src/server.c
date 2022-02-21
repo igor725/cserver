@@ -212,7 +212,7 @@ cs_bool Server_Init(void) {
 
 	ent = Config_NewEntry(cfg, CFG_WORLDS_KEY, CONFIG_TYPE_STR);
 	Config_SetComment(ent, "List of worlds to load at startup. (Can be \"*\" it means load all worlds in the folder)");
-	Config_SetDefaultStr(ent, "world.cws:256x256x256:normal,flat_world.cws:64x64x64:flat");
+	Config_SetDefaultStr(ent, "world:256x256x256:normal,flat_world:64x64x64:flat");
 
 	cfg->modified = true;
 	if(!Config_Load(cfg)) {
@@ -254,7 +254,13 @@ cs_bool Server_Init(void) {
 		if(Iter_Init(&wIter, "worlds", "cws")) {
 			do {
 				if(wIter.isDir || !wIter.cfile) continue;
-				World *tmp = World_Create(wIter.cfile);
+				cs_char wname[64] = {0};
+				if(String_Copy(wname, 64, wIter.cfile)) {
+					cs_char *ext = String_FindSubstr(wname, ".cws");
+					if(ext) *ext = '\0';
+				} else continue;
+
+				World *tmp = World_Create(wname);
 				if(World_Load(tmp)) {
 					World_Lock(tmp, 0);
 					if(World_HasError(tmp)) {
@@ -274,7 +280,7 @@ cs_bool Server_Init(void) {
 		Iter_Close(&wIter);
 
 		if(wIndex < 1) {
-			cs_str wname = "world.cws";
+			cs_str wname = "world";
 			World *tmp = World_Create(wname);
 			SVec defdims = {256, 256, 256};
 			World_SetDimensions(tmp, &defdims);
@@ -296,6 +302,8 @@ cs_bool Server_Init(void) {
 
 				if(state == 0) {
 					skip_creating = false;
+					cs_char *ext = String_FindSubstr(buffer, ".cws");
+					if(ext) *ext = '\0';
 					tmp = World_Create(buffer);
 					if(World_Load(tmp)) {
 						World_Lock(tmp, 0);
