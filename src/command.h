@@ -141,7 +141,7 @@ API cs_str Command_GetName(Command *cmd);
  * 
  * @param cmd указатель на структуру команды
  */
-API void Command_SetAlias(Command *cmd, cs_str alias);
+API cs_bool Command_SetAlias(Command *cmd, cs_str alias);
 
 /**
  * @brief Присваивает команде указатель для различных целей.

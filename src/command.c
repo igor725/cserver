@@ -25,8 +25,11 @@ cs_str Command_GetName(Command *cmd) {
 	return cmd->name;
 }
 
-void Command_SetAlias(Command *cmd, cs_str alias) {
+cs_bool Command_SetAlias(Command *cmd, cs_str alias) {
+	Command *tcmd = Command_GetByName(alias);
+	if(tcmd && tcmd != cmd) return false;
 	String_Copy(cmd->alias, 7, alias);
+	return true;
 }
 
 void Command_SetUserData(Command *cmd, void *ud) {
