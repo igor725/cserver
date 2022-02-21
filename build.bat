@@ -73,15 +73,21 @@ IF "%1"=="" GOTO argsdone
 SHIFT
 GOTO libloop
 
+@REM Сделать тут умное обновление
+:testupdate
+git fetch
+git merge --ff-only
+EXIT /b 0
+
 :argsdone
 IF "!GITOK!"=="1" (
 	IF "!GITUPD!"=="1" (
 		IF "!PLUGIN_BUILD!"=="1" (
 			PUSHD ..\cs-!PLUGNAME!
-			git pull
+			CALL :testupdate
 			POPD
 		) else (
-			git pull
+			CALL :testupdate
 		)
 	)
 

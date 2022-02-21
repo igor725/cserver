@@ -37,7 +37,6 @@ CFLAGS="-pipe -fPIC"
 LIBS=""
 OUTBIN="server"
 if git --version >/dev/null 2>&1; then
-	CFLAGS="$CFLAGS -DGIT_COMMIT_TAG=\"$(git describe --tags HEAD)\""
 	GITOK=1
 fi
 PLUGIN_BUILD=0
@@ -143,6 +142,10 @@ if [ $GITUPD -eq 1 ]; then
 			fi
 		fi
 	fi
+fi
+
+if [ $GITOK -eq 1 ]; then
+	CFLAGS="$CFLAGS -DGIT_COMMIT_TAG=\"$(git describe --tags HEAD)\""
 fi
 
 STDERR="$ROOT/out/stderr"
