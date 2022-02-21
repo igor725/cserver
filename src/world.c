@@ -385,7 +385,12 @@ void World_SetInMemory(World *world, cs_bool state) {
 }
 
 cs_bool World_Save(World *world) {
-	if(world->inmemory || !world->modified)
+	if(world->inmemory) {
+		world->error.code = WORLD_ERROR_INMEMORY;
+		world->error.extra = WORLD_EXTRA_NOINFO;
+		return false;
+	}
+	if(!world->modified)
 		return world->loaded;
 	World_Lock(world, 0);
 	Thread_Create(WorldSaveThread, world, true);
@@ -454,7 +459,12 @@ THREAD_FUNC(WorldLoadThread) {
 }
 
 cs_bool World_Load(World *world) {
-	if(world->loaded || world->inmemory)
+	if(world->inmemory) {
+		world->error.code = WORLD_ERROR_INMEMORY;
+		world->error.extra = WORLD_EXTRA_NOINFO;
+		return false;
+	}
+	if(world->loaded)
 		return false;
 	World_Lock(world, 0);
 	Thread_Create(WorldLoadThread, world, false);
