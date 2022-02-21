@@ -18,6 +18,7 @@ API void World_Free(World *world);
 API void World_Add(World *world);
 API cs_bool World_Remove(World *world);
 API cs_bool World_IsReadyToPlay(World *world);
+API cs_bool World_IsInMemory(World *world);
 API void World_FinishEnvUpdate(World *world);
 
 API cs_bool World_Load(World *world);

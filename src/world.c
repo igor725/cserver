@@ -80,6 +80,10 @@ cs_bool World_Remove(World *world) {
 	return true;
 }
 
+cs_bool World_IsInMemory(World *world) {
+	return world->inmemory;
+}
+
 cs_bool World_IsReadyToPlay(World *world) {
 	return world->wdata.ptr != NULL && world->loaded;
 }
