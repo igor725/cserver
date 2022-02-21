@@ -17,7 +17,7 @@ EXP void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size);
 EXP cs_int32 Plugin_ApiVer, Plugin_Version;
 #define Plugin_DeclareInterfaces(_N) EXP PluginInterface Plugin_Interfaces[_N]; \
 PluginInterface Plugin_Interfaces[_N] = 
-#define Plugin_SetVersion(ver) cs_int32 Plugin_ApiVer = PLUGIN_API_NUM, Plugin_Version = ver;
+#define Plugin_SetVersion(ver) cs_int32 Plugin_ApiVer = PLUGIN_API_NUM, Plugin_Version = ver
 #define PLUGIN_IFACE_END {NULL, NULL, 0}
 #define PLUGIN_IFACE_ADD(n, i) {n, &(i), sizeof(i)},
 #endif
