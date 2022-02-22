@@ -431,7 +431,7 @@ INL static void UnloadAllWorlds(void) {
 		World *world = (World *)tmp->value.ptr;
 		cs_str wname = World_GetName(world);
 
-		if(World_Save(world)) {
+		if(!World_IsInMemory(world) && World_Save(world)) {
 			World_WaitAllTasks(world);
 			World_Lock(world, 0);
 			if(World_HasError(world)) {
