@@ -167,6 +167,16 @@ void World_FinishEnvUpdate(World *world) {
 	world->info.modval = MV_NONE;
 }
 
+cs_byte World_CountPlayers(World *world) {
+	cs_byte count = 0;
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		Client *client = Clients_List[i];
+		if(client && Client_IsInWorld(client, world))
+			count++;
+	}
+	return count;
+}
+
 Color3* World_GetEnvColor(World *world, EColors type) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	return &world->info.colors[type];

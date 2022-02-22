@@ -20,6 +20,7 @@ API cs_bool World_Remove(World *world);
 API cs_bool World_IsReadyToPlay(World *world);
 API cs_bool World_IsInMemory(World *world);
 API void World_FinishEnvUpdate(World *world);
+API cs_byte World_CountPlayers(World *world);
 
 API cs_bool World_Load(World *world);
 API void World_Unload(World *world);
