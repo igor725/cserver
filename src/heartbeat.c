@@ -55,6 +55,13 @@ INL static void NewSecret(void) {
 	}
 }
 
+INL static void TrimReserved(cs_char *name) {
+	for(cs_int32 i = 0; name[i] != '\0'; i++) {
+		if(name[i] == ' ') name[i] = '+';
+		else if(String_FirstChar("!*'();:@&=+$,/?#%", name[i])) name[i] = '.';
+	}
+}
+
 INL static void initHeartbeatModule(void) {
 	gLock = Mutex_Create();
 	inited = true;
@@ -66,6 +73,7 @@ INL static void initHeartbeatModule(void) {
 				break;
 		} while(*secretKey == '#');
 		File_Close(sfile);
+		TrimReserved(secretKey);
 	} else NewSecret();
 }
 
@@ -95,13 +103,6 @@ static cs_bool VanillaKeyChecker(cs_str secret, Client *client) {
 	}
 
 	return String_CaselessCompare2(hash_hex, key, 32);
-}
-
-INL static void TrimReserved(cs_char *name) {
-	for(cs_int32 i = 0; name[i] != '\0'; i++) {
-		if(name[i] == ' ') name[i] = '+';
-		else if(String_FirstChar("!*'();:@&=+$,/?#%", name[i])) name[i] = '.';
-	}
 }
 
 INL static void MakeHeartbeatRequest(Heartbeat *self) {

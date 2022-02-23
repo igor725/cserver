@@ -7,6 +7,12 @@
 #include "types/compr.h"
 #include "types/cpe.h"
 
+#define WORLD_FLAG_NONE 0x00
+#define WORLD_FLAG_LOADED BIT(0)
+#define WORLD_FLAG_MODIFIED BIT(1)
+#define WORLD_FLAG_MODIGNORE BIT(2)
+#define WORLD_FLAG_INMEMORY BIT(3)
+
 typedef enum _EWorldError {
 	WORLD_ERROR_SUCCESS = 0,
 	WORLD_ERROR_IOFAIL,
@@ -40,14 +46,12 @@ typedef struct _WorldInfo {
 } WorldInfo;
 
 typedef struct _World {
+	cs_uint32 flags;
 	cs_str name;
 	WorldInfo info;
-	cs_bool inmemory;
-	cs_bool modified;
 	Semaphore *sem;
 	Waitable *taskw;
 	cs_uint32 taskc;
-	cs_bool loaded;
 	Compr compr;
 	KListField *headNode;
 	struct _WorldError {

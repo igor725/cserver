@@ -855,7 +855,7 @@ INL static void PacketReceiverRaw(Client *client) {
 }
 
 NOINL static void SendWorld(Client *client, World *world) {
-	if(!world->loaded) {
+	if(!World_IsReadyToPlay(world)) {
 		if(!World_Load(world)) {
 			Client_Kick(client, Sstor_Get("KICK_INT"));
 			return;

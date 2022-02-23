@@ -143,5 +143,6 @@ typedef cs_int8 ClientID;
 
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))
 #define ISNUM(ch) (ch >= '0' && ch <= '9')
+#define ISSET(v, f) (((v) & (f)) == f)
 #define BIT(b) (1U << b)
 #endif

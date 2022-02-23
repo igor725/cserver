@@ -80,12 +80,17 @@ cs_bool World_Remove(World *world) {
 	return true;
 }
 
+cs_bool World_IsModified(World *world) {
+	return ISSET(world->flags, WORLD_FLAG_MODIFIED);
+}
+
 cs_bool World_IsInMemory(World *world) {
-	return world->inmemory;
+	return ISSET(world->flags, WORLD_FLAG_INMEMORY);
 }
 
 cs_bool World_IsReadyToPlay(World *world) {
-	return world->wdata.ptr != NULL && world->loaded;
+	return world->wdata.ptr != NULL &&
+	ISSET(world->flags, WORLD_FLAG_LOADED);
 }
 
 World *World_GetByName(cs_str name) {
@@ -105,7 +110,8 @@ void World_SetDimensions(World *world, const SVec *dims) {
 
 cs_bool World_SetEnvProp(World *world, EProp property, cs_int32 value) {
 	if(property > WORLD_PROPS_COUNT) return false;
-	world->modified = true;
+	if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
+		world->flags |= WORLD_FLAG_MODIFIED;
 	world->info.props[property] = value;
 	world->info.modval |= MV_PROPS;
 	world->info.modprop |= 2 ^ property;
@@ -120,7 +126,8 @@ cs_int32 World_GetEnvProp(World *world, EProp property) {
 cs_bool World_SetTexturePack(World *world, cs_str url) {
 	if(String_CaselessCompare(world->info.texturepack, url))
 		return true;
-	world->modified = true;
+	if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
+		world->flags |= WORLD_FLAG_MODIFIED;
 	world->info.modval |= MV_TEXPACK;
 	if(!url || String_Length(url) > 64) {
 		world->info.texturepack[0] = '\0';
@@ -139,8 +146,9 @@ cs_str World_GetTexturePack(World *world) {
 
 cs_bool World_SetWeather(World *world, EWeather type) {
 	if(type > WORLD_WEATHER_SNOW) return false;
+	if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
+		world->flags |= WORLD_FLAG_MODIFIED;
 	world->info.weatherType = type;
-	world->modified = true;
 	world->info.modval |= MV_WEATHER;
 	Event_Call(EVT_ONWEATHER, world);
 	return true;
@@ -148,9 +156,10 @@ cs_bool World_SetWeather(World *world, EWeather type) {
 
 cs_bool World_SetEnvColor(World *world, EColors type, Color3* color) {
 	if(type > WORLD_COLORS_COUNT) return false;
+	if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
+		world->flags |= WORLD_FLAG_MODIFIED;
 	world->info.modval |= MV_COLORS;
 	world->info.modclr |= (1 << type);
-	world->modified = true;
 	world->info.colors[type] = *color;
 	Event_Call(EVT_ONCOLOR, world);
 	return true;
@@ -191,11 +200,11 @@ void World_AllocBlockArray(World *world) {
 	*(cs_uint32 *)data = htonl(world->wdata.size);
 	world->wdata.ptr = data;
 	world->wdata.blocks = (BlockID *)data + 4;
-	world->loaded = true;
+	world->flags |= WORLD_FLAG_LOADED;
 }
 
 cs_bool World_CleanBlockArray(World *world) {
-	if(world->loaded && world->wdata.blocks) {
+	if(World_IsReadyToPlay(world)) {
 		Memory_Fill(world->wdata.blocks, world->wdata.size, 0);
 		return true;
 	}
@@ -360,6 +369,7 @@ THREAD_FUNC(WorldSaveThread) {
 
 	world->error.code = WORLD_ERROR_SUCCESS;
 	world->error.extra = WORLD_EXTRA_NOINFO;
+	world->flags &= ~WORLD_FLAG_MODIFIED;
 	World_Unlock(world);
 	return 0;
 }
@@ -395,17 +405,27 @@ void World_WaitAllTasks(World *world) {
 }
 
 void World_SetInMemory(World *world, cs_bool state) {
-	world->inmemory = state;
+	if(state)
+		world->flags |= WORLD_FLAG_INMEMORY;
+	else
+		world->flags &= ~WORLD_FLAG_INMEMORY;
+}
+
+void World_SetIgnoreModifications(World *world, cs_bool state) {
+	if(state)
+		world->flags |= WORLD_FLAG_MODIGNORE;
+	else
+		world->flags &= ~WORLD_FLAG_MODIGNORE;
 }
 
 cs_bool World_Save(World *world) {
-	if(world->inmemory) {
+	if(World_IsInMemory(world)) {
 		world->error.code = WORLD_ERROR_INMEMORY;
 		world->error.extra = WORLD_EXTRA_NOINFO;
 		return false;
 	}
-	if(!world->modified)
-		return world->loaded;
+	if(!World_IsModified(world))
+		return World_IsReadyToPlay(world);
 	World_Lock(world, 0);
 	Thread_Create(WorldSaveThread, world, true);
 	return true;
@@ -473,12 +493,12 @@ THREAD_FUNC(WorldLoadThread) {
 }
 
 cs_bool World_Load(World *world) {
-	if(world->inmemory) {
+	if(World_IsInMemory(world)) {
 		world->error.code = WORLD_ERROR_INMEMORY;
 		world->error.extra = WORLD_EXTRA_NOINFO;
 		return false;
 	}
-	if(world->loaded)
+	if(ISSET(world->flags, WORLD_FLAG_LOADED))
 		return false;
 	World_Lock(world, 0);
 	Thread_Create(WorldLoadThread, world, false);
@@ -491,7 +511,7 @@ void World_FreeBlockArray(World *world) {
 		world->wdata.size = 0;
 		world->wdata.ptr = world->wdata.blocks = NULL;
 	}
-	world->loaded = false;
+	world->flags &= ~WORLD_FLAG_LOADED;
 }
 
 void World_Unload(World *world) {
@@ -521,7 +541,7 @@ cs_uint32 World_GetOffset(World *world, SVec *pos) {
 cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id) {
 	if(world->wdata.size <= offset) return false;
 	world->wdata.blocks[offset] = id;
-	world->modified = true;
+	world->flags |= WORLD_FLAG_MODIFIED;
 	return true;
 }
 

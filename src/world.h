@@ -19,6 +19,7 @@ API void World_Add(World *world);
 API cs_bool World_Remove(World *world);
 API cs_bool World_IsReadyToPlay(World *world);
 API cs_bool World_IsInMemory(World *world);
+API cs_bool World_IsModified(World *world);
 API void World_FinishEnvUpdate(World *world);
 API cs_byte World_CountPlayers(World *world);
 
@@ -33,6 +34,7 @@ API void World_EndTask(World *world);
 API void World_WaitAllTasks(World *world);
 
 API void World_SetInMemory(World *world, cs_bool state);
+API void World_SetIgnoreModifications(World *world, cs_bool state);
 API void World_SetDimensions(World *world, const SVec *dims);
 API cs_bool World_SetBlock(World *world, SVec *pos, BlockID id);
 API cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id);
