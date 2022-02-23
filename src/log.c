@@ -5,21 +5,23 @@
 #include "event.h"
 #include "consoleio.h"
 
-cs_byte Log_Level = LOG_ALL;
+cs_byte Log_Flags = LOG_ALL;
 static Mutex *logMutex = NULL;
+
+#define MKCOL(c, t) Log_Flags&LOG_COLORS?"\x1B["c"m"t"\x1B[0m":t
 
 INL static cs_str getName(cs_byte flag) {
 	switch(flag) {
 		case LOG_ERROR:
-			return "ERROR";
+			return MKCOL("1;34", "ERROR");
 		case LOG_INFO:
-			return "INFO ";
+			return MKCOL("1;32", "INFO ");
 		case LOG_CHAT:
-			return "CHAT ";
+			return MKCOL("1;33", "CHAT ");
 		case LOG_WARN:
-			return "WARN ";
+			return MKCOL("35", "WARN ");
 		case LOG_DEBUG:
-			return "DEBUG";
+			return MKCOL("1;34", "DEBUG");
 	}
 	return NULL;
 }
@@ -37,6 +39,9 @@ void Log_SetLevelStr(cs_str str) {
 
 	do {
 		switch (*str) {
+			case 'c':
+				level |= LOG_COLORS;
+				break;
 			case 'I':
 				level |= LOG_INFO;
 				break;
@@ -55,7 +60,7 @@ void Log_SetLevelStr(cs_str str) {
 		}
 	} while(*str++ != '\0');
 
-	Log_Level = level;
+	Log_Flags = level;
 }
 
 static LogBuffer buffer = {
@@ -63,7 +68,7 @@ static LogBuffer buffer = {
 };
 
 void Log_Print(cs_byte flag, cs_str str, va_list *args) {
-	if(Log_Level & flag) {
+	if(Log_Flags & flag) {
 		Mutex_Lock(logMutex);
 
 		cs_int32 ret;

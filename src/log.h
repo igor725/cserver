@@ -10,6 +10,7 @@
 #define LOG_WARN BIT(3)
 #define LOG_DEBUG BIT(4)
 #define LOG_ALL 0x0F
+#define LOG_COLORS BIT(5)
 
 #define LOG_BUFSIZE 8192
 
@@ -29,5 +30,5 @@ API void Log_Warn(cs_str str, ...);
 API void Log_Debug(cs_str str, ...);
 
 API void Log_SetLevelStr(cs_str str);
-VAR cs_byte Log_Level;
+VAR cs_byte Log_Flags;
 #endif // LOG_H
