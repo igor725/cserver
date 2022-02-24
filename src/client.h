@@ -50,6 +50,7 @@ API cs_bool Client_IsInWorld(Client *client, World *world);
 API cs_bool Client_IsOP(Client *client);
 API cs_bool Client_IsFirstSpawn(Client *client);
 
+API cs_bool Client_SetDisplayName(Client *client, cs_str name);
 API cs_bool Client_SetWeather(Client *client, cs_int8 type);
 API cs_bool Client_SetInvOrder(Client *client, cs_byte order, BlockID block);
 API cs_bool Client_SetServerIdent(Client *client, cs_str name, cs_str motd);
@@ -75,6 +76,7 @@ API cs_bool Client_RegisterParticle(Client *client, CustomParticle *e);
 API cs_bool Client_SpawnParticle(Client *client, cs_byte id, Vec *pos, Vec *origin);
 
 API cs_str Client_GetName(Client *client);
+API cs_str Client_GetDisplayName(Client *client);
 API cs_str Client_GetAppName(Client *client);
 API cs_str Client_GetKey(Client *client);
 API cs_str Client_GetSkin(Client *client);

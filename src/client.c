@@ -82,6 +82,11 @@ cs_str Client_GetName(Client *client) {
 	return client->playerData->name;
 }
 
+cs_str Client_GetDisplayName(Client *client) {
+	if(!client->playerData) return Sstor_Get("NONAME");
+	return client->playerData->displayname;
+}
+
 cs_str Client_GetKey(Client *client) {
 	if(!client->playerData) return Sstor_Get("CL_NOKEY");
 	return client->playerData->key;
@@ -420,6 +425,13 @@ cs_bool Client_SetTexturePack(Client *client, cs_str url) {
 	return false;
 }
 
+cs_bool Client_SetDisplayName(Client *client, cs_str name) {
+	if(!client->playerData) return false;
+	if(String_Copy(client->playerData->displayname, 65, name))
+		client->cpeData->updates |= PCU_NAME;
+	return false;
+}
+
 cs_bool Client_SetWeather(Client *client, cs_int8 type) {
 	if(Client_GetExtVer(client, EXT_WEATHER)) {
 		CPE_WriteWeatherType(client, type);
@@ -587,7 +599,7 @@ cs_bool Client_SetModelStr(Client *client, cs_str model) {
 cs_bool Client_SetGroup(Client *client, cs_int16 gid) {
 	if(!client->cpeData) return false;
 	client->cpeData->group = gid;
-	client->cpeData->updates |= PCU_GROUP;
+	client->cpeData->updates |= PCU_NAME;
 	return true;
 }
 
@@ -659,7 +671,7 @@ cs_bool Client_Update(Client *client) {
 	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
 		Client *other = Clients_List[id];
 		if(other) {
-			if(client->cpeData->updates & PCU_GROUP && hasplsupport)
+			if(client->cpeData->updates & PCU_NAME && hasplsupport)
 				CPE_WriteAddName(other, client);
 			if(client->cpeData->updates & PCU_MODEL && hassmsupport)
 				CPE_WriteSetModel(other, client);
@@ -981,6 +993,7 @@ cs_bool Client_Spawn(Client *client) {
 	Event_Call(EVT_ONSPAWN, &evt);
 	// Vanilla_WriteUserType(client, client->playerData->isOP ? 0x64 : 0x00);
 	Client_UpdateWorldInfo(client, client->playerData->world, true);
+	if(client->cpeData) client->cpeData->updates = PCU_NONE;
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *other = Clients_List[i];

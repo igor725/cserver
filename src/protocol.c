@@ -321,6 +321,7 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 
 	if(!Proto_ReadStringNoAlloc(&data, client->playerData->name)) return false;
 	if(!Proto_ReadStringNoAlloc(&data, client->playerData->key)) return false;
+	String_Copy(client->playerData->displayname, 65, client->playerData->name);
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *other = Clients_List[i];
@@ -482,7 +483,7 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 
 	if(Event_Call(EVT_ONMESSAGE, &params)) {
 		cs_char formatted[320];
-		String_FormatBuf(formatted, 320, "<%s>: %s", Client_GetName(client), params.message);
+		String_FormatBuf(formatted, 320, "<%s&f>: %s", Client_GetDisplayName(client), params.message);
 
 		if(*params.message == '/') {
 			if(!Command_Handle(params.message, client))
@@ -629,7 +630,7 @@ void CPE_WriteAddName(Client *client, Client *other) {
 	*data = 0x16; data += 2;
 	*data++ = client == other ? CLIENT_SELF : other->id;
 	Proto_WriteString(&data, Client_GetName(other));
-	Proto_WriteString(&data, Client_GetName(other));
+	Proto_WriteString(&data, Client_GetDisplayName(other));
 	CGroup *group = Client_GetGroup(other);
 	Proto_WriteString(&data, group->name);
 	*data++ = group->rank;

@@ -4,7 +4,7 @@
 #include "types/list.h"
 
 #define PCU_NONE 0x00 // Ни одно из CPE-значений игрока не изменилось
-#define PCU_GROUP BIT(0) // Была обновлена группа игрока
+#define PCU_NAME BIT(0) // Была обновлено имя игрока, либо группа
 #define PCU_MODEL BIT(1) // Была изменена модель игрока
 #define PCU_SKIN BIT(2) // Был изменён скин игрока
 #define PCU_ENTPROP BIT(3) // Модель игрока была повёрнута

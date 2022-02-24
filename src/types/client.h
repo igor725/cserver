@@ -29,6 +29,7 @@ typedef enum _EPlayerState {
 typedef struct _PlayerData {
 	cs_char key[65]; // Ключ, полученный от игрока
 	cs_char name[65]; // Имя игрока
+	cs_char displayname[65]; // Отображаемое имя игрока
 	World *world, *reqWorldChange; // Мир, в котором игрок обитает
 	Vec position; // Позиция игрока
 	Ang angle; // Угол вращения игрока
