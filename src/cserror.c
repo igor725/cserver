@@ -3,7 +3,6 @@
 #define _GNU_SOURCE
 #endif
 #include "str.h"
-#include "log.h"
 #include "cserror.h"
 #include "compr.h"
 
@@ -25,9 +24,9 @@ NOINL static void PrintCallStack(void) {
 
 	for(cs_int32 i = 0; i < frames; i++) {
 		SymFromAddr(process, (cs_uintptr)stack[i], NULL, symbol);
-		Log_Debug("Frame #%d: %s = 0x%0X", i, symbol->Name, symbol->Address);
+		printf("Frame #%d: %s = %p\n", i, symbol->Name, (void *)symbol->Address);
 		if(SymGetLineFromAddr(process, (cs_uintptr)symbol->Address, (void *)&stack[i], &line)) {
-			Log_Debug("\tin %s at line %d", line.FileName, line.LineNumber);
+			printf("\tin %s at line %ld\n", line.FileName, line.LineNumber);
 		}
 	}
 }
@@ -42,7 +41,7 @@ void Error_Uninit(void) {
 
 #elif defined(__ANDROID__)
 static void PrintCallStack(void) {
-	Log_Debug("Callstack printing for android not implemented yet");
+	printf("Callstack printing for android not implemented yet\n");
 }
 
 cs_bool Error_Init(void) {return true;}
@@ -58,7 +57,7 @@ static void PrintCallStack(void) {
 	for(cs_int32 i = 0; i < frames; i++) {
 		Dl_info dli;
 		if(dladdr(stack[i], &dli))
-			Log_Debug("Frame #%d: %s = 0x%0X", i, dli.dli_sname, dli.dli_saddr);
+			printf("Frame #%d: %s = 0x%0X\n", i, dli.dli_sname, dli.dli_saddr);
 	}
 }
 
@@ -81,7 +80,7 @@ void Error_Print(cs_int32 code, cs_str file, cs_uint32 line, cs_str func, ...) {
 	va_list args;
 	va_start(args, func);
 	String_FormatError(code, strbuf + fmtpos, 384 - fmtpos, &args);
-	Log_Info("%s", strbuf);
+	printf("%s\n", strbuf);
 	va_end(args);
 	PrintCallStack();
 }
