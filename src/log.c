@@ -8,20 +8,43 @@
 cs_byte Log_Flags = LOG_ALL;
 static Mutex *logMutex = NULL;
 
-#define MKCOL(c, t) Log_Flags&LOG_COLORS?"\x1B["c"m"t"\x1B[0m":t
+#define MKCOL(c) "\x1B["c"m"
+#define MKTCOL(c, t) Log_Flags&LOG_COLORS?MKCOL(c)t"\x1B[0m":t
 
-INL static cs_str getName(cs_byte flag) {
+INL static cs_str MapColor(cs_char col) {
+	switch(col) {
+		case '0': return MKCOL("30");
+		case '1': return MKCOL("34");
+		case '2': return MKCOL("32");
+		case '3': return MKCOL("36");
+		case '4': return MKCOL("31");
+		case '5': return MKCOL("35");
+		case '6': return MKCOL("2;33");
+		case '7': return MKCOL("1;30");
+		case '8': return MKCOL("2;37");
+		case '9': return MKCOL("1;34");
+		case 'a': return MKCOL("1;32");
+		case 'b': return MKCOL("1;34");
+		case 'c': return MKCOL("1;31");
+		case 'd': return MKCOL("1;35");
+		case 'e': return MKCOL("33");
+		case 'f': return MKCOL("0");
+	}
+	return NULL;
+}
+
+INL static cs_str GetName(cs_byte flag) {
 	switch(flag) {
 		case LOG_ERROR:
-			return MKCOL("1;34", "ERROR");
+			return MKTCOL("1;31", "ERROR");
 		case LOG_INFO:
-			return MKCOL("1;32", "INFO ");
+			return MKTCOL("1;32", "INFO ");
 		case LOG_CHAT:
-			return MKCOL("1;33", "CHAT ");
+			return MKTCOL("1;33", "CHAT ");
 		case LOG_WARN:
-			return MKCOL("35", "WARN ");
+			return MKTCOL("35", "WARN ");
 		case LOG_DEBUG:
-			return MKCOL("1;34", "DEBUG");
+			return MKTCOL("1;34", "DEBUG");
 	}
 	return NULL;
 }
@@ -67,6 +90,27 @@ static LogBuffer buffer = {
 	.offset = 0
 };
 
+// Сдвигает все символы в лог буфере на указанное количество байт влево
+static void BufShiftLeft(cs_size from, cs_size shift) {
+	for(cs_size i = from + shift; i < buffer.offset; i++) {
+		buffer.data[i - shift] = buffer.data[i];
+		if(buffer.data[i] == '\0') break;
+	}
+	buffer.offset -= shift;
+}
+
+// Сдвигает все символы в лог буфере на указанное количество байт вправо
+static cs_bool BufShiftRight(cs_size from, cs_size shift) {
+	if(shift == 0) return false;
+	for(cs_size i = buffer.offset; i >= from; i--) {
+		if(LOG_BUFSIZE > i + shift)
+			buffer.data[i + shift] = buffer.data[i];
+		buffer.data[i] = '\0';
+	}
+	buffer.offset += shift;
+	return true;
+}
+
 void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 	if(Log_Flags & flag) {
 		Mutex_Lock(logMutex);
@@ -76,34 +120,55 @@ void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 			buffer.offset = ret;
 
 		if((ret = String_FormatBuf(buffer.data + buffer.offset,
-			LOG_BUFSIZE - buffer.offset, " [%s] ", getName(flag)
+			LOG_BUFSIZE - buffer.offset, " [%s] ", GetName(flag)
 		)) > 0)
 			buffer.offset += ret;
 
 		if(args) {
 			if((ret = String_FormatBufVararg(
 				buffer.data + buffer.offset,
-				LOG_BUFSIZE - buffer.offset - 3, str, args
+				LOG_BUFSIZE - buffer.offset, str, args
 			)) > 0)
 				buffer.offset += ret;
+			else goto logend;
 		} else {
 			if((ret = (cs_int32)String_Append(
 				buffer.data + buffer.offset,
-				LOG_BUFSIZE - buffer.offset - 3, str
+				LOG_BUFSIZE - buffer.offset, str
 			)) > 0)
 				buffer.offset += ret;
+			else goto logend;
 		}
 
+		cs_char lastcolor = '\0';
 		for(cs_size i = 0; i < buffer.offset; i++) {
-			if((buffer.data[i] == '&' || buffer.data[i] == '%') && buffer.data[i + 1] != '\0') {
-				for(cs_size j = i + 2; i < buffer.offset; j++) {
-					buffer.data[j - 2] = buffer.data[j];
-					if(buffer.data[j] == '\0') break;
+			if((buffer.data[i] == '&' || buffer.data[i] == '%') && ISHEX(buffer.data[i + 1])) {
+				cs_char currcol = buffer.data[i + 1];
+				if(Log_Flags & LOG_COLORS && lastcolor != currcol) {
+					cs_str color = MapColor(currcol);
+					if(color) {
+						cs_size clen = String_Length(color);
+						if(clen == 0) continue;
+						if(clen > 2) BufShiftRight(i + 2, clen - 2);
+						Memory_Copy(buffer.data + i, color, clen);
+						lastcolor = currcol;
+						// Отнимаем 1 потому что цикл и так заинкрементит значение i
+						i += clen - 1;
+						continue;
+					}
 				}
-				buffer.offset -= 2;
+				BufShiftLeft(i, 2);
 			}
 		}
 
+		// Убеждаемся, что завершающие символы у нас поместятся в буфер
+		buffer.offset = min(buffer.offset, LOG_BUFSIZE - 8);
+		if(Log_Flags & LOG_COLORS)
+			buffer.offset += String_Copy(
+				buffer.data + buffer.offset,
+				LOG_BUFSIZE - buffer.offset,
+				MapColor('f')
+			);
 		buffer.data[buffer.offset++] = '\r';
 		buffer.data[buffer.offset++] = '\n';
 		buffer.data[buffer.offset] = '\0';
@@ -115,6 +180,7 @@ void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 			ConsoleIO_AfterPrint();
 		}
 
+		logend:
 		Mutex_Unlock(logMutex);
 	}
 }

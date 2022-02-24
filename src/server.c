@@ -194,7 +194,7 @@ cs_bool Server_Init(void) {
 
 	ent = Config_NewEntry(cfg, CFG_LOGLEVEL_KEY, CONFIG_TYPE_STR);
 	Config_SetComment(ent, "I - Info, C - Chat, W - Warnings, D - Debug, c - Console colors");
-	Config_SetDefaultStr(ent, "ICWDc");
+	Config_SetDefaultStr(ent, "ICWD");
 
 	ent = Config_NewEntry(cfg, CFG_LOCALOP_KEY, CONFIG_TYPE_BOOL);
 	Config_SetComment(ent, "Any player with ip address \"127.0.0.1\" will automatically become an operator");
