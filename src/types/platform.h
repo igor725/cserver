@@ -20,6 +20,7 @@ typedef BOOL TSHND_RET;
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/socket.h>
+#include <netinet/tcp.h>
 #include <errno.h>
 #include <netdb.h>
 #include <arpa/inet.h>

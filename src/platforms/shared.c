@@ -120,20 +120,29 @@ Socket Socket_New(void) {
 
 cs_bool Socket_Bind(Socket sock, struct sockaddr_in *addr) {
 #if defined(CORE_USE_UNIX)
-	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(cs_int32){1}, 4) == -1) {
+	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(cs_int32){1}, 4) < 0) {
+		return false;
+	}
+	if(setsockopt(sock, IPPROTO_TCP, TCP_KEEPCNT, &(cs_int32){2}, 4) < 0) {
+		return false;
+	}
+	if(setsockopt(sock, IPPROTO_TCP, TCP_KEEPIDLE, &(cs_int32){5}, 4) < 0) {
+		return false;
+	}
+	if(setsockopt(sock, IPPROTO_TCP, TCP_KEEPINTVL, &(cs_int32){5}, 4) < 0) {
 		return false;
 	}
 #elif defined(CORE_USE_WINDOWS)
-	if(setsockopt(sock, SOL_SOCKET, SO_DONTLINGER, (void*)&(cs_int32){0}, 4) == -1) {
+	if(setsockopt(sock, SOL_SOCKET, SO_DONTLINGER, (void*)&(cs_int32){0}, 4) < 0) {
 		return false;
 	}
 #endif
 
-	if(bind(sock, (const struct sockaddr *)addr, sizeof(struct sockaddr_in)) == -1) {
+	if(bind(sock, (const struct sockaddr *)addr, sizeof(struct sockaddr_in)) < 0) {
 		return false;
 	}
 
-	if(listen(sock, SOMAXCONN) == -1) {
+	if(listen(sock, SOMAXCONN) < 0) {
 		return false;
 	}
 
