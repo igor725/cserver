@@ -169,6 +169,9 @@ INL static cs_bool Bind(cs_str ip, cs_uint16 port) {
 cs_bool Server_Init(void) {
 	if(!Generators_Init() || !Sstor_Defaults()) return false;
 
+	Directory_Ensure("worlds");
+	Directory_Ensure("configs");
+
 	CStore *cfg = Config_NewStore(MAINCFG);
 	CEntry *ent;
 
@@ -246,7 +249,6 @@ cs_bool Server_Init(void) {
 	Packet_RegisterDefault();
 	Plugin_LoadAll();
 
-	Directory_Ensure("worlds");
 	cs_str worlds = Config_GetStrByKey(cfg, CFG_WORLDS_KEY);
 	cs_uint32 wIndex = 0;
 	if(*worlds == '*') {

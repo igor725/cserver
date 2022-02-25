@@ -22,17 +22,11 @@ if(!checkNumber(value)) { \
 	return false; \
 }
 
-CStore *Config_NewStore(cs_str path) {
+CStore *Config_NewStore(cs_str name) {
 	CStore *store = Memory_Alloc(1, sizeof(CStore));
-	store->path = String_AllocCopy(path);
-	cs_str ext = String_FindSubstr(store->path, ".cfg");
-	if(!ext) {
-		cs_size sz = 0;
-		cs_char *newpath = (cs_char *)store->path;
-		newpath = String_Grow(newpath, 4, &sz);
-		String_Append(newpath, sz, ".cfg");
-		store->path = (cs_str)newpath;
-	}
+	store->name = String_AllocCopy(name);
+	cs_char *ext = String_FindSubstr(store->name, ".cfg");
+	if(ext) *ext = '\0';
 	return store;
 }
 
@@ -138,7 +132,13 @@ cs_byte Config_ToStr(CEntry *ent, cs_char *value, cs_byte len) {
 }
 
 cs_bool Config_Load(CStore *store) {
-	cs_file fp = File_Open(store->path, "r");
+	cs_char path[MAX_PATH];
+	if(String_FormatBuf(path, MAX_PATH, "configs/%s.cfg", store->name) < 1) {
+		store->error.code = CONFIG_ERROR_INTERNAL;
+		store->error.extra = CONFIG_EXTRA_NOINFO;
+		return false;
+	}
+	cs_file fp = File_Open(path, "r");
 	if(!fp) {
 		store->error.code = CONFIG_ERROR_IOFAIL;
 		store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
@@ -235,10 +235,14 @@ cs_bool Config_Load(CStore *store) {
 cs_bool Config_Save(CStore *store) {
 	if(!store->modified) return true;
 
-	cs_char tmpname[256];
-	String_FormatBuf(tmpname, 256, "%s.tmp", store->path);
+	cs_char tmppath[MAX_PATH]; cs_char path[MAX_PATH];
+	if(String_FormatBuf(tmppath, MAX_PATH, "configs" PATH_DELIM "%s.tmp", store->name) < 1) {
+		store->error.code = CONFIG_ERROR_INTERNAL;
+		store->error.extra = CONFIG_EXTRA_NOINFO;
+		return false;
+	}
 
-	cs_file fp = File_Open(tmpname, "w");
+	cs_file fp = File_Open(tmppath, "w");
 	if(!fp) {
 		store->error.code = CONFIG_ERROR_IOFAIL;
 		store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
@@ -290,12 +294,19 @@ cs_bool Config_Save(CStore *store) {
 
 	File_Close(fp);
 	store->modified = false;
-	if(!File_Rename(tmpname, store->path)) {
-		store->error.code = CONFIG_ERROR_IOFAIL;
-		store->error.extra = CONFIG_EXTRA_IO_FRENAME;
-		store->error.line = 0;
+	if(String_FormatBuf(path, MAX_PATH, "configs/%s.cfg", store->name) > 0) {
+		if(!File_Rename(tmppath, path)) {
+			store->error.code = CONFIG_ERROR_IOFAIL;
+			store->error.extra = CONFIG_EXTRA_IO_FRENAME;
+			store->error.line = 0;
+			return false;
+		}
+	} else {
+		store->error.code = CONFIG_ERROR_INTERNAL;
+		store->error.extra = CONFIG_EXTRA_NOINFO;
 		return false;
 	}
+
 
 	store->error.code = CONFIG_ERROR_SUCCESS;
 	store->error.extra = CONFIG_EXTRA_NOINFO;
@@ -530,7 +541,7 @@ void Config_EmptyStore(CStore *store) {
 }
 
 void Config_DestroyStore(CStore *store) {
-	Memory_Free((void *)store->path);
+	Memory_Free((void *)store->name);
 	Config_EmptyStore(store);
 	Memory_Free(store);
 }

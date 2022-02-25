@@ -58,7 +58,7 @@ typedef struct _CEntry {
 } CEntry;
 
 typedef struct _CStore {
-	cs_str path; // Путь до cfg-файла
+	cs_str name; // Название cfg-файла
 	cs_bool modified; // Было ли хранилище модифицировано во время работы сервера
 	struct _CError {
 		ECError code;

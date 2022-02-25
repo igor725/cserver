@@ -12,7 +12,7 @@ API cs_byte Config_ToStr(CEntry *ent, cs_char *value, cs_byte len);
 API cs_str Config_ErrorToString(ECError code);
 API cs_str Config_ExtraToString(ECExtra extra);
 
-API CStore *Config_NewStore(cs_str path);
+API CStore *Config_NewStore(cs_str name);
 API void Config_EmptyStore(CStore *store);
 API void Config_DestroyStore(CStore *store);
 API void Config_ResetToDefault(CStore *store);
