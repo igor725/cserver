@@ -25,6 +25,14 @@ if(!checkNumber(value)) { \
 CStore *Config_NewStore(cs_str path) {
 	CStore *store = Memory_Alloc(1, sizeof(CStore));
 	store->path = String_AllocCopy(path);
+	cs_str ext = String_FindSubstr(store->path, ".cfg");
+	if(!ext) {
+		cs_size sz = 0;
+		cs_char *newpath = (cs_char *)store->path;
+		newpath = String_Grow(newpath, 4, &sz);
+		String_Append(newpath, sz, ".cfg");
+		store->path = (cs_str)newpath;
+	}
 	return store;
 }
 
@@ -52,7 +60,7 @@ cs_str Config_GetEntryKey(CEntry *ent) {
 	return ent->key;
 }
 
-CEntry *Config_NewEntry(CStore *store, cs_str key, cs_int32 type) {
+CEntry *Config_NewEntry(CStore *store, cs_str key, ECTypes type) {
 	CEntry *ent = Config_GetEntry(store, key);
 	if(ent) return ent;
 

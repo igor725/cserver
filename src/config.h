@@ -17,7 +17,7 @@ API void Config_EmptyStore(CStore *store);
 API void Config_DestroyStore(CStore *store);
 API void Config_ResetToDefault(CStore *store);
 
-API CEntry *Config_NewEntry(CStore *store, cs_str key, cs_int32 type);
+API CEntry *Config_NewEntry(CStore *store, cs_str key, ECTypes type);
 API CEntry *Config_GetEntry(CStore *store, cs_str key);
 API ECTypes Config_GetEntryType(CEntry *ent);
 API cs_str Config_GetEntryTypeName(CEntry *ent);
