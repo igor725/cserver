@@ -147,7 +147,9 @@ cs_bool Socket_Connect(Socket sock, struct sockaddr_in *addr) {
 
 Socket Socket_Accept(Socket sock, struct sockaddr_in *addr) {
 	socklen_t len = sizeof(struct sockaddr_in);
-	return accept(sock, (struct sockaddr *)addr, &len);
+	Socket fd = accept(sock, (struct sockaddr *)addr, &len);
+	setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void *)&(cs_int32){1}, 4);
+	return fd;
 }
 
 cs_int32 Socket_Receive(Socket sock, cs_char *buf, cs_int32 len, cs_int32 flags) {
