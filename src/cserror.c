@@ -57,7 +57,7 @@ static void PrintCallStack(void) {
 	for(cs_int32 i = 0; i < frames; i++) {
 		Dl_info dli;
 		if(dladdr(stack[i], &dli))
-			printf("Frame #%d: %s = 0x%0X\n", i, dli.dli_sname, dli.dli_saddr);
+			printf("Frame #%d: %s = %p\n", i, dli.dli_sname, dli.dli_saddr);
 	}
 }
 
