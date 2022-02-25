@@ -8,6 +8,7 @@ SET DEBUG=0
 SET SAN=0
 SET ROOT=.
 SET PLUGIN_BUILD=0
+SET PLUGIN_ARGS=
 SET NOPROMPT=0
 SET OUTBIN=server.exe
 SET GITOK=0
@@ -66,12 +67,11 @@ IF "%1"=="" GOTO argsdone
 :subargloop
 IF "%1"=="install" (
 	SET PLUGIN_INSTALL=1
-	SHIFT
-)
-IF "%1"=="" GOTO argsdone
-
+) ELSE IF NOT "%1"=="" (
+	SET PLUGIN_ARGS=!PLUGIN_ARGS!%1 
+) ELSE GOTO argsdone
 SHIFT
-GOTO libloop
+GOTO subargloop
 
 @REM Сделать тут умное обновление
 :testupdate
