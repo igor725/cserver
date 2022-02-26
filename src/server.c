@@ -217,7 +217,6 @@ cs_bool Server_Init(void) {
 	Config_SetComment(ent, "List of worlds to load at startup. (Can be \"*\" it means load all worlds in the folder)");
 	Config_SetDefaultStr(ent, "world:256x256x256:normal,flat_world:64x64x64:flat");
 
-	cfg->modified = true;
 	if(!Config_Load(cfg)) {
 		cs_int32 line = 0;
 		ECExtra extra = CONFIG_EXTRA_NOINFO;
@@ -239,7 +238,7 @@ cs_bool Server_Init(void) {
 		}
 	}
 	Log_SetLevelStr(Config_GetStrByKey(cfg, CFG_LOGLEVEL_KEY));
-	Config_Save(Server_Config);
+	Config_Save(Server_Config, true);
 
 	SyncClients = Waitable_Create();
 	Broadcast = Memory_Alloc(1, sizeof(Client));
@@ -471,7 +470,7 @@ void Server_Cleanup(void) {
 	UnloadAllWorlds();
 	Socket_Close(Server_Socket);
 	Log_Info(Sstor_Get("SV_STOP_SC"));
-	Config_Save(Server_Config);
+	Config_Save(Server_Config, true);
 	Config_DestroyStore(Server_Config);
 	Log_Info(Sstor_Get("SV_STOP_UP"));
 	Plugin_UnloadAll(true);

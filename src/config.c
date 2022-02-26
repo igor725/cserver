@@ -232,8 +232,8 @@ cs_bool Config_Load(CStore *store) {
 	return true;
 }
 
-cs_bool Config_Save(CStore *store) {
-	if(!store->modified) return true;
+cs_bool Config_Save(CStore *store, cs_bool force) {
+	if(!store->modified && !force) return true;
 
 	cs_char tmppath[MAX_PATH]; cs_char path[MAX_PATH];
 	if(String_FormatBuf(tmppath, MAX_PATH, "configs" PATH_DELIM "%s.tmp", store->name) < 1) {

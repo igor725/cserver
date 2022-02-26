@@ -24,7 +24,7 @@ API cs_str Config_GetEntryTypeName(CEntry *ent);
 API cs_str Config_GetEntryKey(CEntry *ent);
 
 API cs_bool Config_Load(CStore *store);
-API cs_bool Config_Save(CStore *store);
+API cs_bool Config_Save(CStore *store, cs_bool force);
 
 API void Config_SetComment(CEntry *ent, cs_str commentary);
 API cs_bool Config_SetLimit(CEntry *ent, cs_int32 min, cs_int32 max);

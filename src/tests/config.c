@@ -32,7 +32,6 @@ cs_bool Tests_Config(void) {
 	Tests_Assert(Config_SetLimit(ent, 10, 20) == false, "set limit for boolean entry");
 
 	Tests_NewTask("Save config store");
-	store->modified = true;
-	Tests_Assert(Config_Save(store), "save config store");
+	Tests_Assert(Config_Save(store, true), "save config store");
 	return true;
 }
