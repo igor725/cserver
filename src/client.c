@@ -664,15 +664,18 @@ cs_bool Client_AddTextColor(Client *client, Color4* color, cs_char code) {
 
 cs_bool Client_Update(Client *client) {
 	if(!client->cpeData || client->cpeData->updates == PCU_NONE) return false;
-	cs_bool hasplsupport = Client_GetExtVer(client, EXT_PLAYERLIST) == 2,
-	hassmsupport = Client_GetExtVer(client, EXT_CHANGEMODEL) == 1,
-	hasentprop = Client_GetExtVer(client, EXT_ENTPROP) == 1;
 
 	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
 		Client *other = Clients_List[id];
 		if(other) {
-			if(client->cpeData->updates & PCU_NAME && hasplsupport)
+			cs_bool hasplsupport = Client_GetExtVer(other, EXT_PLAYERLIST) == 2,
+			hassmsupport = Client_GetExtVer(other, EXT_CHANGEMODEL) == 1,
+			hasentprop = Client_GetExtVer(other, EXT_ENTPROP) == 1;
+			if(client->cpeData->updates & PCU_NAME && hasplsupport) {
+				Vanilla_WriteDespawn(other, client);
+				CPE_WriteAddEntity2(other, client);
 				CPE_WriteAddName(other, client);
+			}
 			if(client->cpeData->updates & PCU_MODEL && hassmsupport)
 				CPE_WriteSetModel(other, client);
 			if(client->cpeData->updates & PCU_SKIN && hasplsupport)

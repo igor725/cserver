@@ -3,7 +3,6 @@
 #include "core.h"
 #include "types/config.h"
 
-API cs_bool Config_HasError(CStore *store);
 API ECError Config_PopError(CStore *store, ECExtra *extra, cs_int32 *line);
 
 API cs_str Config_TypeName(ECTypes type);

@@ -646,7 +646,7 @@ void CPE_WriteAddEntity2(Client *client, Client *other) {
 	if(other->cpeData && other->cpeData->hideDisplayName)
 		Proto_WriteString(&data, NULL);
 	else
-		Proto_WriteString(&data, Client_GetName(other));
+		Proto_WriteString(&data, Client_GetDisplayName(other));
 	Proto_WriteString(&data, Client_GetSkin(other));
 	WriteExtEntityPos(
 		&data,

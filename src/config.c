@@ -479,10 +479,6 @@ cs_bool Config_GetBoolByKey(CStore *store, cs_str key) {
 	return Config_GetBool(Config_GetEntry(store, key));
 }
 
-cs_bool Config_HasError(CStore *store) {
-	return store->error.code != CONFIG_ERROR_SUCCESS;
-}
-
 static cs_str ErrorStrings[CONFIG_MAX_ERROR] = {
 	"CONFIG_ERROR_SUCCESS",
 	"CONFIG_ERROR_IOFAIL",
