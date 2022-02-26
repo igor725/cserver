@@ -70,11 +70,10 @@ cs_str Block_GetName(World *world, BlockID id) {
 	return defaultBlockNames[id];
 }
 
-BlockDef *Block_New(BlockID id, cs_str name, cs_byte flags) {
+BlockDef *Block_New(cs_str name, cs_byte flags) {
 	BlockDef *bdef = Memory_Alloc(1, sizeof(BlockDef));
 	String_Copy(bdef->name, 65, name);
 	bdef->flags = BDF_DYNALLOCED | flags;
-	bdef->id = id;
 	return bdef;
 }
 
@@ -83,10 +82,19 @@ void Block_Free(BlockDef *bdef) {
 		Memory_Free(bdef);
 }
 
-cs_bool Block_Define(World *world, BlockDef *bdef) {
-	if(world->info.bdefines[bdef->id]) return false;
+BlockID Block_GetIDFor(World *world, BlockDef *bdef) {
+	for(cs_uint16 i = 0; i < 256; i++) {
+		if(world->info.bdefines[i] == bdef)
+			return (BlockID)i;
+	}
+	return BLOCK_AIR;
+}
+
+cs_bool Block_Define(World *world, BlockID id, BlockDef *bdef) {
+	if(id < 1 || world->info.bdefines[id]) return false;
+	if(Block_GetIDFor(world, bdef) > 0) return false;
 	bdef->flags &= ~(BDF_UPDATED | BDF_UNDEFINED);
-	world->info.bdefines[bdef->id] = bdef;
+	world->info.bdefines[id] = bdef;
 	return true;
 }
 
@@ -95,19 +103,22 @@ BlockDef *Block_GetDefinition(World *world, BlockID id) {
 }
 
 cs_bool Block_Undefine(World *world, BlockDef *bdef) {
-	if(!world->info.bdefines[bdef->id]) return false;
+	BlockID bid = Block_GetIDFor(world, bdef);
+	if(bid < 1) return false;
 	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
 		Client *client = Clients_List[id];
 		if(client && Client_IsInWorld(client, world))
-			Client_UndefineBlock(client, bdef->id);
+			Client_UndefineBlock(client, bid);
 	}
-	world->info.bdefines[bdef->id] = NULL;
+	world->info.bdefines[bid] = NULL;
 	return true;
 }
 
 void Block_UndefineGlobal(BlockDef *bdef) {
-	bdef->flags |= BDF_UNDEFINED;
-	bdef->flags &= ~BDF_UPDATED;
+	if((bdef->flags & BDF_UNDEFINED) == 0) {
+		bdef->flags |= BDF_UNDEFINED;
+		bdef->flags &= ~BDF_UPDATED;
+	}
 }
 
 void Block_UpdateDefinition(BlockDef *bdef) {
@@ -117,19 +128,20 @@ void Block_UpdateDefinition(BlockDef *bdef) {
 	AListField *tmp;
 	List_Iter(tmp, World_Head) {
 		World *world = (World *)tmp->value.ptr;
-		if(world->info.bdefines[bdef->id] == bdef) {
+		BlockID bid = Block_GetIDFor(world, bdef);
+		if(bid > BLOCK_AIR) {
 			if(bdef->flags & BDF_UNDEFINED) {
 				for(ClientID id = 0; id < MAX_CLIENTS; id++) {
 					Client *client = Clients_List[id];
 					if(client && Client_IsInWorld(client, world))
-						Client_UndefineBlock(client, bdef->id);
+						Client_UndefineBlock(client, bid);
 				}
-				world->info.bdefines[bdef->id] = NULL;
+				world->info.bdefines[bid] = NULL;
 			} else {
 				for(ClientID id = 0; id < MAX_CLIENTS; id++) {
 					Client *client = Clients_List[id];
 					if(client && Client_IsInWorld(client, world))
-						Client_DefineBlock(client, bdef);
+						Client_DefineBlock(client, bid, bdef);
 				}
 			}
 		}

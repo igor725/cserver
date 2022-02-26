@@ -776,11 +776,11 @@ void CPE_WriteHackControl(Client *client, CPEHacks *hacks) {
 	PacketWriter_EndAnytime(client);
 }
 
-void CPE_WriteDefineBlock(Client *client, BlockDef *block) {
+void CPE_WriteDefineBlock(Client *client, BlockID id, BlockDef *block) {
 	PacketWriter_Start(client, 80);
 
 	*data++ = 0x23;
-	*data++ = block->id;
+	*data++ = id;
 	Proto_WriteString(&data, block->name);
 	*(struct _BlockParams *)data = block->params.nonext;
 	data += sizeof(block->params.nonext);
@@ -797,11 +797,11 @@ void CPE_WriteUndefineBlock(Client *client, BlockID id) {
 	PacketWriter_EndAnytime(client);
 }
 
-void CPE_WriteDefineExBlock(Client *client, BlockDef *block) {
+void CPE_WriteDefineExBlock(Client *client, BlockID id, BlockDef *block) {
 	PacketWriter_Start(client, 88);
 
 	*data++ = 0x25;
-	*data++ = block->id;
+	*data++ = id;
 	Proto_WriteString(&data, block->name);
 	*(struct _BlockParamsExt *)data = block->params.ext;
 	data += sizeof(block->params.ext);

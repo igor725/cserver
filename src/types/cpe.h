@@ -83,7 +83,6 @@ typedef struct _CustomParticle {
  */
 typedef struct _BlockDef {
 	cs_char name[65]; /** Название блока */
-	BlockID id; /** Уникальный номер блока */
 	BlockID fallback; /** Блок-замена, если клиент не поддерживает дополнение */
 	cs_byte flags; /** Флаги блока */
 	union {
@@ -96,7 +95,7 @@ typedef struct _BlockDef {
 			cs_byte frontTex; /** Текстура передней границы блока */
 			cs_byte backTex; /** Текстура задней границы блока */
 			cs_byte bottomTex; /** Текстура нижней границы блока */
-			cs_byte transmitsLight; /** Пропускает ли блок свет */
+			cs_bool transmitsLight; /** Пропускает ли блок свет */
 			cs_byte walkSound; /** Звук хождения по блоку */
 			cs_bool fullBright; /** Действуют ли тени на блок */
 			cs_byte minX, minY, minZ;

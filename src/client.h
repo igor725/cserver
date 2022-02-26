@@ -21,7 +21,7 @@ NOINL cs_bool Client_SendAnytimeData(Client *client, cs_int32 size);
 NOINL cs_bool Client_FlushBuffer(Client *client);
 
 API void Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
-NOINL cs_bool Client_DefineBlock(Client *client, BlockDef *block);
+NOINL cs_bool Client_DefineBlock(Client *client, BlockID id, BlockDef *block);
 NOINL cs_bool Client_UndefineBlock(Client *client, BlockID id);
 
 API CGroup *Group_Add(cs_int16 gid, cs_str gname, cs_byte grank);

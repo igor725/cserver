@@ -56,7 +56,7 @@ API cs_str Block_GetName(World *world, BlockID id);
  * @param flags флаги блока
  * @return структура, описывающая блок
  */
-API BlockDef *Block_New(BlockID id, cs_str name, cs_byte flags);
+API BlockDef *Block_New(cs_str name, cs_byte flags);
 
 /**
  * @brief Высвобождает память, выделенную под динамический блок.
@@ -68,6 +68,8 @@ API BlockDef *Block_New(BlockID id, cs_str name, cs_byte flags);
  */
 API void Block_Free(BlockDef *bdef);
 
+API cs_bool Block_IsDefinedFor(World *world, BlockDef *bdef);
+
 /**
  * @brief Очищает у блока флаги UPDATED и UNDEFINED и
  * добавляет его к массиву указанного мира.
@@ -76,7 +78,7 @@ API void Block_Free(BlockDef *bdef);
  * @param bdef структура, описывающая блока
  * @return true - регистрация прошла успешно, false - блок с таким id уже зарегистрирован
  */
-API cs_bool Block_Define(World *world, BlockDef *bdef);
+API cs_bool Block_Define(World *world, BlockID id, BlockDef *bdef);
 
 /**
  * @brief Возвращает структуру блока по его номеру.

@@ -629,16 +629,16 @@ void Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu) {
 	}
 }
 
-cs_bool Client_DefineBlock(Client *client, BlockDef *block) {
+cs_bool Client_DefineBlock(Client *client, BlockID id, BlockDef *block) {
 	if(block->flags & BDF_UNDEFINED) return false;
 	if(block->flags & BDF_EXTENDED) {
 		if(Client_GetExtVer(client, EXT_BLOCKDEF2)) {
-			CPE_WriteDefineExBlock(client, block);
+			CPE_WriteDefineExBlock(client, id, block);
 			return true;
 		}
 	} else {
 		if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
-			CPE_WriteDefineBlock(client, block);
+			CPE_WriteDefineBlock(client, id, block);
 			return true;
 		}
 	}
@@ -910,9 +910,9 @@ NOINL static void SendWorld(Client *client, World *world) {
 				BlockDef *newbdef = Block_GetDefinition(world, (BlockID)id);
 				if(oldworld) {
 					BlockDef *unbdef = Block_GetDefinition(oldworld, (BlockID)id);
-					if(unbdef) Client_UndefineBlock(client, unbdef->id);
+					if(unbdef) Client_UndefineBlock(client, (BlockID)id);
 				}
-				if(newbdef) Client_DefineBlock(client, newbdef);
+				if(newbdef) Client_DefineBlock(client, (BlockID)id, newbdef);
 			}
 		}
 
