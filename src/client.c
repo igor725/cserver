@@ -508,7 +508,7 @@ cs_bool Client_SetModel(Client *client, cs_int16 model) {
 cs_bool Client_SetSkin(Client *client, cs_str skin) {
 	if(!client->cpeData) return false;
 	String_Copy(client->cpeData->skin, 65, skin);
-	client->cpeData->updates |= PCU_SKIN;
+	client->cpeData->updates |= PCU_ENTITY;
 	return true;
 }
 
@@ -672,20 +672,22 @@ cs_bool Client_Update(Client *client) {
 		if(other) {
 			cs_bool hasplsupport = Client_GetExtVer(other, EXT_PLAYERLIST) == 2,
 			hassmsupport = Client_GetExtVer(other, EXT_CHANGEMODEL) == 1,
-			hasentprop = Client_GetExtVer(other, EXT_ENTPROP) == 1;
+			hasentprop = Client_GetExtVer(other, EXT_ENTPROP) == 1,
+			isinsameworld = Client_IsInSameWorld(client, other);
 			if(client->cpeData->updates & PCU_NAME && hasplsupport) {
-				Vanilla_WriteDespawn(other, client);
-				CPE_WriteAddEntity2(other, client);
+				client->cpeData->updates |= PCU_ENTITY;
 				CPE_WriteAddName(other, client);
 			}
-			if(client->cpeData->updates & PCU_MODEL && hassmsupport)
-				CPE_WriteSetModel(other, client);
-			if(client->cpeData->updates & PCU_SKIN && hasplsupport)
-				CPE_WriteAddEntity2(other, client);
-			if(client->cpeData->updates & PCU_ENTPROP && hasentprop)
-				for(cs_int8 i = 0; i < 3; i++) {
-					CPE_WriteSetEntityProperty(other, client, i, client->cpeData->rotation[i]);
-				}
+			if(isinsameworld) {
+				if(client->cpeData->updates & PCU_MODEL && hassmsupport)
+					CPE_WriteSetModel(other, client);
+				if(client->cpeData->updates & PCU_ENTITY && hasplsupport)
+					CPE_WriteAddEntity2(other, client);
+				if(client->cpeData->updates & PCU_ENTPROP && hasentprop)
+					for(cs_int8 i = 0; i < 3; i++) {
+						CPE_WriteSetEntityProperty(other, client, i, client->cpeData->rotation[i]);
+					}
+			}
 		}
 	}
 
