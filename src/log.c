@@ -11,7 +11,7 @@ static Mutex *logMutex = NULL;
 #define MKCOL(c) "\x1B["c"m"
 #define MKTCOL(c, t) Log_Flags&LOG_COLORS?MKCOL(c)t"\x1B[0m":t
 
-INL static cs_str MapColor(cs_char col) {
+static cs_str MapColor(cs_char col) {
 	switch(col) {
 		case '0': return MKCOL("30");
 		case '1': return MKCOL("34");
@@ -91,7 +91,7 @@ static LogBuffer buffer = {
 };
 
 // Сдвигает все символы в лог буфере на указанное количество байт влево
-static void BufShiftLeft(cs_size from, cs_size shift) {
+INL static void BufShiftLeft(cs_size from, cs_size shift) {
 	for(cs_size i = from + shift; i < buffer.offset; i++) {
 		buffer.data[i - shift] = buffer.data[i];
 		if(buffer.data[i] == '\0') break;
@@ -100,7 +100,7 @@ static void BufShiftLeft(cs_size from, cs_size shift) {
 }
 
 // Сдвигает все символы в лог буфере на указанное количество байт вправо
-static cs_bool BufShiftRight(cs_size from, cs_size shift) {
+INL static cs_bool BufShiftRight(cs_size from, cs_size shift) {
 	if(shift == 0) return false;
 	for(cs_size i = buffer.offset; i >= from; i--) {
 		if(LOG_BUFSIZE > i + shift)

@@ -21,7 +21,7 @@ SET OUTDIR=out\%ARCH%
 SET OBJDIR=%OUTDIR%\objs
 SET SERVER_OUTROOT=.\%OUTDIR%
 
-SET LDFLAGS=/opt:ref
+SET LDFLAGS=/link
 SET CFLAGS=/FC /MP /Oi
 SET LIBS=kernel32.lib dbghelp.lib
 
@@ -101,7 +101,7 @@ ECHO Architecture: %ARCH%
 
 IF "%DEBUG%"=="0" (
 	SET CFLAGS=!CFLAGS! /MT
-	SET LDFLAGS=!LDFLAGS! /RELEASE
+	SET LDFLAGS=!LDFLAGS! /RELEASE /OPT:REF
 	ECHO Debug: disabled
 ) else (
 	SET SERVER_OUTROOT=!SERVER_OUTROOT!dbg
@@ -119,7 +119,7 @@ IF "%DEBUG%"=="0" (
 IF NOT EXIST !OBJDIR! MD !OBJDIR!
 
 IF "%PLUGIN_BUILD%"=="0" (
-	SET LDFLAGS=!LDFLAGS! /subsystem:console
+	SET LDFLAGS=!LDFLAGS! /SUBSYSTEM:CONSOLE
 	SET LIBS=!LIBS! ws2_32.lib
 	GOTO detectzlib
 ) else (
@@ -133,7 +133,7 @@ SET BINPATH=%OUTDIR%\%OUTBIN%
 IF "%PLUGIN_BUILD%"=="1" (
   SET CFLAGS=!CFLAGS! /Fe!BINPATH! /DCORE_BUILD_PLUGIN /I.\src\
   SET LIBS=server.lib !LIBS!
-	SET LDFLAGS=!LDFLAGS! /libpath:!SERVER_OUTROOT!
+	SET LDFLAGS=!LDFLAGS! /LIBPATH:!SERVER_OUTROOT!
 ) else (
 	SET CFLAGS=!CFLAGS! /Fe!BINPATH!
 )
@@ -142,7 +142,7 @@ SET CFLAGS=%CFLAGS% %WARN% %OPT% /Fo%OBJDIR%\
 SET SOURCES=%ROOT%\src\*.c
 
 IF EXIST %ROOT%\version.rc (
-	RC /nologo /Fo!OBJDIR!\version.res !ROOT!\version.rc
+	RC /NOLOGO /Fo!OBJDIR!\version.res !ROOT!\version.rc
 	SET SOURCES=!SOURCES! !OBJDIR!\version.res
 )
 
@@ -151,8 +151,7 @@ IF EXIST %ROOT%\vars.bat (
 	IF NOT "!ERRORLEVEL!"=="0" GOTO compileerror
 )
 
-SET CFLAGS=%CFLAGS% /link %LDFLAGS%
-CL %SOURCES% /I%ROOT%\src %CFLAGS% %LIBS%
+CL %SOURCES% /I%ROOT%\src %CFLAGS% %LDFLAGS% %LIBS%
 IF NOT "%ERRORLEVEL%"=="0" GOTO compileerror
 
 IF "%PLUGIN_BUILD%"=="1" (
@@ -218,8 +217,6 @@ IF "%NOPROMPT%"=="0" (
 	ECHO Note: The zlib repo will be cloned from Mark Adler's GitHub, then compiled.
 	ECHO Warning: If "!ZFOLDER!" exists it will be removed!
 	SET /P ZQUESTION="[Y/n]>"
-	IF "!ZQUESTION!"=="n" GOTO end
-	IF "!ZQUESTION!"=="N" GOTO end
 	IF "!ZQUESTION!"=="" GOTO downzlib
 	IF "!ZQUESTION!"=="y" GOTO downzlib
 	IF "!ZQUESTION!"=="Y" GOTO downzlib

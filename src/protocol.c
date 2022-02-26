@@ -296,7 +296,7 @@ void Vanilla_WriteUserType(Client *client, cs_byte type) {
 	PacketWriter_EndIngame(client);
 }
 
-INL static cs_bool FinishHandshake(Client *client) {
+static cs_bool FinishHandshake(Client *client) {
 	onHandshakeDone evt = {
 		.client = client,
 		.world = World_Main

@@ -62,7 +62,7 @@ INL static void TrimReserved(cs_char *name) {
 	}
 }
 
-INL static void initHeartbeatModule(void) {
+static void initHeartbeatModule(void) {
 	gLock = Mutex_Create();
 	inited = true;
 
