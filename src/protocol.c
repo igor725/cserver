@@ -653,10 +653,7 @@ void CPE_WriteAddEntity2(Client *client, Client *other) {
 
 	*data++ = 0x21;
 	*data++ = client == other ? CLIENT_SELF : other->id;
-	if(other->cpeData && other->cpeData->hideDisplayName)
-		Proto_WriteString(&data, NULL);
-	else
-		Proto_WriteString(&data, Client_GetDisplayName(other));
+	Proto_WriteString(&data, Client_GetDisplayName(other));
 	Proto_WriteString(&data, Client_GetSkin(other));
 	WriteExtEntityPos(
 		&data,

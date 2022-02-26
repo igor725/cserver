@@ -282,6 +282,8 @@ cs_bool Client_RemoveSelection(Client *client, cs_byte id) {
 cs_bool Client_TeleportTo(Client *client, Vec *pos, Ang *ang) {
 	if(Client_CheckState(client, PLAYER_STATE_INGAME)) {
 		Vanilla_WriteTeleport(client, pos, ang);
+		client->playerData->position = *pos;
+		client->playerData->angle = *ang;
 		return true;
 	}
 	return false;

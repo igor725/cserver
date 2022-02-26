@@ -128,7 +128,6 @@ typedef struct _CPEData {
 	cs_char *message; // Используется для получения длинных сообщений [LongerMessages]
 	BlockID heldBlock; // Выбранный игроком блок в данный момент [HeldBlock]
 	cs_int8 updates; // Обновлённые значения игрока
-	cs_bool hideDisplayName; // Будет ли ник игрока скрыт [ExtPlayerList]
 	cs_bool pingStarted; // Начат ли процесс пингования [TwoWayPing]
 	cs_int16 _extCount; // Переменная используется при получении списка дополнений
 	cs_int16 model; // Текущая модель игрока [ChangeModel]
