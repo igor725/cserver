@@ -142,7 +142,7 @@ cs_bool Config_Load(CStore *store) {
 	if(!fp) {
 		store->error.code = CONFIG_ERROR_IOFAIL;
 		store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
-		store->error.line = errno;
+		store->error.line = Thread_GetError();
 		return false;
 	}
 
@@ -246,7 +246,7 @@ cs_bool Config_Save(CStore *store, cs_bool force) {
 	if(!fp) {
 		store->error.code = CONFIG_ERROR_IOFAIL;
 		store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
-		store->error.line = errno;
+		store->error.line = Thread_GetError();
 		return false;
 	}
 
@@ -257,14 +257,14 @@ cs_bool Config_Save(CStore *store, cs_bool force) {
 			if(File_WriteFormat(fp, "#%s\n", ptr->commentary) < 0) {
 				store->error.code = CONFIG_ERROR_IOFAIL;
 				store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
-				store->error.line = errno;
+				store->error.line = Thread_GetError();
 				File_Close(fp);
 				return false;
 			}
 		if(!File_Write(ptr->key, 1, String_Length(ptr->key), fp)) {
 			store->error.code = CONFIG_ERROR_IOFAIL;
 			store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
-			store->error.line = errno;
+			store->error.line = Thread_GetError();
 			File_Close(fp);
 			return false;
 		}
@@ -272,7 +272,7 @@ cs_bool Config_Save(CStore *store, cs_bool force) {
 		if(!File_Write("=", 1, 1, fp)) {
 			store->error.code = CONFIG_ERROR_IOFAIL;
 			store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
-			store->error.line = errno;
+			store->error.line = Thread_GetError();
 			File_Close(fp);
 			return false;
 		}
@@ -284,7 +284,7 @@ cs_bool Config_Save(CStore *store, cs_bool force) {
 			if(!File_Write(value, 1, written, fp)) {
 				store->error.code = CONFIG_ERROR_IOFAIL;
 				store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
-				store->error.line = errno;
+				store->error.line = Thread_GetError();
 				File_Close(fp);
 				return false;
 			}

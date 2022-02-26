@@ -100,7 +100,7 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("KICK_PERR_WS", "WebSocket frame body smaller than expected");
 	Sstor_Set("KICK_PERR_UNEXP", "Failed to handle packet 0x%02X");
 	Sstor_Set("KICK_PERR_NOHANDLER", "Unknown opcode 0x%02X");
-	Sstor_Set("KICK_UNKBID", "Invalid block ID received: %d");
+	Sstor_Set("KICK_UNKBID", "Block with ID %d is not registred for this world");
 	Sstor_Set("KICK_ZERR", "zlib error: %s");
 	Sstor_Set("KICK_INT", "Internal server error");
 	Sstor_Set("KICK_STOP", "Server stopped");
@@ -114,8 +114,8 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("HBEAT_SECRET_COMM1", "#Remove this file if you want to generate new secret key\n");
 	Sstor_Set("HBEAT_SECRET_COMM2", "#This key used by the heartbeat as server's \"salt\" for user authentication check\n");
 
-	Sstor_Set("PLUG_DEPR_API", "Please upgrade your server software. Plugin \"%s\" compiled for PluginAPI v%03d, but server uses v%d");
-	Sstor_Set("PLUG_DEPR", "Plugin \"%s\" is deprecated. Server uses PluginAPI v%03d but plugin compiled for v%03d");
+	Sstor_Set("PLUG_DEPR_API", "Please upgrade your server software. Plugin \"%s\" compiled for PluginAPI v%03d, but server uses v%d.");
+	Sstor_Set("PLUG_DEPR", "Plugin \"%s\" is deprecated. Server uses PluginAPI v%03d but plugin compiled for v%03d.");
 
 	Sstor_Set("Z_NOGZ", "Your zlib installation has no gzip support");
 	Sstor_Set("Z_LVL1", "Your zlib installation supports only one, lowest compression level!");
