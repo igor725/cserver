@@ -320,6 +320,16 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 		client->playerData->isOP = true;
 
 	if(!Proto_ReadStringNoAlloc(&data, client->playerData->name)) return false;
+
+	if(Config_GetBoolByKey(Server_Config, CFG_SANITIZE_KEY)) {
+		for(cs_char *c = client->playerData->name; *c != '\0'; c++) {
+			if((*c < '0' || *c > '9') && (*c < 'A' || *c > 'Z') && (*c < 'a' || *c > 'z') && *c != '_') {
+				Client_Kick(client, Sstor_Get("KICK_NAMECHARS"));
+				return true;
+			}
+		}
+	}
+
 	if(!Proto_ReadStringNoAlloc(&data, client->playerData->key)) return false;
 	String_Copy(client->playerData->displayname, 65, client->playerData->name);
 

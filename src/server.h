@@ -9,6 +9,7 @@
 #define CFG_SERVERNAME_KEY "server-name"
 #define CFG_SERVERMOTD_KEY "server-motd"
 #define CFG_LOGLEVEL_KEY "log-level"
+#define CFG_SANITIZE_KEY "sanitize-names"
 #define CFG_LOCALOP_KEY "always-local-op"
 #define CFG_MAXPLAYERS_KEY "max-players"
 #define CFG_CONN_KEY "max-connections-per-ip"
