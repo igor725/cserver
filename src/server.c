@@ -71,6 +71,7 @@ THREAD_FUNC(ClientInitThread) {
 	} else
 		Client_Kick(client, Sstor_Get("KICK_PERR_HS"));
 
+	Event_Call(EVT_ONCLIENTFINISH, client);
 	Waitable_Signal(client->waitend);
 	return 0;
 }
