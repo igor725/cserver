@@ -1088,7 +1088,7 @@ cs_bool CPEHandler_PluginMessage(Client *client, cs_char *data) {
 	return Event_Call(EVT_ONPLUGINMESSAGE, &pmesg);
 }
 
-Packet *packetsList[255] = {NULL};
+Packet *packetsList[256] = {NULL};
 
 void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler) {
 	Packet *tmp = (Packet *)Memory_Alloc(1, sizeof(Packet));

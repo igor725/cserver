@@ -843,8 +843,9 @@ INL static void PacketReceiverRaw(Client *client) {
 	cs_byte packetId = 0xFF;
 	cs_bool extended = false;
 	cs_error ecode = 0;
+	cs_int32 len = 0;
 
-	if(Socket_Receive(client->sock, (cs_char *)&packetId, 1, 0) == 1) {
+	if((len = Socket_Receive(client->sock, (cs_char *)&packetId, 1, 0)) > 0) {
 		packet = Packet_Get(packetId);
 		if(!packet) {
 			Client_KickFormat(client, Sstor_Get("KICK_PERR_NOHANDLER"), packetId);
@@ -856,7 +857,7 @@ INL static void PacketReceiverRaw(Client *client) {
 		if(packetSize > 0) {
 			cs_uint32 offset = 0;
 			while(Server_Active) {
-				cs_int32 len = Socket_Receive(client->sock, client->rdbuf + offset, packetSize - offset, MSG_WAITALL);
+				len = Socket_Receive(client->sock, client->rdbuf + offset, packetSize - offset, MSG_WAITALL);
 
 				if(len > 0) {
 					offset += len;
@@ -865,14 +866,15 @@ INL static void PacketReceiverRaw(Client *client) {
 						HandlePacket(client, client->rdbuf, packet, extended);
 						break;
 					}
-				} else if((ecode = Socket_GetError()) != EAGAIN && ecode > 0) {
+				} else if(len < 0 && (ecode = Socket_GetError()) != EAGAIN && ecode > 0) {
 					Client_KickFormat(client, Sstor_Get("KICK_NERR"), ecode);
 					break;
-				}
+				} else if(len == 0) client->closed = true;
 			}
 		}
-	} else if((ecode = Socket_GetError()) != EAGAIN && ecode > 0)
+	} else if(len < 0 && (ecode = Socket_GetError()) != EAGAIN && ecode > 0) {
 		Client_KickFormat(client, Sstor_Get("KICK_NERR"), ecode);
+	} else if(len == 0) client->closed = true;
 }
 
 NOINL static void SendWorld(Client *client, World *world) {
