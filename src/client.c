@@ -542,6 +542,7 @@ cs_bool Client_GetPosition(Client *client, Vec *pos, Ang *ang) {
 cs_bool Client_SetOP(Client *client, cs_bool state) {
 	if(!client->playerData) return false;
 	client->playerData->isOP = state;
+	Event_Call(EVT_ONUSERTYPECHANGE, client);
 	// if(Client_CheckState(client, PLAYER_STATE_INGAME))
 	// 	Vanilla_WriteUserType(client, state ? 0x64 : 0x00);
 	return true;
