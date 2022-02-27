@@ -162,7 +162,7 @@ Socket Socket_Accept(Socket sock, struct sockaddr_in *addr) {
 }
 
 cs_int32 Socket_Receive(Socket sock, cs_char *buf, cs_int32 len, cs_int32 flags) {
-	return recv(sock, buf, len, MSG_NOSIGNAL | flags);
+	return recv(sock, buf, len, MSG_NOSIGNAL | MSG_DONTWAIT | flags);
 }
 
 cs_int32 Socket_ReceiveLine(Socket sock, cs_char *line, cs_int32 len) {

@@ -80,6 +80,7 @@ API Waitable *Waitable_Create(void);
 API void Waitable_Free(Waitable *wte);
 API void Waitable_Signal(Waitable *wte);
 API void Waitable_Wait(Waitable *wte);
+API cs_bool Waitable_TryWait(Waitable *wte, cs_ulong timeout);
 API void Waitable_Reset(Waitable *wte);
 
 API Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max);

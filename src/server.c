@@ -70,6 +70,11 @@ THREAD_FUNC(ClientInitThread) {
 	} else
 		Client_Kick(client, Sstor_Get("KICK_PERR_HS"));
 
+	Mutex_Lock(client->mutex);
+	Socket_SetRecvTimeout(client->sock, 150);
+	Socket_Shutdown(client->sock, SD_SEND);
+	Mutex_Unlock(client->mutex);
+
 	Event_Call(EVT_ONDISCONNECT, client);
 	Waitable_Signal(client->waitend);
 	return 0;
@@ -100,10 +105,9 @@ INL static void CloseCient(Client *client) {
 	Waitable_Signal(SyncClients);
 	Waitable_Wait(client->waitend);
 	Mutex_Lock(client->mutex);
-	Socket_Close(client->sock);
+	Waitable_Reset(SyncClients);
 	Mutex_Unlock(client->mutex);
 	Client_Free(client);
-	Waitable_Reset(SyncClients);
 }
 
 INL static void WaitAllClientThreads(void) {

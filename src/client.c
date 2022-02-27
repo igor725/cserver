@@ -857,7 +857,7 @@ INL static void PacketReceiverRaw(Client *client) {
 		if(packetSize > 0) {
 			cs_uint32 offset = 0;
 			while(Server_Active) {
-				len = Socket_Receive(client->sock, client->rdbuf + offset, packetSize - offset, MSG_WAITALL);
+				len = Socket_Receive(client->sock, client->rdbuf + offset, packetSize - offset, 0);
 
 				if(len > 0) {
 					offset += len;
@@ -1047,11 +1047,6 @@ void Client_Kick(Client *client, cs_str reason) {
 	Vanilla_WriteKick(client, reason);
 	client->kickReason = String_AllocCopy(reason);
 	client->closed = true;
-	Mutex_Lock(client->mutex);
-	Socket_SetRecvTimeout(client->sock, 150);
-	Socket_Shutdown(client->sock, SD_SEND);
-	while(Socket_Receive(client->sock, client->rdbuf, 134, 0) > 0);
-	Mutex_Unlock(client->mutex);
 }
 
 void Client_KickFormat(Client *client, cs_str fmtreason, ...) {

@@ -14,6 +14,7 @@ typedef HANDLE Thread, ITER_DIR;
 typedef BOOL TSHND_RET;
 #define TSHND_OK TRUE
 #define MSG_NOSIGNAL 0
+#define MSG_DONTWAIT 0
 #elif defined(CORE_USE_UNIX)
 #include <pthread.h>
 #include <semaphore.h>

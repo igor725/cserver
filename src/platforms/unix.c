@@ -51,6 +51,7 @@ cs_bool Socket_Init(void) {
 
 cs_error Socket_GetError(void) {
 	return Thread_GetError();
+	return Thread_GetError();
 }
 
 cs_bool Socket_SetRecvTimeout(Socket n, cs_ulong msec) {
@@ -246,6 +247,21 @@ void Waitable_Wait(Waitable *wte) {
 	while(!wte->signalled)
 		pthread_cond_wait(&wte->cond, &wte->mutex->handle);
 	Mutex_Unlock(wte->mutex);
+}
+
+cs_bool Waitable_TryWait(Waitable *wte, cs_ulong timeout) {
+	struct timespec ts;
+	clock_gettime(CLOCK_REALTIME, &ts);
+	cs_ulong secs = timeout / 1000;
+	timeout = timeout % 1000;
+
+	cs_ulong add = 0;
+	timeout = timeout * 1000 * 1000 + ts.tv_nsec;
+	add = timeout / (1000 * 1000 * 1000);
+	ts.tv_sec += (add + secs);
+	ts.tv_nsec = timeout % (1000 * 1000 * 1000);
+
+	return pthread_cond_timedwait(&wte->cond, &wte->mutex->handle, &ts) == 0;
 }
 
 Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max) {

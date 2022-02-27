@@ -214,6 +214,10 @@ void Waitable_Wait(Waitable *wte) {
 	WaitForSingleObject(wte, INFINITE);
 }
 
+cs_bool Waitable_TryWait(Waitable *wte, cs_ulong timeout) {
+	return WaitForSingleObject(wte, timeout) == WAIT_OBJECT_0;
+}
+
 Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max) {
 	return CreateSemaphore(
 		NULL, initial,
