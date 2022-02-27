@@ -443,7 +443,7 @@ cs_bool Client_SetWeather(Client *client, cs_int8 type) {
 }
 
 cs_bool Client_SetInvOrder(Client *client, cs_byte order, BlockID block) {
-	if(Block_IsValid(Client_GetWorld(client), block) && Client_GetExtVer(client, EXT_INVORDER)) {
+	if(Client_GetExtVer(client, EXT_INVORDER)) {
 		CPE_WriteInventoryOrder(client, order, block);
 		return true;
 	}
@@ -458,7 +458,7 @@ cs_bool Client_SetServerIdent(Client *client, cs_str name, cs_str motd) {
 }
 
 cs_bool Client_SetHeldBlock(Client *client, BlockID block, cs_bool preventChange) {
-	if(Block_IsValid(Client_GetWorld(client), block) && Client_GetExtVer(client, EXT_HELDBLOCK)) {
+	if(Client_GetExtVer(client, EXT_HELDBLOCK)) {
 		CPE_WriteHoldThis(client, block, preventChange);
 		return true;
 	}
@@ -483,7 +483,7 @@ cs_bool Client_SetHotkey(Client *client, cs_str action, cs_int32 keycode, cs_int
 }
 
 cs_bool Client_SetHotbar(Client *client, cs_byte pos, BlockID block) {
-	if(Block_IsValid(Client_GetWorld(client), block) && pos < 9 && Client_GetExtVer(client, EXT_SETHOTBAR)) {
+	if(pos < 9 && Client_GetExtVer(client, EXT_SETHOTBAR)) {
 		CPE_WriteSetHotBar(client, pos, block);
 		return true;
 	}
@@ -491,7 +491,7 @@ cs_bool Client_SetHotbar(Client *client, cs_byte pos, BlockID block) {
 }
 
 cs_bool Client_SetBlockPerm(Client *client, BlockID block, cs_bool allowPlace, cs_bool allowDestroy) {
-	if(Block_IsValid(Client_GetWorld(client), block) && Client_GetExtVer(client, EXT_BLOCKPERM)) {
+	if(Client_GetExtVer(client, EXT_BLOCKPERM)) {
 		CPE_WriteBlockPerm(client, block, allowPlace, allowDestroy);
 		return true;
 	}
