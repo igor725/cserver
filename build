@@ -131,15 +131,14 @@ if [ $GITUPD -eq 1 ]; then
 					break
 				fi
 			done
-
-			git merge --ff-only
-			if [ $? -ne 0 ]; then
-				echo "!!! Failed to update server core"
-				exit 1
-			elif [ $BUILDALERTED -eq 1 ]; then
-				echo "Bash script has been updated, restarting..."
-				CSBUILD_NOUPDATE=ignore exec $0 $@
-			fi
+		fi
+		git merge --ff-only
+		if [ $? -ne 0 ]; then
+			echo "!!! Failed to update server core"
+			exit 1
+		elif [ $BUILDALERTED -eq 1 ]; then
+			echo "Bash script has been updated, restarting..."
+			CSBUILD_NOUPDATE=ignore exec $0 $@
 		fi
 	fi
 fi
