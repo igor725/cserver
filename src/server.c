@@ -66,12 +66,11 @@ THREAD_FUNC(ClientInitThread) {
 					CPE_WriteRemoveName(other, client);
 			}
 			Client_Despawn(client);
-			Event_Call(EVT_ONDISCONNECT, client);
 		}
 	} else
 		Client_Kick(client, Sstor_Get("KICK_PERR_HS"));
 
-	Event_Call(EVT_ONCLIENTFINISH, client);
+	Event_Call(EVT_ONDISCONNECT, client);
 	Waitable_Signal(client->waitend);
 	return 0;
 }
