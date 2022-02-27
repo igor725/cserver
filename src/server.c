@@ -137,14 +137,19 @@ THREAD_FUNC(SockAcceptThread) {
 			tmp->id = TryToGetIDFor(tmp);
 			Waitable_Signal(tmp->waitend);
 			if(tmp->id != CLIENT_SELF) {
-				Clients_List[tmp->id] = tmp;
-				Thread_Create(ClientInitThread, tmp, true);
-			} else {
+				if(Event_Call(EVT_ONCONNECT, tmp)) {
+					Clients_List[tmp->id] = tmp;
+					Thread_Create(ClientInitThread, tmp, true);
+					continue;
+				} else
+					Client_Kick(tmp, Sstor_Get("KICK_REJ"));
+			} else
 				Client_Kick(tmp, Sstor_Get("KICK_FULL"));
-				Client_Free(tmp);
-			}
-		} else
-			Socket_Close(fd);
+
+			Client_Free(tmp);
+		}
+		
+		Socket_Close(fd);
 	}
 
 	if(Server_Active) {
