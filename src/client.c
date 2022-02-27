@@ -371,7 +371,7 @@ INL static cs_uint16 GetPacketSizeFor(Packet *packet, Client *client, cs_bool *e
 }
 
 cs_bool Client_CheckState(Client *client, EPlayerState state) {
-	if(!client->playerData) return false;
+	if(!client->playerData) return state == PLAYER_STATE_INITIAL;
 	return client->playerData->state == state;
 }
 
