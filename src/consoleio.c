@@ -153,8 +153,7 @@ THREAD_FUNC(ConsoleIOThread) {
 					Memory_Free(buf);
 					continue;
 				}
-			} else if(!buf)
-				Server_Active = false;
+			}
 			if(buf) Memory_Free(buf);
 		} else {
 			cs_char buf[192];
