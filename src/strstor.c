@@ -93,6 +93,7 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("KICK_NAMECHARS", "Your name contains prohibited characters");
 	Sstor_Set("KICK_NAMEINUSE", "This name is already in use");
 	Sstor_Set("KICK_AUTHFAIL", "Authorization failed");
+	Sstor_Set("KICK_NERR", "Network error %d");
 	Sstor_Set("KICK_MANYCONN", "Too many connections from one IP");
 	Sstor_Set("KICK_REJ", "Server rejected your connection attempt");
 	Sstor_Set("KICK_FULL", "Server is full");

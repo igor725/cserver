@@ -49,6 +49,10 @@ cs_bool Socket_Init(void) {
 	return true;
 }
 
+cs_error Socket_GetError(void) {
+	return Thread_GetError();
+}
+
 cs_bool Socket_SetRecvTimeout(Socket n, cs_ulong msec) {
 	struct timeval tv;
 	tv.tv_usec = msec * 1000;

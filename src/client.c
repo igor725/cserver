@@ -842,6 +842,7 @@ INL static void PacketReceiverRaw(Client *client) {
 	cs_uint16 packetSize;
 	cs_byte packetId = 0xFF;
 	cs_bool extended = false;
+	cs_error ecode = 0;
 
 	if(Socket_Receive(client->sock, (cs_char *)&packetId, 1, 0) == 1) {
 		packet = Packet_Get(packetId);
@@ -864,13 +865,14 @@ INL static void PacketReceiverRaw(Client *client) {
 						HandlePacket(client, client->rdbuf, packet, extended);
 						break;
 					}
-				} else if(Thread_GetError() != EAGAIN) {
-					client->closed = true;
+				} else if((ecode = Socket_GetError()) != EAGAIN && ecode > 0) {
+					Client_KickFormat(client, Sstor_Get("KICK_NERR"), ecode);
 					break;
 				}
 			}
 		}
-	} else client->closed = Thread_GetError() != EAGAIN;
+	} else if((ecode = Socket_GetError()) != EAGAIN && ecode > 0)
+		Client_KickFormat(client, Sstor_Get("KICK_NERR"), ecode);
 }
 
 NOINL static void SendWorld(Client *client, World *world) {

@@ -50,6 +50,7 @@ cs_bool DLib_LoadAll(cs_str lib[], cs_str symlist[], void **ctx);
 cs_bool Socket_Init(void);
 void Socket_Uninit(void);
 API Socket Socket_New(void);
+API cs_error Socket_GetError(void);
 API cs_int32 Socket_SetAddr(struct sockaddr_in *ssa, cs_str ip, cs_uint16 port);
 API cs_bool Socket_SetAddrGuess(struct sockaddr_in *ssa, cs_str host, cs_uint16 port);
 API cs_bool Socket_Bind(Socket sock, struct sockaddr_in *ssa);
