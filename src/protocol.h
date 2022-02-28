@@ -5,38 +5,6 @@
 #include "types/client.h"
 #include "types/protocol.h"
 
-#define ValidateClientState(client, st, ret) \
-if(!Client_CheckState(client, st)) \
-	return ret;
-
-#define ValidateCpeClient(client, ret) \
-if(!client->cpeData) return ret;
-
-#define PacketWriter_Start(cl, msz) \
-if(cl->closed) return; \
-Mutex_Lock(cl->mutex); \
-if(!GrowingBuffer_Ensure(&cl->gb, msz)) { \
-	cl->closed = true; \
-	Mutex_Unlock(cl->mutex); \
-	return; \
-} \
-cs_char *data = GrowingBuffer_GetCurrentPoint(&cl->gb);
-
-#define PacketWriter_EndAnytime(cl) \
-cs_uint32 written = GrowingBuffer_GetDiff(&cl->gb, data); \
-if(written > 0) Client_SendAnytimeData(cl, written); \
-Mutex_Unlock(cl->mutex); \
-
-#define PacketWriter_EndIngame(cl) \
-cs_uint32 written = GrowingBuffer_GetDiff(&cl->gb, data); \
-if(written > 0) { \
-	GrowingBuffer_Commit(&cl->gb, written); \
-	if(Client_CheckState(cl, PLAYER_STATE_INGAME)) { \
-		Client_FlushBuffer(cl); \
-	} \
-} \
-Mutex_Unlock(cl->mutex);
-
 #define PROTOCOL_VERSION 0x07
 
 #define EXT_CLICKDIST 0x6DD2B567ul

@@ -77,6 +77,14 @@ void Clients_KickAll(cs_str reason) {
 	}
 }
 
+void Client_Lock(Client *client) {
+	Mutex_Lock(client->mutex);
+}
+
+void Client_Unlock(Client *client) {
+	Mutex_Unlock(client->mutex);
+}
+
 cs_str Client_GetName(Client *client) {
 	if(!client->playerData) return Sstor_Get("NONAME");
 	return client->playerData->name;
@@ -375,6 +383,10 @@ cs_bool Client_CheckState(Client *client, EPlayerState state) {
 	return client->playerData->state == state;
 }
 
+cs_bool Client_IsClosed(Client *client) {
+	return client->closed;
+}
+
 cs_bool Client_IsLocal(Client *client) {
 	return client->addr == 0x7f000001;
 }
@@ -510,6 +522,10 @@ cs_bool Client_SetSkin(Client *client, cs_str skin) {
 	String_Copy(client->cpeData->skin, 65, skin);
 	client->cpeData->updates |= PCU_ENTITY;
 	return true;
+}
+
+GrowingBuffer *Client_GetBuffer(Client *client) {
+	return &client->gb;
 }
 
 cs_uint32 Client_GetAddr(Client *client) {

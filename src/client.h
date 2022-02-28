@@ -31,6 +31,9 @@ API cs_bool Group_Remove(cs_int16 gid);
 API cs_byte Clients_GetCount(EPlayerState state);
 API void Clients_KickAll(cs_str reason);
 
+API void Client_Lock(Client *client);
+API void Client_Unlock(Client *client);
+
 API cs_bool Client_ChangeWorld(Client *client, World *world);
 API void Client_Chat(Client *client, EMesgType type, cs_str message);
 API void Client_Kick(Client *client, cs_str reason);
@@ -44,6 +47,7 @@ API cs_bool Client_TeleportTo(Client *client, Vec *pos, Ang *ang);
 API cs_bool Client_TeleportToSpawn(Client *client);
 API cs_bool Client_CheckState(Client *client, EPlayerState state);
 
+API cs_bool Client_IsClosed(Client *client);
 API cs_bool Client_IsLocal(Client *client);
 API cs_bool Client_IsInSameWorld(Client *client, Client *other);
 API cs_bool Client_IsInWorld(Client *client, World *world);
@@ -75,6 +79,7 @@ API cs_bool Client_SetGroup(Client *client, cs_int16 gid);
 API cs_bool Client_RegisterParticle(Client *client, CustomParticle *e);
 API cs_bool Client_SpawnParticle(Client *client, cs_byte id, Vec *pos, Vec *origin);
 
+API GrowingBuffer *Client_GetBuffer(Client *client);
 API cs_str Client_GetName(Client *client);
 API cs_str Client_GetDisplayName(Client *client);
 API cs_str Client_GetAppName(Client *client);
