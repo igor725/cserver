@@ -1022,7 +1022,7 @@ cs_bool Client_Spawn(Client *client) {
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *other = Clients_List[i];
-		if(!other) continue;
+		if(!other || !Client_CheckState(other, PLAYER_STATE_INGAME)) continue;
 
 		if(client->playerData->firstSpawn) {
 			if(Client_GetExtVer(other, EXT_PLAYERLIST))
