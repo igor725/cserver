@@ -144,13 +144,14 @@ if [ $GITUPD -eq 1 ]; then
 	fi
 fi
 
+OUTDIR="$ROOT/out/$MACH"
+
 if [ $COMPILE -eq 1 ]; then
 	if [ $GITOK -eq 1 ]; then
 		CFLAGS="$CFLAGS -DGIT_COMMIT_TAG=\"$(git describe --tags HEAD)\""
 	fi
 
 	STDERR="$ROOT/out/stderr"
-	OUTDIR="$ROOT/out/$MACH"
 	OBJDIR="$OUTDIR/objs"
 
 	if [ $SAN -eq 1 ]; then
