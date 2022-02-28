@@ -25,4 +25,6 @@ cs_bool Server_Init(void);
 void Server_DoStep(cs_int32 delta);
 void Server_StartLoop(void);
 void Server_Cleanup(void);
+
+API cs_str Server_GetAppName(void);
 #endif // SERVER_H

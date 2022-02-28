@@ -473,6 +473,10 @@ INL static void UnloadAllWorlds(void) {
 	}
 }
 
+cs_str Server_GetAppName(void) {
+	return SOFTWARE_FULLNAME;
+}
+
 void Server_Cleanup(void) {
 	ConsoleIO_Uninit();
 	Log_Info(Sstor_Get("SV_STOP_PL"));
