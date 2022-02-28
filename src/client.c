@@ -107,7 +107,7 @@ cs_str Client_GetAppName(Client *client) {
 
 cs_str Client_GetSkin(Client *client) {
 	if(!client->cpeData || *client->cpeData->skin == '\0')
-		return NULL;
+		return Client_GetName(client);
 	return client->cpeData->skin;
 }
 

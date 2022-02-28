@@ -124,7 +124,7 @@ typedef struct _BlockDef {
 typedef struct _CPEData {
 	CPEExt *headExtension; // Список дополнений клиента
 	cs_char appName[65]; // Название игрового клиента
-	cs_char skin[65]; // Скин игрока, может быть NULL [ExtPlayerList]
+	cs_char skin[65]; // Скин игрока [ExtPlayerList]
 	cs_char *message; // Используется для получения длинных сообщений [LongerMessages]
 	BlockID heldBlock; // Выбранный игроком блок в данный момент [HeldBlock]
 	cs_int8 updates; // Обновлённые значения игрока
