@@ -35,6 +35,7 @@ API void World_WaitAllTasks(World *world);
 
 API void World_SetInMemory(World *world, cs_bool state);
 API void World_SetIgnoreModifications(World *world, cs_bool state);
+API void World_SetSpawn(World *world, Vec *svec, Ang *sang);
 API void World_SetDimensions(World *world, const SVec *dims);
 API cs_bool World_SetBlock(World *world, SVec *pos, BlockID id);
 API cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id);
@@ -44,6 +45,7 @@ API cs_bool World_SetTexturePack(World *world, cs_str url);
 API cs_bool World_SetWeather(World *world, EWeather type);
 
 API cs_str World_GetName(World *world);
+API void World_GetSpawn(World *world, Vec *svec, Ang *sang);
 API void *World_GetData(World *world, cs_uint32 *size);
 API BlockID *World_GetBlockArray(World *world, cs_uint32 *size);
 API cs_uint32 World_GetBlockArraySize(World *world);

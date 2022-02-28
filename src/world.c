@@ -103,6 +103,12 @@ World *World_GetByName(cs_str name) {
 	return NULL;
 }
 
+void World_SetSpawn(World *world, Vec *svec, Ang *sang) {
+	if(svec) world->info.spawnVec = *svec;
+	if(sang) world->info.spawnAng = *sang;
+	if(svec || sang) world->flags |= WORLD_FLAG_MODIFIED;
+}
+
 void World_SetDimensions(World *world, const SVec *dims) {
 	world->info.dimensions = *dims;
 	world->wdata.size = (cs_uint32)dims->x * (cs_uint32)dims->y * (cs_uint32)dims->z;
@@ -522,6 +528,11 @@ void World_Unload(World *world) {
 
 cs_str World_GetName(World *world) {
 	return world->name;
+}
+
+void World_GetSpawn(World *world, Vec *svec, Ang *sang) {
+	if(svec) *svec = world->info.spawnVec;
+	if(sang) *sang = world->info.spawnAng;
 }
 
 void World_GetDimensions(World *world, SVec *dims) {
