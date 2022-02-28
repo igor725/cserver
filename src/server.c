@@ -101,6 +101,7 @@ THREAD_FUNC(SockAcceptThread) {
 	struct sockaddr_in caddr;
 
 	while(Server_Active) {
+		Waitable_Wait(SyncClients);
 		Socket fd = Socket_Accept(Server_Socket, &caddr);
 		if(fd == INVALID_SOCKET) break;
 		if(!Server_Active) {
@@ -108,7 +109,6 @@ THREAD_FUNC(SockAcceptThread) {
 			break;
 		}
 
-		Waitable_Wait(SyncClients);
 		Client *tmp = Memory_TryAlloc(1, sizeof(Client));
 		if(tmp) {
 			tmp->sock = fd;
@@ -454,7 +454,7 @@ INL static void UnloadAllWorlds(void) {
 			AList_Remove(&World_Head, tmp);
 			World_Free(world);
 		} else {
-			Thread_Sleep(500);
+			Thread_Sleep(1000);
 			attempt++;
 		}
 	}

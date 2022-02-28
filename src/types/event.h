@@ -4,6 +4,7 @@
 #include "vector.h"
 #include "types/block.h"
 #include "types/client.h"
+#include "types/world.h"
 
 typedef void(*evtVoidCallback)(void *);
 typedef cs_bool(*evtBoolCallback)(void *);

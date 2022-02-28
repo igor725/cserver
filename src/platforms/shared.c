@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "core.h"
 #include "platform.h"
 #include "cserror.h"

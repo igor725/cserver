@@ -3,7 +3,7 @@
 #include "timer.h"
 #include "list.h"
 
-static AListField *headTimer;
+static AListField *headTimer = NULL;
 
 Timer *Timer_Add(cs_int32 ticks, cs_uint32 delay, TimerCallback callback, void *ud) {
 	Timer *timer = Memory_Alloc(1, sizeof(Timer));
