@@ -9,6 +9,8 @@
 #include "types/websock.h"
 #include "types/growingbuffer.h"
 
+#define CLIENT_SELF (ClientID)-1
+
 typedef enum _EMesgType {
 	MESSAGE_TYPE_CHAT, // Сообщение в чате
 	MESSAGE_TYPE_STATUS1, // Правый верхний угол

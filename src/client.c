@@ -748,7 +748,7 @@ void Client_Free(Client *client) {
 }
 
 cs_bool Client_RawSend(Client *client, cs_char *buf, cs_int32 len) {
-	if(client->closed || len < 1) return false;
+	if(client->sock == (Socket)-1 || client->closed || len < 1) return false;
 
 	if(client == Broadcast) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {

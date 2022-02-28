@@ -38,7 +38,6 @@ if(written > 0) { \
 Mutex_Unlock(cl->mutex);
 
 #define PROTOCOL_VERSION 0x07
-#define CLIENT_SELF (ClientID)-1
 
 #define EXT_CLICKDIST 0x6DD2B567ul
 #define EXT_CUSTOMBLOCKS 0x98455F43ul

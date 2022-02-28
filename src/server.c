@@ -92,7 +92,7 @@ INL static ClientID TryToGetIDFor(Client *client) {
 			++sameAddrCount;
 		else continue;
 
-		if(sameAddrCount > maxConnPerIP) {
+		if(sameAddrCount >= maxConnPerIP) {
 			Client_Kick(client, Sstor_Get("KICK_MANYCONN"));
 			return CLIENT_SELF;
 		}
@@ -132,6 +132,7 @@ THREAD_FUNC(SockAcceptThread) {
 			break;
 		}
 
+		Waitable_Wait(SyncClients);
 		Client *tmp = Memory_TryAlloc(1, sizeof(Client));
 		if(tmp) {
 			tmp->sock = fd;
