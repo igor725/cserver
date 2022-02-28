@@ -16,6 +16,7 @@ case "$(uname -s)" in
 		;;
 esac
 MAXWORKERS=$(nproc)
+COMPILE=1
 GITOK=0
 GITUPD=0
 RUN=0
@@ -100,7 +101,7 @@ if [ $GITUPD -eq 1 ]; then
 		if [ -f "$PLUGINS_DIR/$OUTBIN" ] && [ "$CSBUILD_NOUPDATE" != "ignore" ]; then
 			if [ $(git rev-list HEAD..origin/$BRANCH --count) -eq 0 ]; then
 				echo "Nothing updated"
-				exit 0
+				COMPILE=0
 			fi
 		fi
 		git merge --ff-only
@@ -122,7 +123,7 @@ if [ $GITUPD -eq 1 ]; then
 		if [ -f "$SERVER_OUTROOT/$OUTBIN" ] && [ "$CSBUILD_NOUPDATE" != "ignore" ]; then
 			if [ $(git rev-list HEAD..origin/$BRANCH --count) -eq 0 ]; then
 				echo "Nothing updated"
-				exit 0
+				COMPILE=0
 			fi
 
 			for file in `git diff --stat --name-only HEAD origin/$BRANCH`; do
@@ -143,75 +144,79 @@ if [ $GITUPD -eq 1 ]; then
 	fi
 fi
 
-if [ $GITOK -eq 1 ]; then
-	CFLAGS="$CFLAGS -DGIT_COMMIT_TAG=\"$(git describe --tags HEAD)\""
-fi
-
-STDERR="$ROOT/out/stderr"
-OUTDIR="$ROOT/out/$MACH"
-OBJDIR="$OUTDIR/objs"
-
-if [ $SAN -eq 1 ]; then
-	LIBS="-lasan -lubsan $LIBS"
-	CFLAGS="-fsanitize=undefined,address -fstack-protector-all -fno-sanitize=alignment -fno-sanitize-recover=all $CFLAGS"
-fi
-
-if [ ! -d "$OUTDIR" ]; then mkdir -p $OUTDIR; fi
-if [ ! -d "$OBJDIR" ]; then mkdir -p $OBJDIR; fi
-
-if [ -f "$ROOT/vars.sh" ]; then
-	. "$ROOT/vars.sh"
-fi
-
-echo -n "Compiling..."
-pids=()
-OBJS=""
-
-> $STDERR
-for cpath in `find "$ROOT/src/" -maxdepth 1 -type f -name "*.c"`; do
-	objpath="$OBJDIR/$(basename $cpath .c).o"
-	OBJS="$OBJS $objpath"
-	$CC -c $CFLAGS $WARN $OPT -I$ROOT/src $cpath -o$objpath 2>> $STDERR &
-	pids+=($!)
-	while test $(jobs -p | wc -w) -ge "$MAXWORKERS"; do
-		wait -n;
-	done
-done
-
-for pid in ${pids[@]}; do
-	waitfor $pid
-done
-
-echo -ne "done\nLinking..."
-if [ $PLUGIN_BUILD -eq 0 ]; then
-	if [ "$OS" == "win" ]; then
-		LIBS="$LIBS -lkernel32 -ldbghelp -lws2_32"
-	else
-		LIBS="$LIBS -lpthread -ldl"
+if [ $COMPILE -eq 1 ]; then
+	if [ $GITOK -eq 1 ]; then
+		CFLAGS="$CFLAGS -DGIT_COMMIT_TAG=\"$(git describe --tags HEAD)\""
 	fi
-fi
 
-$LNK$OBJS -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR &
-waitfor $!
+	STDERR="$ROOT/out/stderr"
+	OUTDIR="$ROOT/out/$MACH"
+	OBJDIR="$OUTDIR/objs"
 
-if [ $DEBUG -eq 0 ]; then
-	echo -ne "done\nStripping..."
-	strip $OUTDIR/$OUTBIN
+	if [ $SAN -eq 1 ]; then
+		LIBS="-lasan -lubsan $LIBS"
+		CFLAGS="-fsanitize=undefined,address -fstack-protector-all -fno-sanitize=alignment -fno-sanitize-recover=all $CFLAGS"
+	fi
+
+	if [ ! -d "$OUTDIR" ]; then mkdir -p $OUTDIR; fi
+	if [ ! -d "$OBJDIR" ]; then mkdir -p $OBJDIR; fi
+
+	if [ -f "$ROOT/vars.sh" ]; then
+		. "$ROOT/vars.sh"
+	fi
+
+	echo -n "Compiling..."
+	pids=()
+	OBJS=""
+
+	> $STDERR
+	for cpath in `find "$ROOT/src/" -maxdepth 1 -type f -name "*.c"`; do
+		objpath="$OBJDIR/$(basename $cpath .c).o"
+		OBJS="$OBJS $objpath"
+		$CC -c $CFLAGS $WARN $OPT -I$ROOT/src $cpath -o$objpath 2>> $STDERR &
+		pids+=($!)
+		while test $(jobs -p | wc -w) -ge "$MAXWORKERS"; do
+			wait -n;
+		done
+	done
+
+	for pid in ${pids[@]}; do
+		waitfor $pid
+	done
+
+	echo -ne "done\nLinking..."
+	if [ $PLUGIN_BUILD -eq 0 ]; then
+		if [ "$OS" == "win" ]; then
+			LIBS="$LIBS -lkernel32 -ldbghelp -lws2_32"
+		else
+			LIBS="$LIBS -lpthread -ldl"
+		fi
+	fi
+
+	$LNK$OBJS -o$OUTDIR/$OUTBIN $LIBS 2>> $STDERR &
+	waitfor $!
+
+	if [ $DEBUG -eq 0 ]; then
+		echo -ne "done\nStripping..."
+		strip $OUTDIR/$OUTBIN
+	fi
+
+	echo -ne "done\n"
 fi
 
 if [ $PLUGIN_INSTALL -eq 1 ]; then
-	echo -ne "done\nCopying to plugins directory..."
+	echo -ne "Copying to plugins directory..."
 	if [ ! -d "$PLUGINS_DIR" ]; then mkdir -p $PLUGINS_DIR; fi
 	cp $OUTDIR/$OUTBIN $PLUGINS_DIR/$OUTBIN
 	echo "done"
-else
-	echo "done"
 fi
 
-stderrlen=$(wc -c < "$STDERR")
-if [ $stderrlen -gt 0 ]; then
-	echo -e "Compiler stderr:\n$(cat $STDERR)"
-	exit 1
+if [ $COMPILE -eq 1 ]; then
+	stderrlen=$(wc -c < "$STDERR")
+	if [ $stderrlen -gt 0 ]; then
+		echo -e "Compiler stderr:\n$(cat $STDERR)"
+		exit 1
+	fi
 fi
 
 if [ $RUN -eq 1 ]; then

@@ -873,7 +873,7 @@ INL static void PacketReceiverRaw(Client *client) {
 
 		if(packetSize > 0) {
 			cs_uint32 offset = 0;
-			while(Server_Active) {
+			while(!client->closed) {
 				len = Socket_Receive(client->sock, client->rdbuf + offset, packetSize - offset, 0);
 
 				if(len > 0) {
@@ -883,9 +883,8 @@ INL static void PacketReceiverRaw(Client *client) {
 						HandlePacket(client, client->rdbuf, packet, extended);
 						break;
 					}
-				} else if(len < 0 && (ecode = Socket_GetError()) != EAGAIN && ecode > 0) {
+				} else if(len < 0 && ((ecode = Socket_GetError()) != EAGAIN && ecode > 0)) {
 					Client_KickFormat(client, Sstor_Get("KICK_NERR"), ecode);
-					break;
 				} else if(len == 0) client->closed = true;
 			}
 		}
@@ -1059,11 +1058,11 @@ cs_str Client_GetDisconnectReason(Client *client) {
 }
 
 void Client_Kick(Client *client, cs_str reason) {
-	if(client->closed) return;
+	if(client->kickReason) return;
 	if(!reason) reason = Sstor_Get("KICK_NOREASON");
 	Vanilla_WriteKick(client, reason);
+	Socket_Shutdown(client->sock, SD_SEND);
 	client->kickReason = String_AllocCopy(reason);
-	client->closed = true;
 }
 
 void Client_KickFormat(Client *client, cs_str fmtreason, ...) {

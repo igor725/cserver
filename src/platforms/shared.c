@@ -189,8 +189,8 @@ cs_int32 Socket_Send(Socket sock, const cs_char *buf, cs_int32 len) {
 	return send(sock, buf, len, MSG_NOSIGNAL);
 }
 
-void Socket_Shutdown(Socket sock, cs_int32 how) {
-	shutdown(sock, how);
+cs_bool Socket_Shutdown(Socket sock, cs_int32 how) {
+	return shutdown(sock, how) == 0;
 }
 
 cs_bool Directory_Ensure(cs_str path) {

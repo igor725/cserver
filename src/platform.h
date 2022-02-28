@@ -60,7 +60,7 @@ API cs_bool Socket_SetRecvTimeout(Socket n, cs_ulong msec);
 API cs_int32 Socket_Receive(Socket sock, cs_char *buf, cs_int32 len, cs_int32 flags);
 API cs_int32 Socket_ReceiveLine(Socket sock, cs_char *line, cs_int32 len);
 API cs_int32 Socket_Send(Socket sock, const cs_char *buf, cs_int32 len);
-API void Socket_Shutdown(Socket sock, cs_int32 how);
+API cs_bool Socket_Shutdown(Socket sock, cs_int32 how);
 API void Socket_Close(Socket sock);
 
 API Thread Thread_Create(TFUNC func, const TARG param, cs_bool detach);

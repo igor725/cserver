@@ -52,11 +52,11 @@ THREAD_FUNC(ClientInitThread) {
 	if(attempt < 10) {
 		Socket_SetRecvTimeout(client->sock, 30000);
 
-		while(Server_Active) {
-			if(!client->closed) {
-				Waitable_Wait(SyncClients);
+		while(1) {
+			Waitable_Wait(SyncClients);
+			if(!client->closed)
 				Client_Tick(client);
-			} else break;
+			else break;
 		}
 
 		if(Client_CheckState(client, PLAYER_STATE_INGAME)) {
@@ -69,11 +69,6 @@ THREAD_FUNC(ClientInitThread) {
 		}
 	} else
 		Client_Kick(client, Sstor_Get("KICK_PERR_HS"));
-
-	Mutex_Lock(client->mutex);
-	Socket_SetRecvTimeout(client->sock, 150);
-	Socket_Shutdown(client->sock, SD_SEND);
-	Mutex_Unlock(client->mutex);
 
 	Event_Call(EVT_ONDISCONNECT, client);
 	Waitable_Signal(client->waitend);
@@ -99,25 +94,6 @@ INL static ClientID TryToGetIDFor(Client *client) {
 	}
 
 	return possibleId;
-}
-
-INL static void CloseCient(Client *client) {
-	Waitable_Signal(SyncClients);
-	Waitable_Wait(client->waitend);
-	Mutex_Lock(client->mutex);
-	Waitable_Reset(SyncClients);
-	Mutex_Unlock(client->mutex);
-	Client_Free(client);
-}
-
-INL static void WaitAllClientThreads(void) {
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client *client = Clients_List[i];
-		if(client) {
-			Clients_List[i] = NULL;
-			CloseCient(client);
-		}
-	}
 }
 
 THREAD_FUNC(SockAcceptThread) {
@@ -409,7 +385,12 @@ INL static void DoStep(cs_int32 delta) {
 		Client *client = Clients_List[i];
 		if(client && client->closed) {
 			Clients_List[client->id] = NULL;
-			CloseCient(client);
+			Waitable_Signal(SyncClients);
+			Waitable_Wait(client->waitend);
+			Mutex_Lock(client->mutex);
+			Mutex_Unlock(client->mutex);
+			Client_Free(client);
+			Waitable_Reset(SyncClients);
 		}
 	}
 	Waitable_Signal(SyncClients);
@@ -435,7 +416,13 @@ void Server_StartLoop(void) {
 		Thread_Sleep(1000 / TICKS_PER_SECOND);
 	}
 
+	Waitable_Reset(SyncClients);
 	Event_Call(EVT_ONSTOP, NULL);
+}
+
+INL static void WaitAllClientThreads(void) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++)
+		while(Clients_List[i]) DoStep(0);
 }
 
 INL static void UnloadAllWorlds(void) {
