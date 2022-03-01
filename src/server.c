@@ -381,19 +381,15 @@ INL static void DoStep(cs_int32 delta) {
 	Waitable_Reset(SyncClients);
 	Event_Call(EVT_ONTICK, &delta);
 	Timer_Update(delta);
+	Waitable_Signal(SyncClients);
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
 		if(client && client->closed) {
 			Clients_List[client->id] = NULL;
-			Waitable_Signal(SyncClients);
 			Waitable_Wait(client->waitend);
-			Mutex_Lock(client->mutex);
-			Mutex_Unlock(client->mutex);
 			Client_Free(client);
-			Waitable_Reset(SyncClients);
 		}
 	}
-	Waitable_Signal(SyncClients);
 }
 
 void Server_StartLoop(void) {
