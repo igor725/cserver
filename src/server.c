@@ -114,7 +114,7 @@ THREAD_FUNC(SockAcceptThread) {
 			tmp->sock = fd;
 			tmp->mutex = Mutex_Create();
 			tmp->waitend = Waitable_Create();
-			tmp->addr = htonl(caddr.sin_addr.s_addr);
+			tmp->addr = caddr.sin_addr.s_addr;
 			tmp->id = TryToGetIDFor(tmp);
 			Waitable_Signal(tmp->waitend);
 			if(tmp->id != CLIENT_SELF) {

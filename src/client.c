@@ -385,8 +385,25 @@ cs_bool Client_IsClosed(Client *client) {
 	return client->closed;
 }
 
+static const struct _subnet {
+	cs_ulong net;
+	cs_ulong mask;
+} localnets[] = {
+	{0x0000007f, 0x000000FF},
+	{0x0000000A, 0x000000FF},
+	{0x000010AC, 0x00000FFF},
+	{0x0000A8C0, 0x0000FFFF},
+	
+	{0x00000000, 0}
+};
+
 cs_bool Client_IsLocal(Client *client) {
-	return client->addr == 0x7f000001;
+	for(const struct _subnet *s = localnets; s->mask; s++) {
+		if((client->addr & s->mask) == s->net)
+			return true;
+	}
+
+	return false;
 }
 
 cs_bool Client_IsInSameWorld(Client *client, Client *other) {

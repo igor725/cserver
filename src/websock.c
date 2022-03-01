@@ -149,7 +149,7 @@ cs_bool WebSock_ReceiveFrame(WebSock *ws) {
 		ws->state = WS_STATE_DONE;
 		return true;
 	}
-	
+
 	if(len < 0)
 		ws->error = Socket_GetError() == EAGAIN ? WS_ERROR_CONTINUE : WS_ERROR_SOCKET;
 	else if(len >= 0) ws->error = WS_ERROR_SOCKET;
