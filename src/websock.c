@@ -112,9 +112,6 @@ cs_bool WebSock_ReceiveFrame(WebSock *ws) {
 				ws->error = WS_ERROR_MASK;
 				return false;
 			}
-		} else if(len < 0 && Socket_GetError() != EAGAIN) {
-			ws->error = WS_ERROR_SOCKET;
-			return false;
 		}
 	}
 
@@ -128,20 +125,12 @@ cs_bool WebSock_ReceiveFrame(WebSock *ws) {
 				return false;
 			}
 			ws->state = WS_STATE_MASK;
-		} else if(len < 0 && Socket_GetError() != EAGAIN) {
-			ws->error = WS_ERROR_SOCKET;
-			return false;
 		}
 	}
 
 	if(ws->state == WS_STATE_MASK) {
 		len = Socket_Receive(ws->sock, ws->mask, 4, 0);
-		if(len == 4)
-			ws->state = WS_STATE_RECVPL;
-		else if(len < 0 && Socket_GetError() != EAGAIN) {
-			ws->error = WS_ERROR_SOCKET;
-			return false;
-		}
+		if(len == 4) ws->state = WS_STATE_RECVPL;
 	}
 
 	if(ws->state == WS_STATE_RECVPL) {
@@ -151,7 +140,7 @@ cs_bool WebSock_ReceiveFrame(WebSock *ws) {
 			if(len == ws->plen) {
 				for(cs_int32 i = 0; i < len; i++)
 					ws->recvbuf[i] ^= ws->mask[i % 4];
-			} else {
+			} else if(len > 0) {
 				ws->error = WS_ERROR_PAYLOAD_LEN_MISMATCH;
 				return false;
 			}
@@ -160,8 +149,11 @@ cs_bool WebSock_ReceiveFrame(WebSock *ws) {
 		ws->state = WS_STATE_DONE;
 		return true;
 	}
+	
+	if(len < 0)
+		ws->error = Socket_GetError() == EAGAIN ? WS_ERROR_CONTINUE : WS_ERROR_SOCKET;
+	else if(len >= 0) ws->error = WS_ERROR_SOCKET;
 
-	ws->error = len == 0 ? WS_ERROR_SOCKET : WS_ERROR_CONTINUE;
 	return false;
 }
 
