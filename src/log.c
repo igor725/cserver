@@ -172,6 +172,7 @@ void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 		buffer.data[buffer.offset++] = '\r';
 		buffer.data[buffer.offset++] = '\n';
 		buffer.data[buffer.offset] = '\0';
+		buffer.colored = ISSET(Log_Flags, LOG_COLORS);
 
 		if(Event_Call(EVT_ONLOG, &buffer)) {
 			ConsoleIO_PrePrint();

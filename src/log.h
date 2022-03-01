@@ -17,6 +17,7 @@
 typedef struct _LogBuffer {
 	cs_char data[LOG_BUFSIZE];
 	cs_size offset;
+	cs_bool colored;
 } LogBuffer;
 
 cs_bool Log_Init(void);
