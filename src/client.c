@@ -848,8 +848,10 @@ INL static void PacketReceiverWs(Client *client) {
 
 			return;
 		} else Client_Kick(client, Sstor_Get("KICK_PERR_WS"));
-	} else
+	} else if(client->websock->error != WS_ERROR_CONTINUE) {
+		Client_KickFormat(client, WebSock_GetError(client->websock));
 		client->closed = true;
+	}
 }
 
 INL static void PacketReceiverRaw(Client *client) {

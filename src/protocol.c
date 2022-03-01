@@ -1092,6 +1092,7 @@ cs_bool CPEHandler_TwoWayPing(Client *client, cs_char *data) {
 			client->cpeData->pingStarted = true;
 			client->cpeData->pingStart = Time_GetMSec();
 		}
+
 		return true;
 	} else if(pingDirection == 1) {
 		if(client->cpeData->pingStarted) {
@@ -1102,9 +1103,11 @@ cs_bool CPEHandler_TwoWayPing(Client *client, cs_char *data) {
 				(cs_float)client->cpeData->pingTime) / (client->cpeData->_pingAvgSize + 1);
 				client->cpeData->_pingAvgSize += 1;
 			}
+
 			return true;
 		}
 	}
+
 	return false;
 }
 
