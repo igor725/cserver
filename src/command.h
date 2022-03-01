@@ -92,7 +92,15 @@ typedef struct _Command {
 
 void Command_RegisterDefault(void);
 void Command_UnregisterAll(void);
-cs_bool Command_Handle(cs_char *cmd, Client *caller);
+
+/**
+ * @brief Обрабатывает переданную строку как команду.
+ * 
+ * @param str команда с аргументами (массив может измениться в процессе выполнения)
+ * @param caller игрок, вызвавший команду
+ * @return true - команда выполнена успешно, false - произошла какая-то ошибка
+ */
+API cs_bool Command_Handle(cs_char *str, Client *caller);
 
 /**
  * @brief Регистрирует новую команду.
