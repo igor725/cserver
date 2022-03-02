@@ -3,6 +3,10 @@
 #include "core.h"
 #include "types/event.h"
 
+#define Event_DeclareBunch(N) static EventRegBunch N[] =
+#define EVENT_BUNCH_ADD(R, E, F) {R, E, (void*)F},
+#define EVENT_BUNCH_END {0, 0, NULL}
+
 API cs_bool Event_RegisterVoid(EventTypes type, evtVoidCallback func);
 API cs_bool Event_RegisterBool(EventTypes type, evtBoolCallback func);
 API cs_bool Event_RegisterBunch(EventRegBunch *bunch);
