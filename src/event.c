@@ -73,13 +73,9 @@ cs_bool Event_Unregister(EventTypes type, cs_uintptr evtFuncPtr) {
 	return false;
 }
 
-cs_bool Event_UnregisterBunch(EventRegBunch *bunch) {
-	for(cs_int32 i = 0; bunch[i].evtfunc; i++) {
-		if(!Event_Unregister(bunch[i].type, (cs_uintptr)bunch[i].evtfunc))
-			return false;
-	}
-
-	return true;
+void Event_UnregisterBunch(EventRegBunch *bunch) {
+	for(cs_int32 i = 0; bunch[i].evtfunc; i++)
+		Event_Unregister(bunch[i].type, (cs_uintptr)bunch[i].evtfunc);
 }
 
 void Event_UnregisterAll(void) {
