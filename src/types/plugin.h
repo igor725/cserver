@@ -22,6 +22,7 @@ typedef struct _Plugin {
 	pluginReceiveIface irecv;
 	pluginUnloadFunc unload;
 	AListField *ireqHead;
+	AListField *ireqHold;
 	Mutex *mutex;
 } Plugin;
 #endif

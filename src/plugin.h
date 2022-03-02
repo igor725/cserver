@@ -26,5 +26,6 @@ API cs_bool Plugin_LoadDll(cs_str name);
 API cs_bool Plugin_UnloadDll(Plugin *plugin, cs_bool force);
 API Plugin *Plugin_Get(cs_str name);
 API cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname);
+API cs_bool Plugin_DiscardInterface(pluginReceiveIface irecv, cs_str iname);
 VAR Plugin *Plugins_List[MAX_PLUGINS];
 #endif // PLUGIN_H

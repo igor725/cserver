@@ -8,6 +8,31 @@
 
 Plugin *Plugins_List[MAX_PLUGINS] = {0};
 
+static void AddInterface(Plugin *requester, PluginInterface *iface) {
+	void *ptr = Memory_Alloc(1, iface->isize);
+	Memory_Copy(ptr, iface->iptr, iface->isize);
+	AList_AddField(&requester->ireqHead, (void *)iface->iname);
+	requester->irecv(iface->iname, ptr, iface->isize);
+}
+
+static void CheckHoldIfaces(Plugin *plugin) {
+	for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
+		AListField *hold;
+		Plugin *tplugin = Plugins_List[i];
+		if(tplugin == plugin || !tplugin) continue;
+		List_Iter(hold, tplugin->ireqHold) {
+			PluginInterface *iface;
+			for(iface = plugin->ifaces; iface && iface->iname; iface++) {
+				if(String_Compare(iface->iname, hold->value.str)) {
+					Memory_Free(hold->value.ptr);
+					AList_Remove(&tplugin->ireqHold, hold);
+					AddInterface(tplugin, iface);
+				}
+			}
+		}
+	}
+}
+
 cs_bool Plugin_LoadDll(cs_str name) {
 	cs_char path[256], error[512];
 	void *lib;
@@ -48,19 +73,23 @@ cs_bool Plugin_LoadDll(cs_str name) {
 		plugin->id = -1;
 
 		for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
-			if(!Plugins_List[i]) {
+			if(!Plugins_List[i] && plugin->id == -1) {
 				plugin->id = i;
 				break;
 			}
 		}
 
-		if(plugin->id == -1 || !initSym()) {
-			Plugin_UnloadDll(plugin, true);
-			return false;
+		if(plugin->id != -1) {
+			Plugins_List[plugin->id] = plugin;
+			if(initSym()) {
+				if(plugin->ifaces)
+					CheckHoldIfaces(plugin);
+				return true;
+			}
 		}
 
-		Plugins_List[plugin->id] = plugin;
-		return true;
+		Plugin_UnloadDll(plugin, true);
+		return false;
 	}
 
 	Log_Error("%s: %s", path, DLib_GetError(error, 512));
@@ -83,22 +112,30 @@ cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname) {
 	Plugin *requester = NULL,
 	*answerer = NULL;
 
-	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
+	for(cs_int32 i = 0; i < MAX_PLUGINS && !(requester && answerer); i++) {
 		Plugin *cplugin = Plugins_List[i];
 		if(!cplugin) continue;
 
 		if(!requester && irecv == cplugin->irecv && cplugin != answerer) {
-			requester = cplugin;
+			Plugin_Lock(cplugin);
 			AListField *tmp;
-			Plugin_Lock(requester);
-			List_Iter(tmp, requester->ireqHead) {
+
+			List_Iter(tmp, cplugin->ireqHead) {
 				if(String_Compare(tmp->value.ptr, iname)) {
-					Plugin_Unlock(requester);
+					Plugin_Unlock(cplugin);
+					if(answerer) Plugin_Unlock(answerer);
+					return false;
+				}
+			}
+			List_Iter(tmp, cplugin->ireqHold) {
+				if(String_Compare(tmp->value.ptr, iname)) {
+					Plugin_Unlock(cplugin);
 					if(answerer) Plugin_Unlock(answerer);
 					return false;
 				}
 			}
 
+			requester = cplugin;
 			continue;
 		}
 
@@ -115,17 +152,61 @@ cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname) {
 	}
 
 	if(requester && answerer) {
-		void *ptr = Memory_Alloc(1, iface->isize);
-		Memory_Copy(ptr, iface->iptr, iface->isize);
-		AList_AddField(&requester->ireqHead, (void *)iface->iname);
-		requester->irecv(iface->iname, ptr, iface->isize);
+		AddInterface(requester, iface);
 		Plugin_Unlock(requester);
 		Plugin_Unlock(answerer);
+		return true;
+	} else if(requester) {
+		AList_AddField(&requester->ireqHold, (void *)String_AllocCopy(iname));
+		Plugin_Unlock(requester);
 		return true;
 	}
 
 	if(requester) Plugin_Unlock(requester);
 	if(answerer) Plugin_Unlock(answerer);
+	return false;
+}
+
+static cs_bool TryDiscard(Plugin *plugin, AListField **head, cs_str iname) {
+	Plugin_Lock(plugin);
+
+	AListField *tmp;
+	List_Iter(tmp, *head) {
+		if(String_Compare(tmp->value.str, iname)) {
+			/**
+			 * Так как в списке холда все названия интерфейсов
+			 * хранятся в виде копии оригинальной строки, дабы
+			 * не словить утечку памяти, мы очищаем её здесь.
+			 * 
+			 * P.S. Если интерфейс был в списке холда, то
+			 * коллбек с установкой поинтера в ноль не вызывается,
+			 * в этом мало смысла.
+			 * 
+			 */
+			if(*head == plugin->ireqHold)
+				Memory_Free(tmp->value.ptr);
+			else
+				plugin->irecv(iname, NULL, 0);
+			AList_Remove(head, tmp);
+			Plugin_Unlock(plugin);
+			return true;
+		}
+	}
+
+	Plugin_Unlock(plugin);
+	return false;
+}
+
+cs_bool Plugin_DiscardInterface(pluginReceiveIface irecv, cs_str iname) {
+	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
+		Plugin *cplugin = Plugins_List[i];
+		if(cplugin && cplugin->irecv == irecv) {
+			if(TryDiscard(cplugin, &cplugin->ireqHead, iname)) return true;
+			if(TryDiscard(cplugin, &cplugin->ireqHold, iname)) return true;
+			break;
+		}
+	}
+
 	return false;
 }
 
@@ -151,6 +232,7 @@ cs_bool Plugin_UnloadDll(Plugin *plugin, cs_bool force) {
 				List_Iter(tmp, tplugin->ireqHead) {
 					if(tmp->value.ptr == iface->iname) {
 						AList_Remove(&tplugin->ireqHead, tmp);
+						AList_AddField(&tplugin->ireqHold, (void *)String_AllocCopy(iface->iname));
 						tplugin->irecv(iface->iname, NULL, 0);
 						break;
 					}
@@ -158,6 +240,11 @@ cs_bool Plugin_UnloadDll(Plugin *plugin, cs_bool force) {
 				Plugin_Unlock(tplugin);
 			}
 		}
+	}
+
+	while(plugin->ireqHold) {
+		Memory_Free(plugin->ireqHold->value.ptr);
+		AList_Remove(&plugin->ireqHold, plugin->ireqHold);
 	}
 
 	while(plugin->ireqHead)
