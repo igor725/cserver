@@ -540,13 +540,13 @@ void World_GetDimensions(World *world, SVec *dims) {
 }
 
 cs_uint32 World_GetOffset(World *world, SVec *pos) {
-	if(pos->x < 0 || pos->y < 0 || pos->z < 0) return (cs_uint32)-1;
+	if(pos->x < 0 || pos->y < 0 || pos->z < 0) return WORLD_INVALID_OFFSET;
 	if(pos->x >= world->info.dimensions.x ||
 	pos->y >= world->info.dimensions.y ||
-	pos->z >= world->info.dimensions.z) return (cs_uint32)-1;
+	pos->z >= world->info.dimensions.z) return WORLD_INVALID_OFFSET;
 	cs_uint32 offset = ((cs_uint32)pos->y * (cs_uint32)world->info.dimensions.z
 	+ (cs_uint32)pos->z) * (cs_uint32)world->info.dimensions.x + (cs_uint32)pos->x;
-	return offset < world->wdata.size ? offset : (cs_uint32)-1;
+	return offset < world->wdata.size ? offset : WORLD_INVALID_OFFSET;
 }
 
 cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id) {
