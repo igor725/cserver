@@ -85,7 +85,7 @@ PluginInterface Plugin_Interfaces[] =
 /**
  * @brief Загружает указанный плагин.
  * 
- * @param name имя плагина
+ * @param name название плагина
  * @return true - плагин загружен успешно, false - произошли
  * технические шоколадки.
  */
@@ -94,7 +94,7 @@ API cs_bool Plugin_LoadDll(cs_str name);
 /**
  * @brief 
  * 
- * @param plugin названте плагина
+ * @param plugin название плагина
  * @param force будет ли проигнорировано значение, которое вернёт функция Plugin_Unload
  * (может привести к потере данных!)
  * @return true - плагин был выгружен успешно, false - что-то не так

@@ -13,6 +13,7 @@ typedef struct _PluginInterface {
 typedef cs_bool(*pluginInitFunc)(void);
 typedef cs_bool(*pluginUnloadFunc)(cs_bool);
 typedef void(*pluginReceiveIface)(cs_str name, void *ptr, cs_size size);
+
 typedef struct _Plugin {
 	cs_int8 id;
 	cs_str name;
