@@ -1080,6 +1080,7 @@ cs_bool CPEHandler_PlayerClick(Client *client, cs_char *data) {
 }
 
 cs_bool CPEHandler_TwoWayPing(Client *client, cs_char *data) {
+	if(!Client_CheckState(client, PLAYER_STATE_INGAME)) return true;
 	if(Client_GetExtVer(client, EXT_TWOWAYPING) < 1) return false;
 
 	cs_byte pingDirection = *data++;
