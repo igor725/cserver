@@ -174,6 +174,10 @@ cs_bool WebSock_SendFrame(WebSock *ws, cs_byte opcode, const cs_char *buf, cs_ui
 	Socket_Send(ws->sock, buf, len) == len;
 }
 
+EWebSockErrors WebSock_GetErrorCode(WebSock *ws) {
+	return ws->error;
+}
+
 cs_str WebSock_GetError(WebSock *ws) {
 	switch(ws->error) {
 		case WS_ERROR_SUCC: return "WS_ERROR_SUCC";
