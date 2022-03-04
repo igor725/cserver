@@ -28,6 +28,11 @@ API CGroup *Group_Add(cs_int16 gid, cs_str gname, cs_byte grank);
 API CGroup *Group_GetByID(cs_int16 gid);
 API cs_bool Group_Remove(cs_int16 gid);
 
+API void Cuboid_SetPositions(CPECuboid *cub, SVec start, SVec end);
+API void Cuboid_SetColor(CPECuboid *cub, Color4 color);
+API cs_uint32 Cuboid_GetSize(CPECuboid *cub);
+API void Cuboid_GetPositions(CPECuboid *cub, SVec *start, SVec *end);
+
 API cs_byte Clients_GetCount(EPlayerState state);
 API void Clients_KickAll(cs_str reason);
 
@@ -41,8 +46,9 @@ API void Client_KickFormat(Client *client, cs_str fmtreason, ...);
 API void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll);
 API cs_bool Client_Update(Client *client);
 API cs_bool Client_SendHacks(Client *client, CPEHacks *hacks);
-API cs_bool Client_MakeSelection(Client *client, cs_byte id, SVec *start, SVec *end, Color4* color);
-API cs_bool Client_RemoveSelection(Client *client, cs_byte id);
+API CPECuboid *Client_NewSelection(Client *client);
+API cs_bool Client_UpdateSelection(Client *client, CPECuboid *cub);
+API cs_bool Client_RemoveSelection(Client *client, CPECuboid *cub);
 API cs_bool Client_TeleportTo(Client *client, Vec *pos, Ang *ang);
 API cs_bool Client_TeleportToSpawn(Client *client);
 API cs_bool Client_CheckState(Client *client, EPlayerState state);

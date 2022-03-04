@@ -102,7 +102,7 @@ NOINL void CPE_WriteAddName(Client *client, Client *other);
 NOINL void CPE_WriteAddEntity2(Client *client, Client *other);
 NOINL void CPE_WriteRemoveName(Client *client, Client *other);
 NOINL void CPE_WriteEnvColor(Client *client, cs_byte type, Color3* col);
-NOINL void CPE_WriteMakeSelection(Client *client, cs_byte id, SVec *start, SVec *end, Color4* color);
+NOINL void CPE_WriteMakeSelection(Client *client, CPECuboid *cub);
 NOINL void CPE_WriteRemoveSelection(Client *client, cs_byte id);
 NOINL void CPE_WriteHackControl(Client *client, CPEHacks *hacks);
 NOINL void CPE_WriteDefineBlock(Client *client, BlockID id, BlockDef *block);

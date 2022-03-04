@@ -716,15 +716,15 @@ void CPE_WriteEnvColor(Client *client, cs_byte type, Color3* col) {
 	PacketWriter_EndIngame(client);
 }
 
-void CPE_WriteMakeSelection(Client *client, cs_byte id, SVec *start, SVec *end, Color4* color) {
+void CPE_WriteMakeSelection(Client *client, CPECuboid *cub) {
 	PacketWriter_Start(client, 86);
 
 	*data++ = 0x1A;
-	*data++ = id;
+	*data++ = cub->id;
 	Proto_WriteString(&data, NULL); // Label
-	Proto_WriteSVec(&data, start);
-	Proto_WriteSVec(&data, end);
-	Proto_WriteColor4(&data, color);
+	Proto_WriteSVec(&data, &cub->pos[0]);
+	Proto_WriteSVec(&data, &cub->pos[1]);
+	Proto_WriteColor4(&data, &cub->color);
 
 	PacketWriter_EndIngame(client);
 }

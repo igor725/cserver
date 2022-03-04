@@ -1,6 +1,7 @@
 #ifndef CPETYPES_H
 #define CPETYPES_H
 #include "core.h"
+#include "vector.h"
 #include "types/list.h"
 
 #define PCU_NONE 0x00 // Ни одно из CPE-значений игрока не изменилось
@@ -51,6 +52,12 @@ typedef enum _EWeather {
 	WORLD_WEATHER_RAIN,
 	WORLD_WEATHER_SNOW
 } EWeather;
+
+typedef enum _ESelectionParam {
+	SELECTION_PARAM_START,
+	SELECTION_PARAM_END,
+	SELECTION_PARAM_COLOR
+} ESelectionParam;
 
 typedef struct {
 	cs_int16 r, g, b, a;
@@ -121,6 +128,13 @@ typedef struct _BlockDef {
 	} params; /** Объединение параметров блока */
 } BlockDef;
 
+typedef struct _CPECuboid {
+	cs_byte id;
+	cs_bool used;
+	Color4 color;
+	SVec pos[2];
+} CPECuboid;
+
 typedef struct _CPEData {
 	CPEExt *headExtension; // Список дополнений клиента
 	cs_char appName[65]; // Название игрового клиента
@@ -132,14 +146,15 @@ typedef struct _CPEData {
 	cs_int16 _extCount; // Переменная используется при получении списка дополнений
 	cs_int16 model; // Текущая модель игрока [ChangeModel]
 	cs_int16 group; // Текущая группа игрока [ExtPlayerList]
-	cs_uint16 pingData; // Данные, цепляемые к пинг-запросу
-	cs_uint32 pingTime; // Сам пинг, в миллисекундах
-	cs_float pingAvgTime; // Средний пинг, в миллисекундах
-	cs_uint32 _pingAvgSize; // Количество значений в текущем среднем пинга
-	cs_uint64 pingStart; // Время начала пинг-запроса
+	cs_uint16 pingData; // Данные, цепляемые к пинг-запросу [TwoWayPing]
+	cs_uint32 pingTime; // Сам пинг, в миллисекундах [TwoWayPing]
+	cs_float pingAvgTime; // Средний пинг, в миллисекундах [TwoWayPing]
+	cs_uint32 _pingAvgSize; // Количество значений в текущем среднем пинга [TwoWayPing]
+	cs_uint64 pingStart; // Время начала пинг-запроса [TwoWayPing]
 	cs_int32 rotation[3]; // Вращение модели игрока в градусах [EntityProperty]
-	cs_uint16 clickDist; // Расстояние клика игрока
-	cs_byte cbLevel; // Уровень дополнения CustomBlocks, пока не используется
+	cs_uint16 clickDist; // Расстояние клика игрока [ClickDistance]
+	cs_byte cbLevel; // Поддерживаемый уровень кастом блоков, пока не используется [CustomBlocks]
+	CPECuboid cuboids[16]; // Кубоиды игрока [SelectionCuboid]
 } CPEData;
 
 typedef struct _CGroup {

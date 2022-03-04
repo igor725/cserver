@@ -59,6 +59,38 @@ cs_bool Group_Remove(cs_int16 gid) {
 	return true;
 }
 
+static void CubeNormalize(SVec *s, SVec *e) {
+	cs_int16 tmp, *a = (cs_int16 *)s, *b = (cs_int16 *)e;
+	for(int i = 0; i < 3; i++) {
+		if(a[i] < b[i]) {
+			tmp = a[i];
+			a[i] = b[i];
+			b[i] = tmp;
+		}
+		a[i]++;
+	}
+}
+
+void Cuboid_SetPositions(CPECuboid *cub, SVec start, SVec end) {
+	cub->pos[0] = start, cub->pos[1] = end;
+	CubeNormalize(&cub->pos[0], &cub->pos[1]);
+}
+
+void Cuboid_SetColor(CPECuboid *cub, Color4 color) {
+	cub->color = color;
+}
+
+cs_uint32 Cuboid_GetSize(CPECuboid *cub) {
+	return (cub->pos[0].x - cub->pos[1].x) *
+	(cub->pos[0].y - cub->pos[1].y) *
+	(cub->pos[0].z - cub->pos[1].z);
+}
+
+void Cuboid_GetPositions(CPECuboid *cub, SVec *start, SVec *end) {
+	if(start) *start = cub->pos[0];
+	if(end) *end = cub->pos[1];
+}
+
 cs_byte Clients_GetCount(EPlayerState state) {
 	cs_byte count = 0;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
@@ -269,17 +301,33 @@ void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 		Client_SetWeather(client, world->info.weatherType);
 }
 
-cs_bool Client_MakeSelection(Client *client, cs_byte id, SVec *start, SVec *end, Color4* color) {
+CPECuboid *Client_NewSelection(Client *client) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
-		CPE_WriteMakeSelection(client, id, start, end, color);
+		for(cs_byte i = 0; i < 16; i++) {
+			CPECuboid *cub = &client->cpeData->cuboids[i];
+			if(cub->used) continue;
+			cub->used = true;
+			cub->id = i;
+			return cub;
+		}
+	}
+
+	return NULL;
+}
+
+cs_bool Client_UpdateSelection(Client *client, CPECuboid *cub) {
+	if(Client_GetExtVer(client, EXT_CUBOID)) {
+		CPE_WriteMakeSelection(client, cub);
 		return true;
 	}
+
 	return false;
 }
 
-cs_bool Client_RemoveSelection(Client *client, cs_byte id) {
+cs_bool Client_RemoveSelection(Client *client, CPECuboid *cub) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
-		CPE_WriteRemoveSelection(client, id);
+		CPE_WriteRemoveSelection(client, cub->id);
+		cub->used = false;
 		return true;
 	}
 	return false;
