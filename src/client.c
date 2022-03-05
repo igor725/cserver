@@ -95,16 +95,44 @@ cs_byte Clients_GetCount(EPlayerState state) {
 	cs_byte count = 0;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
-		if(client && Client_CheckState(client, state)) count++;
+		if(client) {
+			if(!Client_CheckState(client, state)) continue;
+			if(Client_IsBot(client)) continue;
+			count++;
+		}
 	}
 	return count;
 }
 
-void Clients_KickAll(cs_str reason) {
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client *client = Clients_List[i];
-		if(client) Client_Kick(client, reason);
-	}
+static ClientID FindFreeID(void) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++)
+		if(!Clients_List[i]) return i;
+
+	return CLIENT_SELF;
+}
+
+Client *Client_NewBot(void) {
+	ClientID botid = FindFreeID();
+	if(botid == CLIENT_SELF)
+		return NULL;
+	
+	Client *client = Memory_Alloc(1, sizeof(Client));
+	client->playerData = Memory_Alloc(1, sizeof(PlayerData));
+	client->cpeData = Memory_Alloc(1, sizeof(CPEData));
+	client->playerData->state = PLAYER_STATE_INGAME;
+	client->waitend = Waitable_Create();
+	Waitable_Signal(client->waitend);
+	client->mutex = Mutex_Create();
+	client->sock = INVALID_SOCKET;
+	client->cpeData->model = 256;
+	client->id = botid;
+
+	Clients_List[botid] = client;
+	return client;
+}
+
+cs_bool Client_IsBot(Client *bot) {
+	return bot->sock == INVALID_SOCKET;
 }
 
 void Client_Lock(Client *client) {
@@ -229,6 +257,7 @@ cs_float Client_GetClickDistanceInBlocks(Client *client) {
 }
 
 cs_int32 Client_GetExtVer(Client *client, cs_uint32 exthash) {
+	if(Client_IsBot(client)) return true;
 	if(!client->cpeData) return false;
 
 	CPEExt *ptr = client->cpeData->headExtension;
@@ -253,6 +282,12 @@ cs_bool Client_Despawn(Client *client) {
 }
 
 cs_bool Client_ChangeWorld(Client *client, World *world) {
+	if(Client_IsBot(client)) {
+		Client_Despawn(client);
+		client->playerData->world = world;
+		Client_Spawn(client);
+		return true;
+	}
 	if(!world || Client_CheckState(client, PLAYER_STATE_MOTD))
 		return false;
 
@@ -279,22 +314,28 @@ void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 					CPE_WriteMapProperty(client, prop, World_GetEnvProp(world, prop));
 			}
 		}
-	} else if(Client_GetExtVer(client, EXT_MAPPROPS) == 2) {
-		CPE_WriteSetMapAppearanceV2(
-			client, world->info.texturepack,
-			(cs_byte)World_GetEnvProp(world, 0),
-			(cs_byte)World_GetEnvProp(world, 1),
-			(cs_int16)World_GetEnvProp(world, 2),
-			(cs_int16)World_GetEnvProp(world, 3),
-			(cs_int16)World_GetEnvProp(world, 4)
-		);
-	} else if(Client_GetExtVer(client, EXT_MAPPROPS) == 1) {
-		CPE_WriteSetMapAppearanceV1(
-			client, world->info.texturepack,
-			(cs_byte)World_GetEnvProp(world, 0),
-			(cs_byte)World_GetEnvProp(world, 1),
-			(cs_int16)World_GetEnvProp(world, 2)
-		);
+	} else {
+		switch(Client_GetExtVer(client, EXT_MAPPROPS)) {
+			case 1:
+				CPE_WriteSetMapAppearanceV1(
+					client, world->info.texturepack,
+					(cs_byte)World_GetEnvProp(world, 0),
+					(cs_byte)World_GetEnvProp(world, 1),
+					(cs_int16)World_GetEnvProp(world, 2)
+				);
+				break;
+
+			case 2:
+				CPE_WriteSetMapAppearanceV2(
+					client, world->info.texturepack,
+					(cs_byte)World_GetEnvProp(world, 0),
+					(cs_byte)World_GetEnvProp(world, 1),
+					(cs_int16)World_GetEnvProp(world, 2),
+					(cs_int16)World_GetEnvProp(world, 3),
+					(cs_int16)World_GetEnvProp(world, 4)
+				);
+				break;
+		}
 	}
 
 	if(updateAll || world->info.modval & MV_WEATHER)
@@ -351,20 +392,23 @@ cs_bool Client_TeleportToSpawn(Client *client) {
 	);
 }
 
-INL static cs_uint32 copyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_char *color) {
+INL static cs_uint32 CopyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_char *color) {
 	if(*msg == '\0') return 0;
+	cs_uint32 maxlen = 64;
 
 	if(i > 0) {
 		*part++ = '>';
 		*part++ = ' ';
+		maxlen -= 2;
 	}
 
 	if(*color > 0) {
 		*part++ = '&';
 		*part++ = *color;
+		maxlen -= 2;
 	}
 
-	cs_uint32 len = min(60, (cs_uint32)String_Length(msg));
+	cs_uint32 len = min(maxlen, (cs_uint32)String_Length(msg));
 	if(msg[len - 1] == '&' && ISHEX(msg[len])) --len;
 
 	for(cs_uint32 j = 0; j < len; j++) {
@@ -387,7 +431,7 @@ void Client_Chat(Client *client, EMesgType type, cs_str message) {
 		cs_char color = 0, part[65] = {0};
 		cs_uint32 parts = (msgLen / 60) + 1;
 		for(cs_uint32 i = 0; i < parts; i++) {
-			cs_uint32 len = copyMessagePart(message, part, i, &color);
+			cs_uint32 len = CopyMessagePart(message, part, i, &color);
 			if(len > 0) {
 				Vanilla_WriteChat(client, type, part);
 				message += len;
@@ -442,10 +486,12 @@ static const struct _subnet {
 	{0x000010AC, 0x00000FFF},
 	{0x0000A8C0, 0x0000FFFF},
 	
-	{0x00000000, 0}
+	{0x00000000, 0x00000000}
 };
 
 cs_bool Client_IsLocal(Client *client) {
+	if(Client_IsBot(client)) return true;
+
 	for(const struct _subnet *s = localnets; s->mask; s++) {
 		if((client->addr & s->mask) == s->net)
 			return true;
@@ -1104,7 +1150,7 @@ cs_bool Client_Spawn(Client *client) {
 			if(Client_GetExtVer(other, EXT_CHANGEMODEL))
 				CPE_WriteSetModel(other, client);
 
-			if(client != other) {
+			if(client != other && !Client_IsBot(client)) {
 				SendSpawnPacket(client, other);
 
 				if(Client_GetExtVer(client, EXT_CHANGEMODEL))
@@ -1123,6 +1169,10 @@ cs_str Client_GetDisconnectReason(Client *client) {
 }
 
 void Client_Kick(Client *client, cs_str reason) {
+	if(Client_IsBot(client)) {
+		client->closed = true;
+		return;
+	}
 	if(client->kickReason) return;
 	if(!reason) reason = Sstor_Get("KICK_NOREASON");
 	Vanilla_WriteKick(client, reason);

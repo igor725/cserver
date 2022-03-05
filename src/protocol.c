@@ -23,7 +23,7 @@ if(!Client_CheckState(client, st)) \
 if(!client->cpeData) return ret;
 
 #define PacketWriter_Start(cl, msz) \
-if(cl->closed) return; \
+if(cl->closed || Client_IsBot(cl)) return; \
 Mutex_Lock(cl->mutex); \
 if(!GrowingBuffer_Ensure(&cl->gb, msz)) { \
 	cl->closed = true; \

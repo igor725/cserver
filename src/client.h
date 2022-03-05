@@ -34,7 +34,9 @@ API cs_uint32 Cuboid_GetSize(CPECuboid *cub);
 API void Cuboid_GetPositions(CPECuboid *cub, SVec *start, SVec *end);
 
 API cs_byte Clients_GetCount(EPlayerState state);
-API void Clients_KickAll(cs_str reason);
+
+API Client *Client_NewBot(void);
+API cs_bool Client_IsBot(Client *bot);
 
 API void Client_Lock(Client *client);
 API void Client_Unlock(Client *client);

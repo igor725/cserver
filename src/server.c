@@ -456,6 +456,13 @@ INL static void UnloadAllWorlds(void) {
 	}
 }
 
+static void KickAll(cs_str reason) {
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		Client *client = Clients_List[i];
+		if(client) Client_Kick(client, reason);
+	}
+}
+
 cs_str Server_GetAppName(void) {
 	return SOFTWARE_FULLNAME;
 }
@@ -463,7 +470,7 @@ cs_str Server_GetAppName(void) {
 void Server_Cleanup(void) {
 	ConsoleIO_Uninit();
 	Log_Info(Sstor_Get("SV_STOP_PL"));
-	Clients_KickAll(Sstor_Get("KICK_STOP"));
+	KickAll(Sstor_Get("KICK_STOP"));
 	WaitAllClientThreads();
 	if(Broadcast && Broadcast->mutex) Mutex_Free(Broadcast->mutex);
 	if(Broadcast) Memory_Free(Broadcast);
