@@ -179,7 +179,7 @@ Client *Client_GetByName(cs_str name) {
 }
 
 Client *Client_GetByID(ClientID id) {
-	return id >= 0 && id < MAX_CLIENTS ? Clients_List[id] : NULL;
+	return id < MAX_CLIENTS ? Clients_List[id] : NULL;
 }
 
 ClientID Client_GetID(Client *client) {

@@ -76,20 +76,28 @@ THREAD_FUNC(ClientInitThread) {
 }
 
 INL static ClientID TryToGetIDFor(Client *client) {
+	cs_int16 maxPlayers = (cs_byte)Config_GetInt16ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
 	cs_int8 maxConnPerIP = Config_GetInt8ByKey(Server_Config, CFG_CONN_KEY),
-	sameAddrCount = 1;
+	sameAddrCount = 1, playersCount = 0;
 	ClientID possibleId = CLIENT_SELF;
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *other = Clients_List[i];
 		if(!other && possibleId == CLIENT_SELF) possibleId = i;
-		if(other && other->addr == client->addr)
-			++sameAddrCount;
-		else continue;
 
-		if(sameAddrCount >= maxConnPerIP) {
-			Client_Kick(client, Sstor_Get("KICK_MANYCONN"));
-			return CLIENT_SELF;
+		if(other) {
+			if(!Client_IsBot(other)) playersCount++;
+			if(other->addr == client->addr)
+				sameAddrCount++;
+			else continue;
+
+			if(playersCount >= maxPlayers)
+				return CLIENT_SELF;
+
+			if(sameAddrCount >= maxConnPerIP) {
+				Client_Kick(client, Sstor_Get("KICK_MANYCONN"));
+				return CLIENT_SELF;
+			}
 		}
 	}
 
@@ -127,9 +135,11 @@ THREAD_FUNC(SockAcceptThread) {
 			} else
 				Client_Kick(tmp, Sstor_Get("KICK_FULL"));
 
+			Socket_Shutdown(fd, SD_SEND);
+			while(Socket_Receive(fd, tmp->rdbuf, 134, 0) > 0);
 			Client_Free(tmp);
 		}
-		
+
 		Socket_Close(fd);
 	}
 
@@ -169,10 +179,10 @@ cs_bool Server_Init(void) {
 	Config_SetComment(ent, "Bind server to specified IP address. \"0.0.0.0\" - means \"all available network adapters\"");
 	Config_SetDefaultStr(ent, "0.0.0.0");
 
-	ent = Config_NewEntry(cfg, CFG_SERVERPORT_KEY, CONFIG_TYPE_INT16);
+	ent = Config_NewEntry(cfg, CFG_SERVERPORT_KEY, CONFIG_TYPE_INT32);
 	Config_SetComment(ent, "Use specified port to accept clients. [1-65535]");
 	Config_SetLimit(ent, 1, 65535);
-	Config_SetDefaultInt16(ent, 25565);
+	Config_SetDefaultInt32(ent, 25565);
 
 	ent = Config_NewEntry(cfg, CFG_SERVERNAME_KEY, CONFIG_TYPE_STR);
 	Config_SetComment(ent, "Server name and MOTD will be shown to the player during map loading");
@@ -193,10 +203,10 @@ cs_bool Server_Init(void) {
 	Config_SetComment(ent, "Any player with ip address \"127.0.0.1\" will automatically become an operator");
 	Config_SetDefaultBool(ent, false);
 
-	ent = Config_NewEntry(cfg, CFG_MAXPLAYERS_KEY, CONFIG_TYPE_INT8);
-	Config_SetComment(ent, "Max players on server. [1-126]");
-	Config_SetLimit(ent, 1, 126);
-	Config_SetDefaultInt8(ent, 10);
+	ent = Config_NewEntry(cfg, CFG_MAXPLAYERS_KEY, CONFIG_TYPE_INT16);
+	Config_SetComment(ent, "Max players on server. [1-254]");
+	Config_SetLimit(ent, 1, 254);
+	Config_SetDefaultInt16(ent, 10);
 
 	ent = Config_NewEntry(cfg, CFG_CONN_KEY, CONFIG_TYPE_INT8);
 	Config_SetComment(ent, "Max connections per one IP. [1-5]");

@@ -118,7 +118,7 @@ typedef float cs_float;
 typedef const cs_char *cs_str;
 typedef cs_byte cs_bool;
 typedef cs_byte BlockID;
-typedef cs_int8 ClientID;
+typedef cs_byte ClientID;
 
 #define true  1
 #define false 0
@@ -128,7 +128,7 @@ typedef cs_int8 ClientID;
 #define PLUGIN_API_NUM 1
 #define MAX_PLUGINS 64
 #define	MAX_CMD_OUT 1024
-#define MAX_CLIENTS 127
+#define MAX_CLIENTS 254
 #ifndef GIT_COMMIT_TAG
 #define GIT_COMMIT_TAG "????"
 #endif

@@ -13,7 +13,7 @@
 #include "config.h"
 
 #define SECRET_LENGTH 32
-#define REQUEST "%s?name=%s&port=%d&users=%d&max=%d&salt=%s&public=%s&web=true&software=%s&version=7"
+#define REQUEST "%s?name=%s&port=%u&users=%d&max=%u&salt=%s&public=%s&web=true&software=%s&version=7"
 
 static AListField *headHeartbeat = NULL;
 static Mutex *gLock = NULL;
@@ -110,8 +110,8 @@ INL static void MakeHeartbeatRequest(Heartbeat *self) {
 	String_Copy(name, 65, Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY));
 	TrimReserved(name);
 
-	cs_uint16 port = (cs_uint16)Config_GetInt16ByKey(Server_Config, CFG_SERVERPORT_KEY);
-	cs_byte max = (cs_byte)Config_GetInt8ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
+	cs_int32 port = (cs_int32)Config_GetInt32ByKey(Server_Config, CFG_SERVERPORT_KEY);
+	cs_int16 max = (cs_int16)Config_GetInt16ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
 	cs_byte count = Clients_GetCount(PLAYER_STATE_INGAME);
 
 	if(String_FormatBuf(reqstr, 512, REQUEST,
