@@ -379,6 +379,15 @@ cs_bool Client_TeleportTo(Client *client, Vec *pos, Ang *ang) {
 		Vanilla_WriteTeleport(client, pos, ang);
 		client->playerData->position = *pos;
 		client->playerData->angle = *ang;
+		if(Client_IsBot(client)) {
+			for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+				Client *other = Clients_List[i];
+				if(!other || Client_IsBot(other)) continue;
+				if(!Client_CheckState(other, PLAYER_STATE_INGAME)) continue;
+				if(!Client_IsInSameWorld(other, client)) continue;
+				Vanilla_WritePosAndOrient(other, client);
+			}
+		}
 		return true;
 	}
 	return false;
