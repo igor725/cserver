@@ -950,8 +950,12 @@ INL static void PacketReceiverWs(Client *client) {
 		}
 
 		goto wsrecvmark;
-	} else if(client->websock->error != WEBSOCK_ERROR_CONTINUE)
-		Client_KickFormat(client, WebSock_GetError(client->websock));
+	} else if(client->websock->error != WEBSOCK_ERROR_CONTINUE) {
+		if(client->websock->error == WEBSOCK_ERROR_SOCKET)
+			client->closed = true;
+		else
+			Client_KickFormat(client, WebSock_GetError(client->websock));
+	}
 }
 
 INL static void PacketReceiverRaw(Client *client) {
