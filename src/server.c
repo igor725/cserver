@@ -55,7 +55,7 @@ INL static ClientID TryToGetIDFor(Client *client) {
 	return possibleId;
 }
 
-INL static void ProcessClient(Client *client) {
+INL static cs_bool ProcessClient(Client *client) {
 	if(client->closed) {
 		if(client->state >= CLIENT_STATE_INGAME) {
 			for(int i = 0; i < MAX_CLIENTS; i++) {
@@ -68,7 +68,7 @@ INL static void ProcessClient(Client *client) {
 		Event_Call(EVT_ONDISCONNECT, client);
 		Clients_List[client->id] = NULL;
 		Client_Free(client);
-		return;
+		return false;
 	}
 
 	switch(client->state) {
@@ -79,7 +79,7 @@ INL static void ProcessClient(Client *client) {
 					client->websock = Memory_TryAlloc(1, sizeof(WebSock));
 					if(!client->websock) {
 						Client_Kick(client, Sstor_Get("KICK_INT"));
-						return;
+						return true;
 					}
 					client->websock->maxpaylen = CLIENT_RDBUF_SIZE;
 					client->websock->payload = client->rdbuf;
@@ -93,6 +93,8 @@ INL static void ProcessClient(Client *client) {
 			Client_Tick(client);
 			break;
 	}
+
+	return true;
 }
 
 THREAD_FUNC(NetThread) {
@@ -136,8 +138,7 @@ THREAD_FUNC(NetThread) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			Client *client = Clients_List[i];
 			if(!client) continue;
-			ProcessClient(client);
-
+			if(!ProcessClient(client)) continue;
 			if(client->kickReason) continue;
 			cs_uint64 currtime = Time_GetMSec(), timeout = 0;
 			switch(client->state) {
