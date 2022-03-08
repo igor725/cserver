@@ -948,6 +948,7 @@ INL static void PacketReceiverWs(Client *client) {
 
 			if(availpay >= pdata->psize) {
 				HandlePacket(client, data);
+				client->lastmsg = Time_GetMSec();
 				availpay -= pdata->psize;
 				data += pdata->psize;
 			}
@@ -988,6 +989,7 @@ INL static void PacketReceiverRaw(Client *client) {
 			pdata->precv += (cs_uint16)len;
 			if(pdata->psize == pdata->precv) {
 				HandlePacket(client, client->rdbuf);
+				client->lastmsg = Time_GetMSec();
 				pdata->packet = NULL;
 				pdata->psize = 0;
 				pdata->precv = 0;

@@ -111,8 +111,8 @@ THREAD_FUNC(NetThread) {
 			Client *tmp = Memory_TryAlloc(1, sizeof(Client));
 			if(tmp) {
 				tmp->sock = fd;
+				tmp->lastmsg = curr;
 				tmp->mutex = Mutex_Create();
-				tmp->lastmsg = Time_GetMSec();
 				tmp->addr = caddr.sin_addr.s_addr;
 				tmp->id = TryToGetIDFor(tmp);
 				if(tmp->id != CLIENT_SELF) {
@@ -137,6 +137,30 @@ THREAD_FUNC(NetThread) {
 			Client *client = Clients_List[i];
 			if(!client) continue;
 			ProcessClient(client);
+
+			if(client->kickReason) continue;
+			cs_uint64 currtime = Time_GetMSec(), timeout = 0;
+			switch(client->state) {
+				case CLIENT_STATE_INITIAL:
+					timeout = 800;
+					break;
+				case CLIENT_STATE_MOTD:
+					if(client->mapData.world)
+						timeout = (cs_uint64)-1;
+					else
+						timeout = 800;
+					break;
+				case CLIENT_STATE_INGAME:
+					timeout = 30000;
+					break;
+			}
+
+			if(currtime - client->lastmsg > timeout) {
+				client->kickReason = String_AllocCopy(Sstor_Get("KICK_TIMEOUT"));
+				Socket_Close(client->sock);
+				client->closed = true;
+			}
+
 			shutallowed = false;
 		}
 

@@ -94,6 +94,7 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("KICK_MANYCONN", "Too many connections from one IP");
 	Sstor_Set("KICK_REJ", "Server rejected your connection attempt");
 	Sstor_Set("KICK_FULL", "Server is full");
+	Sstor_Set("KICK_TIMEOUT", "Timed out");
 	Sstor_Set("KICK_PACKETSPAM", "Too many packets per second");
 	Sstor_Set("KICK_PERR_UNEXP", "Failed to handle packet 0x%02X");
 	Sstor_Set("KICK_PERR_NOHANDLER", "Unknown opcode 0x%02X");
