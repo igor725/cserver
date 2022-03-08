@@ -200,7 +200,8 @@ cs_bool Socket_Send(Socket sock, const cs_char *buf, cs_int32 len) {
 			if(len == 0) break;
 		} else if(sent < 0 && Socket_IsFatal()) {
 			return false;
-		}
+		} else if(sent == 0)
+			return false;
 	}
 	return true;
 }

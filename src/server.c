@@ -57,7 +57,14 @@ INL static ClientID TryToGetIDFor(Client *client) {
 
 INL static void ProcessClient(Client *client) {
 	if(client->closed) {
-		Client_Despawn(client);
+		if(Client_CheckState(client, CLIENT_STATE_INGAME)) {
+			for(int i = 0; i < MAX_CLIENTS; i++) {
+				Client *other = Clients_List[i];
+				if(other && other != client && Client_GetExtVer(other, EXT_PLAYERLIST) == 2)
+					CPE_WriteRemoveName(other, client);
+			}
+			Client_Despawn(client);
+		}
 		Event_Call(EVT_ONDISCONNECT, client);
 		Clients_List[client->id] = NULL;
 		Client_Free(client);

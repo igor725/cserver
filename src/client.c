@@ -923,6 +923,11 @@ cs_bool Client_FlushBuffer(Client *client) {
 INL static void PacketReceiverWs(Client *client) {
 	wsrecvmark:
 	if(WebSock_Tick(client->websock, client->sock)) {
+		if(client->websock->opcode == 0x08) {
+			client->closed = true;
+			return;
+		}
+
 		cs_char *data = client->websock->payload;
 		cs_uint16 availpay = client->websock->paylen;
 		PacketData *pdata = &client->packetData;
