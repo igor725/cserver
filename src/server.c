@@ -57,7 +57,7 @@ INL static ClientID TryToGetIDFor(Client *client) {
 
 INL static void ProcessClient(Client *client) {
 	if(client->closed) {
-		if(Client_CheckState(client, CLIENT_STATE_INGAME)) {
+		if(client->state >= CLIENT_STATE_INGAME) {
 			for(int i = 0; i < MAX_CLIENTS; i++) {
 				Client *other = Clients_List[i];
 				if(other && other != client && Client_GetExtVer(other, EXT_PLAYERLIST) == 2)

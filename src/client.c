@@ -642,6 +642,10 @@ cs_bool Client_SetSkin(Client *client, cs_str skin) {
 	return true;
 }
 
+EClientState Client_GetState(Client *client) {
+	return client->state;
+}
+
 GrowingBuffer *Client_GetBuffer(Client *client) {
 	return &client->gb;
 }
@@ -1040,7 +1044,7 @@ NOINL static cs_bool SendWorldTick(Client *client) {
 		}
 	}
 
-	if(md->sent < md->size) {
+	if(md->sent <= md->size) {
 		cs_uint64 markStart = Time_GetMSec();
 		cs_byte indata[10240] = {0}, data[1029] = {0x03};
 		cs_uint16 *len = (cs_uint16 *)(data + 1);

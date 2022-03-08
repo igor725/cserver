@@ -81,9 +81,6 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("CMD_NOCON", "This command can't be called from console");
 	Sstor_Set("CMD_NOPERM", "Access denied");
 
-	Sstor_Set("WS_NOTVALID", "Not a websocket connection");
-	Sstor_Set("WS_SHAERR", "SHA1_Init() returned false");
-
 	Sstor_Set("NONAME", "Unnamed");
 	Sstor_Set("CL_NOKEY", "Not received");
 	Sstor_Set("CL_VANILLA", "Vanilla client");
@@ -98,9 +95,6 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("KICK_REJ", "Server rejected your connection attempt");
 	Sstor_Set("KICK_FULL", "Server is full");
 	Sstor_Set("KICK_PACKETSPAM", "Too many packets per second");
-	Sstor_Set("KICK_PERR_HS", "Handshake waiting timeout");
-	Sstor_Set("KICK_PERR", "Packet reading error");
-	Sstor_Set("KICK_PERR_WS", "WebSocket frame body smaller than expected");
 	Sstor_Set("KICK_PERR_UNEXP", "Failed to handle packet 0x%02X");
 	Sstor_Set("KICK_PERR_NOHANDLER", "Unknown opcode 0x%02X");
 	Sstor_Set("KICK_UNKBID", "Block with ID %d is not registred for this world");

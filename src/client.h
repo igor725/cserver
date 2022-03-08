@@ -87,6 +87,7 @@ API cs_bool Client_SetGroup(Client *client, cs_int16 gid);
 API cs_bool Client_RegisterParticle(Client *client, CustomParticle *e);
 API cs_bool Client_SpawnParticle(Client *client, cs_byte id, Vec *pos, Vec *origin);
 
+API EClientState Client_GetState(Client *client);
 API GrowingBuffer *Client_GetBuffer(Client *client);
 API cs_str Client_GetName(Client *client);
 API cs_str Client_GetDisplayName(Client *client);
