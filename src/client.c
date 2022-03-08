@@ -1191,7 +1191,6 @@ void Client_Kick(Client *client, cs_str reason) {
 	if(!reason) reason = Sstor_Get("KICK_NOREASON");
 	Vanilla_WriteKick(client, reason);
 	client->kickReason = String_AllocCopy(reason);
-	client->state = CLIENT_STATE_KICK;
 }
 
 void Client_KickFormat(Client *client, cs_str fmtreason, ...) {

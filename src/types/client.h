@@ -27,8 +27,7 @@ typedef enum _EMesgType {
 typedef enum _EClientState {
 	CLIENT_STATE_INITIAL, // Игрок только подключился
 	CLIENT_STATE_MOTD, // Игрок получает карту
-	CLIENT_STATE_INGAME, // Игрок находится в игре
-	CLIENT_STATE_KICK // Игрок кикнут
+	CLIENT_STATE_INGAME // Игрок находится в игре
 } EClientState;
 
 typedef struct _PlayerData {

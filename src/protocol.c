@@ -291,20 +291,9 @@ void Vanilla_WriteDespawn(Client *client, Client *other) {
 void Vanilla_WriteChat(Client *client, EMesgType type, cs_str mesg) {
 	PacketWriter_Start(client, 66);
 
-	cs_char mesg_out[65];
-	String_Copy(mesg_out, 65, mesg);
-
-	if(Client_GetExtVer(client, EXT_CP437) != 1) {
-		for(cs_int32 i = 0; i < 65; i++) {
-			if(mesg_out[i] == '\0') break;
-			if(mesg_out[i] < ' ' || mesg_out[i] > '~')
-				mesg_out[i] = '?';
-		}
-	}
-
 	*data++ = 0x0D;
 	*data++ = (cs_byte)type;
-	Proto_WriteString(&data, mesg_out);
+	Proto_WriteString(&data, mesg);
 
 	PacketWriter_EndAnytime(client);
 }
@@ -523,19 +512,39 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 	};
 
 	if(Event_Call(EVT_ONMESSAGE, &params)) {
-		cs_char formatted[320];
-		String_FormatBuf(formatted, 320, "<%s&f>: %s", Client_GetDisplayName(client), params.message);
+		cs_char formatted[320] = {0}, formatted_san[320] = {0};
 
 		if(*params.message == '/') {
+			Log_Warn("%s executed command: %s", Client_GetDisplayName(client), params.message);
 			if(!Command_Handle(params.message, client))
 				Vanilla_WriteChat(client, params.type, Sstor_Get("CMD_UNK"));
-		} else
-			Client_Chat(Broadcast, params.type, formatted);
+		} else {
+			cs_int32 flen = String_FormatBuf(formatted, 320, "<%s&f>: %s", Client_GetDisplayName(client), params.message);
+			if(flen > 0) {
+				for(cs_int32 j = 0; j < flen; j++) {
+					formatted_san[j] = formatted[j] < ' ' || formatted[j] > '~' ? '?' : formatted[j];
+				}
 
-		Log_Chat(formatted);
+				for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+					Client *other = Clients_List[i];
+					if(!other) continue;
+					if(Client_GetExtVer(other, EXT_CP437) < 1)
+						Client_Chat(other, MESSAGE_TYPE_CHAT, formatted_san);
+					else
+						Client_Chat(other, MESSAGE_TYPE_CHAT, formatted);
+				}
+
+				Log_Chat(formatted_san);
+			}
+		}
 	}
 
-	if(messptr != message) *messptr = '\0';
+	/*
+	 * Нужно для очистки буфера частичных
+	 * сообщений дополнения LongerMessages
+	 */
+	if(messptr != message)
+		*messptr = '\0';
 
 	return true;
 }

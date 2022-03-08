@@ -92,13 +92,6 @@ INL static void ProcessClient(Client *client) {
 		case CLIENT_STATE_INGAME:
 			Client_Tick(client);
 			break;
-
-		case CLIENT_STATE_KICK:
-			Socket_Shutdown(client->sock, SD_SEND);
-			while(Socket_Receive(client->sock, client->rdbuf, 134, 0) > 0);
-			Socket_Close(client->sock);
-			client->closed = true;
-			break;
 	}
 }
 
