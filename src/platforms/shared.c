@@ -122,15 +122,6 @@ cs_bool Socket_Bind(Socket sock, struct sockaddr_in *addr) {
 	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(cs_int32){1}, 4) < 0) {
 		return false;
 	}
-	if(setsockopt(sock, IPPROTO_TCP, TCP_KEEPCNT, &(cs_int32){2}, 4) < 0) {
-		return false;
-	}
-	if(setsockopt(sock, IPPROTO_TCP, TCP_KEEPIDLE, &(cs_int32){5}, 4) < 0) {
-		return false;
-	}
-	if(setsockopt(sock, IPPROTO_TCP, TCP_KEEPINTVL, &(cs_int32){5}, 4) < 0) {
-		return false;
-	}
 #elif defined(CORE_USE_WINDOWS)
 	if(setsockopt(sock, SOL_SOCKET, SO_DONTLINGER, (void*)&(cs_int32){0}, 4) < 0) {
 		return false;
@@ -155,37 +146,63 @@ cs_bool Socket_Connect(Socket sock, struct sockaddr_in *addr) {
 
 Socket Socket_Accept(Socket sock, struct sockaddr_in *addr) {
 	socklen_t len = sizeof(struct sockaddr_in);
-	Socket fd = accept(sock, (struct sockaddr *)addr, &len);
-	setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void *)&(cs_int32){1}, 4);
-	return fd;
+	return accept(sock, (struct sockaddr *)addr, &len);
 }
 
 cs_int32 Socket_Receive(Socket sock, cs_char *buf, cs_int32 len, cs_int32 flags) {
 	return recv(sock, buf, len, MSG_NOSIGNAL | MSG_DONTWAIT | flags);
 }
 
-cs_int32 Socket_ReceiveLine(Socket sock, cs_char *line, cs_int32 len) {
-	cs_int32 start_len = len;
-	cs_char sym;
+cs_bool Socket_ReceiveLine(Socket sock, cs_char *line, cs_int32 blen, cs_int32 *recv) {
+	cs_int32 start_len = blen;
+	cs_char sym = 0;
 
-	while(len > 1) {
-		if(Socket_Receive(sock, &sym, 1, MSG_WAITALL) == 1) {
-			if(sym == '\n') {
-				*line++ = '\0';
-				break;
-			} else if(sym != '\r') {
-				*line++ = sym;
-				--len;
-			}
-		} else return 0;
+	if(*recv > 0) {
+		blen -= *recv;
+		if(blen < 1) {
+			*recv = -1;
+			return false;
+		} 
+		line += *recv;
 	}
 
-	*line = '\0';
-	return start_len - len;
+	while(blen > 1) {
+		if(Socket_Receive(sock, &sym, 1, 0) == 1) {
+			if(sym == '\n') {
+				*recv = start_len - blen;
+				*line = '\0';
+				return true;
+			} else if(sym != '\r') {
+				*line++ = sym;
+				blen -= 1;
+			}
+		} else {
+			if(Socket_IsFatal()) {
+				*recv = -1;
+				return false;
+			}
+
+			break;
+		}
+	}
+
+	*recv = start_len - blen;
+	return false;
 }
 
-cs_int32 Socket_Send(Socket sock, const cs_char *buf, cs_int32 len) {
-	return send(sock, buf, len, MSG_NOSIGNAL);
+cs_bool Socket_Send(Socket sock, const cs_char *buf, cs_int32 len) {
+	cs_uint32 offset = 0;
+	while(true) {
+		cs_int32 sent = send(sock, buf + offset, len, MSG_NOSIGNAL);
+		if(sent > 0) {
+			len -= sent;
+			offset += sent;
+			if(len == 0) break;
+		} else if(sent < 0 && Socket_IsFatal()) {
+			return false;
+		}
+	}
+	return true;
 }
 
 cs_bool Socket_Shutdown(Socket sock, cs_int32 how) {

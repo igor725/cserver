@@ -112,7 +112,7 @@ INL static void MakeHeartbeatRequest(Heartbeat *self) {
 
 	cs_int32 port = (cs_int32)Config_GetInt32ByKey(Server_Config, CFG_SERVERPORT_KEY);
 	cs_int16 max = (cs_int16)Config_GetInt16ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
-	cs_byte count = Clients_GetCount(PLAYER_STATE_INGAME);
+	cs_byte count = Clients_GetCount(CLIENT_STATE_INGAME);
 
 	if(String_FormatBuf(reqstr, 512, REQUEST,
 		self->reqpath, name, port, count,

@@ -24,56 +24,7 @@ cs_str Server_Version = GIT_COMMIT_TAG;
 cs_bool Server_Active = false, Server_Ready = false;
 cs_uint64 Server_StartTime = 0;
 Socket Server_Socket = 0;
-Waitable *SyncClients = NULL;
-
-THREAD_FUNC(ClientInitThread) {
-	Client *client = (Client *)param;
-	Waitable_Reset(client->waitend);
-	Socket_SetRecvTimeout(client->sock, 500);
-
-	cs_byte attempt = 0;
-	while(attempt < 10) {
-		if(Socket_Receive(client->sock, client->rdbuf, 5, MSG_PEEK) == 5) {
-			if(String_CaselessCompare2(client->rdbuf, "GET /", 5)) {
-				WebSock *wscl = Memory_Alloc(1, sizeof(WebSock));
-				wscl->proto = "ClassiCube";
-				wscl->recvbuf = client->rdbuf;
-				wscl->sock = client->sock;
-				client->websock = wscl;
-				if(WebSock_DoHandshake(wscl))
-					break;
-				else attempt = 10;
-			} else break;
-		}
-		Thread_Sleep(100);
-		attempt++;
-	}
-
-	if(attempt < 10) {
-		Socket_SetRecvTimeout(client->sock, 30000);
-
-		while(1) {
-			Waitable_Wait(SyncClients);
-			if(!client->closed)
-				Client_Tick(client);
-			else break;
-		}
-
-		if(Client_CheckState(client, PLAYER_STATE_INGAME)) {
-			for(int i = 0; i < MAX_CLIENTS; i++) {
-				Client *other = Clients_List[i];
-				if(other && other != client && Client_GetExtVer(other, EXT_PLAYERLIST) == 2)
-					CPE_WriteRemoveName(other, client);
-			}
-			Client_Despawn(client);
-		}
-	} else
-		Client_Kick(client, Sstor_Get("KICK_PERR_HS"));
-
-	Event_Call(EVT_ONDISCONNECT, client);
-	Waitable_Signal(client->waitend);
-	return 0;
-}
+static Thread NetThreadHandle = (Thread)NULL;
 
 INL static ClientID TryToGetIDFor(Client *client) {
 	cs_int16 maxPlayers = (cs_byte)Config_GetInt16ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
@@ -104,43 +55,99 @@ INL static ClientID TryToGetIDFor(Client *client) {
 	return possibleId;
 }
 
-THREAD_FUNC(SockAcceptThread) {
+INL static void ProcessClient(Client *client) {
+	if(client->closed) {
+		Client_Despawn(client);
+		Event_Call(EVT_ONDISCONNECT, client);
+		Clients_List[client->id] = NULL;
+		Client_Free(client);
+		return;
+	}
+
+	switch(client->state) {
+		case CLIENT_STATE_INITIAL:
+			if(Socket_Receive(client->sock, client->rdbuf, 5, MSG_PEEK) == 5) {
+				client->state = CLIENT_STATE_MOTD;
+				if(String_CaselessCompare2(client->rdbuf, "GET /", 5)) {
+					client->websock = Memory_TryAlloc(1, sizeof(WebSock));
+					if(!client->websock) {
+						Client_Kick(client, Sstor_Get("KICK_INT"));
+						return;
+					}
+					client->websock->maxpaylen = CLIENT_RDBUF_SIZE;
+					client->websock->payload = client->rdbuf;
+					client->websock->proto = "ClassiCube";
+				}
+			}
+			break;
+
+		case CLIENT_STATE_MOTD:
+		case CLIENT_STATE_INGAME:
+			Client_Tick(client);
+			break;
+
+		case CLIENT_STATE_KICK:
+			Socket_Shutdown(client->sock, SD_SEND);
+			while(Socket_Receive(client->sock, client->rdbuf, 134, 0) > 0);
+			Socket_Close(client->sock);
+			client->closed = true;
+			break;
+	}
+}
+
+THREAD_FUNC(NetThread) {
 	(void)param;
 	struct sockaddr_in caddr;
+	cs_uint64 last = 0, curr = 0;
 
-	while(Server_Active) {
-		Waitable_Wait(SyncClients);
+	while(true) {
 		Socket fd = Socket_Accept(Server_Socket, &caddr);
-		if(fd == INVALID_SOCKET) break;
-		if(!Server_Active) {
-			Socket_Close(fd);
-			break;
-		}
+		if(fd != INVALID_SOCKET) {
+			if(!Server_Active) {
+				Socket_Close(fd);
+				continue;
+			}
 
-		Client *tmp = Memory_TryAlloc(1, sizeof(Client));
-		if(tmp) {
-			tmp->sock = fd;
-			tmp->mutex = Mutex_Create();
-			tmp->waitend = Waitable_Create();
-			tmp->addr = caddr.sin_addr.s_addr;
-			tmp->id = TryToGetIDFor(tmp);
-			Waitable_Signal(tmp->waitend);
-			if(tmp->id != CLIENT_SELF) {
-				if(Event_Call(EVT_ONCONNECT, tmp)) {
-					Clients_List[tmp->id] = tmp;
-					Thread_Create(ClientInitThread, tmp, true);
-					continue;
+			Client *tmp = Memory_TryAlloc(1, sizeof(Client));
+			if(tmp) {
+				tmp->sock = fd;
+				tmp->mutex = Mutex_Create();
+				tmp->lastmsg = Time_GetMSec();
+				tmp->addr = caddr.sin_addr.s_addr;
+				tmp->id = TryToGetIDFor(tmp);
+				if(tmp->id != CLIENT_SELF) {
+					if(Event_Call(EVT_ONCONNECT, tmp)) {
+						Clients_List[tmp->id] = tmp;
+						continue;
+					} else
+						Client_Kick(tmp, Sstor_Get("KICK_REJ"));
 				} else
-					Client_Kick(tmp, Sstor_Get("KICK_REJ"));
-			} else
-				Client_Kick(tmp, Sstor_Get("KICK_FULL"));
+					Client_Kick(tmp, Sstor_Get("KICK_FULL"));
 
-			Socket_Shutdown(fd, SD_SEND);
-			while(Socket_Receive(fd, tmp->rdbuf, 134, 0) > 0);
-			Client_Free(tmp);
+				Socket_Shutdown(fd, SD_SEND);
+				while(Socket_Receive(fd, tmp->rdbuf, 134, 0) > 0);
+				Client_Free(tmp);
+			}
+
+			Socket_Close(fd);
 		}
 
-		Socket_Close(fd);
+		cs_bool shutallowed = true;
+		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+			Client *client = Clients_List[i];
+			if(!client) continue;
+			ProcessClient(client);
+			shutallowed = false;
+		}
+
+		if(!Server_Active && shutallowed) break;
+		last = curr;
+		curr = Time_GetMSec();
+		if(last > 0) {
+			cs_uint64 diff = curr - last;
+			if(diff <= 16)
+				Thread_Sleep(16 - (cs_uint32)diff);
+		}
 	}
 
 	if(Server_Active) {
@@ -159,6 +166,7 @@ INL static cs_bool Bind(cs_str ip, cs_uint16 port) {
 
 	struct sockaddr_in ssa;
 	return Socket_SetAddr(&ssa, ip, port) > 0 &&
+	Socket_SetNonBlocking(Server_Socket, true) &&
 	Socket_Bind(Server_Socket, &ssa);
 }
 
@@ -240,7 +248,6 @@ cs_bool Server_Init(void) {
 	Log_SetLevelStr(Config_GetStrByKey(cfg, CFG_LOGLEVEL_KEY));
 	Config_Save(Server_Config, true);
 
-	SyncClients = Waitable_Create();
 	Broadcast = Memory_Alloc(1, sizeof(Client));
 	Broadcast->mutex = Mutex_Create();
 	Broadcast->id = CLIENT_SELF;
@@ -378,7 +385,7 @@ cs_bool Server_Init(void) {
 		Event_Call(EVT_POSTSTART, NULL);
 		if(ConsoleIO_Init())
 			Log_Info(Sstor_Get("SV_STOPNOTE"));
-		Thread_Create(SockAcceptThread, NULL, true);
+		NetThreadHandle = Thread_Create(NetThread, NULL, false);
 		Server_Ready = true;
 		return true;
 	}
@@ -388,18 +395,8 @@ cs_bool Server_Init(void) {
 }
 
 INL static void DoStep(cs_int32 delta) {
-	Waitable_Reset(SyncClients);
 	Event_Call(EVT_ONTICK, &delta);
 	Timer_Update(delta);
-	Waitable_Signal(SyncClients);
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client *client = Clients_List[i];
-		if(client && client->closed) {
-			Clients_List[client->id] = NULL;
-			Waitable_Wait(client->waitend);
-			Client_Free(client);
-		}
-	}
 }
 
 void Server_StartLoop(void) {
@@ -422,13 +419,7 @@ void Server_StartLoop(void) {
 		Thread_Sleep(1000 / TICKS_PER_SECOND);
 	}
 
-	Waitable_Reset(SyncClients);
 	Event_Call(EVT_ONSTOP, NULL);
-}
-
-INL static void WaitAllClientThreads(void) {
-	for(ClientID i = 0; i < MAX_CLIENTS; i++)
-		while(Clients_List[i]) DoStep(0);
 }
 
 INL static void UnloadAllWorlds(void) {
@@ -481,7 +472,7 @@ void Server_Cleanup(void) {
 	ConsoleIO_Uninit();
 	Log_Info(Sstor_Get("SV_STOP_PL"));
 	KickAll(Sstor_Get("KICK_STOP"));
-	WaitAllClientThreads();
+	Thread_Join(NetThreadHandle);
 	if(Broadcast && Broadcast->mutex) Mutex_Free(Broadcast->mutex);
 	if(Broadcast) Memory_Free(Broadcast);
 	Log_Info(Sstor_Get("SV_STOP_SW"));

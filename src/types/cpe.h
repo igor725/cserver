@@ -53,6 +53,12 @@ typedef enum _EWeather {
 	WORLD_WEATHER_SNOW
 } EWeather;
 
+typedef enum _EEntProp {
+	ROT_X = 0, // Вращение модели по оси X
+	ROT_Y,
+	ROT_Z
+} EEntProp;
+
 typedef enum _ESelectionParam {
 	SELECTION_PARAM_START,
 	SELECTION_PARAM_END,

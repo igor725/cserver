@@ -6,7 +6,6 @@ The goal of this project: create a stable, customizable and future-rich multipla
 ## Features
 * Classic Protocol Extension;
 * Multiplatform (Windows/Linux);
-* Multithreaded clients processing;
 * Plugins support;
 * Web client support ([More info](https://www.classicube.net/api/docs/server));
 * RCON server (Implemented in [base plugin](https://github.com/igor725/cs-base));

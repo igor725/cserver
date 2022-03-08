@@ -47,12 +47,23 @@ cs_bool Socket_Init(void) {
 	return WSAStartup(MAKEWORD(2, 2), &ws) != SOCKET_ERROR;
 }
 
+cs_bool Socket_IsFatal(void) {
+	switch(Socket_GetError()) {
+		case WSAEWOULDBLOCK:
+		case EAGAIN:
+			return false;
+		
+		default:
+			return true;
+	}
+}
+
 cs_error Socket_GetError(void) {
 	return WSAGetLastError();
 }
 
-cs_bool Socket_SetRecvTimeout(Socket n, cs_ulong msec) {
-	return setsockopt(n, SOL_SOCKET, SO_RCVTIMEO, (const char *)&msec, sizeof(msec)) != SOCKET_ERROR;
+cs_bool Socket_SetNonBlocking(Socket n, cs_bool state) {
+	return ioctlsocket(n, FIONBIO, &(cs_ulong){state}) == 0;
 }
 
 void Socket_Close(Socket n) {

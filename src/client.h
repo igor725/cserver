@@ -33,7 +33,7 @@ API void Cuboid_SetColor(CPECuboid *cub, Color4 color);
 API cs_uint32 Cuboid_GetSize(CPECuboid *cub);
 API void Cuboid_GetPositions(CPECuboid *cub, SVec *start, SVec *end);
 
-API cs_byte Clients_GetCount(EPlayerState state);
+API cs_byte Clients_GetCount(EClientState state);
 
 API Client *Client_NewBot(void);
 API cs_bool Client_IsBot(Client *bot);
@@ -53,7 +53,7 @@ API cs_bool Client_UpdateSelection(Client *client, CPECuboid *cub);
 API cs_bool Client_RemoveSelection(Client *client, CPECuboid *cub);
 API cs_bool Client_TeleportTo(Client *client, Vec *pos, Ang *ang);
 API cs_bool Client_TeleportToSpawn(Client *client);
-API cs_bool Client_CheckState(Client *client, EPlayerState state);
+API cs_bool Client_CheckState(Client *client, EClientState state);
 
 API cs_bool Client_IsClosed(Client *client);
 API cs_bool Client_IsLocal(Client *client);

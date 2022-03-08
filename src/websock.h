@@ -4,39 +4,31 @@
 #include "types/websock.h"
 
 /**
- * @brief Пытается выполнить стандартное рукопожатие
- * вебсокета с указанным в структуре сокетом.
- * 
- * @param ws указатель на структуру вебсокета
- * @return true - рукопожатие завершилось успешно,
- * false - клиент что-то сделал не так (или сервер???)
- */
-API cs_bool WebSock_DoHandshake(WebSock *ws);
-
-/**
- * @brief Читает из сокета фрейм вебсокета.
+ * @brief Эдакий комбайн, выполняет хендшейк и чтение из
+ * сокета фреймов. Рассчитан на работу с нонблок сокетами.
  * Внимание: Может вернуть false даже если сокет в порядке!
  * В случае ошибки всегда проверяйте WebSock_GetErrorCode(),
- * если там значение WS_ERROR_CONTINUE, то это значит, что
- * нужен ещё один вызов, чтобы получить фрейм полностью.
+ * если там значение WEBSOCK_ERROR_CONTINUE, то это значит,
+ * что нужен ещё один вызов, чтобы получить фрейм полностью.
  * 
  * @param ws указатель на структуру вебсокета
+ * @param sock сокет, из которого читаем данные
  * @return true - фрейм полностью прочитан,
  * false - что-то не так
  */
-API cs_bool WebSock_ReceiveFrame(WebSock *ws);
+API cs_bool WebSock_Tick(WebSock *ws, Socket sock);
 
 /**
  * @brief Отправляет фрейм клиенту.
  * 
- * @param ws указатель на структуру вебсокета
+ * @param sock сокет, в который нужно послать фрейм
  * @param opcode опкод фрейма
  * @param buf данные, которые будут записаны в фрейм
  * @param len длинна данных
  * @return true - фрейм отправлен успешно,
  * false - похоже, что соединение разорвано.
  */
-API cs_bool WebSock_SendFrame(WebSock *ws, cs_byte opcode, const cs_char *buf, cs_uint16 len);
+API cs_bool WebSock_SendFrame(Socket sock, cs_byte opcode, const cs_char *buf, cs_uint16 len);
 
 /**
  * @brief Возвращает код последней произошедшей ошибки.

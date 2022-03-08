@@ -41,6 +41,8 @@
 #define EXT_CUSTOMMODEL 0xB27EFA32ul
 #define EXT_PLUGINMESSAGE 0x59FA7285ul
 
+typedef cs_bool(*packetHandler)(Client *, cs_char *);
+
 API Packet *Packet_Get(cs_byte id);
 API void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler);
 API void Packet_SetCPEHandler(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler);

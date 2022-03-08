@@ -16,8 +16,7 @@
 #include "config.h"
 
 #define ValidateClientState(client, st, ret) \
-if(!Client_CheckState(client, st)) \
-	return ret;
+if(!Client_CheckState(client, st)) return ret;
 
 #define ValidateCpeClient(client, ret) \
 if(!client->cpeData) return ret;
@@ -41,7 +40,7 @@ Mutex_Unlock(cl->mutex); \
 cs_uint32 written = GrowingBuffer_GetDiff(&cl->gb, data); \
 if(written > 0) { \
 	GrowingBuffer_Commit(&cl->gb, written); \
-	if(Client_CheckState(cl, PLAYER_STATE_INGAME)) { \
+	if(Client_CheckState(cl, CLIENT_STATE_INGAME)) { \
 		Client_FlushBuffer(cl); \
 	} \
 } \
@@ -410,7 +409,7 @@ INL static void UpdateBlock(World *world, SVec *pos, BlockID block) {
 }
 
 cs_bool Handler_SetBlock(Client *client, cs_char *data) {
-	ValidateClientState(client, PLAYER_STATE_INGAME, false)
+	ValidateClientState(client, CLIENT_STATE_INGAME, false)
 
 	World *world = Client_GetWorld(client);
 	if(!world || !World_IsReadyToPlay(world)) return false;
@@ -472,7 +471,7 @@ INL static cs_bool ReadClientPos(Client *client, cs_char *data) {
 }
 
 cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
-	ValidateClientState(client, PLAYER_STATE_INGAME, true)
+	ValidateClientState(client, CLIENT_STATE_INGAME, true)
 
 	BlockID cb = *data++;
 	if(Client_GetExtVer(client, EXT_HELDBLOCK) == 1) {
@@ -490,7 +489,7 @@ cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
 	if(ReadClientPos(client, data)) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			Client *other = Clients_List[i];
-			if(other && client != other && Client_CheckState(other, PLAYER_STATE_INGAME) && Client_IsInSameWorld(client, other))
+			if(other && client != other && Client_CheckState(other, CLIENT_STATE_INGAME) && Client_IsInSameWorld(client, other))
 				Vanilla_WritePosAndOrient(other, client);
 		}
 	}
@@ -498,7 +497,7 @@ cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
 }
 
 cs_bool Handler_Message(Client *client, cs_char *data) {
-	ValidateClientState(client, PLAYER_STATE_INGAME, true)
+	ValidateClientState(client, CLIENT_STATE_INGAME, true)
 
 	cs_char message[65],
 	*messptr = message;
@@ -1012,7 +1011,7 @@ void CPE_WritePluginMessage(Client *client, cs_byte channel, cs_str message) {
 
 cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
-	ValidateClientState(client, PLAYER_STATE_INITIAL, false)
+	ValidateClientState(client, CLIENT_STATE_MOTD, false)
 
 	if(!Proto_ReadStringNoAlloc(&data, client->cpeData->appName)) {
 		String_Copy(client->cpeData->appName, 65, "(unknown)");
@@ -1024,7 +1023,7 @@ cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
 
 cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
-	ValidateClientState(client, PLAYER_STATE_INITIAL, false)
+	ValidateClientState(client, CLIENT_STATE_MOTD, false)
 
 	CPEExt *tmp = Memory_Alloc(1, sizeof(struct _CPEExt));
 	if(!Proto_ReadString(&data, &tmp->name)) {
@@ -1055,7 +1054,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 
 cs_bool CPEHandler_SetCBVer(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false)
-	ValidateClientState(client, PLAYER_STATE_INITIAL, false)
+	ValidateClientState(client, CLIENT_STATE_MOTD, false)
 	if(Client_GetExtVer(client, EXT_CUSTOMBLOCKS) < 1) return false;
 	client->cpeData->cbLevel = *data;
 	return FinishHandshake(client);
@@ -1063,7 +1062,7 @@ cs_bool CPEHandler_SetCBVer(Client *client, cs_char *data) {
 
 cs_bool CPEHandler_PlayerClick(Client *client, cs_char *data) {
 	if(Client_GetExtVer(client, EXT_PLAYERCLICK) < 1) return false;
-	ValidateClientState(client, PLAYER_STATE_INGAME, false)
+	ValidateClientState(client, CLIENT_STATE_INGAME, false)
 
 	onPlayerClick params;
 	params.client = client;
@@ -1080,7 +1079,7 @@ cs_bool CPEHandler_PlayerClick(Client *client, cs_char *data) {
 }
 
 cs_bool CPEHandler_TwoWayPing(Client *client, cs_char *data) {
-	if(!Client_CheckState(client, PLAYER_STATE_INGAME)) return true;
+	if(!Client_CheckState(client, CLIENT_STATE_INGAME)) return true;
 	if(Client_GetExtVer(client, EXT_TWOWAYPING) < 1) return false;
 
 	cs_byte pingDirection = *data++;
@@ -1130,7 +1129,7 @@ void Packet_Register(cs_byte id, cs_uint16 size, packetHandler handler) {
 	Packet *tmp = (Packet *)Memory_Alloc(1, sizeof(Packet));
 	tmp->id = id;
 	tmp->size = size;
-	tmp->handler = handler;
+	tmp->handler = (void *)handler;
 	packetsList[id] = tmp;
 }
 
@@ -1138,7 +1137,7 @@ void Packet_SetCPEHandler(cs_byte id, cs_uint32 hash, cs_int32 ver, cs_uint16 si
 	Packet *tmp = packetsList[id];
 	tmp->exthash = hash;
 	tmp->extVersion = ver;
-	tmp->extHandler = handler;
+	tmp->extHandler = (void *)handler;
 	tmp->extSize = size;
 	tmp->haveCPEImp = true;
 }

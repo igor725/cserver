@@ -49,15 +49,21 @@ cs_bool Socket_Init(void) {
 	return true;
 }
 
+cs_bool Socket_IsFatal(void) {
+	return Socket_GetError() != EAGAIN;
+}
+
 cs_error Socket_GetError(void) {
-	return Thread_GetError();
 	return Thread_GetError();
 }
 
-cs_bool Socket_SetRecvTimeout(Socket n, cs_ulong msec) {
-	struct timeval tv;
-	tv.tv_usec = msec * 1000;
-	return setsockopt(n, SOL_SOCKET, SO_RCVTIMEO, (const char *)&tv, sizeof(tv)) != 0;
+cs_bool Socket_SetNonBlocking(Socket n, cs_bool state) {
+	cs_ulong flags = fcntl(n, F_GETFL, 0);
+	if(state)
+		flags |= O_NONBLOCK;
+	else
+		flags &= ~O_NONBLOCK;
+	return fcntl(n, F_SETFL, flags) == 0;
 }
 
 void Socket_Close(Socket n) {

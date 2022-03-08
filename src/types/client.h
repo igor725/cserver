@@ -8,8 +8,10 @@
 #include "types/compr.h"
 #include "types/websock.h"
 #include "types/growingbuffer.h"
+#include "types/protocol.h"
 
 #define CLIENT_SELF (ClientID)-1
+#define CLIENT_RDBUF_SIZE 134
 
 typedef enum _EMesgType {
 	MESSAGE_TYPE_CHAT, // Сообщение в чате
@@ -22,42 +24,56 @@ typedef enum _EMesgType {
 	MESSAGE_TYPE_ANNOUNCE = 100 // Сообщение в середине экрана
 } EMesgType;
 
-typedef enum _EPlayerState {
-	PLAYER_STATE_INITIAL, // Игрок только подключился
-	PLAYER_STATE_MOTD, // Игрок получает карту
-	PLAYER_STATE_INGAME // Игрок находится в игре
-} EPlayerState;
+typedef enum _EClientState {
+	CLIENT_STATE_INITIAL, // Игрок только подключился
+	CLIENT_STATE_MOTD, // Игрок получает карту
+	CLIENT_STATE_INGAME, // Игрок находится в игре
+	CLIENT_STATE_KICK // Игрок кикнут
+} EClientState;
 
 typedef struct _PlayerData {
 	cs_char key[65]; // Ключ, полученный от игрока
 	cs_char name[65]; // Имя игрока
 	cs_char displayname[65]; // Отображаемое имя игрока
-	World *world, *reqWorldChange; // Мир, в котором игрок обитает
+	World *world; // Мир, в котором игрок обитает
 	Vec position; // Позиция игрока
 	Ang angle; // Угол вращения игрока
-	EPlayerState state; // Текущее состояние игрока
 	cs_bool isOP; // Является ли игрок оператором
 	cs_bool spawned; // Заспавнен ли игрок
 	cs_bool firstSpawn; // Был лы этот спавн первым с момента захода на сервер
 } PlayerData;
 
+typedef struct _PacketData {
+	Packet *packet;
+	cs_uint16 psize, precv;
+	cs_bool isExtended;
+} PacketData;
+
+typedef struct _MapData {
+	Compr compr; // Штука для сжатия карты
+	World *world; // Передаваемая карта
+	BlockID *cbptr; // Указатель на место, с которого отправляем карту
+	cs_uint32 size; // Размер карты в байтах
+	cs_uint32 sent; // Количество отправленных байт
+	cs_bool fback; // Нужно ли заменять кастомные блоки
+} MapData;
+
 typedef struct _Client {
 	cs_str kickReason; // Причина кика, если имеется
-	Waitable *waitend; // Ожидание завершения потока клиента
+	cs_uint64 lastmsg; // Временная метка последнего полученного от клиента сообщения
 	cs_bool closed; // В случае значения true сервер прекращает общение с клиентом
-	cs_bool noflush; // Приостанавливает отправку пакетов клиенту, что приводит к заполнению буфера
+	EClientState state; // Текущее состояние игрока
 	Socket sock; // Файловый дескриптор сокета клиента
 	ClientID id; // Используется в качестве entityid
-	cs_ulong pps; // Количество пакетов, отправленных игроком за секунду
-	cs_ulong ppstm; // Таймер для счётчика пакетов
 	cs_ulong addr; // ipv4 адрес клиента
-	Compr compr; // Штука для сжатия карты
+	PacketData packetData; // Стейт получения пакета от клиента
+	MapData mapData; // Стейт отправки карты клиенту
 	CPEData *cpeData; // В случае vanilla клиента эта структура не создаётся
 	PlayerData *playerData; // Создаётся при получении hanshake пакета
 	KListField *headNode; // Последняя созданная ассоциативная нода у клиента
 	WebSock *websock; // Создаётся, если клиент был определён как браузерный
 	Mutex *mutex; // Мьютекс записи, на время отправки пакета клиенту он лочится
-	cs_char rdbuf[134]; // Буфер для получения пакетов от клиента
+	cs_char rdbuf[CLIENT_RDBUF_SIZE]; // Буфер для получения пакетов от клиента
 	GrowingBuffer gb; // Буфер отправки пакетов клиенту
 } Client;
 #endif
