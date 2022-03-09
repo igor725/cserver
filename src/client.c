@@ -195,7 +195,25 @@ BlockID Client_GetStandBlock(Client *client) {
 	if(tpos.x < 0 || tpos.y < 0 || tpos.z < 0) return 0;
 	tpos.y -= 2;
 
-	return World_GetBlock(client->playerData->world, &tpos);
+	BlockID id;
+	for(cs_int16 x = -1; x < 2; x++) {
+		for(cs_int16 z = -1; z < 2; z++) {
+			SVec btest = tpos;
+			btest.x += x; btest.z += z;
+			id = World_GetBlock(client->playerData->world, &btest);
+			if(id != BLOCK_AIR) {
+				if(x != 0 || z != 0) {
+					btest.y -= 1;
+					if(World_GetBlock(client->playerData->world, &btest))
+						continue;
+				}
+
+				return id;
+			}
+		}
+	}
+
+	return BLOCK_AIR;
 }
 
 cs_int8 Client_GetFluidLevel(Client *client, BlockID *fluid) {
