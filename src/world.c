@@ -186,8 +186,10 @@ cs_byte World_CountPlayers(World *world) {
 	cs_byte count = 0;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
-		if(client && Client_IsInWorld(client, world))
-			count++;
+		if(!client) continue;
+		if(!Client_IsInWorld(client, world)) continue;
+		if(Client_IsBot(client)) continue;
+		count++;
 	}
 	return count;
 }
