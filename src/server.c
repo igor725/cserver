@@ -71,6 +71,7 @@ INL static cs_bool ProcessClient(Client *client) {
 		return false;
 	}
 
+	if(Client_IsBot(client)) return true;
 	switch(client->state) {
 		case CLIENT_STATE_INITIAL:
 			if(Socket_Receive(client->sock, client->rdbuf, 5, MSG_PEEK) == 5) {
@@ -139,6 +140,7 @@ THREAD_FUNC(NetThread) {
 			Client *client = Clients_List[i];
 			if(!client) continue;
 			if(!ProcessClient(client)) continue;
+			if(Client_IsBot(client)) continue;
 			if(client->kickReason) continue;
 			cs_uint64 currtime = Time_GetMSec(), timeout = 0;
 			switch(client->state) {
