@@ -111,6 +111,7 @@ THREAD_FUNC(NetThread) {
 				continue;
 			}
 
+			Socket_SetNonBlocking(fd, true);
 			Client *tmp = Memory_TryAlloc(1, sizeof(Client));
 			if(tmp) {
 				tmp->sock = fd;
