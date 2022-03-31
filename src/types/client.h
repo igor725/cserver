@@ -7,11 +7,10 @@
 #include "types/world.h"
 #include "types/compr.h"
 #include "types/websock.h"
-#include "types/growingbuffer.h"
+#include "types/netbuffer.h"
 #include "types/protocol.h"
 
 #define CLIENT_SELF (ClientID)-1
-#define CLIENT_RDBUF_SIZE 134
 
 typedef enum _EMesgType {
 	MESSAGE_TYPE_CHAT, // Сообщение в чате
@@ -44,7 +43,7 @@ typedef struct _PlayerData {
 
 typedef struct _PacketData {
 	Packet *packet;
-	cs_uint16 psize, precv;
+	cs_uint16 psize;
 	cs_bool isExtended;
 } PacketData;
 
@@ -55,16 +54,16 @@ typedef struct _MapData {
 	cs_uint32 size; // Размер карты в байтах
 	cs_uint32 sent; // Количество отправленных байт
 	cs_bool fback; // Нужно ли заменять кастомные блоки
+	cs_bool fastmap; // Есть ли дополнение FastMap
 } MapData;
 
 typedef struct _Client {
+	ClientID id; // Используется в качестве entityid
+	EClientState state; // Текущее состояние игрока
 	cs_str kickReason; // Причина кика, если имеется
 	cs_uint64 lastmsg; // Временная метка последнего полученного от клиента сообщения
-	cs_bool closed; // В случае значения true сервер прекращает общение с клиентом
-	EClientState state; // Текущее состояние игрока
-	Socket sock; // Файловый дескриптор сокета клиента
-	ClientID id; // Используется в качестве entityid
 	cs_ulong addr; // ipv4 адрес клиента
+	NetBuffer netbuf; // Прикол для обмена данными
 	PacketData packetData; // Стейт получения пакета от клиента
 	MapData mapData; // Стейт отправки карты клиенту
 	CPEData *cpeData; // В случае vanilla клиента эта структура не создаётся
@@ -72,7 +71,5 @@ typedef struct _Client {
 	KListField *headNode; // Последняя созданная ассоциативная нода у клиента
 	WebSock *websock; // Создаётся, если клиент был определён как браузерный
 	Mutex *mutex; // Мьютекс записи, на время отправки пакета клиенту он лочится
-	cs_char rdbuf[CLIENT_RDBUF_SIZE]; // Буфер для получения пакетов от клиента
-	GrowingBuffer gb; // Буфер отправки пакетов клиенту
 } Client;
 #endif

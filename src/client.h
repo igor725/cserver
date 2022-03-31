@@ -6,7 +6,6 @@
 #include "types/world.h"
 #include "types/websock.h"
 #include "types/compr.h"
-#include "types/growingbuffer.h"
 #include "types/block.h"
 #include "types/cpe.h"
 #include "types/client.h"
@@ -14,11 +13,6 @@
 
 void Client_Tick(Client *client);
 void Client_Free(Client *client);
-
-NOINL cs_bool Client_RawSend(Client *client, cs_char *buf, cs_int32 len);
-API void Client_SetNoFlush(Client *client, cs_bool state);
-NOINL cs_bool Client_SendAnytimeData(Client *client, cs_int32 size);
-NOINL cs_bool Client_FlushBuffer(Client *client);
 
 API void Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
 NOINL cs_bool Client_DefineBlock(Client *client, BlockID id, BlockDef *block);
@@ -36,7 +30,7 @@ API void Cuboid_GetPositions(CPECuboid *cub, SVec *start, SVec *end);
 API cs_byte Clients_GetCount(EClientState state);
 
 API Client *Client_NewBot(void);
-API cs_bool Client_IsBot(Client *bot);
+API cs_bool Client_IsBot(Client *client);
 
 API void Client_Lock(Client *client);
 API void Client_Unlock(Client *client);
@@ -88,7 +82,6 @@ API cs_bool Client_RegisterParticle(Client *client, CustomParticle *e);
 API cs_bool Client_SpawnParticle(Client *client, cs_byte id, Vec *pos, Vec *origin);
 
 API EClientState Client_GetState(Client *client);
-API GrowingBuffer *Client_GetBuffer(Client *client);
 API cs_str Client_GetName(Client *client);
 API cs_str Client_GetDisplayName(Client *client);
 API cs_str Client_GetAppName(Client *client);

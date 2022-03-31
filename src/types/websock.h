@@ -27,6 +27,7 @@ typedef enum _EWebSockState {
 typedef enum _EWebSockErrors {
 	WEBSOCK_ERROR_SUCC,
 	WEBSOCK_ERROR_SOCKET,
+	WEBSOCK_ERROR_STRLEN,
 	WEBSOCK_ERROR_CONTINUE,
 	WEBSOCK_ERROR_HTTPVER,
 	WEBSOCK_ERROR_INVKEY,
@@ -42,7 +43,6 @@ typedef struct _WebShake {
 	EWebShakeState state;
 	cs_char line[1024];
 	cs_char key[32];
-	cs_int32 linepos;
 	cs_int32 keylen;
 	cs_int16 hdrflags;
 } WebShake;
@@ -51,12 +51,10 @@ typedef struct _WebSock {
 	WebShake shake;
 	EWebSockState state;
 	EWebSockErrors error;
-	cs_uint16 partial;
 	cs_uint16 paylen;
 	cs_uint16 maxpaylen;
 	cs_str proto;
 	cs_char *payload;
-	cs_char header[2];
 	cs_char mask[4];
 	cs_byte opcode;
 	cs_bool done;

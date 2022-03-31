@@ -58,6 +58,12 @@ cs_bool Socket_IsFatal(void) {
 	}
 }
 
+cs_ulong Socket_AvailData(Socket n) {
+	cs_ulong avail = 0;
+	ioctlsocket(n, FIONREAD, &avail);
+	return avail;
+}
+
 cs_error Socket_GetError(void) {
 	return WSAGetLastError();
 }

@@ -2,6 +2,7 @@
 #define WEBSOCKET_H
 #include "core.h"
 #include "types/websock.h"
+#include "types/netbuffer.h"
 
 /**
  * @brief Эдакий комбайн, выполняет хендшейк и чтение из
@@ -16,10 +17,12 @@
  * @return true - фрейм полностью прочитан,
  * false - что-то не так
  */
-API cs_bool WebSock_Tick(WebSock *ws, Socket sock);
+API cs_bool WebSock_Tick(WebSock *ws, NetBuffer *sock);
 
 /**
- * @brief Отправляет фрейм клиенту.
+ * @brief Отправляет заголовок фрейма клиенту.
+ * За заголовком должны следовать сырые данные
+ * указанного размера @len.
  * 
  * @param sock сокет, в который нужно послать фрейм
  * @param opcode опкод фрейма
@@ -28,7 +31,7 @@ API cs_bool WebSock_Tick(WebSock *ws, Socket sock);
  * @return true - фрейм отправлен успешно,
  * false - похоже, что соединение разорвано.
  */
-API cs_bool WebSock_SendFrame(Socket sock, cs_byte opcode, const cs_char *buf, cs_uint16 len);
+API cs_int32 WebSock_WriteHeader(Socket sock, cs_byte opcode, cs_uint32 len, cs_int32 *hdrlen);
 
 /**
  * @brief Возвращает код последней произошедшей ошибки.

@@ -3,6 +3,7 @@
 #include "log.h"
 #include "cserror.h"
 #include "server.h"
+#include "netbuffer.h"
 #include "client.h"
 #include "protocol.h"
 #include "config.h"
@@ -56,7 +57,7 @@ INL static ClientID TryToGetIDFor(Client *client) {
 }
 
 INL static cs_bool ProcessClient(Client *client) {
-	if(client->closed) {
+	if(client->netbuf.closed) {
 		if(client->state >= CLIENT_STATE_INGAME) {
 			for(int i = 0; i < MAX_CLIENTS; i++) {
 				Client *other = Clients_List[i];
@@ -72,19 +73,20 @@ INL static cs_bool ProcessClient(Client *client) {
 	}
 
 	if(Client_IsBot(client)) return true;
+	NetBuffer_Process(&client->netbuf);
+
 	switch(client->state) {
 		case CLIENT_STATE_INITIAL:
-			if(Socket_Receive(client->sock, client->rdbuf, 5, MSG_PEEK) == 5) {
+			if(NetBuffer_AvailRead(&client->netbuf) >= 5) {
 				client->state = CLIENT_STATE_MOTD;
-				if(String_CaselessCompare2(client->rdbuf, "GET /", 5)) {
+				if(String_CaselessCompare2(NetBuffer_PeekRead(&client->netbuf, 5), "GET /", 5)) {
 					client->websock = Memory_TryAlloc(1, sizeof(WebSock));
 					if(!client->websock) {
 						Client_Kick(client, Sstor_Get("KICK_INT"));
 						return true;
 					}
-					client->websock->maxpaylen = CLIENT_RDBUF_SIZE;
-					client->websock->payload = client->rdbuf;
 					client->websock->proto = "ClassiCube";
+					client->websock->maxpaylen = 32 * 1024;
 				}
 			}
 			break;
@@ -114,12 +116,12 @@ THREAD_FUNC(NetThread) {
 			Socket_SetNonBlocking(fd, true);
 			Client *tmp = Memory_TryAlloc(1, sizeof(Client));
 			if(tmp) {
-				tmp->sock = fd;
-				tmp->lastmsg = curr;
-				tmp->mutex = Mutex_Create();
 				tmp->addr = caddr.sin_addr.s_addr;
 				tmp->id = TryToGetIDFor(tmp);
 				if(tmp->id != CLIENT_SELF) {
+					tmp->lastmsg = curr;
+					tmp->mutex = Mutex_Create();
+					NetBuffer_Init(&tmp->netbuf, fd);
 					if(Event_Call(EVT_ONCONNECT, tmp)) {
 						Clients_List[tmp->id] = tmp;
 						continue;
@@ -128,8 +130,6 @@ THREAD_FUNC(NetThread) {
 				} else
 					Client_Kick(tmp, Sstor_Get("KICK_FULL"));
 
-				Socket_Shutdown(fd, SD_SEND);
-				while(Socket_Receive(fd, tmp->rdbuf, 134, 0) > 0);
 				Client_Free(tmp);
 			}
 
@@ -161,8 +161,7 @@ THREAD_FUNC(NetThread) {
 
 			if(currtime - client->lastmsg > timeout) {
 				client->kickReason = String_AllocCopy(Sstor_Get("KICK_TIMEOUT"));
-				Socket_Close(client->sock);
-				client->closed = true;
+				NetBuffer_ForceClose(&client->netbuf);
 			}
 
 			shutallowed = false;

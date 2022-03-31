@@ -5,7 +5,7 @@
 #include "client.h"
 #include "event.h"
 #include "server.h"
-#include "growingbuffer.h"
+#include "netbuffer.h"
 #include "protocol.h"
 #include "platform.h"
 #include "command.h"
@@ -22,28 +22,18 @@ if(!Client_CheckState(client, st)) return ret;
 if(!client->cpeData) return ret;
 
 #define PacketWriter_Start(cl, msz) \
-if(cl->closed || Client_IsBot(cl)) return; \
+if(!NetBuffer_IsAlive(&cl->netbuf) || Client_IsBot(cl)) return; \
 Mutex_Lock(cl->mutex); \
-if(!GrowingBuffer_Ensure(&cl->gb, msz)) { \
-	cl->closed = true; \
+cs_char *data = NetBuffer_StartWrite(&cl->netbuf, msz); \
+cs_char *start = data; \
+if(data == NULL) { \
+	NetBuffer_ForceClose(&cl->netbuf); \
 	Mutex_Unlock(cl->mutex); \
 	return; \
-} \
-cs_char *data = GrowingBuffer_GetCurrentPoint(&cl->gb);
+}
 
-#define PacketWriter_EndAnytime(cl) \
-cs_uint32 written = GrowingBuffer_GetDiff(&cl->gb, data); \
-if(written > 0) Client_SendAnytimeData(cl, written); \
-Mutex_Unlock(cl->mutex); \
-
-#define PacketWriter_EndIngame(cl) \
-cs_uint32 written = GrowingBuffer_GetDiff(&cl->gb, data); \
-if(written > 0) { \
-	GrowingBuffer_Commit(&cl->gb, written); \
-	if(Client_CheckState(cl, CLIENT_STATE_INGAME)) { \
-		Client_FlushBuffer(cl); \
-	} \
-} \
+#define PacketWriter_End(cl) \
+NetBuffer_EndWrite(&cl->netbuf, (cs_uint32)(data - start)); \
 Mutex_Unlock(cl->mutex);
 
 static cs_uint16 extensionsCount = 0;
@@ -205,7 +195,7 @@ void Vanilla_WriteServerIdent(Client *client, cs_str name, cs_str motd) {
 	Proto_WriteString(&data, motd);
 	*data++ = 0x00;
 
-	PacketWriter_EndAnytime(client);
+	PacketWriter_End(client);
 }
 
 void Vanilla_WriteLvlInit(Client *client) {
@@ -213,7 +203,7 @@ void Vanilla_WriteLvlInit(Client *client) {
 
 	*data++ = 0x02;
 
-	PacketWriter_EndAnytime(client);
+	PacketWriter_End(client);
 }
 
 void Vanilla_WriteLvlFin(Client *client, SVec *dims) {
@@ -222,7 +212,7 @@ void Vanilla_WriteLvlFin(Client *client, SVec *dims) {
 	*data++ = 0x04;
 	Proto_WriteSVec(&data, dims);
 
-	PacketWriter_EndAnytime(client);
+	PacketWriter_End(client);
 }
 
 void Vanilla_WriteSetBlock(Client *client, SVec *pos, BlockID block) {
@@ -232,7 +222,7 @@ void Vanilla_WriteSetBlock(Client *client, SVec *pos, BlockID block) {
 	Proto_WriteSVec(&data, pos);
 	*data++ = block;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void Vanilla_WriteSpawn(Client *client, Client *other) {
@@ -248,7 +238,7 @@ void Vanilla_WriteSpawn(Client *client, Client *other) {
 		Client_GetExtVer(client, EXT_ENTPOS) > 0
 	);
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void Vanilla_WriteTeleport(Client *client, Vec *pos, Ang *ang) {
@@ -261,7 +251,7 @@ void Vanilla_WriteTeleport(Client *client, Vec *pos, Ang *ang) {
 		Client_GetExtVer(client, EXT_ENTPOS) > 0
 	);
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void Vanilla_WritePosAndOrient(Client *client, Client *other) {
@@ -276,7 +266,7 @@ void Vanilla_WritePosAndOrient(Client *client, Client *other) {
 		Client_GetExtVer(client, EXT_ENTPOS) > 0
 	);
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void Vanilla_WriteDespawn(Client *client, Client *other) {
@@ -285,7 +275,7 @@ void Vanilla_WriteDespawn(Client *client, Client *other) {
 	*data++ = 0x0C;
 	*data++ = client == other ? CLIENT_SELF : other->id;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void Vanilla_WriteChat(Client *client, EMesgType type, cs_str mesg) {
@@ -295,7 +285,7 @@ void Vanilla_WriteChat(Client *client, EMesgType type, cs_str mesg) {
 	*data++ = (cs_byte)type;
 	Proto_WriteString(&data, mesg);
 
-	PacketWriter_EndAnytime(client);
+	PacketWriter_End(client);
 }
 
 void Vanilla_WriteKick(Client *client, cs_str reason) {
@@ -304,7 +294,7 @@ void Vanilla_WriteKick(Client *client, cs_str reason) {
 	*data++ = 0x0E;
 	Proto_WriteString(&data, reason);
 
-	PacketWriter_EndAnytime(client);
+	PacketWriter_End(client);
 }
 
 void Vanilla_WriteUserType(Client *client, cs_byte type) {
@@ -313,7 +303,7 @@ void Vanilla_WriteUserType(Client *client, cs_byte type) {
 	*data++ = 0x0F;
 	*data++ = type;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 static cs_bool FinishHandshake(Client *client) {
@@ -515,7 +505,7 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 		cs_char formatted[320] = {0}, formatted_san[320] = {0};
 
 		if(*params.message == '/') {
-			Log_Warn("%s executed command: %s", Client_GetDisplayName(client), params.message);
+			Log_Warn("%s&f executed command: %s", Client_GetDisplayName(client), params.message);
 			if(!Command_Handle(params.message, client))
 				Vanilla_WriteChat(client, params.type, Sstor_Get("CMD_UNK"));
 		} else {
@@ -619,7 +609,7 @@ void CPE_WriteInfo(Client *client) {
 	*(cs_uint16 *)data = htons(extensionsCount);
 	data += 2;
 
-	PacketWriter_EndAnytime(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteExtEntry(Client *client, CPEExt *ext) {
@@ -630,7 +620,7 @@ void CPE_WriteExtEntry(Client *client, CPEExt *ext) {
 	*(cs_uint32 *)data = htonl(ext->version);
 	data += 4;
 
-	PacketWriter_EndAnytime(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteClickDistance(Client *client, cs_uint16 dist) {
@@ -640,7 +630,7 @@ void CPE_WriteClickDistance(Client *client, cs_uint16 dist) {
 	*(cs_uint16 *)data = htons(dist);
 	data += 2;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_CustomBlockSupportLevel(Client *client, cs_byte level) {
@@ -649,7 +639,7 @@ void CPE_CustomBlockSupportLevel(Client *client, cs_byte level) {
 	*data++ = 0x13;
 	*data++ = level;
 
-	PacketWriter_EndAnytime(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteHoldThis(Client *client, BlockID block, cs_bool preventChange) {
@@ -659,7 +649,7 @@ void CPE_WriteHoldThis(Client *client, BlockID block, cs_bool preventChange) {
 	*data++ = block;
 	*data++ = (cs_char)preventChange;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteSetHotKey(Client *client, cs_str action, cs_int32 keycode, cs_int8 keymod) {
@@ -671,7 +661,7 @@ void CPE_WriteSetHotKey(Client *client, cs_str action, cs_int32 keycode, cs_int8
 	*(cs_int32 *)data = htonl(keycode); data += 4;
 	*data++ = keymod;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteAddName(Client *client, Client *other) {
@@ -685,7 +675,7 @@ void CPE_WriteAddName(Client *client, Client *other) {
 	Proto_WriteString(&data, group->name);
 	*data++ = group->rank;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteAddEntity2(Client *client, Client *other) {
@@ -702,7 +692,7 @@ void CPE_WriteAddEntity2(Client *client, Client *other) {
 		Client_GetExtVer(client, EXT_ENTPOS) > 0
 	);
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteRemoveName(Client *client, Client *other) {
@@ -711,7 +701,7 @@ void CPE_WriteRemoveName(Client *client, Client *other) {
 	*data = 0x18; data += 2;
 	*data++ = client == other ? CLIENT_SELF : other->id;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteEnvColor(Client *client, cs_byte type, Color3* col) {
@@ -721,7 +711,7 @@ void CPE_WriteEnvColor(Client *client, cs_byte type, Color3* col) {
 	*data++ = type;
 	Proto_WriteColor3(&data, col);
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteMakeSelection(Client *client, CPECuboid *cub) {
@@ -734,7 +724,7 @@ void CPE_WriteMakeSelection(Client *client, CPECuboid *cub) {
 	Proto_WriteSVec(&data, &cub->pos[1]);
 	Proto_WriteColor4(&data, &cub->color);
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteRemoveSelection(Client *client, cs_byte id) {
@@ -743,7 +733,7 @@ void CPE_WriteRemoveSelection(Client *client, cs_byte id) {
 	*data++ = 0x1B;
 	*data++ = id;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteBlockPerm(Client *client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy) {
@@ -754,7 +744,7 @@ void CPE_WriteBlockPerm(Client *client, BlockID id, cs_bool allowPlace, cs_bool 
 	*data++ = (cs_char)allowPlace;
 	*data++ = (cs_char)allowDestroy;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteSetModel(Client *client, Client *other) {
@@ -769,7 +759,7 @@ void CPE_WriteSetModel(Client *client, Client *other) {
 	else
 		Proto_WriteString(&data, validModelNames[0]);
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteSetMapAppearanceV1(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl) {
@@ -782,7 +772,7 @@ void CPE_WriteSetMapAppearanceV1(Client *client, cs_str tex, cs_byte side, cs_by
 	*(cs_uint16 *)data = htons(sidelvl);
 	data += 2;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteSetMapAppearanceV2(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl, cs_int16 cllvl, cs_int16 maxview) {
@@ -796,7 +786,7 @@ void CPE_WriteSetMapAppearanceV2(Client *client, cs_str tex, cs_byte side, cs_by
 	*(cs_uint16 *)data = htons(cllvl); data += 2;
 	*(cs_uint16 *)data = htons(maxview); data += 2;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteWeatherType(Client *client, cs_int8 type) {
@@ -805,7 +795,7 @@ void CPE_WriteWeatherType(Client *client, cs_int8 type) {
 	*data++ = 0x1F;
 	*data++ = type;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteHackControl(Client *client, CPEHacks *hacks) {
@@ -820,7 +810,7 @@ void CPE_WriteHackControl(Client *client, CPEHacks *hacks) {
 	*(cs_int16 *)data = htons(hacks->jumpHeight);
 	data += 2;
 
-	PacketWriter_EndAnytime(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteDefineBlock(Client *client, BlockID id, BlockDef *block) {
@@ -832,7 +822,7 @@ void CPE_WriteDefineBlock(Client *client, BlockID id, BlockDef *block) {
 	*(struct _BlockParams *)data = block->params.nonext;
 	data += sizeof(block->params.nonext);
 
-	PacketWriter_EndAnytime(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteUndefineBlock(Client *client, BlockID id) {
@@ -841,7 +831,7 @@ void CPE_WriteUndefineBlock(Client *client, BlockID id) {
 	*data++ = 0x24;
 	*data++ = id;
 
-	PacketWriter_EndAnytime(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteDefineExBlock(Client *client, BlockID id, BlockDef *block) {
@@ -853,7 +843,7 @@ void CPE_WriteDefineExBlock(Client *client, BlockID id, BlockDef *block) {
 	*(struct _BlockParamsExt *)data = block->params.ext;
 	data += sizeof(block->params.ext);
 
-	PacketWriter_EndAnytime(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteBulkBlockUpdate(Client *client, BulkBlockUpdate *bbu) {
@@ -863,7 +853,7 @@ void CPE_WriteBulkBlockUpdate(Client *client, BulkBlockUpdate *bbu) {
 	*(struct _BBUData *)data = bbu->data;
 	data += sizeof(bbu->data);
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteFastMapInit(Client *client, cs_uint32 size) {
@@ -873,7 +863,7 @@ void CPE_WriteFastMapInit(Client *client, cs_uint32 size) {
 	*(cs_uint32 *)data = htonl(size);
 	data += 4;
 
-	PacketWriter_EndAnytime(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteAddTextColor(Client *client, Color4* color, cs_char code) {
@@ -883,7 +873,7 @@ void CPE_WriteAddTextColor(Client *client, Color4* color, cs_char code) {
 	Proto_WriteByteColor4(&data, color);
 	*data++ = code;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteTexturePack(Client *client, cs_str url) {
@@ -892,7 +882,7 @@ void CPE_WriteTexturePack(Client *client, cs_str url) {
 	*data++ = 0x28;
 	Proto_WriteString(&data, url);
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteMapProperty(Client *client, cs_byte property, cs_int32 value) {
@@ -903,7 +893,7 @@ void CPE_WriteMapProperty(Client *client, cs_byte property, cs_int32 value) {
 	*(cs_int32 *)data = htonl(value);
 	data += 4;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteSetEntityProperty(Client *client, Client *other, EEntProp type, cs_int32 value) {
@@ -915,7 +905,7 @@ void CPE_WriteSetEntityProperty(Client *client, Client *other, EEntProp type, cs
 	*(cs_int32 *)data = htonl(value);
 	data += 4;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteTwoWayPing(Client *client, cs_byte direction, cs_int16 num) {
@@ -926,7 +916,7 @@ void CPE_WriteTwoWayPing(Client *client, cs_byte direction, cs_int16 num) {
 	*(cs_uint16 *)data = num;
 	data += 2;
 
-	PacketWriter_EndAnytime(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteInventoryOrder(Client *client, cs_byte order, BlockID block) {
@@ -936,7 +926,7 @@ void CPE_WriteInventoryOrder(Client *client, cs_byte order, BlockID block) {
 	*data++ = block;
 	*data++ = order;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteSetHotBar(Client *client, cs_byte order, BlockID block) {
@@ -946,7 +936,7 @@ void CPE_WriteSetHotBar(Client *client, cs_byte order, BlockID block) {
 	*data++ = block;
 	*data++ = order;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteSetSpawnPoint(Client *client, Vec *pos, Ang *ang) {
@@ -959,7 +949,7 @@ void CPE_WriteSetSpawnPoint(Client *client, Vec *pos, Ang *ang) {
 		Proto_WriteFlSVec(&data, pos);
 	Proto_WriteAng(&data, ang);
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_bool mode) {
@@ -970,7 +960,7 @@ void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_bool mode) {
 	*(cs_uint32 *)data = mode ? 0x01010101 : 0x00000000; // Why not?
 	data += 4;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteDefineEffect(Client *client, CustomParticle *e) {
@@ -990,7 +980,7 @@ void CPE_WriteDefineEffect(Client *client, CustomParticle *e) {
 	*data++ = e->collideFlags;
 	*data++ = e->fullBright;
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 void CPE_WriteSpawnEffect(Client *client, cs_byte id, Vec *pos, Vec *origin) {
@@ -1001,7 +991,7 @@ void CPE_WriteSpawnEffect(Client *client, cs_byte id, Vec *pos, Vec *origin) {
 	Proto_WriteFlVec(&data, pos);
 	Proto_WriteFlVec(&data, origin);
 
-	PacketWriter_EndIngame(client);
+	PacketWriter_End(client);
 }
 
 // void CPE_WriteDefineModel(Client *client, ...) {}
@@ -1015,7 +1005,7 @@ void CPE_WritePluginMessage(Client *client, cs_byte channel, cs_str message) {
 	*data++ = channel;
 	Proto_WriteString(&data, message);
 
-	PacketWriter_EndAnytime(client);
+	PacketWriter_End(client);
 }
 
 cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {

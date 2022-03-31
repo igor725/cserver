@@ -21,7 +21,8 @@ typedef struct _Compr {
 	ComprState state;
 	ComprType type;
 	cs_int32 ret;
-	cs_uint32 written, queued;
+	cs_uint32 written;
+	cs_uint32 queued;
 	void *stream;
 } Compr;
 #endif

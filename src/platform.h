@@ -52,6 +52,7 @@ void Socket_Uninit(void);
 API Socket Socket_New(void);
 API cs_bool Socket_IsFatal(void);
 API cs_error Socket_GetError(void);
+API cs_ulong Socket_AvailData(Socket n);
 API cs_bool Socket_SetNonBlocking(Socket n, cs_bool state);
 API cs_int32 Socket_SetAddr(struct sockaddr_in *ssa, cs_str ip, cs_uint16 port);
 API cs_bool Socket_SetAddrGuess(struct sockaddr_in *ssa, cs_str host, cs_uint16 port);
@@ -59,8 +60,7 @@ API cs_bool Socket_Bind(Socket sock, struct sockaddr_in *ssa);
 API cs_bool Socket_Connect(Socket sock, struct sockaddr_in *ssa);
 API Socket Socket_Accept(Socket sock, struct sockaddr_in *addr);
 API cs_int32 Socket_Receive(Socket sock, cs_char *buf, cs_int32 len, cs_int32 flags);
-API cs_bool Socket_ReceiveLine(Socket sock, cs_char *line, cs_int32 blen, cs_int32 *recv);
-API cs_bool Socket_Send(Socket sock, const cs_char *buf, cs_int32 len);
+API cs_int32 Socket_Send(Socket sock, const cs_char *buf, cs_int32 len);
 API cs_bool Socket_Shutdown(Socket sock, cs_int32 how);
 API void Socket_Close(Socket sock);
 

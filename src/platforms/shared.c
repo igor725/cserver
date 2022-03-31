@@ -153,87 +153,8 @@ cs_int32 Socket_Receive(Socket sock, cs_char *buf, cs_int32 len, cs_int32 flags)
 	return recv(sock, buf, len, MSG_NOSIGNAL | MSG_DONTWAIT | flags);
 }
 
-cs_bool Socket_ReceiveLine(Socket sock, cs_char *line, cs_int32 blen, cs_int32 *recv) {
-	cs_int32 start_len = blen;
-	cs_char sym = 0;
-
-	if(*recv > 0) {
-		blen -= *recv;
-		if(blen < 1) {
-			*recv = -1;
-			return false;
-		} 
-		line += *recv;
-	}
-
-	while(blen > 1) {
-		if(Socket_Receive(sock, &sym, 1, 0) == 1) {
-			if(sym == '\n') {
-				*recv = start_len - blen;
-				*line = '\0';
-				return true;
-			} else if(sym != '\r') {
-				*line++ = sym;
-				blen -= 1;
-			}
-		} else {
-			if(Socket_IsFatal()) {
-				*recv = -1;
-				return false;
-			}
-
-			break;
-		}
-	}
-
-	*recv = start_len - blen;
-	return false;
-}
-
-/* Это пиздец, товарищи. Я понятия не имею, почему
- * иногда при грязном закрытии сокета, send продолжает
- * бесконечно возвращать EWOULDBLOCK. Пришлось нашаманить
- * ту хуйню, которую вы сейчас видите. До лучших времён
- * это говно останется здесь. По хорошему, при ошибке в
- * send, сетевой поток должен продолжать исполнять свой
- * цикл в нормальном порядке и после полного тика с чтением
- * данных из этого сокета и прочими приколами, если оказалось,
- * что клиент жив, то повторить отправку данных с места
- * ошибки. Если же мёртв, то послать его куда подальше и
- * ничего ему не отправлять. Поскольку такой подход требует
- * ещё больше переписать код отправки пакетов я решил
- * накостылять этой процедуре, чтобы оно хоть как-то работало
- * сейчас. В общем, не обессудьте, когда-нибудь я это всё
- * перепишу и оно начнёт работать так, как задумано душевно
- * больными людьми, создавшими сие чудо, протокол TCP/IP. Но
- * сегодня у меня нет ни времени, ни желания этим заниматься,
- * так как на первый взгляд это всё требует общего буфера для
- * сокета, который сможет в себе хранить все неотправленные
- * данные, так как при той же отправке мира они будут копиться с
- * ебанутой скоростью. Также встаёт вопрос с вебсокет соедиениями,
- * они тоже должны быть способны обрабатывать кейсы, когда send
- * начинает страдать хуйнёй.
- */
-cs_bool Socket_Send(Socket sock, const cs_char *buf, cs_int32 len) {
-	cs_uint32 offset = 0;
-	cs_uint32 attempts = 100;
-
-	while(attempts > 0) {
-		cs_int32 sent = send(sock, buf + offset, len, MSG_NOSIGNAL);
-		if(sent > 0) {
-			len -= sent;
-			offset += sent;
-			if(len == 0) return true;
-		} else if(sent < 0 && Socket_IsFatal()) {
-			return false;
-		} else if(sent == 0)
-			return false;
-
-		Thread_Sleep(8);
-		attempts--;
-	}
-
-	return false;
+cs_int32 Socket_Send(Socket sock, const cs_char *buf, cs_int32 len) {
+	return (cs_int32)send(sock, buf, len, MSG_NOSIGNAL);
 }
 
 cs_bool Socket_Shutdown(Socket sock, cs_int32 how) {

@@ -132,7 +132,7 @@ INL static cs_bool DeflateStep(Compr *ctx) {
 
 	if(ctx->state == COMPR_STATE_FINISHING && stream->avail_out == outbuf_size)
 		ctx->state = COMPR_STATE_DONE;
-	else if(ctx->state == COMPR_STATE_INPROCESS && stream->avail_out > 0)
+	else if(ctx->state == COMPR_STATE_INPROCESS && stream->avail_out == outbuf_size)
 		ctx->state = COMPR_STATE_FINISHING;
 
 	ctx->written = outbuf_size - stream->avail_out;

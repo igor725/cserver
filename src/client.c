@@ -3,7 +3,7 @@
 #include "list.h"
 #include "platform.h"
 #include "block.h"
-#include "growingbuffer.h"
+#include "netbuffer.h"
 #include "protocol.h"
 #include "client.h"
 #include "event.h"
@@ -119,9 +119,9 @@ Client *Client_NewBot(void) {
 	Client *client = Memory_Alloc(1, sizeof(Client));
 	client->playerData = Memory_Alloc(1, sizeof(PlayerData));
 	client->cpeData = Memory_Alloc(1, sizeof(CPEData));
+	NetBuffer_Init(&client->netbuf, INVALID_SOCKET);
 	client->state = CLIENT_STATE_INGAME;
 	client->mutex = Mutex_Create();
-	client->sock = INVALID_SOCKET;
 	client->cpeData->model = 256;
 	client->id = botid;
 
@@ -129,8 +129,8 @@ Client *Client_NewBot(void) {
 	return client;
 }
 
-cs_bool Client_IsBot(Client *bot) {
-	return bot->sock == INVALID_SOCKET;
+cs_bool Client_IsBot(Client *client) {
+	return !NetBuffer_IsValid(&client->netbuf);
 }
 
 void Client_Lock(Client *client) {
@@ -501,7 +501,7 @@ cs_bool Client_CheckState(Client *client, EClientState state) {
 }
 
 cs_bool Client_IsClosed(Client *client) {
-	return client->closed;
+	return !NetBuffer_IsAlive(&client->netbuf);
 }
 
 static const struct _subnet {
@@ -578,7 +578,7 @@ cs_bool Client_SetTexturePack(Client *client, cs_str url) {
 cs_bool Client_SetDisplayName(Client *client, cs_str name) {
 	if(!client->playerData) return false;
 	if(String_Copy(client->playerData->displayname, 65, name))
-		client->cpeData->updates |= PCU_NAME;
+		if(client->cpeData) client->cpeData->updates |= PCU_NAME;
 	return false;
 }
 
@@ -662,10 +662,6 @@ cs_bool Client_SetSkin(Client *client, cs_str skin) {
 
 EClientState Client_GetState(Client *client) {
 	return client->state;
-}
-
-GrowingBuffer *Client_GetBuffer(Client *client) {
-	return &client->gb;
 }
 
 cs_uint32 Client_GetAddr(Client *client) {
@@ -894,59 +890,16 @@ void Client_Free(Client *client) {
 		KList_Remove(&client->headNode, client->headNode);
 	}
 
-	GrowingBuffer_Cleanup(&client->gb);
+	NetBuffer_ForceClose(&client->netbuf);
 	Compr_Cleanup(&client->mapData.compr);
 	Memory_Free(client);
 }
 
-cs_bool Client_RawSend(Client *client, cs_char *buf, cs_int32 len) {
-	if(client->sock == (Socket)-1 || client->closed || len < 1) return false;
-
-	if(client == Broadcast) {
-		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-			Client *bClient = Clients_List[i];
-
-			if(bClient && !bClient->closed) {
-				Mutex_Lock(bClient->mutex);
-				Client_RawSend(bClient, buf, len);
-				Mutex_Unlock(bClient->mutex);
-			}
-		}
-
-		return true;
-	}
-
-	if(client->websock) {
-		if(!WebSock_SendFrame(client->sock, 0x02, buf, (cs_uint16)len)) {
-			client->closed = true;
-			return false;
-		}
-	} else {
-		if(!Socket_Send(client->sock, buf, len)) {
-			client->closed = true;
-			return false;
-		}
-	}
-
-	return true;
-}
-
-cs_bool Client_SendAnytimeData(Client *client, cs_int32 size) {
-	cs_char *data = GrowingBuffer_GetCurrentPoint(&client->gb);
-	return Client_RawSend(client, data, size);
-}
-
-cs_bool Client_FlushBuffer(Client *client) {
-	cs_uint32 size = 0;
-	cs_char *data = GrowingBuffer_PopFullData(&client->gb, &size);
-	return Client_RawSend(client, data, size);
-}
-
 INL static void PacketReceiverWs(Client *client) {
 	wsrecvmark:
-	if(WebSock_Tick(client->websock, client->sock)) {
+	if(WebSock_Tick(client->websock, &client->netbuf)) {
 		if(client->websock->opcode == 0x08) {
-			client->closed = true;
+			NetBuffer_ForceClose(&client->netbuf);
 			return;
 		}
 
@@ -975,7 +928,7 @@ INL static void PacketReceiverWs(Client *client) {
 		goto wsrecvmark;
 	} else if(client->websock->error != WEBSOCK_ERROR_CONTINUE) {
 		if(client->websock->error == WEBSOCK_ERROR_SOCKET)
-			client->closed = true;
+			NetBuffer_ForceClose(&client->netbuf);
 		else
 			Client_KickFormat(client, WebSock_GetError(client->websock));
 	}
@@ -983,13 +936,11 @@ INL static void PacketReceiverWs(Client *client) {
 
 INL static void PacketReceiverRaw(Client *client) {
 	PacketData *pdata = &client->packetData;
-	cs_int32 len;
 	recvmark:
-	len = 0;
 
 	if(!pdata->packet) {
-		cs_byte packetId = 0xFF;
-		if((len = Socket_Receive(client->sock, (cs_char *)&packetId, 1, 0)) > 0) {
+		if(NetBuffer_AvailRead(&client->netbuf) >= 1) {
+			cs_byte packetId = *NetBuffer_Read(&client->netbuf, 1);
 			pdata->packet = Packet_Get(packetId);
 			if(!pdata->packet) {
 				Client_KickFormat(client, Sstor_Get("KICK_PERR_NOHANDLER"), packetId);
@@ -997,29 +948,16 @@ INL static void PacketReceiverRaw(Client *client) {
 			}
 
 			pdata->psize = GetPacketSizeFor(pdata->packet, client, &pdata->isExtended);
-			pdata->precv = 0;
-		}
+		} else return;
 	}
 
-	if(pdata->psize > pdata->precv) {
-		cs_int32 req = pdata->psize - pdata->precv;
-		if((len = Socket_Receive(client->sock, client->rdbuf + pdata->precv, req, 0)) > 0) {
-			pdata->precv += (cs_uint16)len;
-			if(pdata->psize == pdata->precv) {
-				HandlePacket(client, client->rdbuf);
-				client->lastmsg = Time_GetMSec();
-				pdata->packet = NULL;
-				pdata->psize = 0;
-				pdata->precv = 0;
-				goto recvmark;
-			}
-		}
+	if(NetBuffer_AvailRead(&client->netbuf) >= pdata->psize) {
+		HandlePacket(client, NetBuffer_Read(&client->netbuf, pdata->psize));
+		client->lastmsg = Time_GetMSec();
+		pdata->packet = NULL;
+		pdata->psize = 0;
+		goto recvmark;
 	}
-
-	if(len < 0)
-		client->closed = Socket_IsFatal();
-	else
-		client->closed = len == 0;
 }
 
 NOINL static cs_bool SendWorldTick(Client *client) {
@@ -1048,10 +986,11 @@ NOINL static cs_bool SendWorldTick(Client *client) {
 			}
 		}
 
+		md->fastmap = Client_GetExtVer(client, EXT_FASTMAP) == 1;
 		md->fback = Client_GetExtVer(client, EXT_BLOCKDEF) < 1 ||
 		Client_GetExtVer(client, EXT_BLOCKDEF2) < 1 ||
 		Client_GetExtVer(client, EXT_CUSTOMBLOCKS) < 1;
-		if(Client_GetExtVer(client, EXT_FASTMAP) == 1) {
+		if(md->fastmap) {
 			if(Compr_Init(&md->compr, COMPR_TYPE_DEFLATE)) {
 				md->cbptr = World_GetBlockArray(md->world, &md->size);
 				CPE_WriteFastMapInit(client, md->size);
@@ -1066,19 +1005,21 @@ NOINL static cs_bool SendWorldTick(Client *client) {
 
 	if(md->sent <= md->size) {
 		cs_uint64 markStart = Time_GetMSec();
-		cs_byte indata[10240] = {0}, data[1029] = {0x03};
-		cs_uint16 *len = (cs_uint16 *)(data + 1);
-		cs_byte *cmpdata = data + 3;
-		cs_byte *progr = data + 1028;
+		cs_byte indata[10240] = {0};
 
-		while(!client->closed) {
+		while(NetBuffer_IsAlive(&client->netbuf)) {
+			cs_uint32 avail;
 			comprstep:
-			if(md->sent == md->size && Compr_IsInState(&md->compr, COMPR_STATE_DONE)) break;
-			cs_uint32 avail = min(md->size - md->sent, 10240);
+			avail = min(md->size - md->sent, 10240);
 			if(avail > 0) {
 				if(md->fback) {
-					for(cs_uint32 i = 0; i < avail; i++)
-						indata[i] = Block_GetFallbackFor(md->world, indata[i]);
+					for(cs_uint32 i = 0; i < avail; i++) {
+						cs_uint32 offset = md->sent + i;
+						if(offset < 4 && !md->fastmap)
+							indata[i] = md->cbptr[offset];
+						else
+							indata[i] = Block_GetFallbackFor(md->world, md->cbptr[offset]);
+					}
 				} else
 					Memory_Copy(indata, md->cbptr + md->sent, avail);
 				Compr_SetInBuffer(&md->compr, indata, avail);
@@ -1086,23 +1027,29 @@ NOINL static cs_bool SendWorldTick(Client *client) {
 			}
 
 			Mutex_Lock(client->mutex);
-			do {
-				Compr_SetOutBuffer(&md->compr, cmpdata, 1024);
+			while(true) {
+				cs_byte *data = (cs_byte *)NetBuffer_StartWrite(&client->netbuf, 1030);
+				Compr_SetOutBuffer(&md->compr, data + 3, 1024);
+				*data = 0x03;
+
 				if(Compr_Update(&md->compr)) {
 					if(md->compr.written > 0) {
-						*len = htons((cs_uint16)md->compr.written);
-						*progr = (cs_byte)(((cs_float)md->sent / md->size) * 100);
-						if(!Client_RawSend(client, (cs_char *)data, 1028)) {
+						*((cs_uint16 *)(data + 1)) = htons((cs_uint16)md->compr.written);
+						*(data + 1028) = (cs_byte)(((cs_float)md->sent / md->size) * 100);
+						if(!NetBuffer_EndWrite(&client->netbuf, 1028)) {
 							Mutex_Unlock(client->mutex);
 							goto mapend;
 						}
-					}
+					} else break;
 				} else {
 					Mutex_Unlock(client->mutex);
 					goto mapfail;
 				}
-			} while(Compr_IsInState(&md->compr, COMPR_STATE_INPROCESS));
+			}
 			Mutex_Unlock(client->mutex);
+
+			if(Compr_IsInState(&md->compr, COMPR_STATE_DONE))
+				break;
 
 			if(Time_GetMSec() - markStart < 30)
 				goto comprstep;
@@ -1110,13 +1057,12 @@ NOINL static cs_bool SendWorldTick(Client *client) {
 				return false;
 		}
 
-		if(client->closed) {
+		if(!NetBuffer_IsAlive(&client->netbuf)) {
 			goto mapfail;
 		} else {
 			Vanilla_WriteLvlFin(client, &md->world->info.dimensions);
 			client->playerData->world = md->world;
 			client->state = CLIENT_STATE_INGAME;
-			Client_FlushBuffer(client);
 			Client_Spawn(client);
 			goto mapend;
 		}
@@ -1154,7 +1100,7 @@ INL static void SendSpawnPacket(Client *client, Client *other) {
 }
 
 cs_bool Client_Spawn(Client *client) {
-	if(client->closed || !client->playerData || client->playerData->spawned)
+	if(!client->playerData || client->playerData->spawned)
 		return false;
 
 	onSpawn evt = {
@@ -1204,13 +1150,14 @@ cs_str Client_GetDisconnectReason(Client *client) {
 
 void Client_Kick(Client *client, cs_str reason) {
 	if(Client_IsBot(client)) {
-		client->closed = true;
+		NetBuffer_ForceClose(&client->netbuf);
 		return;
 	}
 	if(client->kickReason) return;
 	if(!reason) reason = Sstor_Get("KICK_NOREASON");
 	Vanilla_WriteKick(client, reason);
 	client->kickReason = String_AllocCopy(reason);
+	NetBuffer_Shutdown(&client->netbuf);
 }
 
 void Client_KickFormat(Client *client, cs_str fmtreason, ...) {
