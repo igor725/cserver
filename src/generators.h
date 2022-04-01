@@ -4,7 +4,9 @@
 #include "types/list.h"
 #include "types/world.h"
 
-typedef cs_bool(*GeneratorRoutine)(World *world, void *unused);
+#define GENERATOR_SEED_FROM_TIME (cs_int32)-1
+
+typedef cs_bool(*GeneratorRoutine)(World *world, cs_int32 seed);
 
 cs_bool Generators_Init(void);
 void Generators_UnregisterAll(void);
@@ -42,7 +44,7 @@ API cs_bool Generators_RemoveByFunc(GeneratorRoutine gr);
  * @param data пока что не используется
  * @return API 
  */
-API cs_bool Generators_Use(World *world, cs_str name, void *data);
+API cs_bool Generators_Use(World *world, cs_str name, cs_int32 seed);
 
 /**
  * @brief Возвращает функцию генератора по его имени.

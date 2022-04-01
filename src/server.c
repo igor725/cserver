@@ -320,7 +320,7 @@ cs_bool Server_Init(void) {
 			SVec defdims = {256, 256, 256};
 			World_SetDimensions(tmp, &defdims);
 			World_AllocBlockArray(tmp);
-			if(!Generators_Use(tmp, "normal", NULL))
+			if(!Generators_Use(tmp, "normal", GENERATOR_SEED_FROM_TIME))
 				Log_Error(Sstor_Get("WGEN_ERROR"), wname);
 			World_Add(tmp);
 		}
@@ -380,7 +380,7 @@ cs_bool Server_Init(void) {
 				} else if(!skip_creating && state == 2) {
 					GeneratorRoutine gr = Generators_Get(buffer);
 					if(gr) {
-						if(!gr(tmp, NULL))
+						if(!gr(tmp, GENERATOR_SEED_FROM_TIME))
 							Log_Error(Sstor_Get("WGEN_ERROR"), tmp->name);
 					} else
 						Log_Error(Sstor_Get("WGEN_NOGEN"), tmp->name);

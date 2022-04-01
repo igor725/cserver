@@ -2,8 +2,8 @@
 #include "block.h"
 #include "world.h"
 
-cs_bool flatgenerator(World *world, void *data) {
-	(void)data;
+cs_bool flatgenerator(World *world, cs_int32 seed) {
+	(void)seed;
 	WorldInfo *wi = &world->info;
 	SVec *dims = &wi->dimensions;
 

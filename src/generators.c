@@ -3,8 +3,8 @@
 #include "list.h"
 #include "generators.h"
 
-static cs_bool flatgenerator(World *world, void *data);
-static cs_bool normalgenerator(World *world, void *data);
+static cs_bool flatgenerator(World *, cs_int32);
+static cs_bool normalgenerator(World *, cs_int32);
 
 #include "generators/flat.c"
 #include "generators/normal.c"
@@ -53,9 +53,9 @@ cs_bool Generators_RemoveByFunc(GeneratorRoutine gr) {
 	return false;
 }
 
-cs_bool Generators_Use(World *world, cs_str name, void *data) {
+cs_bool Generators_Use(World *world, cs_str name, cs_int32 seed) {
 	GeneratorRoutine gr = Generators_Get(name);
-	return gr != NULL ? gr(world, data) : false;
+	return gr != NULL ? gr(world, seed) : false;
 }
 
 GeneratorRoutine Generators_Get(cs_str name) {
