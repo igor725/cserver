@@ -5,21 +5,19 @@
 #include "platform.h"
 
 #define GENROUTINE(N) static void generate##N(void)
+#define setBlock(vec, id) ctx.data[(vec.y * ctx.dims->z + vec.z) * ctx.dims->x + vec.x] = id
+#define getBlock(vec) ctx.data[(vec.y * ctx.dims->z + vec.z) * ctx.dims->x + vec.x]
 
-static cs_bool gen_enable_caves = true,
-gen_enable_trees = true,
-gen_enable_ores = true;
+static const cs_bool gen_enable_caves = true,
+gen_enable_trees = true, gen_enable_ores = true;
 
-static cs_uint16 gen_cave_radius = 3,
-gen_cave_min_length = 100,
-gen_cave_max_length = 500,
-gen_ore_vein_min_size = 4,
-gen_ore_vein_max_size = 9,
-gen_gravel_vein_size = 14,
-gen_biome_step = 20,
+static const cs_uint16 gen_cave_radius = 3,
+gen_cave_min_length = 100, gen_cave_max_length = 500,
+gen_ore_vein_min_size = 4, gen_ore_vein_max_size = 9,
+gen_gravel_vein_size = 14, gen_biome_step = 20,
 gen_biome_radius = 5;
 
-static cs_float gen_trees_count_mult = 1.0f / 250.0f,
+static const cs_float gen_trees_count_mult = 1.0f / 250.0f,
 gen_ores_count_mult = 1.0f / 800.0f,
 gen_caves_count_mult = 3.2f / 200000.0f;
 
@@ -127,9 +125,6 @@ INL static cs_uint16 getHeight(cs_uint16 x, cs_uint16 z) {
 	* (1.0f - percentX) + (cs_float)ctx.heightMap[(hx + 1) + (hz + 1) * ctx.biomeSizeX] * percentX)
 	* percentZ + 0.5f);
 }
-
-#define setBlock(vec, id) ctx.data[(vec.y * ctx.dims->z + vec.z) * ctx.dims->x + vec.x] = id
-#define getBlock(vec) ctx.data[(vec.y * ctx.dims->z + vec.z) * ctx.dims->x + vec.x]
 
 GENROUTINE(Terrain) {
 	cs_uint16 height1, heightStone1;
@@ -452,13 +447,11 @@ cs_bool normalgenerator(World *world, cs_int32 seed) {
 	if(gen_enable_trees)
 		generateTrees();
 	for(cs_uint16 i = 0; i < ctx.numCaves && gen_enable_caves; i++)
-			generateCave();
+		generateCave();
 	
 	WorldInfo *wi = &world->info;
 	cs_int16 x = ctx.dims->x / 2, z = ctx.dims->z / 2;
-	wi->spawnVec.x = (cs_float)x;
-	wi->spawnVec.y = getHeightInPoint(x, z);
-	wi->spawnVec.z = (cs_float)z;
+	Vec_Set(wi->spawnVec, x, getHeightInPoint(x, z), z);
 	World_SetEnvProp(world, WORLD_PROP_SIDEBLOCK, BLOCK_AIR);
 	World_SetEnvProp(world, WORLD_PROP_EDGEBLOCK, BLOCK_WATER);
 	World_SetEnvProp(world, WORLD_PROP_CLOUDSLEVEL, ctx.dims->y + 2);
