@@ -1,7 +1,6 @@
 #include "core.h"
 #include "compr.h"
 #include "platform.h"
-#include "cserror.h"
 #include "strstor.h"
 #include "log.h"
 #include <zlib.h>

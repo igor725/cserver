@@ -2,7 +2,6 @@
 #include "platform.h"
 #include "str.h"
 #include "config.h"
-#include "cserror.h"
 
 INL static cs_bool checkNumber(cs_str n) {
 	cs_bool valid = true;

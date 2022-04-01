@@ -77,8 +77,6 @@ void Http_Cleanup(Http *http) {
 	if(http->req) WinInet.IClose(http->req);
 }
 #elif defined(HTTP_USE_CURL_BACKEND)
-#include "log.h"
-
 static cs_str csymlist[] = {
 	"curl_easy_init", "curl_easy_setopt",
 	"curl_easy_perform", "curl_easy_cleanup",

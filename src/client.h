@@ -2,14 +2,10 @@
 #define CLIENT_H
 #include "core.h"
 #include "vector.h"
-#include "types/list.h"
 #include "types/world.h"
-#include "types/websock.h"
-#include "types/compr.h"
 #include "types/block.h"
 #include "types/cpe.h"
 #include "types/client.h"
-#include <stdarg.h>
 
 void Client_Tick(Client *client);
 void Client_Free(Client *client);

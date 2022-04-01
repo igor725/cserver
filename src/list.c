@@ -1,6 +1,5 @@
 #include "core.h"
 #include "platform.h"
-#include "str.h"
 #include "list.h"
 
 AListField *AList_AddField(AListField **head, void *value) {

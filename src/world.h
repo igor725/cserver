@@ -2,9 +2,7 @@
 #define WORLD_H
 #include "core.h"
 #include "vector.h"
-#include "types/platform.h"
 #include "types/list.h"
-#include "types/compr.h"
 #include "types/world.h"
 
 API cs_bool World_HasError(World *world);
