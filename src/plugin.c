@@ -120,6 +120,10 @@ cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname) {
 			Plugin_Lock(cplugin);
 			AListField *tmp;
 
+			/**
+			 * Проверяем, нету ли указанного интерфейса в активных
+			 * интерфейсах плагина, если он там есть, то возвращаем true.
+			 */
 			List_Iter(tmp, cplugin->ireqHead) {
 				if(String_Compare(tmp->value.ptr, iname)) {
 					Plugin_Unlock(cplugin);
@@ -127,11 +131,20 @@ cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname) {
 					return false;
 				}
 			}
+
+			/**
+			 * Проверяем, нету ли указанного интерфейса в холдлисте плагина,
+			 * если он там есть, то возвращаем true.
+			 * 
+			 * P.S. Да, функция возвращает true если повторно запросить интерфейс,
+			 * который ещё не успел уйти из холдлиста, но если он уже активен, то
+			 * функция вернёт false. Вроде как такой финт выглядит правильно.
+			 */
 			List_Iter(tmp, cplugin->ireqHold) {
 				if(String_Compare(tmp->value.ptr, iname)) {
 					Plugin_Unlock(cplugin);
 					if(answerer) Plugin_Unlock(answerer);
-					return false;
+					return true;
 				}
 			}
 
