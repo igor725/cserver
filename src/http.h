@@ -6,36 +6,35 @@
 
 #if defined(HTTP_USE_WININET_BACKEND)
 // Start of <wininet.h>
-#define INTERNET_SERVICE_HTTP 3
-#define INTERNET_OPEN_TYPE_PRECONFIG 0
-#define INTERNET_FLAG_SECURE 0x00800000
-typedef void *HINTERNET;
-typedef cs_uint16 INTERNET_PORT;
+#	define INTERNET_SERVICE_HTTP 3
+#	define INTERNET_OPEN_TYPE_PRECONFIG 0
+#	define INTERNET_FLAG_SECURE 0x00800000
+	typedef void *HINTERNET;
+	typedef cs_uint16 INTERNET_PORT;
 // End of <wininet.h>
 
-typedef struct _Http {
-	cs_bool secure;
-	HINTERNET conn, req;
-} Http;
+	typedef struct _Http {
+		cs_bool secure;
+		HINTERNET conn, req;
+	} Http;
 #elif defined(HTTP_USE_CURL_BACKEND)
-typedef void CURL;
+#	define CURLOPT_WRITEDATA 10000 + 1
+#	define CURLOPT_URL 10000 + 2
+#	define CURLOPT_USERAGENT 10000 + 18
+#	define CURLOPT_FOLLOWLOCATION 0 + 52
+#	define CURLOPT_WRITEFUNCTION 20000 + 11
+#	define CURLE_OK 0
 
-#define CURLOPT_WRITEDATA 10000 + 1
-#define CURLOPT_URL 10000 + 2
-#define CURLOPT_USERAGENT 10000 + 18
-#define CURLOPT_FOLLOWLOCATION 0 + 52
-#define CURLOPT_WRITEFUNCTION 20000 + 11
-#define CURLE_OK 0
-
-typedef struct _Http {
-	cs_bool secure;
-	cs_str domain;
-	cs_size buflen, rsplen;
-	cs_char *path, *buf;
-	CURL *handle;
-} Http;
+	typedef void CURL;
+	typedef struct _Http {
+		cs_bool secure;
+		cs_str domain;
+		cs_size buflen, rsplen;
+		cs_char *path, *buf;
+		CURL *handle;
+	} Http;
 #else
-#error No HTTP backend selected
+#	error No HTTP backend selected
 #endif
 
 void Http_Uninit(void);

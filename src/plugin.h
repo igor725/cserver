@@ -20,66 +20,67 @@
 #include "types/plugin.h"
 
 #ifndef CORE_BUILD_PLUGIN
-#define Plugin_Lock(_p) Mutex_Lock((_p)->mutex)
-#define Plugin_Unlock(_p) Mutex_Unlock((_p)->mutex)
-void Plugin_LoadAll(void);
-void Plugin_UnloadAll(cs_bool force);
+#	define Plugin_Lock(_p) Mutex_Lock((_p)->mutex)
+#	define Plugin_Unlock(_p) Mutex_Unlock((_p)->mutex)
+
+	void Plugin_LoadAll(void);
+	void Plugin_UnloadAll(cs_bool force);
 #else
-/**
- * @brief Выполняется сервером в момент загрузки плагина.
- * Если функция вернёт false, плагин будет немедленно
- * выгружен из памяти.
- * 
- * @return true - плагин успешно загрузился, false - произошёл какой-то прикол
- */
-EXP cs_bool Plugin_Load(void);
+	/**
+	 * @brief Выполняется сервером в момент загрузки плагина.
+	 * Если функция вернёт false, плагин будет немедленно
+	 * выгружен из памяти.
+	 * 
+	 * @return true - плагин успешно загрузился, false - произошёл какой-то прикол
+	 */
+	EXP cs_bool Plugin_Load(void);
 
-/**
- * @brief Выполняется сервером в момент выгрузки плагина.
- * Например, при вызове серверной команды /plugin unload <name>
- * игроком, либо консолью.
- * 
- * @param force true - возвращённое значение будет проигнорировано
- * и плагин выгрузится в любом случае, false - плагин не будет
- * выгружен, если эта функция вернёт false.
- * @return true - плагин может завершить свою работу сейчас,
- * false - плагин не может быть выгружен.
- */
-EXP cs_bool Plugin_Unload(cs_bool force);
+	/**
+	 * @brief Выполняется сервером в момент выгрузки плагина.
+	 * Например, при вызове серверной команды /plugin unload <name>
+	 * игроком, либо консолью.
+	 * 
+	 * @param force true - возвращённое значение будет проигнорировано
+	 * и плагин выгрузится в любом случае, false - плагин не будет
+	 * выгружен, если эта функция вернёт false.
+	 * @return true - плагин может завершить свою работу сейчас,
+	 * false - плагин не может быть выгружен.
+	 */
+	EXP cs_bool Plugin_Unload(cs_bool force);
 
-/**
- * @brief Вызывается сервером, когда тот найдёт запрошенный
- * плагином интерфейс через Plugin_RequestInterface.
- * Если в данный момент никакой из плагинов не предоставляет
- * указанный интерфейс, сервер добавит запрос в холд-лист,
- * далее плагин должен терпеливо ждать вызова этой функции.
- * 
- * @param name название интерфейса
- * @param ptr указатель на структуру интерфейса (для каждого плагина она индивидуальна)
- * @param size размер структуры интерфейса
- */
-EXP void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size);
-EXP cs_int32 Plugin_ApiVer, Plugin_Version;
+	/**
+	 * @brief Вызывается сервером, когда тот найдёт запрошенный
+	 * плагином интерфейс через Plugin_RequestInterface.
+	 * Если в данный момент никакой из плагинов не предоставляет
+	 * указанный интерфейс, сервер добавит запрос в холд-лист,
+	 * далее плагин должен терпеливо ждать вызова этой функции.
+	 * 
+	 * @param name название интерфейса
+	 * @param ptr указатель на структуру интерфейса (для каждого плагина она индивидуальна)
+	 * @param size размер структуры интерфейса
+	 */
+	EXP void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size);
+	EXP cs_int32 Plugin_ApiVer, Plugin_Version;
 
-// Небольшой макрос для облегчения жизни при объявлении интерфейсов плагина
-#define Plugin_DeclareInterfaces EXP PluginInterface Plugin_Interfaces[]; \
-PluginInterface Plugin_Interfaces[] = 
+	// Небольшой макрос для облегчения жизни при объявлении интерфейсов плагина
+#	define Plugin_DeclareInterfaces EXP PluginInterface Plugin_Interfaces[]; \
+	PluginInterface Plugin_Interfaces[] = 
 
-/**
- * @brief Макрос, который должен выполнить каждый плагин. Он устанавливает версию API,
- * которую использует данный плагин в целях проверки совместимости с функциями,
- * предоставляемыми сервером. Также он устанавливает текущую версию плагина, которая
- * показывается при вызове команды /plugin list.
- * 
- * P.S. На данном этапе развития сервера версия API не меняется,
- * она заморожена на значении 001, так как итоговый набор функций
- * ещё не сформирован окончательно.
- */
-#define Plugin_SetVersion(ver) cs_int32 Plugin_ApiVer = PLUGIN_API_NUM, Plugin_Version = ver
+	/**
+	 * @brief Макрос, который должен выполнить каждый плагин. Он устанавливает версию API,
+	 * которую использует данный плагин в целях проверки совместимости с функциями,
+	 * предоставляемыми сервером. Также он устанавливает текущую версию плагина, которая
+	 * показывается при вызове команды /plugin list.
+	 * 
+	 * P.S. На данном этапе развития сервера версия API не меняется,
+	 * она заморожена на значении 001, так как итоговый набор функций
+	 * ещё не сформирован окончательно.
+	 */
+#	define Plugin_SetVersion(ver) cs_int32 Plugin_ApiVer = PLUGIN_API_NUM, Plugin_Version = ver
 
-// Макросы для создания массива интерфейсов
-#define PLUGIN_IFACE_END {NULL, NULL, 0}
-#define PLUGIN_IFACE_ADD(n, i) {n, &(i), sizeof(i)},
+	// Макросы для создания массива интерфейсов
+#	define PLUGIN_IFACE_END {NULL, NULL, 0}
+#	define PLUGIN_IFACE_ADD(n, i) {n, &(i), sizeof(i)},
 #endif
 
 /**

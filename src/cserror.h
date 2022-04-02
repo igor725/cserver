@@ -16,9 +16,9 @@ if(abort) { \
 }
 
 #if defined(CORE_USE_WINDOWS)
-#  define Error_PrintSys(abort) ERROR_PRINT(GetLastError(), abort);
+#	define Error_PrintSys(abort) ERROR_PRINT(GetLastError(), abort);
 #elif defined(CORE_USE_UNIX)
-#  define Error_PrintSys(abort) ERROR_PRINT(errno, abort);
+#	define Error_PrintSys(abort) ERROR_PRINT(errno, abort);
 #endif
 
 cs_bool Error_Init(void);

@@ -3,10 +3,10 @@
 #include "core.h"
 
 #if defined(CORE_USE_WINDOWS)
-#define CONSOLEIO_TERMINATE CTRL_C_EVENT
+#	define CONSOLEIO_TERMINATE CTRL_C_EVENT
 #elif defined(CORE_USE_UNIX)
-#include <signal.h>
-#define CONSOLEIO_TERMINATE SIGINT
+#	include <signal.h>
+#	define CONSOLEIO_TERMINATE SIGINT
 #endif
 
 void ConsoleIO_PrePrint(void);
