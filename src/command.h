@@ -168,5 +168,5 @@ API void Command_SetUserData(Command *cmd, void *ud);
  */
 API void *Command_GetUserData(Command *cmd);
 
-VAR AListField *Command_Head; /** Список зарегистрированных команд */
+AListField *Command_Head; /** Список зарегистрированных команд */
 #endif // COMMAND_H

@@ -12,7 +12,6 @@
 #include "world.h"
 #include "websock.h"
 
-Client *Broadcast = NULL;
 Client *Clients_List[MAX_CLIENTS] = {0};
 static AListField *headCGroup = NULL;
 
@@ -455,20 +454,27 @@ INL static cs_uint32 CopyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_
 void Client_Chat(Client *client, EMesgType type, cs_str message) {
 	cs_uint32 msgLen = (cs_uint32)String_Length(message);
 
-	if(msgLen > 62 && type == MESSAGE_TYPE_CHAT) {
+	if(msgLen > 64 && type == MESSAGE_TYPE_CHAT) {
 		cs_char color = 0, part[65] = {0};
 		cs_uint32 parts = (msgLen / 60) + 1;
 		for(cs_uint32 i = 0; i < parts; i++) {
 			cs_uint32 len = CopyMessagePart(message, part, i, &color);
 			if(len > 0) {
-				Vanilla_WriteChat(client, type, part);
+				Client_Chat(client, type, part);
 				message += len;
 			}
 		}
 		return;
 	}
 
-	Vanilla_WriteChat(client, type, message);
+	if(client)
+		Vanilla_WriteChat(client, type, message);
+	else {
+		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+			Client *bclient = Clients_List[i];
+			if(bclient) Vanilla_WriteChat(bclient, type, message);
+		}
+	}
 }
 
 NOINL static void HandlePacket(Client *client, cs_char *data) {

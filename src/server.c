@@ -274,10 +274,6 @@ cs_bool Server_Init(void) {
 	}
 	Log_SetLevelStr(Config_GetStrByKey(cfg, CFG_LOGLEVEL_KEY));
 	Config_Save(Server_Config, true);
-
-	Broadcast = Memory_Alloc(1, sizeof(Client));
-	Broadcast->mutex = Mutex_Create();
-	Broadcast->id = CLIENT_SELF;
 	Command_RegisterDefault();
 	Packet_RegisterDefault();
 	Plugin_LoadAll();
@@ -500,8 +496,6 @@ void Server_Cleanup(void) {
 	Log_Info(Sstor_Get("SV_STOP_PL"));
 	KickAll(Sstor_Get("KICK_STOP"));
 	Thread_Join(NetThreadHandle);
-	if(Broadcast && Broadcast->mutex) Mutex_Free(Broadcast->mutex);
-	if(Broadcast) Memory_Free(Broadcast);
 	Log_Info(Sstor_Get("SV_STOP_SW"));
 	UnloadAllWorlds();
 	Socket_Close(Server_Socket);
