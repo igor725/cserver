@@ -2,9 +2,9 @@
 #define COMMAND_H
 #include "core.h"
 #include "str.h"
-#include "strstor.h"
+#include "log.h"
+#include "client.h"
 #include "types/list.h"
-#include "types/client.h"
 
 #define COMMAND_SETUSAGE(str) \
 cs_str cmdUsage = str;

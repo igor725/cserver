@@ -16,7 +16,7 @@
 #include "strstor.h"
 #include "command.h"
 #include "heartbeat.h"
-#include "websock.h"
+#include "types/websock.h"
 #include "world.h"
 #include "list.h"
 

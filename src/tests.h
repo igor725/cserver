@@ -1,6 +1,7 @@
 #ifndef TESTS_H
 #define TESTS_H
 #include "core.h"
+#include "log.h"
 
 extern cs_uint16 Tests_CurrNum;
 extern cs_str Tests_Current;
