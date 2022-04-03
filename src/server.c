@@ -118,10 +118,10 @@ THREAD_FUNC(NetThread) {
 			if(tmp) {
 				tmp->mutex = Mutex_Create();
 				tmp->addr = caddr.sin_addr.s_addr;
+				NetBuffer_Init(&tmp->netbuf, fd);
 				tmp->id = TryToGetIDFor(tmp);
 				if(tmp->id != CLIENT_SELF) {
 					tmp->lastmsg = curr;
-					NetBuffer_Init(&tmp->netbuf, fd);
 					if(Event_Call(EVT_ONCONNECT, tmp)) {
 						Clients_List[tmp->id] = tmp;
 						continue;

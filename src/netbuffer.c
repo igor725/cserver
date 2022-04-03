@@ -54,7 +54,7 @@ cs_bool NetBuffer_Process(NetBuffer *nb) {
 	} else {
 		cs_char unused;
 		cs_int32 ret = Socket_Receive(nb->fd, &unused, 1, MSG_PEEK);
-		if(ret == -1 && Socket_IsFatal()) {
+		if(ret == 0 || (ret == -1 && Socket_IsFatal())) {
 			nb->closed = true;
 			return false;
 		}
@@ -81,6 +81,7 @@ cs_bool NetBuffer_Process(NetBuffer *nb) {
 			if(nb->asframe) nb->framesize -= sent;
 			if(NetBuffer_AvailWrite(nb) == 0) {
 				if(nb->shutdown) Socket_Shutdown(nb->fd, SD_SEND);
+				if(nb->wsupgrade) nb->asframe = true;
 				nb->write.offset = 0;
 				nb->cwrite = 0;
 			}

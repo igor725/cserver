@@ -19,6 +19,7 @@ typedef struct _NetBuffer {
 	cs_bool closed;
 	cs_bool shutdown;
 	cs_bool asframe;
+	cs_bool wsupgrade;
 	cs_uint32 framesize;
 } NetBuffer;
 #endif

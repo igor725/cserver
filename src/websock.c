@@ -100,7 +100,7 @@ INL static void ProcessHandshake(WebSock *ws, NetBuffer *nb) {
 			}
 
 			NetBuffer_EndWrite(nb, ret);
-			nb->asframe = true;
+			nb->wsupgrade = true;
 		} else {
 			ws->error = WEBSOCK_ERROR_NOTWS;
 			return;
