@@ -3,6 +3,7 @@
 #include "core.h"
 #include "str.h"
 #include "log.h"
+#include "strstor.h"
 #include "client.h"
 #include "types/list.h"
 
@@ -168,5 +169,5 @@ API void Command_SetUserData(Command *cmd, void *ud);
  */
 API void *Command_GetUserData(Command *cmd);
 
-AListField *Command_Head; /** Список зарегистрированных команд */
+extern AListField *Command_Head; /** Список зарегистрированных команд */
 #endif // COMMAND_H
