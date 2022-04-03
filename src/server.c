@@ -116,11 +116,11 @@ THREAD_FUNC(NetThread) {
 			Socket_SetNonBlocking(fd, true);
 			Client *tmp = Memory_TryAlloc(1, sizeof(Client));
 			if(tmp) {
+				tmp->mutex = Mutex_Create();
 				tmp->addr = caddr.sin_addr.s_addr;
 				tmp->id = TryToGetIDFor(tmp);
 				if(tmp->id != CLIENT_SELF) {
 					tmp->lastmsg = curr;
-					tmp->mutex = Mutex_Create();
 					NetBuffer_Init(&tmp->netbuf, fd);
 					if(Event_Call(EVT_ONCONNECT, tmp)) {
 						Clients_List[tmp->id] = tmp;
