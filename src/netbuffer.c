@@ -54,7 +54,7 @@ cs_bool NetBuffer_Process(NetBuffer *nb) {
 	} else {
 		cs_char unused;
 		cs_int32 ret = Socket_Receive(nb->fd, &unused, 1, MSG_PEEK);
-		if(ret == 0 || (ret == -1 && Socket_IsFatal())) {
+		if(ret == -1 && Socket_IsFatal()) {
 			nb->closed = true;
 			return false;
 		}
