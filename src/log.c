@@ -65,6 +65,9 @@ void Log_SetLevelStr(cs_str str) {
 			case 'c':
 				level |= LOG_COLORS;
 				break;
+			case 'r':
+				level |= LOG_REPEAT;
+				break;
 			case 'I':
 				level |= LOG_INFO;
 				break;
@@ -90,6 +93,12 @@ static LogBuffer buffer = {
 	.offset = 0
 };
 
+static struct LogPrevLine {
+	cs_char buffer[LOG_BUFSIZE];
+	cs_size count;
+	cs_byte flag;
+} prev;
+
 // Сдвигает все символы в лог буфере на указанное количество байт влево
 INL static void BufShiftLeft(cs_size from, cs_size shift) {
 	for(cs_size i = from + shift; i < buffer.offset; i++) {
@@ -114,6 +123,19 @@ INL static cs_bool BufShiftRight(cs_size from, cs_size shift) {
 void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 	if(Log_Flags & flag) {
 		Mutex_Lock(logMutex);
+
+		// Не даём серверу принтить одинаковые строки по миллон раз
+		if(Log_Flags & LOG_REPEAT) {
+			if(String_CaselessCompare(str, prev.buffer) && prev.flag == flag) {
+				File_WriteFormat(stderr, "\033[u (x%d)\r\n", prev.count++);
+				Mutex_Unlock(logMutex);
+				return;
+			} else {
+				String_Copy(prev.buffer, LOG_BUFSIZE, str);
+				prev.flag = flag;
+				prev.count = 1;
+			}
+		}
 
 		cs_int32 ret;
 		if((ret = Time_Format(buffer.data, LOG_BUFSIZE)) > 0)
@@ -169,14 +191,16 @@ void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 				LOG_BUFSIZE - buffer.offset,
 				MapColor('f')
 			);
-		buffer.data[buffer.offset++] = '\r';
-		buffer.data[buffer.offset++] = '\n';
 		buffer.data[buffer.offset] = '\0';
 		buffer.colored = ISSET(Log_Flags, LOG_COLORS);
 
 		if(Event_Call(EVT_ONLOG, &buffer)) {
 			ConsoleIO_PrePrint();
 			File_Write(buffer.data, buffer.offset, 1, stderr);
+			if(Log_Flags & LOG_REPEAT)
+				File_Write("\x1b[s\r\n", 5, 1, stderr);
+			else
+				File_Write("\r\n", 2, 1, stderr);
 			File_Flush(stderr);
 			ConsoleIO_AfterPrint();
 		}

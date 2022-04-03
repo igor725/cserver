@@ -11,6 +11,7 @@
 #define LOG_DEBUG BIT(4)
 #define LOG_ALL 0x0F
 #define LOG_COLORS BIT(5)
+#define LOG_REPEAT BIT(6)
 
 #define LOG_BUFSIZE 8192
 
