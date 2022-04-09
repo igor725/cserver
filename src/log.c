@@ -4,6 +4,7 @@
 #include "log.h"
 #include "event.h"
 #include "consoleio.h"
+#include <stdio.h>
 
 cs_byte Log_Flags = LOG_ALL;
 static Mutex *logMutex = NULL;

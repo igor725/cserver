@@ -47,7 +47,7 @@ PLUGINS_DIR="$SERVER_OUTROOT/plugins"
 
 notaplugin () {
 	echo "Looks like the specified directory is not a plugin."
-	exit 1;
+	exit 1
 }
 
 waitfor () {

@@ -1,7 +1,7 @@
 #ifndef LOG_H
 #define LOG_H
 #include "core.h"
-#include <stdio.h>
+#include <stdarg.h>
 
 #define LOG_QUIET 0x00
 #define LOG_ERROR BIT(0)
