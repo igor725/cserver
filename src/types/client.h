@@ -11,7 +11,7 @@
 #include "types/protocol.h"
 
 #define CLIENT_SELF (ClientID)-1
-#define Broadcast (Client *)NULL
+#define CLIENT_BROADCAST (Client *)NULL
 
 typedef enum _EMesgType {
 	MESSAGE_TYPE_CHAT, // Сообщение в чате

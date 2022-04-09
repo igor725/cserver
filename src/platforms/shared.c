@@ -5,17 +5,13 @@
 
 void *Memory_Alloc(cs_size num, cs_size size) {
 	void *ptr = Memory_TryAlloc(num, size);
-	if(!ptr) {
-		Error_PrintSys(true);
-	}
+	if(!ptr) Error_PrintSys(true);
 	return ptr;
 }
 
 void *Memory_Realloc(void *oldptr, cs_size new) {
 	void *newptr = Memory_TryRealloc(oldptr, new);
-	if(!newptr) {
-		Error_PrintSys(true);
-	}
+	if(!newptr) Error_PrintSys(true);
 	return newptr;
 }
 
@@ -98,10 +94,11 @@ cs_bool Socket_SetAddrGuess(struct sockaddr_in *ssa, cs_str host, cs_uint16 port
 
 	if((ret = Socket_SetAddr(ssa, host, port)) == 0) {
 		struct addrinfo *addr;
-		struct addrinfo hints = {0};
-		hints.ai_family = AF_INET;
-		hints.ai_socktype = 0;
-		hints.ai_protocol = 0;
+		struct addrinfo hints = {
+			.ai_family = AF_INET,
+			.ai_socktype = 0,
+			.ai_protocol = 0
+		};
 
 		cs_char strport[6];
 		String_FormatBuf(strport, 6, "%d", port);
@@ -164,24 +161,20 @@ cs_bool Socket_Shutdown(Socket sock, cs_int32 how) {
 }
 
 cs_bool Directory_Ensure(cs_str path) {
-	if(Directory_Exists(path)) return true;
-	return Directory_Create(path);
+	return Directory_Exists(path) || Directory_Create(path);
 }
 
 cs_bool DLib_LoadAll(cs_str lib[], cs_str symlist[], void **ctx) {
 	ctx[0] = NULL;
-	for(cs_uint32 i = 0; lib[i]; i++)
-		if(DLib_Load(lib[i], ctx)) break;
-	if(ctx[0] == NULL) return false;
+	while(!DLib_Load(*lib, ctx) && *(++lib));
 
-	for(cs_uint32 i = 0; symlist[i]; i++)
+	for(cs_int32 i = 0; ctx[0] && symlist[i]; i++)
 		if(!DLib_GetSym(ctx[0], symlist[i], &ctx[i + 1])) {
 			DLib_Unload(ctx[0]);
 			ctx[0] = NULL;
-			return false;
 		}
 
-	return true;
+	return ctx[0] != NULL;
 }
 
 cs_error Thread_GetError(void) {

@@ -173,9 +173,8 @@ cs_bool Thread_Signal(Thread th, cs_int32 sig) {
 }
 
 void Thread_Detach(Thread th) {
-	if(!CloseHandle(th)) {
+	if(!CloseHandle(th))
 		Error_PrintSys(true);
-	}
 }
 
 void Thread_Join(Thread th) {
@@ -208,16 +207,13 @@ void Mutex_Unlock(Mutex *mtx) {
 
 Waitable *Waitable_Create(void) {
 	Waitable *handle = CreateEventA(NULL, true, false, NULL);
-	if(handle == INVALID_HANDLE_VALUE) {
-		Error_PrintSys(true);
-	}
+	if(handle == INVALID_HANDLE_VALUE) Error_PrintSys(true);
 	return handle;
 }
 
 void Waitable_Free(Waitable *wte) {
-	if(!CloseHandle(wte)) {
+	if(!CloseHandle(wte))
 		Error_PrintSys(true);
-	}
 }
 
 void Waitable_Reset(Waitable *wte) {
@@ -256,9 +252,8 @@ void Semaphore_Post(Semaphore *sem) {
 }
 
 void Semaphore_Free(Semaphore *sem) {
-	if(!CloseHandle(sem)) {
+	if(!CloseHandle(sem))
 		Error_PrintSys(true);
-	}
 }
 
 cs_int32 Time_Format(cs_char *buf, cs_size buflen) {

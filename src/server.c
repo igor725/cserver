@@ -187,9 +187,7 @@ THREAD_FUNC(NetThread) {
 
 INL static cs_bool Bind(cs_str ip, cs_uint16 port) {
 	Server_Socket = Socket_New();
-	if(!Server_Socket) {
-		Error_PrintSys(true);
-	}
+	if(!Server_Socket) Error_PrintSys(true);
 
 	struct sockaddr_in ssa;
 	return Socket_SetAddr(&ssa, ip, port) > 0 &&

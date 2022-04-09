@@ -173,7 +173,7 @@ COMMAND_FUNC(Say) {
 	if(ccdata->args) {
 		cs_char message[256];
 		if(String_FormatBuf(message, 256, "&eServer&f: %s", ccdata->args)) {
-			Client_Chat(Broadcast, MESSAGE_TYPE_CHAT, message);
+			Client_Chat(CLIENT_BROADCAST, MESSAGE_TYPE_CHAT, message);
 			return false;
 		}
 	}
