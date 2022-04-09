@@ -50,7 +50,14 @@ cs_bool Socket_Init(void) {
 }
 
 cs_bool Socket_IsFatal(void) {
-	return Socket_GetError() != EAGAIN;
+	switch(Socket_GetError()) {
+		case 0:
+		case EAGAIN:
+			return false;
+		
+		default:
+			return true;
+	}
 }
 
 cs_error Socket_GetError(void) {

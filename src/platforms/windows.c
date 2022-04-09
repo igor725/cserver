@@ -51,6 +51,7 @@ cs_bool Socket_IsFatal(void) {
 	switch(Socket_GetError()) {
 		case WSAEWOULDBLOCK:
 		case EAGAIN:
+		case 0:
 			return false;
 		
 		default:
