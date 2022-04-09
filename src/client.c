@@ -452,6 +452,7 @@ INL static cs_uint32 CopyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_
 }
 
 void Client_Chat(Client *client, EMesgType type, cs_str message) {
+	if(Client_IsBot(client)) return;
 	cs_uint32 msgLen = (cs_uint32)String_Length(message);
 
 	if(msgLen > 64 && type == MESSAGE_TYPE_CHAT) {
