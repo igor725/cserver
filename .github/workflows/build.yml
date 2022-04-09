@@ -10,8 +10,8 @@ jobs:
     strategy:
       matrix:
         config:
-        - {name: "Ubuntu", os: ubuntu-latest, cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev, build: ./build, svbin: ./out/$(gcc -dumpmachine)/server}
-        - {name: "Windows", os: windows-latest, build: .\build.bat, svbin: .\out\x64dbg\server.exe}
+        - {name: "Ubuntu", os: ubuntu-latest, cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev, build: ./build, svdir: ./out/$(gcc -dumpmachine)/, svbin: server}
+        - {name: "Windows", os: windows-latest, build: .\build.bat, svdir: .\out\x64dbg\, svbin: server.exe}
 
     steps:
     - uses: actions/checkout@v3
@@ -21,6 +21,11 @@ jobs:
       if: ${{matrix.config.cfg != null}}
       run: ${{matrix.config.cfg}}
     - name: build
-      run: ${{matrix.config.build}} wall dbg
+      run: ${{matrix.config.build}} wall dbg noprompt
     # - name: test
     #   run: ${{matrix.config.svbin}} testmode
+    - name: upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{matrix.config.name}}
+        path: out
