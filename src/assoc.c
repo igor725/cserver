@@ -121,7 +121,7 @@ cs_bool Assoc_Remove(void *target, AssocType type) {
 	if(!AGetType(type, &bind)) return false;
 	KListField *anode = AGetNode(target, bind);
 	if(!anode) return false;
-	void *anodeptr = anode->value.ptr;
+	Memory_Free(anode->value.ptr);
 
 	switch(bind->type) {
 		case ASSOC_BIND_CLIENT:
@@ -130,10 +130,7 @@ cs_bool Assoc_Remove(void *target, AssocType type) {
 		case ASSOC_BIND_WORLD:
 			KList_Remove(&((World *)target)->headNode, anode);
 			break;
-
-		default: return false;
 	}
 
-	Memory_Free(anodeptr);
 	return true;
 }
