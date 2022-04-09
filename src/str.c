@@ -5,20 +5,18 @@
 #include <stdlib.h>
 
 cs_bool String_CaselessCompare(cs_str str1, cs_str str2) {
-	if(!str1 || !str2) return false;
 	cs_byte c1, c2;
 
 	while(true) {
 		c1 = *str1++, c2 = *str2++;
+		if(c1 == c2 && c2 == '\0') return true;
 		if(c1 >= 'A' && c1 <= 'Z') c1 += 32;
 		if(c2 >= 'A' && c2 <= 'Z') c2 += 32;
 		if(c1 != c2) return false;
-		if(c1 == '\0' && c2 == '\0') return true;
 	}
 }
 
 cs_bool String_CaselessCompare2(cs_str str1, cs_str str2, cs_size len) {
-	if(!str1 || !str2) return false;
 	cs_byte c1, c2;
 
 	while(len--) {
