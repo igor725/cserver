@@ -9,8 +9,8 @@
 cs_byte Log_Flags = LOG_ALL;
 static Mutex *logMutex = NULL;
 
-#define MKCOL(c) "\x1B["c"m"
-#define MKTCOL(c, t) Log_Flags&LOG_COLORS?MKCOL(c)t"\x1B[0m":t
+#define MKCOL(c) "\033["c"m"
+#define MKTCOL(c, t) Log_Flags&LOG_COLORS?MKCOL(c)t"\033[0m":t
 
 static cs_str MapColor(cs_char col) {
 	switch(col) {
@@ -128,9 +128,11 @@ void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 		// Не даём серверу принтить одинаковые строки по миллон раз
 		if(Log_Flags & LOG_REPEAT) {
 			if(String_CaselessCompare(str, prev.buffer) && prev.flag == flag) {
+				ConsoleIO_PrePrint();
 				File_WriteFormat(stderr, "\033[u (x%d)\r\n", prev.count++);
-				Mutex_Unlock(logMutex);
-				return;
+				File_Flush(stderr);
+				ConsoleIO_AfterPrint();
+				goto logend;
 			} else {
 				String_Copy(prev.buffer, LOG_BUFSIZE, str);
 				prev.flag = flag;
@@ -198,7 +200,7 @@ void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 			ConsoleIO_PrePrint();
 			File_Write(buffer.data, buffer.offset, 1, stderr);
 			if(Log_Flags & LOG_REPEAT)
-				File_Write("\x1b[s\r\n", 5, 1, stderr);
+				File_Write("\033[s\r\n", 5, 1, stderr);
 			else
 				File_Write("\r\n", 2, 1, stderr);
 			File_Flush(stderr);
