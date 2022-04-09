@@ -95,6 +95,7 @@ cs_int32 Socket_SetAddr(struct sockaddr_in *ssa, cs_str ip, cs_uint16 port) {
 
 cs_bool Socket_SetAddrGuess(struct sockaddr_in *ssa, cs_str host, cs_uint16 port) {
 	cs_int32 ret;
+
 	if((ret = Socket_SetAddr(ssa, host, port)) == 0) {
 		struct addrinfo *addr;
 		struct addrinfo hints = {0};
@@ -110,6 +111,7 @@ cs_bool Socket_SetAddrGuess(struct sockaddr_in *ssa, cs_str host, cs_uint16 port
 			return true;
 		}
 	}
+
 	return ret == 1;
 }
 
