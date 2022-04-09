@@ -200,13 +200,13 @@ cs_int32 WebSock_WriteHeader(Socket sock, cs_byte opcode, cs_uint32 len, cs_int3
 
 	if(len < 126)
 		hdr[1] = (cs_char)len;
-	else if(len < 65535) {
+	else if(len < 65536) {
 		*hdrlen = 4;
 		hdr[1] = 126;
 		*(cs_uint16 *)&hdr[2] = htons((cs_uint16)len);
 	} else {
 		*hdrlen = -1;
-		return -1;
+		return 0;
 	}
 
 	return Socket_Send(sock, hdr, *hdrlen);

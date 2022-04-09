@@ -65,15 +65,21 @@ cs_bool NetBuffer_Process(NetBuffer *nb) {
 		if(nb->asframe) {
 			if(nb->framesize == 0) {
 				cs_int32 hdrlen = 0;
-				nb->framesize = avail;
-				if(WebSock_WriteHeader(nb->fd, 0x02, avail, &hdrlen) != hdrlen) {
+				nb->framesize = min(avail, WEBSOCK_FRAME_MAXSIZE);
+				if(WebSock_WriteHeader(nb->fd, 0x02, nb->framesize, &hdrlen) != hdrlen) {
 					if(Socket_IsFatal()) {
 						nb->closed = true;
 						return false;
 					}
+
+					nb->framesize = 0;
+					return true;
 				}
 			}
+
+			avail = min(nb->framesize, avail);
 		}
+
 		cs_char *data = nb->write.buffer + nb->cwrite;
 		cs_int32 sent = Socket_Send(nb->fd, data, avail);
 		if(sent > 0) {
