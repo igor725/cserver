@@ -11,10 +11,14 @@ jobs:
       matrix:
         config:
         - {name: "Ubuntu", os: ubuntu-latest, cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev, build: ./build, svbin: ./out/$(gcc -dumpmachine)/server}
+        - {name: "Windows", os: windows-latest, build: .\build.bat, svbin: .\out\x64dbg\server.exe}
 
     steps:
     - uses: actions/checkout@v3
+    - uses: ilammy/msvc-dev-cmd@v1
+      if: ${{matrix.config.name == 'Windows'}}
     - name: configure
+      if: ${{matrix.config.cfg != null}}
       run: ${{matrix.config.cfg}}
     - name: build
       run: ${{matrix.config.build}} wall dbg
