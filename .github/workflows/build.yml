@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         config:
-        - {name: "Ubuntu", os: ubuntu-latest, cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev, build: ./build}
+        - {name: "Ubuntu", os: ubuntu-latest, cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev libluajit-5.1-dev, build: ./build}
         - {name: "Windows", os: windows-latest, build: .\build.bat}
 
     steps:
@@ -25,6 +25,24 @@ jobs:
         repository: igor725/cs-base
         path: cs-base
 
+    - name: Checkout Survival plugin
+      uses: actions/checkout@v3
+      with:
+        repository: igor725/cs-survival
+        path: cs-survival
+
+    - name: Checkout Lua plugin
+      uses: actions/checkout@v3
+      with:
+        repository: igor725/cs-lua
+        path: cs-lua
+
+    - name: Checkout WorldEdit plugin
+      uses: actions/checkout@v3
+      with:
+        repository: igor725/cs-worldedit
+        path: cs-worldedit
+
     - name: Detect MSVC
       uses: ilammy/msvc-dev-cmd@v1
       if: ${{matrix.config.name == 'Windows'}}
@@ -38,6 +56,9 @@ jobs:
       run: |
         ${{matrix.config.build}} wall dbg noprompt
         ${{matrix.config.build}} wall dbg pb base install
+        ${{matrix.config.build}} wall dbg pb survival install
+        ${{matrix.config.build}} wall dbg pb lua install
+        ${{matrix.config.build}} wall dbg pb worldedit install
 
     # - name: Test
     #   run: ${{matrix.config.svbin}} testmode
