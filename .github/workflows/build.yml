@@ -51,10 +51,14 @@ jobs:
       if: ${{matrix.config.cfg != null}}
       run: ${{matrix.config.cfg}}
 
-    - name: Build
+    - name: Build core
       working-directory: core
       run: |
         ${{matrix.config.build}} wall dbg noprompt
+
+    - name: Build plugins
+      working-directory: core
+      run: |
         ${{matrix.config.build}} wall dbg pb base install
         ${{matrix.config.build}} wall dbg pb survival install
         ${{matrix.config.build}} wall dbg pb lua install
@@ -73,3 +77,5 @@ jobs:
           !core/out/**/objs
           !core/out/**/worlds
           !core/out/**/configs
+          !core/out/**/*.ilk
+          !core/out/**/*.exp
