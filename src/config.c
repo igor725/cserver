@@ -241,6 +241,7 @@ cs_bool Config_Save(CStore *store, cs_bool force) {
 		return false;
 	}
 
+	Directory_Ensure("configs");
 	cs_file fp = File_Open(tmppath, "w");
 	if(!fp) {
 		store->error.code = CONFIG_ERROR_IOFAIL;

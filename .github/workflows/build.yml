@@ -11,7 +11,7 @@ jobs:
       matrix:
         config:
         - {name: "Ubuntu", os: ubuntu-latest, cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev libluajit-5.1-dev, build: ./build}
-        - {name: "Windows", os: windows-latest, build: .\build.bat}
+        - {name: "Windows", os: windows-latest, build: .\build.bat, testbin: .\core\out\x64dbg\server.exe}
 
     steps:
     - name: Checkout main repo
@@ -60,8 +60,9 @@ jobs:
         ${{matrix.config.build}} wall dbg pb lua install
         ${{matrix.config.build}} wall dbg pb worldedit install
 
-    # - name: Test
-    #   run: ${{matrix.config.svbin}} testmode
+    - name: Make some tests
+      if: ${{matrix.config.testbin != null}}
+      run: ${{matrix.config.testbin}} testmode
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
@@ -70,3 +71,5 @@ jobs:
         path: |
           core/out
           !core/out/**/objs
+          !core/out/**/worlds
+          !core/out/**/configs

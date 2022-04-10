@@ -343,6 +343,7 @@ THREAD_FUNC(WorldSaveThread) {
 	String_FormatBuf(path, MAX_PATH, "worlds" PATH_DELIM "%s.cws", world->name);
 	String_FormatBuf(tmpname, MAX_PATH, "worlds" PATH_DELIM "%s.tmp", world->name);
 
+	Directory_Ensure("worlds");
 	cs_file fp = File_Open(tmpname, "wb");
 	if(!fp) {
 		world->error.code = WORLD_ERROR_IOFAIL;

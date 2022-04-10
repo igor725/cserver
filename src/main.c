@@ -38,12 +38,13 @@ int main(int argc, char *argv[]) {
 		}
 
 		if(testmode) {
-			if(Tests_PerformAll())
+			if(Tests_PerformAll()) {
 				Log_Info("All tests passed!");
-			else
+				Process_Exit(0);
+			} else {
 				Log_Error("Some tests failed!");
-
-			Process_Exit(1);
+				Process_Exit(1);
+			}
 		} else {
 			if(Server_Init())
 				Server_StartLoop();
