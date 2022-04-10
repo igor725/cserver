@@ -10,22 +10,40 @@ jobs:
     strategy:
       matrix:
         config:
-        - {name: "Ubuntu", os: ubuntu-latest, cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev, build: ./build, svdir: ./out/$(gcc -dumpmachine)/, svbin: server}
-        - {name: "Windows", os: windows-latest, build: .\build.bat, svdir: .\out\x64dbg\, svbin: server.exe}
+        - {name: "Ubuntu", os: ubuntu-latest, cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev, build: ./build}
+        - {name: "Windows", os: windows-latest, build: .\build.bat}
 
     steps:
-    - uses: actions/checkout@v3
-    - uses: ilammy/msvc-dev-cmd@v1
+    - name: Checkout main repo
+      uses: actions/checkout@v3
+      with:
+        path: core
+    
+    - name: Checkout base plugin
+      uses: actions/checkout@v3
+      with:
+        repository: igor725/cs-base
+        path: cs-base
+
+    - name: Detect MSVC
+      uses: ilammy/msvc-dev-cmd@v1
       if: ${{matrix.config.name == 'Windows'}}
-    - name: configure
+
+    - name: Configure
       if: ${{matrix.config.cfg != null}}
       run: ${{matrix.config.cfg}}
-    - name: build
-      run: ${{matrix.config.build}} wall dbg noprompt
-    # - name: test
+
+    - name: Build
+      working-directory: core
+      run: |
+        ${{matrix.config.build}} wall dbg noprompt
+        ${{matrix.config.build}} wall dbg pb base install
+
+    # - name: Test
     #   run: ${{matrix.config.svbin}} testmode
-    - name: upload artifacts
+
+    - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
         name: ${{matrix.config.name}}
-        path: out
+        path: core/out
