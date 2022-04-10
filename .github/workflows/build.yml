@@ -46,4 +46,6 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: ${{matrix.config.name}}-${{github.sha}}
-        path: core/out
+        path: |
+          core/out
+          !core/out/**/objs
