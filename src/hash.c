@@ -160,5 +160,5 @@ cs_bool MD5_Final(cs_byte *hash, MD5_CTX *ctx) {
 	return Crypt.MD5Final(hash, ctx);
 }
 #else
-#error This file wants to be hacked
+#	error This file wants to be hacked
 #endif

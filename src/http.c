@@ -91,7 +91,7 @@ static cs_str libcurl[] = {
 	"curl.dll",
 	"libcurl.dll",
 #else
-#error This file wants to be hacked
+#	error This file wants to be hacked
 #endif
 	NULL
 };
@@ -105,10 +105,6 @@ static struct _cURLLib {
 	void (*easy_cleanup)(CURL *);
 } curl;
 
-INL static cs_bool InitBackend(void) {
-	return DLib_LoadAll(libcurl, csymlist, (void **)&curl);
-}
-
 void Http_Uninit(void) {
 	if(!curl.lib) return;
 	DLib_Unload(curl.lib);
@@ -116,7 +112,8 @@ void Http_Uninit(void) {
 }
 
 cs_bool Http_Open(Http *http, cs_str domain) {
-	if(!curl.lib && !InitBackend()) return false;
+	if(!curl.lib && !DLib_LoadAll(libcurl, csymlist, (void **)&curl))
+		return false;
 	http->domain = String_AllocCopy(domain);
 	http->handle = curl.easy_init();
 	if(http->handle) {
@@ -130,7 +127,7 @@ cs_bool Http_Open(Http *http, cs_str domain) {
 cs_bool Http_Request(Http *http, cs_str url) {
 	if(!curl.lib || !http->domain || !http->handle) return false;
 	http->path = (cs_char *)(http->secure ? String_AllocCopy("https://") : String_AllocCopy("http://"));
-	cs_size memsize;
+	cs_size memsize = 0;
 	http->path = String_Grow(http->path, String_Length(http->domain) + String_Length(url), &memsize);
 	String_Append(http->path, memsize, http->domain);
 	String_Append(http->path, memsize, url);
@@ -152,13 +149,11 @@ static cs_size writefunc(cs_char *ptr, cs_size sz, cs_size num, void *ud) {
 
 cs_ulong Http_ReadResponse(Http *http, cs_char *buf, cs_ulong sz) {
 	if(!curl.lib || !http->handle) return false;
-	http->buf = buf;
-	http->buflen = sz;
+	http->buf = buf, http->buflen = sz;
 	curl.easy_setopt(http->handle, CURLOPT_WRITEFUNCTION, writefunc);
 	curl.easy_setopt(http->handle, CURLOPT_WRITEDATA, (void *)http);
-	if(curl.easy_perform(http->handle) == CURLE_OK) {
+	if(curl.easy_perform(http->handle) == CURLE_OK)
 		return (cs_ulong)http->rsplen;
-	}
 	return 0L;
 }
 
@@ -170,5 +165,5 @@ void Http_Cleanup(Http *http) {
 	Memory_Zero(http, sizeof(Http));
 }
 #else
-#error No HTTP backend selected!
+#	error No HTTP backend selected!
 #endif

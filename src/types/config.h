@@ -41,9 +41,9 @@ typedef union _CUValue {
 	cs_str vchar;
 } CUValue;
 
-#define CFG_MAX_LEN 128 // Максимальная длина строки в cfg файле
-#define CFG_FREADED BIT(0) // Была ли осуществленна попытка чтения значения из cfg файла
-#define CFG_FCHANGED BIT(1) // Отличается ли текущее значение записи от заданного стандартного
+#define CFG_MAX_LEN     128 // Максимальная длина строки в cfg файле
+#define CFG_FREADED     BIT(0) // Была ли осуществленна попытка чтения значения из cfg файла
+#define CFG_FCHANGED    BIT(1) // Отличается ли текущее значение записи от заданного стандартного
 #define CFG_FHAVELIMITS BIT(2) // Применимо только для integer типов
 
 typedef struct _CEntry {

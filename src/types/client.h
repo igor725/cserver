@@ -10,7 +10,7 @@
 #include "types/netbuffer.h"
 #include "types/protocol.h"
 
-#define CLIENT_SELF (ClientID)-1
+#define CLIENT_SELF      (ClientID)-1
 #define CLIENT_BROADCAST (Client *)NULL
 
 typedef enum _EMesgType {

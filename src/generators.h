@@ -42,7 +42,7 @@ API cs_bool Generators_RemoveByFunc(GeneratorRoutine gr);
  * @param world указатель на мир
  * @param name имя генератора
  * @param data пока что не используется
- * @return API 
+ * @return true - генератор выполнил работу успешно, false - что-то пошло не так
  */
 API cs_bool Generators_Use(World *world, cs_str name, cs_int32 seed);
 

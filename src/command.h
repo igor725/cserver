@@ -7,20 +7,15 @@
 #include "client.h"
 #include "types/list.h"
 
-#define COMMAND_SETUSAGE(str) \
-cs_str cmdUsage = str;
-
+#define COMMAND_SETUSAGE(str) cs_str cmdUsage = str;
 #define COMMAND_PRINT(str) return String_Copy(ccdata->out, MAX_CMD_OUT, str) > 0
-
 #define COMMAND_PRINTF(f, ...) return String_FormatBuf(ccdata->out, MAX_CMD_OUT, f, ##__VA_ARGS__) > 0
-
 #define COMMAND_APPEND(str) String_Append(ccdata->out, MAX_CMD_OUT, str)
+#define COMMAND_GETARG(a, s, n) String_GetArgument(ccdata->args, a, s, n)
 
 #define COMMAND_APPENDF(buf, sz, fmt, ...) (\
 String_FormatBuf(buf, sz, fmt, ##__VA_ARGS__), \
 String_Append(ccdata->out, MAX_CMD_OUT, buf))
-
-#define COMMAND_GETARG(a, s, n) String_GetArgument(ccdata->args, a, s, n)
 
 #define COMMAND_PRINTLINE(line) \
 if(ccdata->caller) \
