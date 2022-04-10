@@ -2,6 +2,8 @@
 #define ASSOCTYPES_H
 #include "core.h"
 
+#define ASSOC_INVALID_TYPE ((AssocType)-1)
+
 /**
  * @brief Перечисление возможных объектов для создания ассоцииации
  * 

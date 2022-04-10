@@ -53,7 +53,7 @@ AssocType Assoc_NewType(EAssocBindType bindto) {
 	next->id = headBind ? headBind->id + 1 : 0;
 	if(next->id < 0) {
 		Memory_Free(next);
-		return (AssocType)-1;
+		return ASSOC_INVALID_TYPE;
 	}
 	next->type = bindto;
 	AList_AddField(&headAssocType, next);
