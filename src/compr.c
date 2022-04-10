@@ -5,13 +5,6 @@
 #include "log.h"
 #include <zlib.h>
 
-static cs_str zsmylist[] = {
-	"crc32", "zlibCompileFlags", "zError",
-	"deflateInit2_", "deflate", "deflateEnd",
-	"inflateInit2_", "inflate", "inflateEnd",
-	NULL
-};
-
 static struct _ZLib {
 	void *lib;
 
@@ -28,7 +21,14 @@ static struct _ZLib {
 	int(*infend)(z_streamp strm);
 } zlib;
 
-cs_str zlibdll[] = {
+static cs_str zsmylist[] = {
+	"crc32", "zlibCompileFlags", "zError",
+	"deflateInit2_", "deflate", "deflateEnd",
+	"inflateInit2_", "inflate", "inflateEnd",
+	NULL
+};
+
+static cs_str zlibdll[] = {
 #if defined(CORE_USE_WINDOWS)
 	"zlibwapi.dll",
 	"zlib1.dll",
@@ -38,7 +38,7 @@ cs_str zlibdll[] = {
 	"libz.so",
 	"libz.so.1",
 #else
-#error This file wants to be hacked
+#	error This file wants to be hacked
 #endif
 	NULL
 };

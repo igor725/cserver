@@ -315,7 +315,7 @@ cs_bool Client_ChangeWorld(Client *client, World *world) {
 }
 
 void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
-	if(!client->cpeData) return;
+	if(!client->cpeData || Client_IsBot(client)) return;
 
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
 		if(updateAll || world->info.modval & MV_COLORS) {
@@ -452,7 +452,7 @@ INL static cs_uint32 CopyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_
 }
 
 void Client_Chat(Client *client, EMesgType type, cs_str message) {
-	if(Client_IsBot(client)) return;
+	if(client && Client_IsBot(client)) return;
 	cs_uint32 msgLen = (cs_uint32)String_Length(message);
 
 	if(msgLen > 64 && type == MESSAGE_TYPE_CHAT) {
@@ -468,14 +468,16 @@ void Client_Chat(Client *client, EMesgType type, cs_str message) {
 		return;
 	}
 
-	if(client)
-		Vanilla_WriteChat(client, type, message);
-	else {
+	if(client == CLIENT_BROADCAST) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			Client *bclient = Clients_List[i];
 			if(bclient) Vanilla_WriteChat(bclient, type, message);
 		}
+
+		return;
 	}
+
+	Vanilla_WriteChat(client, type, message);
 }
 
 NOINL static void HandlePacket(Client *client, cs_char *data) {
@@ -551,6 +553,7 @@ cs_bool Client_IsFirstSpawn(Client *client) {
 }
 
 void Client_SetBlock(Client *client, SVec *pos, BlockID id) {
+	if(Client_IsBot(client)) return;
 	if(Client_GetExtVer(client, EXT_CUSTOMBLOCKS) < 1 ||
 	(Client_GetExtVer(client, EXT_BLOCKDEF) || Client_GetExtVer(client, EXT_BLOCKDEF2)) < 1)
 		id = Block_GetFallbackFor(Client_GetWorld(client), id);
@@ -699,7 +702,7 @@ cs_bool Client_GetPosition(Client *client, Vec *pos, Ang *ang) {
 }
 
 cs_bool Client_SetOP(Client *client, cs_bool state) {
-	if(!client->playerData) return false;
+	if(!client->playerData || Client_IsBot(client)) return false;
 	client->playerData->isOP = state;
 	Event_Call(EVT_ONUSERTYPECHANGE, client);
 	// if(Client_CheckState(client, CLIENT_STATE_INGAME))
