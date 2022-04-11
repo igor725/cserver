@@ -3,7 +3,8 @@ name: C/C++ CI
 on:
   push:
     paths:
-      - 'src/**'
+      - src/**
+      - .github/**
 
 jobs:
   build:
@@ -14,8 +15,10 @@ jobs:
       fail-fast: false
       matrix:
         config:
-        - {name: "Ubuntu", os: ubuntu-latest, cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev libluajit-5.1-dev, build: ./build, testbin: ./core/out/$(gcc -dumpmachine)/server}
-        - {name: "Windows", os: windows-latest, build: .\build.bat, testbin: .\core\out\x64dbg\server.exe}
+        - {name: Ubuntu x64, os: ubuntu-latest, arch: x86_64-linux-gnu, cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev libluajit-5.1-dev, build: ./build, testbin: ./core/out/$(gcc -dumpmachine)/server}
+        # - {name: Ubuntu arm64, os: ubuntu-latest, arch: aarch64-linux-gnu, cfg: 'sudo apt install -y gcc-aarch64-linux-gnu libcurl4-openssl-dev:arm64 zlib1g-dev:arm64 libluajit-5.1-dev:arm64', build: ./build, testbin: ./core/out/$(gcc -dumpmachine)/server}
+        - {name: Windows x64, os: windows-latest, arch: amd64, build: .\build.bat, testbin: .\core\out\x64dbg\server.exe}
+        # - {name: Windows arm64, os: windows-latest, arch: amd64_arm64, build: .\build.bat, testbin: .\core\out\x64dbg\server.exe}
 
     steps:
     - name: Checkout main repo
@@ -49,19 +52,25 @@ jobs:
 
     - name: Detect MSVC
       uses: ilammy/msvc-dev-cmd@v1
-      if: ${{matrix.config.name == 'Windows'}}
+      if: ${{matrix.config.os == 'windows-latest'}}
+      # with:
+      #   arch: ${{matrix.config.arch}}
 
-    - name: Configure
+    - name: Install some packages
       if: ${{matrix.config.cfg != null}}
       run: ${{matrix.config.cfg}}
 
     - name: Build core
       working-directory: core
+      # env:
+      #   CC: ${{matrix.config.arch}}-gcc
       run: |
         ${{matrix.config.build}} wall dbg noprompt
 
     - name: Build plugins
       working-directory: core
+      # env:
+      #   CC: ${{matrix.config.arch}}-gcc
       run: |
         ${{matrix.config.build}} wall dbg pb base install
         ${{matrix.config.build}} wall dbg pb survival install

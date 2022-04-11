@@ -32,7 +32,7 @@ fi
 CC="$CC -fdiagnostics-color=always"
 LNK="$CC"
 if [ "$OS" != "win" ]; then
-	LNK="gcc -rdynamic"
+	LNK="$CC -rdynamic"
 fi
 CFLAGS="-pipe -fPIC"
 LIBS=""
@@ -199,7 +199,7 @@ if [ $COMPILE -eq 1 ]; then
 
 	if [ $DEBUG -eq 0 ]; then
 		echo -ne "done\nStripping..."
-		strip $OUTDIR/$OUTBIN
+		"$MACH-strip" $OUTDIR/$OUTBIN
 	fi
 
 	echo -ne "done\n"
