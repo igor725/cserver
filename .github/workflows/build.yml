@@ -8,9 +8,10 @@ jobs:
     name: ${{matrix.config.name}}
     runs-on: ${{matrix.config.os}}
     strategy:
+      fail-fast: false
       matrix:
         config:
-        - {name: "Ubuntu", os: ubuntu-latest, cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev libluajit-5.1-dev, build: ./build}
+        - {name: "Ubuntu", os: ubuntu-latest, cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev libluajit-5.1-dev, build: ./build, testbin: ./core/out/$(gcc -dumpmachine)/server}
         - {name: "Windows", os: windows-latest, build: .\build.bat, testbin: .\core\out\x64dbg\server.exe}
 
     steps:
