@@ -85,7 +85,7 @@ cs_bool Tests_Strings(void) {
 	cs_str mystring = "ololostring";
 	cs_size sz = String_Length(mystring),
 	b64sz = String_SizeOfB64(sz);
-	mem = Memory_Alloc(b64sz, 1);
+	mem = Memory_Alloc(b64sz + 1, 1);
 	Tests_Assert(String_ToB64((const cs_byte *)mystring, sz, mem) == b64sz, "encode string to base64");
 	Tests_Assert(String_Compare(mem, "b2xvbG9zdHJpbmc="), "check encoded string");
 	Memory_Free(mem);
