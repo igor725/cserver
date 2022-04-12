@@ -40,6 +40,7 @@ OUTBIN="server"
 if git --version >/dev/null 2>&1; then
 	GITOK=1
 fi
+PLUGIN_ARGS=""
 PLUGIN_BUILD=0
 PLUGIN_INSTALL=0
 SERVER_OUTROOT="$ROOT/out/$MACH"
@@ -64,6 +65,8 @@ do
 		if [ -n "$PLUGIN_NAME" ]; then
 			if [ "$a" == "install" ]; then
 				PLUGIN_INSTALL=1
+			else
+				PLUGIN_ARGS="$PLUGIN_ARGS$a "
 			fi
 			continue
 		else
