@@ -15,12 +15,12 @@ static cs_str csymlist[] = {
 static struct _CryptLib {
 	void *lib;
 
-	BOOL(*AcquireContext)(HCRYPTPROV *, cs_str, cs_str, cs_ulong, cs_ulong);
-	BOOL(*ReleaseContext)(HCRYPTPROV, cs_ulong);
-	BOOL(*CreateHash)(HCRYPTPROV, ALG_ID, HCRYPTKEY, cs_ulong, HCRYPTHASH *);
-	BOOL(*HashData)(HCRYPTHASH, const cs_byte *, cs_ulong, cs_ulong);
-	BOOL(*GetHashParam)(HCRYPTHASH, cs_ulong, cs_byte *, cs_ulong *, cs_ulong);
-	BOOL(*DestroyHash)(HCRYPTHASH);
+	BOOL(__stdcall *AcquireContext)(HCRYPTPROV *, cs_str, cs_str, cs_ulong, cs_ulong);
+	BOOL(__stdcall *ReleaseContext)(HCRYPTPROV, cs_ulong);
+	BOOL(__stdcall *CreateHash)(HCRYPTPROV, ALG_ID, HCRYPTKEY, cs_ulong, HCRYPTHASH *);
+	BOOL(__stdcall *HashData)(HCRYPTHASH, const cs_byte *, cs_ulong, cs_ulong);
+	BOOL(__stdcall *GetHashParam)(HCRYPTHASH, cs_ulong, cs_byte *, cs_ulong *, cs_ulong);
+	BOOL(__stdcall *DestroyHash)(HCRYPTHASH);
 } Crypt;
 
 INL static cs_bool InitBackend(void) {

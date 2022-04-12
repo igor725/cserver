@@ -8,17 +8,17 @@
 static struct _ZLib {
 	void *lib;
 
-	unsigned long(*crc32)(unsigned long start, const unsigned char *data, unsigned int len);
-	unsigned long(*zflags)(void);
-	char *(*error)(int code);
+	unsigned long(__cdecl *crc32)(unsigned long start, const unsigned char *data, unsigned int len);
+	unsigned long(__cdecl *zflags)(void);
+	char *(__cdecl *error)(int code);
 
-	int(*definit)(z_streamp strm, int level, int meth, int bits, int memlvl, int strat, const char *ver, int size);
-	int(*deflate)(z_streamp strm, int flush);
-	int(*defend)(z_streamp strm);
+	int(__cdecl *definit)(z_streamp strm, int level, int meth, int bits, int memlvl, int strat, const char *ver, int size);
+	int(__cdecl *deflate)(z_streamp strm, int flush);
+	int(__cdecl *defend)(z_streamp strm);
 
-	int(*infinit)(z_streamp strm, int bits, const char *ver, int size);
-	int(*inflate)(z_streamp strm, int flush);
-	int(*infend)(z_streamp strm);
+	int(__cdecl *infinit)(z_streamp strm, int bits, const char *ver, int size);
+	int(__cdecl *inflate)(z_streamp strm, int flush);
+	int(__cdecl *infend)(z_streamp strm);
 } zlib;
 
 static cs_str zsmylist[] = {

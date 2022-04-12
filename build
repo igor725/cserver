@@ -34,7 +34,7 @@ LNK="$CC"
 if [ "$OS" != "win" ]; then
 	LNK="$CC -rdynamic"
 fi
-CFLAGS="-pipe -fPIC"
+CFLAGS="-pipe -fpic -fno-semantic-interposition"
 LIBS=""
 OUTBIN="server"
 if git --version >/dev/null 2>&1; then

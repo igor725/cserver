@@ -14,12 +14,12 @@ static cs_str wisymlist[] = {
 struct _WinInet {
 	void *lib;
 
-	HINTERNET(*IOpen)(cs_str, cs_ulong, cs_str, cs_str, cs_ulong);
-	HINTERNET(*IConnect)(HINTERNET, cs_str, INTERNET_PORT, cs_str, cs_str, cs_ulong, cs_ulong, cs_uintptr);
-	HINTERNET(*IOpenRequest)(HINTERNET, cs_str, cs_str, cs_str, cs_str, cs_str *, cs_ulong, cs_uintptr);
-	BOOL(*HSendRequest)(HINTERNET, cs_str, cs_ulong, void *, cs_ulong);
-	BOOL(*IReadFile)(HINTERNET, void *, cs_ulong, cs_ulong *);
-	BOOL(*IClose)(HINTERNET);
+	HINTERNET(__stdcall *IOpen)(cs_str, cs_ulong, cs_str, cs_str, cs_ulong);
+	HINTERNET(__stdcall *IConnect)(HINTERNET, cs_str, INTERNET_PORT, cs_str, cs_str, cs_ulong, cs_ulong, cs_uintptr);
+	HINTERNET(__stdcall *IOpenRequest)(HINTERNET, cs_str, cs_str, cs_str, cs_str, cs_str *, cs_ulong, cs_uintptr);
+	BOOL(__stdcall *HSendRequest)(HINTERNET, cs_str, cs_ulong, void *, cs_ulong);
+	BOOL(__stdcall *IReadFile)(HINTERNET, void *, cs_ulong, cs_ulong *);
+	BOOL(__stdcall *IClose)(HINTERNET);
 } WinInet;
 
 static HINTERNET hInternet = NULL;
@@ -29,8 +29,7 @@ INL static cs_bool InitBackend(void) {
 		return false;
 
 	return (hInternet = WinInet.IOpen(HTTP_USERAGENT,
-		INTERNET_OPEN_TYPE_PRECONFIG,
-		NULL, NULL, 0
+		INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0
 	)) != NULL;
 }
 
