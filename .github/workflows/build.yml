@@ -19,7 +19,7 @@ jobs:
           os: ubuntu-latest
           arch: x86_64
           abi: gnu
-          cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev libluajit-5.1-dev
+          cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev
           build: ./build
           testbin: ./core/out/x86_64-linux-gnu/server
 
@@ -30,7 +30,7 @@ jobs:
           cfg: |
             sudo dpkg --add-architecture i386
             sudo apt update
-            sudo apt install -y gcc-i686-linux-gnu libcurl4-openssl-dev:i386 zlib1g-dev:i386 libluajit-5.1-dev:i386
+            sudo apt install -y gcc-i686-linux-gnu libcurl4-openssl-dev:i386 zlib1g-dev:i386
           build: ./build
           testbin: ./core/out/i686-linux-gnu/server
 
@@ -38,6 +38,7 @@ jobs:
           os: ubuntu-latest
           arch: aarch64
           abi: gnu
+          hostcc: x86_64-linux-gnu-gcc
           cfg: sudo apt install -y gcc-aarch64-linux-gnu
           build: ./build
 
@@ -45,7 +46,8 @@ jobs:
           os: ubuntu-latest
           arch: arm
           abi: gnueabihf
-          cfg: sudo apt install -y gcc-arm-linux-gnueabihf
+          hostcc: i686-linux-gnu-gcc
+          cfg: sudo apt install -y gcc-arm-linux-gnueabihf gcc-i686-linux-gnu
           build: ./build
 
         - name: Windows x64
@@ -80,7 +82,6 @@ jobs:
         path: cs-survival
 
     - name: Checkout Lua plugin
-      if: ${{matrix.config.arch != 'aarch64' && matrix.config.arch != 'arm'}}
       uses: actions/checkout@v3
       with:
         repository: igor725/cs-lua
@@ -113,22 +114,12 @@ jobs:
       working-directory: core
       env:
         CC: ${{matrix.config.arch}}-linux-${{matrix.config.abi}}-gcc
+        HOSTCC: ${{matrix.config.hostcc}}
       run: |
         ${{matrix.config.build}} wall dbg pb base install
         ${{matrix.config.build}} wall dbg pb survival install
         ${{matrix.config.build}} wall dbg pb worldedit install
-
-    # Пока что нет возможности собрать Lua плагин для ARM-машин.
-    # Чуть позже это будет исправлено. По-хорошему надо переписать
-    # скрипт vars.sh у самого плагина, чтобы тот не использовал
-    # системный luajit, а собирал свой из исходников. В таком случае
-    # мы не будем привязаны к архитектуре целевой машины.
-    - name: Build Lua plugin
-      working-directory: core
-      if: ${{matrix.config.arch != 'aarch64' && matrix.config.arch != 'arm'}}
-      env:
-        CC: ${{matrix.config.arch}}-linux-${{matrix.config.abi}}-gcc
-      run: ${{matrix.config.build}} wall dbg pb lua install
+        ${{matrix.config.build}} wall dbg pb lua install
 
     - name: Make some tests
       if: ${{matrix.config.testbin != null}}
