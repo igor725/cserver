@@ -4,6 +4,7 @@
 #endif
 #include "str.h"
 #include "cserror.h"
+#include "platform.h"
 
 #if defined(CORE_USE_WINDOWS)
 #include <dbghelp.h>

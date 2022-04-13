@@ -1,7 +1,6 @@
 #ifndef ERROR_H
 #define ERROR_H
 #include "core.h"
-#include "platform.h"
 
 #define ERROR_PRINT(ecode, abort) Error_Print(abort, ecode, __FILE__, __LINE__, __func__)
 

@@ -5,7 +5,6 @@
 #include "event.h"
 #include "list.h"
 #include "compr.h"
-#include "block.h"
 #include "client.h"
 
 enum _EWorldDataItems {

@@ -4,6 +4,7 @@
 #include "vector.h"
 #include "types/list.h"
 #include "types/world.h"
+#include "types/cpe.h"
 
 API cs_bool World_HasError(World *world);
 API EWorldError World_PopError(World *world, EWorldExtra *extra);

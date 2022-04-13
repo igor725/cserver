@@ -1,7 +1,6 @@
 #ifndef GENERATORS_H
 #define GENERATORS_H
 #include "core.h"
-#include "types/list.h"
 #include "types/world.h"
 
 #define GENERATOR_SEED_FROM_TIME (cs_int32)-1
