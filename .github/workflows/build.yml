@@ -93,13 +93,13 @@ jobs:
         repository: igor725/cs-worldedit
         path: cs-worldedit
 
-    - name: Detect MSVC
+    - name: Detect MSVC (Windows)
       uses: ilammy/msvc-dev-cmd@v1
       if: ${{matrix.config.os == 'windows-latest'}}
       with:
         arch: ${{matrix.config.arch}}
 
-    - name: Install some packages
+    - name: Prebuild preparations
       if: ${{matrix.config.cfg != null}}
       run: ${{matrix.config.cfg}}
 

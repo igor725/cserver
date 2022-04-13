@@ -184,7 +184,7 @@ size_t String_SizeOfB64(size_t inlen) {
 	return inlen;
 }
 
-const cs_char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static const cs_char b64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 cs_size String_ToB64(const cs_byte *src, cs_size len, cs_char *dst) {
 	cs_size elen = String_SizeOfB64(len);

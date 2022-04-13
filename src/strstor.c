@@ -4,7 +4,7 @@
 #include "platform.h"
 #include "strstor.h"
 
-KListField *storage = NULL;
+static KListField *storage = NULL;
 
 cs_bool Sstor_IsExists(cs_str key) {
 	KListField *tmp;

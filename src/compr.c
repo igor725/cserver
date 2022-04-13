@@ -36,9 +36,13 @@ static cs_str zsmylist[] = {
 
 static cs_str zlibdll[] = {
 #if defined(CORE_USE_WINDOWS)
+	"zlibdwapi.dll",
 	"zlibwapi.dll",
+	"zlibd1.dll",
 	"zlib1.dll",
+	"zlibd.dll",
 	"zlib.dll",
+	"zlibd.dll",
 	"libz.dll",
 #elif defined(CORE_USE_UNIX)
 	"libz.so",

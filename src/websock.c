@@ -6,14 +6,14 @@
 #include "strstor.h"
 #include "hash.h"
 
-cs_str ws_resp =
+static cs_str ws_resp =
 "HTTP/1.1 101 Switching Protocols\r\n"
 "Connection: Upgrade\r\n"
 "Upgrade: websocket\r\n"
 "Sec-WebSocket-Protocol: %s\r\n"
 "Sec-WebSocket-Accept: %s\r\n\r\n";
 
-cs_str ws_err =
+static cs_str ws_err =
 "HTTP/1.1 %d %s\r\n"
 "Connection: Close\r\n"
 "Content-Type: text/plain\r\n"

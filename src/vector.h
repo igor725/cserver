@@ -14,15 +14,15 @@ typedef struct _Ang {
 	cs_float yaw, pitch;
 } Ang;
 
-static inline cs_bool SVec_Compare(const SVec *a, const SVec *b) {
+static INL cs_bool SVec_Compare(const SVec *a, const SVec *b) {
 	return a->x == b->x && a->y == b->y && a->z == b->z;
 }
 
-static inline cs_bool Vec_Compare(const Vec *a, const Vec *b) {
+static INL cs_bool Vec_Compare(const Vec *a, const Vec *b) {
 	return a->x == b->x && a->y == b->y && a->z == b->z;
 }
 
-static inline cs_bool Ang_Compare(const Ang *a, const Ang *b) {
+static INL cs_bool Ang_Compare(const Ang *a, const Ang *b) {
 	return a->yaw == b->yaw && a->pitch == b->pitch;
 }
 
