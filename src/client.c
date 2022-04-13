@@ -548,6 +548,10 @@ cs_bool Client_IsOP(Client *client) {
 	return client->playerData ? client->playerData->isOP : false;
 }
 
+cs_bool Client_IsSpawned(Client *client) {
+	return client->playerData ? client->playerData->spawned : false;
+}
+
 cs_bool Client_IsFirstSpawn(Client *client) {
 	return client->playerData ? client->playerData->firstSpawn : true;
 }
@@ -561,17 +565,17 @@ void Client_SetBlock(Client *client, SVec *pos, BlockID id) {
 	Vanilla_WriteSetBlock(client, pos, id);
 }
 
-cs_bool Client_SetEnvProperty(Client *client, cs_byte property, cs_int32 value) {
+cs_bool Client_SetEnvProperty(Client *client, EProp property, cs_int32 value) {
 	if(Client_GetExtVer(client, EXT_MAPASPECT)) {
-		CPE_WriteMapProperty(client, property, value);
+		CPE_WriteMapProperty(client, (cs_byte)property, value);
 		return true;
 	}
 	return false;
 }
 
-cs_bool Client_SetEnvColor(Client *client, cs_byte type, Color3* color) {
+cs_bool Client_SetEnvColor(Client *client, EColor type, Color3* color) {
 	if(Client_GetExtVer(client, EXT_ENVCOLOR)) {
-		CPE_WriteEnvColor(client, type, color);
+		CPE_WriteEnvColor(client, (cs_byte)type, color);
 		return true;
 	}
 	return false;
@@ -750,10 +754,10 @@ cs_bool Client_SendPluginMessage(Client *client, cs_byte channel, cs_str message
 	return false;
 }
 
-cs_bool Client_SetRotation(Client *client, cs_byte axis, cs_int32 value) {
-	if(axis < 2 || !client->cpeData) return false;
-	client->cpeData->rotation[axis] = value;
+cs_bool Client_SetProp(Client *client, EEntProp prop, cs_int32 value) {
+	if(prop >= ENTITY_PROP_COUNT || !client->cpeData) return false;
 	client->cpeData->updates |= PCU_ENTPROP;
+	client->cpeData->props[prop] = value;
 	return true;
 }
 
@@ -847,9 +851,8 @@ cs_bool Client_Update(Client *client) {
 				if(client->cpeData->updates & PCU_ENTITY && hasplsupport)
 					CPE_WriteAddEntity2(other, client);
 				if(client->cpeData->updates & PCU_ENTPROP && hasentprop)
-					for(cs_int8 i = 0; i < 3; i++) {
-						CPE_WriteSetEntityProperty(other, client, i, client->cpeData->rotation[i]);
-					}
+					for(EEntProp i = 0; i < ENTITY_PROP_COUNT; i++)
+						CPE_WriteSetEntityProperty(other, client, i, client->cpeData->props[i]);
 			}
 		}
 	}
@@ -1118,11 +1121,12 @@ cs_bool Client_Spawn(Client *client) {
 	onSpawn evt = {
 		.client = client,
 		.position = &client->playerData->position,
-		.angle = &client->playerData->angle
+		.angle = &client->playerData->angle,
+		.updateenv = true
 	};
 	Event_Call(EVT_ONSPAWN, &evt);
 	// Vanilla_WriteUserType(client, client->playerData->isOP ? 0x64 : 0x00);
-	Client_UpdateWorldInfo(client, client->playerData->world, true);
+	if(evt.updateenv) Client_UpdateWorldInfo(client, client->playerData->world, true);
 	if(client->cpeData) client->cpeData->updates = PCU_NONE;
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {

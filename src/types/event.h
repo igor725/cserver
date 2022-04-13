@@ -52,6 +52,7 @@ typedef struct _onSpawn {
 	Client *client;
 	Vec *position;
 	Ang *angle;
+	cs_bool updateenv;
 } onSpawn;
 
 typedef struct _onMessage {

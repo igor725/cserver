@@ -901,7 +901,7 @@ void CPE_WriteSetEntityProperty(Client *client, Client *other, EEntProp type, cs
 
 	*data++ = 0x2A;
 	*data++ = client == other ? CLIENT_SELF : other->id;
-	*data++ = type;
+	*data++ = (cs_byte)type;
 	*(cs_int32 *)data = htonl(value);
 	data += 4;
 

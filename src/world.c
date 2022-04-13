@@ -159,7 +159,7 @@ cs_bool World_SetWeather(World *world, EWeather type) {
 	return true;
 }
 
-cs_bool World_SetEnvColor(World *world, EColors type, Color3* color) {
+cs_bool World_SetEnvColor(World *world, EColor type, Color3* color) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
 		world->flags |= WORLD_FLAG_MODIFIED;
@@ -193,7 +193,7 @@ cs_byte World_CountPlayers(World *world) {
 	return count;
 }
 
-Color3* World_GetEnvColor(World *world, EColors type) {
+Color3* World_GetEnvColor(World *world, EColor type) {
 	if(type > WORLD_COLORS_COUNT) return false;
 	return &world->info.colors[type];
 }

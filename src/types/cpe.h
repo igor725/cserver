@@ -32,7 +32,7 @@ typedef enum _EWorldColor {
 	WORLD_COLOR_FOG,
 	WORLD_COLOR_AMBIENT,
 	WORLD_COLOR_DIFFUSE
-} EColors;
+} EColor;
 
 typedef enum _EProp {
 	WORLD_PROP_SIDEBLOCK,
@@ -54,9 +54,10 @@ typedef enum _EWeather {
 } EWeather;
 
 typedef enum _EEntProp {
-	ROT_X = 0, // Вращение модели по оси X
-	ROT_Y,
-	ROT_Z
+	ENTITY_PROP_ROT_X = 0, // Вращение модели по оси X
+	ENTITY_PROP_ROT_Y,
+	ENTITY_PROP_ROT_Z,
+	ENTITY_PROP_COUNT
 } EEntProp;
 
 typedef enum _ESelectionParam {
@@ -157,7 +158,7 @@ typedef struct _CPEData {
 	cs_float pingAvgTime; // Средний пинг, в миллисекундах [TwoWayPing]
 	cs_uint32 _pingAvgSize; // Количество значений в текущем среднем пинга [TwoWayPing]
 	cs_uint64 pingStart; // Время начала пинг-запроса [TwoWayPing]
-	cs_int32 rotation[3]; // Вращение модели игрока в градусах [EntityProperty]
+	cs_int32 props[3]; // Вращение модели игрока в градусах [EntityProperty]
 	cs_uint16 clickDist; // Расстояние клика игрока [ClickDistance]
 	cs_byte cbLevel; // Поддерживаемый уровень кастом блоков, пока не используется [CustomBlocks]
 	CPECuboid cuboids[16]; // Кубоиды игрока [SelectionCuboid]
