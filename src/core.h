@@ -153,6 +153,7 @@ typedef cs_byte ClientID;
 #	define SOFTWARE_NAME "CServer"
 #	define SOFTWARE_FULLNAME SOFTWARE_NAME "/" GIT_COMMIT_TAG
 #	define TICKS_PER_SECOND 60
+#	define NET_TICKS_PER_SECOND 40
 #	define MAINCFG "server.cfg"
 #	define WORLD_MAGIC 0x54414457
 #endif

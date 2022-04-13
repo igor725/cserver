@@ -22,7 +22,6 @@ VAR cs_str Server_Version;
 extern Socket Server_Socket;
 
 cs_bool Server_Init(void);
-void Server_DoStep(cs_int32 delta);
 void Server_StartLoop(void);
 void Server_Cleanup(void);
 

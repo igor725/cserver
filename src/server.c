@@ -172,8 +172,8 @@ THREAD_FUNC(NetThread) {
 		curr = Time_GetMSec();
 		if(last > 0) {
 			cs_uint64 diff = curr - last;
-			if(diff <= 16)
-				Thread_Sleep(16 - (cs_uint32)diff);
+			if(diff <= 1000 / NET_TICKS_PER_SECOND)
+				Thread_Sleep((1000 / NET_TICKS_PER_SECOND) - (cs_uint32)diff);
 		}
 	}
 

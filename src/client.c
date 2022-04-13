@@ -1061,7 +1061,9 @@ NOINL static cs_bool SendWorldTick(Client *client) {
 			if(Compr_IsInState(&md->compr, COMPR_STATE_DONE))
 				break;
 
-			if(Time_GetMSec() - markStart < 30)
+			// Не даём серверу слишком долго сжимать карту для клиента
+			// Поле taskc хранит в себе количество подключающихся в данный момент клиентов к данному миру
+			if(Time_GetMSec() - markStart < ((1000.0f / NET_TICKS_PER_SECOND) / md->world->taskc))
 				goto comprstep;
 			else
 				return false;

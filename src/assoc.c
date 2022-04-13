@@ -5,7 +5,7 @@
 #include "platform.h"
 #include "list.h"
 
-AListField *headAssocType = NULL;
+static AListField *headAssocType = NULL;
 
 typedef struct AssocBind {
 	EAssocBindType type;
