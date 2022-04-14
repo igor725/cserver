@@ -20,6 +20,7 @@ API cs_bool Group_Remove(cs_int16 gid);
 
 API void Cuboid_SetPositions(CPECuboid *cub, SVec start, SVec end);
 API void Cuboid_SetColor(CPECuboid *cub, Color4 color);
+API cs_byte Cuboid_GetID(CPECuboid *cub);
 API cs_uint32 Cuboid_GetSize(CPECuboid *cub);
 API void Cuboid_GetPositions(CPECuboid *cub, SVec *start, SVec *end);
 

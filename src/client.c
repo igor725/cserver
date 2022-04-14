@@ -79,6 +79,10 @@ void Cuboid_SetColor(CPECuboid *cub, Color4 color) {
 	cub->color = color;
 }
 
+cs_byte Cuboid_GetID(CPECuboid *cub) {
+	return cub->id;
+}
+
 cs_uint32 Cuboid_GetSize(CPECuboid *cub) {
 	return (cub->pos[1].x - cub->pos[0].x) *
 	(cub->pos[1].y - cub->pos[0].y) *
@@ -376,6 +380,8 @@ CPECuboid *Client_NewSelection(Client *client) {
 
 cs_bool Client_UpdateSelection(Client *client, CPECuboid *cub) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
+		if(&client->cpeData->cuboids[cub->id] != cub)
+			return false;
 		CPE_WriteMakeSelection(client, cub);
 		return true;
 	}
@@ -385,6 +391,8 @@ cs_bool Client_UpdateSelection(Client *client, CPECuboid *cub) {
 
 cs_bool Client_RemoveSelection(Client *client, CPECuboid *cub) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
+		if(&client->cpeData->cuboids[cub->id] != cub)
+			return false;
 		CPE_WriteRemoveSelection(client, cub->id);
 		cub->used = false;
 		return true;
