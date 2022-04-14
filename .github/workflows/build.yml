@@ -67,6 +67,7 @@ jobs:
     - name: Checkout Core repo
       uses: actions/checkout@v3
       with:
+        fetch-depth: 0
         path: core
     
     - name: Checkout Base plugin
@@ -124,6 +125,19 @@ jobs:
     - name: Make some tests
       if: ${{matrix.config.testbin != null}}
       run: ${{matrix.config.testbin}} testmode
+
+    - name: Collect changes (Linux)
+      if: ${{matrix.config.os == 'ubuntu-latest'}}
+      working-directory: core
+      run: |
+        git log --format=medium $(git describe --tags --abbrev=0 @^)..HEAD > out/CHANGES
+
+    - name: Collect changes (Windows)
+      if: ${{matrix.config.os == 'windows-latest'}}
+      working-directory: core
+      run: |
+        $lasttag = (git describe --tags --abbrev=0 @^) -join "`n"
+        Start-Process -NoNewWindow -RedirectStandardOutput out\CHANGES git.exe "log --format=medium $lasttag..HEAD"
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
