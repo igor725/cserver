@@ -11,52 +11,9 @@
 #include "compr.h"
 #include "world.h"
 #include "websock.h"
+#include "groups.h"
 
 Client *Clients_List[MAX_CLIENTS] = {0};
-static AListField *headCGroup = NULL;
-
-CGroup *Group_Add(cs_int16 gid, cs_str gname, cs_byte grank) {
-	CGroup *gptr = Group_GetByID(gid);
-	if(!gptr) {
-		gptr = Memory_Alloc(1, sizeof(CGroup));
-		gptr->id = gid;
-		gptr->field = AList_AddField(&headCGroup, gptr);
-	}
-
-	String_Copy(gptr->name, 65, gname);
-	gptr->rank = grank;
-	return gptr;
-}
-
-CGroup *Group_GetByID(cs_int16 gid) {
-	CGroup *gptr = NULL;
-	AListField *lptr = NULL;
-
-	List_Iter(lptr, headCGroup) {
-		CGroup *tmp = lptr->value.ptr;
-		if(tmp->id == gid) {
-			gptr = tmp;
-			break;
-		}
-	}
-
-	return gptr;
-}
-
-cs_bool Group_Remove(cs_int16 gid) {
-	CGroup *cg = Group_GetByID(gid);
-	if(!cg) return false;
-
-	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
-		Client *client = Clients_List[id];
-		if(client && Client_GetGroupID(client) == gid)
-			Client_SetGroup(client, -1);
-	}
-
-	AList_Remove(&headCGroup, cg->field);
-	Memory_Free(cg);
-	return true;
-}
 
 static void CubeNormalize(SVec *s, SVec *e) {
 	cs_int16 tmp, *a = (cs_int16 *)s, *b = (cs_int16 *)e;
@@ -242,16 +199,16 @@ cs_int8 Client_GetFluidLevel(Client *client, BlockID *fluid) {
 	return 0;
 }
 
-static CGroup dgroup = {-1, 0, "", NULL};
+static CGroup dgroup = {0, ""};
 
 CGroup *Client_GetGroup(Client *client) {
 	if(!client->cpeData) return &dgroup;
-	CGroup *gptr = Group_GetByID(client->cpeData->group);
+	CGroup *gptr = Groups_GetByID(client->cpeData->group);
 	return !gptr ? &dgroup : gptr;
 }
 
-cs_int16 Client_GetGroupID(Client *client) {
-	if(!client->cpeData) return -1;
+cs_uintptr Client_GetGroupID(Client *client) {
+	if(!client->cpeData) return GROUPS_INVALID_ID;
 	return client->cpeData->group;
 }
 
@@ -773,7 +730,7 @@ cs_bool Client_SetModelStr(Client *client, cs_str model) {
 	return Client_SetModel(client, CPE_GetModelNum(model));
 }
 
-cs_bool Client_SetGroup(Client *client, cs_int16 gid) {
+cs_bool Client_SetGroup(Client *client, cs_uintptr gid) {
 	if(!client->cpeData) return false;
 	client->cpeData->group = gid;
 	client->cpeData->updates |= PCU_NAME;

@@ -152,7 +152,7 @@ typedef struct _CPEData {
 	cs_bool pingStarted; // Начат ли процесс пингования [TwoWayPing]
 	cs_int16 _extCount; // Переменная используется при получении списка дополнений
 	cs_int16 model; // Текущая модель игрока [ChangeModel]
-	cs_int16 group; // Текущая группа игрока [ExtPlayerList]
+	cs_uintptr group; // Текущая группа игрока [ExtPlayerList]
 	cs_uint16 pingData; // Данные, цепляемые к пинг-запросу [TwoWayPing]
 	cs_uint32 pingTime; // Сам пинг, в миллисекундах [TwoWayPing]
 	cs_float pingAvgTime; // Средний пинг, в миллисекундах [TwoWayPing]
@@ -163,13 +163,6 @@ typedef struct _CPEData {
 	cs_byte cbLevel; // Поддерживаемый уровень кастом блоков, пока не используется [CustomBlocks]
 	CPECuboid cuboids[16]; // Кубоиды игрока [SelectionCuboid]
 } CPEData;
-
-typedef struct _CGroup {
-	cs_int16 id;
-	cs_byte rank;
-	cs_char name[65];
-	AListField *field;
-} CGroup;
 
 typedef struct _CPEHacks {
 	cs_bool flying, noclip, speeding,

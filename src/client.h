@@ -5,6 +5,7 @@
 #include "types/world.h"
 #include "types/block.h"
 #include "types/cpe.h"
+#include "types/groups.h"
 #include "types/client.h"
 
 void Client_Tick(Client *client);
@@ -13,10 +14,6 @@ void Client_Free(Client *client);
 API void Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
 NOINL cs_bool Client_DefineBlock(Client *client, BlockID id, BlockDef *block);
 NOINL cs_bool Client_UndefineBlock(Client *client, BlockID id);
-
-API CGroup *Group_Add(cs_int16 gid, cs_str gname, cs_byte grank);
-API CGroup *Group_GetByID(cs_int16 gid);
-API cs_bool Group_Remove(cs_int16 gid);
 
 API void Cuboid_SetPositions(CPECuboid *cub, SVec start, SVec end);
 API void Cuboid_SetColor(CPECuboid *cub, Color4 color);
@@ -75,7 +72,7 @@ API cs_bool Client_SetSpawn(Client *client, Vec *pos, Ang *ang);
 API cs_bool Client_SetOP(Client *client, cs_bool state);
 API cs_bool Client_SetVelocity(Client *client, Vec *velocity, cs_bool mode);
 API cs_bool Client_SetProp(Client *client, EEntProp prop, cs_int32 value);
-API cs_bool Client_SetGroup(Client *client, cs_int16 gid);
+API cs_bool Client_SetGroup(Client *client, cs_uintptr gid);
 API cs_bool Client_RegisterParticle(Client *client, CustomParticle *e);
 API cs_bool Client_SpawnParticle(Client *client, cs_byte id, Vec *pos, Vec *origin);
 
@@ -102,7 +99,7 @@ API cs_uint32 Client_GetAddr(Client *client);
 API cs_int32 Client_GetPing(Client *client);
 API cs_float Client_GetAvgPing(Client *client);
 API CGroup *Client_GetGroup(Client *client);
-API cs_int16 Client_GetGroupID(Client *client);
+API cs_uintptr Client_GetGroupID(Client *client);
 
 API cs_bool Client_Spawn(Client *client);
 API cs_bool Client_Despawn(Client *client);
