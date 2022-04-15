@@ -120,7 +120,7 @@ API void Block_UpdateDefinition(BlockDef *bdef);
  * @param bbu указатель на кучу
  * @param offset смещение блока в мире
  * @param id уникальный номер блока
- * @return API 
+ * @return true - блок добавлен, false - произошла ошибка
  */
 API cs_bool Block_BulkUpdateAdd(BulkBlockUpdate *bbu, cs_uint32 offset, BlockID id);
 
@@ -128,8 +128,9 @@ API cs_bool Block_BulkUpdateAdd(BulkBlockUpdate *bbu, cs_uint32 offset, BlockID 
  * @brief Рассылает всем игрокам указанного в куче мира обновлённые блоки.
  * 
  * @param bbu указатель на кучу
+ * @return true - пакет добавлен в очередь, false - отправка провалилась
  */
-API void Block_BulkUpdateSend(BulkBlockUpdate *bbu);
+API cs_bool Block_BulkUpdateSend(BulkBlockUpdate *bbu);
 
 /**
  * @brief Очищает кучу от добавленных в неё блоков.

@@ -153,7 +153,7 @@ cs_bool Block_BulkUpdateAdd(BulkBlockUpdate *bbu, cs_uint32 offset, BlockID id) 
 	bbu->data.ids[bbu->data.count] = id;
 
 	if(bbu->data.count == 255) {
-		if(bbu->autosend) {
+		if(bbu->autosend && bbu->world) {
 			Block_BulkUpdateSend(bbu);
 			Block_BulkUpdateClean(bbu);
 		} else return false;
@@ -162,12 +162,16 @@ cs_bool Block_BulkUpdateAdd(BulkBlockUpdate *bbu, cs_uint32 offset, BlockID id) 
 	return true;
 }
 
-void Block_BulkUpdateSend(BulkBlockUpdate *bbu) {
+cs_bool Block_BulkUpdateSend(BulkBlockUpdate *bbu) {
+	if(!bbu->world) return false;
+
 	for(ClientID cid = 0; cid < MAX_CLIENTS; cid++) {
 		Client *client = Clients_List[cid];
 		if(client && Client_IsInWorld(client, bbu->world))
 			Client_BulkBlockUpdate(client, bbu);
 	}
+
+	return true;
 }
 
 void Block_BulkUpdateClean(BulkBlockUpdate *bbu) {
