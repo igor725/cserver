@@ -10,13 +10,13 @@ jobs:
   build:
 
     name: ${{matrix.config.name}}
-    runs-on: ${{matrix.config.os}}
+    runs-on: ${{matrix.config.os}}-latest
     strategy:
       fail-fast: false
       matrix:
         config:
         - name: Ubuntu x64
-          os: ubuntu-latest
+          os: ubuntu
           arch: x86_64
           abi: gnu
           cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev
@@ -24,7 +24,7 @@ jobs:
           testbin: ./core/out/x86_64-linux-gnu/server
 
         - name: Ubuntu x86
-          os: ubuntu-latest
+          os: ubuntu
           arch: i686
           abi: gnu
           cfg: |
@@ -35,7 +35,7 @@ jobs:
           testbin: ./core/out/i686-linux-gnu/server
 
         - name: Ubuntu arm64
-          os: ubuntu-latest
+          os: ubuntu
           arch: aarch64
           abi: gnu
           hostcc: x86_64-linux-gnu-gcc
@@ -43,7 +43,7 @@ jobs:
           build: ./build
 
         - name: Ubuntu armv7hf
-          os: ubuntu-latest
+          os: ubuntu
           arch: arm
           abi: gnueabihf
           hostcc: i686-linux-gnu-gcc
@@ -51,13 +51,13 @@ jobs:
           build: ./build
 
         - name: Windows x64
-          os: windows-latest
+          os: windows
           arch: x86_64
           build: .\build.bat
           testbin: .\core\out\x64dbg\server.exe
 
         - name: Windows x86
-          os: windows-latest
+          os: windows
           arch: x86
           build: .\build.bat
           testbin: .\core\out\x86dbg\server.exe
@@ -96,7 +96,7 @@ jobs:
 
     - name: Detect MSVC (Windows)
       uses: ilammy/msvc-dev-cmd@v1
-      if: ${{matrix.config.os == 'windows-latest'}}
+      if: ${{matrix.config.os == 'windows'}}
       with:
         arch: ${{matrix.config.arch}}
 
@@ -127,13 +127,13 @@ jobs:
       run: ${{matrix.config.testbin}} testmode
 
     - name: Collect changes (Linux)
-      if: ${{matrix.config.os == 'ubuntu-latest'}}
+      if: ${{matrix.config.os == 'ubuntu'}}
       working-directory: core
       run: |
         git log --format=medium $(git describe --tags --abbrev=0 @^)..HEAD > out/CHANGES
 
     - name: Collect changes (Windows)
-      if: ${{matrix.config.os == 'windows-latest'}}
+      if: ${{matrix.config.os == 'windows'}}
       working-directory: core
       run: |
         $lasttag = (git describe --tags --abbrev=0 @^) -join "`n"
