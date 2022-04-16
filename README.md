@@ -8,13 +8,14 @@ The goal of this project: create a stable, customizable and future-rich multipla
 * Multiplatform (Windows/Linux)
 * Plugins support
 * Web client support ([More info](https://www.classicube.net/api/docs/server))
-* RCON server (Implemented in [base plugin](https://github.com/igor725/cs-base))
+* Lua scripting (Implemented in the [Lua plugin](https://github.com/igor725/cs-lua))
+* RCON server (Implemented in the [Base plugin](https://github.com/igor725/cs-base))
 * Own world generator (Written by [scaled](https://github.com/scaledteam) for [LuaClassic](https://github.com/igor725/LuaClassic), later ported to C by me)
-* Heartbeat API (ClassiCube heartbeat implemented in [the base plugin](https://github.com/igor725/cs-base))
+* Heartbeat API (ClassiCube heartbeat implemented in the [Base plugin](https://github.com/igor725/cs-base))
 * Easy configurable
 
 ## Download
-If you don't want to mess with compilers, you can always download latest prebuilt binaries [HERE](https://github.com/igor725/cserver/actions/workflows/build.yml?query=event%3Apush+is%3Acompleted+branch%3Amain).
+If you don't want to mess with compilers, you can always download latest prebuilt binaries [here](https://github.com/igor725/cserver/actions/workflows/build.yml).
 
 ## Dependencies
 
@@ -70,6 +71,7 @@ NOTE: This script must be runned in the Visual Studio Developer Command Prompt.
 * Your directory should have the following structure in order to compile plugins:
 ```
 	[root_folder]/cserver - Main server repository
+	[root_folder]/cs-lua - Lua scripting plugin
 	[root_folder]/cs-base - Base server functionality
 	[root_folder]/cs-survival - Survival plugin
 	[root_folder]/cs-test - Test plugin
