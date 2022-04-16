@@ -13,6 +13,9 @@ The goal of this project: create a stable, customizable and future-rich multipla
 * Heartbeat API (ClassiCube heartbeat implemented in [the base plugin](https://github.com/igor725/cs-base))
 * Easy configurable
 
+## Download
+If you don't want to mess with compilers, you can always download latest prebuilt binaries [HERE](https://github.com/igor725/cserver/actions/workflows/build.yml?query=event%3Apush+is%3Acompleted+branch%3Amain).
+
 ## Dependencies
 
 ### On Linux
@@ -41,6 +44,7 @@ NOTE: This script must be runned in the Visual Studio Developer Command Prompt.
 ### Build script arguments
 * ``cls`` - Clear console window before compilation
 * ``pb`` - Build a plugin (next argument must be a plugin name, without the "cs-" prefix)
+* ``install`` - Copy plugin binary to the ``plugins`` directory after compilation (Can be used only with ``pb``)
 * ``upd`` - Update local server (or plugin if ``pb`` passed AFTER ``upd``) repository before building
 * ``dbg`` - Build with debug symbols
 * ``wall`` - Enable all possible warnings
@@ -49,9 +53,8 @@ NOTE: This script must be runned in the Visual Studio Developer Command Prompt.
 * ``od`` - Disable compiler optimizations
 * ``san`` - Add LLVM sanitizers
 * ``run`` - Start the server after compilation
-* ``noprompt`` - Suppress zlib download prompt message (Windows only)
 * ``runsame`` - Start the server after compilation in the same console window (Windows only)
-* ``install`` - Copy plugin binary to the ``plugins`` directory after compilation (Can be used only with ``pb``)
+* ``noprompt`` - Suppress zlib download prompt message (Windows only)
 
 ### Example
 * ``./build`` - Build the server release binary
