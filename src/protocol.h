@@ -66,8 +66,8 @@ API void Proto_WriteByteColor3(cs_char **dataptr, const Color3* color);
 API void Proto_WriteByteColor4(cs_char **dataptr, const Color4* color);
 
 /*
-** Врайтеры и хендлеры
-** ванильного протокола
+ * Врайтеры и хендлеры
+ * ванильного протокола
 */
 
 NOINL void Vanilla_WriteServerIdent(Client *client, cs_str name, cs_str motd);
@@ -83,9 +83,9 @@ NOINL void Vanilla_WriteKick(Client *client, cs_str reason);
 NOINL void Vanilla_WriteUserType(Client *client, cs_byte type);
 
 /*
-** Врайтеры и хендлеры
-** CPE протокола и прочие,
-** связанные с CPE вещи
+ * Врайтеры и хендлеры
+ * CPE протокола и прочие,
+ * связанные с CPE вещи
 */
 API cs_bool CPE_CheckModel(Client *client, cs_int16 model);
 API void CPE_RegisterExtension(cs_str name, cs_int32 version);

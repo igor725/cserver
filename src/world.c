@@ -30,8 +30,8 @@ World *World_Create(cs_str name) {
 	Waitable_Signal(tmp->taskw);
 
 	/*
-	** Устанавливаем дефолтные значения
-	** согласно документации по CPE.
+	 * Устанавливаем дефолтные значения
+	 * согласно документации по CPE.
 	*/
 	cs_int32 *props = tmp->info.props;
 	props[WORLD_PROP_SIDEBLOCK] = BLOCK_BEDROCK;
