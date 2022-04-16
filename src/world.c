@@ -105,7 +105,8 @@ World *World_GetByName(cs_str name) {
 void World_SetSpawn(World *world, Vec *svec, Ang *sang) {
 	if(svec) world->info.spawnVec = *svec;
 	if(sang) world->info.spawnAng = *sang;
-	if(svec || sang) world->flags |= WORLD_FLAG_MODIFIED;
+	if((svec || sang) && !ISSET(world->flags, WORLD_FLAG_MODIGNORE))
+		world->flags |= WORLD_FLAG_MODIFIED;
 }
 
 void World_SetDimensions(World *world, const SVec *dims) {
@@ -194,7 +195,7 @@ cs_byte World_CountPlayers(World *world) {
 }
 
 Color3* World_GetEnvColor(World *world, EColor type) {
-	if(type > WORLD_COLORS_COUNT) return false;
+	if(type > WORLD_COLORS_COUNT) return NULL;
 	return &world->info.colors[type];
 }
 
@@ -554,7 +555,8 @@ cs_uint32 World_GetOffset(World *world, SVec *pos) {
 cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id) {
 	if(world->wdata.size <= offset) return false;
 	world->wdata.blocks[offset] = id;
-	world->flags |= WORLD_FLAG_MODIFIED;
+	if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
+		world->flags |= WORLD_FLAG_MODIFIED;
 	return true;
 }
 
