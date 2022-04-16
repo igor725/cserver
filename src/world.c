@@ -114,19 +114,21 @@ void World_SetDimensions(World *world, const SVec *dims) {
 	world->wdata.size = (cs_uint32)dims->x * (cs_uint32)dims->y * (cs_uint32)dims->z;
 }
 
-cs_bool World_SetEnvProp(World *world, EProp property, cs_int32 value) {
-	if(property > WORLD_PROPS_COUNT) return false;
-	if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
-		world->flags |= WORLD_FLAG_MODIFIED;
-	world->info.props[property] = value;
-	world->info.modval |= MV_PROPS;
-	world->info.modprop |= 2 ^ property;
-	return true;
+cs_bool World_SetEnvProp(World *world, EProp prop, cs_int32 value) {
+	if(prop < WORLD_PROPS_COUNT) {
+		if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
+			world->flags |= WORLD_FLAG_MODIFIED;
+		world->info.props[prop] = value;
+		world->info.modval |= MV_PROPS;
+		world->info.modprop |= 2 ^ prop;
+		return true;
+	}
+
+	return false;
 }
 
-cs_int32 World_GetEnvProp(World *world, EProp property) {
-	if(property > WORLD_PROPS_COUNT) return 0;
-	return world->info.props[property];
+cs_int32 World_GetEnvProp(World *world, EProp prop) {
+	return prop < WORLD_PROPS_COUNT ? world->info.props[prop] : 0;
 }
 
 cs_bool World_SetTexturePack(World *world, cs_str url) {
@@ -161,14 +163,17 @@ cs_bool World_SetWeather(World *world, EWeather type) {
 }
 
 cs_bool World_SetEnvColor(World *world, EColor type, Color3* color) {
-	if(type > WORLD_COLORS_COUNT) return false;
-	if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
-		world->flags |= WORLD_FLAG_MODIFIED;
-	world->info.modval |= MV_COLORS;
-	world->info.modclr |= (1 << type);
-	world->info.colors[type] = *color;
-	Event_Call(EVT_ONCOLOR, world);
-	return true;
+	if(type < WORLD_COLORS_COUNT) {
+		if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
+			world->flags |= WORLD_FLAG_MODIFIED;
+		world->info.modval |= MV_COLORS;
+		world->info.modclr |= (1 << type);
+		world->info.colors[type] = *color;
+		Event_Call(EVT_ONCOLOR, world);
+		return true;
+	}
+	
+	return false;
 }
 
 void World_FinishEnvUpdate(World *world) {
@@ -195,8 +200,7 @@ cs_byte World_CountPlayers(World *world) {
 }
 
 Color3* World_GetEnvColor(World *world, EColor type) {
-	if(type > WORLD_COLORS_COUNT) return NULL;
-	return &world->info.colors[type];
+	return type < WORLD_COLORS_COUNT ? &world->info.colors[type] : NULL;
 }
 
 EWeather World_GetWeather(World *world) {
