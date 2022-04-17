@@ -1218,7 +1218,7 @@ static const struct extReg {
 	{NULL, 0}
 };
 
-Packet *Packet_Get(cs_byte id) {
+Packet *Packet_Get(EPacketID id) {
 	return packetsList[id];
 }
 

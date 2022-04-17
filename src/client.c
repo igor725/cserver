@@ -901,7 +901,7 @@ INL static void PacketReceiverWs(Client *client) {
 		PacketData *pdata = &client->packetData;
 
 		while(availpay > 0) {
-			cs_byte packetId = *data++;
+			EPacketID packetId = (EPacketID)*data++;
 			pdata->packet = Packet_Get(packetId);
 			if(!pdata->packet) {
 				Client_KickFormat(client, Sstor_Get("KICK_PERR_NOHANDLER"), packetId);
@@ -933,7 +933,7 @@ INL static void PacketReceiverRaw(Client *client) {
 
 	if(!pdata->packet) {
 		if(NetBuffer_AvailRead(&client->netbuf) >= 1) {
-			cs_byte packetId = *NetBuffer_Read(&client->netbuf, 1);
+			EPacketID packetId = (EPacketID)*NetBuffer_Read(&client->netbuf, 1);
 			pdata->packet = Packet_Get(packetId);
 			if(!pdata->packet) {
 				Client_KickFormat(client, Sstor_Get("KICK_PERR_NOHANDLER"), packetId);
