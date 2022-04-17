@@ -869,11 +869,6 @@ void Client_Free(Client *client) {
 			Memory_Free(prev);
 		}
 
-		if(client->cpeData->message) {
-			Memory_Free(client->cpeData->message);
-			client->cpeData->message = NULL;
-		}
-
 		Memory_Free(client->cpeData);
 		client->cpeData = NULL;
 	}

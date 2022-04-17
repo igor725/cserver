@@ -490,7 +490,6 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 	}
 
 	if(client->cpeData && Client_GetExtVer(client, EXT_LONGMSG)) {
-		if(!client->cpeData->message) client->cpeData->message = Memory_Alloc(1, 193);
 		if(String_Append(client->cpeData->message, 193, message) && partial == 1) return true;
 		messptr = client->cpeData->message;
 	}
