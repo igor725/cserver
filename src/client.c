@@ -796,6 +796,21 @@ cs_bool Client_AddTextColor(Client *client, Color4* color, cs_char code) {
 	return false;
 }
 
+INL static cs_bool SendCPEEntity(Client *client, Client *other) {
+	switch(Client_GetExtVer(client, EXT_PLAYERLIST)) {
+		case 1:
+			CPE_WriteAddEntity_v1(client, other);
+			return true;
+		
+		case 2:
+			CPE_WriteAddEntity_v2(client, other);
+			return true;
+		
+		default:
+			return false;
+	}
+}
+
 cs_bool Client_Update(Client *client) {
 	if(!client->cpeData || client->cpeData->updates == PCU_NONE) return false;
 
@@ -814,7 +829,7 @@ cs_bool Client_Update(Client *client) {
 				if(client->cpeData->updates & PCU_MODEL && hassmsupport)
 					CPE_WriteSetModel(other, client);
 				if(client->cpeData->updates & PCU_ENTITY && hasplsupport)
-					CPE_WriteAddEntity2(other, client);
+					SendCPEEntity(other, client);
 				if(client->cpeData->updates & PCU_ENTPROP && hasentprop)
 					for(EEntProp i = 0; i < ENTITY_PROP_COUNT; i++)
 						CPE_WriteSetEntityProperty(other, client, i, client->cpeData->props[i]);
@@ -1073,9 +1088,7 @@ void Client_Tick(Client *client) {
 }
 
 INL static void SendSpawnPacket(Client *client, Client *other) {
-	if(Client_GetExtVer(client, EXT_PLAYERLIST))
-		CPE_WriteAddEntity2(client, other);
-	else
+	if(!SendCPEEntity(client, other))
 		Vanilla_WriteSpawn(client, other);
 }
 
