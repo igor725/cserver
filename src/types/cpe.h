@@ -66,11 +66,11 @@ typedef enum _ESelectionParam {
 	SELECTION_PARAM_COLOR
 } ESelectionParam;
 
-typedef struct {
+typedef struct _Color4 {
 	cs_int16 r, g, b, a;
 } Color4;
 
-typedef struct {
+typedef struct _Color3 {
 	cs_int16 r, g, b;
 } Color3;
 
@@ -87,7 +87,8 @@ typedef struct _CustomParticle {
 	Color3 tintCol;
 	cs_byte frameCount, particleCount, collideFlags;
 	cs_bool fullBright;
-	cs_float size, sizeVariation, spread, speed,
+	cs_byte size;
+	cs_float sizeVariation, spread, speed,
 	gravity, baseLifetime, lifetimeVariation;
 } CustomParticle;
 

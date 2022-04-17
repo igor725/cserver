@@ -975,18 +975,22 @@ void CPE_WriteDefineEffect(Client *client, CustomParticle *e) {
 	PacketWriter_Start(client, 36);
 
 	*data++ = 0x30;
-	*(struct TextureRec *)data = e->rec;
+	*data++ = e->id;
+	*(struct TextureRec *)data = e->rec; data += sizeof(struct TextureRec);
+	*data++ = (cs_byte)e->tintCol.r;
+	*data++ = (cs_byte)e->tintCol.g;
+	*data++ = (cs_byte)e->tintCol.b;
 	*data++ = e->frameCount;
 	*data++ = e->particleCount;
-	*data++ = (cs_byte)(e->size * 32.0f);
-	*(cs_uint32 *)data = htonl((cs_uint32)(e->sizeVariation * 1000.0f)); data += 4;
+	*data++ = e->size;
+	*(cs_uint32 *)data = htonl((cs_uint32)(e->sizeVariation * 10000.0f)); data += 4;
 	*(cs_uint16 *)data = htons((cs_uint16)(e->spread * 32.0f)); data += 2;
 	*(cs_uint32 *)data = htonl((cs_uint32)(e->speed * 10000.0f)); data += 4;
 	*(cs_uint32 *)data = htonl((cs_uint32)(e->gravity * 10000.0f)); data += 4;
 	*(cs_uint32 *)data = htonl((cs_uint32)(e->baseLifetime * 10000.0f)); data += 4;
 	*(cs_uint32 *)data = htonl((cs_uint32)(e->lifetimeVariation * 10000.0f)); data += 4;
 	*data++ = e->collideFlags;
-	*data++ = e->fullBright;
+	*data = e->fullBright;
 
 	PacketWriter_End(client);
 }
