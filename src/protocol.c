@@ -16,10 +16,10 @@
 #include "config.h"
 
 #define ValidateClientState(client, st, ret) \
-if(!Client_CheckState(client, st)) return ret;
+if(!Client_CheckState(client, st)) return ret
 
 #define ValidateCpeClient(client, ret) \
-if(!client->cpeData) return ret;
+if(!client->cpeData) return ret
 
 #define PacketWriter_Start(cl, msz) \
 if(!NetBuffer_IsAlive(&cl->netbuf) || Client_IsBot(cl)) return; \
@@ -388,7 +388,7 @@ INL static void UpdateBlock(World *world, SVec *pos, BlockID block) {
 }
 
 cs_bool Handler_SetBlock(Client *client, cs_char *data) {
-	ValidateClientState(client, CLIENT_STATE_INGAME, false)
+	ValidateClientState(client, CLIENT_STATE_INGAME, false);
 
 	World *world = Client_GetWorld(client);
 	if(!world || !World_IsReadyToPlay(world)) return false;
@@ -450,7 +450,7 @@ INL static cs_bool ReadClientPos(Client *client, cs_char *data) {
 }
 
 cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
-	ValidateClientState(client, CLIENT_STATE_INGAME, true)
+	ValidateClientState(client, CLIENT_STATE_INGAME, true);
 
 	BlockID cb = *data++;
 	if(Client_GetExtVer(client, EXT_HELDBLOCK) == 1) {
@@ -476,7 +476,7 @@ cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
 }
 
 cs_bool Handler_Message(Client *client, cs_char *data) {
-	ValidateClientState(client, CLIENT_STATE_INGAME, true)
+	ValidateClientState(client, CLIENT_STATE_INGAME, true);
 
 	cs_char message[65],
 	*messptr = message;
@@ -539,9 +539,9 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 }
 
 /*
-** Врайтеры и хендлеры
-** CPE протокола
-*/
+ * Врайтеры и хендлеры
+ * CPE протокола
+ */
 #define MODELS_COUNT 15
 
 static cs_str validModelNames[MODELS_COUNT] = {
@@ -729,7 +729,7 @@ void CPE_WriteMakeSelection(Client *client, CPECuboid *cub) {
 
 	*data++ = PACKET_SELECTIONADD;
 	*data++ = cub->id;
-	Proto_WriteString(&data, NULL); // Label
+	Proto_WriteString(&data, NULL); // Клиент игнорирует Label
 	Proto_WriteSVec(&data, &cub->pos[0]);
 	Proto_WriteSVec(&data, &cub->pos[1]);
 	Proto_WriteColor4(&data, &cub->color);
@@ -1031,8 +1031,8 @@ void CPE_WritePluginMessage(Client *client, cs_byte channel, cs_str message) {
 }
 
 cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
-	ValidateCpeClient(client, false)
-	ValidateClientState(client, CLIENT_STATE_MOTD, false)
+	ValidateCpeClient(client, false);
+	ValidateClientState(client, CLIENT_STATE_MOTD, false);
 
 	if(!Proto_ReadStringNoAlloc(&data, client->cpeData->appName)) {
 		String_Copy(client->cpeData->appName, 65, "(unknown)");
@@ -1043,8 +1043,8 @@ cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
 }
 
 cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
-	ValidateCpeClient(client, false)
-	ValidateClientState(client, CLIENT_STATE_MOTD, false)
+	ValidateCpeClient(client, false);
+	ValidateClientState(client, CLIENT_STATE_MOTD, false);
 
 	CPEExt *tmp = Memory_Alloc(1, sizeof(struct _CPEExt));
 	if(!Proto_ReadString(&data, &tmp->name)) {
@@ -1074,8 +1074,8 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 }
 
 cs_bool CPEHandler_SetCBVer(Client *client, cs_char *data) {
-	ValidateCpeClient(client, false)
-	ValidateClientState(client, CLIENT_STATE_MOTD, false)
+	ValidateCpeClient(client, false);
+	ValidateClientState(client, CLIENT_STATE_MOTD, false);
 	if(Client_GetExtVer(client, EXT_CUSTOMBLOCKS) < 1) return false;
 	client->cpeData->cbLevel = *data;
 	return FinishHandshake(client);
@@ -1083,7 +1083,7 @@ cs_bool CPEHandler_SetCBVer(Client *client, cs_char *data) {
 
 cs_bool CPEHandler_PlayerClick(Client *client, cs_char *data) {
 	if(Client_GetExtVer(client, EXT_PLAYERCLICK) < 1) return false;
-	ValidateClientState(client, CLIENT_STATE_INGAME, false)
+	ValidateClientState(client, CLIENT_STATE_INGAME, false);
 
 	onPlayerClick params;
 	params.client = client;
@@ -1228,15 +1228,15 @@ void Packet_RegisterDefault(void) {
 	Packet_Register(PACKET_SENDMESSAGE,     65, Handler_Message);
 
 	const struct extReg *ext;
-	for(ext = serverExtensions; ext->name; ext++) {
+	for(ext = serverExtensions; ext->name; ext++)
 		CPE_RegisterServerExtension(ext->name, ext->version);
-	}
 
 	Packet_Register(PACKET_EXTINFO,         66, CPEHandler_ExtInfo);
 	Packet_Register(PACKET_EXTENTRY,        68, CPEHandler_ExtEntry);
 	Packet_Register(PACKET_CUSTOMBLOCKSLVL, 1, CPEHandler_SetCBVer);
 	Packet_Register(PACKET_TWOWAYPING,      3, CPEHandler_TwoWayPing);
 	Packet_Register(PACKET_PLAYERCLICKED,   14, CPEHandler_PlayerClick);
+	Packet_Register(PACKET_PLUGINMESSAGE,   65, CPEHandler_PluginMessage);
 	Packet_SetCPEHandler(PACKET_ENTITYTELEPORT, EXT_ENTPOS, 1, 15, NULL);
 }
 

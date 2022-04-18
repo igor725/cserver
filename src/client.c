@@ -816,7 +816,7 @@ cs_bool Client_Update(Client *client) {
 
 	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
 		Client *other = Clients_List[id];
-		if(other) {
+		if(other && other->cpeData) {
 			cs_bool hasplsupport = Client_GetExtVer(other, EXT_PLAYERLIST) == 2,
 			hassmsupport = Client_GetExtVer(other, EXT_CHANGEMODEL) == 1,
 			hasentprop = Client_GetExtVer(other, EXT_ENTPROP) == 1,
