@@ -95,7 +95,7 @@ NOINL void CPE_WriteSetModel(Client *client, Client *other);
 NOINL void CPE_WriteSetMapAppearanceV1(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl);
 NOINL void CPE_WriteSetMapAppearanceV2(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl, cs_int16 cllvl, cs_int16 maxview);
 NOINL void CPE_WriteBlockPerm(Client *client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy);
-NOINL void CPE_WriteDefineModel(Client *client, CPEModel *mdoel);
+NOINL void CPE_WriteDefineModel(Client *client, cs_byte id, CPEModel *mdoel);
 NOINL void CPE_WriteDefineModelPart(Client *client, CPEModelPart *part);
 NOINL void CPE_WriteUndefineModel(Client *client, cs_byte id);
 NOINL void CPE_WritePluginMessage(Client *client, cs_byte channel, cs_str message);
