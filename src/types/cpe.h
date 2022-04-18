@@ -136,6 +136,51 @@ typedef struct _BlockDef {
 	} params; /** Объединение параметров блока */
 } BlockDef;
 
+typedef enum _EModelUV {
+	MODEL_UV_TOP,
+	MODEL_UV_BOTTOM,
+	MODEL_UV_FRONT,
+	MODEL_UV_BACK,
+	MODEL_UV_LEFT,
+	MODEL_UV_RIGHT,
+	MODEL_UVS_COUNT
+} EModelUV;
+
+typedef struct _UVCoords {
+	cs_uint16 U1, V1, U2, V2;
+} UVCoords;
+
+typedef struct _AnimData {
+	cs_byte flags;
+	cs_float a, b, c, d;
+} AnimData;
+
+typedef struct _CPEModelPart {
+	Vec minCoords;
+	Vec maxCoords;
+	UVCoords UVs[MODEL_UVS_COUNT];
+	Vec rotOrigin;
+	Vec rotAngles;
+	AnimData anims[4];
+	cs_bool flags;
+
+	struct _CPEModelPart *next;
+} CPEModelPart;
+
+typedef struct _CPEModel {
+	cs_char name[65];
+	cs_byte flags;
+	cs_float nameY;
+	cs_float eyeY;
+	Vec collideBox;
+	Vec clickMin;
+	Vec clickMax;
+	cs_uint16 uScale;
+	cs_uint16 vScale;
+	cs_byte partsCount;
+	CPEModelPart *part;
+} CPEModel; 
+
 typedef struct _CPECuboid {
 	cs_byte id;
 	cs_bool used;

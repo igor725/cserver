@@ -542,9 +542,8 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
  * Врайтеры и хендлеры
  * CPE протокола
  */
-#define MODELS_COUNT 15
 
-static cs_str validModelNames[MODELS_COUNT] = {
+static cs_str originalModelNames[15] = {
 	"humanoid",
 	"chicken",
 	"creeper",
@@ -562,20 +561,37 @@ static cs_str validModelNames[MODELS_COUNT] = {
 	NULL
 };
 
+static CPEModel *customModels[256] = {NULL};
+
+cs_bool CPE_IsModelDefined(cs_byte model) {
+	return customModels[model] != NULL || model < 15;
+}
+
 cs_bool CPE_CheckModel(Client *client, cs_int16 model) {
 	World *world = Client_GetWorld(client);
 	if(world && model < 256)
 		return Block_IsValid(world, (BlockID)model);
-	return model - 256 < MODELS_COUNT;
+	return CPE_IsModelDefined(model % 256);
 }
 
 cs_int16 CPE_GetModelNum(cs_str model) {
 	cs_int16 modelnum = -1;
-	for(cs_int16 i = 0; validModelNames[i]; i++) {
-		cs_str cmdl = validModelNames[i];
-		if(String_CaselessCompare(model, cmdl)) {
+
+	for(cs_int16 i = 0; i < 256; i++) {
+		CPEModel *pmdl = customModels[i];
+		if(pmdl && String_CaselessCompare(pmdl->name, model)) {
 			modelnum = i + 256;
 			break;
+		}
+	}
+
+	if(modelnum == -1) {
+		for(cs_int16 i = 0; originalModelNames[i]; i++) {
+			cs_str cmdl = originalModelNames[i];
+			if(String_CaselessCompare(model, cmdl)) {
+				modelnum = i + 256;
+				break;
+			}
 		}
 	}
 
@@ -592,10 +608,17 @@ cs_int16 CPE_GetModelNum(cs_str model) {
 }
 
 cs_uint32 CPE_GetModelStr(cs_int16 num, char *buffer, cs_uint32 buflen) {
-	if(num > 255) {
-		cs_str mdl = validModelNames[num % 256];
+	if(num > 255) { // За пределами 256 первых id находятся неблоковые модели
+		cs_byte modelid = num % 256;
+		cs_str mdl = NULL;
+		if(customModels[modelid])
+			mdl = customModels[modelid]->name;
+		else if(modelid < 15)
+			mdl = originalModelNames[modelid];
+
 		return mdl ? (cs_uint32)String_Copy(buffer, buflen, mdl) : 0;
 	}
+
 	cs_int32 ret = String_FormatBuf(buffer, buflen, "%d", num);
 	return max(0, ret);
 }
@@ -767,7 +790,7 @@ void CPE_WriteSetModel(Client *client, Client *other) {
 	if(CPE_GetModelStr(Client_GetModel(other), model, 64))
 		Proto_WriteString(&data, model);
 	else
-		Proto_WriteString(&data, validModelNames[0]);
+		Proto_WriteString(&data, originalModelNames[0]);
 
 	PacketWriter_End(client);
 }
@@ -1016,9 +1039,35 @@ void CPE_WriteSpawnEffect(Client *client, cs_byte id, Vec *pos, Vec *origin) {
 	PacketWriter_End(client);
 }
 
-// void CPE_WriteDefineModel(Client *client, ...) {}
-// void CPE_WriteDefineModelPart(Client *client, ...) {}
-// void CPE_WriteUndefineModel(Client *client, ...) {}
+void CPE_WriteDefineModel(Client *client, cs_byte id, CPEModel *model) {
+	PacketWriter_Start(client, 116);
+
+	*data++ = PACKET_DEFINEMODEL;
+	*data++ = id;
+	// TODO: Запись модели
+	(void)model;
+
+	PacketWriter_End(client);
+}
+
+void CPE_WriteDefineModelPart(Client *client, CPEModelPart *part) {
+	PacketWriter_Start(client, 167);
+
+	*data++ = PACKET_DEFINEMODELPART;
+	// TODO: Запись частей модели
+	(void)part;
+
+	PacketWriter_End(client);
+}
+
+void CPE_WriteUndefineModel(Client *client, cs_byte id) {
+	PacketWriter_Start(client, 2);
+
+	*data++ = PACKET_UNDEFINEMODEL;
+	*data++ = id;
+
+	PacketWriter_End(client);
+}
 
 void CPE_WritePluginMessage(Client *client, cs_byte channel, cs_str message) {
 	PacketWriter_Start(client, 66);
