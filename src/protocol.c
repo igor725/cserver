@@ -587,7 +587,7 @@ cs_bool CPE_IsModelDefined(cs_byte model) {
 }
 
 cs_bool CPE_DefineModel(cs_byte id, CPEModel *model) {
-	if(!model->part || model->partsCount < 1) return false;
+	if(!model->part || !model->partsCount) return false;
 	customModels[id] = model;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
@@ -631,7 +631,7 @@ cs_int16 CPE_GetModelNum(cs_str model) {
 	if(modelnum == -1) {
 		for(cs_int16 i = 0; originalModelNames[i]; i++) {
 			cs_str cmdl = originalModelNames[i];
-			if(String_CaselessCompare(model, cmdl)) {
+			if(!customModels[i] && String_CaselessCompare(model, cmdl)) {
 				modelnum = i + 256;
 				break;
 			}
