@@ -15,6 +15,13 @@
 #include "world.h"
 #include "config.h"
 
+/**
+ * TODO: 
+ * 1) Перенести все CPE функции, которые
+ * не работают с пакетами в отедльный файл
+ * 2) Почистить код связанный с CustomModels
+ */
+
 #define ValidateClientState(client, st, ret) \
 if(!Client_CheckState(client, st)) return ret
 
@@ -110,6 +117,16 @@ void Proto_WriteByteColor4(cs_char **dataptr, const Color4* color) {
 	*data++ = (cs_char)color->b;
 	*data++ = (cs_char)color->a;
 	*dataptr = data;
+}
+
+void Proto_WriteFloat(cs_char **dataptr, cs_float num) {
+	union {
+		cs_float num;
+		cs_ulong numi;
+	} fi;
+	fi.num = num;
+	*(cs_ulong *)*dataptr = htonl(fi.numi);
+	*dataptr += sizeof(fi);
 }
 
 NOINL static void WriteExtEntityPos(cs_char **dataptr, Vec *vec, Ang *ang, cs_bool extended) {
@@ -306,12 +323,15 @@ void Vanilla_WriteUserType(Client *client, cs_byte type) {
 	PacketWriter_End(client);
 }
 
+static void FinishCPEThings(Client *client);
+
 static cs_bool FinishHandshake(Client *client) {
 	onHandshakeDone evt = {
 		.client = client,
 		.world = World_Main
 	};
 
+	FinishCPEThings(client);
 	return Event_Call(EVT_ONHANDSHAKEDONE, &evt) &&
 	Client_ChangeWorld(client, evt.world);
 }
@@ -373,7 +393,6 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 			CPE_WriteExtEntry(client, ptr);
 			ptr = ptr->next;
 		}
-		CPE_CustomBlockSupportLevel(client, 1);
 	} else return FinishHandshake(client);
 
 	return true;
@@ -543,7 +562,7 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
  * CPE протокола
  */
 
-static cs_str originalModelNames[15] = {
+static cs_str originalModelNames[16] = {
 	"humanoid",
 	"chicken",
 	"creeper",
@@ -565,6 +584,30 @@ static CPEModel *customModels[256] = {NULL};
 
 cs_bool CPE_IsModelDefined(cs_byte model) {
 	return customModels[model] != NULL || model < 15;
+}
+
+cs_bool CPE_DefineModel(cs_byte id, CPEModel *model) {
+	if(!model->part || model->partsCount < 1) return false;
+	customModels[id] = model;
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		Client *client = Clients_List[i];
+		if(!client) continue;
+		if(Client_GetExtVer(client, EXT_CUSTOMMODELS))
+			Client_DefineModel(client, id, model);
+	}
+	return true;
+}
+
+cs_bool CPE_UndefineModel(cs_byte id) {
+	if(!customModels[id]) return false;
+	customModels[id] = NULL;
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		Client *client = Clients_List[i];
+		if(!client) continue;
+		if(Client_GetExtVer(client, EXT_CUSTOMMODELS))
+			Client_UndefineModel(client, id);
+	}
+	return true;
 }
 
 cs_bool CPE_CheckModel(Client *client, cs_int16 model) {
@@ -611,7 +654,7 @@ cs_uint32 CPE_GetModelStr(cs_int16 num, char *buffer, cs_uint32 buflen) {
 	if(num > 255) { // За пределами 256 первых id находятся неблоковые модели
 		cs_byte modelid = num % 256;
 		cs_str mdl = NULL;
-		if(customModels[modelid])
+ 		if(customModels[modelid])
 			mdl = customModels[modelid]->name;
 		else if(modelid < 15)
 			mdl = originalModelNames[modelid];
@@ -1044,18 +1087,71 @@ void CPE_WriteDefineModel(Client *client, cs_byte id, CPEModel *model) {
 
 	*data++ = PACKET_DEFINEMODEL;
 	*data++ = id;
-	// TODO: Запись модели
-	(void)model;
+	Proto_WriteString(&data, model->name);
+	*data++ = model->flags;
+
+	Proto_WriteFloat(&data, model->nameY);
+	Proto_WriteFloat(&data, model->eyeY);
+
+	Proto_WriteFloat(&data, model->collideBox.x);
+	Proto_WriteFloat(&data, model->collideBox.y);
+	Proto_WriteFloat(&data, model->collideBox.z);
+
+	Proto_WriteFloat(&data, model->clickMin.x);
+	Proto_WriteFloat(&data, model->clickMin.y);
+	Proto_WriteFloat(&data, model->clickMin.z);
+
+	Proto_WriteFloat(&data, model->clickMax.x);
+	Proto_WriteFloat(&data, model->clickMax.y);
+	Proto_WriteFloat(&data, model->clickMax.z);
+
+	*(cs_uint16 *)data = htons(model->uScale); data += 2;
+	*(cs_uint16 *)data = htons(model->vScale); data += 2;
+	*data++ = model->partsCount;
 
 	PacketWriter_End(client);
 }
 
-void CPE_WriteDefineModelPart(Client *client, CPEModelPart *part) {
+void CPE_WriteDefineModelPart(Client *client, cs_int32 ver, cs_byte id, CPEModelPart *part) {
 	PacketWriter_Start(client, 167);
 
 	*data++ = PACKET_DEFINEMODELPART;
-	// TODO: Запись частей модели
-	(void)part;
+	*data++ = id;
+
+	Proto_WriteFloat(&data, part->minCoords.x);
+	Proto_WriteFloat(&data, part->minCoords.y);
+	Proto_WriteFloat(&data, part->minCoords.z);
+
+	Proto_WriteFloat(&data, part->maxCoords.x);
+	Proto_WriteFloat(&data, part->maxCoords.y);
+	Proto_WriteFloat(&data, part->maxCoords.z);
+
+	for(cs_int32 i = 0; i < 6; i++) {
+		*(cs_uint16 *)data = htons(part->UVs[i].U1); data += 2;
+		*(cs_uint16 *)data = htons(part->UVs[i].V1); data += 2;
+		*(cs_uint16 *)data = htons(part->UVs[i].U2); data += 2;
+		*(cs_uint16 *)data = htons(part->UVs[i].V2); data += 2;
+	}
+
+	Proto_WriteFloat(&data, part->rotOrigin.x);
+	Proto_WriteFloat(&data, part->rotOrigin.y);
+	Proto_WriteFloat(&data, part->rotOrigin.z);
+
+	Proto_WriteFloat(&data, part->rotAngles.x);
+	Proto_WriteFloat(&data, part->rotAngles.y);
+	Proto_WriteFloat(&data, part->rotAngles.z);
+
+	// Отправка анимаций происходит только если версия CustomModels равна 2
+	for(cs_int32 i = 0; i < 4 && ver == 2; i++) {
+		*data++ = part->anims[i].flags;
+
+		Proto_WriteFloat(&data, part->anims[i].a);
+		Proto_WriteFloat(&data, part->anims[i].b);
+		Proto_WriteFloat(&data, part->anims[i].c);
+		Proto_WriteFloat(&data, part->anims[i].d);
+	}
+
+	*data++ = part->flags;
 
 	PacketWriter_End(client);
 }
@@ -1113,8 +1209,10 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 	client->cpeData->headExtension = tmp;
 
 	if(--client->cpeData->_extCount == 0) {
-		if(Client_GetExtVer(client, EXT_CUSTOMBLOCKS))
+		if(Client_GetExtVer(client, EXT_CUSTOMBLOCKS)) {
+			CPE_CustomBlockSupportLevel(client, 1);
 			return true;
+		}
 
 		return FinishHandshake(client);
 	}
@@ -1193,6 +1291,15 @@ cs_bool CPEHandler_PluginMessage(Client *client, cs_char *data) {
 	return Event_Call(EVT_ONPLUGINMESSAGE, &pmesg);
 }
 
+static void FinishCPEThings(Client *client) {
+	if(Client_GetExtVer(client, EXT_CUSTOMMODELS)) {
+		for(cs_int16 i = 0; i < 256; i++) {
+			if(customModels[i])
+				Client_DefineModel(client, (cs_byte)i, customModels[i]);
+		}
+	}
+}
+
 Packet *packetsList[256] = {NULL};
 
 void Packet_Register(EPacketID id, cs_uint16 size, packetHandler handler) {
@@ -1230,13 +1337,11 @@ static const struct extReg {
 	{"HeldBlock", 1},
 	{"EmoteFix", 1},
 	{"TextHotKey", 1},
-	{"ExtPlayerList", 1},
 	{"ExtPlayerList", 2},
 	{"EnvColors", 1},
 	{"SelectionCuboid", 1},
 	{"BlockPermissions", 1},
 	{"ChangeModel", 1},
-	{"EnvMapAppearance", 1},
 	{"EnvMapAppearance", 2},
 	{"EnvWeatherType", 1},
 	{"HackControl", 1},
@@ -1260,7 +1365,7 @@ static const struct extReg {
 	{"SetSpawnpoint", 1},
 	{"VelocityControl", 1},
 	{"CustomParticles", 1},
-	// {"CustomModels", 2},
+	{"CustomModels", 2},
 	{"PluginMessages", 1},
 
 	{NULL, 0}

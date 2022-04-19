@@ -719,6 +719,28 @@ cs_bool Client_SendPluginMessage(Client *client, cs_byte channel, cs_str message
 	return false;
 }
 
+cs_bool Client_DefineModel(Client *client, cs_byte id, CPEModel *model) {
+	cs_int32 extVer = Client_GetExtVer(client, EXT_CUSTOMMODELS);
+	if(extVer > 0) {
+		CPE_WriteDefineModel(client, id, model);
+		CPEModelPart *part = model->part;
+		while(part) {
+			CPE_WriteDefineModelPart(client, extVer, id, part);
+			part = part->next;
+		}
+		return true;
+	}
+	return false;
+}
+
+cs_bool Client_UndefineModel(Client *client, cs_byte id) {
+	if(Client_GetExtVer(client, EXT_CUSTOMMODELS)) {
+		CPE_WriteUndefineModel(client, id);
+		return true;
+	}
+	return false;
+}
+
 cs_bool Client_SetProp(Client *client, EEntProp prop, cs_int32 value) {
 	if(prop >= ENTITY_PROP_COUNT || !client->cpeData) return false;
 	client->cpeData->updates |= PCU_ENTPROP;

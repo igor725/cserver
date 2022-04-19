@@ -28,6 +28,7 @@ API void Proto_WriteColor3(cs_char **dataptr, const Color3* color);
 API void Proto_WriteColor4(cs_char **dataptr, const Color4* color);
 API void Proto_WriteByteColor3(cs_char **dataptr, const Color3* color);
 API void Proto_WriteByteColor4(cs_char **dataptr, const Color4* color);
+API void Proto_WriteFloat(cs_char **dataptr, cs_float num);
 
 /*
  * Врайтеры и хендлеры
@@ -52,8 +53,8 @@ NOINL void Vanilla_WriteUserType(Client *client, cs_byte type);
  * связанные с CPE вещи
 */
 API cs_bool CPE_IsModelDefined(cs_byte model);
-// API cs_bool CPE_DefineModel(...);
-// API cs_bool CPE_UndefineModel(...);
+API cs_bool CPE_DefineModel(cs_byte id, CPEModel *model);
+API cs_bool CPE_UndefineModel(cs_byte id);
 API cs_bool CPE_CheckModel(Client *client, cs_int16 model);
 API void CPE_RegisterExtension(cs_str name, cs_int32 version);
 API cs_int16 CPE_GetModelNum(cs_str model);
@@ -96,7 +97,7 @@ NOINL void CPE_WriteSetMapAppearanceV1(Client *client, cs_str tex, cs_byte side,
 NOINL void CPE_WriteSetMapAppearanceV2(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl, cs_int16 cllvl, cs_int16 maxview);
 NOINL void CPE_WriteBlockPerm(Client *client, BlockID id, cs_bool allowPlace, cs_bool allowDestroy);
 NOINL void CPE_WriteDefineModel(Client *client, cs_byte id, CPEModel *mdoel);
-NOINL void CPE_WriteDefineModelPart(Client *client, CPEModelPart *part);
+NOINL void CPE_WriteDefineModelPart(Client *client, cs_int32 ver, cs_byte id, CPEModelPart *part);
 NOINL void CPE_WriteUndefineModel(Client *client, cs_byte id);
 NOINL void CPE_WritePluginMessage(Client *client, cs_byte channel, cs_str message);
 
