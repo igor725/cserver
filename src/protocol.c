@@ -610,6 +610,14 @@ cs_bool CPE_UndefineModel(cs_byte id) {
 	return true;
 }
 
+cs_bool CPE_UndefineModelPtr(CPEModel *mdl) {
+	for(cs_int16 i = 0; i < 256 && mdl; i++) {
+		if(customModels[i] == mdl)
+			return CPE_UndefineModel((cs_byte)i);
+	}
+	return false;
+}
+
 cs_bool CPE_CheckModel(Client *client, cs_int16 model) {
 	World *world = Client_GetWorld(client);
 	if(world && model < 256)

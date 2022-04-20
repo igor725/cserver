@@ -56,6 +56,7 @@ NOINL void Vanilla_WriteUserType(Client *client, cs_byte type);
 API cs_bool CPE_IsModelDefined(cs_byte model);
 API cs_bool CPE_DefineModel(cs_byte id, CPEModel *model);
 API cs_bool CPE_UndefineModel(cs_byte id);
+API cs_bool CPE_UndefineModelPtr(CPEModel *mdl);
 API cs_bool CPE_CheckModel(Client *client, cs_int16 model);
 API void CPE_RegisterExtension(cs_str name, cs_int32 version);
 API cs_int16 CPE_GetModelNum(cs_str model);
