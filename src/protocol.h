@@ -4,6 +4,7 @@
 #include "types/cpe.h"
 #include "types/client.h"
 #include "types/protocol.h"
+#include "types/block.h"
 
 typedef cs_bool(*packetHandler)(Client *, cs_char *);
 
