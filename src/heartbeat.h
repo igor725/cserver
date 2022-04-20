@@ -92,6 +92,14 @@ API void Heartbeat_SetDelay(Heartbeat *self, cs_uint16 delay);
 API cs_bool Heartbeat_Run(Heartbeat *self);
 
 /**
+ * @brief Останавливает запросы к heartbeat серверу,
+ * которые осуществлялись с помощью данного контекста.
+ * 
+ * @param указатель на heartbeat
+ */
+API void Heartbeat_Close(Heartbeat *self);
+
+/**
  * @brief Производит проверку ключа игрока на действительность
  * всеми доступными функциями проверки ключа. Для игроков с
  * 127.0.0.1 всегда возвращает true.

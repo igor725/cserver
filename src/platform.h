@@ -93,7 +93,7 @@ API void Semaphore_Free(Semaphore *sem);
 API cs_int32 Time_Format(cs_char *buf, cs_size len);
 API cs_uint64 Time_GetMSec(void);
 
-API cs_bool Console_BindSignalHandler(TSHND handler);
+cs_bool Console_BindSignalHandler(TSHND handler);
 
 API void Process_Exit(cs_int32 ecode);
 #endif // PLATFORM_H

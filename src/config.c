@@ -102,7 +102,7 @@ ECTypes Config_TypeNameToEnum(cs_str name) {
 	return -1;
 }
 
-cs_byte Config_ToStr(CEntry *ent, cs_char *value, cs_byte len) {
+static cs_byte ToStr(CEntry *ent, cs_char *value, cs_byte len) {
 	cs_byte written = 0;
 	*value = '\0';
 
@@ -278,7 +278,7 @@ cs_bool Config_Save(CStore *store, cs_bool force) {
 		}
 
 		cs_char value[CFG_MAX_LEN];
-		cs_byte written = Config_ToStr(ptr, value, CFG_MAX_LEN);
+		cs_byte written = ToStr(ptr, value, CFG_MAX_LEN);
 		value[written++] = '\n';
 		if(written > 0) {
 			if(!File_Write(value, 1, written, fp)) {
@@ -468,6 +468,7 @@ cs_bool Config_GetBool(CEntry *ent) {
 
 void Config_ResetToDefault(CStore *store) {
 	CEntry *ent = store->firstCfgEntry;
+	store->modified = true;
 
 	while(ent) {
 		ent->flags &= ~CFG_FCHANGED;

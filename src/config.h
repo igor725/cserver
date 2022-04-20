@@ -7,7 +7,6 @@ API ECError Config_PopError(CStore *store, ECExtra *extra, cs_int32 *line);
 
 API cs_str Config_TypeName(ECTypes type);
 API ECTypes Config_TypeNameToEnum(cs_str name);
-API cs_byte Config_ToStr(CEntry *ent, cs_char *value, cs_byte len);
 API cs_str Config_ErrorToString(ECError code);
 API cs_str Config_ExtraToString(ECExtra extra);
 
