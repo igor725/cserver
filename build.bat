@@ -75,24 +75,27 @@ GOTO subargloop
 
 @REM Сделать тут умное обновление
 :testupdate
-git fetch
-git merge --ff-only
+git -C !ROOT! fetch
+git -C !ROOT! merge --ff-only
 EXIT /b 0
 
 :argsdone
 IF "!GITOK!"=="1" (
 	IF "!GITUPD!"=="1" (
-		IF "!PLUGIN_BUILD!"=="1" (
-			PUSHD ..\cs-!PLUGNAME!
-			CALL :testupdate
-			POPD
-		) else (
-			CALL :testupdate
-		)
+		CALL :testupdate
 	)
 
-	FOR /F "tokens=* USEBACKQ" %%F IN (`git describe --tags HEAD`) DO (
+	SET TAG_INSTALLED=0
+
+	FOR /F "tokens=* USEBACKQ" %%F IN (`git -C "!ROOT!" describe --tags HEAD 2^> nul`) DO (
 		SET CFLAGS=%CFLAGS% /DGIT_COMMIT_TAG#\"%%F\"
+		SET TAG_INSTALLED=1
+	)
+	
+	IF "!TAG_INSTALLED!"=="0" (
+		FOR /F "tokens=* USEBACKQ" %%F IN (`git -C "!ROOT!" rev-parse --short HEAD`) DO 2> nul (
+			SET CFLAGS=%CFLAGS% /DGIT_COMMIT_TAG#\"%%F\"
+		)	
 	)
 )
 

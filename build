@@ -151,7 +151,11 @@ OUTDIR="$ROOT/out/$MACH"
 
 if [ $COMPILE -eq 1 ]; then
 	if [ $GITOK -eq 1 ]; then
-		CFLAGS="$CFLAGS -DGIT_COMMIT_TAG=\"$(git describe --tags HEAD)\""
+		VER="$(git -C "$ROOT" describe --tags HEAD 2> /dev/null)"
+		if [ "$VER" == "" ]; then
+			VER="$(git -C "$ROOT" rev-parse --short HEAD 2> /dev/null)"
+		fi
+		CFLAGS="$CFLAGS -DGIT_COMMIT_TAG=\"$VER\""
 	fi
 
 	STDERR="$ROOT/out/stderr"
