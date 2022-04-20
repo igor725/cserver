@@ -12,44 +12,9 @@
 #include "world.h"
 #include "websock.h"
 #include "groups.h"
+#include "cpe.h"
 
 Client *Clients_List[MAX_CLIENTS] = {0};
-
-static void CubeNormalize(SVec *s, SVec *e) {
-	cs_int16 tmp, *a = (cs_int16 *)s, *b = (cs_int16 *)e;
-	for(int i = 0; i < 3; i++) {
-		if(b[i] < a[i]) {
-			tmp = b[i];
-			b[i] = a[i];
-			a[i] = tmp;
-		}
-		b[i]++;
-	}
-}
-
-void Cuboid_SetPositions(CPECuboid *cub, SVec start, SVec end) {
-	cub->pos[0] = start, cub->pos[1] = end;
-	CubeNormalize(&cub->pos[0], &cub->pos[1]);
-}
-
-void Cuboid_SetColor(CPECuboid *cub, Color4 color) {
-	cub->color = color;
-}
-
-cs_byte Cuboid_GetID(CPECuboid *cub) {
-	return cub->id;
-}
-
-cs_uint32 Cuboid_GetSize(CPECuboid *cub) {
-	return (cub->pos[1].x - cub->pos[0].x) *
-	(cub->pos[1].y - cub->pos[0].y) *
-	(cub->pos[1].z - cub->pos[0].z);
-}
-
-void Cuboid_GetPositions(CPECuboid *cub, SVec *start, SVec *end) {
-	if(start) *start = cub->pos[0];
-	if(end) *end = cub->pos[1];
-}
 
 cs_byte Clients_GetCount(EClientState state) {
 	cs_byte count = 0;

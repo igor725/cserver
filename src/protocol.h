@@ -53,15 +53,6 @@ NOINL void Vanilla_WriteUserType(Client *client, cs_byte type);
  * CPE протокола и прочие,
  * связанные с CPE вещи
 */
-API cs_bool CPE_IsModelDefined(cs_byte model);
-API cs_bool CPE_DefineModel(cs_byte id, CPEModel *model);
-API cs_bool CPE_UndefineModel(cs_byte id);
-API cs_bool CPE_UndefineModelPtr(CPEModel *mdl);
-API cs_bool CPE_CheckModel(Client *client, cs_int16 model);
-API void CPE_RegisterExtension(cs_str name, cs_int32 version);
-API cs_int16 CPE_GetModelNum(cs_str model);
-API cs_uint32 CPE_GetModelStr(cs_int16 num, char *buffer, cs_uint32 buflen);
-API void CPE_RegisterServerExtension(cs_str name, cs_int32 version);
 
 NOINL void CPE_WriteInfo(Client *client);
 NOINL void CPE_WriteExtEntry(Client *client, CPEExt *ext);
@@ -103,5 +94,6 @@ NOINL void CPE_WriteDefineModelPart(Client *client, cs_int32 ver, cs_byte id, CP
 NOINL void CPE_WriteUndefineModel(Client *client, cs_byte id);
 NOINL void CPE_WritePluginMessage(Client *client, cs_byte channel, cs_str message);
 
+API void CPE_RegisterServerExtension(cs_str name, cs_int32 version);
 void Packet_RegisterDefault(void);
 #endif // PROTOCOL_H

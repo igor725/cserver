@@ -15,12 +15,6 @@ API void Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
 NOINL cs_bool Client_DefineBlock(Client *client, BlockID id, BlockDef *block);
 NOINL cs_bool Client_UndefineBlock(Client *client, BlockID id);
 
-API void Cuboid_SetPositions(CPECuboid *cub, SVec start, SVec end);
-API void Cuboid_SetColor(CPECuboid *cub, Color4 color);
-API cs_byte Cuboid_GetID(CPECuboid *cub);
-API cs_uint32 Cuboid_GetSize(CPECuboid *cub);
-API void Cuboid_GetPositions(CPECuboid *cub, SVec *start, SVec *end);
-
 API cs_byte Clients_GetCount(EClientState state);
 
 API Client *Client_NewBot(void);

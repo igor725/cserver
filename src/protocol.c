@@ -14,13 +14,7 @@
 #include "compr.h"
 #include "world.h"
 #include "config.h"
-
-/**
- * TODO: 
- * 1) Перенести все CPE функции, которые
- * не работают с пакетами в отедльный файл
- * 2) Почистить код связанный с CustomModels
- */
+#include "cpe.h"
 
 #define ValidateClientState(client, st, ret) \
 if(!Client_CheckState(client, st)) return ret
@@ -562,118 +556,6 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
  * CPE протокола
  */
 
-static cs_str originalModelNames[16] = {
-	"humanoid",
-	"chicken",
-	"creeper",
-	"pig",
-	"sheep",
-	"skeleton",
-	"sheep",
-	"sheep_nofur",
-	"skeleton",
-	"spider",
-	"zombie",
-	"head",
-	"sit",
-	"chibi",
-	NULL
-};
-
-static CPEModel *customModels[256] = {NULL};
-
-cs_bool CPE_IsModelDefined(cs_byte model) {
-	return customModels[model] != NULL || model < 15;
-}
-
-cs_bool CPE_DefineModel(cs_byte id, CPEModel *model) {
-	if(!model->part || !model->partsCount) return false;
-	customModels[id] = model;
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client *client = Clients_List[i];
-		if(!client) continue;
-		if(Client_GetExtVer(client, EXT_CUSTOMMODELS))
-			Client_DefineModel(client, id, model);
-	}
-	return true;
-}
-
-cs_bool CPE_UndefineModel(cs_byte id) {
-	if(!customModels[id]) return false;
-	customModels[id] = NULL;
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client *client = Clients_List[i];
-		if(!client) continue;
-		if(Client_GetExtVer(client, EXT_CUSTOMMODELS))
-			Client_UndefineModel(client, id);
-	}
-	return true;
-}
-
-cs_bool CPE_UndefineModelPtr(CPEModel *mdl) {
-	for(cs_int16 i = 0; i < 256 && mdl; i++) {
-		if(customModels[i] == mdl)
-			return CPE_UndefineModel((cs_byte)i);
-	}
-	return false;
-}
-
-cs_bool CPE_CheckModel(Client *client, cs_int16 model) {
-	World *world = Client_GetWorld(client);
-	if(world && model < 256)
-		return Block_IsValid(world, (BlockID)model);
-	return CPE_IsModelDefined(model % 256);
-}
-
-cs_int16 CPE_GetModelNum(cs_str model) {
-	cs_int16 modelnum = -1;
-
-	for(cs_int16 i = 0; i < 256; i++) {
-		CPEModel *pmdl = customModels[i];
-		if(pmdl && String_CaselessCompare(pmdl->name, model)) {
-			modelnum = i + 256;
-			break;
-		}
-	}
-
-	if(modelnum == -1) {
-		for(cs_int16 i = 0; originalModelNames[i]; i++) {
-			cs_str cmdl = originalModelNames[i];
-			if(!customModels[i] && String_CaselessCompare(model, cmdl)) {
-				modelnum = i + 256;
-				break;
-			}
-		}
-	}
-
-	if(modelnum == -1) {
-		if(ISNUM(*model)) {
-			cs_int32 tmp = String_ToInt(model);
-			if(tmp >= 0 && tmp < 256)
-				modelnum = (cs_int16)tmp;
-		} else
-			modelnum = 256;
-	}
-
-	return modelnum;
-}
-
-cs_uint32 CPE_GetModelStr(cs_int16 num, char *buffer, cs_uint32 buflen) {
-	if(num > 255) { // За пределами 256 первых id находятся неблоковые модели
-		cs_byte modelid = num % 256;
-		cs_str mdl = NULL;
- 		if(customModels[modelid])
-			mdl = customModels[modelid]->name;
-		else if(modelid < 15)
-			mdl = originalModelNames[modelid];
-
-		return mdl ? (cs_uint32)String_Copy(buffer, buflen, mdl) : 0;
-	}
-
-	cs_int32 ret = String_FormatBuf(buffer, buflen, "%d", num);
-	return max(0, ret);
-}
-
 void CPE_WriteInfo(Client *client) {
 	PacketWriter_Start(client, 67);
 
@@ -841,7 +723,7 @@ void CPE_WriteSetModel(Client *client, Client *other) {
 	if(CPE_GetModelStr(Client_GetModel(other), model, 64))
 		Proto_WriteString(&data, model);
 	else
-		Proto_WriteString(&data, originalModelNames[0]);
+		Proto_WriteString(&data, CPE_GetDefaultModelName());
 
 	PacketWriter_End(client);
 }
@@ -1302,8 +1184,8 @@ cs_bool CPEHandler_PluginMessage(Client *client, cs_char *data) {
 static void FinishCPEThings(Client *client) {
 	if(Client_GetExtVer(client, EXT_CUSTOMMODELS)) {
 		for(cs_int16 i = 0; i < 256; i++) {
-			if(customModels[i])
-				Client_DefineModel(client, (cs_byte)i, customModels[i]);
+			CPEModel *model = CPE_GetModel((cs_byte)i);
+			if(model) Client_DefineModel(client, (cs_byte)i, model);
 		}
 	}
 }
