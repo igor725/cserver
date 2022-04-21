@@ -54,6 +54,10 @@ Command_UnregisterByFunc((cmdFunc)svcmd_##N)
 #define CMDF_RESERVED1 BIT(3)
 #define CMDF_RESERVED2 BIT(4)
 
+#define Command_DeclareBunch(N) static CommandRegBunch N[] =
+#define COMMAND_BUNCH_ADD(N, F, H) {#N, H, (cmdFunc)svcmd_##N, F},
+#define COMMAND_BUNCH_END {NULL, NULL, NULL, 0x00}
+
 /**
  * @brief Структура с информацией о вызове команды.
  * 
@@ -70,6 +74,12 @@ typedef struct {
  * 
  */
 typedef cs_bool(*cmdFunc)(CommandCallData *);
+
+typedef struct _CommandRegBunch {
+	cs_str name, descr;
+	cmdFunc func;
+	cs_byte flags;
+} CommandRegBunch;
 
 typedef struct _Command {
 	cs_str name;
@@ -104,19 +114,23 @@ API cs_bool Command_Handle(cs_char *str, Client *caller);
 API Command *Command_Register(cs_str name, cs_str descr, cmdFunc func, cs_byte flags);
 
 /**
+ * @brief Удаляет зарегистрированную ранее команду.
+ * 
+ * @param cmd указатель на структуру команды
+ */
+API void Command_Unregister(Command *cmd);
+
+API cs_bool Command_RegisterBunch(CommandRegBunch *bunch);
+
+API void Command_UnregisterBunch(CommandRegBunch *bunch);
+
+/**
  * @brief Возвращает указатель на структуру команды по её имени.
  * 
  * @param name имя команды
  * @return указатель на структуру команды
  */
 API Command *Command_GetByName(cs_str name);
-
-/**
- * @brief Удаляет зарегистрированную ранее команду.
- * 
- * @param cmd указатель на структуру команды
- */
-API void Command_Unregister(Command *cmd);
 
 /**
  * @brief Удаляет зарегистрированную ранее команду.

@@ -21,6 +21,15 @@ Command *Command_Register(cs_str name, cs_str descr, cmdFunc func, cs_byte flags
 	return tmp;
 }
 
+cs_bool Command_RegisterBunch(CommandRegBunch *bunch) {
+	for(cs_int32 i = 0; bunch[i].func; i++) {
+		CommandRegBunch *cmd = &bunch[i];
+		if(!Command_Register(cmd->name, cmd->descr, cmd->func, cmd->flags))
+			return false;
+	}
+	return true;
+}
+
 cs_str Command_GetName(Command *cmd) {
 	return cmd->name;
 }
@@ -75,6 +84,11 @@ void Command_UnregisterByFunc(cmdFunc func) {
 			break;
 		}
 	}
+}
+
+void Command_UnregisterBunch(CommandRegBunch *bunch) {
+	for(cs_int32 i = 0; bunch[i].func; i++)
+		Command_UnregisterByFunc(bunch[i].func);
 }
 
 INL static void SendOutput(Client *caller, cs_char *ret) {
