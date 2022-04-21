@@ -49,12 +49,11 @@ cs_bool Plugin_LoadDll(cs_str name) {
 			return false;
 		}
 
-		cs_int32 apiVer = *apiVerSym;
-		if(apiVer != PLUGIN_API_NUM) {
-			if(apiVer < PLUGIN_API_NUM)
-				Log_Error(Sstor_Get("PLUG_DEPR"), name, PLUGIN_API_NUM, apiVer);
+		if(*apiVerSym != PLUGIN_API_NUM) {
+			if(*apiVerSym < PLUGIN_API_NUM)
+				Log_Error(Sstor_Get("PLUG_DEPR"), name, PLUGIN_API_NUM, *apiVerSym);
 			else
-				Log_Error(Sstor_Get("PLUG_DEPR_API"), name, apiVer, PLUGIN_API_NUM);
+				Log_Error(Sstor_Get("PLUG_DEPR_API"), name, *apiVerSym, PLUGIN_API_NUM);
 
 			DLib_Unload(lib);
 			return false;

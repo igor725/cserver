@@ -21,7 +21,9 @@ typedef enum _EMesgType {
 	MESSAGE_TYPE_BRIGHT1 = 11, // Правый нижний угол
 	MESSAGE_TYPE_BRIGHT2,
 	MESSAGE_TYPE_BRIGHT3,
-	MESSAGE_TYPE_ANNOUNCE = 100 // Сообщение в середине экрана
+	MESSAGE_TYPE_ANNOUNCE = 100, // Сообщение в середине экрана
+	MESSAGE_TYPE_BIGANNOUNCE,
+	MESSAGE_TYPE_SMALLANNOUNCE
 } EMesgType;
 
 typedef enum _EClientState {
