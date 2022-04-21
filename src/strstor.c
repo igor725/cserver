@@ -114,6 +114,7 @@ cs_bool Sstor_Defaults(void) {
 
 	Sstor_Set("PLUG_DEPR_API", "Please upgrade your server software. Plugin \"%s\" compiled for PluginAPI v%03d, but server uses v%d.");
 	Sstor_Set("PLUG_DEPR", "Plugin \"%s\" is deprecated. Server uses PluginAPI v%03d but plugin compiled for v%03d.");
+	Sstor_Set("PLUG_ERROR", "Failed to load plugin %s: Plugin_Load returned false");
 
 	Sstor_Set("Z_NOGZ", "Your zlib installation has no gzip support");
 	Sstor_Set("Z_LVL1", "Your zlib installation supports only one, lowest compression level!");

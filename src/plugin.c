@@ -85,7 +85,8 @@ cs_bool Plugin_LoadDll(cs_str name) {
 				if(plugin->ifaces)
 					CheckHoldIfaces(plugin);
 				return true;
-			}
+			} else
+				Log_Error(Sstor_Get("PLUG_ERROR"), path);
 		}
 
 		Plugin_UnloadDll(plugin, true);

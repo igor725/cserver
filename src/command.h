@@ -36,16 +36,16 @@ if(ccdata->caller && !Client_IsOP(ccdata->caller)) { \
 }
 
 #define COMMAND_PRINTUSAGE \
-COMMAND_PRINTF("Usage: %s", cmdUsage);
+COMMAND_PRINTF("Usage: %s", cmdUsage)
 
 #define COMMAND_FUNC(N) \
 static cs_bool svcmd_##N(CommandCallData *ccdata)
 
 #define COMMAND_ADD(N, F, H) \
-Command_Register(#N, H, (cmdFunc)svcmd_##N, F);
+Command_Register(#N, H, (cmdFunc)svcmd_##N, F)
 
 #define COMMAND_REMOVE(N) \
-Command_UnregisterByFunc((cmdFunc)svcmd_##N);
+Command_UnregisterByFunc((cmdFunc)svcmd_##N)
 
 #define CMDF_NONE      0x00
 #define CMDF_OP        BIT(0)
