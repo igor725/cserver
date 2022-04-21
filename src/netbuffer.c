@@ -176,7 +176,6 @@ cs_bool NetBuffer_IsAlive(NetBuffer *nb) {
 }
 
 void NetBuffer_ForceClose(NetBuffer *nb) {
-	if(nb->closed) return;
 	if(nb->fd != INVALID_SOCKET) Socket_Close(nb->fd);
 	Cleanup(&nb->write);
 	Cleanup(&nb->read);
