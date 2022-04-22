@@ -25,7 +25,6 @@ cs_str Server_Version = GIT_COMMIT_TAG;
 cs_bool Server_Active = false, Server_Ready = false;
 cs_uint64 Server_StartTime = 0;
 Socket Server_Socket = 0;
-static Thread NetThreadHandle = (Thread)NULL;
 
 INL static ClientID TryToGetIDFor(Client *client) {
 	cs_int16 maxPlayers = (cs_byte)Config_GetInt16ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
@@ -100,89 +99,65 @@ INL static cs_bool ProcessClient(Client *client) {
 	return true;
 }
 
-THREAD_FUNC(NetThread) {
-	(void)param;
+static void DoNetTick(void) {
 	struct sockaddr_in caddr;
-	cs_uint64 last = 0, curr = 0;
-
-	while(true) {
-		Socket fd = Socket_Accept(Server_Socket, &caddr);
-		if(fd != INVALID_SOCKET) {
-			if(!Server_Active) {
-				Socket_Close(fd);
-				continue;
-			}
-
-			Socket_SetNonBlocking(fd, true);
-			Client *tmp = Memory_TryAlloc(1, sizeof(Client));
-			if(tmp) {
-				tmp->mutex = Mutex_Create();
-				tmp->addr = caddr.sin_addr.s_addr;
-				NetBuffer_Init(&tmp->netbuf, fd);
-				tmp->id = TryToGetIDFor(tmp);
-				if(tmp->id != CLIENT_SELF) {
-					tmp->lastmsg = curr;
-					if(Event_Call(EVT_ONCONNECT, tmp)) {
-						Clients_List[tmp->id] = tmp;
-						continue;
-					} else
-						Client_Kick(tmp, Sstor_Get("KICK_REJ"));
-				} else
-					Client_Kick(tmp, Sstor_Get("KICK_FULL"));
-
-				Client_Free(tmp);
-			}
-
+	Socket fd = Socket_Accept(Server_Socket, &caddr);
+	if(fd != INVALID_SOCKET) {
+		if(!Server_Active) {
 			Socket_Close(fd);
+			return;
 		}
 
-		cs_bool shutallowed = true;
-		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-			Client *client = Clients_List[i];
-			if(!client) continue;
-			if(!ProcessClient(client)) continue;
-			if(Client_IsBot(client)) continue;
-			if(client->kickReason) continue;
-			cs_uint64 currtime = Time_GetMSec(), timeout = 0;
-			switch(client->state) {
-				case CLIENT_STATE_INITIAL:
+		Socket_SetNonBlocking(fd, true);
+		Client *tmp = Memory_TryAlloc(1, sizeof(Client));
+		if(tmp) {
+			tmp->mutex = Mutex_Create();
+			tmp->addr = caddr.sin_addr.s_addr;
+			NetBuffer_Init(&tmp->netbuf, fd);
+			tmp->id = TryToGetIDFor(tmp);
+			if(tmp->id != CLIENT_SELF) {
+				tmp->lastmsg = Time_GetMSec();
+				if(Event_Call(EVT_ONCONNECT, tmp)) {
+					Clients_List[tmp->id] = tmp;
+					return;
+				} else
+					Client_Kick(tmp, Sstor_Get("KICK_REJ"));
+			} else
+				Client_Kick(tmp, Sstor_Get("KICK_FULL"));
+
+			Client_Free(tmp);
+		}
+
+		Socket_Close(fd);
+	}
+
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		Client *client = Clients_List[i];
+		if(!client) continue;
+		if(!ProcessClient(client)) continue;
+		if(Client_IsBot(client)) continue;
+		if(client->kickReason) continue;
+		cs_uint64 currtime = Time_GetMSec(), timeout = 0;
+		switch(client->state) {
+			case CLIENT_STATE_INITIAL:
+				timeout = 800;
+				break;
+			case CLIENT_STATE_MOTD:
+				if(client->mapData.world)
+					timeout = (cs_uint64)-1;
+				else
 					timeout = 800;
-					break;
-				case CLIENT_STATE_MOTD:
-					if(client->mapData.world)
-						timeout = (cs_uint64)-1;
-					else
-						timeout = 800;
-					break;
-				case CLIENT_STATE_INGAME:
-					timeout = 30000;
-					break;
-			}
-
-			if(currtime - client->lastmsg > timeout) {
-				client->kickReason = String_AllocCopy(Sstor_Get("KICK_TIMEOUT"));
-				NetBuffer_ForceClose(&client->netbuf);
-			}
-
-			shutallowed = false;
+				break;
+			case CLIENT_STATE_INGAME:
+				timeout = 30000;
+				break;
 		}
 
-		if(!Server_Active && shutallowed) break;
-		last = curr;
-		curr = Time_GetMSec();
-		if(last > 0) {
-			cs_uint64 diff = curr - last;
-			if(diff <= 1000 / NET_TICKS_PER_SECOND)
-				Thread_Sleep((1000 / NET_TICKS_PER_SECOND) - (cs_uint32)diff);
+		if(currtime - client->lastmsg > timeout) {
+			client->kickReason = String_AllocCopy(Sstor_Get("KICK_TIMEOUT"));
+			NetBuffer_ForceClose(&client->netbuf);
 		}
 	}
-
-	if(Server_Active) {
-		Error_PrintSys(false);
-		Server_Active = false;
-	}
-
-	return 0;
 }
 
 INL static cs_bool Bind(cs_str ip, cs_uint16 port) {
@@ -406,7 +381,6 @@ cs_bool Server_Init(void) {
 		Event_Call(EVT_POSTSTART, NULL);
 		if(ConsoleIO_Init())
 			Log_Info(Sstor_Get("SV_STOPNOTE"));
-		NetThreadHandle = Thread_Create(NetThread, NULL, false);
 		Server_Ready = true;
 		return true;
 	}
@@ -415,7 +389,10 @@ cs_bool Server_Init(void) {
 	return false;
 }
 
+cs_uint64 prev, this = 0;
+
 INL static void DoStep(cs_int32 delta) {
+	DoNetTick();
 	Event_Call(EVT_ONTICK, &delta);
 	Timer_Update(delta);
 }
@@ -437,7 +414,10 @@ void Server_StartLoop(void) {
 			delta = 500;
 		}
 		DoStep(delta);
-		Thread_Sleep(1000 / TICKS_PER_SECOND);
+
+		cs_uint64 diff = curr - last;
+		if(diff <= (1000 / TICKS_PER_SECOND))
+			Thread_Sleep((1000 / TICKS_PER_SECOND) - (cs_uint32)diff);
 	}
 
 	Event_Call(EVT_ONSTOP, NULL);
@@ -493,7 +473,6 @@ void Server_Cleanup(void) {
 	ConsoleIO_Uninit();
 	Log_Info(Sstor_Get("SV_STOP_PL"));
 	KickAll(Sstor_Get("KICK_STOP"));
-	Thread_Join(NetThreadHandle);
 	Log_Info(Sstor_Get("SV_STOP_SW"));
 	UnloadAllWorlds();
 	Socket_Close(Server_Socket);
