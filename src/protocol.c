@@ -116,10 +116,10 @@ void Proto_WriteByteColor4(cs_char **dataptr, const Color4* color) {
 void Proto_WriteFloat(cs_char **dataptr, cs_float num) {
 	union {
 		cs_float num;
-		cs_ulong numi;
+		cs_uint32 numi;
 	} fi;
 	fi.num = num;
-	*(cs_ulong *)*dataptr = htonl(fi.numi);
+	*(cs_uint32 *)*dataptr = htonl(fi.numi);
 	*dataptr += sizeof(fi);
 }
 
