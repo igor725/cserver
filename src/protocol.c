@@ -510,7 +510,7 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 	onMessage params = {
 		.client = client,
 		.message = messptr,
-		.type = 0
+		.type = MESSAGE_TYPE_CHAT
 	};
 
 	if(Event_Call(EVT_ONMESSAGE, &params)) {
@@ -531,9 +531,9 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 					Client *other = Clients_List[i];
 					if(!other) continue;
 					if(Client_GetExtVer(other, EXT_CP437) < 1)
-						Client_Chat(other, MESSAGE_TYPE_CHAT, formatted_san);
+						Client_Chat(other, params.type, formatted_san);
 					else
-						Client_Chat(other, MESSAGE_TYPE_CHAT, formatted);
+						Client_Chat(other, params.type, formatted);
 				}
 
 				Log_Chat(formatted_san);
