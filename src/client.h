@@ -7,6 +7,7 @@
 #include "types/cpe.h"
 #include "types/groups.h"
 #include "types/client.h"
+#include "types/keys.h"
 
 void Client_Tick(Client *client);
 void Client_Free(Client *client);
@@ -59,7 +60,7 @@ API cs_bool Client_SetModelStr(Client *client, cs_str model);
 API cs_bool Client_SetBlockPerm(Client *client, BlockID block, cs_bool allowPlace, cs_bool allowDestroy);
 API cs_bool Client_SetHeldBlock(Client *client, BlockID block, cs_bool preventChange);
 API cs_bool Client_SetClickDistance(Client *client, cs_uint16 dist);
-API cs_bool Client_SetHotkey(Client *client, cs_str action, cs_int32 keycode, cs_int8 keymod);
+API cs_bool Client_SetHotkey(Client *client, cs_str action, ELWJGLKey keycode, ELWJGLMod keymod);
 API cs_bool Client_SetHotbar(Client *client, cs_byte pos, BlockID block);
 API cs_bool Client_SetSkin(Client *client, cs_str skin);
 API cs_bool Client_SetSpawn(Client *client, Vec *pos, Ang *ang);

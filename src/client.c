@@ -566,7 +566,7 @@ cs_bool Client_SetClickDistance(Client *client, cs_uint16 dist) {
 	return false;
 }
 
-cs_bool Client_SetHotkey(Client *client, cs_str action, cs_int32 keycode, cs_int8 keymod) {
+cs_bool Client_SetHotkey(Client *client, cs_str action, ELWJGLKey keycode, ELWJGLMod keymod) {
 	if(Client_GetExtVer(client, EXT_TEXTHOTKEY)) {
 		CPE_WriteSetHotKey(client, action, keycode, keymod);
 		return true;

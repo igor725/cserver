@@ -5,6 +5,7 @@
 #include "types/client.h"
 #include "types/protocol.h"
 #include "types/block.h"
+#include "types/keys.h"
 
 typedef cs_bool(*packetHandler)(Client *, cs_char *);
 
@@ -60,7 +61,7 @@ NOINL void CPE_WriteClickDistance(Client *client, cs_uint16 dist);
 NOINL void CPE_CustomBlockSupportLevel(Client *client, cs_byte level);
 NOINL void CPE_WriteInventoryOrder(Client *client, cs_byte order, BlockID block);
 NOINL void CPE_WriteHoldThis(Client *client, BlockID block, cs_bool preventChange);
-NOINL void CPE_WriteSetHotKey(Client *client, cs_str action, cs_int32 keycode, cs_int8 keymod);
+NOINL void CPE_WriteSetHotKey(Client *client, cs_str action, ELWJGLKey keycode, ELWJGLMod keymod);
 NOINL void CPE_WriteAddName(Client *client, Client *other);
 NOINL void CPE_WriteAddEntity_v1(Client *client, Client *other);
 NOINL void CPE_WriteAddEntity_v2(Client *client, Client *other);

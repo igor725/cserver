@@ -607,14 +607,14 @@ void CPE_WriteHoldThis(Client *client, BlockID block, cs_bool preventChange) {
 	PacketWriter_End(client);
 }
 
-void CPE_WriteSetHotKey(Client *client, cs_str action, cs_int32 keycode, cs_int8 keymod) {
+void CPE_WriteSetHotKey(Client *client, cs_str action, ELWJGLKey keycode, ELWJGLMod keymod) {
 	PacketWriter_Start(client, 134);
 
 	*data++ = PACKET_SETHOTKEY;
 	Proto_WriteString(&data, NULL); // Label
 	Proto_WriteString(&data, action);
-	*(cs_int32 *)data = htonl(keycode); data += 4;
-	*data++ = keymod;
+	*(cs_uint32 *)data = htonl((cs_uint32)keycode); data += 4;
+	*data++ = (cs_byte)keymod;
 
 	PacketWriter_End(client);
 }
