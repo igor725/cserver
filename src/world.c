@@ -199,7 +199,7 @@ cs_byte World_CountPlayers(World *world) {
 	return count;
 }
 
-Color3* World_GetEnvColor(World *world, EColor type) {
+Color3 *World_GetEnvColor(World *world, EColor type) {
 	return type < WORLD_COLORS_COUNT ? &world->info.colors[type] : NULL;
 }
 

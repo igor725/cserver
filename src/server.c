@@ -125,6 +125,13 @@ static void DoNetTick(void) {
 			} else
 				Client_Kick(tmp, Sstor_Get("KICK_FULL"));
 
+			/* TODO:
+			 * Возможно тут может произойти вход
+			 * в бесконечный цикл (ненавижу TCP/IP),
+			 * нужно разобраться с этой фигнёй как
+			 * можно более изящно.
+			 */
+			while(NetBuffer_Process(&tmp->netbuf));
 			Client_Free(tmp);
 		}
 
