@@ -817,13 +817,7 @@ void CPE_WriteBulkBlockUpdate(Client *client, BulkBlockUpdate *bbu) {
 
 	*data++ = PACKET_BULKBLOCKUPDATE;
 	*(struct _BBUData *)data = bbu->data;
-	/**
-	 * Временное исправление (наверное).
-	 * Клиент принимает не количество обновлённых
-	 * блоков, а последний обновлённый индекс в
-	 * массиве. Соответственно нам надо понизить
-	 * значение count на 1.
-	 */
+	// Клиенту нужно количество блоков, не индекс последнего
 	(*(struct _BBUData *)data).count--;
 	data += sizeof(bbu->data);
 

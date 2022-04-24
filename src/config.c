@@ -165,13 +165,7 @@ cs_bool Config_Load(CStore *store) {
 		}
 		*value++ = '\0';
 		CEntry *ent = Config_GetEntry(store, line);
-		if(!ent) {
-			store->error.code = CONFIG_ERROR_PARSE;
-			store->error.extra = CONFIG_EXTRA_PARSE_NOENTRY;
-			store->error.line = linenum;
-			File_Close(fp);
-			return false;
-		}
+		if(!ent) continue;
 		ent->flags |= CFG_FREADED;
 
 		if(haveComment) {
@@ -482,6 +476,7 @@ cs_bool Config_GetBoolByKey(CStore *store, cs_str key) {
 
 static cs_str ErrorStrings[CONFIG_MAX_ERROR] = {
 	"CONFIG_ERROR_SUCCESS",
+	"CONFIG_ERROR_INTERNAL",
 	"CONFIG_ERROR_IOFAIL",
 	"CONFIG_ERROR_PARSE"
 };
@@ -497,7 +492,6 @@ static cs_str ExtraStrings[CONFIG_MAX_EXTRA] = {
 	"CONFIG_EXTRA_NOINFO",
 	"CONFIG_EXTRA_IO_LINEASERROR",
 	"CONFIG_EXTRA_IO_FRENAME",
-	"CONFIG_EXTRA_PARSE_NOENTRY",
 	"CONFIG_EXTRA_PARSE_LINEFORMAT",
 	"CONFIG_EXTRA_PARSE_NUMBER",
 	"CONFIG_EXTRA_PARSE_END"
