@@ -406,25 +406,23 @@ INL static void DoStep(cs_int32 delta) {
 
 void Server_StartLoop(void) {
 	if(!Server_Active) return;
-	cs_uint64 last, curr = Time_GetMSec();
-	cs_int32 delta;
+	cs_uint64 start, end;
+	cs_int32 delta = 0;
 
 	while(Server_Active) {
-		last = curr;
-		curr = Time_GetMSec();
-		delta = (cs_int32)(curr - last);
-		if(curr < last) {
+		start = Time_GetMSec();
+		if(delta < TICKS_PER_SECOND)
+			Thread_Sleep(TICKS_PER_SECOND - delta);
+		DoStep(delta);
+		end = Time_GetMSec();
+		if(end < start) {
 			Log_Warn(Sstor_Get("SV_BADTICK_BW"));
 			delta = 0;
 		} else if(delta > 500) {
 			Log_Warn(Sstor_Get("SV_BADTICK"), delta);
 			delta = 500;
-		}
-		DoStep(delta);
-
-		cs_uint64 diff = curr - last;
-		if(diff <= (1000 / TICKS_PER_SECOND))
-			Thread_Sleep((1000 / TICKS_PER_SECOND) - (cs_uint32)diff);
+		} else
+			delta = (cs_int32)(end - start);
 	}
 
 	Event_Call(EVT_ONSTOP, NULL);
