@@ -810,7 +810,8 @@ cs_bool Client_Update(Client *client) {
 			isinsameworld = Client_IsInSameWorld(client, other);
 			if(client->cpeData->updates & PCU_NAME && hasplsupport) {
 				client->cpeData->updates |= PCU_ENTITY;
-				CPE_WriteAddName(other, client);
+				if(!Client_IsBot(client))
+					CPE_WriteAddName(other, client);
 			}
 			if(isinsameworld) {
 				if(client->cpeData->updates & PCU_ENTITY && hasplsupport) {
@@ -1095,7 +1096,7 @@ cs_bool Client_Spawn(Client *client) {
 		Client *other = Clients_List[i];
 		if(!other || !Client_CheckState(other, CLIENT_STATE_INGAME)) continue;
 
-		if(client->playerData->firstSpawn) {
+		if(client->playerData->firstSpawn && !Client_IsBot(client)) {
 			if(Client_GetExtVer(other, EXT_PLAYERLIST))
 				CPE_WriteAddName(other, client);
 			if(Client_GetExtVer(client, EXT_PLAYERLIST) && client != other)
