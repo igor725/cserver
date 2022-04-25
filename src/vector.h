@@ -31,6 +31,7 @@ static INL cs_bool Ang_Compare(const Ang *a, const Ang *b) {
 #define Vec_Sub(dst, v1, v2) (dst).x = (v1).x - (v2).x, (dst).y = (v1).y - (v2).y, (dst).z = (v1).z - (v2).z
 #define Vec_Mul(dst, v1, v2) (dst).x = (v1).x * (v2).x, (dst).y = (v1).y * (v2).y, (dst).z = (v1).z * (v2).z
 #define Vec_Div(dst, v1, v2) (dst).x = (v1).x / (v2).x, (dst).y = (v1).y / (v2).y, (dst).z = (v1).z / (v2).z
+#define Vec_DivN(v, n) (v).x /= n, (v).y /= n, (v).z /= n
 #define Vec_Copy(dv, sv) (dv).x = (cs_float)(sv).x, (dv).y = (cs_float)(sv).y, (dv).z = (cs_float)(sv).z
 #define SVec_Copy(dv, sv) (dv).x = (cs_int16)(sv).x, (dv).y = (cs_int16)(sv).y, (dv).z = (cs_int16)(sv).z
 #define Vec_Set(v, vx, vy, vz) (v).x = vx, (v).y = vy, (v).z = vz
