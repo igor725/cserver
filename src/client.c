@@ -813,10 +813,10 @@ cs_bool Client_Update(Client *client) {
 				CPE_WriteAddName(other, client);
 			}
 			if(isinsameworld) {
-				if(client->cpeData->updates & PCU_MODEL && hassmsupport)
-					CPE_WriteSetModel(other, client);
 				if(client->cpeData->updates & PCU_ENTITY && hasplsupport)
 					SendCPEEntity(other, client);
+				if(client->cpeData->updates & PCU_MODEL && hassmsupport)
+					CPE_WriteSetModel(other, client);
 				if(client->cpeData->updates & PCU_ENTPROP && hasentprop)
 					for(EEntProp i = 0; i < ENTITY_PROP_COUNT; i++)
 						CPE_WriteSetEntityProperty(other, client, i, client->cpeData->props[i]);
