@@ -130,6 +130,7 @@ typedef unsigned char cs_uchar;
 typedef unsigned long cs_ulong;
 typedef long cs_long;
 typedef float cs_float;
+typedef double cs_double;
 typedef const cs_char *cs_str;
 typedef cs_byte cs_bool;
 typedef cs_byte BlockID;
