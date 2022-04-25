@@ -336,7 +336,7 @@ cs_uint64 Time_GetMSec(void) {
 	return (cs_uint64)cur.tv_sec * 1000 + 62135596800000ULL + (cur.tv_usec / 1000);
 }
 
-cs_double Time_GetMsecD(void) {
+cs_double Time_GetMSecD(void) {
 	struct timeval cur; gettimeofday(&cur, NULL);
 	return cur.tv_sec + cur.tv_usec / 1.0e6;
 }
