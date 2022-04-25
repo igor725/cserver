@@ -1028,7 +1028,7 @@ NOINL static cs_bool SendWorldTick(Client *client) {
 
 			// Не даём серверу слишком долго сжимать карту для клиента
 			// Поле taskc хранит в себе количество подключающихся в данный момент клиентов к данному миру
-			if(Time_GetMSec() - markStart < ((1000.0f / TICKS_PER_SECOND) / md->world->taskc))
+			if(Time_GetMSec() - markStart < (TICKS_PER_SECOND / md->world->taskc))
 				goto comprstep;
 			else
 				return false;

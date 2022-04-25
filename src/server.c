@@ -99,6 +99,42 @@ INL static cs_bool ProcessClient(Client *client) {
 	return true;
 }
 
+static cs_bool ProcessClients(void) {
+	cs_bool canFinish = true;
+
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		Client *client = Clients_List[i];
+		if(!client) continue;
+		canFinish = false;
+
+		if(!ProcessClient(client)) continue;
+		if(Client_IsBot(client)) continue;
+		if(client->kickReason) continue;
+		cs_uint64 currtime = Time_GetMSec(), timeout = 0;
+		switch(client->state) {
+			case CLIENT_STATE_INITIAL:
+				timeout = 800;
+				break;
+			case CLIENT_STATE_MOTD:
+				if(client->mapData.world)
+					timeout = (cs_uint64)-1;
+				else
+					timeout = 800;
+				break;
+			case CLIENT_STATE_INGAME:
+				timeout = 30000;
+				break;
+		}
+
+		if(currtime - client->lastmsg > timeout) {
+			client->kickReason = String_AllocCopy(Sstor_Get("KICK_TIMEOUT"));
+			NetBuffer_ForceClose(&client->netbuf);
+		}
+	}
+
+	return canFinish;
+}
+
 static void DoNetTick(void) {
 	struct sockaddr_in caddr;
 	Socket fd = Socket_Accept(Server_Socket, &caddr);
@@ -138,33 +174,7 @@ static void DoNetTick(void) {
 		Socket_Close(fd);
 	}
 
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client *client = Clients_List[i];
-		if(!client) continue;
-		if(!ProcessClient(client)) continue;
-		if(Client_IsBot(client)) continue;
-		if(client->kickReason) continue;
-		cs_uint64 currtime = Time_GetMSec(), timeout = 0;
-		switch(client->state) {
-			case CLIENT_STATE_INITIAL:
-				timeout = 800;
-				break;
-			case CLIENT_STATE_MOTD:
-				if(client->mapData.world)
-					timeout = (cs_uint64)-1;
-				else
-					timeout = 800;
-				break;
-			case CLIENT_STATE_INGAME:
-				timeout = 30000;
-				break;
-		}
-
-		if(currtime - client->lastmsg > timeout) {
-			client->kickReason = String_AllocCopy(Sstor_Get("KICK_TIMEOUT"));
-			NetBuffer_ForceClose(&client->netbuf);
-		}
-	}
+	ProcessClients();
 }
 
 INL static cs_bool Bind(cs_str ip, cs_uint16 port) {
@@ -399,8 +409,8 @@ cs_bool Server_Init(void) {
 cs_uint64 prev, this = 0;
 
 INL static void DoStep(cs_int32 delta) {
-	DoNetTick();
-	Event_Call(EVT_ONTICK, &delta);
+	(void)DoNetTick();
+	(void)Event_Call(EVT_ONTICK, &delta);
 	Timer_Update(delta);
 }
 
@@ -478,6 +488,7 @@ void Server_Cleanup(void) {
 	ConsoleIO_Uninit();
 	Log_Info(Sstor_Get("SV_STOP_PL"));
 	KickAll(Sstor_Get("KICK_STOP"));
+	while(!ProcessClients());
 	Log_Info(Sstor_Get("SV_STOP_SW"));
 	UnloadAllWorlds();
 	Socket_Close(Server_Socket);
