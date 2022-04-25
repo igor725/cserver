@@ -74,8 +74,8 @@ void Proto_WriteSVec(cs_char **dataptr, const SVec *vec) {
 
 void Proto_WriteAng(cs_char **dataptr, const Ang *ang) {
 	cs_char *data = *dataptr;
-	*(cs_byte *)data++ = (cs_byte)((ang->yaw / 360) * 256);
-	*(cs_byte *)data++ = (cs_byte)((ang->pitch / 360) * 256);
+	*(cs_byte *)data++ = (cs_byte)((ang->yaw) * 256.0f / 360.0f);
+	*(cs_byte *)data++ = (cs_byte)((ang->pitch) * 256.0f / 360.0f);
 	*dataptr = data;
 }
 
@@ -123,11 +123,14 @@ void Proto_WriteFloat(cs_char **dataptr, cs_float num) {
 	*dataptr += sizeof(fi);
 }
 
-NOINL static void WriteExtEntityPos(cs_char **dataptr, Vec *vec, Ang *ang, cs_bool extended) {
+NOINL static void WriteExtEntityPos(cs_char **dataptr, Vec *vec, Ang *ang, cs_bool extended, cs_bool sub) {
+	Vec avec = *vec;
+	if(sub) avec.y -= 0.66f;
+
 	if(extended)
-		Proto_WriteFlVec(dataptr, vec);
+		Proto_WriteFlVec(dataptr, &avec);
 	else
-		Proto_WriteFlSVec(dataptr, vec);
+		Proto_WriteFlSVec(dataptr, &avec);
 	Proto_WriteAng(dataptr, ang);
 }
 
@@ -176,24 +179,24 @@ void Proto_ReadSVec(cs_char **dataptr, SVec *vec) {
 
 void Proto_ReadAng(cs_char **dataptr, Ang *ang) {
 	cs_char *data = *dataptr;
-	ang->yaw = (((cs_float)*data++) / 256) * 360;
-	ang->pitch = (((cs_float)*data++) / 256) * 360;
+	ang->yaw = (*data++) * 360.0f / 256.0f;
+	ang->pitch = (*data++) * 360.0f / 256.0f;
 	*dataptr = data;
 }
 
 void Proto_ReadFlSVec(cs_char **dataptr, Vec *vec) {
 	cs_char *data = *dataptr;
-	vec->x = (cs_float)ntohs(*(cs_int16 *)data) / 32; data += 2;
-	vec->y = (cs_float)ntohs(*(cs_int16 *)data) / 32; data += 2;
-	vec->z = (cs_float)ntohs(*(cs_int16 *)data) / 32; data += 2;
+	vec->x = (cs_int16)ntohs(*(cs_uint16 *)data) / 32.0f; data += 2;
+	vec->y = (cs_int16)ntohs(*(cs_uint16 *)data) / 32.0f; data += 2;
+	vec->z = (cs_int16)ntohs(*(cs_uint16 *)data) / 32.0f; data += 2;
 	*dataptr = data;
 }
 
 void Proto_ReadFlVec(cs_char **dataptr, Vec *vec) {
 	cs_char *data = *dataptr;
-	vec->x = (cs_float)ntohl(*(cs_int32 *)data) / 32; data += 4;
-	vec->y = (cs_float)ntohl(*(cs_int32 *)data) / 32; data += 4;
-	vec->z = (cs_float)ntohl(*(cs_int32 *)data) / 32; data += 4;
+	vec->x = (cs_int32)ntohl(*(cs_uint32 *)data) / 32.0f; data += 4;
+	vec->y = (cs_int32)ntohl(*(cs_uint32 *)data) / 32.0f; data += 4;
+	vec->z = (cs_int32)ntohl(*(cs_uint32 *)data) / 32.0f; data += 4;
 	*dataptr = data;
 }
 
@@ -246,7 +249,8 @@ void Vanilla_WriteSpawn(Client *client, Client *other) {
 		&data,
 		&other->playerData->position,
 		&other->playerData->angle,
-		Client_GetExtVer(client, EXT_ENTPOS) > 0
+		Client_GetExtVer(client, EXT_ENTPOS) > 0,
+		client == other
 	);
 
 	PacketWriter_End(client);
@@ -259,7 +263,8 @@ void Vanilla_WriteTeleport(Client *client, Vec *pos, Ang *ang) {
 	*data++ = CLIENT_SELF;
 	WriteExtEntityPos(
 		&data, pos, ang,
-		Client_GetExtVer(client, EXT_ENTPOS) > 0
+		Client_GetExtVer(client, EXT_ENTPOS) > 0,
+		true
 	);
 
 	PacketWriter_End(client);
@@ -274,7 +279,8 @@ void Vanilla_WritePosAndOrient(Client *client, Client *other) {
 		&data,
 		&other->playerData->position,
 		&other->playerData->angle,
-		Client_GetExtVer(client, EXT_ENTPOS) > 0
+		Client_GetExtVer(client, EXT_ENTPOS) > 0,
+		client == other
 	);
 
 	PacketWriter_End(client);
@@ -655,7 +661,8 @@ void CPE_WriteAddEntity_v2(Client *client, Client *other) {
 		&data,
 		&other->playerData->position,
 		&other->playerData->angle,
-		Client_GetExtVer(client, EXT_ENTPOS) > 0
+		Client_GetExtVer(client, EXT_ENTPOS) > 0,
+		client == other
 	);
 
 	PacketWriter_End(client);
