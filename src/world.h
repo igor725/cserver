@@ -53,7 +53,7 @@ API void World_GetDimensions(World *world, SVec *dims);
 API BlockID World_GetBlock(World *world, SVec *pos);
 API BlockID World_GetBlockO(World *world, cs_uint32 offset);
 API cs_int32 World_GetEnvProp(World *world, EProp prop);
-API Color3* World_GetEnvColor(World *world, EColor type);
+API cs_bool World_GetEnvColor(World *world, EColor type, Color3 *dst);
 API EWeather World_GetWeather(World *world);
 API cs_str World_GetTexturePack(World *world);
 

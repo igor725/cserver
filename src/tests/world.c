@@ -5,7 +5,7 @@
 #include "vector.h"
 #include "world.h"
 
-#define COMPARE_COLORS(c1, c2) ((c1)->r == (c2)->r || (c1)->g == (c2)->g || (c1)->b == (c2)->b)
+#define COMPARE_COLORS(c1, c2) ((c1).r == (c2).r || (c1).g == (c2).g || (c1).b == (c2).b)
 
 cs_bool Tests_World(void) {
 	Tests_NewTask("Create world");
@@ -78,16 +78,17 @@ cs_bool Tests_World(void) {
 	Tests_Assert(World_GetEnvProp(world, WORLD_PROP_SIDEOFFSET) == -6, "check map sides offset");
 	Tests_Assert(String_Compare(World_GetTexturePack(world), "http://test.texture/pack.zip"), "check texture pack");
 	Tests_Assert(World_GetWeather(world) == WORLD_WEATHER_SNOW, "check weather");
-	Color3 *cskycol = World_GetEnvColor(world, WORLD_COLOR_SKY),
-	*cfogcol = World_GetEnvColor(world, WORLD_COLOR_FOG),
-	*ccloudcol = World_GetEnvColor(world, WORLD_COLOR_CLOUD),
-	*cambcol = World_GetEnvColor(world, WORLD_COLOR_AMBIENT),
-	*cdiffcol = World_GetEnvColor(world, WORLD_COLOR_DIFFUSE);
-	Tests_Assert(COMPARE_COLORS(cskycol, &skycol), "check sky color");
-	Tests_Assert(COMPARE_COLORS(cfogcol, &fogcol), "check fog color");
-	Tests_Assert(COMPARE_COLORS(ccloudcol, &cloudcol), "check cloud color");
-	Tests_Assert(COMPARE_COLORS(cambcol, &ambcol), "check ambient color");
-	Tests_Assert(COMPARE_COLORS(cdiffcol, &diffcol), "check ambient color");
+	Color3 cskycol, cfogcol, ccloudcol, cambcol, cdiffcol;
+	Tests_Assert(World_GetEnvColor(world, WORLD_COLOR_SKY, &cskycol), "reading sky color");
+	Tests_Assert(World_GetEnvColor(world, WORLD_COLOR_FOG, &cfogcol), "reading fog color");
+	Tests_Assert(World_GetEnvColor(world, WORLD_COLOR_CLOUD, &ccloudcol), "reading cloud color");
+	Tests_Assert(World_GetEnvColor(world, WORLD_COLOR_AMBIENT, &cambcol), "reading ambient color");
+	Tests_Assert(World_GetEnvColor(world, WORLD_COLOR_DIFFUSE, &cdiffcol), "reading diffuse color");
+	Tests_Assert(COMPARE_COLORS(cskycol, skycol), "check sky color");
+	Tests_Assert(COMPARE_COLORS(cfogcol, fogcol), "check fog color");
+	Tests_Assert(COMPARE_COLORS(ccloudcol, cloudcol), "check cloud color");
+	Tests_Assert(COMPARE_COLORS(cambcol, ambcol), "check ambient color");
+	Tests_Assert(COMPARE_COLORS(cdiffcol, diffcol), "check diffuse color");
 
 	Tests_NewTask("Check blocks placing");
 	Tests_Assert(World_GetBlock(world, &p1) == BLOCK_BEDROCK, "check first block");

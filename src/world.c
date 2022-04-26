@@ -199,8 +199,12 @@ cs_byte World_CountPlayers(World *world) {
 	return count;
 }
 
-Color3 *World_GetEnvColor(World *world, EColor type) {
-	return type < WORLD_COLORS_COUNT ? &world->info.colors[type] : NULL;
+cs_bool World_GetEnvColor(World *world, EColor type, Color3 *dst) {
+	if(type < WORLD_COLORS_COUNT) {
+		*dst = world->info.colors[type];
+		return true;
+	}
+	return false;
 }
 
 EWeather World_GetWeather(World *world) {
