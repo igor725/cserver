@@ -407,7 +407,7 @@ INL static void UpdateBlock(World *world, SVec *pos, BlockID block) {
 }
 
 cs_bool Handler_SetBlock(Client *client, cs_char *data) {
-	ValidateClientState(client, CLIENT_STATE_INGAME, false);
+	ValidateClientState(client, CLIENT_STATE_INGAME, true);
 
 	World *world = Client_GetWorld(client);
 	if(!world || !World_IsReadyToPlay(world)) return false;
@@ -1122,7 +1122,7 @@ cs_bool CPEHandler_SetCBVer(Client *client, cs_char *data) {
 
 cs_bool CPEHandler_PlayerClick(Client *client, cs_char *data) {
 	if(Client_GetExtVer(client, EXT_PLAYERCLICK) < 1) return false;
-	ValidateClientState(client, CLIENT_STATE_INGAME, false);
+	ValidateClientState(client, CLIENT_STATE_INGAME, true);
 
 	onPlayerClick params;
 	params.client = client;
