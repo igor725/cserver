@@ -65,7 +65,7 @@ API cs_bool Client_SetHotbar(Client *client, cs_byte pos, BlockID block);
 API cs_bool Client_SetSkin(Client *client, cs_str skin);
 API cs_bool Client_SetSpawn(Client *client, Vec *pos, Ang *ang);
 API cs_bool Client_SetOP(Client *client, cs_bool state);
-API cs_bool Client_SetVelocity(Client *client, Vec *velocity, cs_bool mode);
+API cs_bool Client_SetVelocity(Client *client, Vec *velocity, cs_byte mode);
 API cs_bool Client_SetProp(Client *client, EEntProp prop, cs_int32 value);
 API cs_bool Client_SetGroup(Client *client, cs_uintptr gid);
 API cs_bool Client_RegisterParticle(Client *client, CustomParticle *e);

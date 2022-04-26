@@ -10,6 +10,12 @@
 #define PCU_ENTITY  BIT(2) // Был изменён скин игрока
 #define PCU_ENTPROP BIT(3) // Модель игрока была повёрнута
 
+#define PVC_ADDALL  0x00
+#define PVC_SETX    BIT(0)
+#define PVC_SETY    BIT(1)
+#define PVC_SETZ    BIT(2)
+#define PVC_SETALL  (PVC_SETX | PVC_SETY | PVC_SETZ)
+
 #define MV_NONE    0x00
 #define MV_COLORS  BIT(0)
 #define MV_PROPS   BIT(1)

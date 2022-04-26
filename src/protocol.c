@@ -927,13 +927,14 @@ void CPE_WriteSetSpawnPoint(Client *client, Vec *pos, Ang *ang) {
 	PacketWriter_End(client);
 }
 
-void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_bool mode) {
+void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_byte mode) {
 	PacketWriter_Start(client, 16);
 
 	*data++ = PACKET_SETVELOCITY;
-	Proto_WriteFlVec(&data, velocity);
-	*(cs_uint32 *)data = mode ? 0x01010101 : 0x00000000; // Why not?
-	data += 4;
+	*(cs_int32 *)data = htonl((cs_int32)(velocity->x * 10000.0f)); data += 4;
+	*(cs_int32 *)data = htonl((cs_int32)(velocity->y * 10000.0f)); data += 4;
+	*(cs_int32 *)data = htonl((cs_int32)(velocity->z * 10000.0f)); data += 4;
+	for(cs_int8 i = 2; i >= 0; i--) *data++ = (mode >> i) & 1;
 
 	PacketWriter_End(client);
 }

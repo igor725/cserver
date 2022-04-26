@@ -655,7 +655,7 @@ cs_bool Client_SetSpawn(Client *client, Vec *pos, Ang *ang) {
 	return false;
 }
 
-cs_bool Client_SetVelocity(Client *client, Vec *velocity, cs_bool mode) {
+cs_bool Client_SetVelocity(Client *client, Vec *velocity, cs_byte mode) {
 	if(Client_GetExtVer(client, EXT_VELCTRL)) {
 		CPE_WriteVelocityControl(client, velocity, mode);
 		return true;
