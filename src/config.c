@@ -165,7 +165,10 @@ cs_bool Config_Load(CStore *store) {
 		}
 		*value++ = '\0';
 		CEntry *ent = Config_GetEntry(store, line);
-		if(!ent) continue;
+		if(!ent) {
+			haveComment = false;
+			continue;
+		}
 		ent->flags |= CFG_FREADED;
 
 		if(haveComment) {
