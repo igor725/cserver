@@ -40,21 +40,17 @@ static cs_str syms[] = {
 };
 
 /*
- * Пока как-то не охота, учить винду
- * искусству ридлайна, да и порт
- * был чето заброшен на 5ой версии,
- * так что ну прям мегалень.
+ * Windows не поддерживает libreadline.
+ * Имеется порт 5ой, но и его не получится
+ * заставить работать. Так как нужна как
+ * минимум 7ая версия ридлайна.
 */
 
 static cs_str rllib[] = {
 #ifdef CORE_USE_UNIX
-	"libreadline.so.8.1",
 	"libreadline.so.8",
 	"libreadline.so.7",
-	"libreadline.so.6",
-	"libreadline.so.5",
-	"libreadline.so.4",
-	// Ниже 4ой версии нет completion api
+	// Ниже 7ой версии отсутствуют некоторые API
 	"libreadline.so", // Опасненько
 #endif
 	NULL
@@ -80,7 +76,7 @@ static cs_char *cmd_generator(cs_str text, cs_int32 state) {
 	return NULL;
 }
 
-static char *arg_generator(cs_str text, cs_int32 state) {
+static cs_char *arg_generator(cs_str text, cs_int32 state) {
 	cs_size tlen = String_Length(text);
 	if(tlen < 1) return NULL;
 
@@ -147,14 +143,16 @@ THREAD_FUNC(ConsoleIOThread) {
 			rlalive = true;
 			cs_char *buf = ReadLine.start(NULL);
 			rlalive = false;
-			if(buf && *buf != '\0') {
-				ReadLine.tohistory(buf);
-				if(Command_Handle(buf, NULL)) {
-					Memory_Free(buf);
-					continue;
+			if(buf) {
+				if(*buf != '\0') {
+					ReadLine.tohistory(buf);
+					if(Command_Handle(buf, NULL)) {
+						Memory_Free(buf);
+						continue;
+					}
 				}
+				Memory_Free(buf);
 			}
-			if(buf) Memory_Free(buf);
 		} else {
 			cs_char buf[192];
 			if(File_ReadLine(stdin, buf, 192) > 0)
@@ -174,14 +172,6 @@ cs_bool ConsoleIO_Init(void) {
 	inputThread = Thread_Create(ConsoleIOThread, NULL, false);
 	return Console_BindSignalHandler(sighand);
 }
-
-/*
- * TODO:
- * Возможно нужны дополнительные действия.
- * Также тут возможен рейскондишн. Изучить
- * получше ридлайн, чтобы понять, как
- * правильно его убивать.
-*/
 
 void ConsoleIO_Uninit(void) {
 	if(ReadLine.lib)
