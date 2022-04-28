@@ -3,18 +3,25 @@ if [ "$CC" = "" ]; then
 	CC="gcc"
 fi
 
-OS=""
-case "$(uname -s)" in
-	Linux)
-		OS="linux"
-		;;
-	CYGWIN*|MINGW*|MSYS*|MINGW32*)
-		OS="win"
-		;;
-	*)
-		OS="unknown"
-		;;
-esac
+if [[ $CC == *"mingw"* ]]; then
+	OS="win"
+fi
+
+if [ "$OS" = "" ]; then
+	OS=""
+	case "$(uname -s)" in
+		Linux)
+			OS="linux"
+			;;
+		CYGWIN*|MINGW*|MSYS*|MINGW32*)
+			OS="win"
+			;;
+		*)
+			OS="unknown"
+			;;
+	esac
+fi
+
 MAXWORKERS=$(nproc)
 COMPILE=1
 GITOK=0

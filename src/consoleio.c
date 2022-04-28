@@ -26,7 +26,7 @@ static struct {
 	void (*deprep)(void);
 } ReadLine;
 
-static cs_str syms[] = {
+static cs_str const syms[] = {
 	"readline", "rl_clear_visible_line",
 	"rl_reset_line_state", "rl_redisplay",
 	"rl_completion_matches", "add_history",
@@ -46,7 +46,7 @@ static cs_str syms[] = {
  * минимум 7ая версия ридлайна.
 */
 
-static cs_str rllib[] = {
+static cs_str const rllib[] = {
 #ifdef CORE_USE_UNIX
 	"libreadline.so.8",
 	"libreadline.so.7",

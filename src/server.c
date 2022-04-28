@@ -402,7 +402,7 @@ cs_bool Server_Init(void) {
 		return true;
 	}
 
-	Log_Error(Sstor_Get("SV_BIND_FAIL"), port);
+	Log_Error(Sstor_Get("SV_BIND_FAIL"), ip, port);
 	return false;
 }
 

@@ -83,12 +83,6 @@ cs_bool File_Close(cs_file fp) {
 	return fclose(fp) != 0;
 }
 
-cs_int32 Socket_SetAddr(struct sockaddr_in *ssa, cs_str ip, cs_uint16 port) {
-	ssa->sin_family = AF_INET;
-	ssa->sin_port = htons(port);
-	return inet_pton(AF_INET, ip, &ssa->sin_addr.s_addr);
-}
-
 cs_bool Socket_SetAddrGuess(struct sockaddr_in *ssa, cs_str host, cs_uint16 port) {
 	cs_int32 ret;
 
@@ -164,7 +158,7 @@ cs_bool Directory_Ensure(cs_str path) {
 	return Directory_Exists(path) || Directory_Create(path);
 }
 
-cs_bool DLib_LoadAll(cs_str lib[], cs_str symlist[], void **ctx) {
+cs_bool DLib_LoadAll(cs_str const lib[], cs_str const symlist[], void **ctx) {
 	ctx[0] = NULL;
 	while(!DLib_Load(*lib, ctx) && *(++lib));
 

@@ -49,12 +49,18 @@ cs_bool Socket_Init(void) {
 	return true;
 }
 
+cs_int32 Socket_SetAddr(struct sockaddr_in *ssa, cs_str ip, cs_uint16 port) {
+	ssa->sin_family = AF_INET;
+	ssa->sin_port = htons(port);
+	return inet_pton(AF_INET, ip, &ssa->sin_addr.s_addr);
+}
+
 cs_bool Socket_IsFatal(void) {
 	switch(Socket_GetError()) {
 		case 0:
 		case EAGAIN:
 			return false;
-		
+
 		default:
 			return true;
 	}

@@ -47,13 +47,23 @@ cs_bool Socket_Init(void) {
 	return WSAStartup(MAKEWORD(2, 2), &ws) != SOCKET_ERROR;
 }
 
+cs_int32 Socket_SetAddr(struct sockaddr_in *ssa, cs_str ip, cs_uint16 port) {
+	INT size = sizeof(struct sockaddr_in);
+
+	if(WSAStringToAddressA((LPSTR)ip, AF_INET, NULL, (LPSOCKADDR)ssa, (LPINT)&size))
+		return 0;
+
+	ssa->sin_port = htons(port);
+	return 1;
+}
+
 cs_bool Socket_IsFatal(void) {
 	switch(Socket_GetError()) {
 		case WSAEWOULDBLOCK:
 		case EAGAIN:
 		case 0:
 			return false;
-		
+
 		default:
 			return true;
 	}
@@ -168,7 +178,7 @@ cs_bool Thread_IsValid(Thread th) {
 }
 
 cs_bool Thread_Signal(Thread th, cs_int32 sig) {
-	(void)th, sig;
+	(void)th; (void)sig;
 	return false;
 }
 

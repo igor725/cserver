@@ -3,16 +3,15 @@
 #include "core.h"
 #include <stdarg.h>
 
-#define LOG_QUIET 0x00
-#define LOG_ERROR BIT(0)
-#define LOG_INFO BIT(1)
-#define LOG_CHAT BIT(2)
-#define LOG_WARN BIT(3)
-#define LOG_DEBUG BIT(4)
-#define LOG_ALL 0x0F
-#define LOG_COLORS BIT(5)
-#define LOG_REPEAT BIT(6)
-
+#define LOG_QUIET   0x00
+#define LOG_ERROR   BIT(0)
+#define LOG_INFO    BIT(1)
+#define LOG_CHAT    BIT(2)
+#define LOG_WARN    BIT(3)
+#define LOG_DEBUG   BIT(4)
+#define LOG_COLORS  BIT(5)
+#define LOG_REPEAT  BIT(6)
+#define LOG_ALL     0x0F
 #define LOG_BUFSIZE 8192
 
 typedef struct _LogBuffer {

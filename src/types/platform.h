@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #if defined(CORE_USE_WINDOWS)
+#	define _WINSOCK_DEPRECATED_NO_WARNINGS
 #	include <ws2tcpip.h>
 #	define TSHND_OK TRUE
 #	define MSG_NOSIGNAL 0
