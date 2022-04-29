@@ -13,7 +13,7 @@ typedef struct {
 
 #define EVENTS_FCOUNT 128
 
-static Event regEvents[EVENTS_TCOUNT][EVENTS_FCOUNT] = {{0, NULL}};
+static Event regEvents[EVENTS_TCOUNT][EVENTS_FCOUNT] = {{{0, {NULL}}}};
 
 #define rgPart1 \
 for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) { \
