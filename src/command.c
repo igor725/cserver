@@ -111,7 +111,7 @@ INL static void SendOutput(Client *caller, cs_char *ret) {
 cs_bool Command_Handle(cs_char *str, Client *caller) {
 	if(*str == '/' && *++str == '\0') return false;
 
-	cs_char ret[MAX_CMD_OUT];
+	cs_char ret[MAX_CMD_OUT] = {0};
 	cs_char *args = str;
 
 	while(1) {
@@ -137,12 +137,12 @@ cs_bool Command_Handle(cs_char *str, Client *caller) {
 			return true;
 		}
 
-		CommandCallData ccdata;
-		ccdata.args = (cs_str)args;
-		ccdata.caller = caller;
-		ccdata.command = cmd;
-		ccdata.out = ret;
-		*ret = '\0';
+		CommandCallData ccdata = {
+			.args = (cs_str)args,
+			.caller = caller,
+			.command = cmd,
+			.out = ret
+		};
 
 		if(cmd->func(&ccdata))
 			SendOutput(caller, ret);

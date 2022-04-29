@@ -44,28 +44,34 @@ typedef struct _EventRegBunch {
 } EventRegBunch;
 
 typedef struct _onHandshakeDone {
-	Client *client;
+	Client *const client;
 	World *world;
 } onHandshakeDone;
 
 typedef struct _onSpawn {
-	Client *client;
-	Vec *position;
-	Ang *angle;
+	Client *const client;
+	Vec *const position;
+	Ang *const angle;
 	cs_bool updateenv;
 } onSpawn;
 
 typedef struct _onMessage {
-	Client *client;
+	Client *const client;
 	cs_char *message;
 	cs_byte type;
 } onMessage;
 
 typedef struct _onHeldBlockChange {
-	Client *client;
-	BlockID prev, curr;
+	Client *const client;
+	const BlockID prev, curr;
 } onHeldBlockChange;
 
+/**
+ * TODO:
+ * Расставить для двух следующих
+ * эвентов const спецификаторы,
+ * когда предоставится возможность.
+ */
 typedef struct _onBlockPlace {
 	Client *client;
 	cs_byte mode;
@@ -83,8 +89,8 @@ typedef struct _onPlayerClick {
 } onPlayerClick;
 
 typedef struct _onPluginMessage {
-	Client *client;
-	cs_byte channel;
+	Client *const client;
+	const cs_byte channel;
 	cs_char message[65];
 } onPluginMessage;
 #endif

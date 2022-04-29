@@ -4,6 +4,8 @@
 #include "types/platform.h"
 
 #define Memory_Zero(p, c) Memory_Fill(p, c, 0)
+#define THREAD_FUNC(N) \
+static TRET N(TARG param)
 
 cs_bool Memory_Init(void);
 void Memory_Uninit(void);

@@ -4,7 +4,7 @@
 #include "client.h"
 #include "block.h"
 #include "platform.h"
-#include "types/list.h"
+#include "list.h"
 
 static cs_str defaultBlockNames[] = {
 	"Air", "Stone", "Grass", "Dirt",

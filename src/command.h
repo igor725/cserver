@@ -1,11 +1,9 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 #include "core.h"
-#include "str.h"
-#include "log.h"
-#include "strstor.h"
 #include "client.h"
 #include "types/list.h"
+#include "types/command.h"
 
 #define COMMAND_SETUSAGE(str) cs_str cmdUsage = str;
 #define COMMAND_PRINT(str) return String_Copy(ccdata->out, MAX_CMD_OUT, str) > 0
@@ -47,48 +45,9 @@ Command_Register(#N, H, (cmdFunc)svcmd_##N, F)
 #define COMMAND_REMOVE(N) \
 Command_UnregisterByFunc((cmdFunc)svcmd_##N)
 
-#define CMDF_NONE      0x00
-#define CMDF_OP        BIT(0)
-#define CMDF_CLIENT    BIT(1)
-#define CMDF_RESERVED0 BIT(2)
-#define CMDF_RESERVED1 BIT(3)
-#define CMDF_RESERVED2 BIT(4)
-
 #define Command_DeclareBunch(N) static CommandRegBunch N[] =
 #define COMMAND_BUNCH_ADD(N, F, H) {#N, H, (cmdFunc)svcmd_##N, F},
 #define COMMAND_BUNCH_END {NULL, NULL, NULL, 0x00}
-
-/**
- * @brief Структура с информацией о вызове команды.
- * 
- */
-typedef struct {
-	struct _Command *command; /** Вызванная команда */
-	cs_str args; /** Аргументы с которыми команда была вызвана */
-	Client *caller; /** Игрок, вызвавший команду, NULL в случае вызова из консоли*/
-	cs_char *out; /* Массив, в который команда будет записывать вывод*/
-} CommandCallData;
-
-/**
- * @brief Функция команды.
- * 
- */
-typedef cs_bool(*cmdFunc)(CommandCallData *);
-
-typedef struct _CommandRegBunch {
-	cs_str name, descr;
-	cmdFunc func;
-	cs_byte flags;
-} CommandRegBunch;
-
-typedef struct _Command {
-	cs_str name;
-	cs_char alias[7];
-	cs_byte flags;
-	cmdFunc func;
-	cs_str descr;
-	void *data;
-} Command;
 
 void Command_RegisterDefault(void);
 void Command_UnregisterAll(void);

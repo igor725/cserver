@@ -57,8 +57,6 @@ typedef FILE *cs_file;
 typedef void *TARG;
 typedef TRET(*TFUNC)(TARG);
 typedef TSHND_RET(*TSHND)(TSHND_PARAM);
-#define THREAD_FUNC(N) \
-static TRET N(TARG param)
 
 typedef enum _EIterState {
 	ITER_INITIAL,
