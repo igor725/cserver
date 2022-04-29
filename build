@@ -230,7 +230,9 @@ if [ $COMPILE -eq 1 ]; then
 	stderrlen=$(wc -c < "$STDERR")
 	if [ $stderrlen -gt 0 ]; then
 		echo -e "Compiler stderr:\n$(cat $STDERR)"
-		exit 1
+		if grep $STDERR -qe 'error:'; then
+			exit 1
+		fi
 	fi
 fi
 
