@@ -7,34 +7,32 @@ typedef struct {
 	union {
 		evtBoolCallback fbool;
 		evtVoidCallback fvoid;
-		cs_uintptr fptr;
+		void *fptr;
 	} func;
 } Event;
 
 #define EVENTS_FCOUNT 128
 
-static Event *regEvents[EVENTS_TCOUNT][EVENTS_FCOUNT] = {{NULL}};
+static Event regEvents[EVENTS_TCOUNT][EVENTS_FCOUNT] = {{0, NULL}};
 
 #define rgPart1 \
 for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) { \
-	if(!regEvents[type][pos]) { \
-		Event *evt = Memory_Alloc(1, sizeof(Event));
+	Event *evt = &regEvents[type][pos]; \
+	if(evt->func.fptr) continue;
 
 #define rgPart2 \
-		regEvents[type][pos] = evt; \
-		return true; \
-	} \
+	return true; \
 } \
 return false;
 
-cs_bool Event_RegisterVoid(EventTypes type, evtVoidCallback func) {
+cs_bool Event_RegisterVoid(EventType type, evtVoidCallback func) {
 	rgPart1
 	evt->rtype = 0;
 	evt->func.fvoid = func;
 	rgPart2
 }
 
-cs_bool Event_RegisterBool(EventTypes type, evtBoolCallback func) {
+cs_bool Event_RegisterBool(EventType type, evtBoolCallback func) {
 	rgPart1
 	evt->rtype = 1;
 	evt->func.fbool = func;
@@ -60,13 +58,12 @@ cs_bool Event_RegisterBunch(EventRegBunch *bunch) {
 	return true;
 }
 
-cs_bool Event_Unregister(EventTypes type, cs_uintptr evtFuncPtr) {
+cs_bool Event_Unregister(EventType type, void *evtFuncPtr) {
 	for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) {
-		Event *evt = regEvents[type][pos];
+		Event *evt = &regEvents[type][pos];
 
 		if(evt && evt->func.fptr == evtFuncPtr) {
-			Memory_Free(regEvents[type][pos]);
-			regEvents[type][pos] = NULL;
+			regEvents[type][pos].func.fptr = NULL;
 			return true;
 		}
 	}
@@ -75,24 +72,23 @@ cs_bool Event_Unregister(EventTypes type, cs_uintptr evtFuncPtr) {
 
 void Event_UnregisterBunch(EventRegBunch *bunch) {
 	for(cs_int32 i = 0; bunch[i].evtfunc; i++)
-		Event_Unregister(bunch[i].type, (cs_uintptr)bunch[i].evtfunc);
+		Event_Unregister(bunch[i].type, bunch[i].evtfunc);
 }
 
 void Event_UnregisterAll(void) {
 	for(cs_int32 type = 0; type < EVENTS_TCOUNT; type++) {
 		for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) {
-			Memory_Free(regEvents[type][pos]);
-			regEvents[type][pos] = NULL;
+			regEvents[type][pos].func.fptr = NULL;
 		}
 	}
 }
 
-cs_bool Event_Call(EventTypes type, void *param) {
+cs_bool Event_Call(EventType type, void *param) {
 	cs_bool ret = true;
 
 	for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) {
-		Event *evt = regEvents[type][pos];
-		if(!evt) continue;
+		Event *evt = &regEvents[type][pos];
+		if(!evt->func.fptr) continue;
 
 		if(evt->rtype == 1)
 			ret = evt->func.fbool(param);

@@ -9,7 +9,7 @@
 typedef void(*evtVoidCallback)(void *);
 typedef cs_bool(*evtBoolCallback)(void *);
 
-typedef enum _EventTypes {
+typedef enum _EventType {
 	EVT_POSTSTART,
 	EVT_ONTICK,
 	EVT_ONSTOP,
@@ -35,11 +35,11 @@ typedef enum _EventTypes {
 	EVT_ONLOG,
 
 	EVENTS_TCOUNT
-} EventTypes;
+} EventType;
 
 typedef struct _EventRegBunch {
 	cs_byte ret;
-	EventTypes type;
+	EventType type;
 	void *evtfunc;
 } EventRegBunch;
 
