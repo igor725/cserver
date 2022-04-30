@@ -88,7 +88,9 @@ typedef enum _EBlockIDs {
 	BLOCK_MAGMA = 62,
 	BLOCK_PILLAR = 63,
 	BLOCK_CRATE = 64,
-	BLOCK_STONEBRICK = 65
+	BLOCK_STONEBRICK = 65,
+
+	BLOCK_DEFAULT_COUNT
 } EBlockIDs;
 
 typedef struct _BulkBlockUpdate {

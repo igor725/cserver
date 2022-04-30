@@ -64,10 +64,10 @@ NOTE: This script must be runned in the Visual Studio Developer Command Prompt.
 * ``./build dbg wall upd pb base install`` - Pull latest changes from cs-base repository, then build the base plugin and copy binary to the plugins directory
 
 ## Notes
-* STRONGLY recommended to recompile all plugins every time you update the server because the final version of API not yet been formed, it means your server may not work properly
-* My main OS - Windows 10. It means the Linux part of the server not well tested
-* By default the server doesn't have any chat commands (except /say, /stop and /help), build the [cs-base](https://github.com/igor725/cs-base) plugin to add them
-* Here is the [example plugin](https://github.com/igor725/cs-test) for this server software
+* It is strongly recommended to recompile **all plugins** every time you update the server, because the final version of API not yet been formed. It means your server may not work properly.
+* My main OS is Windows 10, this means the Linux thing are not well tested.
+* By default the server doesn't have any useful chat commands, build the [cs-base](https://github.com/igor725/cs-base) plugin for an expanded command set.
+* Here is the [example plugin](https://github.com/igor725/cs-test) for this server software.
 * Your directory should have the following structure in order to compile plugins:
 ```
 	[root_folder]/cserver - Main server repository

@@ -1,7 +1,7 @@
 @ECHO off
 setlocal enableextensions enabledelayedexpansion
-SET ARCH=%VSCMD_ARG_TGT_ARCH%
-IF "%ARCH%"=="" GOTO vcerror
+CALL misc\vsdetect.bat
+IF NOT "%ERRORLEVEL%"=="0" GOTO end
 CD /D %~dp0
 
 SET DEBUG=0
@@ -73,32 +73,8 @@ IF "%1"=="install" (
 SHIFT
 GOTO subargloop
 
-@REM Сделать тут умное обновление
-:testupdate
-git -C !ROOT! fetch
-git -C !ROOT! merge --ff-only
-EXIT /b 0
-
 :argsdone
-IF "!GITOK!"=="1" (
-	IF "!GITUPD!"=="1" (
-		CALL :testupdate
-	)
-
-	SET TAG_INSTALLED=0
-
-	FOR /F "tokens=* USEBACKQ" %%F IN (`git -C "!ROOT!" describe --tags HEAD 2^> nul`) DO (
-		SET CFLAGS=%CFLAGS% /DGIT_COMMIT_TAG#\"%%F\"
-		SET TAG_INSTALLED=1
-	)
-	
-	IF "!TAG_INSTALLED!"=="0" (
-		FOR /F "tokens=* USEBACKQ" %%F IN (`git -C "!ROOT!" rev-parse --short HEAD`) DO 2> nul (
-			SET CFLAGS=%CFLAGS% /DGIT_COMMIT_TAG#\"%%F\"
-		)	
-	)
-)
-
+CALL misc\gitthing.bat
 ECHO Build configuration:
 ECHO Architecture: %ARCH%
 
@@ -124,7 +100,12 @@ IF NOT EXIST !OBJDIR! MD !OBJDIR!
 IF "%PLUGIN_BUILD%"=="0" (
 	SET LDFLAGS=!LDFLAGS! /SUBSYSTEM:CONSOLE
 	SET LIBS=!LIBS! ws2_32.lib
-	GOTO detectzlib
+	CALL misc\zdetect.bat
+	IF "%ERRORLEVEL%"=="0" (
+		GOTO compile
+	) ELSE (
+		GOTO compileerror
+	)
 ) else (
 	IF "!DEBUG!"=="1" (
 		SET LIBS=!LIBS! vcruntimed.lib
@@ -135,7 +116,7 @@ IF "%PLUGIN_BUILD%"=="0" (
 	IF NOT EXIST !SERVER_OUTROOT!\server.lib GOTO noserver
 )
 
-:zlibok
+:compile
 SET BINPATH=%OUTDIR%\%OUTBIN%
 IF "%PLUGIN_BUILD%"=="1" (
 	SET CFLAGS=!CFLAGS! /Fe!BINPATH! /DCORE_BUILD_PLUGIN /I.\src\
@@ -173,95 +154,6 @@ IF "%PLUGIN_BUILD%"=="1" (
   GOTO endok
 ) else GOTO binstart
 
-:detectzlib
-SET ZFOLDER=..\zlib
-IF EXIST ".\zlib.path" (
-	FOR /f "delims=" %%F IN (.\zlib.path) DO (
-		IF NOT "%%F"=="" SET ZFOLDER=%%F
-	)
-) else (
-	ECHO Type absolute or relative path ^(without quotes^) to the folder that containing zlib repo.
-	ECHO If specified folder is empty or does not contain zlib source code, it will be cloned and
-	ECHO builded by this script automatically.
-	ECHO Hint: If you leave the path field empty, the script will use "!ZFOLDER!" by default.
-	:zfolderloop
-	SET /p UZF="zlib path> "
-	IF NOT "!UZF!"=="" (
-		IF NOT EXIST "!UZF!" MD "!UZF!"
-		SET ZFOLDER=!UZF!
-	)
-	ECHO !ZFOLDER!>.\zlib.path
-)
-
-IF NOT EXIST "!ZFOLDER!\" GOTO nozlib
-IF NOT EXIST "!ZFOLDER!\zlib.h" GOTO nozlib
-IF NOT EXIST "!ZFOLDER!\zconf.h" GOTO nozlib
-SET INCLUDE=%INCLUDE%;!ZFOLDER!\
-FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R "!ZFOLDER!\win32\!ARCH!" z*.dll`) DO (
-	SET ZLIB_DYNAMIC=%%F
-)
-IF "%ZLIB_DYNAMIC%"=="" (
-	GOTO makezlib_st1
-) ELSE (
-	IF NOT EXIST "!ZLIB_DYNAMIC!" (
-		GOTO makezlib_st1
-	) ELSE (
-		GOTO copyzlib
-	)
-)
-
-:makezlib_st1
-IF NOT EXIST "!ZFOLDER!\win32\Makefile.msc" (
-	GOTO nozlib
-) ELSE (
-	GOTO makezlib_st2
-)
-
-:nozlib
-IF "%NOPROMPT%"=="0" (
-	ECHO zlib not found in "!ZFOLDER!".
-	ECHO Would you like the script to automatically clone and build zlib library?
-	ECHO Note: The zlib repo will be cloned from Mark Adler's GitHub, then compiled.
-	ECHO Warning: If "!ZFOLDER!" exists it will be removed!
-	SET /P ZQUESTION="[Y/n]>"
-	IF "!ZQUESTION!"=="" GOTO downzlib
-	IF "!ZQUESTION!"=="y" GOTO downzlib
-	IF "!ZQUESTION!"=="Y" GOTO downzlib
-	GOTO end
-)
-
-:downzlib
-IF "%GITOK%"=="0" (
-	ECHO Looks like you don't have Git for Windows
-	ECHO You can download it from https://git-scm.com/download/win
-) ELSE (
-	RMDIR /S /Q "!ZFOLDER!"
-	git clone https://github.com/madler/zlib "!ZFOLDER!"
-	GOTO makezlib_st2
-)
-
-:makezlib_st2
-IF NOT EXIST "!ZFOLDER!\win32\!ARCH!" MD "!ZFOLDER!\win32\!ARCH!"
-PUSHD "!ZFOLDER!\win32\!ARCH!"
-NMAKE /F ..\Makefile.msc TOP=..\..\
-IF "%ERRORLEVEL%"=="0" (
-	POPD
-	GOTO detectzlib
-) else (
-	POPD
-	GOTO compileerror
-)
-
-:copyzlib
-FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R !SERVER_OUTROOT! zlib1.dll`) DO (
-	IF EXIST "%%F" GOTO zlibok
-)
-COPY "%ZLIB_DYNAMIC%" "%SERVER_OUTROOT%\zlib1.dll"
-IF "%DEBUG%"=="1" (
-	COPY "!ZLIB_DYNAMIC:~0,-3!pdb" "!SERVER_OUTROOT!\zlib1.pdb"
-)
-GOTO zlibok
-
 :binstart
 IF "%RUNMODE%"=="0" start /D %OUTDIR% %OUTBIN%
 IF "%RUNMODE%"=="1" GOTO onerun
@@ -272,16 +164,6 @@ PUSHD %OUTDIR%
 %OUTBIN%
 POPD
 GOTO endok
-
-:zclonefail
-ECHO Error: Failed to clone zlib repo
-GOTO end
-
-:vcerror
-ECHO Error: Script must be runned via Native Tools Command Prompt for Visual Studio.
-ECHO Note: If you don't have Visual Studio C++ installed, you can download it here:
-ECHO https://visualstudio.microsoft.com/downloads/
-GOTO end
 
 :notaplugin
 ECHO Looks like the specified directory is not a plugin.
@@ -297,7 +179,7 @@ GOTO end
 
 :end
 endlocal
-EXIT /B 2
+EXIT /B 1
 
 :endok
 endlocal

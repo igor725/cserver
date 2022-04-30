@@ -6,7 +6,7 @@
 #include "platform.h"
 #include "list.h"
 
-static cs_str defaultBlockNames[] = {
+static cs_str defaultBlockNames[BLOCK_DEFAULT_COUNT] = {
 	"Air", "Stone", "Grass", "Dirt",
 	"Cobblestone", "Wood", "Sapling",
 	"Bedrock", "Water", "Still water",
@@ -32,7 +32,7 @@ static cs_str defaultBlockNames[] = {
 };
 
 cs_bool Block_IsValid(World *world, BlockID id) {
-	return id < 66 || world->info.bdefines[id] != NULL;
+	return id < BLOCK_DEFAULT_COUNT || world->info.bdefines[id] != NULL;
 }
 
 BlockID Block_GetFallbackFor(World *world, BlockID id) {
