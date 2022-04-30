@@ -19,7 +19,7 @@ jobs:
           os: ubuntu
           arch: x86_64
           abi: gnu
-          cfg: sudo apt install -y libcurl4-openssl-dev zlib1g-dev
+          cfg: sudo apt install -y zlib1g-dev
           build: ./build
           testbin: ./core/out/x86_64-linux-gnu/server
 
@@ -30,7 +30,7 @@ jobs:
           cfg: |
             sudo dpkg --add-architecture i386
             sudo apt update
-            sudo apt install -y gcc-i686-linux-gnu libcurl4-openssl-dev:i386 zlib1g-dev:i386
+            sudo apt install -y gcc-i686-linux-gnu zlib1g-dev:i386
           build: ./build
           testbin: ./core/out/i686-linux-gnu/server
 
