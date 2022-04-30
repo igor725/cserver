@@ -32,6 +32,8 @@
 #define WORLD_PROPS_COUNT 10
 #define WORLD_COLORS_COUNT 5
 
+#define CLIENT_CUBOIDS_COUNT 16
+
 typedef enum _EWorldColor {
 	WORLD_COLOR_SKY,
 	WORLD_COLOR_CLOUD,
@@ -213,7 +215,7 @@ typedef struct _CPEData {
 	cs_int32 props[3]; // Вращение модели игрока в градусах [EntityProperty]
 	cs_uint16 clickDist; // Расстояние клика игрока [ClickDistance]
 	cs_byte cbLevel; // Поддерживаемый уровень кастом блоков, пока не используется [CustomBlocks]
-	CPECuboid cuboids[16]; // Кубоиды игрока [SelectionCuboid]
+	CPECuboid cuboids[CLIENT_CUBOIDS_COUNT]; // Кубоиды игрока [SelectionCuboid]
 } CPEData;
 
 typedef struct _CPEHacks {

@@ -291,7 +291,7 @@ void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 
 CPECuboid *Client_NewSelection(Client *client) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
-		for(cs_byte i = 0; i < 16; i++) {
+		for(cs_byte i = 0; i < CLIENT_CUBOIDS_COUNT; i++) {
 			CPECuboid *cub = &client->cpeData->cuboids[i];
 			if(cub->used) continue;
 			cub->used = true;
