@@ -75,6 +75,7 @@ GOTO subargloop
 
 :argsdone
 CALL misc\gitthing.bat
+IF NOT "%ERRORLEVEL%"=="0" GOTO end
 ECHO Build configuration:
 ECHO Architecture: %ARCH%
 
@@ -101,7 +102,7 @@ IF "%PLUGIN_BUILD%"=="0" (
 	SET LDFLAGS=!LDFLAGS! /SUBSYSTEM:CONSOLE
 	SET LIBS=!LIBS! ws2_32.lib
 	CALL misc\zdetect.bat
-	IF "%ERRORLEVEL%"=="0" (
+	IF "!ERRORLEVEL!"=="0" (
 		GOTO compile
 	) ELSE (
 		GOTO compileerror
