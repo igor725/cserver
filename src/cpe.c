@@ -29,6 +29,14 @@ cs_bool CPE_IsModelDefined(cs_byte id) {
 	return customModels[id] != NULL || id < 15;
 }
 
+cs_bool CPE_IsModelDefinedPtr(CPEModel *model) {
+	for(cs_int16 i = 0; i < 256; i++) {
+		if(customModels[i] == model)
+			return true;
+	}
+	return false;
+}
+
 cs_str CPE_GetDefaultModelName(void) {
 	return customModels[0] ? customModels[0]->name : originalModelNames[0];
 }
@@ -39,6 +47,7 @@ CPEModel *CPE_GetModel(cs_byte id) {
 
 cs_bool CPE_DefineModel(cs_byte id, CPEModel *model) {
 	if(!model->part || !model->partsCount) return false;
+	if(CPE_IsModelDefinedPtr(model)) return false;
 	customModels[id] = model;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];

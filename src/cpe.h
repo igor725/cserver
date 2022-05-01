@@ -5,6 +5,7 @@
 #include "types/client.h"
 
 API cs_bool CPE_IsModelDefined(cs_byte id);
+API cs_bool CPE_IsModelDefinedPtr(CPEModel *model);
 API cs_str CPE_GetDefaultModelName(void);
 API CPEModel *CPE_GetModel(cs_byte id);
 API cs_bool CPE_DefineModel(cs_byte id, CPEModel *model);
