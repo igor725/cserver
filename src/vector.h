@@ -27,10 +27,12 @@ static INL cs_bool Ang_Compare(const Ang *a, const Ang *b) {
 }
 
 #define Ang_Set(a, ay, ap) (a).yaw = ay, (a).pitch = ap;
-#define Vec_Add(dst, v1, v2) (dst).x = (v1).x + (v2).x, (dst).y = (v1).y + (v2).y, (dst).z = (v1).z + (v2).z
-#define Vec_Sub(dst, v1, v2) (dst).x = (v1).x - (v2).x, (dst).y = (v1).y - (v2).y, (dst).z = (v1).z - (v2).z
-#define Vec_Mul(dst, v1, v2) (dst).x = (v1).x * (v2).x, (dst).y = (v1).y * (v2).y, (dst).z = (v1).z * (v2).z
-#define Vec_Div(dst, v1, v2) (dst).x = (v1).x / (v2).x, (dst).y = (v1).y / (v2).y, (dst).z = (v1).z / (v2).z
+#define Vec_Add(d, v1, v2) (d).x = (v1).x + (v2).x, (d).y = (v1).y + (v2).y, (d).z = (v1).z + (v2).z
+#define Vec_Sub(d, v1, v2) (d).x = (v1).x - (v2).x, (d).y = (v1).y - (v2).y, (d).z = (v1).z - (v2).z
+#define Vec_Mul(d, v1, v2) (d).x = (v1).x * (v2).x, (d).y = (v1).y * (v2).y, (d).z = (v1).z * (v2).z
+#define Vec_Div(d, v1, v2) (d).x = (v1).x / (v2).x, (d).y = (v1).y / (v2).y, (d).z = (v1).z / (v2).z
+#define Vec_Min(d, v1, v2) (d).x = min((v1).x, (v2).x), (d).y = min((v1).y, (v2).y), (d).z = min((v1).z, (v2).z)
+#define Vec_Max(d, v1, v2) (d).x = max((v1).x, (v2).x), (d).y = max((v1).y, (v2).y), (d).z = max((v1).z, (v2).z)
 #define Vec_DivN(v, n) (v).x /= n, (v).y /= n, (v).z /= n
 #define Vec_Copy(dv, sv) (dv).x = (cs_float)(sv).x, (dv).y = (cs_float)(sv).y, (dv).z = (cs_float)(sv).z
 #define SVec_Copy(dv, sv) (dv).x = (cs_int16)(sv).x, (dv).y = (cs_int16)(sv).y, (dv).z = (cs_int16)(sv).z
