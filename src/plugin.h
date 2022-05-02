@@ -26,6 +26,37 @@
 	void Plugin_LoadAll(void);
 	void Plugin_UnloadAll(cs_bool force);
 
+	/**
+	 * @brief Загружает указанный плагин.
+	 * 
+	 * @param name название плагина
+	 * @return true - плагин загружен успешно, false - произошли
+	 * технические шоколадки.
+	 */
+	cs_bool Plugin_LoadDll(cs_str name);
+
+	/**
+	 * @brief 
+	 * 
+	 * @param plugin название плагина
+	 * @param force будет ли проигнорировано значение, которое вернёт функция Plugin_Unload
+	 * (может привести к потере данных!)
+	 * @return true - плагин был выгружен успешно, false - что-то не так
+	 */
+	cs_bool Plugin_UnloadDll(Plugin *plugin, cs_bool force);
+
+	/**
+	 * @brief Возвращает указатель на структуру
+	 * плагина, используется функцией Plugin_UnloadDll.
+	 * 
+	 * Настоятельно рекомендуется не изменять вручную поля
+	 * структуры. Это может привести к неопределённому поведению.
+	 * 
+	 * @param name название плагина
+	 * @return указатель на структуру плагина
+	 */
+	Plugin *Plugin_Get(cs_str name);
+
 	// Массив всех загруженных плагинов
 	extern Plugin *Plugins_List[MAX_PLUGINS];
 #else
@@ -85,37 +116,6 @@
 #	define PLUGIN_IFACE_END {NULL, NULL, 0}
 #	define PLUGIN_IFACE_ADD(n, i) {n, &(i), sizeof(i)},
 #endif
-
-/**
- * @brief Загружает указанный плагин.
- * 
- * @param name название плагина
- * @return true - плагин загружен успешно, false - произошли
- * технические шоколадки.
- */
-API cs_bool Plugin_LoadDll(cs_str name);
-
-/**
- * @brief 
- * 
- * @param plugin название плагина
- * @param force будет ли проигнорировано значение, которое вернёт функция Plugin_Unload
- * (может привести к потере данных!)
- * @return true - плагин был выгружен успешно, false - что-то не так
- */
-API cs_bool Plugin_UnloadDll(Plugin *plugin, cs_bool force);
-
-/**
- * @brief Возвращает указатель на структуру
- * плагина, используется функцией Plugin_UnloadDll.
- * 
- * Настоятельно рекомендуется не изменять вручную поля
- * структуры. Это может привести к неопределённому поведению.
- * 
- * @param name название плагина
- * @return указатель на структуру плагина
- */
-API Plugin *Plugin_Get(cs_str name);
 
 /**
  * @brief Запрашивает у сервера указанный интерфейс.

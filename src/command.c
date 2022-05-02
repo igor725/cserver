@@ -196,43 +196,13 @@ COMMAND_FUNC(Say) {
 	COMMAND_PRINTUSAGE;
 }
 
-#define PLUGIN_NAME \
-if(!COMMAND_GETARG(name, 64, 1)) { \
-	COMMAND_PRINTUSAGE; \
-} \
-cs_str lc = String_LastChar(name, '.'); \
-if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) { \
-	String_Append(name, 64, "." DLIB_EXT); \
-}
-
 COMMAND_FUNC(Plugin) {
 	COMMAND_SETUSAGE("/plugin <load/unload/list> [pluginName]");
 	cs_char subcommand[8], name[64];
 	Plugin *plugin;
 
 	if(COMMAND_GETARG(subcommand, 8, 0)) {
-		if(String_CaselessCompare(subcommand, "load")) {
-			PLUGIN_NAME
-			if(!Plugin_Get(name)) {
-				if(Plugin_LoadDll(name)) {
-					COMMAND_PRINTF("Plugin \"%s\" loaded.", name);
-				} else {
-					COMMAND_PRINT("Something went wrong.");
-				}
-			}
-			COMMAND_PRINTF("Plugin \"%s\" is already loaded.", name);
-		} else if(String_CaselessCompare(subcommand, "unload")) {
-			PLUGIN_NAME
-			plugin = Plugin_Get(name);
-			if(!plugin) {
-				COMMAND_PRINTF("Plugin \"%s\" is not loaded.", name);
-			}
-			if(Plugin_UnloadDll(plugin, false)) {
-				COMMAND_PRINTF("Plugin \"%s\" successfully unloaded.", name);
-			} else {
-				COMMAND_PRINTF("Plugin \"%s\" cannot be unloaded.", name);
-			}
-		} else if(String_CaselessCompare(subcommand, "list")) {
+		if(String_CaselessCompare(subcommand, "list")) {
 			cs_int32 idx = 1;
 			cs_char pluginfo[64];
 			COMMAND_APPEND("Loaded plugins list:");
@@ -249,6 +219,35 @@ COMMAND_FUNC(Plugin) {
 			}
 
 			return true;
+		} else {
+			if(!COMMAND_GETARG(name, 64, 1))
+				COMMAND_PRINTUSAGE;
+
+			cs_str lc = String_LastChar(name, '.');
+			if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) {
+				String_Append(name, 64, "." DLIB_EXT);
+			}
+
+			if(String_CaselessCompare(subcommand, "load")) {
+				if(!Plugin_Get(name)) {
+					if(Plugin_LoadDll(name)) {
+						COMMAND_PRINTF("Plugin \"%s\" loaded.", name);
+					} else {
+						COMMAND_PRINT("Something went wrong.");
+					}
+				}
+				COMMAND_PRINTF("Plugin \"%s\" is already loaded.", name);
+			} else if(String_CaselessCompare(subcommand, "unload")) {
+				plugin = Plugin_Get(name);
+				if(!plugin) {
+					COMMAND_PRINTF("Plugin \"%s\" is not loaded.", name);
+				}
+				if(Plugin_UnloadDll(plugin, false)) {
+					COMMAND_PRINTF("Plugin \"%s\" successfully unloaded.", name);
+				} else {
+					COMMAND_PRINTF("Plugin \"%s\" cannot be unloaded.", name);
+				}
+			}
 		}
 	}
 
