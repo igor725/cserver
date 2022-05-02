@@ -25,6 +25,9 @@
 
 	void Plugin_LoadAll(void);
 	void Plugin_UnloadAll(cs_bool force);
+
+	// Массив всех загруженных плагинов
+	extern Plugin *Plugins_List[MAX_PLUGINS];
 #else
 	/**
 	 * @brief Выполняется сервером в момент загрузки плагина.
@@ -143,7 +146,4 @@ API cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname);
  * @return true - интерфейс отключен, false - такой интерфейс не был запрошел
  */
 API cs_bool Plugin_DiscardInterface(pluginReceiveIface irecv, cs_str iname);
-
-// Массив всех загруженных плагинов
-VAR Plugin *Plugins_List[MAX_PLUGINS];
 #endif // PLUGIN_H
