@@ -39,6 +39,9 @@ static cs_bool CheckHoldIfaces(Plugin *plugin) {
 }
 
 cs_bool Plugin_LoadDll(cs_str name) {
+	if(String_FindSubstr(name, ".."))
+		return false;
+
 	cs_char path[256], error[512];
 	void *lib;
 	pluginInitFunc initSym;
