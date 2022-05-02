@@ -197,21 +197,20 @@ COMMAND_FUNC(Say) {
 }
 
 COMMAND_FUNC(Plugin) {
-	COMMAND_SETUSAGE("/plugin <load/unload/list> [pluginName]");
-	cs_char subcommand[8], name[64];
+	COMMAND_SETUSAGE("/plugin <load/unload/ifaces/list> [pluginName]");
+	cs_char subcommand[8], name[64], tempinf[64];
 	Plugin *plugin;
 
 	if(COMMAND_GETARG(subcommand, 8, 0)) {
 		if(String_CaselessCompare(subcommand, "list")) {
 			cs_int32 idx = 1;
-			cs_char pluginfo[64];
 			COMMAND_APPEND("Loaded plugins list:");
 
 			for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
 				plugin = Plugins_List[i];
 				if(plugin) {
 					COMMAND_APPENDF(
-						pluginfo, 64,
+						tempinf, 64,
 						"\r\n  %d.%s v%d", idx++,
 						plugin->name, plugin->version
 					);
@@ -237,15 +236,37 @@ COMMAND_FUNC(Plugin) {
 					}
 				}
 				COMMAND_PRINTF("Plugin \"%s\" is already loaded.", name);
-			} else if(String_CaselessCompare(subcommand, "unload")) {
+			} else {
 				plugin = Plugin_Get(name);
 				if(!plugin) {
 					COMMAND_PRINTF("Plugin \"%s\" is not loaded.", name);
 				}
-				if(Plugin_UnloadDll(plugin, false)) {
-					COMMAND_PRINTF("Plugin \"%s\" successfully unloaded.", name);
-				} else {
-					COMMAND_PRINTF("Plugin \"%s\" cannot be unloaded.", name);
+
+				if(String_CaselessCompare(subcommand, "unload")) {
+					if(Plugin_UnloadDll(plugin, false)) {
+						COMMAND_PRINTF("Plugin \"%s\" successfully unloaded.", name);
+					} else {
+						COMMAND_PRINTF("Plugin \"%s\" cannot be unloaded.", name);
+					}
+				} else if(String_CaselessCompare(subcommand, "ifaces")) {
+					COMMAND_APPENDF(tempinf, 64, "&e%s interfaces:", name);
+					PluginInterface *iface = plugin->ifaces;
+					if(!iface && !plugin->ireqHead)
+						COMMAND_PRINTF("&ePlugin %s has not yet interacted with ifaces API", name);
+
+					if(iface) {
+						COMMAND_APPEND("\r\n  &bExported&f: ");
+						for(; iface && iface->iname; iface++)
+							COMMAND_APPENDF(tempinf, 64, "%s, ", iface->iname);
+					}
+					if(plugin->ireqHead) {
+						COMMAND_APPEND("\r\n  &5Imported&f: ");
+						AListField *tmp;
+						List_Iter(tmp, plugin->ireqHead)
+							COMMAND_APPENDF(tempinf, 64, "%s, ", tmp->value.str);
+					}
+
+					return true;
 				}
 			}
 		}

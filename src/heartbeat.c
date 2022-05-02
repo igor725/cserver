@@ -161,8 +161,10 @@ THREAD_FUNC(HbeatThread) {
 
 	while(self->started && Server_Active) {
 		if(delay == 0) {
+			Mutex_Lock(gLock);
 			MakeHeartbeatRequest(self);
 			delay = self->delay;
+			Mutex_Unlock(gLock);
 		} else {
 			Thread_Sleep(50);
 			delay -= 50;
