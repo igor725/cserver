@@ -15,14 +15,17 @@ static void AddInterface(Plugin *requester, PluginInterface *iface) {
 	requester->irecv(iface->iname, ptr, iface->isize);
 }
 
-static void CheckHoldIfaces(Plugin *plugin) {
+static cs_bool CheckHoldIfaces(Plugin *plugin) {
 	for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
 		AListField *hold;
 		Plugin *tplugin = Plugins_List[i];
 		if(tplugin == plugin || !tplugin) continue;
-		List_Iter(hold, tplugin->ireqHold) {
-			PluginInterface *iface;
-			for(iface = plugin->ifaces; iface && iface->iname; iface++) {
+		PluginInterface *iface, *tiface;
+		for(iface = plugin->ifaces; iface && iface->iname; iface++) {
+			for(tiface = tplugin->ifaces; tiface && tiface->iname; tiface++)
+				if(String_Compare(iface->iname, tiface->iname)) return false;
+
+			List_Iter(hold, tplugin->ireqHold) {
 				if(String_Compare(iface->iname, hold->value.str)) {
 					Memory_Free(hold->value.ptr);
 					AList_Remove(&tplugin->ireqHold, hold);
@@ -31,6 +34,8 @@ static void CheckHoldIfaces(Plugin *plugin) {
 			}
 		}
 	}
+
+	return true;
 }
 
 cs_bool Plugin_LoadDll(cs_str name) {
@@ -79,13 +84,12 @@ cs_bool Plugin_LoadDll(cs_str name) {
 		}
 
 		if(plugin->id != -1) {
-			Plugins_List[plugin->id] = plugin;
-			if(initSym()) {
-				if(plugin->ifaces)
-					CheckHoldIfaces(plugin);
-				return true;
-			} else
+			if(!plugin->ifaces || CheckHoldIfaces(plugin)) {
+				Plugins_List[plugin->id] = plugin;
+				if(initSym()) return true;
 				Log_Error(Sstor_Get("PLUG_ERROR"), path);
+			} else
+				Log_Error(Sstor_Get("PLUG_ITFS"), name);
 		}
 
 		Plugin_UnloadDll(plugin, true);
