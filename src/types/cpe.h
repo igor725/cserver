@@ -68,12 +68,6 @@ typedef enum _EEntProp {
 	ENTITY_PROP_COUNT
 } EEntProp;
 
-typedef enum _ESelectionParam {
-	SELECTION_PARAM_START,
-	SELECTION_PARAM_END,
-	SELECTION_PARAM_COLOR
-} ESelectionParam;
-
 typedef struct _Color4 {
 	cs_int16 r, g, b, a;
 } Color4;
@@ -89,9 +83,17 @@ typedef struct _CPEExt {
 	struct _CPEExt *next; // Следующее дополнение
 } CPEExt;
 
+typedef struct _UVCoords {
+	cs_uint16 U1, V1, U2, V2;
+} UVCoords;
+
+typedef struct _UVCoordsB {
+	cs_byte U1, V1, U2, V2;
+} UVCoordsB;
+
 typedef struct _CustomParticle {
 	cs_byte id;
-	struct TextureRec {cs_byte U1, V1, U2, V2;} rec;
+	UVCoordsB rec;
 	Color3 tintCol;
 	cs_byte frameCount, particleCount, collideFlags;
 	cs_bool fullBright;
@@ -153,10 +155,6 @@ typedef enum _EModelUV {
 	MODEL_UV_RIGHT,
 	MODEL_UVS_COUNT
 } EModelUV;
-
-typedef struct _UVCoords {
-	cs_uint16 U1, V1, U2, V2;
-} UVCoords;
 
 typedef struct _AnimData {
 	cs_byte flags;

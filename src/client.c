@@ -814,13 +814,12 @@ cs_bool Client_Update(Client *client) {
 		if(other && other->cpeData) {
 			cs_bool hasplsupport = Client_GetExtVer(other, EXT_PLAYERLIST) == 2,
 			hassmsupport = Client_GetExtVer(other, EXT_CHANGEMODEL) == 1,
-			hasentprop = Client_GetExtVer(other, EXT_ENTPROP) == 1,
-			isinsameworld = Client_IsInSameWorld(client, other);
+			hasentprop = Client_GetExtVer(other, EXT_ENTPROP) == 1;
 			if(client->cpeData->updates & PCU_NAME && hasplsupport) {
 				client->cpeData->updates |= PCU_ENTITY;
 				PushClientName(other, client);
 			}
-			if(isinsameworld) {
+			if(Client_IsInSameWorld(client, other)) {
 				if(client->cpeData->updates & PCU_ENTITY && hasplsupport) {
 					client->cpeData->updates |= PCU_MODEL;
 					SendCPEEntity(other, client);

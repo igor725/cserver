@@ -944,7 +944,7 @@ void CPE_WriteDefineEffect(Client *client, CustomParticle *e) {
 
 	*data++ = PACKET_DEFINEEFFECT;
 	*data++ = e->id;
-	*(struct TextureRec *)data = e->rec; data += sizeof(struct TextureRec);
+	*(UVCoordsB *)data = e->rec; data += sizeof(UVCoordsB);
 	*data++ = (cs_byte)e->tintCol.r;
 	*data++ = (cs_byte)e->tintCol.g;
 	*data++ = (cs_byte)e->tintCol.b;
