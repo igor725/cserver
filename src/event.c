@@ -1,5 +1,4 @@
 #include "core.h"
-#include "platform.h"
 #include "event.h"
 
 typedef struct {

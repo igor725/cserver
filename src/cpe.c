@@ -1,6 +1,6 @@
 #include "core.h"
 #include "client.h"
-#include "world.h"
+#include "types/world.h"
 #include "block.h"
 #include "str.h"
 #include "cpe.h"

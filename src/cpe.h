@@ -3,6 +3,7 @@
 #include "core.h"
 #include "types/cpe.h"
 #include "types/client.h"
+#include "vector.h"
 
 API cs_bool CPE_IsModelDefined(cs_byte id);
 API cs_bool CPE_IsModelDefinedPtr(CPEModel *model);
