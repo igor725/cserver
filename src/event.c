@@ -3,7 +3,7 @@
 
 typedef struct {
 	cs_uint32 rtype;
-	union {
+	union _UCallbacks {
 		evtBoolCallback fbool;
 		evtVoidCallback fvoid;
 		void *fptr;

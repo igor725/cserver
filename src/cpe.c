@@ -1,29 +1,24 @@
 #include "core.h"
 #include "client.h"
+#include "protocol.h"
 #include "types/world.h"
 #include "block.h"
 #include "str.h"
 #include "cpe.h"
 
 static cs_str originalModelNames[16] = {
-	"humanoid",
-	"chicken",
-	"creeper",
-	"pig",
-	"sheep",
-	"skeleton",
-	"sheep",
-	"sheep_nofur",
-	"skeleton",
-	"spider",
-	"zombie",
-	"head",
-	"sit",
-	"chibi",
+	"humanoid", "chicken", "creeper",
+	"pig", "sheep", "skeleton", "sheep",
+	"sheep_nofur", "skeleton", "spider",
+	"zombie", "head", "sit", "chibi",
 	NULL
 };
 
 static CPEModel *customModels[256] = {NULL};
+
+/**
+ * CustomModel
+ */
 
 cs_bool CPE_IsModelDefined(cs_byte id) {
 	return customModels[id] != NULL || id < 15;
@@ -45,6 +40,17 @@ CPEModel *CPE_GetModel(cs_byte id) {
 	return customModels[id];
 }
 
+void CPE_SendModel(Client *client, cs_int32 extVer, cs_byte id) {
+	CPEModel *model = customModels[id];
+	if(!extVer || !model) return;
+	CPE_WriteDefineModel(client, id, model);
+	CPEModelPart *part = model->part;
+	while(part) {
+		CPE_WriteDefineModelPart(client, extVer, id, part);
+		part = part->next;
+	}
+}
+
 cs_bool CPE_DefineModel(cs_byte id, CPEModel *model) {
 	if(!model->part || !model->partsCount) return false;
 	if(CPE_IsModelDefinedPtr(model)) return false;
@@ -52,8 +58,8 @@ cs_bool CPE_DefineModel(cs_byte id, CPEModel *model) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
 		if(!client) continue;
-		if(Client_GetExtVer(client, EXT_CUSTOMMODELS))
-			Client_DefineModel(client, id, model);
+		cs_int32 extVer = Client_GetExtVer(client, EXT_CUSTOMMODELS);
+		CPE_SendModel(client, extVer, id);
 	}
 	return true;
 }
@@ -134,6 +140,42 @@ cs_uint32 CPE_GetModelStr(cs_int16 num, char *buffer, cs_uint32 buflen) {
 	return max(0, ret);
 }
 
+/**
+ * CustomParticles 
+ */
+
+static CPEParticle *customParticles[256] = {NULL};
+
+cs_bool CPE_IsParticleDefined(cs_byte id) {
+	return customParticles[id] != NULL;
+}
+
+cs_bool CPE_IsParticleDefinedPtr(CPEParticle *part) {
+	for(cs_int16 i = 0; i < 256 && part; i++)
+		if(part == customParticles[i])
+			return true;
+	return false;
+}
+
+CPEParticle *CPE_GetParticle(cs_byte id) {
+	return customParticles[id];
+}
+
+void CPE_SendParticle(Client *client, cs_byte id) {
+	CPEParticle *part = customParticles[id];
+	if(part) CPE_WriteDefineEffect(client, id, part);
+}
+
+void CPE_DefineParticle(cs_byte id, CPEParticle *part) {
+	customParticles[id] = part;
+	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+		Client *client = Clients_List[i];
+		if(client) continue;
+		if(Client_GetExtVer(client, EXT_CUSTOMPARTS))
+			CPE_SendParticle(client, id);
+	}
+}
+
 static void CubeNormalize(SVec *s, SVec *e) {
 	cs_int16 tmp, *a = (cs_int16 *)s, *b = (cs_int16 *)e;
 	for(int i = 0; i < 3; i++) {
@@ -145,6 +187,10 @@ static void CubeNormalize(SVec *s, SVec *e) {
 		b[i]++;
 	}
 }
+
+/**
+ * SelectionCuboid
+ */
 
 void Cuboid_SetPositions(CPECuboid *cub, SVec start, SVec end) {
 	cub->pos[0] = start, cub->pos[1] = end;

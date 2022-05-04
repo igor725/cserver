@@ -79,7 +79,7 @@ NOINL void CPE_WriteAddTextColor(Client *client, Color4* color, cs_char code);
 NOINL void CPE_WriteSetHotBar(Client *client, cs_byte order, BlockID block);
 NOINL void CPE_WriteSetSpawnPoint(Client *client, Vec *pos, Ang *ang);
 NOINL void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_byte mode);
-NOINL void CPE_WriteDefineEffect(Client *client, CustomParticle *e);
+NOINL void CPE_WriteDefineEffect(Client *client, cs_byte id, CPEParticle *e);
 NOINL void CPE_WriteSpawnEffect(Client *client, cs_byte id, Vec *pos, Vec *origin);
 NOINL void CPE_WriteWeatherType(Client *client, cs_int8 type);
 NOINL void CPE_WriteTexturePack(Client *client, cs_str url);

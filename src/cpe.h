@@ -5,6 +5,9 @@
 #include "types/client.h"
 #include "vector.h"
 
+void CPE_SendModel(Client *client, cs_int32 extVer, cs_byte id);
+void CPE_SendParticle(Client *client, cs_byte id);
+
 API cs_bool CPE_IsModelDefined(cs_byte id);
 API cs_bool CPE_IsModelDefinedPtr(CPEModel *model);
 API cs_str CPE_GetDefaultModelName(void);
@@ -16,6 +19,11 @@ API cs_bool CPE_CheckModel(Client *client, cs_int16 model);
 API void CPE_RegisterExtension(cs_str name, cs_int32 version);
 API cs_int16 CPE_GetModelNum(cs_str model);
 API cs_uint32 CPE_GetModelStr(cs_int16 num, char *buffer, cs_uint32 buflen);
+
+API cs_bool CPE_IsParticleDefined(cs_byte id);
+API cs_bool CPE_IsParticleDefinedPtr(CPEParticle *part);
+API CPEParticle *CPE_GetParticle(cs_byte id);
+API void CPE_DefineParticle(cs_byte id, CPEParticle *part);
 
 API void Cuboid_SetPositions(CPECuboid *cub, SVec start, SVec end);
 API void Cuboid_SetColor(CPECuboid *cub, Color4 color);

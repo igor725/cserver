@@ -12,7 +12,7 @@ API cs_bool Event_RegisterBool(EventType type, evtBoolCallback func);
 API cs_bool Event_RegisterBunch(EventRegBunch *bunch);
 API cs_bool Event_Unregister(EventType type, void *evtFuncPtr);
 API void Event_UnregisterBunch(EventRegBunch *bunch);
+API cs_bool Event_Call(EventType type, void *param);
 
 NOINL void Event_UnregisterAll(void);
-NOINL cs_bool Event_Call(EventType type, void *param);
 #endif // EVENT_H

@@ -91,8 +91,7 @@ typedef struct _UVCoordsB {
 	cs_byte U1, V1, U2, V2;
 } UVCoordsB;
 
-typedef struct _CustomParticle {
-	cs_byte id;
+typedef struct _CPEParticle {
 	UVCoordsB rec;
 	Color3 tintCol;
 	cs_byte frameCount, particleCount, collideFlags;
@@ -100,7 +99,7 @@ typedef struct _CustomParticle {
 	cs_byte size;
 	cs_float sizeVariation, spread, speed,
 	gravity, baseLifetime, lifetimeVariation;
-} CustomParticle;
+} CPEParticle;
 
 /**
  * @brief Структура, описывающая создаваемый блок.

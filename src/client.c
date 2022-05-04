@@ -663,14 +663,6 @@ cs_bool Client_SetVelocity(Client *client, Vec *velocity, cs_byte mode) {
 	return false;
 }
 
-cs_bool Client_RegisterParticle(Client *client, CustomParticle *e) {
-	if(Client_GetExtVer(client, EXT_PARTICLE)) {
-		CPE_WriteDefineEffect(client, e);
-		return true;
-	}
-	return false;
-}
-
 cs_bool Client_SpawnParticle(Client *client, cs_byte id, Vec *pos, Vec *origin) {
 	if(Client_GetExtVer(client, EXT_PARTICLE)) {
 		CPE_WriteSpawnEffect(client, id, pos, origin);
@@ -682,20 +674,6 @@ cs_bool Client_SpawnParticle(Client *client, cs_byte id, Vec *pos, Vec *origin) 
 cs_bool Client_SendPluginMessage(Client *client, cs_byte channel, cs_str message) {
 	if(Client_GetExtVer(client, EXT_PLUGINMESSAGE)) {
 		CPE_WritePluginMessage(client, channel, message);
-		return true;
-	}
-	return false;
-}
-
-cs_bool Client_DefineModel(Client *client, cs_byte id, CPEModel *model) {
-	cs_int32 extVer = Client_GetExtVer(client, EXT_CUSTOMMODELS);
-	if(extVer > 0) {
-		CPE_WriteDefineModel(client, id, model);
-		CPEModelPart *part = model->part;
-		while(part) {
-			CPE_WriteDefineModelPart(client, extVer, id, part);
-			part = part->next;
-		}
 		return true;
 	}
 	return false;

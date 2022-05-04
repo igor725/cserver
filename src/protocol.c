@@ -939,11 +939,11 @@ void CPE_WriteVelocityControl(Client *client, Vec *velocity, cs_byte mode) {
 	PacketWriter_End(client);
 }
 
-void CPE_WriteDefineEffect(Client *client, CustomParticle *e) {
+void CPE_WriteDefineEffect(Client *client, cs_byte id, CPEParticle *e) {
 	PacketWriter_Start(client, 36);
 
 	*data++ = PACKET_DEFINEEFFECT;
-	*data++ = e->id;
+	*data++ = id;
 	*(UVCoordsB *)data = e->rec; data += sizeof(UVCoordsB);
 	*data++ = (cs_byte)e->tintCol.r;
 	*data++ = (cs_byte)e->tintCol.g;
@@ -1184,11 +1184,11 @@ cs_bool CPEHandler_PluginMessage(Client *client, cs_char *data) {
 }
 
 static void FinishCPEThings(Client *client) {
-	if(Client_GetExtVer(client, EXT_CUSTOMMODELS)) {
-		for(cs_int16 i = 0; i < 256; i++) {
-			CPEModel *model = CPE_GetModel((cs_byte)i);
-			if(model) Client_DefineModel(client, (cs_byte)i, model);
-		}
+	cs_int32 extVer = Client_GetExtVer(client, EXT_CUSTOMMODELS);
+	cs_bool hasParts = Client_GetExtVer(client, EXT_CUSTOMPARTS) > 0;
+	for(cs_int16 i = 0; i < 256; i++) {
+		CPE_SendModel(client, extVer, (cs_byte)i);
+		if(hasParts) CPE_SendParticle(client, (cs_byte)i);
 	}
 }
 
