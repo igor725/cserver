@@ -1085,6 +1085,7 @@ cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
 cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, CLIENT_STATE_MOTD, false);
+	if(client->cpeData->_extCount == 0) return false;
 
 	CPEExt *tmp = Memory_Alloc(1, sizeof(struct _CPEExt));
 	if(!Proto_ReadString(&data, &tmp->name)) {
@@ -1195,23 +1196,31 @@ static void FinishCPEThings(Client *client) {
 	}
 }
 
-Packet *packetsList[256] = {NULL};
+static Packet *packetsList[256] = {NULL};
 
-void Packet_Register(EPacketID id, cs_uint16 size, packetHandler handler) {
+cs_bool Packet_Register(EPacketID id, cs_uint16 size, packetHandler handler) {
+	if(packetsList[id]) return false;
+
 	Packet *tmp = (Packet *)Memory_Alloc(1, sizeof(Packet));
 	tmp->id = id;
 	tmp->size = size;
 	tmp->handler = (void *)handler;
 	packetsList[id] = tmp;
+	
+	return true;
 }
 
-void Packet_SetCPEHandler(EPacketID id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler) {
+cs_bool Packet_SetCPEHandler(EPacketID id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler) {
 	Packet *tmp = packetsList[id];
+	if(!tmp || tmp->exthash) return false;
+
 	tmp->exthash = hash;
 	tmp->extVersion = ver;
 	tmp->extHandler = (void *)handler;
 	tmp->extSize = size;
 	tmp->haveCPEImp = true;
+
+	return true;
 }
 
 void CPE_RegisterServerExtension(cs_str name, cs_int32 version) {
@@ -1271,22 +1280,22 @@ Packet *Packet_Get(EPacketID id) {
 }
 
 void Packet_RegisterDefault(void) {
-	Packet_Register(PACKET_IDENTIFICATION,  130, Handler_Handshake);
-	Packet_Register(PACKET_SETBLOCK_CLIENT, 8, Handler_SetBlock);
-	Packet_Register(PACKET_ENTITYTELEPORT,  9, Handler_PosAndOrient);
-	Packet_Register(PACKET_SENDMESSAGE,     65, Handler_Message);
+	(void)Packet_Register(PACKET_IDENTIFICATION,  130, Handler_Handshake);
+	(void)Packet_Register(PACKET_SETBLOCK_CLIENT, 8, Handler_SetBlock);
+	(void)Packet_Register(PACKET_ENTITYTELEPORT,  9, Handler_PosAndOrient);
+	(void)Packet_Register(PACKET_SENDMESSAGE,     65, Handler_Message);
 
 	const struct extReg *ext;
 	for(ext = serverExtensions; ext->name; ext++)
 		CPE_RegisterServerExtension(ext->name, ext->version);
 
-	Packet_Register(PACKET_EXTINFO,         66, CPEHandler_ExtInfo);
-	Packet_Register(PACKET_EXTENTRY,        68, CPEHandler_ExtEntry);
-	Packet_Register(PACKET_CUSTOMBLOCKSLVL, 1, CPEHandler_SetCBVer);
-	Packet_Register(PACKET_TWOWAYPING,      3, CPEHandler_TwoWayPing);
-	Packet_Register(PACKET_PLAYERCLICKED,   14, CPEHandler_PlayerClick);
-	Packet_Register(PACKET_PLUGINMESSAGE,   65, CPEHandler_PluginMessage);
-	Packet_SetCPEHandler(PACKET_ENTITYTELEPORT, EXT_ENTPOS, 1, 15, NULL);
+	(void)Packet_Register(PACKET_EXTINFO,         66, CPEHandler_ExtInfo);
+	(void)Packet_Register(PACKET_EXTENTRY,        68, CPEHandler_ExtEntry);
+	(void)Packet_Register(PACKET_CUSTOMBLOCKSLVL, 1, CPEHandler_SetCBVer);
+	(void)Packet_Register(PACKET_TWOWAYPING,      3, CPEHandler_TwoWayPing);
+	(void)Packet_Register(PACKET_PLAYERCLICKED,   14, CPEHandler_PlayerClick);
+	(void)Packet_Register(PACKET_PLUGINMESSAGE,   65, CPEHandler_PluginMessage);
+	(void)Packet_SetCPEHandler(PACKET_ENTITYTELEPORT, EXT_ENTPOS, 1, 15, NULL);
 }
 
 void Packet_UnregisterAll(void) {

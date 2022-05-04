@@ -18,6 +18,8 @@
 #define BDF_UNDEFINED  BIT(3) /** Блок удалён */
 /* @} */
 
+BlockDef *Block_GetDefinition(World *world, BlockID id);
+
 /**
  * @brief Возвращает фоллбек блок для указанного блока
  * на случай, если клиент не поддерживает дополнения
@@ -79,15 +81,6 @@ API cs_bool Block_IsDefinedFor(World *world, BlockDef *bdef);
  * @return true - регистрация прошла успешно, false - блок с таким id уже зарегистрирован
  */
 API cs_bool Block_Define(World *world, BlockID id, BlockDef *bdef);
-
-/**
- * @brief Возвращает структуру блока по его номеру.
- * 
- * @param world целевой мир
- * @param id уникальный номер блока
- * @return структура, описывающая, блок
- */
-API BlockDef *Block_GetDefinition(World *world, BlockID id);
 
 /**
  * @brief Удаляет указанный блок для одного мира

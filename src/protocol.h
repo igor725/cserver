@@ -9,9 +9,9 @@
 
 typedef cs_bool(*packetHandler)(Client *, cs_char *);
 
-API Packet *Packet_Get(EPacketID id);
-API void Packet_Register(EPacketID id, cs_uint16 size, packetHandler handler);
-API void Packet_SetCPEHandler(EPacketID id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler);
+API cs_bool Packet_Register(EPacketID id, cs_uint16 size, packetHandler handler);
+API cs_bool Packet_SetCPEHandler(EPacketID id, cs_uint32 hash, cs_int32 ver, cs_uint16 size, packetHandler handler);
+Packet *Packet_Get(EPacketID id);
 void Packet_UnregisterAll(void);
 
 API cs_byte Proto_ReadString(cs_char **data, cs_str *dstptr);

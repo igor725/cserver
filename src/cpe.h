@@ -5,13 +5,14 @@
 #include "types/client.h"
 #include "vector.h"
 
+CPEModel *CPE_GetModel(cs_byte id);
 void CPE_SendModel(Client *client, cs_int32 extVer, cs_byte id);
 void CPE_SendParticle(Client *client, cs_byte id);
+CPEParticle *CPE_GetParticle(cs_byte id);
 
 API cs_bool CPE_IsModelDefined(cs_byte id);
 API cs_bool CPE_IsModelDefinedPtr(CPEModel *model);
 API cs_str CPE_GetDefaultModelName(void);
-API CPEModel *CPE_GetModel(cs_byte id);
 API cs_bool CPE_DefineModel(cs_byte id, CPEModel *model);
 API cs_bool CPE_UndefineModel(cs_byte id);
 API cs_bool CPE_UndefineModelPtr(CPEModel *mdl);
@@ -22,7 +23,6 @@ API cs_uint32 CPE_GetModelStr(cs_int16 num, cs_char *buffer, cs_uint32 buflen);
 
 API cs_bool CPE_IsParticleDefined(cs_byte id);
 API cs_bool CPE_IsParticleDefinedPtr(CPEParticle *part);
-API CPEParticle *CPE_GetParticle(cs_byte id);
 API void CPE_DefineParticle(cs_byte id, CPEParticle *part);
 API cs_bool CPE_UndefineParticle(cs_byte id);
 API cs_bool CPE_UndefineParticlePtr(CPEParticle *ptr);
