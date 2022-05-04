@@ -18,12 +18,22 @@
 VAR cs_bool Server_Active, Server_Ready;
 VAR CStore *Server_Config;
 VAR cs_uint64 Server_StartTime;
-VAR cs_str Server_Version;
-extern Socket Server_Socket;
 
 cs_bool Server_Init(void);
 void Server_StartLoop(void);
 void Server_Cleanup(void);
 
-API cs_str Server_GetAppName(void);
+#define SERVERINFO_FLAG_DEBUG      BIT(0)
+#define SERVERINFO_FLAG_WININET    BIT(1)
+#define SERVERINFO_FLAG_LIBCURL    BIT(2)
+#define SERVERINFO_FLAG_WINCRYPT   BIT(3)
+#define SERVERINFO_FLAG_LIBCRYPTO  BIT(4)
+
+typedef struct _ServerInfo {
+	cs_int32 coreFlags;
+	cs_str coreFullName;
+	cs_str coreGitTag;
+} ServerInfo;
+
+API cs_bool Server_GetInfo(ServerInfo *info, cs_size sisz);
 #endif // SERVER_H

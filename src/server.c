@@ -21,7 +21,6 @@
 #include "list.h"
 
 CStore *Server_Config = NULL;
-cs_str Server_Version = GIT_COMMIT_TAG;
 cs_bool Server_Active = false, Server_Ready = false;
 cs_uint64 Server_StartTime = 0;
 Socket Server_Socket = 0;
@@ -481,8 +480,29 @@ static void KickAll(cs_str reason) {
 	}
 }
 
-cs_str Server_GetAppName(void) {
-	return SOFTWARE_FULLNAME;
+cs_bool Server_GetInfo(ServerInfo *info, cs_size sisz) {
+	if(sisz != sizeof(ServerInfo)) return false;
+
+	info->coreFullName = SOFTWARE_FULLNAME;
+	info->coreGitTag = GIT_COMMIT_TAG;
+
+#	ifdef CORE_BUILD_DEBUG
+		info->coreFlags |= SERVERINFO_FLAG_DEBUG;
+#	endif
+
+#	if defined(HTTP_USE_WININET_BACKEND)
+		info->coreFlags |= SERVERINFO_FLAG_WININET;
+#	elif defined(HTTP_USE_CURL_BACKEND)
+		info->coreFlags |= SERVERINFO_FLAG_LIBCURL;
+#	endif
+
+#	if defined(HASH_USE_WINCRYPT_BACKEND)
+		info->coreFlags |= SERVERINFO_FLAG_WINCRYPT;
+#	elif defined(HASH_USE_CRYPTO_BACKEND)
+		info->coreFlags |= SERVERINFO_FLAG_LIBCRYPTO;
+#	endif
+
+	return true;
 }
 
 void Server_Cleanup(void) {

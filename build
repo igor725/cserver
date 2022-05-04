@@ -92,7 +92,7 @@ do
 	if [ "$a" == "wall" ]; then WARN="-Wall -Wextra"; fi
 	if [ "$a" == "wx" ]; then CFLAGS="$CFLAGS -Werror"; fi
 	if [ "$a" == "w0" ]; then WARN="-W0"; fi
-	if [ "$a" == "dbg" ]; then DEBUG=1; CFLAGS="$CFLAGS -g"; OPT="-O0"; fi
+	if [ "$a" == "dbg" ]; then DEBUG=1; fi
 	if [ "$a" == "od" ]; then OPT="-O0"; fi
 	if [ "$a" == "san" ]; then SAN=1; fi
 	if [ "$a" == "run" ]; then RUN=1; fi
@@ -157,6 +157,12 @@ fi
 OUTDIR="$ROOT/out/$MACH"
 
 if [ $COMPILE -eq 1 ]; then
+	if [ $DEBUG -eq 1 ]; then
+		CFLAGS="$CFLAGS -g -DCORE_BUILD_DEBUG"
+		CFLAGS="$CFLAGS -fno-omit-frame-pointer"
+		OPT="-O0"
+	fi
+
 	if [ $GITOK -eq 1 ]; then
 		VER="$(git -C "$ROOT" describe --tags HEAD 2> /dev/null)"
 		if [ "$VER" == "" ]; then
