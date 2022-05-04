@@ -124,7 +124,7 @@ cs_int16 CPE_GetModelNum(cs_str model) {
 	return modelnum;
 }
 
-cs_uint32 CPE_GetModelStr(cs_int16 num, char *buffer, cs_uint32 buflen) {
+cs_uint32 CPE_GetModelStr(cs_int16 num, cs_char *buffer, cs_uint32 buflen) {
 	if(num > 255) { // За пределами 256 первых id находятся неблоковые модели
 		cs_byte modelid = num % 256;
 		cs_str mdl = NULL;
@@ -174,6 +174,20 @@ void CPE_DefineParticle(cs_byte id, CPEParticle *part) {
 		if(Client_GetExtVer(client, EXT_CUSTOMPARTS))
 			CPE_SendParticle(client, id);
 	}
+}
+
+cs_bool CPE_UndefineParticle(cs_byte id) {
+	if(!customParticles[id]) return false;
+	customParticles[id] = NULL;
+	return true;
+}
+
+cs_bool CPE_UndefineParticlePtr(CPEParticle *ptr) {
+	for(cs_int16 i = 0; i < 256 && ptr; i++) {
+		if(customParticles[i] == ptr)
+			return true;
+	}
+	return false;
 }
 
 static void CubeNormalize(SVec *s, SVec *e) {
