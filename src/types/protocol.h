@@ -108,4 +108,9 @@ typedef struct _Packet {
 	void *handler;
 	void *extHandler;
 } Packet;
+
+typedef enum _ESetBlockMode {
+	SETBLOCK_MODE_DESTROY,
+	SETBLOCK_MODE_CREATE
+} ESetBlockMode;
 #endif

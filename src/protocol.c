@@ -415,11 +415,11 @@ cs_bool Handler_SetBlock(Client *client, cs_char *data) {
 	onBlockPlace params;
 	params.client = client;
 	Proto_ReadSVec(&data, &params.pos);
-	params.mode = *data++;
+	params.mode = (ESetBlockMode)*data++;
 	params.id = *data;
 
 	switch(params.mode) {
-		case 0x01:
+		case SETBLOCK_MODE_CREATE:
 			if(!Block_IsValid(world, params.id)) {
 				Client_KickFormat(client, Sstor_Get("KICK_UNKBID"), params.id);
 				return false;
@@ -429,13 +429,16 @@ cs_bool Handler_SetBlock(Client *client, cs_char *data) {
 			else
 				Vanilla_WriteSetBlock(client, &params.pos, World_GetBlock(world, &params.pos));
 			break;
-		case 0x00:
+		case SETBLOCK_MODE_DESTROY:
 			params.id = BLOCK_AIR;
 			if(Event_Call(EVT_ONBLOCKPLACE, &params) && World_SetBlock(world, &params.pos, params.id))
 				UpdateBlock(world, &params.pos, params.id);
 			else
 				Vanilla_WriteSetBlock(client, &params.pos, World_GetBlock(world, &params.pos));
 			break;
+		
+		default:
+			return false;
 	}
 
 	return true;

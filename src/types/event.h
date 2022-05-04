@@ -74,7 +74,7 @@ typedef struct _onHeldBlockChange {
  */
 typedef struct _onBlockPlace {
 	Client *client;
-	cs_byte mode;
+	ESetBlockMode mode;
 	SVec pos;
 	BlockID id;
 } onBlockPlace;
