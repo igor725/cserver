@@ -526,7 +526,7 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 		cs_char formatted[320] = {0}, formatted_san[320] = {0};
 
 		if(*params.message == '/') {
-			Log_Warn("%s&f executed command: %s", Client_GetDisplayName(client), params.message);
+			Log_Warn("%s&f executed command: %s", Client_GetName(client), params.message);
 			if(!Command_Handle(params.message, client))
 				Vanilla_WriteChat(client, params.type, Sstor_Get("CMD_UNK"));
 		} else {

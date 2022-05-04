@@ -485,6 +485,7 @@ cs_bool Server_GetInfo(ServerInfo *info, cs_size sisz) {
 
 	info->coreFullName = SOFTWARE_FULLNAME;
 	info->coreGitTag = GIT_COMMIT_TAG;
+	info->coreFlags = 0x00000000;
 
 #	ifdef CORE_BUILD_DEBUG
 		info->coreFlags |= SERVERINFO_FLAG_DEBUG;

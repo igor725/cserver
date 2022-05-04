@@ -12,7 +12,7 @@
 
 cs_bool Error_Init(void);
 void Error_Uninit(void);
+cs_int32 Error_GetSysCode(void);
 
 API void Error_Print(cs_bool abort, cs_int32 code, cs_str file, cs_uint32 line, cs_str func, ...);
-API cs_int32 Error_GetSysCode(void);
 #endif // ERROR_H
