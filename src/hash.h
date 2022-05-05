@@ -61,7 +61,7 @@ void Hash_Uninit(void);
 	} SHA_CTX;
 // End of <openssl/sha.h>
 #else
-#	error No hash backend selected
+#	error No сryptographic backend selected
 #endif
 
 cs_bool SHA1_Init(SHA_CTX *ctx);

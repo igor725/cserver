@@ -170,7 +170,7 @@ void CPE_DefineParticle(cs_byte id, CPEParticle *part) {
 	customParticles[id] = part;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
-		if(client) continue;
+		if(!client) continue;
 		if(Client_GetExtVer(client, EXT_CUSTOMPARTS))
 			CPE_SendParticle(client, id);
 	}
