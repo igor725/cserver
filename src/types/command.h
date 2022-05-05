@@ -17,11 +17,11 @@
  * @brief Структура с информацией о вызове команды.
  * 
  */
-typedef struct {
-	struct _Command * const command; /** Вызванная команда */
+typedef struct _CommandCallData {
+	struct _Command *const command; /** Вызванная команда */
 	cs_str const args; /** Аргументы с которыми команда была вызвана */
-	Client * const caller; /** Игрок, вызвавший команду, NULL в случае вызова из консоли*/
-	cs_char * const out; /* Массив, в который команда будет записывать вывод*/
+	Client *const caller; /** Игрок, вызвавший команду, NULL в случае вызова из консоли*/
+	cs_char *const out; /* Массив, в который команда будет записывать вывод*/
 } CommandCallData;
 
 /**

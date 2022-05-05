@@ -6,6 +6,10 @@
 #include "str.h"
 #include "cpe.h"
 
+/**
+ * CustomModel
+ */
+
 static cs_str originalModelNames[16] = {
 	"humanoid", "chicken", "creeper",
 	"pig", "sheep", "skeleton", "sheep",
@@ -15,10 +19,6 @@ static cs_str originalModelNames[16] = {
 };
 
 static CPEModel *customModels[256] = {NULL};
-
-/**
- * CustomModel
- */
 
 cs_bool CPE_IsModelDefined(cs_byte id) {
 	return customModels[id] != NULL || id < 15;
@@ -166,7 +166,9 @@ void CPE_SendParticle(Client *client, cs_byte id) {
 	if(part) CPE_WriteDefineEffect(client, id, part);
 }
 
-void CPE_DefineParticle(cs_byte id, CPEParticle *part) {
+cs_bool CPE_DefineParticle(cs_byte id, CPEParticle *part) {
+	if(customParticles[id]) return false;
+	if(CPE_IsParticleDefinedPtr(part)) return false;
 	customParticles[id] = part;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
@@ -174,6 +176,7 @@ void CPE_DefineParticle(cs_byte id, CPEParticle *part) {
 		if(Client_GetExtVer(client, EXT_CUSTOMPARTS))
 			CPE_SendParticle(client, id);
 	}
+	return true;
 }
 
 cs_bool CPE_UndefineParticle(cs_byte id) {

@@ -17,13 +17,12 @@ API cs_bool CPE_DefineModel(cs_byte id, CPEModel *model);
 API cs_bool CPE_UndefineModel(cs_byte id);
 API cs_bool CPE_UndefineModelPtr(CPEModel *mdl);
 API cs_bool CPE_CheckModel(Client *client, cs_int16 model);
-API void CPE_RegisterExtension(cs_str name, cs_int32 version);
 API cs_int16 CPE_GetModelNum(cs_str model);
 API cs_uint32 CPE_GetModelStr(cs_int16 num, cs_char *buffer, cs_uint32 buflen);
 
 API cs_bool CPE_IsParticleDefined(cs_byte id);
 API cs_bool CPE_IsParticleDefinedPtr(CPEParticle *part);
-API void CPE_DefineParticle(cs_byte id, CPEParticle *part);
+API cs_bool CPE_DefineParticle(cs_byte id, CPEParticle *part);
 API cs_bool CPE_UndefineParticle(cs_byte id);
 API cs_bool CPE_UndefineParticlePtr(CPEParticle *ptr);
 

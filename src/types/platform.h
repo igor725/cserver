@@ -44,7 +44,7 @@
 	typedef sem_t Semaphore;
 	typedef void TSHND_RET;
 	typedef cs_int32 TSHND_PARAM;
-	typedef struct {
+	typedef struct _Waitable {
 		pthread_cond_t cond;
 		Mutex *mutex;
 		cs_bool signalled;
