@@ -174,7 +174,6 @@ COMMAND_FUNC(Help) {
 	cs_int32 startPage = 1;
 	if(COMMAND_GETARG(temparg, 6, 0))
 		startPage = String_ToInt(temparg);
-
 	Pager pager = Pager_Init(startPage, PAGER_DEFAULT_PAGELEN);
 
 	COMMAND_APPEND("&eList of commands:");

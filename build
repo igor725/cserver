@@ -59,8 +59,7 @@ notaplugin () {
 }
 
 waitfor () {
-	wait $1
-	if [ $? -ne 0 ]; then
+	if ! wait $1; then
 		echo -ne "error\nCompiler errors:\n$(cat $STDERR)\n"
 		exit 1
 	fi
@@ -102,8 +101,7 @@ done
 if [ $GITUPD -eq 1 ]; then
 	if [ $PLUGIN_BUILD -eq 1 ]; then
 		pushd "../cs-$PLUGIN_NAME"
-		git fetch origin
-		if [ $? -ne 0 ]; then
+		if ! git fetch origin; then
 			echo "!!! Failed to fetch $PLUGIN_NAME repo"
 			exit 1
 		fi
@@ -114,16 +112,14 @@ if [ $GITUPD -eq 1 ]; then
 				COMPILE=0
 			fi
 		fi
-		git merge --ff-only
-		if [ $? -ne 0 ]; then
+		if ! git merge --ff-only; then
 			echo "!!! Failed to update $PLUGIN_NAME"
 			popd
 			exit 1
 		fi
 		popd
 	else
-		git fetch origin
-		if [ $? -ne 0 ]; then
+		if ! git fetch origin; then
 			echo "!!! Failed to fetch main repo"
 			exit 1
 		fi
@@ -136,15 +132,14 @@ if [ $GITUPD -eq 1 ]; then
 				COMPILE=0
 			fi
 
-			for file in `git diff --stat --name-only HEAD origin/$BRANCH`; do
+			for file in $(git diff --stat --name-only HEAD origin/$BRANCH); do
 				if [ "$file" = "build" ]; then
 					BUILDALERTED=1
 					break
 				fi
 			done
 		fi
-		git merge --ff-only
-		if [ $? -ne 0 ]; then
+		if ! git merge --ff-only; then
 			echo "!!! Failed to update server core"
 			exit 1
 		elif [ $BUILDALERTED -eq 1 ]; then
@@ -191,7 +186,7 @@ if [ $COMPILE -eq 1 ]; then
 	OBJS=""
 
 	> $STDERR
-	for cpath in `find "$ROOT/src/" -maxdepth 1 -type f -name "*.c"`; do
+	for cpath in $(find "$ROOT/src/" -maxdepth 1 -type f -name "*.c"); do
 		objpath="$OBJDIR/$(basename $cpath .c).o"
 		OBJS="$OBJS $objpath"
 		$CC -c $CFLAGS $WARN $OPT -I$ROOT/src $cpath -o$objpath 2>> $STDERR &
