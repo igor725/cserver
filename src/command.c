@@ -137,30 +137,28 @@ cs_bool Command_Handle(cs_char *str, Client *caller) {
 		preCommand params = {
 			.command = cmd,
 			.caller = caller,
-			.args = args,
+			.args = (cs_str)args,
 			.allowed = ((cmd->flags & CMDF_OP) == 0) ||
 				!caller || Client_IsOP(caller)
 		};
 
-		if(Event_Call(EVT_PRECOMMAND, &params)) {
-			if(!params.allowed) {
-				if(caller)
-					Client_Chat(caller, MESSAGE_TYPE_CHAT, Sstor_Get("CMD_NOPERM"));
-				else
-					Log_Info(Sstor_Get("CMD_NOPERM"));
-				return true;
-			}
+		Event_Call(EVT_PRECOMMAND, &params);
 
-			CommandCallData ccdata = {
-				.args = (cs_str)args,
-				.caller = caller,
-				.command = cmd,
-				.out = ret
-			};
-
-			if(cmd->func(&ccdata))
-				SendOutput(caller, ret);
+		if(!params.allowed) {
+			String_Copy(ret, MAX_CMD_OUT, Sstor_Get("CMD_NOPERM"));
+			SendOutput(caller, ret);
+			return true;
 		}
+
+		CommandCallData ccdata = {
+			.args = (cs_str)args,
+			.caller = caller,
+			.command = cmd,
+			.out = ret
+		};
+
+		if(cmd->func(&ccdata))
+			SendOutput(caller, ret);
 
 		return true;
 	}

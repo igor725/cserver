@@ -99,7 +99,7 @@ typedef struct _onPluginMessage {
 typedef struct _preCommand {
 	Command *const command;
 	Client *const caller;
-	cs_char *const args;
+	cs_str const args;
 	cs_bool allowed;
 } preCommand;
 #endif
