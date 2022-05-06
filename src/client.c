@@ -413,30 +413,6 @@ void Client_Chat(Client *client, EMesgType type, cs_str message) {
 	Vanilla_WriteChat(client, type, message);
 }
 
-NOINL static void HandlePacket(Client *client, cs_char *data) {
-	packetHandler phand = NULL;
-
-	if(client->packetData.isExtended)
-		if(client->packetData.packet->extHandler)
-			phand = (packetHandler)client->packetData.packet->extHandler;
-		else
-			phand = (packetHandler)client->packetData.packet->handler;
-	else
-		if(client->packetData.packet->handler)
-			phand = (packetHandler)client->packetData.packet->handler;
-
-	if(phand(client, data) == false)
-		Client_KickFormat(client, Sstor_Get("KICK_PERR_UNEXP"), client->packetData.packet->id);
-}
-
-INL static cs_uint16 GetPacketSizeFor(Packet *packet, Client *client, cs_bool *extended) {
-	if(packet->haveCPEImp) {
-		*extended = Client_GetExtVer(client, packet->exthash) == packet->extVersion;
-		if(*extended) return packet->extSize;
-	}
-	return packet->size;
-}
-
 cs_bool Client_CheckState(Client *client, EClientState state) {
 	if(!client->playerData) return state == CLIENT_STATE_INITIAL;
 	return client->state == state;
@@ -815,6 +791,15 @@ cs_bool Client_Update(Client *client) {
 	return true;
 }
 
+cs_char *Client_StartRaw(Client *client, cs_uint32 msize) {
+	if(!NetBuffer_IsAlive(&client->netbuf) || Client_IsBot(client)) return NULL;
+	return NetBuffer_StartWrite(&client->netbuf, msize);
+}
+
+cs_bool Client_EndRaw(Client *client, cs_uint32 psize) {
+	return NetBuffer_EndWrite(&client->netbuf, psize);
+}
+
 void Client_Free(Client *client) {
 	if(client->mutex) {
 		Mutex_Free(client->mutex);
@@ -855,6 +840,30 @@ void Client_Free(Client *client) {
 	NetBuffer_ForceClose(&client->netbuf);
 	Compr_Cleanup(&client->mapData.compr);
 	Memory_Free(client);
+}
+
+NOINL static void HandlePacket(Client *client, cs_char *data) {
+	packetHandler phand = NULL;
+
+	if(client->packetData.isExtended)
+		if(client->packetData.packet->extHandler)
+			phand = (packetHandler)client->packetData.packet->extHandler;
+		else
+			phand = (packetHandler)client->packetData.packet->handler;
+	else
+		if(client->packetData.packet->handler)
+			phand = (packetHandler)client->packetData.packet->handler;
+
+	if(phand(client, data) == false)
+		Client_KickFormat(client, Sstor_Get("KICK_PERR_UNEXP"), client->packetData.packet->id);
+}
+
+INL static cs_uint16 GetPacketSizeFor(Packet *packet, Client *client, cs_bool *extended) {
+	if(packet->haveCPEImp) {
+		*extended = Client_GetExtVer(client, packet->exthash) == packet->extVersion;
+		if(*extended) return packet->extSize;
+	}
+	return packet->size;
 }
 
 INL static void PacketReceiverWs(Client *client) {

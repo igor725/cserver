@@ -24,6 +24,9 @@ API cs_bool Client_IsBot(Client *client);
 API void Client_Lock(Client *client);
 API void Client_Unlock(Client *client);
 
+API cs_char *Client_StartRaw(Client *client, cs_uint32 msize);
+API cs_bool Client_EndRaw(Client *client, cs_uint32 psize);
+
 API cs_bool Client_ChangeWorld(Client *client, World *world);
 API void Client_Chat(Client *client, EMesgType type, cs_str message);
 API void Client_Kick(Client *client, cs_str reason);
