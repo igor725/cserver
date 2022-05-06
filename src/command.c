@@ -9,6 +9,7 @@
 #include "server.h"
 #include "plugin.h"
 #include "event.h"
+#include "pager.h"
 
 AListField *Command_Head = NULL;
 
@@ -169,24 +170,28 @@ cs_bool Command_Handle(cs_char *str, Client *caller) {
 COMMAND_FUNC(Help) {
 	AListField *tmp;
 
-	cs_char availarg[6];
-	cs_bool availOnly = COMMAND_GETARG(availarg, 6, 0) &&
-	String_CaselessCompare(availarg, "avail");
+	cs_char temparg[64];
+	cs_int32 startPage = 1;
+	if(COMMAND_GETARG(temparg, 6, 0))
+		startPage = String_ToInt(temparg);
 
-	COMMAND_PRINTFLINE("&eList of %s commands:", availOnly?"available":"all");
+	Pager pager = Pager_Init(startPage, PAGER_DEFAULT_PAGELEN);
+
+	COMMAND_APPEND("&eList of commands:");
 
 	List_Iter(tmp, Command_Head) {
-		Command *cmd = (Command *)tmp->value.ptr;
-		cs_bool isAvailable = true;
-		if(ccdata->caller && cmd->flags & CMDF_OP)
-			isAvailable = Client_IsOP(ccdata->caller);
-		if(!isAvailable && availOnly)
-			continue;
+		Pager_Step(pager);
 
-		COMMAND_PRINTFLINE("%s%s&f - %s", isAvailable?"&2":"&4", cmd->name, cmd->descr);
+		Command *cmd = (Command *)tmp->value.ptr;
+		COMMAND_APPENDF(temparg, 64, "\r\n  &b%s&f - %s", cmd->name, cmd->descr);
 	}
 
-	return false;
+	if(Pager_IsDirty(pager))
+		COMMAND_APPENDF(temparg, 64, "\r\nPage %d/%d shown",
+			Pager_CurrentPage(pager), Pager_CountPages(pager)
+		);
+
+	return true;
 }
 
 COMMAND_FUNC(Stop) {
@@ -210,72 +215,82 @@ COMMAND_FUNC(Say) {
 
 COMMAND_FUNC(Plugin) {
 	COMMAND_SETUSAGE("/plugin <load/unload/ifaces/list> [pluginName]");
-	cs_char subcommand[8], name[64], tempinf[64];
+	cs_char temparg1[64], temparg2[64];
 	Plugin *plugin;
 
-	if(COMMAND_GETARG(subcommand, 8, 0)) {
-		if(String_CaselessCompare(subcommand, "list")) {
-			cs_int32 idx = 1;
+	if(COMMAND_GETARG(temparg1, 8, 0)) {
+		if(String_CaselessCompare(temparg1, "list")) {
+			cs_int32 idx = 0, startPage = 1;
+			if(COMMAND_GETARG(temparg1, 8, 1))
+				startPage = String_ToInt(temparg1);
+			Pager pager = Pager_Init(startPage, PAGER_DEFAULT_PAGELEN);
 			COMMAND_APPEND("Loaded plugins list:");
 
 			for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
 				plugin = Plugins_List[i];
 				if(plugin) {
+					idx += 1;
+					Pager_Step(pager);
 					COMMAND_APPENDF(
-						tempinf, 64,
-						"\r\n  %d.%s v%d", idx++,
+						temparg1, 64,
+						"\r\n  %d.%s v%d", idx,
 						plugin->name, plugin->version
 					);
 				}
 			}
 
+			if(Pager_IsDirty(pager))
+				COMMAND_APPENDF(temparg2, 64, "\r\nPage %d/%d shown",
+					Pager_CurrentPage(pager), Pager_CountPages(pager)
+				);
+
 			return true;
 		} else {
-			if(!COMMAND_GETARG(name, 64, 1))
+			if(!COMMAND_GETARG(temparg2, 64, 1))
 				COMMAND_PRINTUSAGE;
 
-			cs_str lc = String_LastChar(name, '.');
+			cs_str lc = String_LastChar(temparg2, '.');
 			if(!lc || !String_CaselessCompare(lc, "." DLIB_EXT)) {
-				String_Append(name, 64, "." DLIB_EXT);
+				String_Append(temparg2, 64, "." DLIB_EXT);
 			}
 
-			if(String_CaselessCompare(subcommand, "load")) {
-				if(!Plugin_Get(name)) {
-					if(Plugin_LoadDll(name)) {
-						COMMAND_PRINTF("Plugin \"%s\" loaded.", name);
+			if(String_CaselessCompare(temparg1, "load")) {
+				if(!Plugin_Get(temparg2)) {
+					if(Plugin_LoadDll(temparg2)) {
+						COMMAND_PRINTF("Plugin \"%s\" loaded.", temparg2);
 					} else {
 						COMMAND_PRINT("Something went wrong.");
 					}
 				}
-				COMMAND_PRINTF("Plugin \"%s\" is already loaded.", name);
+				COMMAND_PRINTF("Plugin \"%s\" is already loaded.", temparg2);
 			} else {
-				plugin = Plugin_Get(name);
+				plugin = Plugin_Get(temparg2);
 				if(!plugin) {
-					COMMAND_PRINTF("Plugin \"%s\" is not loaded.", name);
+					COMMAND_PRINTF("Plugin \"%s\" is not loaded.", temparg2);
 				}
 
-				if(String_CaselessCompare(subcommand, "unload")) {
+				if(String_CaselessCompare(temparg1, "unload")) {
 					if(Plugin_UnloadDll(plugin, false)) {
-						COMMAND_PRINTF("Plugin \"%s\" successfully unloaded.", name);
+						COMMAND_PRINTF("Plugin \"%s\" successfully unloaded.", temparg2);
 					} else {
-						COMMAND_PRINTF("Plugin \"%s\" cannot be unloaded.", name);
+						COMMAND_PRINTF("Plugin \"%s\" cannot be unloaded.", temparg2);
 					}
-				} else if(String_CaselessCompare(subcommand, "ifaces")) {
-					COMMAND_APPENDF(tempinf, 64, "&e%s interfaces:", name);
+				} else if(String_CaselessCompare(temparg1, "ifaces")) {
+					COMMAND_APPENDF(temparg1, 64, "&e%s interfaces:", temparg2);
 					PluginInterface *iface = plugin->ifaces;
 					if(!iface && !plugin->ireqHead)
-						COMMAND_PRINTF("&ePlugin %s has not yet interacted with ifaces API", name);
+						COMMAND_PRINTF("&ePlugin %s has not yet interacted with ifaces API", temparg2);
 
 					if(iface) {
 						COMMAND_APPEND("\r\n  &bExported&f: ");
 						for(; iface && iface->iname; iface++)
-							COMMAND_APPENDF(tempinf, 64, "%s, ", iface->iname);
+							COMMAND_APPENDF(temparg1, 64, "%s, ", iface->iname);
 					}
 					if(plugin->ireqHead) {
 						COMMAND_APPEND("\r\n  &5Imported&f: ");
 						AListField *tmp;
 						List_Iter(tmp, plugin->ireqHead)
-							COMMAND_APPENDF(tempinf, 64, "%s, ", tmp->value.str);
+							COMMAND_APPENDF(temparg1, 64, "%s, ", tmp->value.str);
 					}
 
 					return true;
