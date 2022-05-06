@@ -5,6 +5,7 @@
 #include "types/block.h"
 #include "types/client.h"
 #include "types/world.h"
+#include "types/command.h"
 
 typedef void(*evtVoidCallback)(void *);
 typedef cs_bool(*evtBoolCallback)(void *);
@@ -33,6 +34,7 @@ typedef enum _EventType {
 	EVT_ONWORLDREMOVED,
 	EVT_ONPLUGINMESSAGE,
 	EVT_ONLOG,
+	EVT_PRECOMMAND,
 
 	EVENTS_TCOUNT
 } EventType;
@@ -93,4 +95,11 @@ typedef struct _onPluginMessage {
 	const cs_byte channel;
 	cs_char message[65];
 } onPluginMessage;
+
+typedef struct _preCommand {
+	Command *const command;
+	Client *const caller;
+	cs_char *const args;
+	cs_bool allowed;
+} preCommand;
 #endif

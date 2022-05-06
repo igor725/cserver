@@ -8,6 +8,7 @@
 #include "strstor.h"
 #include "server.h"
 #include "plugin.h"
+#include "event.h"
 
 AListField *Command_Head = NULL;
 
@@ -133,20 +134,33 @@ cs_bool Command_Handle(cs_char *str, Client *caller) {
 			return true;
 		}
 
-		if(cmd->flags & CMDF_OP && (caller && !Client_IsOP(caller))) {
-			Client_Chat(caller, MESSAGE_TYPE_CHAT, Sstor_Get("CMD_NOPERM"));
-			return true;
-		}
-
-		CommandCallData ccdata = {
-			.args = (cs_str)args,
-			.caller = caller,
+		preCommand params = {
 			.command = cmd,
-			.out = ret
+			.caller = caller,
+			.args = args,
+			.allowed = ((cmd->flags & CMDF_OP) == 0) ||
+				!caller || Client_IsOP(caller)
 		};
 
-		if(cmd->func(&ccdata))
-			SendOutput(caller, ret);
+		if(Event_Call(EVT_PRECOMMAND, &params)) {
+			if(!params.allowed) {
+				if(caller)
+					Client_Chat(caller, MESSAGE_TYPE_CHAT, Sstor_Get("CMD_NOPERM"));
+				else
+					Log_Info(Sstor_Get("CMD_NOPERM"));
+				return true;
+			}
+
+			CommandCallData ccdata = {
+				.args = (cs_str)args,
+				.caller = caller,
+				.command = cmd,
+				.out = ret
+			};
+
+			if(cmd->func(&ccdata))
+				SendOutput(caller, ret);
+		}
 
 		return true;
 	}
