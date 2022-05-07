@@ -49,15 +49,12 @@ INL static KListField *AGetNode(void *target, AssocBind *bind) {
 
 AssocType Assoc_NewType(EAssocBindType bindto) {
 	AssocBind *headBind = GetBind(headAssocType);
+	AssocType id = headBind ? headBind->id + 1 : 0;
+	if(id < 0) return ASSOC_INVALID_TYPE;
 	AssocBind *next = (AssocBind *)Memory_Alloc(1, sizeof(AssocBind));
-	next->id = headBind ? headBind->id + 1 : 0;
-	if(next->id < 0) {
-		Memory_Free(next);
-		return ASSOC_INVALID_TYPE;
-	}
-	next->type = bindto;
+	next->id = id, next->type = bindto;
 	AList_AddField(&headAssocType, next);
-	return next->id;
+	return id;
 }
 
 cs_bool Assoc_DelType(AssocType type) {

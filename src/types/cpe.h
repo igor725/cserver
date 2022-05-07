@@ -76,12 +76,16 @@ typedef struct _Color3 {
 	cs_int16 r, g, b;
 } Color3;
 
-typedef struct _CPEExt {
+typedef struct _CPEClExt {
+	cs_ulong hash; // crc32 хеш названия дополнения
+	cs_int32 version;  // Его версия
+} CPEClExt;
+
+typedef struct _CPESvExt {
 	cs_str name; // Название дополнения
 	cs_int32 version; // Его версия
-	cs_ulong hash; // crc32 хеш названия дополнения
-	struct _CPEExt *next; // Следующее дополнение
-} CPEExt;
+	struct _CPESvExt *next; // Следующее дополнение
+} CPESvExt;
 
 typedef struct _UVCoords {
 	cs_uint16 U1, V1, U2, V2;
@@ -194,14 +198,18 @@ typedef struct _CPECuboid {
 } CPECuboid;
 
 typedef struct _CPEData {
-	CPEExt *headExtension; // Список дополнений клиента
+	cs_bool markedAsCPE;
+	struct _CPEClExts {
+		CPEClExt *list; // Список дополнений клиента
+		cs_int16 count; // Количество дополнений у клиента
+		cs_int16 current; // Количество обработанных дополнений
+	} extensions;
 	cs_char appName[65]; // Название игрового клиента
 	cs_char skin[65]; // Скин игрока [ExtPlayerList]
 	cs_char message[193]; // Используется для получения длинных сообщений [LongerMessages]
 	BlockID heldBlock; // Выбранный игроком блок в данный момент [HeldBlock]
 	cs_int8 updates; // Обновлённые значения игрока
 	cs_bool pingStarted; // Начат ли процесс пингования [TwoWayPing]
-	cs_int16 _extCount; // Переменная используется при получении списка дополнений
 	cs_int16 model; // Текущая модель игрока [ChangeModel]
 	cs_uintptr group; // Текущая группа игрока [ExtPlayerList]
 	cs_uint16 pingData; // Данные, цепляемые к пинг-запросу [TwoWayPing]

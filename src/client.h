@@ -2,6 +2,7 @@
 #define CLIENT_H
 #include "core.h"
 #include "vector.h"
+#include "types/platform.h"
 #include "types/world.h"
 #include "types/block.h"
 #include "types/cpe.h"
@@ -9,6 +10,7 @@
 #include "types/client.h"
 #include "types/keys.h"
 
+void Client_Init(Client *client, Socket fd, cs_ulong addr);
 void Client_Tick(Client *client);
 void Client_Free(Client *client);
 
@@ -92,8 +94,8 @@ API cs_int16 Client_GetModel(Client *client);
 API BlockID Client_GetHeldBlock(Client *client);
 API cs_uint16 Client_GetClickDistance(Client *client);
 API cs_float Client_GetClickDistanceInBlocks(Client *client);
-API cs_bool Client_GetPosition(Client *client, Vec *pos, Ang *ang);
-API cs_int32 Client_GetExtVer(Client *client, cs_uint32 exthash);
+API void Client_GetPosition(Client *client, Vec *pos, Ang *ang);
+API cs_int32 Client_GetExtVer(Client *client, cs_ulong exthash);
 API cs_uint32 Client_GetAddr(Client *client);
 API cs_int32 Client_GetPing(Client *client);
 API cs_float Client_GetAvgPing(Client *client);

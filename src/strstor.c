@@ -81,10 +81,6 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("CMD_NOCON", "This command can't be called from console");
 	Sstor_Set("CMD_NOPERM", "Access denied");
 
-	Sstor_Set("NONAME", "Unnamed");
-	Sstor_Set("CL_NOKEY", "Not received");
-	Sstor_Set("CL_VANILLA", "Vanilla client");
-
 	Sstor_Set("KICK_NOREASON", "Kicked without reason");
 	Sstor_Set("KICK_PROTOVER", "Invalid protocol version (e: 0x%02X, g: 0x%02X)");
 	Sstor_Set("KICK_NAMECHARS", "Your name contains prohibited characters");

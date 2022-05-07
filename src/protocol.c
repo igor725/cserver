@@ -20,7 +20,7 @@
 if(!Client_CheckState(client, st)) return ret
 
 #define ValidateCpeClient(client, ret) \
-if(!client->cpeData) return ret
+if(!client->cpeData.markedAsCPE) return ret
 
 #define PacketWriter_Start(cl, msz) \
 if(!NetBuffer_IsAlive(&cl->netbuf) || Client_IsBot(cl)) return; \
@@ -38,7 +38,7 @@ NetBuffer_EndWrite(&cl->netbuf, (cs_uint32)(data - start)); \
 Mutex_Unlock(cl->mutex);
 
 static cs_uint16 extensionsCount = 0;
-static CPEExt *headExtension = NULL;
+static CPESvExt *headExtension = NULL;
 
 void Proto_WriteString(cs_char **dataptr, cs_str string) {
 	cs_size size = 0;
@@ -244,11 +244,11 @@ void Vanilla_WriteSpawn(Client *client, Client *other) {
 
 	*data++ = PACKET_ENTITYSPAWN;
 	*data++ = client == other ? CLIENT_SELF : other->id;
-	Proto_WriteString(&data, other->playerData->name);
+	Proto_WriteString(&data, other->playerData.name);
 	WriteExtEntityPos(
 		&data,
-		&other->playerData->position,
-		&other->playerData->angle,
+		&other->playerData.position,
+		&other->playerData.angle,
 		Client_GetExtVer(client, EXT_ENTPOS) > 0,
 		client == other
 	);
@@ -277,8 +277,8 @@ void Vanilla_WritePosAndOrient(Client *client, Client *other) {
 	*data++ = client == other ? CLIENT_SELF : other->id;
 	WriteExtEntityPos(
 		&data,
-		&other->playerData->position,
-		&other->playerData->angle,
+		&other->playerData.position,
+		&other->playerData.angle,
 		Client_GetExtVer(client, EXT_ENTPOS) > 0,
 		client == other
 	);
@@ -337,22 +337,21 @@ static cs_bool FinishHandshake(Client *client) {
 }
 
 cs_bool Handler_Handshake(Client *client, cs_char *data) {
-	if(client->playerData) return false;
+	if(*client->playerData.name != '\0') return false;
 	cs_byte protoVer = *data++;
 	if(protoVer != PROTOCOL_VERSION) {
 		Client_KickFormat(client, Sstor_Get("KICK_PROTOVER"), PROTOCOL_VERSION, protoVer);
 		return true;
 	}
 
-	client->playerData = Memory_Alloc(1, sizeof(PlayerData));
-	client->playerData->firstSpawn = true;
+	client->playerData.firstSpawn = true;
 	if(Client_IsLocal(client) && Config_GetBoolByKey(Server_Config, CFG_LOCALOP_KEY))
-		client->playerData->isOP = true;
+		client->playerData.isOP = true;
 
-	if(!Proto_ReadStringNoAlloc(&data, client->playerData->name)) return false;
+	if(!Proto_ReadStringNoAlloc(&data, client->playerData.name)) return false;
 
 	if(Config_GetBoolByKey(Server_Config, CFG_SANITIZE_KEY)) {
-		for(cs_char *c = client->playerData->name; *c != '\0'; c++) {
+		for(cs_char *c = client->playerData.name; *c != '\0'; c++) {
 			if((*c < '0' || *c > '9') && (*c < 'A' || *c > 'Z') && (*c < 'a' || *c > 'z') && *c != '_') {
 				Client_Kick(client, Sstor_Get("KICK_NAMECHARS"));
 				return true;
@@ -360,13 +359,13 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 		}
 	}
 
-	if(!Proto_ReadStringNoAlloc(&data, client->playerData->key)) return false;
-	String_Copy(client->playerData->displayname, 65, client->playerData->name);
+	if(!Proto_ReadStringNoAlloc(&data, client->playerData.key)) return false;
+	String_Copy(client->playerData.displayname, 65, client->playerData.name);
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *other = Clients_List[i];
-		if(!other || !other->playerData || other == client) continue;
-		if(String_CaselessCompare(client->playerData->name, other->playerData->name)) {
+		if(!other || other == client) continue;
+		if(String_CaselessCompare(client->playerData.name, other->playerData.name)) {
 			Client_Kick(client, Sstor_Get("KICK_NAMEINUSE"));
 			return true;
 		}
@@ -382,13 +381,9 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 		return true;
 	}
 
-	if(*data == 0x42) {
-		client->cpeData = Memory_Alloc(1, sizeof(CPEData));
-		client->cpeData->model = 256; // Humanoid model id
-		client->cpeData->clickDist = 160; // Default click distance
-
+	if(client->cpeData.markedAsCPE = *data == 0x42) {
 		CPE_WriteInfo(client);
-		CPEExt *ptr = headExtension;
+		CPESvExt *ptr = headExtension;
 		while(ptr) {
 			CPE_WriteExtEntry(client, ptr);
 			ptr = ptr->next;
@@ -445,8 +440,8 @@ cs_bool Handler_SetBlock(Client *client, cs_char *data) {
 }
 
 INL static cs_bool ReadClientPos(Client *client, cs_char *data) {
-	Vec *vec = &client->playerData->position, newVec;
-	Ang *ang = &client->playerData->angle, newAng;
+	Vec *vec = &client->playerData.position, newVec;
+	Ang *ang = &client->playerData.angle, newAng;
 	cs_bool changed = false;
 
 	if(Client_GetExtVer(client, EXT_ENTPOS))
@@ -457,13 +452,13 @@ INL static cs_bool ReadClientPos(Client *client, cs_char *data) {
 	Proto_ReadAng(&data, &newAng);
 
 	if(newVec.x != vec->x || newVec.y != vec->y || newVec.z != vec->z) {
-		client->playerData->position = newVec;
+		client->playerData.position = newVec;
 		Event_Call(EVT_ONMOVE, client);
 		changed = true;
 	}
 
 	if(newAng.yaw != ang->yaw || newAng.pitch != ang->pitch) {
-		client->playerData->angle = newAng;
+		client->playerData.angle = newAng;
 		Event_Call(EVT_ONROTATE, client);
 		changed = true;
 	}
@@ -476,14 +471,14 @@ cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
 
 	BlockID cb = *data++;
 	if(Client_GetExtVer(client, EXT_HELDBLOCK) == 1) {
-		if(client->cpeData->heldBlock != cb) {
+		if(client->cpeData.heldBlock != cb) {
 			onHeldBlockChange params = {
 				.client = client,
-				.prev = client->cpeData->heldBlock,
+				.prev = client->cpeData.heldBlock,
 				.curr = cb
 			};
 			Event_Call(EVT_ONHELDBLOCKCHNG, &params);
-			client->cpeData->heldBlock = cb;
+			client->cpeData.heldBlock = cb;
 		}
 	}
 
@@ -511,9 +506,9 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 			message[i] = '&';
 	}
 
-	if(client->cpeData && Client_GetExtVer(client, EXT_LONGMSG)) {
-		if(String_Append(client->cpeData->message, 193, message) && partial == 1) return true;
-		messptr = client->cpeData->message;
+	if(Client_GetExtVer(client, EXT_LONGMSG)) {
+		if(String_Append(client->cpeData.message, 193, message) && partial == 1) return true;
+		messptr = client->cpeData.message;
 	}
 
 	onMessage params = {
@@ -576,7 +571,7 @@ void CPE_WriteInfo(Client *client) {
 	PacketWriter_End(client);
 }
 
-void CPE_WriteExtEntry(Client *client, CPEExt *ext) {
+void CPE_WriteExtEntry(Client *client, CPESvExt *ext) {
 	PacketWriter_Start(client, 69);
 
 	*data++ = PACKET_EXTENTRY;
@@ -662,8 +657,8 @@ void CPE_WriteAddEntity_v2(Client *client, Client *other) {
 	Proto_WriteString(&data, Client_GetSkin(other));
 	WriteExtEntityPos(
 		&data,
-		&other->playerData->position,
-		&other->playerData->angle,
+		&other->playerData.position,
+		&other->playerData.angle,
 		Client_GetExtVer(client, EXT_ENTPOS) > 0,
 		client == other
 	);
@@ -1074,37 +1069,34 @@ cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, CLIENT_STATE_MOTD, false);
 
-	if(!Proto_ReadStringNoAlloc(&data, client->cpeData->appName)) {
-		String_Copy(client->cpeData->appName, 65, "(unknown)");
+	if(!Proto_ReadStringNoAlloc(&data, client->cpeData.appName)) {
+		String_Copy(client->cpeData.appName, 65, "(unknown)");
 		return true;
 	}
-	client->cpeData->_extCount = ntohs(*(cs_uint16 *)data);
-	return true;
+	client->cpeData.extensions.count = ntohs(*(cs_uint16 *)data);
+	if(client->cpeData.extensions.count > 512) return false;
+	client->cpeData.extensions.list = Memory_TryAlloc(
+		client->cpeData.extensions.count,
+		sizeof(struct _CPEClExt)
+	);
+	return client->cpeData.extensions.list != NULL;
 }
 
 cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, CLIENT_STATE_MOTD, false);
-	if(client->cpeData->_extCount == 0) return false;
-
-	CPEExt *tmp = Memory_Alloc(1, sizeof(struct _CPEExt));
-	if(!Proto_ReadString(&data, &tmp->name)) {
-		Memory_Free(tmp);
+	struct _CPEClExts *exts = &client->cpeData.extensions;
+	if(exts->current == exts->count) return false;
+	cs_char tempname[65];
+	if(!Proto_ReadStringNoAlloc(&data, tempname))
 		return false;
-	}
 
-	tmp->version = ntohl(*(cs_int32 *)data);
-	if(tmp->version < 1) {
-		Memory_Free((void *)tmp->name);
-		Memory_Free(tmp);
-		return false;
-	}
+	CPEClExt *ext = &exts->list[exts->current++];
+	ext->version = ntohl(*(cs_int32 *)data);
+	if(ext->version < 1) return false;
+	ext->hash = Compr_CRC32((cs_byte*)tempname, (cs_uint32)String_Length(tempname));
 
-	tmp->hash = Compr_CRC32((cs_byte*)tmp->name, (cs_uint32)String_Length(tmp->name));
-	tmp->next = client->cpeData->headExtension;
-	client->cpeData->headExtension = tmp;
-
-	if(--client->cpeData->_extCount == 0) {
+	if(exts->current == exts->count) {
 		if(Client_GetExtVer(client, EXT_CUSTOMBLOCKS)) {
 			CPE_CustomBlockSupportLevel(client, 1);
 			return true;
@@ -1120,7 +1112,7 @@ cs_bool CPEHandler_SetCBVer(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, CLIENT_STATE_MOTD, false);
 	if(Client_GetExtVer(client, EXT_CUSTOMBLOCKS) < 1) return false;
-	client->cpeData->cbLevel = *data;
+	client->cpeData.cbLevel = *data;
 	return FinishHandshake(client);
 }
 
@@ -1151,21 +1143,21 @@ cs_bool CPEHandler_TwoWayPing(Client *client, cs_char *data) {
 
 	if(pingDirection == 0) {
 		CPE_WriteTwoWayPing(client, 0, pingData);
-		if(!client->cpeData->pingStarted) {
-			CPE_WriteTwoWayPing(client, 1, ++client->cpeData->pingData);
-			client->cpeData->pingStarted = true;
-			client->cpeData->pingStart = Time_GetMSec();
+		if(!client->cpeData.pingStarted) {
+			CPE_WriteTwoWayPing(client, 1, ++client->cpeData.pingData);
+			client->cpeData.pingStarted = true;
+			client->cpeData.pingStart = Time_GetMSec();
 		}
 
 		return true;
 	} else if(pingDirection == 1) {
-		if(client->cpeData->pingStarted) {
-			client->cpeData->pingStarted = false;
-			if(client->cpeData->pingData == pingData) {
-				client->cpeData->pingTime = (cs_uint32)((Time_GetMSec() - client->cpeData->pingStart) / 2);
-				client->cpeData->pingAvgTime = (client->cpeData->_pingAvgSize * client->cpeData->pingAvgTime +
-				(cs_float)client->cpeData->pingTime) / (client->cpeData->_pingAvgSize + 1);
-				client->cpeData->_pingAvgSize += 1;
+		if(client->cpeData.pingStarted) {
+			client->cpeData.pingStarted = false;
+			if(client->cpeData.pingData == pingData) {
+				client->cpeData.pingTime = (cs_uint32)((Time_GetMSec() - client->cpeData.pingStart) / 2);
+				client->cpeData.pingAvgTime = (client->cpeData._pingAvgSize * client->cpeData.pingAvgTime +
+				(cs_float)client->cpeData.pingTime) / (client->cpeData._pingAvgSize + 1);
+				client->cpeData._pingAvgSize += 1;
 			}
 
 			return true;
@@ -1224,7 +1216,7 @@ cs_bool Packet_SetCPEHandler(EPacketID id, cs_uint32 hash, cs_int32 ver, cs_uint
 }
 
 void CPE_RegisterServerExtension(cs_str name, cs_int32 version) {
-	CPEExt *tmp = Memory_Alloc(1, sizeof(struct _CPEExt));
+	CPESvExt *tmp = Memory_Alloc(1, sizeof(struct _CPESvExt));
 	tmp->name = name;
 	tmp->version = version;
 	tmp->next = headExtension;
@@ -1300,7 +1292,7 @@ void Packet_RegisterDefault(void) {
 
 void Packet_UnregisterAll(void) {
 	while(headExtension != NULL) {
-		CPEExt *tmp = headExtension;
+		CPESvExt *tmp = headExtension;
 		headExtension = headExtension->next;
 		Memory_Free(tmp);
 	}

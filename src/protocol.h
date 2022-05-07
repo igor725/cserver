@@ -56,7 +56,7 @@ NOINL void Vanilla_WriteUserType(Client *client, cs_byte type);
 */
 
 NOINL void CPE_WriteInfo(Client *client);
-NOINL void CPE_WriteExtEntry(Client *client, CPEExt *ext);
+NOINL void CPE_WriteExtEntry(Client *client, CPESvExt *ext);
 NOINL void CPE_WriteClickDistance(Client *client, cs_uint16 dist);
 NOINL void CPE_CustomBlockSupportLevel(Client *client, cs_byte level);
 NOINL void CPE_WriteInventoryOrder(Client *client, cs_byte order, BlockID block);

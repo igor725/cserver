@@ -69,8 +69,8 @@ typedef struct _Client {
 	NetBuffer netbuf; // Прикол для обмена данными
 	PacketData packetData; // Стейт получения пакета от клиента
 	MapData mapData; // Стейт отправки карты клиенту
-	CPEData *cpeData; // В случае vanilla клиента эта структура не создаётся
-	PlayerData *playerData; // Создаётся при получении hanshake пакета
+	CPEData cpeData; // CPE-информация о клиенте
+	PlayerData playerData; // Создаётся при получении hanshake пакета
 	KListField *headNode; // Последняя созданная ассоциативная нода у клиента
 	WebSock *websock; // Создаётся, если клиент был определён как браузерный
 	Mutex *mutex; // Мьютекс записи, на время отправки пакета клиенту он лочится

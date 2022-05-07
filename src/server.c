@@ -146,9 +146,7 @@ static void DoNetTick(void) {
 		Socket_SetNonBlocking(fd, true);
 		Client *tmp = Memory_TryAlloc(1, sizeof(Client));
 		if(tmp) {
-			tmp->mutex = Mutex_Create();
-			tmp->addr = caddr.sin_addr.s_addr;
-			NetBuffer_Init(&tmp->netbuf, fd);
+			Client_Init(tmp, fd, caddr.sin_addr.s_addr);
 			tmp->id = TryToGetIDFor(tmp);
 			if(tmp->id != CLIENT_SELF) {
 				tmp->lastmsg = Time_GetMSec();
