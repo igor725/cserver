@@ -49,6 +49,10 @@ cs_bool Socket_Init(void) {
 	return true;
 }
 
+Socket Socket_New(void) {
+	return socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+}
+
 cs_int32 Socket_SetAddr(struct sockaddr_in *ssa, cs_str ip, cs_uint16 port) {
 	ssa->sin_family = AF_INET;
 	ssa->sin_port = htons(port);

@@ -381,7 +381,7 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 		return true;
 	}
 
-	if(client->cpeData.markedAsCPE = *data == 0x42) {
+	if((client->cpeData.markedAsCPE = (*data == 0x42)) == true) {
 		CPE_WriteInfo(client);
 		CPESvExt *ptr = headExtension;
 		while(ptr) {

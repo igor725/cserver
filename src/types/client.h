@@ -68,11 +68,11 @@ typedef struct _Client {
 	cs_ulong addr; // ipv4 адрес клиента
 	NetBuffer netbuf; // Прикол для обмена данными
 	PacketData packetData; // Стейт получения пакета от клиента
-	MapData mapData; // Стейт отправки карты клиенту
-	CPEData cpeData; // CPE-информация о клиенте
-	PlayerData playerData; // Создаётся при получении hanshake пакета
+	MapData mapData; // Стейт отправки карты игроку
+	CPEData cpeData; // CPE-информация игрока
+	PlayerData playerData; // Информация о игроке
 	KListField *headNode; // Последняя созданная ассоциативная нода у клиента
 	WebSock *websock; // Создаётся, если клиент был определён как браузерный
-	Mutex *mutex; // Мьютекс записи, на время отправки пакета клиенту он лочится
+	Mutex *mutex; // Мьютекс записи, на время отправки пакета по сокету он лочится
 } Client;
 #endif

@@ -47,6 +47,10 @@ cs_bool Socket_Init(void) {
 	return WSAStartup(MAKEWORD(2, 2), &ws) != SOCKET_ERROR;
 }
 
+Socket Socket_New(void) {
+	return WSASocketA(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0);
+}
+
 cs_int32 Socket_SetAddr(struct sockaddr_in *ssa, cs_str ip, cs_uint16 port) {
 	INT size = sizeof(struct sockaddr_in);
 

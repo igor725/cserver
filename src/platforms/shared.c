@@ -106,10 +106,6 @@ cs_bool Socket_SetAddrGuess(struct sockaddr_in *ssa, cs_str host, cs_uint16 port
 	return ret == 1;
 }
 
-Socket Socket_New(void) {
-	return socket(AF_INET, SOCK_STREAM, 0);
-}
-
 cs_bool Socket_Bind(Socket sock, struct sockaddr_in *addr) {
 #if defined(CORE_USE_UNIX)
 	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &(cs_int32){1}, 4) < 0) {
