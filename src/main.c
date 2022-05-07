@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		if(!nochdir) {
-			cs_char *lastSlash = (cs_char *)String_LastChar(argv[0], *PATH_DELIM);
+			cs_char *lastSlash = String_LastChar(argv[0], *PATH_DELIM);
 			if(lastSlash) {
 				// Отсоединяем имя запускаемого файла и
 				// тем самым получаем путь до него.

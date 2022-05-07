@@ -155,7 +155,7 @@ cs_bool Config_Load(CStore *store) {
 			String_Copy(comment, CFG_MAX_LEN, line + 1);
 			continue;
 		}
-		cs_char *value = (cs_char *)String_FirstChar(line, '=');
+		cs_char *value = String_FirstChar(line, '=');
 		if(!value) {
 			store->error.code = CONFIG_ERROR_PARSE;
 			store->error.extra = CONFIG_EXTRA_PARSE_LINEFORMAT;

@@ -114,11 +114,11 @@ cs_int32 String_FormatBuf(cs_char *buf, cs_size len, cs_str str, ...) {
 	return wrlen;
 }
 
-cs_str String_LastChar(cs_str str, cs_char sym) {
+cs_char *String_LastChar(cs_str str, cs_char sym) {
 	return strrchr(str, sym);
 }
 
-cs_str String_FirstChar(cs_str str, cs_char sym) {
+cs_char *String_FirstChar(cs_str str, cs_char sym) {
 	return strchr(str, sym);
 }
 

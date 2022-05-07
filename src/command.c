@@ -98,10 +98,10 @@ INL static void SendOutput(Client *caller, cs_char *ret) {
 	if(caller) {
 		cs_char *tmp = ret;
 		while(*tmp) {
-			cs_char *nlptr = (cs_char *)String_FirstChar(tmp, '\r');
+			cs_char *nlptr = String_FirstChar(tmp, '\r');
 			if(nlptr) *nlptr++ = '\0';
 			else nlptr = tmp;
-			nlptr = (cs_char *)String_FirstChar(nlptr, '\n');
+			nlptr = String_FirstChar(nlptr, '\n');
 			if(nlptr) *nlptr++ = '\0';
 			Client_Chat(caller, 0, tmp);
 			if(!nlptr) break;
@@ -115,18 +115,8 @@ cs_bool Command_Handle(cs_char *str, Client *caller) {
 	if(*str == '/' && *++str == '\0') return false;
 
 	cs_char ret[MAX_CMD_OUT] = {0};
-	cs_char *args = str;
-
-	while(1) {
-		++args;
-		if(*args == '\0') {
-			args = NULL;
-			break;
-		} else if(*args == 32) {
-			*args++ = '\0';
-			break;
-		}
-	}
+	cs_char *args = String_FirstChar(str, ' ');
+	if(args) *args++ = '\0';
 
 	Command *cmd = Command_GetByName(str);
 	if(cmd) {

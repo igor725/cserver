@@ -8,6 +8,7 @@
 #include "core.h"
 #include "platform.h"
 #include "cserror.h"
+#include "str.h"
 
 cs_bool Memory_Init(void) {return true;}
 void Memory_Uninit(void) {}

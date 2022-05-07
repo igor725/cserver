@@ -16,9 +16,8 @@ String_FormatBuf(buf, sz, fmt, ##__VA_ARGS__), \
 String_Append(ccdata->out, MAX_CMD_OUT, buf))
 
 #define COMMAND_TESTOP() \
-if(ccdata->caller && !Client_IsOP(ccdata->caller)) { \
-	COMMAND_PRINT(Sstor_Get("CMD_NOPERM")); \
-}
+if(ccdata->caller && !Client_IsOP(ccdata->caller)) \
+	COMMAND_PRINT(Sstor_Get("CMD_NOPERM"));
 
 #define COMMAND_PRINTUSAGE \
 COMMAND_PRINTF("Usage: %s", cmdUsage)

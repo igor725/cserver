@@ -289,7 +289,7 @@ cs_uint64 Time_GetMSec(void) {
 
 cs_double Time_GetMSecD(void) {
 	FILETIME ft; GetSystemTimeAsFileTime(&ft);
-	double time = ft.dwLowDateTime / 1.0e7 +
+	cs_double time = ft.dwLowDateTime / 1.0e7 +
 		ft.dwHighDateTime * (4294967296.0 / 1.0e7);
 	return (time - 11644473600.0);
 }

@@ -308,6 +308,7 @@ cs_bool Server_Init(void) {
 			World_Add(tmp);
 		}
 	} else {
+		// TODO: Переписать это нечто
 		cs_bool skip_creating = false;
 		cs_byte state = 0, pos = 0;
 		cs_char buffer[64];
@@ -346,7 +347,7 @@ cs_bool Server_Init(void) {
 				} else if(!skip_creating && state == 1) {
 					cs_char *del = buffer, *prev = buffer;
 					for(cs_uint16 i = 0; i < 3; i++) {
-						del = (cs_char *)String_FirstChar(del, 'x');
+						del = String_FirstChar(del, 'x');
 						if(del) *del++ = '\0'; else if(i != 2) break;
 						((cs_uint16 *)&dims)[i] = (cs_uint16)String_ToInt(prev);
 						prev = del;

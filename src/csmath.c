@@ -2,7 +2,7 @@
 #include "csmath.h"
 #include "platform.h"
 
-cs_float Math_Sqrt(const cs_float f) {
+cs_float Math_Sqrt(cs_float f) {
 	union {
 		cs_int32 i;
 		cs_float f;
@@ -15,20 +15,6 @@ cs_float Math_Sqrt(const cs_float f) {
 	u.f = 0.25f * u.f + f / u.f;
 
 	return u.f;
-}
-
-cs_float Math_Distance(Vec *v1, Vec *v2) {
-	cs_float dx = (v1->x - v2->x),
-	dy = (v1->y - v2->y),
-	dz = (v1->z - v2->z);
-	return Math_Sqrt((dx * dx) + (dy * dy) + (dz * dz));
-}
-
-void Math_Normalize(Vec *src, Vec *dst) {
-	cs_float len = Math_Sqrt((src->x * src->x) + (src->y * src->y) + (src->z * src->z));
-	dst->x = src->x / len;
-	dst->y = src->y / len;
-	dst->z = src->z / len;
 }
 
 #define RND_VALUE (0x5DEECE66DULL)

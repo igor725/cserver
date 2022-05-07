@@ -1,6 +1,7 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 #include "core.h"
+#include "csmath.h"
 
 typedef struct _SVec {
 	cs_int16 x, y, z;
@@ -43,4 +44,5 @@ static INL cs_bool Ang_Compare(const Ang *a, const Ang *b) {
 #define Vec_IsZero(v) ((v).x == 0 && (v).y == 0 && (v).z == 0)
 #define Vec_HaveZero(v) ((v).x == 0 || (v).y == 0 || (v).z == 0)
 #define Vec_Scale(v, s) (v).x *= s, (v).y *= s, (v).z *= s
+#define Vec_Distance(a, b) Math_Sqrt(Math_Sq((a).x - (b).x) + Math_Sq((a).y - (b).y) + Math_Sq((a).z - (b).z))
 #endif // VECTOR_H
