@@ -525,11 +525,8 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 		if(Event_Call(EVT_ONMESSAGE, &params)) {
 			cs_char formatted[320] = {0};
 
-			if(String_FormatBuf(formatted, 320, "<%s&f>: %s", Client_GetDisplayName(client), params.message)) {
-				for(ClientID i = 0; i < MAX_CLIENTS; i++) 
-					if(Clients_List[i])
-						Client_Chat(Clients_List[i], params.type, formatted);
-			}
+			if(String_FormatBuf(formatted, 320, "<%s&f>: %s", Client_GetDisplayName(client), params.message))
+				Client_Chat(CLIENT_BROADCAST, params.type, formatted);
 		}
 	}
 
