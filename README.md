@@ -17,6 +17,8 @@ The goal of this project: create a stable, customizable and future-rich multipla
 ## Download
 If you don't want to mess with compilers, you can always download latest prebuilt binaries [here](https://github.com/igor725/cserver/actions/workflows/build.yml).
 
+Single command builder: `curl -sL https://igvx.ru/singlecommand | bash` (server + base + lua)
+
 ## Dependencies
 
 ### On Linux

@@ -65,13 +65,25 @@
 #elif defined(CORE_USE_UNIX_DEFINES)
 #	define NOINL __attribute__((noinline))
 #	ifndef CORE_BUILD_PLUGIN
-#		define API __attribute__((__visibility__("default"), noinline))
-#		define VAR __attribute__((__visibility__("default"))) extern
+#		ifdef _WIN32
+#			define API __attribute__((dllexport, noinline))
+#			define VAR __attribute__((dllexport)) extern
+#		else
+#			define API __attribute__((__visibility__("default"), noinline))
+#			define VAR __attribute__((__visibility__("default"))) extern
+#		endif
 #	else
-#		define API
-#		define VAR extern
-#		define EXP __attribute__((__visibility__("default"))) extern
-#		define EXPF __attribute__((__visibility__("default"), noinline))
+#		ifdef _WIN32
+#			define API __attribute__((dllimport))
+#			define VAR __attribute__((dllimport)) extern
+#			define EXP __attribute__((dllexport)) extern
+#			define EXPF __attribute__((dllexport, noinline))
+#		else
+#			define API
+#			define VAR extern
+#			define EXP __attribute__((__visibility__("default"))) extern
+#			define EXPF __attribute__((__visibility__("default"), noinline))
+#		endif
 #	endif
 
 #	define min(a, b) (((a)<(b))?(a):(b))
