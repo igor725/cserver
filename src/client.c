@@ -343,7 +343,7 @@ cs_bool Client_TeleportToSpawn(Client *client) {
 	);
 }
 
-INL static cs_uint32 CopyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_char *color) {
+INL static cs_uint32 CopyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_char *color, cs_bool sanitize) {
 	if(*msg == '\0') return 0;
 	cs_uint32 maxlen = 64;
 
@@ -366,7 +366,12 @@ INL static cs_uint32 CopyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_
 		cs_char prevsym = *msg++,
 		nextsym = *msg;
 
-		if(prevsym != '\r') *part++ = prevsym;
+		if(prevsym != '\r') {
+			if(sanitize)
+				*part++ = prevsym < ' ' || prevsym > '~' ? '?' : prevsym;
+			else
+				*part++ = prevsym;
+		}
 		if(nextsym == '\0' || nextsym == '\n') break;
 		if(prevsym == '&' && ISHEX(nextsym)) *color = nextsym;
 	}
@@ -379,29 +384,28 @@ void Client_Chat(Client *client, EMesgType type, cs_str message) {
 	if(client && Client_IsBot(client)) return;
 	cs_uint32 msgLen = (cs_uint32)String_Length(message);
 
-	if(msgLen > 64 && type == MESSAGE_TYPE_CHAT) {
+	if(client && type == MESSAGE_TYPE_CHAT) {
 		cs_char color = 0, part[65] = {0};
 		cs_uint32 parts = (msgLen / 60) + 1;
 		for(cs_uint32 i = 0; i < parts; i++) {
-			cs_uint32 len = CopyMessagePart(message, part, i, &color);
+			cs_uint32 len = CopyMessagePart(message, part, i, &color, !client->cpeData.markedAsCPE);
 			if(len > 0) {
-				Client_Chat(client, type, part);
+				Vanilla_WriteChat(client, type, part);
 				message += len;
 			}
 		}
+
 		return;
 	}
 
 	if(client == CLIENT_BROADCAST) {
 		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 			Client *bclient = Clients_List[i];
-			if(bclient) Vanilla_WriteChat(bclient, type, message);
+			if(bclient) Client_Chat(bclient, type, message);
 		}
 
 		return;
 	}
-
-	Vanilla_WriteChat(client, type, message);
 }
 
 cs_bool Client_CheckState(Client *client, EClientState state) {

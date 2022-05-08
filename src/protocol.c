@@ -512,36 +512,23 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 		messptr = client->cpeData.message;
 	}
 
-	onMessage params = {
-		.client = client,
-		.message = messptr,
-		.type = MESSAGE_TYPE_CHAT
-	};
+	if(*messptr == '/') {
+		if(!Command_Handle(messptr, client))
+			Vanilla_WriteChat(client, MESSAGE_TYPE_CHAT, Sstor_Get("CMD_UNK"));
+	} else {
+		onMessage params = {
+			.client = client,
+			.message = messptr,
+			.type = MESSAGE_TYPE_CHAT
+		};
 
-	if(Event_Call(EVT_ONMESSAGE, &params)) {
-		cs_char formatted[320] = {0}, formatted_san[320] = {0};
+		if(Event_Call(EVT_ONMESSAGE, &params)) {
+			cs_char formatted[320] = {0};
 
-		if(*params.message == '/') {
-			Log_Warn("%s&f executed command: %s", Client_GetName(client), params.message);
-			if(!Command_Handle(params.message, client))
-				Vanilla_WriteChat(client, params.type, Sstor_Get("CMD_UNK"));
-		} else {
-			cs_int32 flen = String_FormatBuf(formatted, 320, "<%s&f>: %s", Client_GetDisplayName(client), params.message);
-			if(flen > 0) {
-				for(cs_int32 j = 0; j < flen; j++) {
-					formatted_san[j] = formatted[j] < ' ' || formatted[j] > '~' ? '?' : formatted[j];
-				}
-
-				for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-					Client *other = Clients_List[i];
-					if(!other) continue;
-					if(Client_GetExtVer(other, EXT_CP437) < 1)
-						Client_Chat(other, params.type, formatted_san);
-					else
-						Client_Chat(other, params.type, formatted);
-				}
-
-				Log_Chat(formatted_san);
+			if(String_FormatBuf(formatted, 320, "<%s&f>: %s", Client_GetDisplayName(client), params.message)) {
+				for(ClientID i = 0; i < MAX_CLIENTS; i++) 
+					if(Clients_List[i])
+						Client_Chat(Clients_List[i], params.type, formatted);
 			}
 		}
 	}

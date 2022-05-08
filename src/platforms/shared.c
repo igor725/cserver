@@ -156,7 +156,7 @@ cs_bool Directory_Ensure(cs_str path) {
 
 cs_bool DLib_LoadAll(cs_str const lib[], cs_str const symlist[], void **ctx) {
 	ctx[0] = NULL;
-	while(!DLib_Load(*lib, ctx) && *(++lib));
+	while(*lib && !DLib_Load(*lib++, ctx));
 
 	for(cs_int32 i = 0; ctx[0] && symlist[i]; i++)
 		if(!DLib_GetSym(ctx[0], symlist[i], &ctx[i + 1])) {
