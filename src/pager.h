@@ -14,5 +14,5 @@ typedef struct _Pager {
 #define Pager_Step(s) if((s).state-- > 0) continue; else if((s).state < -(s).plen) continue;
 #define Pager_IsDirty(s) (((s).state < -(s).plen) || ((s).pcur != 1))
 #define Pager_CurrentPage(s) ((s).pcur)
-#define Pager_CountPages(s) (((s).plen * ((s).pcur - 1) -(s).state) / (s).plen)
+#define Pager_CountPages(s) (((s).plen * ((s).pcur - 1) - (s).state) / (s).plen)
 #endif

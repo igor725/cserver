@@ -12,6 +12,7 @@
 #include "heartbeat.h"
 #include "strstor.h"
 #include "compr.h"
+#include "vector.h"
 #include "world.h"
 #include "config.h"
 #include "cpe.h"
@@ -451,13 +452,13 @@ INL static cs_bool ReadClientPos(Client *client, cs_char *data) {
 
 	Proto_ReadAng(&data, &newAng);
 
-	if(newVec.x != vec->x || newVec.y != vec->y || newVec.z != vec->z) {
+	if(!Vec_Compare(&newVec, vec)) {
 		client->playerData.position = newVec;
 		Event_Call(EVT_ONMOVE, client);
 		changed = true;
 	}
 
-	if(newAng.yaw != ang->yaw || newAng.pitch != ang->pitch) {
+	if(!Ang_Compare(&newAng, ang)) {
 		client->playerData.angle = newAng;
 		Event_Call(EVT_ONROTATE, client);
 		changed = true;

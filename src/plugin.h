@@ -36,11 +36,17 @@
 	cs_bool Plugin_LoadDll(cs_str name);
 
 	/**
-	 * @brief 
+	 * @brief Выгружает указанный плагин из памяти.
+	 * Параметр force может быть установлен в true только
+	 * и только тогда, когда сервер гарантированно не будет
+	 * больше взаимодействовать с эвентами, командами и прочим.
+	 * То есть перед завершением работы. Если проигнорировать
+	 * это правило, то в лучшем случае данные с которыми
+	 * оперирует плагин будут утеряны, в худшем - сервер крашнется.
 	 * 
 	 * @param plugin название плагина
-	 * @param force будет ли проигнорировано значение, которое вернёт функция Plugin_Unload
-	 * (может привести к потере данных!)
+	 * @param force будет ли проигнорировано значение, которое вернёт функция Plugin_Unload.
+	 * 
 	 * @return true - плагин был выгружен успешно, false - что-то не так
 	 */
 	cs_bool Plugin_UnloadDll(Plugin *plugin, cs_bool force);
@@ -94,11 +100,13 @@
 	 * @param size размер структуры интерфейса
 	 */
 	EXP void Plugin_RecvInterface(cs_str name, void *ptr, cs_size size);
-	EXP cs_int32 Plugin_ApiVer, Plugin_Version;
 
 	// Небольшой макрос для облегчения жизни при объявлении интерфейсов плагина
 #	define Plugin_DeclareInterfaces EXP PluginInterface Plugin_Interfaces[]; \
 	PluginInterface Plugin_Interfaces[] = 
+	// Макросы для создания массива интерфейсов
+#	define PLUGIN_IFACE_END {NULL, NULL, 0}
+#	define PLUGIN_IFACE_ADD(n, i) {n, (void *)&(i), sizeof(i)},
 
 	/**
 	 * @brief Макрос, который должен выполнить каждый плагин. Он устанавливает версию API,
@@ -111,10 +119,7 @@
 	 * ещё не сформирован окончательно.
 	 */
 #	define Plugin_SetVersion(ver) cs_int32 Plugin_ApiVer = PLUGIN_API_NUM, Plugin_Version = ver
-
-	// Макросы для создания массива интерфейсов
-#	define PLUGIN_IFACE_END {NULL, NULL, 0}
-#	define PLUGIN_IFACE_ADD(n, i) {n, &(i), sizeof(i)},
+	EXP cs_int32 Plugin_ApiVer, Plugin_Version;
 #endif
 
 /**

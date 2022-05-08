@@ -25,7 +25,7 @@ static cs_bool Ensure(GrowingBuffer *self, cs_uint32 size) {
 	return true;
 }
 
-static void Cleanup(GrowingBuffer *self) {
+static INL void Cleanup(GrowingBuffer *self) {
 	if(self->buffer) {
 		Memory_Free(self->buffer);
 		self->buffer = NULL;
