@@ -203,7 +203,7 @@ COMMAND_FUNC(Say) {
 }
 
 COMMAND_FUNC(Plugin) {
-	COMMAND_SETUSAGE("/plugin <load/unload/ifaces/list> [pluginName]");
+	COMMAND_SETUSAGE("/plugin <load/unload/enable/disable/ifaces/list> [pluginName]");
 	cs_char temparg1[64], temparg2[64];
 	Plugin *plugin;
 
@@ -245,24 +245,52 @@ COMMAND_FUNC(Plugin) {
 
 			if(String_CaselessCompare(temparg1, "load")) {
 				if(!Plugin_Get(temparg2)) {
-					if(Plugin_LoadDll(temparg2)) {
-						COMMAND_PRINTF("Plugin \"%s\" loaded.", temparg2);
-					} else {
-						COMMAND_PRINT("Something went wrong.");
-					}
+					if(Plugin_LoadDll(temparg2))
+						COMMAND_PRINTF("Plugin \"%s\" loaded", temparg2);
+					COMMAND_PRINT("Something went wrong");
 				}
-				COMMAND_PRINTF("Plugin \"%s\" is already loaded.", temparg2);
-			} else {
+				COMMAND_PRINTF("Plugin \"%s\" is already loaded", temparg2);
+			}else {
 				plugin = Plugin_Get(temparg2);
-				if(!plugin) {
-					COMMAND_PRINTF("Plugin \"%s\" is not loaded.", temparg2);
+				cs_char oldname[MAX_PATH], newname[MAX_PATH];
+				if(String_CaselessCompare(temparg1, "enable")) {
+					if(plugin) COMMAND_PRINT("This plugin is already loaded");
+
+					if(String_FormatBuf(newname, MAX_PATH, "plugins" PATH_DELIM "%s", temparg2) &&
+					String_FormatBuf(oldname, MAX_PATH, "plugins" PATH_DELIM "disabled" PATH_DELIM "%s", temparg2)) {
+						if(File_Rename(oldname, newname)) {
+							if(Plugin_LoadDll(temparg2))
+								COMMAND_PRINTF("Now plugin \"%s\" is enabled", temparg2);
+							else
+								COMMAND_PRINTF("Plugin \"%s\" enabled but not loaded", temparg2);
+						} else
+							COMMAND_PRINT("Failed to enable specified plugin");
+					}
+
+					COMMAND_PRINT("Something went wrong");
+				} else if(String_CaselessCompare(temparg1, "disable")) {
+					if(plugin && !Plugin_UnloadDll(plugin, false))
+						COMMAND_PRINT("Failed to unload specified plugin");
+
+					if(String_FormatBuf(oldname, MAX_PATH, "plugins" PATH_DELIM "%s", temparg2) &&
+					String_FormatBuf(newname, MAX_PATH, "plugins" PATH_DELIM "disabled" PATH_DELIM "%s", temparg2)) {
+						if(File_Rename(oldname, newname))
+							COMMAND_PRINTF("Now plugin \"%s\" is disabled", temparg2);
+						else
+							COMMAND_PRINT("Failed to disable specified plugin");
+					}
+
+					COMMAND_PRINT("Something went wrong");
 				}
+
+				if(!plugin)
+					COMMAND_PRINTF("Plugin \"%s\" is not loaded.", temparg2);
 
 				if(String_CaselessCompare(temparg1, "unload")) {
 					if(Plugin_UnloadDll(plugin, false)) {
-						COMMAND_PRINTF("Plugin \"%s\" successfully unloaded.", temparg2);
+						COMMAND_PRINTF("Plugin \"%s\" successfully unloaded", temparg2);
 					} else {
-						COMMAND_PRINTF("Plugin \"%s\" cannot be unloaded.", temparg2);
+						COMMAND_PRINTF("Plugin \"%s\" cannot be unloaded", temparg2);
 					}
 				} else if(String_CaselessCompare(temparg1, "ifaces")) {
 					COMMAND_APPENDF(temparg1, 64, "&e%s interfaces:", temparg2);

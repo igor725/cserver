@@ -284,6 +284,7 @@ cs_bool Plugin_UnloadDll(Plugin *plugin, cs_bool force) {
 
 void Plugin_LoadAll(void) {
 	Directory_Ensure("plugins");
+	Directory_Ensure("plugins" PATH_DELIM "disabled");
 
 	DirIter pIter;
 	if(Iter_Init(&pIter, "plugins", DLIB_EXT)) {
