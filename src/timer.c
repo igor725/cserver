@@ -6,6 +6,12 @@
 static AListField *headTimer = NULL;
 
 Timer *Timer_Add(cs_int32 ticks, cs_uint32 delay, TimerCallback callback, void *ud) {
+	AListField *field;
+	List_Iter(field, headTimer) {
+		Timer *htimer = (Timer *)field->value.ptr;
+		if(htimer->callback == callback)
+			return NULL;
+	}
 	Timer *timer = Memory_Alloc(1, sizeof(Timer));
 	timer->left = ticks;
 	timer->delay = delay;
@@ -25,8 +31,10 @@ INL static void removeTimerByField(AListField *field) {
 void Timer_Remove(Timer *timer) {
 	AListField *field;
 	List_Iter(field, headTimer) {
-		if(timer == field->value.ptr)
+		if(timer == field->value.ptr) {
 			removeTimerByField(field);
+			break;
+		}
 	}
 }
 
