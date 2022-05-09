@@ -239,8 +239,9 @@ INL static void freeMemory(Heartbeat *self) {
 		Waitable_Wait(self->isdone);
 	}
 
-	if(self->playurl) Memory_Free((void *)self->playurl);
 	if(self->domain) Memory_Free((void *)self->domain);
+	if(self->reqpath) Memory_Free((void *)self->reqpath);
+	if(self->playurl) Memory_Free((void *)self->playurl);
 	Waitable_Free(self->isdone);
 	Memory_Free(self);
 }
