@@ -23,6 +23,7 @@ API cs_bool Iter_Init(DirIter *iter, cs_str path, cs_str ext);
 API cs_bool Iter_Next(DirIter *iter);
 API void Iter_Close(DirIter *iter);
 
+API cs_error File_Access(cs_str path, cs_int32 mode);
 API cs_bool File_Rename(cs_str path, cs_str newpath);
 API cs_file File_Open(cs_str path, cs_str mode);
 API cs_file File_ProcOpen(cs_str cmd, cs_str mode);

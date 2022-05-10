@@ -34,6 +34,13 @@ void Memory_Free(void *ptr) {
 	free(ptr);
 }
 
+cs_error File_Access(cs_str path, cs_int32 mode) {
+	if(access(path, mode) < 0)
+		return Thread_GetError();
+	
+	return 0;
+}
+
 cs_bool File_Rename(cs_str path, cs_str newpath) {
 	return rename(path, newpath) == 0;
 }

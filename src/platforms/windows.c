@@ -2,6 +2,7 @@
 #include "platform.h"
 #include "cserror.h"
 #include "str.h"
+#include <io.h>
 
 HANDLE hHeap = NULL;
 
@@ -28,6 +29,10 @@ void *Memory_TryRealloc(void *oldptr, cs_size new) {
 
 void Memory_Free(void *ptr) {
 	HeapFree(hHeap, 0, ptr);
+}
+
+cs_error File_Access(cs_str path, cs_int32 mode) {
+	return _access_s(path, mode);
 }
 
 cs_bool File_Rename(cs_str path, cs_str newpath) {
