@@ -64,6 +64,7 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("SV_START", "Server started on %s:%d");
 	Sstor_Set("SV_BIND_FAIL", "Failed to bind %s:%d");
 	Sstor_Set("SV_NOWORLDS", "No worlds loaded");
+	Sstor_Set("SV_WPARSE_ERR", "Failed to parse worlds-list: string too long");
 	Sstor_Set("SV_WLOAD_ERR", "Failed to %s world %s: (%d, %d)");
 	Sstor_Set("SV_CFGL_ERR", "Failed to parse line %d from %s: (%s, %s)");
 	Sstor_Set("SV_CFG_ERR", "Failed to %s %s: (%s, %s)");

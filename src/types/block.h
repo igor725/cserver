@@ -4,6 +4,19 @@
 #include "types/world.h"
 
 /**
+ * @name BDF_*
+ * 
+ * Флаги для динамических блоков.
+ * 
+ */
+/* @{ */
+#define BDF_EXTENDED   BIT(0) /** Блок использует расширенную спецификацию */
+#define BDF_DYNALLOCED BIT(1) /** Блок был создан в динамической памяти */
+#define BDF_UPDATED    BIT(2) /** Блок был разослан клиентам */
+#define BDF_UNDEFINED  BIT(3) /** Блок удалён */
+/* @} */
+
+/**
  * @brief Перечисление граней блока.
  * 
  */

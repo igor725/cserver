@@ -308,10 +308,10 @@ cs_bool Server_Init(void) {
 			World_Add(tmp);
 		}
 	} else {
-		// TODO: Переписать это нечто
+		// TODO: Написать нормальный парсер для параметра worlds-list
 		cs_bool skip_creating = false;
 		cs_byte state = 0, pos = 0;
-		cs_char buffer[64];
+		cs_char buffer[65];
 		SVec dims = {0, 0, 0};
 		World *tmp = NULL;
 
@@ -377,8 +377,12 @@ cs_bool Server_Init(void) {
 				else
 					state = 0;
 				pos = 0;
-			} else
-				buffer[pos++] = *worlds;
+			} else {
+				if(pos < 64)
+					buffer[pos++] = *worlds;
+				else
+					(Log_Error(Sstor_Get("SV_WPARSE_ERR")), Process_Exit(1));
+			}
 			worlds++;
 		} while(state < 3);
 	}
@@ -466,7 +470,7 @@ INL static void UnloadAllWorlds(void) {
 			AList_Remove(&World_Head, tmp);
 			World_Free(world);
 		} else {
-			Thread_Sleep(1000);
+			Thread_Sleep(1500);
 			attempt++;
 		}
 	}

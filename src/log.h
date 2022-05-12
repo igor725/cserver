@@ -10,7 +10,7 @@
 #define LOG_WARN    BIT(3)
 #define LOG_DEBUG   BIT(4)
 #define LOG_COLORS  BIT(5)
-#define LOG_REPEAT  BIT(6)
+#define LOG_REPEAT  BIT(6) // Пока что не работает корректно
 #define LOG_ALL     0x0F
 #define LOG_BUFSIZE 8192
 

@@ -6,7 +6,7 @@
 #include "strstor.h"
 #include "list.h"
 
-Plugin *Plugins_List[MAX_PLUGINS] = {0};
+Plugin *Plugins_List[MAX_PLUGINS] = {NULL};
 
 static void AddInterface(Plugin *requester, PluginInterface *iface) {
 	void *ptr = Memory_Alloc(1, iface->isize);
