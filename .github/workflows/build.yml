@@ -19,7 +19,9 @@ jobs:
           os: ubuntu
           arch: x86_64
           abi: gnu
-          cfg: sudo apt install -y zlib1g-dev
+          cfg: |
+            sudo apt update
+            sudo apt install -y zlib1g-dev
           build: ./build
           testbin: ./core/out/x86_64-linux-gnu/server
 
@@ -39,7 +41,9 @@ jobs:
           arch: aarch64
           abi: gnu
           hostcc: x86_64-linux-gnu-gcc
-          cfg: sudo apt install -y gcc-aarch64-linux-gnu
+          cfg: |
+            sudo apt update
+            sudo apt install -y gcc-aarch64-linux-gnu
           build: ./build
 
         - name: Ubuntu armv7hf
@@ -47,7 +51,9 @@ jobs:
           arch: arm
           abi: gnueabihf
           hostcc: i686-linux-gnu-gcc
-          cfg: sudo apt install -y gcc-arm-linux-gnueabihf gcc-i686-linux-gnu
+          cfg: |
+            sudo apt update
+            sudo apt install -y gcc-arm-linux-gnueabihf gcc-i686-linux-gnu
           build: ./build
 
         - name: Windows x64
