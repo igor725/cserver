@@ -330,7 +330,6 @@ static cs_bool ReadInfo(World *world, cs_file fp) {
 
 THREAD_FUNC(WorldSaveThread) {
 	World *world = (World *)param;
-	World_Lock(world, 0);
 	cs_uint32 wsize = 0;
 	cs_bool compr_ok;
 
@@ -447,6 +446,8 @@ cs_bool World_Save(World *world) {
 	}
 	if(!World_IsModified(world))
 		return World_IsReadyToPlay(world);
+	
+	World_Lock(world, 0);
 	Thread_Create(WorldSaveThread, world, true);
 	return true;
 }
@@ -465,7 +466,6 @@ EWorldError World_PopError(World *world, EWorldExtra *extra) {
 
 THREAD_FUNC(WorldLoadThread) {
 	World *world = (World *)param;
-	World_Lock(world, 0);
 	cs_bool compr_ok;
 
 	if((compr_ok = Compr_Init(&world->compr, COMPR_TYPE_UNGZIP)) == false) {
@@ -525,6 +525,8 @@ cs_bool World_Load(World *world) {
 	}
 	if(ISSET(world->flags, WORLD_FLAG_LOADED))
 		return false;
+
+	World_Lock(world, 0);
 	Thread_Create(WorldLoadThread, world, false);
 	return true;
 }
