@@ -371,7 +371,7 @@ THREAD_FUNC(WorldSaveThread) {
 		} while(world->compr.state != COMPR_STATE_DONE);
 	} else {
 		world->error.code = WORLD_ERROR_IOFAIL;
-		world->error.code = WORLD_EXTRA_IO_WRITE;
+		world->error.extra = WORLD_EXTRA_IO_WRITE;
 		Compr_Reset(&world->compr);
 		File_Close(fp);
 		World_Unlock(world);
@@ -506,7 +506,7 @@ THREAD_FUNC(WorldLoadThread) {
 		world->error.extra = WORLD_EXTRA_NOINFO;
 	} else {
 		world->error.code = WORLD_ERROR_INFOREAD;
-		world->error.code = WORLD_EXTRA_NOINFO;
+		world->error.extra = WORLD_EXTRA_NOINFO;
 	}
 
 	if(fp) File_Close(fp);

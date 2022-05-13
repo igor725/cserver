@@ -192,7 +192,7 @@ cs_float Client_GetClickDistanceInBlocks(Client *client) {
 }
 
 cs_int32 Client_GetExtVer(Client *client, cs_ulong exthash) {
-	if(Client_IsBot(client)) return true;
+	if(Client_IsBot(client)) return false;
 
 	for(cs_int16 i = 0; i < client->cpeData.extensions.count; i++)
 		if(client->cpeData.extensions.list[i].hash == exthash)
@@ -460,7 +460,6 @@ cs_bool Client_IsFirstSpawn(Client *client) {
 }
 
 void Client_SetBlock(Client *client, SVec *pos, BlockID id) {
-	if(Client_IsBot(client)) return;
 	if(Client_GetExtVer(client, EXT_CUSTOMBLOCKS) < 1 ||
 	(Client_GetExtVer(client, EXT_BLOCKDEF) || Client_GetExtVer(client, EXT_BLOCKDEF2)) < 1)
 		id = Block_GetFallbackFor(Client_GetWorld(client), id);
