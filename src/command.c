@@ -222,7 +222,7 @@ COMMAND_FUNC(Plugin) {
 					Pager_Step(pager);
 					COMMAND_APPENDF(
 						temparg1, 64,
-						"\r\n  %d.%s v%d", idx,
+						"\r\n  %d.%.48s v%d", idx,
 						plugin->name, plugin->version
 					);
 				}
@@ -301,13 +301,13 @@ COMMAND_FUNC(Plugin) {
 					if(iface) {
 						COMMAND_APPEND("\r\n  &bExported&f: ");
 						for(; iface && iface->iname; iface++)
-							COMMAND_APPENDF(temparg1, 64, "%s, ", iface->iname);
+							COMMAND_APPENDF(temparg1, 64, "%.60s, ", iface->iname);
 					}
 					if(plugin->ireqHead) {
 						COMMAND_APPEND("\r\n  &5Imported&f: ");
 						AListField *tmp;
 						List_Iter(tmp, plugin->ireqHead)
-							COMMAND_APPENDF(temparg1, 64, "%s, ", tmp->value.str);
+							COMMAND_APPENDF(temparg1, 64, "%.60s, ", tmp->value.str);
 					}
 
 					return true;

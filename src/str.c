@@ -98,11 +98,7 @@ cs_uint32 String_FormatError(cs_uint32 code, cs_char *buf, cs_size buflen, va_li
 }
 
 cs_int32 String_FormatBufVararg(cs_char *buf, cs_size len, cs_str str, va_list *args) {
-#if defined(CORE_USE_WINDOWS)
-	return vsprintf_s(buf, len, str, *args);
-#elif defined(CORE_USE_UNIX)
 	return vsnprintf(buf, len, str, *args);
-#endif
 }
 
 cs_int32 String_FormatBuf(cs_char *buf, cs_size len, cs_str str, ...) {

@@ -260,12 +260,8 @@ NOINL static cs_bool WriteWData(cs_file fp, cs_byte dataType, void *ptr, cs_int3
 }
 
 INL static cs_bool WriteInfo(World *world, cs_file fp) {
-	if(!File_Write((cs_char *)&(cs_int32){WORLD_MAGIC}, 4, 1, fp)) {
-		world->error.code = WORLD_ERROR_IOFAIL;
-		world->error.extra = WORLD_EXTRA_IO_WRITE;
-		return false;
-	}
-	return WriteWData(fp, DT_DIM, &world->info.dimensions, sizeof(SVec)) &&
+	return File_Write((cs_char *)&(cs_int32){WORLD_MAGIC}, 4, 1, fp) &&
+	WriteWData(fp, DT_DIM, &world->info.dimensions, sizeof(SVec)) &&
 	WriteWData(fp, DT_SV, &world->info.spawnVec, sizeof(Vec)) &&
 	WriteWData(fp, DT_SA, &world->info.spawnAng, sizeof(Ang)) &&
 	WriteWData(fp, DT_WT, &world->info.weatherType, 1) &&
@@ -334,6 +330,7 @@ static cs_bool ReadInfo(World *world, cs_file fp) {
 
 THREAD_FUNC(WorldSaveThread) {
 	World *world = (World *)param;
+	World_Lock(world, 0);
 	cs_uint32 wsize = 0;
 	cs_bool compr_ok;
 
@@ -373,6 +370,13 @@ THREAD_FUNC(WorldSaveThread) {
 				}
 			} else break;
 		} while(world->compr.state != COMPR_STATE_DONE);
+	} else {
+		world->error.code = WORLD_ERROR_IOFAIL;
+		world->error.code = WORLD_EXTRA_IO_WRITE;
+		Compr_Reset(&world->compr);
+		File_Close(fp);
+		World_Unlock(world);
+		return 0;
 	}
 
 	File_Close(fp);
@@ -443,7 +447,6 @@ cs_bool World_Save(World *world) {
 	}
 	if(!World_IsModified(world))
 		return World_IsReadyToPlay(world);
-	World_Lock(world, 0);
 	Thread_Create(WorldSaveThread, world, true);
 	return true;
 }
@@ -462,6 +465,7 @@ EWorldError World_PopError(World *world, EWorldExtra *extra) {
 
 THREAD_FUNC(WorldLoadThread) {
 	World *world = (World *)param;
+	World_Lock(world, 0);
 	cs_bool compr_ok;
 
 	if((compr_ok = Compr_Init(&world->compr, COMPR_TYPE_UNGZIP)) == false) {
@@ -500,11 +504,15 @@ THREAD_FUNC(WorldLoadThread) {
 		}
 		world->error.code = WORLD_ERROR_SUCCESS;
 		world->error.extra = WORLD_EXTRA_NOINFO;
+	} else {
+		world->error.code = WORLD_ERROR_INFOREAD;
+		world->error.code = WORLD_EXTRA_NOINFO;
 	}
 
 	if(fp) File_Close(fp);
 	Compr_Reset(&world->compr);
-	Event_Call(EVT_ONWORLDLOADED, world);
+	if(world->error.code == WORLD_ERROR_SUCCESS)
+		Event_Call(EVT_ONWORLDLOADED, world);
 	World_Unlock(world);
 	return 0;
 }
@@ -517,7 +525,6 @@ cs_bool World_Load(World *world) {
 	}
 	if(ISSET(world->flags, WORLD_FLAG_LOADED))
 		return false;
-	World_Lock(world, 0);
 	Thread_Create(WorldLoadThread, world, false);
 	return true;
 }
