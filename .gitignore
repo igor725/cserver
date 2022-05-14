@@ -2,3 +2,5 @@
 .vscode/settings.json
 zlib.path
 out/
+vars.sh
+vars.bat

@@ -32,6 +32,30 @@ Single command builder: `curl -sL https://igvx.ru/singlecommand | bash` (server 
 2. Several std libs (such as Kernel32, DbgHelp, WS2_32)
 3. WinInet, Advapi32 (will be loaded on demand)
 
+NOTE: Some libraries (such as libcurl, libcrypto) are multiplatform. You can use them both on Windows and Linux.
+
+### Available HTTP backends
+- libcurl (`HTTP_USE_CURL_BACKEND`)
+- WinInet (`HTTP_USE_WININET_BACKEND`)
+
+### Available crypto backends
+- libcrypto (`HASH_USE_CRYPTO_BACKEND`)
+- WinCrypt (`HASH_USE_WINCRYPT_BACKEND`)
+
+Let's say you want to compile the server for Windows with libcurl and libcrypto backends, then you should add these defines:
+`/DCORE_MANUAL_BACKENDS /DCORE_USE_WINDOWS_TYPES /DCORE_USE_WINDOWS_PATHS /DCORE_USE_WINDOWS_DEFINES /DHTTP_USE_CURL_BACKEND /DHASH_USE_CRYPTO_BACKEND`
+
+It can be done by creating a file called `vars.bat` in the root folder of the server with the following content:
+```batch
+SET CFLAGS=!CFLAGS! /DCORE_MANUAL_BACKENDS ^
+					/DCORE_USE_WINDOWS ^
+					/DCORE_USE_WINDOWS_TYPES ^
+					/DCORE_USE_WINDOWS_PATHS ^
+					/DCORE_USE_WINDOWS_DEFINES ^
+					/DHTTP_USE_CURL_BACKEND ^
+					/DHASH_USE_CRYPTO_BACKEND
+```
+
 ## Building
 
 ### On Linux

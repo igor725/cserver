@@ -8,13 +8,14 @@
 #include "client.h"
 
 enum _EWorldDataItems {
-	DT_DIM,
-	DT_SV,
-	DT_SA,
-	DT_WT,
-	DT_PROPS,
-	DT_COLORS,
-	DT_TEXPACK,
+	WDAT_DIMENSIONS,
+	WDAT_SPAWNVEC,
+	WDAT_SPAWNANG,
+	WDAT_WEATHER,
+	WDAT_ENVPROPS,
+	WDAT_ENVCOLORS,
+	WDAT_TEXTURE,
+	WDAT_GENSEED,
 
 	DT_END = 0xFF
 };
@@ -176,6 +177,13 @@ cs_bool World_SetEnvColor(World *world, EColor type, Color3* color) {
 	return false;
 }
 
+void World_SetSeed(World *world, cs_uint32 seed) {
+	if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
+		world->flags |= WORLD_FLAG_MODIFIED;
+	
+	world->info.seed = seed;
+}
+
 void World_FinishEnvUpdate(World *world) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
@@ -209,6 +217,10 @@ cs_bool World_GetEnvColor(World *world, EColor type, Color3 *dst) {
 
 EWeather World_GetWeather(World *world) {
 	return world->info.weatherType;
+}
+
+cs_uint32 World_GetSeed(World *world) {
+	return world->info.seed;
 }
 
 void World_AllocBlockArray(World *world) {
@@ -259,17 +271,22 @@ NOINL static cs_bool WriteWData(cs_file fp, cs_byte dataType, void *ptr, cs_int3
 	return File_Write(&dataType, 1, 1, fp) && (size > 0 ? File_Write(ptr, size, 1, fp) : true);
 }
 
+#define _WriteWData(F, T, V) WriteWData(F, T, &V, sizeof(V))
+
 INL static cs_bool WriteInfo(World *world, cs_file fp) {
-	return File_Write((cs_char *)&(cs_int32){WORLD_MAGIC}, 4, 1, fp) &&
-	WriteWData(fp, DT_DIM, &world->info.dimensions, sizeof(SVec)) &&
-	WriteWData(fp, DT_SV, &world->info.spawnVec, sizeof(Vec)) &&
-	WriteWData(fp, DT_SA, &world->info.spawnAng, sizeof(Ang)) &&
-	WriteWData(fp, DT_WT, &world->info.weatherType, 1) &&
-	WriteWData(fp, DT_PROPS, world->info.props, 4 * WORLD_PROPS_COUNT) &&
-	WriteWData(fp, DT_COLORS, world->info.colors, sizeof(Color3) * WORLD_COLORS_COUNT) &&
-	WriteWData(fp, DT_TEXPACK, world->info.texturepack, sizeof(world->info.texturepack)) &&
+	return File_Write((void *)&(cs_int32){WORLD_MAGIC}, 4, 1, fp) &&
+	_WriteWData(fp, WDAT_DIMENSIONS, world->info.dimensions) &&
+	_WriteWData(fp, WDAT_SPAWNVEC, world->info.spawnVec) &&
+	_WriteWData(fp, WDAT_SPAWNANG, world->info.spawnAng) &&
+	_WriteWData(fp, WDAT_WEATHER, world->info.weatherType) &&
+	_WriteWData(fp, WDAT_ENVPROPS, world->info.props) &&
+	_WriteWData(fp, WDAT_ENVCOLORS, world->info.colors) &&
+	_WriteWData(fp, WDAT_TEXTURE, world->info.texturepack) &&
+	_WriteWData(fp, WDAT_GENSEED, world->info.seed) &&
 	WriteWData(fp, DT_END, NULL, 0);
 }
+
+#define ReadWData(F, P) File_Read(&P, sizeof(P), 1, F)
 
 static cs_bool ReadInfo(World *world, cs_file fp) {
 	cs_byte id = 0;
@@ -285,37 +302,42 @@ static cs_bool ReadInfo(World *world, cs_file fp) {
 	SVec dims;
 	while(File_Read(&id, 1, 1, fp) == 1) {
 		switch (id) {
-			case DT_DIM:
-				if(File_Read(&dims, sizeof(SVec), 1, fp) != 1)
+			case WDAT_DIMENSIONS:
+				if(ReadWData(fp, dims) != 1)
 					return false;
 				World_SetDimensions(world, &dims);
 				break;
-			case DT_SV:
-				if(File_Read(&world->info.spawnVec, sizeof(Vec), 1, fp) != 1)
+			case WDAT_SPAWNVEC:
+				if(ReadWData(fp, world->info.spawnVec) != 1)
 					return false;
 				break;
-			case DT_SA:
-				if(File_Read(&world->info.spawnAng, sizeof(Ang), 1, fp) != 1)
+			case WDAT_SPAWNANG:
+				if(ReadWData(fp, world->info.spawnAng) != 1)
 					return false;
 				break;
-			case DT_WT:
-				if(File_Read(&world->info.weatherType, 1, 1, fp) != 1)
+			case WDAT_WEATHER:
+				if(ReadWData(fp, world->info.weatherType) != 1)
 					return false;
 				break;
-			case DT_PROPS:
-				if(File_Read(world->info.props, 4 * WORLD_PROPS_COUNT, 1, fp) != 1)
+			case WDAT_ENVPROPS:
+				if(ReadWData(fp, world->info.props) != 1)
 					return false;
 				break;
-			case DT_COLORS:
-				if(File_Read(world->info.colors, sizeof(Color3) * WORLD_COLORS_COUNT, 1, fp) != 1)
+			case WDAT_ENVCOLORS:
+				if(ReadWData(fp, world->info.colors) != 1)
 					return false;
 				break;
-			case DT_TEXPACK:
-				if(File_Read(world->info.texturepack, sizeof(world->info.texturepack), 1, fp) != 1)
+			case WDAT_TEXTURE:
+				if(ReadWData(fp, world->info.texturepack) != 1)
+					return false;
+				break;
+			case WDAT_GENSEED:
+				if(ReadWData(fp, world->info.seed) != 1)
 					return false;
 				break;
 			case DT_END:
 				return true;
+
 			default:
 				world->error.code = WORLD_ERROR_INFOREAD;
 				world->error.extra = WORLD_EXTRA_UNKNOWN_DATA_TYPE;

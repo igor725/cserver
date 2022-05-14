@@ -178,7 +178,7 @@ cs_bool DLib_GetSym(void *lib, cs_str sname, void *sym) {
 Thread Thread_Create(TFUNC func, TARG arg, cs_bool detach) {
 	Thread th;
 	if(pthread_create(&th, NULL, func, arg) != 0) {
-		ERROR_PRINT(errno, true);
+		_Error_Print(errno, true);
 		return (Thread)NULL;
 	}
 
@@ -205,7 +205,7 @@ void Thread_Detach(Thread th) {
 void Thread_Join(Thread th) {
 	cs_int32 ret = pthread_join(th, NULL);
 	if(ret) {
-		ERROR_PRINT(ret, true);
+		_Error_Print(ret, true);
 	}
 }
 
@@ -218,11 +218,11 @@ Mutex *Mutex_Create(void) {
 	cs_int32 ret;
 
 	if((ret = pthread_mutexattr_settype(&ptr->attr, PTHREAD_MUTEX_RECURSIVE)) != 0) {
-		ERROR_PRINT(ret, true);
+		_Error_Print(ret, true);
 	}
 
 	if((ret = pthread_mutex_init(&ptr->handle, &ptr->attr)) != 0) {
-		ERROR_PRINT(ret, true);
+		_Error_Print(ret, true);
 	}
 
 	return ptr;
@@ -231,7 +231,7 @@ Mutex *Mutex_Create(void) {
 void Mutex_Free(Mutex *mtx) {
 	cs_int32 ret = pthread_mutex_destroy(&mtx->handle);
 	if(ret) {
-		ERROR_PRINT(ret, true);
+		_Error_Print(ret, true);
 	}
 	Memory_Free(mtx);
 }
@@ -239,14 +239,14 @@ void Mutex_Free(Mutex *mtx) {
 void Mutex_Lock(Mutex *mtx) {
 	cs_int32 ret = pthread_mutex_lock(&mtx->handle);
 	if(ret) {
-		ERROR_PRINT(ret, true);
+		_Error_Print(ret, true);
 	}
 }
 
 void Mutex_Unlock(Mutex *mtx) {
 	cs_int32 ret = pthread_mutex_unlock(&mtx->handle);
 	if(ret) {
-		ERROR_PRINT(ret, true);
+		_Error_Print(ret, true);
 	}
 }
 

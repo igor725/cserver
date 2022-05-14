@@ -2,13 +2,8 @@
 #define ERROR_H
 #include "core.h"
 
-#define ERROR_PRINT(ecode, abort) Error_Print(abort, ecode, __FILE__, __LINE__, __func__)
-
-#if defined(CORE_USE_WINDOWS)
-#	define Error_PrintSys(abort) ERROR_PRINT(GetLastError(), abort)
-#elif defined(CORE_USE_UNIX)
-#	define Error_PrintSys(abort) ERROR_PRINT(errno, abort)
-#endif
+#define _Error_Print(ecode, abort) Error_Print(abort, ecode, __FILE__, __LINE__, __func__)
+#define Error_PrintSys(abort) _Error_Print(Error_GetSysCode(), abort)
 
 cs_bool Error_Init(void);
 void Error_Uninit(void);

@@ -457,6 +457,7 @@ cs_bool normalgenerator(World *world, cs_int32 seed) {
 	World_SetEnvProp(world, WORLD_PROP_CLOUDSLEVEL, ctx.dims->y + 2);
 	World_SetEnvProp(world, WORLD_PROP_EDGELEVEL, ctx.heightWater + 1);
 	World_SetEnvProp(world, WORLD_PROP_SIDEOFFSET, 0);
+	World_SetSeed(world, seed);
 
 	if(ctx.biomes) Memory_Free(ctx.biomes);
 	if(ctx.heightMap) Memory_Free(ctx.heightMap);

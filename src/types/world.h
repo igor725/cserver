@@ -45,6 +45,7 @@ typedef struct _WorldInfo {
 	cs_int8 weatherType;
 	cs_byte modval, modclr;
 	cs_uint16 modprop;
+	cs_uint32 seed;
 } WorldInfo;
 
 typedef struct _World {

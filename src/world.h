@@ -42,6 +42,7 @@ API cs_bool World_SetEnvColor(World *world, EColor type, Color3* color);
 API cs_bool World_SetEnvProp(World *world, EProp prop, cs_int32 value);
 API cs_bool World_SetTexturePack(World *world, cs_str url);
 API cs_bool World_SetWeather(World *world, EWeather type);
+API void World_SetSeed(World *world, cs_uint32 seed);
 
 API cs_str World_GetName(World *world);
 API void World_GetSpawn(World *world, Vec *svec, Ang *sang);
@@ -56,6 +57,7 @@ API cs_int32 World_GetEnvProp(World *world, EProp prop);
 API cs_bool World_GetEnvColor(World *world, EColor type, Color3 *dst);
 API EWeather World_GetWeather(World *world);
 API cs_str World_GetTexturePack(World *world);
+API cs_uint32 World_GetSeed(World *world);
 
 API World *World_GetByName(cs_str name);
 
