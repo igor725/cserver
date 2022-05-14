@@ -48,12 +48,12 @@ Let's say you want to compile the server for Windows with libcurl and libcrypto 
 It can be done by creating a file called `vars.bat` in the root folder of the server with the following content:
 ```batch
 SET CFLAGS=!CFLAGS! /DCORE_MANUAL_BACKENDS ^
-					/DCORE_USE_WINDOWS ^
-					/DCORE_USE_WINDOWS_TYPES ^
-					/DCORE_USE_WINDOWS_PATHS ^
-					/DCORE_USE_WINDOWS_DEFINES ^
-					/DHTTP_USE_CURL_BACKEND ^
-					/DHASH_USE_CRYPTO_BACKEND
+                    /DCORE_USE_WINDOWS ^
+                    /DCORE_USE_WINDOWS_TYPES ^
+                    /DCORE_USE_WINDOWS_PATHS ^
+                    /DCORE_USE_WINDOWS_DEFINES ^
+                    /DHTTP_USE_CURL_BACKEND ^
+                    /DHASH_USE_CRYPTO_BACKEND
 ```
 
 ## Building
