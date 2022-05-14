@@ -64,14 +64,6 @@ cs_bool Error_Init(void) {return true;}
 void Error_Uninit(void) {}
 #endif
 
-cs_int32 Error_GetSysCode(void) {
-#if defined(CORE_USE_WINDOWS)
-	return GetLastError();
-#elif defined(CORE_USE_UNIX)
-	return errno;
-#endif
-}
-
 void Error_Print(cs_bool abort, cs_int32 code, cs_str file, cs_uint32 line, cs_str func, ...) {
 	cs_char strbuf[384];
 
