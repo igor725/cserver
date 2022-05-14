@@ -486,7 +486,7 @@ static void KickAll(cs_str reason) {
 cs_bool Server_GetInfo(ServerInfo *info, cs_size sisz) {
 	if(sisz != sizeof(ServerInfo)) return false;
 
-	info->coreFullName = SOFTWARE_FULLNAME;
+	info->coreName = SOFTWARE_NAME;
 	info->coreGitTag = GIT_COMMIT_TAG;
 	info->coreFlags = 0x00000000;
 

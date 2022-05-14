@@ -31,7 +31,7 @@ void Server_Cleanup(void);
 
 typedef struct _ServerInfo {
 	cs_int32 coreFlags;
-	cs_str coreFullName;
+	cs_str coreName;
 	cs_str coreGitTag;
 } ServerInfo;
 
