@@ -200,7 +200,8 @@ if [ $COMPILE -eq 1 ]; then
 		$CC -c $CFLAGS $WARN $OPT -I$ROOT/src $cpath -o$objpath 2>> $STDERR &
 		pids+=($!)
 		while test $(jobs -p | wc -w) -ge "$MAXWORKERS"; do
-			wait ${pids[0]};
+			wait ${pids[0]}
+			pids=("${pids[@]:1}")
 		done
 	done
 
