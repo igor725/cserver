@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <signal.h>
-#include <malloc.h>
 #include <fcntl.h>
 #include <dlfcn.h>
 #include <poll.h>
@@ -17,9 +16,19 @@ void *Memory_TryAlloc(cs_size num, cs_size size) {
 	return calloc(num, size);
 }
 
+#ifndef CORE_USE_DARWIN
+#include <malloc.h>
+
 cs_size Memory_GetSize(void *ptr) {
 	return malloc_usable_size(ptr);
 }
+#else
+#include <malloc/malloc.h>
+
+cs_size Memory_GetSize(void *ptr) {
+	return malloc_size(ptr);
+}
+#endif
 
 void *Memory_TryRealloc(void *oldptr, cs_size new) {
 	void *newptr = Memory_TryAlloc(1, new);
@@ -310,18 +319,25 @@ Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max) {
 }
 
 cs_bool Semaphore_TryWait(Semaphore *sem, cs_ulong timeout) {
-	struct timespec ts;
-	clock_gettime(CLOCK_REALTIME, &ts);
-	cs_ulong secs = timeout / 1000;
-	timeout = timeout % 1000;
+#	ifndef CORE_USE_DARWIN
+		struct timespec ts;
+		clock_gettime(CLOCK_REALTIME, &ts);
+		cs_ulong secs = timeout / 1000;
+		timeout = timeout % 1000;
 
-	cs_ulong add = 0;
-	timeout = timeout * 1000 * 1000 + ts.tv_nsec;
-	add = timeout / (1000 * 1000 * 1000);
-	ts.tv_sec += (add + secs);
-	ts.tv_nsec = timeout % (1000 * 1000 * 1000);
+		cs_ulong add = 0;
+		timeout = timeout * 1000 * 1000 + ts.tv_nsec;
+		add = timeout / (1000 * 1000 * 1000);
+		ts.tv_sec += (add + secs);
+		ts.tv_nsec = timeout % (1000 * 1000 * 1000);
 
-	return sem_timedwait(sem, &ts) == 0;
+		return sem_timedwait(sem, &ts) == 0;
+#	else
+		// NYI
+		(void)sem; (void)timeout;
+		Process_Exit(1);
+		return false;
+#	endif
 }
 
 void Semaphore_Wait(Semaphore *sem) {

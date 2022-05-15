@@ -9,9 +9,14 @@ fi
 
 if [ "$OS" = "" ]; then
 	OS=""
+	_NPROC="nproc"
 	case "$(uname -s)" in
 		Linux)
 			OS="linux"
+			;;
+		Darwin)
+			OS="darwin"
+			_NPROC="sysctl -n hw.physicalcpu"
 			;;
 		CYGWIN*|MINGW*|MSYS*|MINGW32*)
 			OS="win"
@@ -22,7 +27,7 @@ if [ "$OS" = "" ]; then
 	esac
 fi
 
-MAXWORKERS=$(nproc)
+MAXWORKERS=$($_NPROC)
 COMPILE=1
 GITOK=0
 GITUPD=0
@@ -40,8 +45,11 @@ CC="$CC -fdiagnostics-color=always"
 LNK="$CC"
 if [ "$OS" != "win" ]; then
 	LNK="$CC -rdynamic"
+	if [ "$OS" != "darwin" ]; then
+		CFLAGS="$CFLAGS -fno-semantic-interposition"
+	fi
 fi
-CFLAGS="-pipe -fpic -fno-semantic-interposition"
+CFLAGS="-pipe -fpic"
 LIBS=""
 OUTBIN="server"
 if git --version >/dev/null 2>&1; then
@@ -192,7 +200,7 @@ if [ $COMPILE -eq 1 ]; then
 		$CC -c $CFLAGS $WARN $OPT -I$ROOT/src $cpath -o$objpath 2>> $STDERR &
 		pids+=($!)
 		while test $(jobs -p | wc -w) -ge "$MAXWORKERS"; do
-			wait -n;
+			wait ${pids[0]};
 		done
 	done
 

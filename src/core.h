@@ -36,6 +36,14 @@
 #		define CORE_USE_UNIX_TYPES
 #		define HTTP_USE_CURL_BACKEND
 #		define HASH_USE_CRYPTO_BACKEND
+#	elif defined(__APPLE__)
+#		define CORE_USE_UNIX
+#		define CORE_USE_DARWIN
+#		define CORE_USE_DARWIN_PATHS
+#		define CORE_USE_UNIX_DEFINES
+#		define CORE_USE_UNIX_TYPES
+#		define HTTP_USE_CURL_BACKEND
+#		define HASH_USE_CRYPTO_BACKEND
 #	endif
 #endif
 
@@ -47,6 +55,10 @@
 #elif defined(CORE_USE_UNIX_PATHS)
 #	define PATH_DELIM "/"
 #	define DLIB_EXT "so"
+#elif defined(CORE_USE_DARWIN_PATHS)
+#	define PATH_DELIM "/"
+#	define DLIB_EXT "dylib"
+#	define PATH_MAX 260 // TODO: Убрать это отсюдова
 #else
 #	error This file wants to be hacked
 #endif // CORE_USE_*_PATHS
