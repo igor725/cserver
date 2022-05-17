@@ -45,8 +45,8 @@ static cs_str zlibdll[] = {
 	"zlibd.dll",
 	"libz.dll",
 #elif defined(CORE_USE_UNIX)
-	"libz.so",
-	"libz.so.1",
+	"libz." DLIB_EXT,
+	"libz." DLIB_EXT ".1",
 #else
 #	error This file wants to be hacked
 #endif

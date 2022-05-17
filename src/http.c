@@ -84,8 +84,9 @@ static cs_str csymlist[] = {
 
 static cs_str libcurl[] = {
 #if defined(CORE_USE_UNIX)
-	"libcurl.so.4",
-	"libcurl.so.3",
+	"libcurl." DLIB_EXT ".4",
+	"libcurl." DLIB_EXT ".3",
+	"libcurl." DLIB_EXT,
 #elif defined(CORE_USE_WINDOWS)
 	"curl.dll",
 	"libcurl.dll",

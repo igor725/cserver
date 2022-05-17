@@ -17,6 +17,7 @@ if [ "$OS" = "" ]; then
 		Darwin)
 			OS="darwin"
 			_NPROC="sysctl -n hw.physicalcpu"
+			echo "WARNING: MacOS build is NOT READY to use"
 			;;
 		CYGWIN*|MINGW*|MSYS*|MINGW32*)
 			OS="win"

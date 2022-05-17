@@ -252,7 +252,7 @@ cs_bool Waitable_TryWait(Waitable *wte, cs_ulong timeout) {
 }
 
 Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max) {
-	return CreateSemaphore(
+	return CreateSemaphoreA(
 		NULL, initial,
 		max, NULL
 	);

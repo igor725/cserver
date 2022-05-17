@@ -222,6 +222,7 @@ void Thread_Sleep(cs_uint32 ms) {
 	usleep(ms * 1000);
 }
 
+#ifndef CORE_USE_DARWIN
 Mutex *Mutex_Create(void) {
 	Mutex *ptr = Memory_Alloc(1, sizeof(Mutex));
 	cs_int32 ret;
@@ -258,6 +259,7 @@ void Mutex_Unlock(Mutex *mtx) {
 		_Error_Print(ret, true);
 	}
 }
+#endif
 
 Waitable *Waitable_Create(void) {
 	Waitable *wte = Memory_Alloc(1, sizeof(Waitable));
@@ -310,6 +312,7 @@ cs_bool Waitable_TryWait(Waitable *wte, cs_ulong timeout) {
 	return pthread_cond_timedwait(&wte->cond, &wte->mutex->handle, &ts) == 0;
 }
 
+#ifndef CORE_USE_DARWIN
 Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max) {
 	Semaphore *sem = Memory_Alloc(1, sizeof(Semaphore));
 	if(sem_init(sem, max, initial) == 0)
@@ -319,25 +322,18 @@ Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max) {
 }
 
 cs_bool Semaphore_TryWait(Semaphore *sem, cs_ulong timeout) {
-#	ifndef CORE_USE_DARWIN
-		struct timespec ts;
-		clock_gettime(CLOCK_REALTIME, &ts);
-		cs_ulong secs = timeout / 1000;
-		timeout = timeout % 1000;
+	struct timespec ts;
+	clock_gettime(CLOCK_REALTIME, &ts);
+	cs_ulong secs = timeout / 1000;
+	timeout = timeout % 1000;
 
-		cs_ulong add = 0;
-		timeout = timeout * 1000 * 1000 + ts.tv_nsec;
-		add = timeout / (1000 * 1000 * 1000);
-		ts.tv_sec += (add + secs);
-		ts.tv_nsec = timeout % (1000 * 1000 * 1000);
+	cs_ulong add = 0;
+	timeout = timeout * 1000 * 1000 + ts.tv_nsec;
+	add = timeout / (1000 * 1000 * 1000);
+	ts.tv_sec += (add + secs);
+	ts.tv_nsec = timeout % (1000 * 1000 * 1000);
 
-		return sem_timedwait(sem, &ts) == 0;
-#	else
-		// NYI
-		(void)sem; (void)timeout;
-		Process_Exit(1);
-		return false;
-#	endif
+	return sem_timedwait(sem, &ts) == 0;
 }
 
 void Semaphore_Wait(Semaphore *sem) {
@@ -351,6 +347,7 @@ void Semaphore_Post(Semaphore *sem) {
 void Semaphore_Free(Semaphore *sem) {
 	Memory_Free(sem);
 }
+#endif
 
 cs_int32 Time_Format(cs_char *buf, cs_size buflen) {
 	struct timeval tv;

@@ -469,6 +469,7 @@ INL static void UnloadAllWorlds(void) {
 		if(attempt > 10) {
 			AList_Remove(&World_Head, tmp);
 			World_Free(world);
+			attempt = 0;
 		} else {
 			Thread_Sleep(1500);
 			attempt++;
