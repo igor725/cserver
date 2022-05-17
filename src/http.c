@@ -79,7 +79,7 @@ void Http_Cleanup(Http *http) {
 static cs_str csymlist[] = {
 	"curl_easy_init", "curl_easy_setopt",
 	"curl_easy_perform", "curl_easy_cleanup",
-	NULL
+	"curl_global_cleanup", NULL
 };
 
 static cs_str libcurl[] = {
@@ -90,6 +90,9 @@ static cs_str libcurl[] = {
 #elif defined(CORE_USE_WINDOWS)
 	"curl.dll",
 	"libcurl.dll",
+#	ifdef _WIN64
+		"libcurl-x64.dll",
+#	endif
 #else
 #	error This file wants to be hacked
 #endif
@@ -103,10 +106,13 @@ static struct _cURLLib {
 	cs_int32 (*easy_setopt)(CURL *, cs_int32, ...);
 	cs_int32 (*easy_perform)(CURL *);
 	void (*easy_cleanup)(CURL *);
+
+	void (*global_cleanup)(void);
 } curl;
 
 void Http_Uninit(void) {
 	if(!curl.lib) return;
+	curl.global_cleanup();
 	DLib_Unload(curl.lib);
 	Memory_Zero(&curl, sizeof(curl));
 }

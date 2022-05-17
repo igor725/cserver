@@ -44,14 +44,25 @@ static cs_str const syms[] = {
  * Имеется порт 5ой, но и его не получится
  * заставить работать. Так как нужна как
  * минимум 7ая версия ридлайна.
+ * 
+ * В libreadline.dylib.8 по какой-то
+ * мистической причине отсутствует символ
+ * rl_clear_visible_line, соответственно
+ * библиотека не будет использоваться.
+ * Нужно либо придумать способ обойтись
+ * без этой функции, либо же забить.
+ * Профиты от первого варианта:
+ * 	- ConsoleIO начнёт рабоать под MacOS
+ * 	- Станет возможной поддержка версий
+ * 	библиотеки libreadline ниже 8.
 */
 
 static cs_str const rllib[] = {
 #ifdef CORE_USE_UNIX
-	"libreadline.so.8",
-	"libreadline.so.7",
+	"libreadline." DLIB_EXT ".8",
+	"libreadline." DLIB_EXT ".7",
 	// Ниже 7ой версии отсутствуют некоторые API
-	"libreadline.so", // Опасненько
+	"libreadline." DLIB_EXT "", // Опасненько
 #endif
 	NULL
 };
