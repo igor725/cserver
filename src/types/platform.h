@@ -19,7 +19,6 @@
 	typedef BOOL TSHND_RET;
 #elif defined(CORE_USE_UNIX)
 #	include <pthread.h>
-#	include <semaphore.h>
 #	include <sys/stat.h>
 #	include <sys/time.h>
 #	include <sys/ioctl.h>
@@ -37,11 +36,25 @@
 	typedef struct dirent *ITER_FILE;
 	typedef void *TRET;
 	typedef pthread_t Thread;
-	typedef struct _UMutex {
-		pthread_mutex_t handle;
-		pthread_mutexattr_t attr;
-	} Mutex;
-	typedef sem_t Semaphore;
+#	ifdef CORE_USE_DARWIN
+#		include <mach/task.h>
+#		include <mach/semaphore.h>
+		typedef struct _DMutex {
+			pthread_mutex_t handle;
+			pthread_cond_t cond;
+			pthread_t owner;
+			cs_uint32 rec;
+		} Mutex;
+		typedef semaphore_t Semaphore;
+#	else
+#		include <semaphore.h>
+
+		typedef struct _UMutex {
+			pthread_mutex_t handle;
+			pthread_mutexattr_t attr;
+		} Mutex;
+		typedef sem_t Semaphore;
+#	endif
 	typedef void TSHND_RET;
 	typedef cs_int32 TSHND_PARAM;
 	typedef struct _Waitable {
