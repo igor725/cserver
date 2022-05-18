@@ -67,11 +67,11 @@
 #	define NOINL __declspec(noinline)
 #	ifndef CORE_BUILD_PLUGIN
 #		define API __declspec(dllexport, noinline)
-#		define VAR __declspec(dllexport) extern
+#		define VAR __declspec(dllexport)
 #	else
-#		define API __declspec(dllimport)
+#		define API __declspec(dllimport) extern
 #		define VAR __declspec(dllimport) extern
-#		define EXP __declspec(dllexport) extern
+#		define EXP __declspec(dllexport)
 #		define EXPF __declspec(dllexport)
 #	endif
 #elif defined(CORE_USE_UNIX_DEFINES)
@@ -79,21 +79,21 @@
 #	ifndef CORE_BUILD_PLUGIN
 #		ifdef _WIN32
 #			define API __attribute__((dllexport, noinline))
-#			define VAR __attribute__((dllexport)) extern
+#			define VAR __attribute__((dllexport))
 #		else
 #			define API __attribute__((__visibility__("default"), noinline))
-#			define VAR __attribute__((__visibility__("default"))) extern
+#			define VAR __attribute__((__visibility__("default")))
 #		endif
 #	else
 #		ifdef _WIN32
-#			define API __attribute__((dllimport))
+#			define API __attribute__((dllimport)) extern
 #			define VAR __attribute__((dllimport)) extern
-#			define EXP __attribute__((dllexport)) extern
+#			define EXP __attribute__((dllexport))
 #			define EXPF __attribute__((dllexport, noinline))
 #		else
-#			define API
+#			define API extern
 #			define VAR extern
-#			define EXP __attribute__((__visibility__("default"))) extern
+#			define EXP __attribute__((__visibility__("default")))
 #			define EXPF __attribute__((__visibility__("default"), noinline))
 #		endif
 #	endif

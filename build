@@ -45,9 +45,11 @@ fi
 CC="$CC -fdiagnostics-color=always"
 LNK="$CC"
 if [ "$OS" != "win" ]; then
-	LNK="$CC -rdynamic"
+	LNK="$LNK -rdynamic"
 	if [ "$OS" != "darwin" ]; then
 		CFLAGS="$CFLAGS -fno-semantic-interposition"
+	else
+		LNG="$LNK -undefined dynamic_lookup"
 	fi
 fi
 CFLAGS="-pipe -fpic"

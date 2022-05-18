@@ -36,17 +36,20 @@ static cs_str zsmylist[] = {
 
 static cs_str zlibdll[] = {
 #if defined(CORE_USE_WINDOWS)
-	"zlibdwapi.dll",
+#	ifdef CORE_BUILD_DEBUG
+		"zlibdwapi.dll",
+		"zlibd1.dll",
+		"zlibd.dll",
+#	endif
 	"zlibwapi.dll",
-	"zlibd1.dll",
 	"zlib1.dll",
-	"zlibd.dll",
 	"zlib.dll",
-	"zlibd.dll",
 	"libz.dll",
 #elif defined(CORE_USE_UNIX)
-	"libz." DLIB_EXT,
+	"libz." DLIB_EXT ".1.2.12",
+	"libz." DLIB_EXT ".1.2.11",
 	"libz." DLIB_EXT ".1",
+	"libz." DLIB_EXT,
 #else
 #	error This file wants to be hacked
 #endif
