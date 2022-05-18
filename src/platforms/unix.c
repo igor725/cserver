@@ -93,7 +93,8 @@ cs_error Socket_GetError(void) {
 
 cs_ulong Socket_AvailData(Socket n) {
 	cs_ulong avail = 0;
-	ioctl(n, FIONREAD, &avail);
+	if(ioctl(n, FIONREAD, &avail) == -1)
+		Error_PrintSys(false);
 	return avail;
 }
 
@@ -150,8 +151,8 @@ cs_bool Iter_Next(DirIter *iter) {
 }
 
 void Iter_Close(DirIter *iter) {
-	if(iter->dirHandle)
-		closedir(iter->dirHandle);
+	if(iter->dirHandle && closedir(iter->dirHandle) != 0)
+		Error_PrintSys(false);
 }
 
 cs_bool Directory_Exists(cs_str path) {

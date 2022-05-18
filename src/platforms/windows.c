@@ -80,7 +80,8 @@ cs_bool Socket_IsFatal(void) {
 
 cs_ulong Socket_AvailData(Socket n) {
 	cs_ulong avail = 0;
-	ioctlsocket(n, FIONREAD, &avail);
+	if(ioctlsocket(n, FIONREAD, &avail) == SOCKET_ERROR)
+		Error_PrintSys(false);
 	return avail;
 }
 
@@ -93,11 +94,13 @@ cs_bool Socket_SetNonBlocking(Socket n, cs_bool state) {
 }
 
 void Socket_Close(Socket n) {
-	closesocket(n);
+	if(closesocket(n) == SOCKET_ERROR)
+		Error_PrintSys(false);
 }
 
 void Socket_Uninit(void) {
-	WSACleanup();
+	if(WSACleanup() == SOCKET_ERROR)
+		_Error_Print(Socket_GetError(), false);
 }
 
 #define ISDIR(h) (h.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
@@ -132,8 +135,8 @@ cs_bool Iter_Next(DirIter *iter) {
 }
 
 void Iter_Close(DirIter *iter) {
-	if(iter->dirHandle)
-		FindClose(iter->dirHandle);
+	if(iter->dirHandle && !FindClose(iter->dirHandle))
+		Error_PrintSys(false);
 }
 
 cs_bool Directory_Exists(cs_str path) {
@@ -170,9 +173,8 @@ cs_bool DLib_GetSym(void *lib, cs_str sname, void *sym) {
 Thread Thread_Create(TFUNC func, TARG param, cs_bool detach) {
 	Thread th;
 
-	if((th = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)func, param, 0, NULL)) == INVALID_HANDLE_VALUE) {
+	if((th = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)func, param, 0, NULL)) == INVALID_HANDLE_VALUE)
 		Error_PrintSys(true);
-	}
 
 	if(detach) {
 		Thread_Detach(th);
@@ -193,11 +195,12 @@ cs_bool Thread_Signal(Thread th, cs_int32 sig) {
 
 void Thread_Detach(Thread th) {
 	if(!CloseHandle(th))
-		Error_PrintSys(true);
+		Error_PrintSys(false);
 }
 
 void Thread_Join(Thread th) {
-	WaitForSingleObject(th, INFINITE);
+	if(WaitForSingleObject(th, INFINITE) == WAIT_FAILED)
+		Error_PrintSys(true);
 	Thread_Detach(th);
 }
 
@@ -232,19 +235,22 @@ Waitable *Waitable_Create(void) {
 
 void Waitable_Free(Waitable *wte) {
 	if(!CloseHandle(wte))
-		Error_PrintSys(true);
+		Error_PrintSys(false);
 }
 
 void Waitable_Reset(Waitable *wte) {
-	ResetEvent(wte);
+	if(!ResetEvent(wte))
+		Error_PrintSys(true);
 }
 
 void Waitable_Signal(Waitable *wte) {
-	SetEvent(wte);
+	if(!SetEvent(wte))
+		Error_PrintSys(true);
 }
 
 void Waitable_Wait(Waitable *wte) {
-	WaitForSingleObject(wte, INFINITE);
+	if(WaitForSingleObject(wte, INFINITE) == WAIT_FAILED)
+		Error_PrintSys(true);
 }
 
 cs_bool Waitable_TryWait(Waitable *wte, cs_ulong timeout) {
@@ -263,16 +269,18 @@ cs_bool Semaphore_TryWait(Semaphore *sem, cs_ulong timeout) {
 }
 
 void Semaphore_Wait(Semaphore *sem) {
-	WaitForSingleObject(sem, INFINITE);
+	if(WaitForSingleObject(sem, INFINITE) == WAIT_FAILED)
+		Error_PrintSys(true);
 }
 
 void Semaphore_Post(Semaphore *sem) {
-	ReleaseSemaphore(sem, 1, NULL);
+	if(!ReleaseSemaphore(sem, 1, NULL))
+		Error_PrintSys(true);
 }
 
 void Semaphore_Free(Semaphore *sem) {
 	if(!CloseHandle(sem))
-		Error_PrintSys(true);
+		Error_PrintSys(false);
 }
 
 cs_int32 Time_Format(cs_char *buf, cs_size buflen) {
