@@ -13,14 +13,17 @@ if [ "$OS" = "" ]; then
 	case "$(uname -s)" in
 		Linux)
 			OS="linux"
+			SHLIB_EXT="so"
 			;;
 		Darwin)
 			OS="darwin"
+			SHLIB_EXT="dylib"
 			_NPROC="sysctl -n hw.physicalcpu"
 			echo "WARNING: MacOS build is NOT READY to use"
 			;;
 		CYGWIN*|MINGW*|MSYS*|MINGW32*)
 			OS="win"
+			SHLIB_EXT="dll"
 			;;
 		*)
 			OS="unknown"
@@ -49,7 +52,7 @@ if [ "$OS" != "win" ]; then
 	if [ "$OS" != "darwin" ]; then
 		CFLAGS="$CFLAGS -fno-semantic-interposition"
 	else
-		LNG="$LNK -undefined dynamic_lookup"
+		LNK="$LNK -undefined dynamic_lookup"
 	fi
 fi
 CFLAGS="-pipe -fpic"
@@ -92,7 +95,7 @@ do
 			PLUGIN_NAME="$a"
 			CFLAGS="$CFLAGS -DCORE_BUILD_PLUGIN -Isrc"
 			LNK="$LNK -shared"
-			OUTBIN="$a.so"
+			OUTBIN="$a.$SHLIB_EXT"
 			ROOT="../cs-$a"
 		fi
 	fi
@@ -252,7 +255,7 @@ fi
 if [ $RUN -eq 1 ]; then
 	pushd $SERVER_OUTROOT
 	if [ $SAN -eq 1 ]; then
-		set -- /usr/lib/$MACH/libasan.so* /lib/$MACH/libasan.so*
+		set -- /usr/lib/$MACH/libasan.$SHLIB_EXT* /lib/$MACH/libasan.$SHLIB_EXT*
 		LD_PRELOAD=$1 ./server
 	else
 		./server

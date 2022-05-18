@@ -82,7 +82,7 @@
 #			define VAR __attribute__((dllexport))
 #		else
 #			define API __attribute__((__visibility__("default"), noinline))
-#			define VAR __attribute__((__visibility__("default")))
+#			define VAR __attribute__((__visibility__("default"))) extern
 #		endif
 #	else
 #		ifdef _WIN32
