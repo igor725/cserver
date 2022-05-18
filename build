@@ -24,7 +24,6 @@ esac
 
 if [[ "$OS" != "win" && "$CC" == *"mingw"* ]]; then
 	OS="win"
-	SHLIB_EXT="dll"
 fi
 
 MAXWORKERS=$($NPROC)
@@ -218,8 +217,13 @@ if [ $COMPILE -eq 1 ]; then
 	if [ $PLUGIN_BUILD -eq 0 ]; then
 		if [ "$OS" == "win" ]; then
 			LIBS="$LIBS -lkernel32 -ldbghelp -lws2_32"
+			LIBS="$LIBS -Wl,--out-implib,$OUTDIR/lib$OUTBIN.a"
 		else
 			LIBS="$LIBS -lpthread -ldl"
+		fi
+	else
+		if [ "$OS" == "win" ]; then
+			LIBS="$LIBS -L$SERVER_OUTROOT -lserver"
 		fi
 	fi
 
