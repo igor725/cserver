@@ -37,27 +37,25 @@ cs_bool Error_Init(void) {
 void Error_Uninit(void) {
 	SymCleanup(GetCurrentProcess());
 }
-
-#elif defined(__ANDROID__)
-static void PrintCallStack(void) {
-	printf("Callstack printing for android not implemented yet\n");
-}
-
-cs_bool Error_Init(void) {return true;}
-void Error_Uninit(void) {}
 #elif defined(CORE_USE_UNIX)
 #include <dlfcn.h>
-#include <execinfo.h>
+#if defined(CORE_USE_LINUX) || defined(CORE_USE_DARWIN)
+#	include <execinfo.h>
+#endif
 
 static void PrintCallStack(void) {
-	void *stack[16];
-	cs_int32 frames = backtrace(stack, 16);
+#	if defined(CORE_USE_LINUX) || defined(CORE_USE_DARWIN)
+		void *stack[16];
+		cs_int32 frames = backtrace(stack, 16);
 
-	for(cs_int32 i = 0; i < frames; i++) {
-		Dl_info dli;
-		if(dladdr(stack[i], &dli))
-			printf("Frame #%d: %s = %p\n", i, dli.dli_sname, dli.dli_saddr);
-	}
+		for(cs_int32 i = 0; i < frames; i++) {
+			Dl_info dli;
+			if(dladdr(stack[i], &dli))
+				printf("Frame #%d: %s = %p\n", i, dli.dli_sname, dli.dli_saddr);
+		}
+#	else
+		printf("Callstack printing is not implemented yet for this OS\n");
+#	endif
 }
 
 cs_bool Error_Init(void) {return true;}
