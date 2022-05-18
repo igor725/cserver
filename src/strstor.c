@@ -79,7 +79,7 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("SV_STOP_UP", "Unloading plugins...");
 
 	Sstor_Set("CMD_UNK", "Unknown command, type \"/help avail\" for more info");
-	Sstor_Set("CMD_NOCON", "This command can't be called from console");
+	Sstor_Set("CMD_NOCON", "This command cannot be called from the console");
 	Sstor_Set("CMD_NOPERM", "Access denied");
 
 	Sstor_Set("KICK_NOREASON", "Kicked without reason");
@@ -96,7 +96,7 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("KICK_PERR_UNEXP", "Failed to handle packet 0x%02X");
 	Sstor_Set("KICK_PERR_NOHANDLER", "Unknown opcode 0x%02X");
 	Sstor_Set("KICK_UNKBID", "Block with ID %d is not registred for this world");
-	Sstor_Set("KICK_ZERR", "zlib error: %s");
+	Sstor_Set("KICK_ZERR", "Compression error: %.45s");
 	Sstor_Set("KICK_INT", "Internal server error");
 	Sstor_Set("KICK_STOP", "Server stopped");
 
@@ -104,7 +104,7 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("HBEAT_ERR", "Heartbeat error: %s");
 	Sstor_Set("HBEAT_ERR_ER", "Empty server response");
 	Sstor_Set("HBEAT_ERR_HF", "HTTP request failed");
-	Sstor_Set("HBEAT_ERR_CF", "Can't open HTTP connection");
+	Sstor_Set("HBEAT_ERR_CF", "Failed to open HTTP connection");
 	Sstor_Set("HBEAT_KEYCHECK_ERR", "VanillaKeyChecker: MD5_Init() returned false, can't check user key validity");
 	Sstor_Set("HBEAT_SECRET_COMM1", "#Remove this file if you want to generate new secret key\n");
 	Sstor_Set("HBEAT_SECRET_COMM2", "#This key used by the heartbeat as server's \"salt\" for user authentication check\n");
