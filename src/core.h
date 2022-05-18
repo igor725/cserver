@@ -79,7 +79,7 @@
 #	ifndef CORE_BUILD_PLUGIN
 #		ifdef _WIN32
 #			define API __attribute__((dllexport, noinline))
-#			define VAR __attribute__((dllexport))
+#			define VAR __attribute__((dllexport)) extern
 #		else
 #			define API __attribute__((__visibility__("default"), noinline))
 #			define VAR __attribute__((__visibility__("default"))) extern
@@ -88,12 +88,12 @@
 #		ifdef _WIN32
 #			define API __attribute__((dllimport)) extern
 #			define VAR __attribute__((dllimport)) extern
-#			define EXP __attribute__((dllexport))
+#			define EXP __attribute__((dllexport)) extern
 #			define EXPF __attribute__((dllexport, noinline))
 #		else
 #			define API extern
 #			define VAR extern
-#			define EXP __attribute__((__visibility__("default")))
+#			define EXP __attribute__((__visibility__("default"))) extern
 #			define EXPF __attribute__((__visibility__("default"), noinline))
 #		endif
 #	endif

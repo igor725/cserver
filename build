@@ -3,35 +3,31 @@ if [ "$CC" = "" ]; then
 	CC="gcc"
 fi
 
-if [[ $CC == *"mingw"* ]]; then
+NPROC="nproc"
+SHLIB_EXT="so"
+case "$(uname -s)" in
+	Linux)
+		OS="linux"
+		;;
+	Darwin)
+		OS="darwin"
+		NPROC="sysctl -n hw.physicalcpu"
+		echo "WARNING: MacOS build is NOT READY to use"
+		;;
+	CYGWIN*|MINGW*|MSYS*|MINGW32*)
+		OS="win"
+		;;
+	*)
+		OS="unknown"
+		;;
+esac
+
+if [[ "$OS" != "win" && "$CC" == *"mingw"* ]]; then
 	OS="win"
+	SHLIB_EXT="dll"
 fi
 
-if [ "$OS" = "" ]; then
-	OS=""
-	_NPROC="nproc"
-	case "$(uname -s)" in
-		Linux)
-			OS="linux"
-			SHLIB_EXT="so"
-			;;
-		Darwin)
-			OS="darwin"
-			SHLIB_EXT="dylib"
-			_NPROC="sysctl -n hw.physicalcpu"
-			echo "WARNING: MacOS build is NOT READY to use"
-			;;
-		CYGWIN*|MINGW*|MSYS*|MINGW32*)
-			OS="win"
-			SHLIB_EXT="dll"
-			;;
-		*)
-			OS="unknown"
-			;;
-	esac
-fi
-
-MAXWORKERS=$($_NPROC)
+MAXWORKERS=$($NPROC)
 COMPILE=1
 GITOK=0
 GITUPD=0
@@ -53,7 +49,10 @@ if [ "$OS" != "win" ]; then
 		CFLAGS="$CFLAGS -fno-semantic-interposition"
 	else
 		LNK="$LNK -undefined dynamic_lookup"
+		SHLIB_EXT="dylib"
 	fi
+else
+	SHLIB_EXT="dll"
 fi
 CFLAGS="-pipe -fpic"
 LIBS=""
