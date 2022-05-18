@@ -7,23 +7,25 @@ NPROC="nproc"
 SHLIB_EXT="so"
 case "$(uname -s)" in
 	Linux)
-		OS="linux"
+		HOST_OS="linux"
 		;;
 	Darwin)
-		OS="darwin"
+		HOST_OS="darwin"
 		NPROC="sysctl -n hw.physicalcpu"
 		echo "WARNING: MacOS build is NOT READY to use"
 		;;
 	CYGWIN*|MINGW*|MSYS*|MINGW32*)
-		OS="win"
+		HOST_OS="win"
 		;;
 	*)
-		OS="unknown"
+		HOST_OS="unknown"
 		;;
 esac
 
-if [[ "$OS" != "win" && "$CC" == *"mingw"* ]]; then
-	OS="win"
+if [[ "$HOST_OS" != "win" && "$CC" == *"mingw"* ]]; then
+	TARGET_OS="win"
+else
+	TARGET_OS="$HOST_OS"
 fi
 
 MAXWORKERS=$($NPROC)
@@ -42,9 +44,9 @@ if [ $MACH = "" ]; then
 fi
 CC="$CC -fdiagnostics-color=always"
 LNK="$CC"
-if [ "$OS" != "win" ]; then
+if [ "$TARGET_OS" != "win" ]; then
 	LNK="$LNK -rdynamic"
-	if [ "$OS" != "darwin" ]; then
+	if [ "$TARGET_OS" != "darwin" ]; then
 		CFLAGS="$CFLAGS -fno-semantic-interposition"
 	else
 		LNK="$LNK -undefined dynamic_lookup"
@@ -215,14 +217,14 @@ if [ $COMPILE -eq 1 ]; then
 
 	echo -ne "done\nLinking..."
 	if [ $PLUGIN_BUILD -eq 0 ]; then
-		if [ "$OS" == "win" ]; then
+		if [ "$TARGET_OS" == "win" ]; then
 			LIBS="$LIBS -lkernel32 -ldbghelp -lws2_32"
 			LIBS="$LIBS -Wl,--out-implib,$OUTDIR/lib$OUTBIN.a"
 		else
 			LIBS="$LIBS -lpthread -ldl"
 		fi
 	else
-		if [ "$OS" == "win" ]; then
+		if [ "$TARGET_OS" == "win" ]; then
 			LIBS="$LIBS -L$SERVER_OUTROOT -lserver"
 		fi
 	fi
@@ -239,7 +241,7 @@ if [ $COMPILE -eq 1 ]; then
 fi
 
 if [ $PLUGIN_INSTALL -eq 1 ]; then
-	echo -ne "Copying to plugins directory..."
+	echo -ne "Copying to the plugins directory..."
 	if [ ! -d "$PLUGINS_DIR" ]; then mkdir -p $PLUGINS_DIR; fi
 	cp $OUTDIR/$OUTBIN $PLUGINS_DIR/$OUTBIN
 	echo "done"
@@ -256,6 +258,11 @@ if [ $COMPILE -eq 1 ]; then
 fi
 
 if [ $RUN -eq 1 ]; then
+	echo -ne "Running..."
+	if [[ "$TARGET_OS" != "$HOST_OS" ]]; then
+		echo "error, $HOST_OS does not support $TARGET_OS binaries"
+		exit 1
+	fi
 	pushd $SERVER_OUTROOT
 	if [ $SAN -eq 1 ]; then
 		set -- /usr/lib/$MACH/libasan.$SHLIB_EXT* /lib/$MACH/libasan.$SHLIB_EXT*
