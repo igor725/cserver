@@ -36,19 +36,10 @@
 	typedef struct dirent *ITER_FILE;
 	typedef void *TRET;
 	typedef pthread_t Thread;
-#	ifdef CORE_USE_DARWIN
-		typedef struct _DMutex {
-			pthread_mutex_t handle;
-			pthread_cond_t cond;
-			pthread_t owner;
-			cs_uint32 rec;
-		} Mutex;
-#	else
-		typedef struct _UMutex {
-			pthread_mutex_t handle;
-			pthread_mutexattr_t attr;
-		} Mutex;
-#	endif
+	typedef struct _UMutex {
+		pthread_mutex_t handle;
+		pthread_mutexattr_t attr;
+	} Mutex;
 	typedef void TSHND_RET;
 	typedef cs_int32 TSHND_PARAM;
 	typedef struct _Waitable {

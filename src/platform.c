@@ -6,7 +6,4 @@
 #include "platforms/windows.c"
 #elif defined(CORE_USE_UNIX)
 #include "platforms/unix.c"
-#ifdef CORE_USE_DARWIN
-#	include "platforms/osx.c"
-#endif
 #endif

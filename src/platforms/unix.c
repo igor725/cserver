@@ -224,10 +224,12 @@ void Thread_Sleep(cs_uint32 ms) {
 	usleep(ms * 1000);
 }
 
-#ifndef CORE_USE_DARWIN
 Mutex *Mutex_Create(void) {
 	Mutex *ptr = Memory_Alloc(1, sizeof(Mutex));
 	cs_int32 ret;
+	if((ret = pthread_mutexattr_init(&ptr->attr)) != 0) {
+		_Error_Print(ret, true);
+	}
 	if((ret = pthread_mutexattr_settype(&ptr->attr, PTHREAD_MUTEX_RECURSIVE)) != 0) {
 		_Error_Print(ret, true);
 	}
@@ -258,7 +260,6 @@ void Mutex_Unlock(Mutex *mtx) {
 		_Error_Print(ret, true);
 	}
 }
-#endif
 
 Waitable *Waitable_Create(void) {
 	Waitable *wte = Memory_Alloc(1, sizeof(Waitable));
