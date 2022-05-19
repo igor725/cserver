@@ -15,7 +15,12 @@ jobs:
       fail-fast: false
       matrix:
         config:
-        - name: Ubuntu x64
+        - name: MacOS X (x64)
+          os: macos
+          build: ./build
+          testbin: ./core/out/*/server
+
+        - name: Ubuntu (x64)
           os: ubuntu
           arch: x86_64
           abi: gnu
@@ -25,7 +30,7 @@ jobs:
           build: ./build
           testbin: ./core/out/x86_64-linux-gnu/server
 
-        - name: Ubuntu x86
+        - name: Ubuntu (x86)
           os: ubuntu
           arch: i686
           abi: gnu
@@ -36,7 +41,7 @@ jobs:
           build: ./build
           testbin: ./core/out/i686-linux-gnu/server
 
-        - name: Ubuntu arm64
+        - name: Ubuntu (arm64)
           os: ubuntu
           arch: aarch64
           abi: gnu
@@ -46,7 +51,7 @@ jobs:
             sudo apt install -y gcc-aarch64-linux-gnu
           build: ./build
 
-        - name: Ubuntu armv7hf
+        - name: Ubuntu (armv7hf)
           os: ubuntu
           arch: arm
           abi: gnueabihf
@@ -56,13 +61,13 @@ jobs:
             sudo apt install -y gcc-arm-linux-gnueabihf gcc-i686-linux-gnu
           build: ./build
 
-        - name: Windows x64
+        - name: Windows (x64)
           os: windows
           arch: x86_64
           build: .\build.bat
           testbin: .\core\out\x64dbg\server.exe
 
-        - name: Windows x86
+        - name: Windows (x86)
           os: windows
           arch: x86
           build: .\build.bat
@@ -110,22 +115,24 @@ jobs:
       if: ${{matrix.config.cfg != null}}
       run: ${{matrix.config.cfg}}
 
+    - name: Set environment (Linux)
+      if: ${{matrix.config.os == 'ubuntu'}}
+      run: |
+        echo "CC=${{matrix.config.arch}}-linux-${{matrix.config.abi}}-gcc" >> $GITHUB_ENV
+
     - name: Build core
       working-directory: core
-      env:
-        CC: ${{matrix.config.arch}}-linux-${{matrix.config.abi}}-gcc
       run: |
         ${{matrix.config.build}} wall dbg noprompt
 
     - name: Build plugins
       working-directory: core
       env:
-        CC: ${{matrix.config.arch}}-linux-${{matrix.config.abi}}-gcc
         HOSTCC: ${{matrix.config.hostcc}}
       run: |
-        ${{matrix.config.build}} wall dbg pb base install
-        ${{matrix.config.build}} wall dbg pb survival install
-        ${{matrix.config.build}} wall dbg pb worldedit install
+        ${{matrix.config.build}} wall dbg pb base install &&
+        ${{matrix.config.build}} wall dbg pb survival install &&
+        ${{matrix.config.build}} wall dbg pb worldedit install &&
         ${{matrix.config.build}} wall dbg pb lua install
 
     - name: Make some tests
@@ -133,7 +140,7 @@ jobs:
       run: ${{matrix.config.testbin}} testmode
 
     - name: Collect changes (Linux)
-      if: ${{matrix.config.os == 'ubuntu'}}
+      if: ${{matrix.config.os != 'windows'}}
       working-directory: core
       run: |
         git log --format=medium $(git describe --tags --abbrev=0 @^)..HEAD > out/CHANGES
