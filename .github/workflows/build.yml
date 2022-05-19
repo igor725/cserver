@@ -129,6 +129,7 @@ jobs:
       working-directory: core
       env:
         HOSTCC: ${{matrix.config.hostcc}}
+        MACOSX_DEPLOYMENT_TARGET: "11.0"
       run: |
         ${{matrix.config.build}} wall dbg pb base install &&
         ${{matrix.config.build}} wall dbg pb survival install &&
