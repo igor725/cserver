@@ -15,8 +15,9 @@ jobs:
       fail-fast: false
       matrix:
         config:
-        - name: MacOS X (x64)
+        - name: macOS (x64)
           os: macos
+          arch: x86_64
           build: ./build
           testbin: ./core/out/*/server
 
