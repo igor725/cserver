@@ -112,9 +112,14 @@ void World_SetSpawn(World *world, Vec *svec, Ang *sang) {
 		world->flags |= WORLD_FLAG_MODIFIED;
 }
 
-void World_SetDimensions(World *world, const SVec *dims) {
+cs_bool World_SetDimensions(World *world, const SVec *dims) {
+	if(dims->x < 1 || dims->y < 1 || dims->z < 1) return false;
+	cs_uint32 size = (cs_uint32)dims->x * (cs_uint32)dims->y;
+	if((WORLD_MAX_SIZE / size) < (cs_uint32)dims->z) return false;
+	size *= (cs_uint32)dims->z;
 	world->info.dimensions = *dims;
-	world->wdata.size = (cs_uint32)dims->x * (cs_uint32)dims->y * (cs_uint32)dims->z;
+	world->wdata.size = size;
+	return true;
 }
 
 cs_bool World_SetEnvProp(World *world, EProp prop, cs_int32 value) {
@@ -308,7 +313,8 @@ static cs_bool ReadInfo(World *world, cs_file fp) {
 			case WDAT_DIMENSIONS:
 				if(ReadWData(fp, dims) != 1)
 					return false;
-				World_SetDimensions(world, &dims);
+				if(!World_SetDimensions(world, &dims))
+					return false;
 				break;
 			case WDAT_SPAWNVEC:
 				if(ReadWData(fp, world->info.spawnVec) != 1)

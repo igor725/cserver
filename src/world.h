@@ -35,7 +35,7 @@ API void World_WaitAllTasks(World *world);
 API void World_SetInMemory(World *world, cs_bool state);
 API void World_SetIgnoreModifications(World *world, cs_bool state);
 API void World_SetSpawn(World *world, Vec *svec, Ang *sang);
-API void World_SetDimensions(World *world, const SVec *dims);
+API cs_bool World_SetDimensions(World *world, const SVec *dims);
 API cs_bool World_SetBlock(World *world, SVec *pos, BlockID id);
 API cs_bool World_SetBlockO(World *world, cs_uint32 offset, BlockID id);
 API cs_bool World_SetEnvColor(World *world, EColor type, Color3* color);

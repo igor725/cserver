@@ -13,6 +13,7 @@
 #define WORLD_FLAG_MODIGNORE BIT(2)
 #define WORLD_FLAG_INMEMORY BIT(3)
 
+#define WORLD_MAX_SIZE 4000000000u
 #define WORLD_INVALID_OFFSET (cs_uint32)-1
 
 typedef enum _EWorldError {
