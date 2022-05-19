@@ -257,32 +257,6 @@ cs_bool Waitable_TryWait(Waitable *wte, cs_ulong timeout) {
 	return WaitForSingleObject(wte, timeout) == WAIT_OBJECT_0;
 }
 
-Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max) {
-	return CreateSemaphoreA(
-		NULL, initial,
-		max, NULL
-	);
-}
-
-cs_bool Semaphore_TryWait(Semaphore *sem, cs_ulong timeout) {
-	return WaitForSingleObject(sem, timeout) == WAIT_OBJECT_0;
-}
-
-void Semaphore_Wait(Semaphore *sem) {
-	if(WaitForSingleObject(sem, INFINITE) == WAIT_FAILED)
-		Error_PrintSys(true);
-}
-
-void Semaphore_Post(Semaphore *sem) {
-	if(!ReleaseSemaphore(sem, 1, NULL))
-		Error_PrintSys(true);
-}
-
-void Semaphore_Free(Semaphore *sem) {
-	if(!CloseHandle(sem))
-		Error_PrintSys(false);
-}
-
 cs_int32 Time_Format(cs_char *buf, cs_size buflen) {
 	SYSTEMTIME time;
 	GetLocalTime(&time);

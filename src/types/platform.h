@@ -12,7 +12,7 @@
 
 	typedef WIN32_FIND_DATAA ITER_FILE;
 	typedef cs_ulong TRET, TSHND_PARAM;
-	typedef void Waitable, Semaphore;
+	typedef void Waitable;
 	typedef CRITICAL_SECTION Mutex;
 	typedef SOCKET Socket;
 	typedef HANDLE Thread, ITER_DIR;
@@ -37,23 +37,17 @@
 	typedef void *TRET;
 	typedef pthread_t Thread;
 #	ifdef CORE_USE_DARWIN
-#		include <mach/task.h>
-#		include <mach/semaphore.h>
 		typedef struct _DMutex {
 			pthread_mutex_t handle;
 			pthread_cond_t cond;
 			pthread_t owner;
 			cs_uint32 rec;
 		} Mutex;
-		typedef semaphore_t Semaphore;
 #	else
-#		include <semaphore.h>
-
 		typedef struct _UMutex {
 			pthread_mutex_t handle;
 			pthread_mutexattr_t attr;
 		} Mutex;
-		typedef sem_t Semaphore;
 #	endif
 	typedef void TSHND_RET;
 	typedef cs_int32 TSHND_PARAM;

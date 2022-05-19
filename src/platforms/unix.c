@@ -324,45 +324,6 @@ cs_bool Waitable_TryWait(Waitable *wte, cs_ulong timeout) {
 	return pthread_cond_timedwait(&wte->cond, &wte->mutex->handle, &ts) == 0;
 }
 
-#ifndef CORE_USE_DARWIN
-Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max) {
-	Semaphore *sem = Memory_Alloc(1, sizeof(Semaphore));
-	if(sem_init(sem, max, initial) == 0)
-		return sem;
-	Error_PrintSys(true);
-	return NULL;
-}
-
-cs_bool Semaphore_TryWait(Semaphore *sem, cs_ulong timeout) {
-	struct timespec ts;
-	clock_gettime(CLOCK_REALTIME, &ts);
-	cs_ulong secs = timeout / 1000;
-	timeout = timeout % 1000;
-
-	cs_ulong add = 0;
-	timeout = timeout * 1000 * 1000 + ts.tv_nsec;
-	add = timeout / (1000 * 1000 * 1000);
-	ts.tv_sec += (add + secs);
-	ts.tv_nsec = timeout % (1000 * 1000 * 1000);
-
-	return sem_timedwait(sem, &ts) == 0;
-}
-
-void Semaphore_Wait(Semaphore *sem) {
-	if(sem_wait(sem) != 0)
-		Error_PrintSys(true);
-}
-
-void Semaphore_Post(Semaphore *sem) {
-	if(sem_post(sem) != 0)
-		Error_PrintSys(true);
-}
-
-void Semaphore_Free(Semaphore *sem) {
-	Memory_Free(sem);
-}
-#endif
-
 cs_int32 Time_Format(cs_char *buf, cs_size buflen) {
 	struct timeval tv;
 	struct tm *tm;

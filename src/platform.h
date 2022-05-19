@@ -87,12 +87,6 @@ API void Waitable_Wait(Waitable *wte);
 API cs_bool Waitable_TryWait(Waitable *wte, cs_ulong timeout);
 API void Waitable_Reset(Waitable *wte);
 
-API Semaphore *Semaphore_Create(cs_ulong initial, cs_ulong max);
-API cs_bool Semaphore_TryWait(Semaphore *sem, cs_ulong timeout);
-API void Semaphore_Wait(Semaphore *sem);
-API void Semaphore_Post(Semaphore *sem);
-API void Semaphore_Free(Semaphore *sem);
-
 API cs_int32 Time_Format(cs_char *buf, cs_size len);
 API cs_uint64 Time_GetMSec(void);
 API cs_double Time_GetMSecD(void);

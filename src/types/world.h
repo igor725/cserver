@@ -52,7 +52,8 @@ typedef struct _World {
 	cs_uint32 flags;
 	cs_str name;
 	WorldInfo info;
-	Semaphore *sem;
+	Mutex *mtx;
+	Waitable *prgw;
 	Waitable *taskw;
 	cs_uint32 taskc;
 	Compr compr;

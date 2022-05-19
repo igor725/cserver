@@ -26,9 +26,11 @@ World *World_Main = NULL;
 World *World_Create(cs_str name) {
 	World *tmp = Memory_Alloc(1, sizeof(World));
 	tmp->name = String_AllocCopy(name);
-	tmp->sem = Semaphore_Create(1, 1);
+	tmp->prgw = Waitable_Create();
 	tmp->taskw = Waitable_Create();
+	tmp->mtx = Mutex_Create();
 	Waitable_Signal(tmp->taskw);
+	Waitable_Signal(tmp->prgw);
 
 	/*
 	 * Устанавливаем дефолтные значения
@@ -261,7 +263,8 @@ void World_Free(World *world) {
 	}
 	Compr_Cleanup(&world->compr);
 	World_FreeBlockArray(world);
-	Semaphore_Free(world->sem);
+	Mutex_Free(world->mtx);
+	Waitable_Free(world->prgw);
 	Waitable_Free(world->taskw);
 	if(world->name) Memory_Free((void *)world->name);
 	Memory_Free(world);
@@ -417,15 +420,21 @@ THREAD_FUNC(WorldSaveThread) {
 }
 
 cs_bool World_Lock(World *world, cs_ulong timeout) {
-	if(timeout > 0 && !Semaphore_TryWait(world->sem, timeout))
-		return false;
-	else Semaphore_Wait(world->sem);
-
-	return true;
+	cs_bool ret = true;
+	Mutex_Lock(world->mtx);
+	if(timeout > 0) {
+		if((ret = Waitable_TryWait(world->prgw, timeout)) == true)
+			Waitable_Reset(world->prgw);
+	} else {
+		Waitable_Wait(world->prgw);
+		Waitable_Reset(world->prgw);
+	}
+	Mutex_Unlock(world->mtx);
+	return ret;
 }
 
 void World_Unlock(World *world) {
-	Semaphore_Post(world->sem);
+	Waitable_Signal(world->prgw);
 }
 
 void World_StartTask(World *world) {
