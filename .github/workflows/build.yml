@@ -1,6 +1,10 @@
 name: C/C++ CI
 
 on:
+  pull_request:
+    types: [opened, reopened]
+  schedule:
+    - cron: '0 0 1 * *'
   push:
     paths:
       - src/**

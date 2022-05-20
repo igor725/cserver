@@ -12,7 +12,6 @@ case "$(uname -s)" in
 	Darwin)
 		HOST_OS="darwin"
 		NPROC="sysctl -n hw.physicalcpu"
-		echo "WARNING: MacOS build is NOT READY to use"
 		;;
 	CYGWIN*|MINGW*|MSYS*|MINGW32*)
 		HOST_OS="win"

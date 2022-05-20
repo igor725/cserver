@@ -5,7 +5,7 @@ The goal of this project: create a stable, customizable and future-rich multipla
 
 ## Features
 * Classic Protocol Extension
-* Multiplatform (Windows/Linux/MacOS)
+* Multiplatform (Windows/Linux/macOS)
 * Plugins support
 * Web client support ([More info](https://www.classicube.net/api/docs/server))
 * Lua scripting (Implemented in the [Lua plugin](https://github.com/igor725/cs-lua))
@@ -21,7 +21,7 @@ Single command builder: `curl -sL https://igvx.ru/singlecommand | bash` (server 
 
 ## Dependencies
 
-### On Linux/MacOS
+### On Linux/macOS
 1. zlib
 2. pthread
 3. libcurl, libcrypto (will be loaded on demand)
@@ -58,7 +58,7 @@ SET CFLAGS=!CFLAGS! /DCORE_MANUAL_BACKENDS ^
 
 ## Building
 
-### On Linux/MacOS
+### On Linux/macOS
 ``./build [args ...]``
 
 NOTE: This script uses gcc, but you can change it to another compiler by setting CC environment variable (``CC=clang ./build [args ...]``).

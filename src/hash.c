@@ -108,8 +108,9 @@ static cs_str cryptodll[] = {
 	"crypto.dll",
 	"libeay32.dll",
 #elif defined(CORE_USE_UNIX)
-	"libcrypto." DLIB_EXT,
+	"libcrypto.35." DLIB_EXT,
 	"libcrypto." DLIB_EXT ".1.1",
+	"libcrypto." DLIB_EXT,
 #else
 #error This file wants to be hacked
 #endif
