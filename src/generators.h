@@ -3,9 +3,9 @@
 #include "core.h"
 #include "types/world.h"
 
-#define GENERATOR_SEED_FROM_TIME (cs_int32)-1
+#define GENERATOR_SEED_FROM_TIME (cs_uint32)-1
 
-typedef cs_bool(*GeneratorRoutine)(World *world, cs_int32 seed);
+typedef cs_bool(*GeneratorRoutine)(World *world, cs_uint32 seed);
 
 cs_bool Generators_Init(void);
 void Generators_UnregisterAll(void);

@@ -3,8 +3,8 @@
 #include "list.h"
 #include "generators.h"
 
-static cs_bool flatgenerator(World *, cs_int32);
-static cs_bool normalgenerator(World *, cs_int32);
+static cs_bool flatgenerator(World *, cs_uint32);
+static cs_bool normalgenerator(World *, cs_uint32);
 
 #include "generators/flat.c"
 #include "generators/normal.c"

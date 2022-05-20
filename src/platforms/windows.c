@@ -271,7 +271,7 @@ cs_int32 Time_Format(cs_char *buf, cs_size buflen) {
 cs_uint64 Time_GetMSec(void) {
 	FILETIME ft; GetSystemTimeAsFileTime(&ft);
 	cs_uint64 time = ft.dwLowDateTime | ((cs_uint64)ft.dwHighDateTime << 32);
-	return (time / 10000) + 50491123200000ULL;
+	return (time - 116444736000000000LL) / 10000;
 }
 
 cs_double Time_GetMSecD(void) {

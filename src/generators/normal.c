@@ -3,6 +3,7 @@
 #include "block.h"
 #include "csmath.h"
 #include "platform.h"
+#include "generators.h"
 
 #define GENROUTINE(N) static void generate##N(void)
 #define setBlock(vec, id) ctx.data[(vec.y * ctx.dims->z + vec.z) * ctx.dims->x + vec.x] = id
@@ -413,18 +414,17 @@ INL static cs_float getHeightInPoint(cs_int16 x, cs_int16 z) {
 	return (cs_float)y + 2.59375f;
 }
 
-cs_bool normalgenerator(World *world, cs_int32 seed) {
+cs_bool normalgenerator(World *world, cs_uint32 seed) {
 	if(world->info.dimensions.x < 32 ||
 	world->info.dimensions.z < 32 ||
 	world->info.dimensions.y < 32)
 		return false;
 
 	Memory_Zero(&ctx, sizeof(ctx));
-	if(seed == -1)
-		Random_SeedFromTime(&ctx.rnd);
-	else
-		Random_Seed(&ctx.rnd, seed);
+	if(seed == GENERATOR_SEED_FROM_TIME)
+		seed = (cs_uint32)(Time_GetMSec() / 1000ull);
 
+	Random_Seed(&ctx.rnd, seed);
 	ctx.dims = &world->info.dimensions;
 	ctx.planeSize = ctx.dims->x * ctx.dims->z;
 	ctx.data = World_GetBlockArray(world, &ctx.worldSize);
