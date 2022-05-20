@@ -406,6 +406,8 @@ void Client_Chat(Client *client, EMesgType type, cs_str message) {
 
 		return;
 	}
+
+	Vanilla_WriteChat(client, type, message);
 }
 
 cs_bool Client_CheckState(Client *client, EClientState state) {

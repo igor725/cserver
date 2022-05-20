@@ -112,7 +112,7 @@ static cs_str cryptodll[] = {
 	"libcrypto." DLIB_EXT ".1.1",
 	"libcrypto." DLIB_EXT,
 #else
-#error This file wants to be hacked
+#	error This file wants to be hacked
 #endif
 	NULL
 };
