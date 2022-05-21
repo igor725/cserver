@@ -4,15 +4,17 @@
 #include "types/client.h"
 #include "types/platform.h"
 
+#define HEARTBEAT_SECRET_LENGTH 32
+
 typedef cs_bool(*heartbeatKeyChecker)(cs_str secret, Client *client);
 
 typedef struct _Heartbeat {
 	heartbeatKeyChecker checker;
 	cs_str domain, playurl, reqpath;
+	cs_char secret[HEARTBEAT_SECRET_LENGTH];
 	Waitable *isdone;
-	cs_bool started,
-	ispublic, issecure,
-	isannounced;
+	cs_bool started, keychanged,
+	ispublic, issecure, isannounced;
 	cs_uint16 delay;
 } Heartbeat;
 

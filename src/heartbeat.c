@@ -4,6 +4,7 @@
 #include "platform.h"
 #include "server.h"
 #include "csmath.h"
+#include "cserror.h"
 #include "heartbeat.h"
 #include "http.h"
 #include "hash.h"
@@ -12,19 +13,17 @@
 #include "client.h"
 #include "config.h"
 
-#define SECRET_LENGTH 32
 #define REQUEST "%s?name=%s&port=%u&users=%d&max=%u&salt=%s&public=%s&web=true&software=%s&version=7"
 
 static AListField *headHeartbeat = NULL;
 static Mutex *gLock = NULL;
 static cs_bool inited = false;
-cs_char secretKey[SECRET_LENGTH * 4];
 
-INL static void NewSecret(void) {
+INL static void NewSecret(Heartbeat *self) {
 	RNGState secrnd;
 	Random_SeedFromTime(&secrnd);
 
-	for(cs_uint32 i = 0; i < SECRET_LENGTH; i++) {
+	for(cs_uint32 i = 0; i < HEARTBEAT_SECRET_LENGTH; i++) {
 		cs_int32 min, max;
 		switch(Random_Range(&secrnd, 0, 3)) {
 			case 0:
@@ -40,19 +39,10 @@ INL static void NewSecret(void) {
 				max = 122;
 				break;
 		}
-		secretKey[i] = (cs_char)Random_Range(&secrnd, min, max);
+		self->secret[i] = (cs_char)Random_Range(&secrnd, min, max);
 	}
-	secretKey[SECRET_LENGTH - 1] = '\0';
-
-	cs_file sfile = File_Open("secret.txt", "w");
-	if(sfile) {
-		cs_str cm1 = Sstor_Get("HBEAT_SECRET_COMM1"),
-		cm2 = Sstor_Get("HBEAT_SECRET_COMM2");
-		File_Write(cm1, String_Length(cm1), 1, sfile);
-		File_Write(cm2, String_Length(cm2), 1, sfile);
-		File_Write(secretKey, SECRET_LENGTH, 1, sfile);
-		File_Close(sfile);
-	}
+	self->secret[HEARTBEAT_SECRET_LENGTH - 1] = '\0';
+	self->keychanged = true;
 }
 
 INL static void TrimReserved(cs_char *name) {
@@ -62,19 +52,26 @@ INL static void TrimReserved(cs_char *name) {
 	}
 }
 
-static void initHeartbeatModule(void) {
-	gLock = Mutex_Create();
-	inited = true;
+static cs_file openHeartbeatSecret(Heartbeat *self, cs_str mode) {
+	cs_char path[MAX_PATH];
+	if(!String_FormatBuf(path, MAX_PATH, "secrets/%s.txt", self->domain)) {
+		Error_PrintSys(false);
+		return NULL;
+	}
+	
+	return File_Open(path, mode);
+}
 
-	cs_file sfile = File_Open("secret.txt", "r");
+static void searchForSecretKey(Heartbeat *self) {
+	Mutex_Lock(gLock);
+	self->keychanged = false;
+	cs_file sfile = openHeartbeatSecret(self, "r");
 	if(sfile) {
-		do {
-			if(File_ReadLine(sfile, secretKey, SECRET_LENGTH * 4) == 0)
-				break;
-		} while(*secretKey == '#');
+		cs_int32 len = File_ReadLine(sfile, self->secret, HEARTBEAT_SECRET_LENGTH);
+		if(len == 0) NewSecret(self);
 		File_Close(sfile);
-		TrimReserved(secretKey);
-	} else NewSecret();
+	} else NewSecret(self);
+	Mutex_Unlock(gLock);
 }
 
 static const cs_char hexchars[] = "0123456789abcdef";
@@ -116,7 +113,7 @@ INL static void MakeHeartbeatRequest(Heartbeat *self) {
 
 	if(String_FormatBuf(reqstr, 512, REQUEST,
 		self->reqpath, name, port, count,
-		max, secretKey, self->ispublic ? "True" : "False",
+		max, self->secret, self->ispublic ? "True" : "False",
 		SOFTWARE_NAME "%2F" GIT_COMMIT_TAG
 	) == -1) {
 		Log_Info(Sstor_Get("HBEAT_ERR"), "String_FormatBuf failed");
@@ -161,10 +158,8 @@ THREAD_FUNC(HbeatThread) {
 
 	while(self->started && Server_Active) {
 		if(delay == 0) {
-			Mutex_Lock(gLock);
 			MakeHeartbeatRequest(self);
 			delay = self->delay;
-			Mutex_Unlock(gLock);
 		} else {
 			Thread_Sleep(50);
 			delay -= 50;
@@ -218,16 +213,29 @@ cs_bool Heartbeat_Run(Heartbeat *self) {
 	if(self->started || !self->playurl || !self->domain || !self->reqpath)
 		return false;
 
-	if(!inited)
-		initHeartbeatModule();
+	if(!inited) {
+		gLock = Mutex_Create();
+		inited = true;
+	}
+
+	Mutex_Lock(gLock);
+	AListField *kc;
+	List_Iter(kc, headHeartbeat) {
+		Heartbeat *other = kc->value.ptr;
+		if(String_CaselessCompare(self->domain, other->domain))
+			return false;
+	}
+
 	if(!self->checker)
 		self->checker = VanillaKeyChecker;
+
+	if(*self->secret == '\0')
+		searchForSecretKey(self);
 
 	self->started = true;
 	self->isdone = Waitable_Create();
 	Waitable_Reset(self->isdone);
 	Thread_Create(HbeatThread, self, true);
-	Mutex_Lock(gLock);
 	AList_AddField(&headHeartbeat, self);
 	Mutex_Unlock(gLock);
 	return true;
@@ -246,13 +254,28 @@ INL static void freeMemory(Heartbeat *self) {
 	Memory_Free(self);
 }
 
+INL static void saveHeartbeatKey(Heartbeat *self) {
+	if(self->keychanged) {
+		cs_file sfile = openHeartbeatSecret(self, "w");
+		if(!sfile) {
+			Error_PrintSys(false);
+			return;
+		}
+		File_Write(self->secret, String_Length(self->secret), 1, sfile);
+		File_Write("\r\n", 2, 1, sfile);
+		File_Close(sfile);
+		self->keychanged = false;
+	}
+}
+
 void Heartbeat_Close(Heartbeat *self) {
+	saveHeartbeatKey(self);
 	freeMemory(self);
-	AListField *tmp;
+	AListField *kc;
 	Mutex_Lock(gLock);
-	List_Iter(tmp, headHeartbeat) {
-		if(tmp->value.ptr == self) {
-			AList_Remove(&headHeartbeat, tmp);
+	List_Iter(kc, headHeartbeat) {
+		if(kc->value.ptr == self) {
+			AList_Remove(&headHeartbeat, kc);
 			break;
 		}
 	}
@@ -265,7 +288,7 @@ cs_bool Heartbeat_Validate(Client *client) {
 	AListField *kc;
 	List_Iter(kc, headHeartbeat) {
 		Heartbeat *self = (Heartbeat *)kc->value.ptr;
-		if(self->checker(secretKey, client)) return true;
+		if(self->checker(self->secret, client)) return true;
 	}
 
 	return false;
@@ -275,6 +298,7 @@ void Heartbeat_StopAll(void) {
 	if(!inited) return;
 	Mutex_Lock(gLock);
 	while(headHeartbeat != NULL) {
+		saveHeartbeatKey(headHeartbeat->value.ptr);
 		freeMemory(headHeartbeat->value.ptr);
 		AList_Remove(&headHeartbeat, headHeartbeat);
 	}

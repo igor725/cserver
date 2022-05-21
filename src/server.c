@@ -189,6 +189,7 @@ cs_bool Server_Init(void) {
 
 	Directory_Ensure("worlds");
 	Directory_Ensure("configs");
+	Directory_Ensure("secrets");
 
 	CStore *cfg = Config_NewStore(MAINCFG);
 	CEntry *ent;
