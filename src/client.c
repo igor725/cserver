@@ -128,7 +128,7 @@ BlockID Client_GetStandBlock(Client *client) {
 			id = World_GetBlock(client->playerData.world, &btest);
 			if(id != BLOCK_AIR) {
 				if(x != 0 || z != 0) {
-					btest.y -= 1;
+					btest.y += 1;
 					if(World_GetBlock(client->playerData.world, &btest))
 						continue;
 				}
