@@ -1167,7 +1167,7 @@ cs_bool CPEHandler_PluginMessage(Client *client, cs_char *data) {
 static void FinishCPEThings(Client *client) {
 	cs_int32 extVer = Client_GetExtVer(client, EXT_CUSTOMMODELS);
 	cs_bool hasParts = Client_GetExtVer(client, EXT_CUSTOMPARTS) > 0;
-	for(cs_int16 i = 0; i < 256; i++) {
+	for(cs_int16 i = 0; i < max(CPE_MODELS_COUNT, CPE_PARTICLES_COUNT); i++) {
 		CPE_SendModel(client, extVer, (cs_byte)i);
 		if(hasParts) CPE_SendParticle(client, (cs_byte)i);
 	}

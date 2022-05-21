@@ -22,6 +22,9 @@
 #define MV_TEXPACK BIT(2)
 #define MV_WEATHER BIT(3)
 
+#define CPE_MODELS_COUNT 64
+#define CPE_PARTICLES_COUNT 254
+
 /*
  * Если какой-то из дефайнов ниже
  * вырос, удостовериться, что
