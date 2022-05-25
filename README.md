@@ -1,5 +1,5 @@
 # cserver
-Another Minecraft Classic server in C. Not well written, but it may be useful for someone. Use this software carefully! The server MAY have many security holes.
+Another Minecraft Classic server in C.
 
 The goal of this project: create a stable, customizable and future-rich multiplatform Minecraft Classic server with a minimal dependencies count.
 
@@ -32,7 +32,7 @@ Single command builder: `curl -sL https://igvx.ru/singlecommand | bash` (server 
 2. Several std libs (such as Kernel32, DbgHelp, WS2_32)
 3. WinInet, Advapi32 (will be loaded on demand)
 
-NOTE: Some libraries (such as libcurl, libcrypto) are multiplatform. You can use them both on Windows and Linux.
+NOTE: Some libraries (such as libcurl, libcrypto) are multiplatform. You can use them both on Windows, Linux and macOS.
 
 ### Available HTTP backends
 - libcurl (`HTTP_USE_CURL_BACKEND`)
@@ -90,6 +90,7 @@ NOTE: This script must be runned in the Visual Studio Developer Command Prompt.
 * ``./build dbg wall upd pb base install`` - Pull latest changes from cs-base repository, then build the base plugin and copy binary to the plugins directory
 
 ## Notes
+* Use this software carefully! The server MAY have many security holes.
 * It is strongly recommended to recompile **all plugins** every time you update the server, because the final version of API not yet been formed. It means your server may not work properly.
 * My main OS is Windows 10, this means the Linux thing are not well tested.
 * By default the server doesn't have any useful chat commands, build the [cs-base](https://github.com/igor725/cs-base) plugin for an expanded command set.

@@ -328,7 +328,7 @@ void Command_RegisterDefault(void) {
 
 void Command_UnregisterAll(void) {
 	while(Command_Head) {
-		Command *cmd = (Command *)Command_Head->value.ptr;
+		Command *cmd = Command_Head->value.ptr;
 		Memory_Free((void *)cmd->name);
 		Memory_Free(cmd);
 		AList_Remove(&Command_Head, Command_Head);

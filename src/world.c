@@ -70,7 +70,7 @@ cs_bool World_Remove(World *world) {
 	World_Lock(world, 0);
 	AListField *tmp;
 	List_Iter(tmp, World_Head) {
-		if(AList_GetValue(tmp).ptr == world) {
+		if(tmp->value.ptr == world) {
 			AList_Remove(&World_Head, tmp);
 			break;
 		}

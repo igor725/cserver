@@ -77,7 +77,7 @@ static cs_char *cmd_generator(cs_str text, cs_int32 state) {
 	AListField *field;
 
 	List_Iter(field, Command_Head) {
-		Command *cmd = AList_GetValue(field).ptr;
+		Command *cmd = field->value.ptr;
 		if(String_CaselessCompare2(cmd->name, text, tlen)) {
 			if(state-- > 0) continue;
 			return (cs_char *)String_AllocCopy(cmd->name);
@@ -104,7 +104,7 @@ static cs_char *arg_generator(cs_str text, cs_int32 state) {
 
 	AListField *field;
 	List_Iter(field, World_Head) {
-		World *world = AList_GetValue(field).ptr;
+		World *world = field->value.ptr;
 		cs_str name = World_GetName(world);
 		if(String_CaselessCompare2(name, text, tlen)) {
 			if(state-- > 0) continue;
