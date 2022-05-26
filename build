@@ -42,7 +42,9 @@ if [ $MACH = "" ]; then
 	MACH="unknown"
 fi
 CC="$CC -fdiagnostics-color=always"
-LNK="$CC"
+if [ "$LNK" = "" ]; then
+	LNK="$CC"
+fi
 if [ "$TARGET_OS" != "win" ]; then
 	LNK="$LNK -rdynamic"
 	if [ "$TARGET_OS" != "darwin" ]; then

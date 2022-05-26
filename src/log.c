@@ -13,6 +13,8 @@ static Mutex *logMutex = NULL;
 #define MKTCOL(c, t) Log_Flags&LOG_COLORS?MKCOL(c)t"\033[0m":t
 
 static cs_str MapColor(cs_char col) {
+	if(col >= 'A' && col <= 'Z') col += 32;
+
 	switch(col) {
 		case '0': return MKCOL("30");
 		case '1': return MKCOL("34");
@@ -31,6 +33,7 @@ static cs_str MapColor(cs_char col) {
 		case 'e': return MKCOL("33");
 		case 'f': return MKCOL("0");
 	}
+
 	return NULL;
 }
 
