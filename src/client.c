@@ -14,7 +14,7 @@
 #include "groups.h"
 #include "cpe.h"
 
-Client *Clients_List[MAX_CLIENTS] = {0};
+Client *Clients_List[MAX_CLIENTS] = {NULL};
 
 cs_byte Clients_GetCount(EClientState state) {
 	cs_byte count = 0;

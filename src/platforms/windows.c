@@ -48,7 +48,7 @@ cs_bool File_ProcClose(cs_file fp) {
 }
 
 cs_bool Socket_Init(void) {
-	WSADATA ws;
+	WSADATA ws = {0};
 	return WSAStartup(MAKEWORD(2, 2), &ws) != SOCKET_ERROR;
 }
 

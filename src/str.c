@@ -122,6 +122,12 @@ cs_char *String_FindSubstr(cs_str str, cs_str strsrch) {
 	return strstr(str, strsrch);
 }
 
+cs_str String_TrimExtension(cs_str str) {
+	cs_char *ext = String_LastChar(str, '.');
+	if(ext) *ext = '\0';
+	return str;
+}
+
 cs_str String_AllocCopy(cs_str str) {
 	cs_size len = String_Length(str) + 1;
 	cs_char *ptr = Memory_Alloc(1, len);

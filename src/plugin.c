@@ -286,7 +286,7 @@ void Plugin_LoadAll(void) {
 	Directory_Ensure("plugins");
 	Directory_Ensure("plugins" PATH_DELIM "disabled");
 
-	DirIter pIter;
+	DirIter pIter = {0};
 	if(Iter_Init(&pIter, "plugins", DLIB_EXT)) {
 		do {
 			if(!pIter.isDir && pIter.cfile)

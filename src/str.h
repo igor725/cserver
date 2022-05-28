@@ -4,6 +4,7 @@
 #include <stdarg.h>
 
 API cs_char *String_FindSubstr(cs_str str, cs_str strsrch);
+API cs_str String_TrimExtension(cs_str str);
 API cs_bool String_Compare(cs_str str1, cs_str str2);
 API cs_bool String_CaselessCompare(cs_str str1, cs_str str2);
 API cs_bool String_CaselessCompare2(cs_str str1, cs_str str2, cs_size len);

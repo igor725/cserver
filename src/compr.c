@@ -97,18 +97,18 @@ cs_bool Compr_Init(Compr *ctx, ComprType type) {
 	ctx->state = COMPR_STATE_IDLE;
 	ctx->type = type;
 
-	if(type == COMPR_TYPE_DEFLATE || type == COMPR_TYPE_GZIP) {
-		if(!zlib.definit) return false;
+	if(type == COMPR_TYPE_DEFLATE || type == COMPR_TYPE_GZIP)
 		ctx->ret = zlib.definit(
 			ctx->stream, Z_DEFAULT_COMPRESSION,
 			Z_DEFLATED, getWndBits(type),
 			MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY,
 			ZLIB_VERSION, sizeof(z_stream)
 		);
-	} else if(type == COMPR_TYPE_INFLATE || type == COMPR_TYPE_UNGZIP) {
-		if(!zlib.infinit) return false;
-		ctx->ret = zlib.infinit(ctx->stream, getWndBits(type), ZLIB_VERSION, sizeof(z_stream));
-	}
+	else if(type == COMPR_TYPE_INFLATE || type == COMPR_TYPE_UNGZIP)
+		ctx->ret = zlib.infinit(
+			ctx->stream, getWndBits(type),
+			ZLIB_VERSION, sizeof(z_stream)
+		);
 
 	return ctx->ret == Z_OK;
 }
@@ -123,20 +123,22 @@ cs_ulong Compr_CRC32(const cs_byte *data, cs_uint32 len) {
 }
 
 void Compr_SetInBuffer(Compr *ctx, void *data, cs_uint32 size) {
-	z_streamp stream = (z_streamp )ctx->stream;
+	if(!ctx->stream) return;
+	z_streamp stream = (z_streamp)ctx->stream;
 	ctx->state = COMPR_STATE_INPROCESS;
 	stream->avail_in = size;
 	stream->next_in = data;
 }
 
 void Compr_SetOutBuffer(Compr *ctx, void *data, cs_uint32 size) {
-	z_streamp stream = (z_streamp )ctx->stream;
+	if(!ctx->stream) return;
+	z_streamp stream = (z_streamp)ctx->stream;
 	stream->avail_out = size;
 	stream->next_out = data;
 }
 
 INL static cs_bool DeflateStep(Compr *ctx) {
-	if(!zlib.deflate) return false;
+	if(!ctx->stream || !zlib.deflate) return false;
 	z_streamp stream = (z_streamp)ctx->stream;
 	cs_uint32 outbuf_size = stream->avail_out;
 
@@ -154,12 +156,17 @@ INL static cs_bool DeflateStep(Compr *ctx) {
 }
 
 INL static cs_bool InflateStep(Compr *ctx) {
+	if(!ctx->stream || !zlib.inflate) return false;
 	z_streamp stream = (z_streamp)ctx->stream;
 	cs_uint32 avail = stream->avail_out;
 	ctx->written = 0;
 	ctx->ret = zlib.inflate(stream, Z_NO_FLUSH);
-	if(ctx->ret == Z_NEED_DICT || ctx->ret == Z_DATA_ERROR ||
-	ctx->ret == Z_MEM_ERROR) return false;
+	switch(ctx->ret) {
+		case Z_NEED_DICT:
+		case Z_DATA_ERROR:
+		case Z_MEM_ERROR:
+			return false;
+	}
 	ctx->written = avail - stream->avail_out;
 	ctx->queued = stream->avail_in;
 	return true;
@@ -184,7 +191,7 @@ cs_str Compr_GetLastError(Compr *ctx) {
 }
 
 cs_str Compr_GetError(cs_int32 code) {
-	if(!zlib.error) return "zlib is not loaded correctly";
+	if(!zlib.error) return "zlib is not loaded";
 	return zlib.error(code);
 }
 

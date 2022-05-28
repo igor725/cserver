@@ -269,14 +269,13 @@ cs_bool Server_Init(void) {
 	cs_str worlds = Config_GetStrByKey(cfg, CFG_WORLDS_KEY);
 	cs_uint32 wIndex = 0;
 	if(*worlds == '*') {
-		DirIter wIter;
+		DirIter wIter = {0};
 		if(Iter_Init(&wIter, "worlds", "cws")) {
 			do {
 				if(wIter.isDir || !wIter.cfile) continue;
 				cs_char wname[64] = {0};
 				if(String_Copy(wname, 64, wIter.cfile)) {
-					cs_char *ext = String_FindSubstr(wname, ".cws");
-					if(ext) *ext = '\0';
+					(void)String_TrimExtension(wname);
 				} else continue;
 
 				World *tmp = World_Create(wname);
@@ -322,8 +321,7 @@ cs_bool Server_Init(void) {
 
 				if(state == 0) {
 					skip_creating = false;
-					cs_char *ext = String_FindSubstr(buffer, ".cws");
-					if(ext) *ext = '\0';
+					(void)String_TrimExtension(buffer);
 					tmp = World_Create(buffer);
 					if(World_Load(tmp)) {
 						World_Lock(tmp, 0);
