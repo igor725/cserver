@@ -373,10 +373,13 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 	}
 
 	if(Heartbeat_Validate(client)) {
-		Client_SetServerIdent(client,
-			Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY),
-			Config_GetStrByKey(Server_Config, CFG_SERVERMOTD_KEY)
-		);
+		preHandshakeDone params = {
+			.client = client
+		};
+		String_Copy(params.name, 65, Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY));
+		String_Copy(params.motd, 65, Config_GetStrByKey(Server_Config, CFG_SERVERMOTD_KEY));
+		Event_Call(EVT_PREHANDSHAKEDONE, &params);
+		Client_SetServerIdent(client, params.name, params.motd);
 	} else {
 		Client_Kick(client, Sstor_Get("KICK_AUTHFAIL"));
 		return true;
@@ -496,32 +499,28 @@ cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
 cs_bool Handler_Message(Client *client, cs_char *data) {
 	ValidateClientState(client, CLIENT_STATE_INGAME, true);
 
-	cs_char message[65],
-	*messptr = message;
+	onMessage params = {
+		.client = client,
+		.type = MESSAGE_TYPE_CHAT
+	};
 	cs_byte partial = *data++,
-	len = Proto_ReadStringNoAlloc(&data, message);
+	len = Proto_ReadStringNoAlloc(&data, params.message);
 	if(len == 0) return false;
 
 	for(cs_byte i = 0; i < len; i++) {
-		if(message[i] == '%' && ISHEX(message[i + 1]))
-			message[i] = '&';
+		if(params.message[i] == '%' && ISHEX(params.message[i + 1]))
+			params.message[i] = '&';
 	}
 
 	if(Client_GetExtVer(client, EXT_LONGMSG)) {
-		if(String_Append(client->cpeData.message, 193, message) && partial == 1) return true;
-		messptr = client->cpeData.message;
+		if(String_Append(client->cpeData.message, CPE_MAX_EXTMESG_LEN, params.message) && partial == 1) return true;
+		String_Copy(params.message, CPE_MAX_EXTMESG_LEN, client->cpeData.message);
 	}
 
-	if(*messptr == '/') {
-		if(!Command_Handle(messptr, client))
+	if(*params.message == '/') {
+		if(!Command_Handle(params.message, client))
 			Vanilla_WriteChat(client, MESSAGE_TYPE_CHAT, Sstor_Get("CMD_UNK"));
 	} else {
-		onMessage params = {
-			.client = client,
-			.message = messptr,
-			.type = MESSAGE_TYPE_CHAT
-		};
-
 		if(Event_Call(EVT_ONMESSAGE, &params)) {
 			cs_char formatted[320] = {0};
 
@@ -534,9 +533,7 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 	 * Нужно для очистки буфера частичных
 	 * сообщений дополнения LongerMessages
 	 */
-	if(messptr != message)
-		*messptr = '\0';
-
+	*client->cpeData.message = '\0';
 	return true;
 }
 

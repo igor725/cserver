@@ -24,6 +24,7 @@
 
 #define CPE_MODELS_COUNT 64
 #define CPE_PARTICLES_COUNT 254
+#define CPE_MAX_EXTMESG_LEN 193
 
 /*
  * Если какой-то из дефайнов ниже
@@ -209,7 +210,7 @@ typedef struct _CPEData {
 	} extensions;
 	cs_char appName[65]; // Название игрового клиента
 	cs_char skin[65]; // Скин игрока [ExtPlayerList]
-	cs_char message[193]; // Используется для получения длинных сообщений [LongerMessages]
+	cs_char message[CPE_MAX_EXTMESG_LEN]; // Используется для получения длинных сообщений [LongerMessages]
 	BlockID heldBlock; // Выбранный игроком блок в данный момент [HeldBlock]
 	cs_int8 updates; // Обновлённые значения игрока
 	cs_bool pingStarted; // Начат ли процесс пингования [TwoWayPing]

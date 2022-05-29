@@ -12,6 +12,7 @@ typedef cs_bool(*evtBoolCallback)(void *);
 
 typedef enum _EventType {
 	EVT_POSTSTART,
+
 	EVT_ONTICK,
 	EVT_ONSTOP,
 	EVT_ONCONNECT,
@@ -34,7 +35,9 @@ typedef enum _EventType {
 	EVT_ONWORLDREMOVED,
 	EVT_ONPLUGINMESSAGE,
 	EVT_ONLOG,
+
 	EVT_PRECOMMAND,
+	EVT_PREHANDSHAKEDONE,
 
 	EVENTS_TCOUNT
 } EventType;
@@ -59,7 +62,7 @@ typedef struct _onSpawn {
 
 typedef struct _onMessage {
 	Client *const client;
-	cs_char *message;
+	cs_char message[CPE_MAX_EXTMESG_LEN];
 	cs_byte type;
 } onMessage;
 
@@ -102,4 +105,9 @@ typedef struct _preCommand {
 	cs_str const args;
 	cs_bool allowed;
 } preCommand;
+
+typedef struct _preHandshakeDone {
+	Client *const client;
+	cs_char name[65], motd[65];
+} preHandshakeDone;
 #endif

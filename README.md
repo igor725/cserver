@@ -7,7 +7,7 @@ The goal of this project: create a stable, customizable and future-rich multipla
 * Classic Protocol Extension
 * Multiplatform (Windows/Linux/macOS)
 * Plugins support
-* Web client support ([More info](https://www.classicube.net/api/docs/server))
+* Web client support ([More info](https://www.classicube.net/api/docs/server#footer))
 * Lua scripting (Implemented in the [Lua plugin](https://github.com/igor725/cs-lua))
 * RCON server (Implemented in the [Base plugin](https://github.com/igor725/cs-base))
 * Own world generator (Written by [scaled](https://github.com/scaledteam) for [LuaClassic](https://github.com/igor725/LuaClassic), later ported to C by me)
