@@ -83,6 +83,7 @@ void Event_UnregisterAll(void) {
 }
 
 cs_bool Event_Call(EventType type, void *param) {
+	if(type >= EVENTS_TCOUNT) return false;
 	cs_bool ret = true;
 
 	for(cs_int32 pos = 0; pos < EVENTS_FCOUNT; pos++) {
