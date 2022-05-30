@@ -324,15 +324,19 @@ void Vanilla_WriteUserType(Client *client, cs_byte type) {
 	PacketWriter_End(client);
 }
 
-static void FinishCPEThings(Client *client);
-
 static cs_bool FinishHandshake(Client *client) {
+	cs_int32 extVer = Client_GetExtVer(client, EXT_CUSTOMMODELS);
+	cs_bool hasParts = Client_GetExtVer(client, EXT_CUSTOMPARTS) > 0;
+	for(cs_int16 i = 0; i < max(CPE_MODELS_COUNT, CPE_PARTICLES_COUNT); i++) {
+		CPE_SendModel(client, extVer, (cs_byte)i);
+		if(hasParts) CPE_SendParticle(client, (cs_byte)i);
+	}
+
 	onHandshakeDone evt = {
 		.client = client,
 		.world = World_Main
 	};
 
-	FinishCPEThings(client);
 	return Event_Call(EVT_ONHANDSHAKEDONE, &evt) &&
 	Client_ChangeWorld(client, evt.world);
 }
@@ -350,7 +354,6 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 		client->playerData.isOP = true;
 
 	if(!Proto_ReadStringNoAlloc(&data, client->playerData.name)) return false;
-
 	if(Config_GetBoolByKey(Server_Config, CFG_SANITIZE_KEY)) {
 		for(cs_char *c = client->playerData.name; *c != '\0'; c++) {
 			if((*c < '0' || *c > '9') && (*c < 'A' || *c > 'Z') && (*c < 'a' || *c > 'z') && *c != '_') {
@@ -362,6 +365,7 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 
 	if(!Proto_ReadStringNoAlloc(&data, client->playerData.key)) return false;
 	String_Copy(client->playerData.displayname, 65, client->playerData.name);
+	client->cpeData.markedAsCPE = (*data == 0x42);
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *other = Clients_List[i];
@@ -385,7 +389,7 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 		return true;
 	}
 
-	if((client->cpeData.markedAsCPE = (*data == 0x42)) == true) {
+	if(client->cpeData.markedAsCPE) {
 		CPE_WriteInfo(client);
 		CPESvExt *ptr = headExtension;
 		while(ptr) {
@@ -1159,15 +1163,6 @@ cs_bool CPEHandler_PluginMessage(Client *client, cs_char *data) {
 
 	Proto_ReadStringNoAlloc(&data, pmesg.message);
 	return Event_Call(EVT_ONPLUGINMESSAGE, &pmesg);
-}
-
-static void FinishCPEThings(Client *client) {
-	cs_int32 extVer = Client_GetExtVer(client, EXT_CUSTOMMODELS);
-	cs_bool hasParts = Client_GetExtVer(client, EXT_CUSTOMPARTS) > 0;
-	for(cs_int16 i = 0; i < max(CPE_MODELS_COUNT, CPE_PARTICLES_COUNT); i++) {
-		CPE_SendModel(client, extVer, (cs_byte)i);
-		if(hasParts) CPE_SendParticle(client, (cs_byte)i);
-	}
 }
 
 static Packet *packetsList[256] = {NULL};

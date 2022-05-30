@@ -403,7 +403,7 @@ GENROUTINE(Trees) {
 	}
 }
 
-INL static cs_float getHeightInPoint(cs_int16 x, cs_int16 z) {
+INL static cs_float getHeightAt(cs_int16 x, cs_int16 z) {
 	cs_int16 y;
 
 	for(y = ctx.dims->y; y > 0;) {
@@ -451,7 +451,7 @@ cs_bool normalgenerator(World *world, cs_uint32 seed) {
 	
 	WorldInfo *wi = &world->info;
 	cs_int16 x = ctx.dims->x / 2, z = ctx.dims->z / 2;
-	Vec_Set(wi->spawnVec, x, getHeightInPoint(x, z), z);
+	Vec_Set(wi->spawnVec, x, getHeightAt(x, z), z);
 	World_SetEnvProp(world, WORLD_PROP_SIDEBLOCK, BLOCK_AIR);
 	World_SetEnvProp(world, WORLD_PROP_EDGEBLOCK, BLOCK_WATER);
 	World_SetEnvProp(world, WORLD_PROP_CLOUDSLEVEL, ctx.dims->y + 2);

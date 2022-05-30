@@ -248,14 +248,14 @@ cs_bool Config_Save(CStore *store, cs_bool force) {
 	CEntry *ptr = store->firstCfgEntry;
 
 	while(ptr) {
-		if(ptr->commentary)
-			if(File_WriteFormat(fp, "#%s\n", ptr->commentary) < 0) {
-				store->error.code = CONFIG_ERROR_IOFAIL;
-				store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
-				store->error.line = Thread_GetError();
-				File_Close(fp);
-				return false;
-			}
+		if(ptr->commentary && File_WriteFormat(fp, "#%s\n", ptr->commentary) < 0) {
+			store->error.code = CONFIG_ERROR_IOFAIL;
+			store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
+			store->error.line = Thread_GetError();
+			File_Close(fp);
+			return false;
+		}
+
 		if(!File_Write(ptr->key, 1, String_Length(ptr->key), fp)) {
 			store->error.code = CONFIG_ERROR_IOFAIL;
 			store->error.extra = CONFIG_EXTRA_IO_LINEASERROR;
