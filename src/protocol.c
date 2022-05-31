@@ -500,6 +500,31 @@ cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
 	return true;
 }
 
+static cs_bool isUrl(cs_char *mesg, cs_byte ls, cs_byte en) {
+	if((en - ls) < 7) return false;
+
+	while((en - ls) > 0 && mesg[ls] == '&') { ls += 2; en -= 2; }
+
+	if(mesg[ls] != 'h' || mesg[ls + 1] != 't' || mesg[ls + 2] != 't' || mesg[ls + 3] != 'p')
+		return false;
+
+	ls += 4; en -= 4;
+	if(mesg[ls] == 's') { ls++; en--; }
+
+	return (en - ls) >= 3 && mesg[ls] == ':' && mesg[ls + 1] == '/' && mesg[ls + 2] == '/';
+}
+
+static void convertColors(cs_char *message, cs_byte len) {
+	cs_byte last_space = 0;
+	for(cs_byte i = 0; i < len; i++) {
+		if(message[i] == ' ') last_space = i;
+		if(message[i] == '%' && message[i + 1] != '\0') {
+			if(!isUrl(message, last_space, i))
+				message[i] = '&';
+		}
+	}
+}
+
 cs_bool Handler_Message(Client *client, cs_char *data) {
 	ValidateClientState(client, CLIENT_STATE_INGAME, true);
 
@@ -510,11 +535,7 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 	cs_byte partial = *data++,
 	len = Proto_ReadStringNoAlloc(&data, params.message);
 	if(len == 0) return false;
-
-	for(cs_byte i = 0; i < len; i++) {
-		if(params.message[i] == '%' && ISHEX(params.message[i + 1]))
-			params.message[i] = '&';
-	}
+	convertColors(params.message, len);
 
 	if(Client_GetExtVer(client, EXT_LONGMSG)) {
 		if(String_Append(client->cpeData.message, CPE_MAX_EXTMESG_LEN, params.message) && partial == 1) return true;
