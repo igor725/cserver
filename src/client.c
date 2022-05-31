@@ -39,10 +39,11 @@ static ClientID FindFreeID(void) {
 void Client_Init(Client *client, Socket fd, cs_ulong addr) {
 	client->addr = addr;
 	client->mutex = Mutex_Create();
-	client->cpeData.model = 256;
-	client->cpeData.clickDist = 160;
+	client->extData.model = 256;
+	client->extData.clickDist = 160;
+	client->extData.type = CLIENT_TYPE_VANILLA;
+	String_Copy(client->extData.appName, 65, "Vanilla client");
 	NetBuffer_Init(&client->netbuf, fd);
-	String_Copy(client->cpeData.appName, 65, "Vanilla client");
 }
 
 Client *Client_NewBot(void) {
@@ -84,13 +85,13 @@ cs_str Client_GetKey(Client *client) {
 }
 
 cs_str Client_GetAppName(Client *client) {
-	return client->cpeData.appName;
+	return client->extData.appName;
 }
 
 cs_str Client_GetSkin(Client *client) {
-	if(*client->cpeData.skin == '\0')
+	if(*client->extData.skin == '\0')
 		return Client_GetName(client);
-	return client->cpeData.skin;
+	return client->extData.skin;
 }
 
 Client *Client_GetByName(cs_str name) {
@@ -167,36 +168,36 @@ cs_int8 Client_GetFluidLevel(Client *client, BlockID *fluid) {
 static CGroup dgroup = {0, ""};
 
 CGroup *Client_GetGroup(Client *client) {
-	CGroup *gptr = Groups_GetByID(client->cpeData.group);
+	CGroup *gptr = Groups_GetByID(client->extData.group);
 	return !gptr ? &dgroup : gptr;
 }
 
 cs_uintptr Client_GetGroupID(Client *client) {
-	return client->cpeData.group;
+	return client->extData.group;
 }
 
 cs_int16 Client_GetModel(Client *client) {
-	return client->cpeData.model;
+	return client->extData.model;
 }
 
 BlockID Client_GetHeldBlock(Client *client) {
-	return client->cpeData.heldBlock;
+	return client->extData.heldBlock;
 }
 
 cs_uint16 Client_GetClickDistance(Client *client) {
-	return client->cpeData.clickDist;
+	return client->extData.clickDist;
 }
 
 cs_float Client_GetClickDistanceInBlocks(Client *client) {
-	return client->cpeData.clickDist / 32.0f;
+	return client->extData.clickDist / 32.0f;
 }
 
 cs_int32 Client_GetExtVer(Client *client, cs_ulong exthash) {
 	if(Client_IsBot(client)) return false;
 
-	for(cs_int16 i = 0; i < client->cpeData.extensions.count; i++)
-		if(client->cpeData.extensions.list[i].hash == exthash)
-			return client->cpeData.extensions.list[i].version;
+	for(cs_int16 i = 0; i < client->extData.extensions.count; i++)
+		if(client->extData.extensions.list[i].hash == exthash)
+			return client->extData.extensions.list[i].version;
 
 	return 0;
 }
@@ -283,7 +284,7 @@ void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 CPECuboid *Client_NewSelection(Client *client) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
 		for(cs_byte i = 0; i < CLIENT_CUBOIDS_COUNT; i++) {
-			CPECuboid *cub = &client->cpeData.cuboids[i];
+			CPECuboid *cub = &client->extData.cuboids[i];
 			if(cub->used) continue;
 			cub->used = true;
 			cub->id = i;
@@ -296,7 +297,7 @@ CPECuboid *Client_NewSelection(Client *client) {
 
 cs_bool Client_UpdateSelection(Client *client, CPECuboid *cub) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
-		if(&client->cpeData.cuboids[cub->id] != cub)
+		if(&client->extData.cuboids[cub->id] != cub)
 			return false;
 		CPE_WriteMakeSelection(client, cub);
 		return true;
@@ -307,7 +308,7 @@ cs_bool Client_UpdateSelection(Client *client, CPECuboid *cub) {
 
 cs_bool Client_RemoveSelection(Client *client, CPECuboid *cub) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
-		if(&client->cpeData.cuboids[cub->id] != cub)
+		if(&client->extData.cuboids[cub->id] != cub)
 			return false;
 		CPE_WriteRemoveSelection(client, cub->id);
 		cub->used = false;
@@ -387,8 +388,9 @@ void Client_Chat(Client *client, EMesgType type, cs_str message) {
 	if(client && type == MESSAGE_TYPE_CHAT) {
 		cs_char color = 0, part[65] = {0};
 		cs_uint32 parts = (msgLen / 60) + 1;
+		cs_bool cp437_support = Client_GetExtVer(client, EXT_CP437) > 0;
 		for(cs_uint32 i = 0; i < parts; i++) {
-			cs_uint32 len = CopyMessagePart(message, part, i, &color, !client->cpeData.markedAsCPE);
+			cs_uint32 len = CopyMessagePart(message, part, i, &color, !cp437_support);
 			if(len > 0) {
 				Vanilla_WriteChat(client, type, part);
 				message += len;
@@ -495,7 +497,7 @@ cs_bool Client_SetTexturePack(Client *client, cs_str url) {
 
 cs_bool Client_SetDisplayName(Client *client, cs_str name) {
 	if(String_Copy(client->playerData.displayname, 65, name))
-		client->cpeData.updates |= PCU_NAME;
+		client->extData.updates |= PCU_NAME;
 	return false;
 }
 
@@ -533,7 +535,7 @@ cs_bool Client_SetHeldBlock(Client *client, BlockID block, cs_bool preventChange
 cs_bool Client_SetClickDistance(Client *client, cs_uint16 dist) {
 	if(Client_GetExtVer(client, EXT_CLICKDIST)) {
 		CPE_WriteClickDistance(client, dist);
-		client->cpeData.clickDist = dist;
+		client->extData.clickDist = dist;
 		return true;
 	}
 	return false;
@@ -565,14 +567,14 @@ cs_bool Client_SetBlockPerm(Client *client, BlockID block, cs_bool allowPlace, c
 
 cs_bool Client_SetModel(Client *client, cs_int16 model) {
 	if(!CPE_CheckModel(client, model)) return false;
-	client->cpeData.model = model;
-	client->cpeData.updates |= PCU_MODEL;
+	client->extData.model = model;
+	client->extData.updates |= PCU_MODEL;
 	return true;
 }
 
 cs_bool Client_SetSkin(Client *client, cs_str skin) {
-	String_Copy(client->cpeData.skin, 65, skin);
-	client->cpeData.updates |= PCU_ENTITY;
+	String_Copy(client->extData.skin, 65, skin);
+	client->extData.updates |= PCU_ENTITY;
 	return true;
 }
 
@@ -585,11 +587,11 @@ cs_uint32 Client_GetAddr(Client *client) {
 }
 
 cs_int32 Client_GetPing(Client *client) {
-	return client->cpeData.pingTime;
+	return client->extData.pingTime;
 }
 
 cs_float Client_GetAvgPing(Client *client) {
-	return client->cpeData.pingAvgTime;
+	return client->extData.pingAvgTime;
 }
 
 void Client_GetPosition(Client *client, Vec *pos, Ang *ang) {
@@ -648,8 +650,8 @@ cs_bool Client_UndefineModel(Client *client, cs_byte id) {
 
 cs_bool Client_SetProp(Client *client, EEntProp prop, cs_int32 value) {
 	if(prop >= ENTITY_PROP_COUNT) return false;
-	client->cpeData.props[prop] = value;
-	client->cpeData.updates |= PCU_ENTPROP;
+	client->extData.props[prop] = value;
+	client->extData.updates |= PCU_ENTPROP;
 	return true;
 }
 
@@ -659,8 +661,8 @@ cs_bool Client_SetModelStr(Client *client, cs_str model) {
 
 cs_bool Client_SetGroup(Client *client, cs_uintptr gid) {
 	if(!Groups_GetByID(gid)) return false;
-	client->cpeData.group = gid;
-	client->cpeData.updates |= PCU_NAME;
+	client->extData.group = gid;
+	client->extData.updates |= PCU_NAME;
 	return true;
 }
 
@@ -744,7 +746,7 @@ INL static void PushClientName(Client *client, Client *other) {
 }
 
 cs_bool Client_Update(Client *client) {
-	if(client->cpeData.updates == PCU_NONE) return false;
+	if(client->extData.updates == PCU_NONE) return false;
 
 	for(ClientID id = 0; id < MAX_CLIENTS; id++) {
 		Client *other = Clients_List[id];
@@ -752,25 +754,25 @@ cs_bool Client_Update(Client *client) {
 			cs_bool hasplsupport = Client_GetExtVer(other, EXT_PLAYERLIST) == 2,
 			hassmsupport = Client_GetExtVer(other, EXT_CHANGEMODEL) == 1,
 			hasentprop = Client_GetExtVer(other, EXT_ENTPROP) == 1;
-			if(client->cpeData.updates & PCU_NAME && hasplsupport) {
-				client->cpeData.updates |= PCU_ENTITY;
+			if(client->extData.updates & PCU_NAME && hasplsupport) {
+				client->extData.updates |= PCU_ENTITY;
 				PushClientName(other, client);
 			}
 			if(Client_IsInSameWorld(client, other)) {
-				if(client->cpeData.updates & PCU_ENTITY && hasplsupport) {
-					client->cpeData.updates |= PCU_MODEL;
+				if(client->extData.updates & PCU_ENTITY && hasplsupport) {
+					client->extData.updates |= PCU_MODEL;
 					SendCPEEntity(other, client);
 				}
-				if(client->cpeData.updates & PCU_MODEL && hassmsupport)
+				if(client->extData.updates & PCU_MODEL && hassmsupport)
 					CPE_WriteSetModel(other, client);
-				if(client->cpeData.updates & PCU_ENTPROP && hasentprop)
+				if(client->extData.updates & PCU_ENTPROP && hasentprop)
 					for(EEntProp i = 0; i < ENTITY_PROP_COUNT; i++)
-						CPE_WriteSetEntityProperty(other, client, i, client->cpeData.props[i]);
+						CPE_WriteSetEntityProperty(other, client, i, client->extData.props[i]);
 			}
 		}
 	}
 
-	client->cpeData.updates = PCU_NONE;
+	client->extData.updates = PCU_NONE;
 	return true;
 }
 
@@ -796,9 +798,9 @@ void Client_Free(Client *client) {
 		Memory_Free((void *)client->kickReason);
 		client->kickReason = false;
 	}
-	if(client->cpeData.extensions.list) {
-		Memory_Free((void *)client->cpeData.extensions.list);
-		client->cpeData.extensions.list = NULL;
+	if(client->extData.extensions.list) {
+		Memory_Free((void *)client->extData.extensions.list);
+		client->extData.extensions.list = NULL;
 	}
 
 	while(client->headNode) {
@@ -1052,7 +1054,7 @@ cs_bool Client_Spawn(Client *client) {
 	Event_Call(EVT_ONSPAWN, &evt);
 	// Vanilla_WriteUserType(client, client->playerData.isOP ? 0x64 : 0x00);
 	if(evt.updateenv) Client_UpdateWorldInfo(client, client->playerData.world, true);
-	client->cpeData.updates = PCU_NONE;
+	client->extData.updates = PCU_NONE;
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *other = Clients_List[i];

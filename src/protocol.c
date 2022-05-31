@@ -21,7 +21,7 @@
 if(!Client_CheckState(client, st)) return ret
 
 #define ValidateCpeClient(client, ret) \
-if(!client->cpeData.markedAsCPE) return ret
+if(client->extData.type != CLIENT_TYPE_CPE) return ret
 
 #define PacketWriter_Start(cl, msz) \
 if(!NetBuffer_IsAlive(&cl->netbuf) || Client_IsBot(cl)) return; \
@@ -365,7 +365,7 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 
 	if(!Proto_ReadStringNoAlloc(&data, client->playerData.key)) return false;
 	String_Copy(client->playerData.displayname, 65, client->playerData.name);
-	client->cpeData.markedAsCPE = (*data == 0x42);
+	if(*data == 0x42) client->extData.type = CLIENT_TYPE_CPE;
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *other = Clients_List[i];
@@ -389,7 +389,7 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 		return true;
 	}
 
-	if(client->cpeData.markedAsCPE) {
+	if(client->extData.type == CLIENT_TYPE_CPE) {
 		CPE_WriteInfo(client);
 		CPESvExt *ptr = headExtension;
 		while(ptr) {
@@ -479,14 +479,14 @@ cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
 
 	BlockID cb = *data++;
 	if(Client_GetExtVer(client, EXT_HELDBLOCK) == 1) {
-		if(client->cpeData.heldBlock != cb) {
+		if(client->extData.heldBlock != cb) {
 			onHeldBlockChange params = {
 				.client = client,
-				.prev = client->cpeData.heldBlock,
+				.prev = client->extData.heldBlock,
 				.curr = cb
 			};
 			Event_Call(EVT_ONHELDBLOCKCHNG, &params);
-			client->cpeData.heldBlock = cb;
+			client->extData.heldBlock = cb;
 		}
 	}
 
@@ -538,8 +538,8 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 	convertColors(params.message, len);
 
 	if(Client_GetExtVer(client, EXT_LONGMSG)) {
-		if(String_Append(client->cpeData.message, CPE_MAX_EXTMESG_LEN, params.message) && partial == 1) return true;
-		String_Copy(params.message, CPE_MAX_EXTMESG_LEN, client->cpeData.message);
+		if(String_Append(client->extData.message, CPE_MAX_EXTMESG_LEN, params.message) && partial == 1) return true;
+		String_Copy(params.message, CPE_MAX_EXTMESG_LEN, client->extData.message);
 	}
 
 	if(*params.message == '/') {
@@ -558,7 +558,7 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 	 * Нужно для очистки буфера частичных
 	 * сообщений дополнения LongerMessages
 	 */
-	*client->cpeData.message = '\0';
+	*client->extData.message = '\0';
 	return true;
 }
 
@@ -1076,23 +1076,23 @@ cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, CLIENT_STATE_MOTD, false);
 
-	if(!Proto_ReadStringNoAlloc(&data, client->cpeData.appName)) {
-		String_Copy(client->cpeData.appName, 65, "(unknown)");
+	if(!Proto_ReadStringNoAlloc(&data, client->extData.appName)) {
+		String_Copy(client->extData.appName, 65, "(unknown)");
 		return true;
 	}
-	client->cpeData.extensions.count = ntohs(*(cs_uint16 *)data);
-	if(client->cpeData.extensions.count > 512) return false;
-	client->cpeData.extensions.list = Memory_TryAlloc(
-		client->cpeData.extensions.count,
+	client->extData.extensions.count = ntohs(*(cs_uint16 *)data);
+	if(client->extData.extensions.count > 512) return false;
+	client->extData.extensions.list = Memory_TryAlloc(
+		client->extData.extensions.count,
 		sizeof(struct _CPEClExt)
 	);
-	return client->cpeData.extensions.list != NULL;
+	return client->extData.extensions.list != NULL;
 }
 
 cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, CLIENT_STATE_MOTD, false);
-	struct _CPEClExts *exts = &client->cpeData.extensions;
+	struct _CPEClExts *exts = &client->extData.extensions;
 	if(exts->current == exts->count) return false;
 	cs_char tempname[65];
 	if(!Proto_ReadStringNoAlloc(&data, tempname))
@@ -1119,7 +1119,7 @@ cs_bool CPEHandler_SetCBVer(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, CLIENT_STATE_MOTD, false);
 	if(Client_GetExtVer(client, EXT_CUSTOMBLOCKS) < 1) return false;
-	client->cpeData.cbLevel = *data;
+	client->extData.cbLevel = *data;
 	return FinishHandshake(client);
 }
 
@@ -1150,21 +1150,21 @@ cs_bool CPEHandler_TwoWayPing(Client *client, cs_char *data) {
 
 	if(pingDirection == 0) {
 		CPE_WriteTwoWayPing(client, 0, pingData);
-		if(!client->cpeData.pingStarted) {
-			CPE_WriteTwoWayPing(client, 1, ++client->cpeData.pingData);
-			client->cpeData.pingStarted = true;
-			client->cpeData.pingStart = Time_GetMSec();
+		if(!client->extData.pingStarted) {
+			CPE_WriteTwoWayPing(client, 1, ++client->extData.pingData);
+			client->extData.pingStarted = true;
+			client->extData.pingStart = Time_GetMSec();
 		}
 
 		return true;
 	} else if(pingDirection == 1) {
-		if(client->cpeData.pingStarted) {
-			client->cpeData.pingStarted = false;
-			if(client->cpeData.pingData == pingData) {
-				client->cpeData.pingTime = (cs_uint32)((Time_GetMSec() - client->cpeData.pingStart) / 2);
-				client->cpeData.pingAvgTime = (client->cpeData._pingAvgSize * client->cpeData.pingAvgTime +
-				(cs_float)client->cpeData.pingTime) / (client->cpeData._pingAvgSize + 1);
-				client->cpeData._pingAvgSize += 1;
+		if(client->extData.pingStarted) {
+			client->extData.pingStarted = false;
+			if(client->extData.pingData == pingData) {
+				client->extData.pingTime = (cs_uint32)((Time_GetMSec() - client->extData.pingStart) / 2);
+				client->extData.pingAvgTime = (client->extData._pingAvgSize * client->extData.pingAvgTime +
+				(cs_float)client->extData.pingTime) / (client->extData._pingAvgSize + 1);
+				client->extData._pingAvgSize += 1;
 			}
 
 			return true;

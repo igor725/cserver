@@ -319,11 +319,23 @@ COMMAND_FUNC(Plugin) {
 	COMMAND_PRINTUSAGE;
 }
 
+COMMAND_FUNC(WoMID) {
+	if(ccdata->caller->extData.type != CLIENT_TYPE_VANILLA)
+		COMMAND_PRINT("&cOnly vanilla client can use this command");
+	if(!ccdata->args)
+		COMMAND_PRINT("&cAPP name is not specified");
+
+	ccdata->caller->extData.type = CLIENT_TYPE_WOM;
+	String_Copy(ccdata->caller->extData.appName, 65, ccdata->args);
+	return false;
+}
+
 void Command_RegisterDefault(void) {
 	COMMAND_ADD(Help, CMDF_NONE, "Prints this message");
 	COMMAND_ADD(Stop, CMDF_OP, "Stops a server");
 	COMMAND_ADD(Say, CMDF_OP, "Sends a message to all players");
 	COMMAND_ADD(Plugin, CMDF_OP, "Server plugin manager");
+	COMMAND_ADD(WoMID, CMDF_CLIENT, "Sets WoM client version");
 }
 
 void Command_UnregisterAll(void) {

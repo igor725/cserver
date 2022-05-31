@@ -163,6 +163,12 @@ typedef enum _EModelUV {
 	MODEL_UVS_COUNT
 } EModelUV;
 
+typedef enum _EClientType {
+	CLIENT_TYPE_VANILLA,
+	CLIENT_TYPE_CPE,
+	CLIENT_TYPE_WOM
+} EClientType;
+
 typedef struct _AnimData {
 	cs_byte flags;
 	cs_float a, b, c, d;
@@ -201,8 +207,8 @@ typedef struct _CPECuboid {
 	SVec pos[2];
 } CPECuboid;
 
-typedef struct _CPEData {
-	cs_bool markedAsCPE;
+typedef struct _ExtendedData {
+	EClientType type;
 	struct _CPEClExts {
 		CPEClExt *list; // Список дополнений клиента
 		cs_int16 count; // Количество дополнений у клиента
@@ -225,7 +231,7 @@ typedef struct _CPEData {
 	cs_uint16 clickDist; // Расстояние клика игрока [ClickDistance]
 	cs_byte cbLevel; // Поддерживаемый уровень кастом блоков, пока не используется [CustomBlocks]
 	CPECuboid cuboids[CLIENT_CUBOIDS_COUNT]; // Кубоиды игрока [SelectionCuboid]
-} CPEData;
+} ExtendedData;
 
 typedef struct _CPEHacks {
 	cs_bool flying, noclip, speeding,

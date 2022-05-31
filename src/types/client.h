@@ -69,7 +69,7 @@ typedef struct _Client {
 	NetBuffer netbuf; // Прикол для обмена данными
 	PacketData packetData; // Стейт получения пакета от клиента
 	MapData mapData; // Стейт отправки карты игроку
-	CPEData cpeData; // CPE-информация игрока
+	ExtendedData extData; // Дополнительная информация о игроке
 	PlayerData playerData; // Информация о игроке
 	KListField *headNode; // Последняя созданная ассоциативная нода у клиента
 	WebSock *websock; // Создаётся, если клиент был определён как браузерный
