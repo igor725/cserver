@@ -18,15 +18,15 @@ static cs_str originalModelNames[16] = {
 	NULL
 };
 
-static CPEModel *customModels[CPE_MODELS_COUNT] = {NULL};
+static CPEModel *customModels[CPE_MAX_MODELS] = {NULL};
 
 cs_bool CPE_IsModelDefined(cs_byte id) {
-	if(id >= CPE_MODELS_COUNT) return false;
+	if(id >= CPE_MAX_MODELS) return false;
 	return customModels[id] != NULL || id < 15;
 }
 
 cs_bool CPE_IsModelDefinedPtr(CPEModel *model) {
-	for(cs_int16 i = 0; i < CPE_MODELS_COUNT; i++) {
+	for(cs_int16 i = 0; i < CPE_MAX_MODELS; i++) {
 		if(customModels[i] == model)
 			return true;
 	}
@@ -38,12 +38,12 @@ cs_str CPE_GetDefaultModelName(void) {
 }
 
 CPEModel *CPE_GetModel(cs_byte id) {
-	if(id >= CPE_MODELS_COUNT) return NULL;
+	if(id >= CPE_MAX_MODELS) return NULL;
 	return customModels[id];
 }
 
 void CPE_SendModel(Client *client, cs_int32 extVer, cs_byte id) {
-	if(id >= CPE_MODELS_COUNT) return;
+	if(id >= CPE_MAX_MODELS) return;
 	CPEModel *model = customModels[id];
 	if(!extVer || !model) return;
 	CPE_WriteDefineModel(client, id, model);
@@ -55,7 +55,7 @@ void CPE_SendModel(Client *client, cs_int32 extVer, cs_byte id) {
 }
 
 cs_bool CPE_DefineModel(cs_byte id, CPEModel *model) {
-	if(id >= CPE_MODELS_COUNT) return false;
+	if(id >= CPE_MAX_MODELS) return false;
 	if(!model->part || !model->partsCount) return false;
 	if(CPE_IsModelDefinedPtr(model)) return false;
 	customModels[id] = model;
@@ -69,7 +69,7 @@ cs_bool CPE_DefineModel(cs_byte id, CPEModel *model) {
 }
 
 cs_bool CPE_UndefineModel(cs_byte id) {
-	if(id >= CPE_MODELS_COUNT) return false;
+	if(id >= CPE_MAX_MODELS) return false;
 	if(!customModels[id]) return false;
 	customModels[id] = NULL;
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
@@ -82,7 +82,7 @@ cs_bool CPE_UndefineModel(cs_byte id) {
 }
 
 cs_bool CPE_UndefineModelPtr(CPEModel *mdl) {
-	for(cs_int16 i = 0; i < CPE_MODELS_COUNT && mdl; i++) {
+	for(cs_int16 i = 0; i < CPE_MAX_MODELS && mdl; i++) {
 		if(customModels[i] == mdl)
 			return CPE_UndefineModel((cs_byte)i);
 	}
@@ -99,7 +99,7 @@ cs_bool CPE_CheckModel(Client *client, cs_int16 model) {
 cs_int16 CPE_GetModelNum(cs_str model) {
 	cs_int16 modelnum = -1;
 
-	for(cs_int16 i = 0; i < CPE_MODELS_COUNT; i++) {
+	for(cs_int16 i = 0; i < CPE_MAX_MODELS; i++) {
 		CPEModel *pmdl = customModels[i];
 		if(pmdl && String_CaselessCompare(pmdl->name, model)) {
 			modelnum = i + 256;
@@ -131,7 +131,7 @@ cs_int16 CPE_GetModelNum(cs_str model) {
 
 cs_uint32 CPE_GetModelStr(cs_int16 num, cs_char *buffer, cs_uint32 buflen) {
 	if(num > 255) { // За пределами 256 первых id находятся неблоковые модели
-		cs_byte modelid = num % CPE_MODELS_COUNT;
+		cs_byte modelid = num % CPE_MAX_MODELS;
 		cs_str mdl = NULL;
  		if(customModels[modelid])
 			mdl = customModels[modelid]->name;
@@ -149,33 +149,33 @@ cs_uint32 CPE_GetModelStr(cs_int16 num, cs_char *buffer, cs_uint32 buflen) {
  * CustomParticles 
  */
 
-static CPEParticle *customParticles[CPE_PARTICLES_COUNT] = {NULL};
+static CPEParticle *customParticles[CPE_MAX_PARTICLES] = {NULL};
 
 cs_bool CPE_IsParticleDefined(cs_byte id) {
-	if(id >= CPE_PARTICLES_COUNT) return false;
+	if(id >= CPE_MAX_PARTICLES) return false;
 	return customParticles[id] != NULL;
 }
 
 cs_bool CPE_IsParticleDefinedPtr(CPEParticle *part) {
-	for(cs_int16 i = 0; i < CPE_PARTICLES_COUNT && part; i++)
+	for(cs_int16 i = 0; i < CPE_MAX_PARTICLES && part; i++)
 		if(part == customParticles[i])
 			return true;
 	return false;
 }
 
 CPEParticle *CPE_GetParticle(cs_byte id) {
-	if(id >= CPE_PARTICLES_COUNT) return NULL;
+	if(id >= CPE_MAX_PARTICLES) return NULL;
 	return customParticles[id];
 }
 
 void CPE_SendParticle(Client *client, cs_byte id) {
-	if(id >= CPE_PARTICLES_COUNT) return;
+	if(id >= CPE_MAX_PARTICLES) return;
 	CPEParticle *part = customParticles[id];
 	if(part) CPE_WriteDefineEffect(client, id, part);
 }
 
 cs_bool CPE_DefineParticle(cs_byte id, CPEParticle *part) {
-	if(id >= CPE_PARTICLES_COUNT) return false;
+	if(id >= CPE_MAX_PARTICLES) return false;
 	if(customParticles[id]) return false;
 	if(CPE_IsParticleDefinedPtr(part)) return false;
 	customParticles[id] = part;
@@ -189,14 +189,14 @@ cs_bool CPE_DefineParticle(cs_byte id, CPEParticle *part) {
 }
 
 cs_bool CPE_UndefineParticle(cs_byte id) {
-	if(id >= CPE_PARTICLES_COUNT) return false;
+	if(id >= CPE_MAX_PARTICLES) return false;
 	if(!customParticles[id]) return false;
 	customParticles[id] = NULL;
 	return true;
 }
 
 cs_bool CPE_UndefineParticlePtr(CPEParticle *ptr) {
-	for(cs_int16 i = 0; i < CPE_PARTICLES_COUNT && ptr; i++) {
+	for(cs_int16 i = 0; i < CPE_MAX_PARTICLES && ptr; i++) {
 		if(customParticles[i] == ptr) {
 			customParticles[i] = NULL;
 			return true;
@@ -205,7 +205,7 @@ cs_bool CPE_UndefineParticlePtr(CPEParticle *ptr) {
 	return false;
 }
 
-static void CubeNormalize(SVec *s, SVec *e) {
+INL static void CubeNormalize(SVec *s, SVec *e) {
 	cs_int16 tmp, *a = (cs_int16 *)s, *b = (cs_int16 *)e;
 	for(int i = 0; i < 3; i++) {
 		if(b[i] < a[i]) {

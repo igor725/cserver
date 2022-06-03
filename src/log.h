@@ -19,9 +19,11 @@ typedef struct _LogBuffer {
 	cs_size offset;
 } LogBuffer;
 
-cs_bool Log_Init(void);
-void Log_Uninit(void);
-void Log_Print(cs_byte flag, cs_str str, va_list *args);
+#ifndef CORE_BUILD_PLUGIN
+	cs_bool Log_Init(void);
+	void Log_Uninit(void);
+	void Log_Print(cs_byte flag, cs_str str, va_list *args);
+#endif
 
 API void Log_Error(cs_str str, ...);
 API void Log_Info(cs_str str, ...);

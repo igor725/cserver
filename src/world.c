@@ -149,7 +149,7 @@ cs_bool World_SetTexturePack(World *world, cs_str url) {
 		world->info.texturepack[0] = '\0';
 		return url == NULL;
 	}
-	if(!String_Copy(world->info.texturepack, 65, url)) {
+	if(!String_Copy(world->info.texturepack, MAX_STR_LEN, url)) {
 		world->info.texturepack[0] = '\0';
 		return false;
 	}

@@ -107,10 +107,13 @@ API void Compr_Reset(Compr *ctx);
  */
 API void Compr_Cleanup(Compr *ctx);
 
-/**
- * @brief Отключает библиотеку zlib.
- * (При следующем вызове Compr_Init произойдёт повторное подключение)
- * 
- */
-void Compr_Uninit(void);
+#ifndef CORE_BUILD_PLUGIN
+	/**
+	 * @brief Отключает библиотеку zlib.
+	 * (При следующем вызове Compr_Init произойдёт повторное подключение)
+	 * 
+	 */
+	void Compr_Uninit(void);
+#endif
+
 #endif

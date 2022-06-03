@@ -96,7 +96,7 @@ typedef struct _onPlayerClick {
 typedef struct _onPluginMessage {
 	Client *const client;
 	const cs_byte channel;
-	cs_char message[65];
+	cs_char message[MAX_STR_LEN];
 } onPluginMessage;
 
 typedef struct _preCommand {
@@ -108,6 +108,6 @@ typedef struct _preCommand {
 
 typedef struct _preHandshakeDone {
 	Client *const client;
-	cs_char name[65], motd[65];
+	cs_char name[MAX_STR_LEN], motd[MAX_STR_LEN];
 } preHandshakeDone;
 #endif

@@ -10,13 +10,18 @@
 #include "types/client.h"
 #include "types/keys.h"
 
-void Client_Init(Client *client, Socket fd, cs_ulong addr);
-void Client_Tick(Client *client);
-void Client_Free(Client *client);
+#ifndef CORE_BUILD_PLUGIN
+	void Client_Init(Client *client, Socket fd, cs_ulong addr);
+
+	void Client_Tick(Client *client);
+	void Client_Free(Client *client);
+
+	NOINL cs_bool Client_DefineBlock(Client *client, BlockID id, BlockDef *block);
+	NOINL cs_bool Client_UndefineBlock(Client *client, BlockID id);
+#endif
+
 
 API void Client_BulkBlockUpdate(Client *client, BulkBlockUpdate *bbu);
-NOINL cs_bool Client_DefineBlock(Client *client, BlockID id, BlockDef *block);
-NOINL cs_bool Client_UndefineBlock(Client *client, BlockID id);
 
 API cs_byte Clients_GetCount(EClientState state);
 

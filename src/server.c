@@ -311,7 +311,7 @@ cs_bool Server_Init(void) {
 		// TODO: Написать нормальный парсер для параметра worlds-list
 		cs_bool skip_creating = false;
 		cs_byte state = 0, pos = 0;
-		cs_char buffer[65];
+		cs_char buffer[MAX_STR_LEN];
 		SVec dims = {0, 0, 0};
 		World *tmp = NULL;
 
@@ -476,7 +476,7 @@ INL static void UnloadAllWorlds(void) {
 	}
 }
 
-static void KickAll(cs_str reason) {
+INL static void KickAll(cs_str reason) {
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
 		Client *client = Clients_List[i];
 		if(client) Client_Kick(client, reason);

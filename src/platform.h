@@ -7,8 +7,12 @@
 #define THREAD_FUNC(N) \
 static TRET N(TARG param)
 
-cs_bool Memory_Init(void);
-void Memory_Uninit(void);
+#ifndef CORE_BUILD_PLUGIN
+	cs_bool Memory_Init(void);
+	void Memory_Uninit(void);
+
+	cs_bool Console_BindSignalHandler(TSHND handler);
+#endif
 
 API void *Memory_TryAlloc(cs_size num, cs_size size);
 API void *Memory_TryRealloc(void *oldptr, cs_size new);
@@ -90,8 +94,6 @@ API void Waitable_Reset(Waitable *wte);
 API cs_int32 Time_Format(cs_char *buf, cs_size len);
 API cs_uint64 Time_GetMSec(void);
 API cs_double Time_GetMSecD(void);
-
-cs_bool Console_BindSignalHandler(TSHND handler);
 
 API void Process_Exit(cs_int32 ecode);
 #endif // PLATFORM_H

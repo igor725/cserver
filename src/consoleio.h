@@ -1,3 +1,7 @@
+#ifdef CORE_BUILD_PLUGIN
+#	error ConsoleIO cannot be used in plugins
+#endif
+
 #ifndef CONSOLEIO_H
 #define CONSOLEIO_H
 #include "core.h"

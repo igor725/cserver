@@ -100,7 +100,7 @@ ECTypes Config_TypeNameToEnum(cs_str name) {
 	return -1;
 }
 
-static cs_byte ToStr(CEntry *ent, cs_char *value, cs_byte len) {
+INL static cs_byte ToStr(CEntry *ent, cs_char *value, cs_byte len) {
 	cs_byte written = 0;
 	*value = '\0';
 

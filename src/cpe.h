@@ -5,10 +5,12 @@
 #include "types/client.h"
 #include "vector.h"
 
-CPEModel *CPE_GetModel(cs_byte id);
-void CPE_SendModel(Client *client, cs_int32 extVer, cs_byte id);
-void CPE_SendParticle(Client *client, cs_byte id);
-CPEParticle *CPE_GetParticle(cs_byte id);
+#ifndef CORE_BUILD_PLUGIN
+	CPEModel *CPE_GetModel(cs_byte id);
+	void CPE_SendModel(Client *client, cs_int32 extVer, cs_byte id);
+	void CPE_SendParticle(Client *client, cs_byte id);
+	CPEParticle *CPE_GetParticle(cs_byte id);
+#endif
 
 API cs_bool CPE_IsModelDefined(cs_byte id);
 API cs_bool CPE_IsModelDefinedPtr(CPEModel *model);

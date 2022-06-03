@@ -33,9 +33,9 @@ typedef enum _EClientState {
 } EClientState;
 
 typedef struct _PlayerData {
-	cs_char key[65]; // Ключ, полученный от игрока
-	cs_char name[65]; // Имя игрока
-	cs_char displayname[65]; // Отображаемое имя игрока
+	cs_char key[MAX_STR_LEN]; // Ключ, полученный от игрока
+	cs_char name[MAX_STR_LEN]; // Имя игрока
+	cs_char displayname[MAX_STR_LEN]; // Отображаемое имя игрока
 	World *world; // Мир, в котором игрок обитает
 	Vec position; // Позиция игрока
 	Ang angle; // Угол вращения игрока

@@ -18,7 +18,18 @@ typedef struct _Heartbeat {
 	cs_uint16 delay;
 } Heartbeat;
 
-void Heartbeat_StopAll(void);
+#ifndef CORE_BUILD_PLUGIN
+	/**
+	 * @brief Производит проверку ключа игрока на действительность
+	 * всеми доступными функциями проверки ключа. Для игроков с
+	 * 127.0.0.1 всегда возвращает true.
+	 * 
+	 * @param client 
+	 * @return cs_bool 
+	 */
+	cs_bool Heartbeat_Validate(Client *client);
+	void Heartbeat_StopAll(void);
+#endif
 
 /**
  * @brief Создаёт новый heartbeat.
@@ -100,14 +111,4 @@ API cs_bool Heartbeat_Run(Heartbeat *self);
  * @param указатель на heartbeat
  */
 API void Heartbeat_Close(Heartbeat *self);
-
-/**
- * @brief Производит проверку ключа игрока на действительность
- * всеми доступными функциями проверки ключа. Для игроков с
- * 127.0.0.1 всегда возвращает true.
- * 
- * @param client 
- * @return cs_bool 
- */
-cs_bool Heartbeat_Validate(Client *client);
 #endif // HEARTBEAT_H

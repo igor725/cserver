@@ -6,6 +6,6 @@
 
 typedef struct _CGroup {
 	cs_byte rank;
-	cs_char name[65];
+	cs_char name[MAX_STR_LEN];
 } CGroup;
 #endif

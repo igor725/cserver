@@ -184,6 +184,7 @@ typedef cs_byte ClientID;
 #define MAX_PLUGINS 64
 #define	MAX_CMD_OUT 1024
 #define MAX_CLIENTS 254
+#define MAX_STR_LEN 65
 
 #ifndef GIT_COMMIT_TAG
 #	define GIT_COMMIT_TAG "unknown"

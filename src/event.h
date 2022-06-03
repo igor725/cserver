@@ -14,5 +14,8 @@ API cs_bool Event_Unregister(EventType type, void *evtFuncPtr);
 API void Event_UnregisterBunch(EventRegBunch *bunch);
 API cs_bool Event_Call(EventType type, void *param);
 
-NOINL void Event_UnregisterAll(void);
+#ifndef CORE_BUILD_PLUGIN
+	NOINL void Event_UnregisterAll(void);
+#endif
+
 #endif // EVENT_H

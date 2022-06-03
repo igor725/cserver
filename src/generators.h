@@ -7,8 +7,10 @@
 
 typedef cs_bool(*GeneratorRoutine)(World *world, cs_uint32 seed);
 
-cs_bool Generators_Init(void);
-void Generators_UnregisterAll(void);
+#ifndef CORE_BUILD_PLUGIN
+	cs_bool Generators_Init(void);
+	void Generators_UnregisterAll(void);
+#endif
 
 /**
  * @brief Добавляет новый генератор миров.

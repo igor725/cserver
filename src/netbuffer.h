@@ -1,3 +1,7 @@
+#ifdef CORE_BUILD_PLUGIN
+#	error NetBuffer cannot be used in plugins
+#endif
+
 #ifndef NETBUFFER_H
 #define NETBUFFER_H
 #include "core.h"

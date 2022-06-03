@@ -8,14 +8,14 @@
 
 Plugin *Plugins_List[MAX_PLUGINS] = {NULL};
 
-static void AddInterface(Plugin *requester, PluginInterface *iface) {
+INL static void AddInterface(Plugin *requester, PluginInterface *iface) {
 	void *ptr = Memory_Alloc(1, iface->isize);
 	Memory_Copy(ptr, iface->iptr, iface->isize);
 	AList_AddField(&requester->ireqHead, (void *)iface->iname);
 	requester->irecv(iface->iname, ptr, iface->isize);
 }
 
-static cs_bool CheckHoldIfaces(Plugin *plugin) {
+INL static cs_bool CheckHoldIfaces(Plugin *plugin) {
 	for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
 		AListField *hold;
 		Plugin *tplugin = Plugins_List[i];
@@ -187,7 +187,7 @@ cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname) {
 	return false;
 }
 
-static cs_bool TryDiscard(Plugin *plugin, AListField **head, cs_str iname) {
+INL static cs_bool TryDiscard(Plugin *plugin, AListField **head, cs_str iname) {
 	Plugin_Lock(plugin);
 
 	AListField *tmp;

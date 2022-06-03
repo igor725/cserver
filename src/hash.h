@@ -1,8 +1,14 @@
+#ifdef CORE_BUILD_PLUGIN
+#	error Hashing library not yet available in plugins
+#endif
+
 #ifndef HASH_H
 #define HASH_H
 #include "core.h"
 
-void Hash_Uninit(void);
+#ifndef CORE_BUILD_PLUGIN
+	void Hash_Uninit(void);
+#endif
 
 #if defined(HASH_USE_WINCRYPT_BACKEND)
 // Start of <wincrypt.h>

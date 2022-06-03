@@ -19,9 +19,11 @@ VAR cs_bool Server_Active, Server_Ready;
 VAR CStore *Server_Config;
 VAR cs_uint64 Server_StartTime;
 
-cs_bool Server_Init(void);
-void Server_StartLoop(void);
-void Server_Cleanup(void);
+#ifndef CORE_BUILD_PLUGIN
+	cs_bool Server_Init(void);
+	void Server_StartLoop(void);
+	void Server_Cleanup(void);
+#endif
 
 #define SERVERINFO_FLAG_DEBUG      BIT(0)
 #define SERVERINFO_FLAG_WININET    BIT(1)

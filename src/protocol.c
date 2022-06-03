@@ -327,7 +327,7 @@ void Vanilla_WriteUserType(Client *client, cs_byte type) {
 static cs_bool FinishHandshake(Client *client) {
 	cs_int32 extVer = Client_GetExtVer(client, EXT_CUSTOMMODELS);
 	cs_bool hasParts = Client_GetExtVer(client, EXT_CUSTOMPARTS) > 0;
-	for(cs_int16 i = 0; i < max(CPE_MODELS_COUNT, CPE_PARTICLES_COUNT); i++) {
+	for(cs_int16 i = 0; i < max(CPE_MAX_MODELS, CPE_MAX_PARTICLES); i++) {
 		CPE_SendModel(client, extVer, (cs_byte)i);
 		if(hasParts) CPE_SendParticle(client, (cs_byte)i);
 	}
@@ -364,7 +364,7 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 	}
 
 	if(!Proto_ReadStringNoAlloc(&data, client->playerData.key)) return false;
-	String_Copy(client->playerData.displayname, 65, client->playerData.name);
+	String_Copy(client->playerData.displayname, MAX_STR_LEN, client->playerData.name);
 	client->cpeData.markedAsCPE = (*data == 0x42);
 
 	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
@@ -380,8 +380,8 @@ cs_bool Handler_Handshake(Client *client, cs_char *data) {
 		preHandshakeDone params = {
 			.client = client
 		};
-		String_Copy(params.name, 65, Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY));
-		String_Copy(params.motd, 65, Config_GetStrByKey(Server_Config, CFG_SERVERMOTD_KEY));
+		String_Copy(params.name, MAX_STR_LEN, Config_GetStrByKey(Server_Config, CFG_SERVERNAME_KEY));
+		String_Copy(params.motd, MAX_STR_LEN, Config_GetStrByKey(Server_Config, CFG_SERVERMOTD_KEY));
 		Event_Call(EVT_PREHANDSHAKEDONE, &params);
 		Client_SetServerIdent(client, params.name, params.motd);
 	} else {
@@ -500,7 +500,7 @@ cs_bool Handler_PosAndOrient(Client *client, cs_char *data) {
 	return true;
 }
 
-static cs_bool isUrl(cs_char *mesg, cs_byte ls, cs_byte en) {
+INL static cs_bool isUrl(cs_char *mesg, cs_byte ls, cs_byte en) {
 	if((en - ls) < 7) return false;
 
 	while((en - ls) > 0 && mesg[ls] == '&') { ls += 2; en -= 2; }
@@ -514,7 +514,7 @@ static cs_bool isUrl(cs_char *mesg, cs_byte ls, cs_byte en) {
 	return (en - ls) >= 3 && mesg[ls] == ':' && mesg[ls + 1] == '/' && mesg[ls + 2] == '/';
 }
 
-static void convertColors(cs_char *message, cs_byte len) {
+INL static void convertColors(cs_char *message, cs_byte len) {
 	cs_byte last_space = 0;
 	for(cs_byte i = 0; i < len; i++) {
 		if(message[i] == ' ') last_space = i;
@@ -1077,7 +1077,7 @@ cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
 	ValidateClientState(client, CLIENT_STATE_MOTD, false);
 
 	if(!Proto_ReadStringNoAlloc(&data, client->cpeData.appName)) {
-		String_Copy(client->cpeData.appName, 65, "(unknown)");
+		String_Copy(client->cpeData.appName, MAX_STR_LEN, "(unknown)");
 		return true;
 	}
 	client->cpeData.extensions.count = ntohs(*(cs_uint16 *)data);
@@ -1094,7 +1094,7 @@ cs_bool CPEHandler_ExtEntry(Client *client, cs_char *data) {
 	ValidateClientState(client, CLIENT_STATE_MOTD, false);
 	struct _CPEClExts *exts = &client->cpeData.extensions;
 	if(exts->current == exts->count) return false;
-	cs_char tempname[65];
+	cs_char tempname[MAX_STR_LEN];
 	if(!Proto_ReadStringNoAlloc(&data, tempname))
 		return false;
 

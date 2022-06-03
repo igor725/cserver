@@ -20,7 +20,7 @@ cs_uintptr Groups_Create(cs_str name, cs_byte rank) {
 		nextid = headCGroup->key.numptr + 1;
 
 	tmpgrp = Memory_Alloc(1, sizeof(CGroup));
-	String_Copy(tmpgrp->name, 65, name);
+	String_Copy(tmpgrp->name, MAX_STR_LEN, name);
 	tmpgrp->rank = rank;
 	KList_AddField(&headCGroup, (void *)nextid, tmpgrp);
 	return nextid;

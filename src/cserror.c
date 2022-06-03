@@ -54,7 +54,7 @@ static void PrintCallStack(void) {
 				printf("Frame #%d: %s = %p\n", i, dli.dli_sname, dli.dli_saddr);
 		}
 #	else
-		printf("Callstack printing is not implemented yet for this OS\n");
+		printf("*** Callstack printing is not implemented yet for this OS\n");
 #	endif
 }
 

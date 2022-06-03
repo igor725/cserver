@@ -42,7 +42,7 @@ void Client_Init(Client *client, Socket fd, cs_ulong addr) {
 	client->cpeData.model = 256;
 	client->cpeData.clickDist = 160;
 	NetBuffer_Init(&client->netbuf, fd);
-	String_Copy(client->cpeData.appName, 65, "Vanilla client");
+	String_Copy(client->cpeData.appName, MAX_STR_LEN, "Vanilla client");
 }
 
 Client *Client_NewBot(void) {
@@ -282,7 +282,7 @@ void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 
 CPECuboid *Client_NewSelection(Client *client) {
 	if(Client_GetExtVer(client, EXT_CUBOID)) {
-		for(cs_byte i = 0; i < CLIENT_CUBOIDS_COUNT; i++) {
+		for(cs_byte i = 0; i < CPE_MAX_CUBOIDS; i++) {
 			CPECuboid *cub = &client->cpeData.cuboids[i];
 			if(cub->used) continue;
 			cub->used = true;
@@ -385,7 +385,7 @@ void Client_Chat(Client *client, EMesgType type, cs_str message) {
 	cs_uint32 msgLen = (cs_uint32)String_Length(message);
 
 	if(client && type == MESSAGE_TYPE_CHAT) {
-		cs_char color = 0, part[65] = {0};
+		cs_char color = 0, part[MAX_STR_LEN] = {0};
 		cs_uint32 parts = (msgLen / 60) + 1;
 		for(cs_uint32 i = 0; i < parts; i++) {
 			cs_uint32 len = CopyMessagePart(message, part, i, &color, !client->cpeData.markedAsCPE);
@@ -494,7 +494,7 @@ cs_bool Client_SetTexturePack(Client *client, cs_str url) {
 }
 
 cs_bool Client_SetDisplayName(Client *client, cs_str name) {
-	if(String_Copy(client->playerData.displayname, 65, name))
+	if(String_Copy(client->playerData.displayname, MAX_STR_LEN, name))
 		client->cpeData.updates |= PCU_NAME;
 	return false;
 }
@@ -571,7 +571,7 @@ cs_bool Client_SetModel(Client *client, cs_int16 model) {
 }
 
 cs_bool Client_SetSkin(Client *client, cs_str skin) {
-	String_Copy(client->cpeData.skin, 65, skin);
+	String_Copy(client->cpeData.skin, MAX_STR_LEN, skin);
 	client->cpeData.updates |= PCU_ENTITY;
 	return true;
 }
@@ -1102,10 +1102,10 @@ void Client_Kick(Client *client, cs_str reason) {
 }
 
 void Client_KickFormat(Client *client, cs_str fmtreason, ...) {
-	char kickreason[65];
+	char kickreason[MAX_STR_LEN];
 	va_list args;
 	va_start(args, fmtreason);
-	if(String_FormatBufVararg(kickreason, 65, fmtreason, &args))
+	if(String_FormatBufVararg(kickreason, MAX_STR_LEN, fmtreason, &args))
 		Client_Kick(client, kickreason);
 	else
 		Client_Kick(client, fmtreason);

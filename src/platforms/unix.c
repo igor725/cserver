@@ -208,16 +208,14 @@ cs_bool Thread_Signal(Thread th, cs_int32 sig) {
 
 void Thread_Detach(Thread th) {
 	cs_int32 ret;
-	if((ret = pthread_detach(th)) != 0) {
+	if((ret = pthread_detach(th)) != 0)
 		_Error_Print(ret, true);
-	}
 }
 
 void Thread_Join(Thread th) {
 	cs_int32 ret;
-	if((ret = pthread_join(th, NULL)) != 0) {
+	if((ret = pthread_join(th, NULL)) != 0)
 		_Error_Print(ret, true);
-	}
 }
 
 void Thread_Sleep(cs_uint32 ms) {
@@ -227,46 +225,39 @@ void Thread_Sleep(cs_uint32 ms) {
 Mutex *Mutex_Create(void) {
 	Mutex *ptr = Memory_Alloc(1, sizeof(Mutex));
 	cs_int32 ret;
-	if((ret = pthread_mutexattr_init(&ptr->attr)) != 0) {
+	if((ret = pthread_mutexattr_init(&ptr->attr)) != 0)
 		_Error_Print(ret, true);
-	}
-	if((ret = pthread_mutexattr_settype(&ptr->attr, PTHREAD_MUTEX_RECURSIVE)) != 0) {
+	if((ret = pthread_mutexattr_settype(&ptr->attr, PTHREAD_MUTEX_RECURSIVE)) != 0)
 		_Error_Print(ret, true);
-	}
-	if((ret = pthread_mutex_init(&ptr->handle, &ptr->attr)) != 0) {
+	if((ret = pthread_mutex_init(&ptr->handle, &ptr->attr)) != 0)
 		_Error_Print(ret, true);
-	}
 	return ptr;
 }
 
 void Mutex_Free(Mutex *mtx) {
 	cs_int32 ret;
-	if((ret = pthread_mutex_destroy(&mtx->handle)) != 0) {
+	if((ret = pthread_mutex_destroy(&mtx->handle)) != 0)
 		_Error_Print(ret, true);
-	}
 	Memory_Free(mtx);
 }
 
 void Mutex_Lock(Mutex *mtx) {
 	cs_int32 ret;
-	if((ret = pthread_mutex_lock(&mtx->handle)) != 0) {
+	if((ret = pthread_mutex_lock(&mtx->handle)) != 0)
 		_Error_Print(ret, true);
-	}
 }
 
 void Mutex_Unlock(Mutex *mtx) {
 	cs_int32 ret ;
-	if((ret = pthread_mutex_unlock(&mtx->handle)) != 0) {
+	if((ret = pthread_mutex_unlock(&mtx->handle)) != 0)
 		_Error_Print(ret, true);
-	}
 }
 
 Waitable *Waitable_Create(void) {
 	Waitable *wte = Memory_Alloc(1, sizeof(Waitable));
 	cs_int32 ret;
-	if((ret = pthread_cond_init(&wte->cond, NULL)) != 0) {
+	if((ret = pthread_cond_init(&wte->cond, NULL)) != 0)
 		_Error_Print(ret, true);
-	}
 	wte->mutex = Mutex_Create();
 	wte->signalled = false;
 	return wte;
@@ -274,9 +265,8 @@ Waitable *Waitable_Create(void) {
 
 void Waitable_Free(Waitable *wte) {
 	cs_int32 ret;
-	if((ret = pthread_cond_destroy(&wte->cond)) != 0) {
+	if((ret = pthread_cond_destroy(&wte->cond)) != 0)
 		_Error_Print(ret, true);
-	}
 	Mutex_Free(wte->mutex);
 	Memory_Free(wte);
 }
@@ -286,9 +276,8 @@ void Waitable_Signal(Waitable *wte) {
 	cs_int32 ret;
 	if(!wte->signalled) {
 		wte->signalled = true;
-		if((ret = pthread_cond_signal(&wte->cond)) != 0) {
+		if((ret = pthread_cond_signal(&wte->cond)) != 0)
 			_Error_Print(ret, true);
-		}
 	}
 	Mutex_Unlock(wte->mutex);
 }
@@ -303,9 +292,8 @@ void Waitable_Wait(Waitable *wte) {
 	Mutex_Lock(wte->mutex);
 	cs_int32 ret;
 	while(!wte->signalled) {
-		if((ret = pthread_cond_wait(&wte->cond, &wte->mutex->handle)) != 0) {
+		if((ret = pthread_cond_wait(&wte->cond, &wte->mutex->handle)) != 0)
 			_Error_Print(ret, true);
-		}
 	}
 	Mutex_Unlock(wte->mutex);
 }

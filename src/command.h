@@ -35,8 +35,10 @@ Command_UnregisterByFunc((cmdFunc)svcmd_##N)
 #define COMMAND_BUNCH_ADD(N, F, H) {#N, H, (cmdFunc)svcmd_##N, F},
 #define COMMAND_BUNCH_END {NULL, NULL, NULL, 0x00}
 
-void Command_RegisterDefault(void);
-void Command_UnregisterAll(void);
+#ifndef CORE_BUILD_PLUGIN
+	void Command_RegisterDefault(void);
+	void Command_UnregisterAll(void);
+#endif
 
 /**
  * @brief Обрабатывает переданную строку как команду.

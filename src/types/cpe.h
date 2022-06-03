@@ -22,9 +22,10 @@
 #define MV_TEXPACK BIT(2)
 #define MV_WEATHER BIT(3)
 
-#define CPE_MODELS_COUNT 64
-#define CPE_PARTICLES_COUNT 254
+#define CPE_MAX_MODELS 64
+#define CPE_MAX_PARTICLES 254
 #define CPE_MAX_EXTMESG_LEN 193
+#define CPE_MAX_CUBOIDS 16
 
 /*
  * Если какой-то из дефайнов ниже
@@ -35,8 +36,6 @@
 */
 #define WORLD_PROPS_COUNT 10
 #define WORLD_COLORS_COUNT 5
-
-#define CLIENT_CUBOIDS_COUNT 16
 
 typedef enum _EWorldColor {
 	WORLD_COLOR_SKY,
@@ -114,7 +113,7 @@ typedef struct _CPEParticle {
  * 
  */
 typedef struct _BlockDef {
-	cs_char name[65]; /** Название блока */
+	cs_char name[MAX_STR_LEN]; /** Название блока */
 	BlockID fallback; /** Блок-замена, если клиент не поддерживает дополнение */
 	cs_byte flags; /** Флаги блока */
 	union {
@@ -181,7 +180,7 @@ typedef struct _CPEModelPart {
 } CPEModelPart;
 
 typedef struct _CPEModel {
-	cs_char name[65];
+	cs_char name[MAX_STR_LEN];
 	cs_byte flags;
 	cs_float nameY;
 	cs_float eyeY;
@@ -208,8 +207,8 @@ typedef struct _CPEData {
 		cs_int16 count; // Количество дополнений у клиента
 		cs_int16 current; // Количество обработанных дополнений
 	} extensions;
-	cs_char appName[65]; // Название игрового клиента
-	cs_char skin[65]; // Скин игрока [ExtPlayerList]
+	cs_char appName[MAX_STR_LEN]; // Название игрового клиента
+	cs_char skin[MAX_STR_LEN]; // Скин игрока [ExtPlayerList]
 	cs_char message[CPE_MAX_EXTMESG_LEN]; // Используется для получения длинных сообщений [LongerMessages]
 	BlockID heldBlock; // Выбранный игроком блок в данный момент [HeldBlock]
 	cs_int8 updates; // Обновлённые значения игрока
@@ -224,7 +223,7 @@ typedef struct _CPEData {
 	cs_int32 props[3]; // Вращение модели игрока в градусах [EntityProperty]
 	cs_uint16 clickDist; // Расстояние клика игрока [ClickDistance]
 	cs_byte cbLevel; // Поддерживаемый уровень кастом блоков, пока не используется [CustomBlocks]
-	CPECuboid cuboids[CLIENT_CUBOIDS_COUNT]; // Кубоиды игрока [SelectionCuboid]
+	CPECuboid cuboids[CPE_MAX_CUBOIDS]; // Кубоиды игрока [SelectionCuboid]
 } CPEData;
 
 typedef struct _CPEHacks {

@@ -72,7 +72,7 @@ cs_str Block_GetName(World *world, BlockID id) {
 
 BlockDef *Block_New(cs_str name, cs_byte flags) {
 	BlockDef *bdef = Memory_Alloc(1, sizeof(BlockDef));
-	String_Copy(bdef->name, 65, name);
+	String_Copy(bdef->name, MAX_STR_LEN, name);
 	bdef->flags = BDF_DYNALLOCED | flags;
 	return bdef;
 }

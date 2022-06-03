@@ -37,7 +37,9 @@
 #	error No HTTP backend selected
 #endif
 
-void Http_Uninit(void);
+#ifndef CORE_BUILD_PLUGIN
+	void Http_Uninit(void);
+#endif
 
 /**
  * @brief Устанавливает соединение с указанным сервером

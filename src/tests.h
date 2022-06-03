@@ -1,3 +1,7 @@
+#ifdef CORE_BUILD_PLUGIN
+#	error Tests cannot be used in plugins
+#endif
+
 #ifndef TESTS_H
 #define TESTS_H
 #include "core.h"
