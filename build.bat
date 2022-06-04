@@ -4,6 +4,7 @@ CALL misc\vsdetect.bat
 IF NOT "%ERRORLEVEL%"=="0" GOTO end
 CD /D %~dp0
 
+SET RUNSERVER=0
 SET DEBUG=0
 SET SAN=0
 SET ROOT=.
@@ -32,9 +33,8 @@ IF "%ERRORLEVEL%"=="0" SET GITOK=1
 IF "%1"=="" GOTO argsdone
 IF "%1"=="cls" cls
 IF "%1"=="dbg" SET DEBUG=1
-IF "%1"=="run" SET RUNMODE=0
+IF "%1"=="run" SET RUNSERVER=1
 IF "%1"=="noprompt" SET NOPROMPT=1
-IF "%1"=="runsame" SET RUNMODE=1
 IF "%1"=="od" SET OPT=/Od
 IF "%1"=="wall" SET WARN=/Wall /wd4820 /wd5045
 IF "%1"=="w4" SET WARN=/W4
@@ -160,11 +160,7 @@ IF "%PLUGIN_BUILD%"=="1" (
 ) else GOTO binstart
 
 :binstart
-IF "%RUNMODE%"=="0" start /D %OUTDIR% %OUTBIN%
-IF "%RUNMODE%"=="1" GOTO onerun
-GOTO endok
-
-:onerun
+IF "%RUNSERVER%"=="0" GOTO endok
 PUSHD %OUTDIR%
 %OUTBIN%
 POPD

@@ -7,7 +7,7 @@ IF "%ERRORLEVEL%"=="0" (
 )
 
 :vcerror
-ECHO Error: Script must be runned via Native Tools Command Prompt for Visual Studio.
+ECHO Error: You must open a Visual Studio Command Prompt to run this script.
 ECHO Note: If you don't have Visual Studio C++ installed, you can download it here:
 ECHO https://visualstudio.microsoft.com/downloads/
 EXIT /B 1

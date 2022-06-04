@@ -2,7 +2,7 @@
 
 #define VER_COMMENT "Minecraft Classic server software\000"
 #define VER_PRODUCTNAME "CServer\000"
-#define VER_COPYRIGHT "Copyright (c) 2022 igor725"
+#define VER_COPYRIGHT "Copyright (c) 2022 igor725\000"
 
 #define VER_FILEVER 0,6,0,1
 #define VER_FILEVER_STR "0.6.0.1\000"

@@ -1,7 +1,8 @@
 # cserver
 Another Minecraft Classic server in C.
+The server is still under development (see [Projects](https://github.com/igor725/cserver/projects) tab)!
 
-The goal of this project: create a stable, customizable and future-rich multiplatform Minecraft Classic server with a minimum dependencies.
+The goal of this project is to create a stable, customizable and future-rich multiplatform Minecraft Classic server with a minimum dependencies.
 
 ## Features
 * Classic Protocol Extension
@@ -32,7 +33,9 @@ Single command builder for Linux: `curl -sL https://igvx.ru/singlecommand | bash
 2. Several std libs (such as Kernel32, DbgHelp, WS2_32)
 3. WinInet, Advapi32 (will be loaded on demand)
 
-NOTE: Some libraries (such as libcurl, libcrypto) are multiplatform. You can use them both on Windows, Linux and macOS.
+### NOTES
+* Some libraries (such as libcurl, libcrypto) are multiplatform. You can use them both on Windows, Linux and macOS.
+* You can use zlib-ng in compatibility mode instead of zlib.
 
 ### Available HTTP backends
 - libcurl (`HTTP_USE_CURL_BACKEND`)
@@ -66,22 +69,36 @@ NOTE: This script uses gcc, but you can change it to another compiler by setting
 ### On Windows
 ``.\build.bat [args ...]``
 
-NOTE: This script must be runned in the Visual Studio Developer Command Prompt.
+NOTE: You must open a Visual Studio Command Prompt to run this script.
 
 ### Build script arguments
-* ``cls`` - Clear console window before compilation
-* ``pb`` - Build a plugin (next argument must be a plugin name, without the "cs-" prefix)
-* ``install`` - Copy plugin binary to the ``plugins`` directory after compilation (Can be used only with ``pb``)
-* ``upd`` - Update local server (or plugin if ``pb`` passed AFTER ``upd``) repository before building
-* ``dbg`` - Build with debug symbols
-* ``wall`` - Enable all possible warnings
-* ``wx`` - Treat warnings as errors
-* ``w0`` - Disable all warnings
-* ``od`` - Disable compiler optimizations
-* ``san`` - Add LLVM sanitizers
-* ``run`` - Start the server after compilation
-* ``runsame`` - Start the server after compilation in the same console window (Windows only)
-* ``noprompt`` - Suppress zlib download prompt message (Windows only)
+
+| Argument | Description |
+|  :---:   |    :---:    |
+|   cls    | Clear console window before compilation |
+|   upd    | Pull latest server (or plugin) changes from a remote repository before building |
+|   dbg    | Build with debug symbols |
+|   wall   | Enable all possible warnings |
+|    wx    | Treat warnings as errors |
+|    w0    | Disable all warnings |
+|    od    | Disable compiler optimizations |
+|   san    | Add LLVM sanitizers |
+|   run    | Start the server after compilation |
+| noprompt | Suppress zlib download prompt message (Windows only) |
+|    pb    | Build a plugin (See notes below) |
+
+#### Plugin arguments
+Notice that these arguments must be passed **after** the `pb` argument and plugin's name!
+
+| Argument | Description |
+|  :---:   |    :---:    |
+| install  | Copy the plugin to the ``plugins`` directory after compilation |
+
+#### Notes
+* Each uncompiled plugin is a folder with a `cs-` prefix in its name. Inside this folder there should be a `src` folder with atleast one *.c file.
+* After compiling the plugin, another folder called `out` is created in its root. Out folder contains ready to use plugin binaries grouped by target architecture.
+* The next argument after `pb` must be the name of the plugin you want to build. The name **must not** include the `cs-` prefix.
+* Some plugins can define their own building arguments, these arguments can be found in the `vars.sh`/`vars.bat` file in the plugin's root folder.
 
 ### Example
 * ``./build`` - Build the server release binary
@@ -91,13 +108,13 @@ NOTE: This script must be runned in the Visual Studio Developer Command Prompt.
 
 ## Notes
 * Use this software carefully! The server **may** have many security holes.
-* It is strongly recommended to recompile **all plugins** every time you update the server, because the final version of API not yet been formed. It means your server may not work properly.
+* At this point, it is strongly recommended to recompile **all plugins** every time you update the server, otherwise your server may crash due to API incompatibility.
 * My main OS is Windows 10, this means the Linux thing are not well tested.
 * By default the server doesn't have any useful chat commands, build the [cs-base](https://github.com/igor725/cs-base) plugin for an expanded command set.
 * Here is the [example plugin](https://github.com/igor725/cs-test) for this server software.
 * Your directory should have the following structure in order to compile plugins:
 ```
-	[root_folder]/cserver - Main server repository
+	[root_folder]/cserver - This repository
 	[root_folder]/cs-lua - Lua scripting plugin
 	[root_folder]/cs-base - Base server functionality
 	[root_folder]/cs-survival - Survival plugin
