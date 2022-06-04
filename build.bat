@@ -131,7 +131,11 @@ SET CFLAGS=%CFLAGS% %WARN% %OPT% /Fo%OBJDIR%\
 SET SOURCES=%ROOT%\src\*.c
 
 IF EXIST %ROOT%\version.rc (
-	RC /NOLOGO /Fo!OBJDIR!\version.res !ROOT!\version.rc
+	SET RCCFLAGS=/NOLOGO /Fo!OBJDIR!\version.res
+	IF "!DEBUG!"=="1" (
+		SET RCCFLAGS=!RCCFLAGS! /DDEBUG
+	)
+	RC !RCCFLAGS! !ROOT!\version.rc
 	SET SOURCES=!SOURCES! !OBJDIR!\version.res
 )
 

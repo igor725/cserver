@@ -108,6 +108,15 @@ typedef struct _CPEParticle {
 	gravity, baseLifetime, lifetimeVariation;
 } CPEParticle;
 
+typedef struct _CPEAppearance {
+	cs_str texture;
+	BlockID side;
+	BlockID edge;
+	cs_uint16 sidelvl;
+	cs_int16 cloudlvl;
+	cs_uint16 maxdist;
+} CPEAppearance;
+
 /**
  * @brief Структура, описывающая создаваемый блок.
  * 
@@ -227,8 +236,11 @@ typedef struct _CPEData {
 } CPEData;
 
 typedef struct _CPEHacks {
-	cs_bool flying, noclip, speeding,
-	spawnControl, tpv;
+	cs_bool flying;
+	cs_bool noclip;
+	cs_bool speeding;
+	cs_bool spawnControl;
+	cs_bool tpv;
 	cs_int16 jumpHeight;
 } CPEHacks;
 

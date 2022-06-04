@@ -253,27 +253,17 @@ void Client_UpdateWorldInfo(Client *client, World *world, cs_bool updateAll) {
 			}
 		}
 	} else {
-		switch(Client_GetExtVer(client, EXT_MAPPROPS)) {
-			case 1:
-				CPE_WriteSetMapAppearanceV1(
-					client, world->info.texturepack,
-					(cs_byte)World_GetEnvProp(world, 0),
-					(cs_byte)World_GetEnvProp(world, 1),
-					(cs_int16)World_GetEnvProp(world, 2)
-				);
-				break;
+		CPEAppearance apps = {
+			.texture = world->info.texturepack,
+			.side = (BlockID)World_GetEnvProp(world, 0),
+			.edge = (BlockID)World_GetEnvProp(world, 1),
+			.sidelvl = (cs_int16)World_GetEnvProp(world, 2),
+			.cloudlvl = (cs_int16)World_GetEnvProp(world, 3),
+			.maxdist = (cs_int16)World_GetEnvProp(world, 4)
+		};
 
-			case 2:
-				CPE_WriteSetMapAppearanceV2(
-					client, world->info.texturepack,
-					(cs_byte)World_GetEnvProp(world, 0),
-					(cs_byte)World_GetEnvProp(world, 1),
-					(cs_int16)World_GetEnvProp(world, 2),
-					(cs_int16)World_GetEnvProp(world, 3),
-					(cs_int16)World_GetEnvProp(world, 4)
-				);
-				break;
-		}
+		cs_int32 ver = Client_GetExtVer(client, EXT_MAPPROPS);
+		if(ver > 0) CPE_WriteSetMapAppearance(client, ver, &apps);
 	}
 
 	if(updateAll || world->info.modval & MV_WEATHER)
@@ -724,18 +714,10 @@ cs_bool Client_AddTextColor(Client *client, Color4* color, cs_char code) {
 }
 
 INL static cs_bool SendCPEEntity(Client *client, Client *other) {
-	switch(Client_GetExtVer(client, EXT_PLAYERLIST)) {
-		case 1:
-			CPE_WriteAddEntity_v1(client, other);
-			return true;
-		
-		case 2:
-			CPE_WriteAddEntity_v2(client, other);
-			return true;
-		
-		default:
-			return false;
-	}
+	cs_int32 ver = Client_GetExtVer(client, EXT_PLAYERLIST);
+	if(!ver) return false;
+	CPE_WriteAddEntity(client, ver, other);
+	return true;
 }
 
 INL static void PushClientName(Client *client, Client *other) {

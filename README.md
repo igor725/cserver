@@ -1,7 +1,7 @@
 # cserver
 Another Minecraft Classic server in C.
 
-The goal of this project: create a stable, customizable and future-rich multiplatform Minecraft Classic server with a minimal dependencies count.
+The goal of this project: create a stable, customizable and future-rich multiplatform Minecraft Classic server with a minimum dependencies.
 
 ## Features
 * Classic Protocol Extension
@@ -17,7 +17,7 @@ The goal of this project: create a stable, customizable and future-rich multipla
 ## Download
 If you don't want to mess with compilers, you can always download latest prebuilt binaries [here](https://github.com/igor725/cserver/actions/workflows/build.yml).
 
-Single command builder: `curl -sL https://igvx.ru/singlecommand | bash` (server + base + lua)
+Single command builder for Linux: `curl -sL https://igvx.ru/singlecommand | bash` (server + base + lua)
 
 ## Dependencies
 
@@ -90,7 +90,7 @@ NOTE: This script must be runned in the Visual Studio Developer Command Prompt.
 * ``./build dbg wall upd pb base install`` - Pull latest changes from cs-base repository, then build the base plugin and copy binary to the plugins directory
 
 ## Notes
-* Use this software carefully! The server MAY have many security holes.
+* Use this software carefully! The server **may** have many security holes.
 * It is strongly recommended to recompile **all plugins** every time you update the server, because the final version of API not yet been formed. It means your server may not work properly.
 * My main OS is Windows 10, this means the Linux thing are not well tested.
 * By default the server doesn't have any useful chat commands, build the [cs-base](https://github.com/igor725/cs-base) plugin for an expanded command set.

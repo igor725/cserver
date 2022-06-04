@@ -644,31 +644,22 @@ void CPE_WriteAddName(Client *client, Client *other) {
 	PacketWriter_End(client);
 }
 
-void CPE_WriteAddEntity_v1(Client *client, Client *other) {
-	PacketWriter_Start(client, 130);
+void CPE_WriteAddEntity(Client *client, cs_int32 ver, Client *other) {
+	PacketWriter_Start(client, ver > 1 ? 144: 130);
 
-	*data++ = PACKET_EXTENTITYADDv1;
+	*data++ = ver > 1 ? PACKET_EXTENTITYADDv2 : PACKET_EXTENTITYADDv1;
 	*data++ = client == other ? CLIENT_SELF : other->id;
 	Proto_WriteString(&data, Client_GetDisplayName(other));
 	Proto_WriteString(&data, Client_GetSkin(other));
-
-	PacketWriter_End(client);
-}
-
-void CPE_WriteAddEntity_v2(Client *client, Client *other) {
-	PacketWriter_Start(client, 144);
-
-	*data++ = PACKET_EXTENTITYADDv2;
-	*data++ = client == other ? CLIENT_SELF : other->id;
-	Proto_WriteString(&data, Client_GetDisplayName(other));
-	Proto_WriteString(&data, Client_GetSkin(other));
-	WriteExtEntityPos(
-		&data,
-		&other->playerData.position,
-		&other->playerData.angle,
-		Client_GetExtVer(client, EXT_ENTPOS) > 0,
-		client == other
-	);
+	if(ver > 1) {
+		WriteExtEntityPos(
+			&data,
+			&other->playerData.position,
+			&other->playerData.angle,
+			Client_GetExtVer(client, EXT_ENTPOS) > 0,
+			client == other
+		);
+	}
 
 	PacketWriter_End(client);
 }
@@ -740,30 +731,18 @@ void CPE_WriteSetModel(Client *client, Client *other) {
 	PacketWriter_End(client);
 }
 
-void CPE_WriteSetMapAppearanceV1(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl) {
-	PacketWriter_Start(client, 69);
+void CPE_WriteSetMapAppearance(Client *client, cs_int32 ver, CPEAppearance *apps) {
+	PacketWriter_Start(client, ver > 1 ? 73 : 69);
 
 	*data++ = PACKET_SETMAPAPPEARANCE;
-	Proto_WriteString(&data, tex);
-	*data++ = side;
-	*data++ = edge;
-	*(cs_uint16 *)data = htons(sidelvl);
-	data += 2;
-
-	PacketWriter_End(client);
-}
-
-void CPE_WriteSetMapAppearanceV2(Client *client, cs_str tex, cs_byte side, cs_byte edge, cs_int16 sidelvl, cs_int16 cllvl, cs_int16 maxview) {
-	PacketWriter_Start(client, 73);
-
-	*data++ = PACKET_SETMAPAPPEARANCE;
-	Proto_WriteString(&data, tex);
-	*data++ = side;
-	*data++ = edge;
-	*(cs_uint16 *)data = htons(sidelvl); data += 2;
-	*(cs_uint16 *)data = htons(cllvl); data += 2;
-	*(cs_uint16 *)data = htons(maxview); data += 2;
-
+	Proto_WriteString(&data, apps->texture);
+	*data++ = apps->side;
+	*data++ = apps->edge;
+	*(cs_uint16 *)data = htons(apps->sidelvl); data += 2;
+	if(ver > 1) {
+		*(cs_uint16 *)data = htons(apps->cloudlvl); data += 2;
+		*(cs_uint16 *)data = htons(apps->maxdist); data += 2;
+	}
 	PacketWriter_End(client);
 }
 

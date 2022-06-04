@@ -1,7 +1,27 @@
 #include "winver.h"
 
+#define VER_COMMENT "Minecraft Classic server software\000"
+#define VER_PRODUCTNAME "CServer\000"
+#define VER_COPYRIGHT "Copyright (c) 2022 igor725"
+
+#define VER_FILEVER 0,6,0,1
+#define VER_FILEVER_STR "0.6.0.1\000"
+#define VER_FILENAME "server.exe\000"
+
+#define VER_PRODUCTVER 0,6,0,0
+#define VER_PRODUCTVER_STR "0.6.0\000"
+
+#ifdef DEBUG
+#	define VER_DEBUG VS_FF_DEBUG
+#else
+#	define VER_DEBUG 0
+#endif
+
 1 VERSIONINFO
-FILEVERSION 1,0,0,0
+FILEVERSION VER_FILEVER
+PRODUCTVERSION VER_PRODUCTVER
+FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+FILEFLAGS (VS_FF_PRERELEASE|VER_DEBUG)
 FILEOS VOS_NT_WINDOWS32
 FILETYPE VFT_APP
 {
@@ -9,15 +29,17 @@ FILETYPE VFT_APP
 	{
 		BLOCK "040904B0"
 		{
-			VALUE "FileDescription", "Minecraft Classic server software\000"
-			VALUE "ProductName", "CServer\000"
-			VALUE "ProductVersion", "1.0\000"
-			VALUE "OriginalFilename", "server.exe\000"
+			VALUE "FileDescription", VER_COMMENT
+			VALUE "FileVersion", VER_FILEVER_STR
+			VALUE "ProductName", VER_PRODUCTNAME
+			VALUE "ProductVersion", VER_PRODUCTVER_STR
+			VALUE "LegalCopyright", VER_COPYRIGHT
+			VALUE "OriginalFilename", VER_FILENAME
 		}
 	}
 
 	BLOCK "VarFileInfo"
 	{
-		VALUE "Translation", 0x0409, 1200
+		VALUE "Translation", 0x0409, 1252
 	}
 }
