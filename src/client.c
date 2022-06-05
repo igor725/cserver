@@ -356,13 +356,14 @@ INL static cs_uint32 CopyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_
 		cs_char prevsym = *msg++,
 		nextsym = *msg;
 
-		if(prevsym != '\r') {
+		if(prevsym != '\r' && prevsym != '\n') {
 			if(sanitize)
 				*part++ = prevsym < ' ' || prevsym > '~' ? '?' : prevsym;
 			else
 				*part++ = prevsym;
 		}
-		if(nextsym == '\0' || nextsym == '\n') break;
+		if(nextsym == '\0') break;
+		if(nextsym == '\n') {len = (j + 2); break;}
 		if(prevsym == '&' && ISHEX(nextsym)) *color = nextsym;
 	}
 
@@ -372,16 +373,17 @@ INL static cs_uint32 CopyMessagePart(cs_str msg, cs_char *part, cs_uint32 i, cs_
 
 void Client_Chat(Client *client, EMesgType type, cs_str message) {
 	if(client && Client_IsBot(client)) return;
-	cs_uint32 msgLen = (cs_uint32)String_Length(message);
 
 	if(client && type == MESSAGE_TYPE_CHAT) {
 		cs_char color = 0, part[MAX_STR_LEN] = {0};
-		cs_uint32 parts = (msgLen / 60) + 1;
-		for(cs_uint32 i = 0; i < parts; i++) {
-			cs_uint32 len = CopyMessagePart(message, part, i, &color, !client->cpeData.markedAsCPE);
+		cs_bool next = false;
+		while(*message != '\0') {
+			cs_uint32 len = CopyMessagePart(message, part, next, &color, !client->cpeData.markedAsCPE);
 			if(len > 0) {
-				Vanilla_WriteChat(client, type, part);
+				if((!next && *part != '\0') || (next && *(part + 2) != '\0'))
+					Vanilla_WriteChat(client, type, part);
 				message += len;
+				next = true;
 			}
 		}
 

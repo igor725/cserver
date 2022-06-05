@@ -1144,6 +1144,9 @@ cs_bool CPEHandler_TwoWayPing(Client *client, cs_char *data) {
 				client->cpeData.pingAvgTime = (client->cpeData._pingAvgSize * client->cpeData.pingAvgTime +
 				(cs_float)client->cpeData.pingTime) / (client->cpeData._pingAvgSize + 1);
 				client->cpeData._pingAvgSize += 1;
+				if(client->cpeData._pingAvgSize > 30)
+					client->cpeData._pingAvgSize = 1;
+				Event_Call(EVT_ONPING, client);
 			}
 
 			return true;
