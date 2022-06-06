@@ -448,7 +448,7 @@ cs_bool normalgenerator(World *world, cs_uint32 seed) {
 		generateTrees();
 	for(cs_uint16 i = 0; i < ctx.numCaves && gen_enable_caves; i++)
 		generateCave();
-	
+
 	WorldInfo *wi = &world->info;
 	cs_int16 x = ctx.dims->x / 2, z = ctx.dims->z / 2;
 	Vec_Set(wi->spawnVec, x, getHeightAt(x, z), z);

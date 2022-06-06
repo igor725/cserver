@@ -70,18 +70,6 @@ cs_str Block_GetName(World *world, BlockID id) {
 	return defaultBlockNames[id];
 }
 
-BlockDef *Block_New(cs_str name, cs_byte flags) {
-	BlockDef *bdef = Memory_Alloc(1, sizeof(BlockDef));
-	String_Copy(bdef->name, MAX_STR_LEN, name);
-	bdef->flags = BDF_DYNALLOCED | flags;
-	return bdef;
-}
-
-void Block_Free(BlockDef *bdef) {
-	if(bdef->flags & BDF_DYNALLOCED)
-		Memory_Free(bdef);
-}
-
 BlockID Block_GetIDFor(World *world, BlockDef *bdef) {
 	for(cs_uint16 i = 0; i < 256; i++) {
 		if(world->info.bdefines[i] == bdef)

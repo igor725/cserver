@@ -176,7 +176,6 @@ static void DoNetTick(void) {
 
 INL static cs_bool Bind(cs_str ip, cs_uint16 port) {
 	Server_Socket = Socket_New();
-	if(!Server_Socket) Error_PrintSys(true);
 
 	struct sockaddr_in ssa;
 	return Socket_SetAddr(&ssa, ip, port) > 0 &&
@@ -429,9 +428,11 @@ void Server_StartLoop(void) {
 		if(start < end) {
 			Log_Warn(Sstor_Get("SV_BADTICK_BW"));
 			delta = 0;
+			continue;
 		} else if(delta > 500) {
 			Log_Warn(Sstor_Get("SV_BADTICK"), delta);
 			delta = 500;
+			continue;
 		}
 
 		Thread_Sleep(TICKS_PER_SECOND);

@@ -37,26 +37,6 @@ API cs_bool Block_IsValid(World *world, BlockID id);
  */
 API cs_str Block_GetName(World *world, BlockID id);
 
-/**
- * @brief Создаёт новый блок в динамической памяти.
- * 
- * @param id уникальный номер блока
- * @param name название блока
- * @param flags флаги блока
- * @return структура, описывающая блок
- */
-API BlockDef *Block_New(cs_str name, cs_byte flags);
-
-/**
- * @brief Высвобождает память, выделенную под динамический блок.
- * Данную функцию следует вызывать после функций Block_Undefine
- * и Block_UpdateDefinition если блок уже был отправлен игрокам,
- * иначе они не будут знать о том, что этот блок более не существует.
- * 
- * @param bdef структура, описывающая блок
- */
-API void Block_Free(BlockDef *bdef);
-
 API cs_bool Block_IsDefinedFor(World *world, BlockDef *bdef);
 
 /**

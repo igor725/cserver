@@ -418,7 +418,7 @@ static const struct _subnet {
 	{0x0000000A, 0x000000FF},
 	{0x000010AC, 0x00000FFF},
 	{0x0000A8C0, 0x0000FFFF},
-	
+
 	{0x00000000, 0x00000000}
 };
 

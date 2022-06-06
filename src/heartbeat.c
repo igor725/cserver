@@ -58,7 +58,7 @@ static cs_file openHeartbeatSecret(Heartbeat *self, cs_str mode) {
 		Error_PrintSys(false);
 		return NULL;
 	}
-	
+
 	return File_Open(path, mode);
 }
 

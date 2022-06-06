@@ -30,7 +30,7 @@ INL static void ProcessHandshake(WebSock *ws, NetBuffer *nb) {
 			case -2:
 				ws->error = WEBSOCK_ERROR_CONTINUE;
 				return;
-			
+
 			default: break;
 		}
 

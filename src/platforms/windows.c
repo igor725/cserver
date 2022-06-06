@@ -53,7 +53,10 @@ cs_bool Socket_Init(void) {
 }
 
 Socket Socket_New(void) {
-	return WSASocketA(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0);
+	Socket sock;
+	if((sock = WSASocketA(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0)) == INVALID_SOCKET)
+		Error_PrintSys(true);
+	return sock;
 }
 
 cs_int32 Socket_SetAddr(struct sockaddr_in *ssa, cs_str ip, cs_uint16 port) {

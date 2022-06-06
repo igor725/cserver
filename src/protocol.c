@@ -439,7 +439,7 @@ cs_bool Handler_SetBlock(Client *client, cs_char *data) {
 			else
 				Vanilla_WriteSetBlock(client, &params.pos, World_GetBlock(world, &params.pos));
 			break;
-		
+
 		default:
 			return false;
 	}
@@ -1178,7 +1178,7 @@ cs_bool Packet_Register(EPacketID id, cs_uint16 size, packetHandler handler) {
 	tmp->size = size;
 	tmp->handler = (void *)handler;
 	packetsList[id] = tmp;
-	
+
 	return true;
 }
 

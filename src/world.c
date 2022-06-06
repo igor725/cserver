@@ -180,14 +180,14 @@ cs_bool World_SetEnvColor(World *world, EColor type, Color3* color) {
 		Event_Call(EVT_ONCOLOR, world);
 		return true;
 	}
-	
+
 	return false;
 }
 
 void World_SetSeed(World *world, cs_uint32 seed) {
 	if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
 		world->flags |= WORLD_FLAG_MODIFIED;
-	
+
 	world->info.seed = seed;
 }
 
@@ -481,9 +481,10 @@ cs_bool World_Save(World *world) {
 		world->error.extra = WORLD_EXTRA_NOINFO;
 		return false;
 	}
+
 	if(!World_IsModified(world))
 		return World_IsReadyToPlay(world);
-	
+
 	World_Lock(world, 0);
 	Thread_Create(WorldSaveThread, world, true);
 	return true;

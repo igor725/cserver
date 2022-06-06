@@ -46,7 +46,7 @@ void Memory_Free(void *ptr) {
 cs_error File_Access(cs_str path, cs_int32 mode) {
 	if(access(path, mode) < 0)
 		return Thread_GetError();
-	
+
 	return 0;
 }
 
@@ -67,7 +67,10 @@ cs_bool Socket_Init(void) {
 }
 
 Socket Socket_New(void) {
-	return socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	Socket sock;
+	if((sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
+		Error_PrintSys(true);
+	return sock;
 }
 
 cs_int32 Socket_SetAddr(struct sockaddr_in *ssa, cs_str ip, cs_uint16 port) {
@@ -188,7 +191,7 @@ cs_bool DLib_GetSym(void *lib, cs_str sname, void *sym) {
 Thread Thread_Create(TFUNC func, TARG arg, cs_bool detach) {
 	Thread th;
 	if(pthread_create(&th, NULL, func, arg) != 0)
-		_Error_Print(errno, true);
+		Error_PrintSys(true);
 
 	if(detach) {
 		Thread_Detach(th);
