@@ -73,7 +73,6 @@
 #elif defined(CORE_USE_DARWIN_PATHS)
 #	define PATH_DELIM "/"
 #	define DLIB_EXT "dylib"
-#	define PATH_MAX 260 // TODO: Убрать это отсюдова
 #else
 #	error This file wants to be hacked
 #endif // CORE_USE_*_PATHS
@@ -115,7 +114,6 @@
 
 #	define min(a, b) (((a)<(b))?(a):(b))
 #	define max(a, b) (((a)>(b))?(a):(b))
-#	define MAX_PATH  PATH_MAX
 #endif // CORE_USE_*_TYPES
 
 #if defined(CORE_USE_WINDOWS_TYPES)
@@ -185,6 +183,7 @@ typedef cs_byte ClientID;
 #define	MAX_CMD_OUT 1024
 #define MAX_CLIENTS 254
 #define MAX_STR_LEN 65
+#define MAX_PATH_LEN 512
 
 #ifndef GIT_COMMIT_TAG
 #	define GIT_COMMIT_TAG "unknown"

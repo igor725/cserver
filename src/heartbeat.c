@@ -53,8 +53,8 @@ INL static void TrimReserved(cs_char *name) {
 }
 
 static cs_file openHeartbeatSecret(Heartbeat *self, cs_str mode) {
-	cs_char path[MAX_PATH];
-	if(!String_FormatBuf(path, MAX_PATH, "secrets/%s.txt", self->domain)) {
+	cs_char path[MAX_PATH_LEN];
+	if(!String_FormatBuf(path, MAX_PATH_LEN, "secrets/%s.txt", self->domain)) {
 		Error_PrintSys(false);
 		return NULL;
 	}

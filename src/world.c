@@ -374,9 +374,9 @@ THREAD_FUNC(WorldSaveThread) {
 	cs_byte *wdata = World_GetBlockArray(world, &wsize);
 	Compr_SetInBuffer(&world->compr, wdata, wsize);
 
-	cs_char path[MAX_PATH], tmpname[MAX_PATH], out[CHUNK_SIZE];
-	String_FormatBuf(path, MAX_PATH, "worlds" PATH_DELIM "%s.cws", world->name);
-	String_FormatBuf(tmpname, MAX_PATH, "worlds" PATH_DELIM "%s.tmp", world->name);
+	cs_char path[MAX_PATH_LEN], tmpname[MAX_PATH_LEN], out[CHUNK_SIZE];
+	String_FormatBuf(path, MAX_PATH_LEN, "worlds" PATH_DELIM "%s.cws", world->name);
+	String_FormatBuf(tmpname, MAX_PATH_LEN, "worlds" PATH_DELIM "%s.tmp", world->name);
 
 	Directory_Ensure("worlds");
 	cs_file fp = File_Open(tmpname, "wb");

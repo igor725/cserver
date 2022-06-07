@@ -252,12 +252,12 @@ COMMAND_FUNC(Plugin) {
 				COMMAND_PRINTF("Plugin \"%s\" is already loaded", temparg2);
 			}else {
 				plugin = Plugin_Get(temparg2);
-				cs_char oldname[MAX_PATH], newname[MAX_PATH];
+				cs_char oldname[MAX_PATH_LEN], newname[MAX_PATH_LEN];
 				if(String_CaselessCompare(temparg1, "enable")) {
 					if(plugin) COMMAND_PRINT("This plugin is already loaded");
 
-					if(String_FormatBuf(newname, MAX_PATH, "plugins" PATH_DELIM "%s", temparg2) &&
-					String_FormatBuf(oldname, MAX_PATH, "plugins" PATH_DELIM "disabled" PATH_DELIM "%s", temparg2)) {
+					if(String_FormatBuf(newname, MAX_PATH_LEN, "plugins" PATH_DELIM "%s", temparg2) &&
+					String_FormatBuf(oldname, MAX_PATH_LEN, "plugins" PATH_DELIM "disabled" PATH_DELIM "%s", temparg2)) {
 						if(File_Rename(oldname, newname)) {
 							if(Plugin_LoadDll(temparg2))
 								COMMAND_PRINTF("Now plugin \"%s\" is enabled", temparg2);
@@ -272,8 +272,8 @@ COMMAND_FUNC(Plugin) {
 					if(plugin && !Plugin_UnloadDll(plugin, false))
 						COMMAND_PRINT("Failed to unload specified plugin");
 
-					if(String_FormatBuf(oldname, MAX_PATH, "plugins" PATH_DELIM "%s", temparg2) &&
-					String_FormatBuf(newname, MAX_PATH, "plugins" PATH_DELIM "disabled" PATH_DELIM "%s", temparg2)) {
+					if(String_FormatBuf(oldname, MAX_PATH_LEN, "plugins" PATH_DELIM "%s", temparg2) &&
+					String_FormatBuf(newname, MAX_PATH_LEN, "plugins" PATH_DELIM "disabled" PATH_DELIM "%s", temparg2)) {
 						if(File_Rename(oldname, newname))
 							COMMAND_PRINTF("Now plugin \"%s\" is disabled", temparg2);
 						else

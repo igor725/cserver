@@ -129,8 +129,8 @@ INL static cs_byte ToStr(CEntry *ent, cs_char *value, cs_byte len) {
 }
 
 cs_bool Config_Load(CStore *store) {
-	cs_char path[MAX_PATH];
-	if(String_FormatBuf(path, MAX_PATH, "configs/%s.cfg", store->name) < 1) {
+	cs_char path[MAX_PATH_LEN];
+	if(String_FormatBuf(path, MAX_PATH_LEN, "configs/%s.cfg", store->name) < 1) {
 		store->error.code = CONFIG_ERROR_INTERNAL;
 		store->error.extra = CONFIG_EXTRA_NOINFO;
 		return false;
@@ -229,8 +229,8 @@ cs_bool Config_Load(CStore *store) {
 cs_bool Config_Save(CStore *store, cs_bool force) {
 	if(!store->modified && !force) return true;
 
-	cs_char tmppath[MAX_PATH]; cs_char path[MAX_PATH];
-	if(String_FormatBuf(tmppath, MAX_PATH, "configs" PATH_DELIM "%s.tmp", store->name) < 1) {
+	cs_char tmppath[MAX_PATH_LEN]; cs_char path[MAX_PATH_LEN];
+	if(String_FormatBuf(tmppath, MAX_PATH_LEN, "configs" PATH_DELIM "%s.tmp", store->name) < 1) {
 		store->error.code = CONFIG_ERROR_INTERNAL;
 		store->error.extra = CONFIG_EXTRA_NOINFO;
 		return false;
@@ -289,7 +289,7 @@ cs_bool Config_Save(CStore *store, cs_bool force) {
 
 	File_Close(fp);
 	store->modified = false;
-	if(String_FormatBuf(path, MAX_PATH, "configs/%s.cfg", store->name) > 0) {
+	if(String_FormatBuf(path, MAX_PATH_LEN, "configs/%s.cfg", store->name) > 0) {
 		if(!File_Rename(tmppath, path)) {
 			store->error.code = CONFIG_ERROR_IOFAIL;
 			store->error.extra = CONFIG_EXTRA_IO_FRENAME;
