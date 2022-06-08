@@ -24,6 +24,7 @@ AListField *World_Head = NULL;
 World *World_Main = NULL;
 
 World *World_Create(cs_str name) {
+	if(!String_IsSafe(name)) return NULL;
 	World *tmp = Memory_Alloc(1, sizeof(World));
 	tmp->name = String_AllocCopy(name);
 	tmp->prgw = Waitable_Create();
@@ -268,9 +269,9 @@ void World_Free(World *world) {
 	}
 	Compr_Cleanup(&world->compr);
 	World_FreeBlockArray(world);
-	Mutex_Free(world->mtx);
-	Waitable_Free(world->prgw);
-	Waitable_Free(world->taskw);
+	if(world->mtx) Mutex_Free(world->mtx);
+	if(world->prgw) Waitable_Free(world->prgw);
+	if(world->taskw) Waitable_Free(world->taskw);
 	if(world->name) Memory_Free((void *)world->name);
 	Memory_Free(world);
 }

@@ -178,7 +178,13 @@ cs_uint32 String_CountArguments(cs_str args) {
 	return cnt;
 }
 
-size_t String_SizeOfB64(size_t inlen) {
+cs_bool String_IsSafe(cs_str str) {
+	for(cs_size i = 0; str[i] != '\0'; i++)
+		if(str[i] == '.' || str[i] == '/' || str[i] == '\\') return false;
+	return true;
+}
+
+cs_size String_SizeOfB64(cs_size inlen) {
 	if (inlen % 3 != 0)
 		inlen += 3 - (inlen % 3);
 	inlen /= 3;
