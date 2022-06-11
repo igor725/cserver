@@ -180,7 +180,7 @@ cs_uint32 String_CountArguments(cs_str args) {
 
 cs_bool String_IsSafe(cs_str str) {
 	for(cs_size i = 0; str[i] != '\0'; i++)
-		if(str[i] == '.' || str[i] == '/' || str[i] == '\\') return false;
+		if((str[i] == '.' && str[i + 1] == '.') || str[i] == '/' || str[i] == '\\') return false;
 	return true;
 }
 

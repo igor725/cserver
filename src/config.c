@@ -24,7 +24,7 @@ if(!checkNumber(value)) { \
 CStore *Config_NewStore(cs_str name) {
 	if(!String_IsSafe(name)) return false;
 	CStore *store = Memory_Alloc(1, sizeof(CStore));
-	store->name = String_AllocCopy(name);
+	store->name = String_TrimExtension(String_AllocCopy(name));
 	return store;
 }
 
