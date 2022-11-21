@@ -3,8 +3,6 @@ name: C/C++ CI
 on:
   pull_request:
     types: [opened, reopened]
-  schedule:
-    - cron: '0 0 1 * *'
   push:
     paths:
       - src/**
@@ -77,7 +75,6 @@ jobs:
           arch: x86
           build: .\build.bat
           testbin: .\core\out\x86dbg\server.exe
-
 
     steps:
     - name: Checkout Core repo

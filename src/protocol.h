@@ -95,7 +95,7 @@ API void Proto_WriteColor3(cs_char **dataptr, const Color3* color);
 API void Proto_WriteColor4(cs_char **dataptr, const Color4* color);
 API void Proto_WriteByteColor3(cs_char **dataptr, const Color3* color);
 API void Proto_WriteByteColor4(cs_char **dataptr, const Color4* color);
-API void Proto_WriteFloat(cs_char **dataptr, cs_float num);
+API void Proto_WriteNFloat(cs_char **dataptr, cs_uint32 n, cs_float *arr);
 
 API void CPE_RegisterServerExtension(cs_str name, cs_int32 version);
 void Packet_RegisterDefault(void);
