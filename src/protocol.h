@@ -73,6 +73,7 @@ typedef cs_bool(*packetHandler)(Client *, cs_char *);
 	NOINL void CPE_WriteDefineModelPart(Client *client, cs_int32 ver, cs_byte id, CPEModelPart *part);
 	NOINL void CPE_WriteUndefineModel(Client *client, cs_byte id);
 	NOINL void CPE_WritePluginMessage(Client *client, cs_byte channel, cs_str message);
+	NOINL void CPE_WriteExtEntityTeleport(Client *client, cs_byte behavior, Vec *pos, Ang *ang);
 #endif
 
 API cs_bool Packet_Register(EPacketID id, cs_uint16 size, packetHandler handler);

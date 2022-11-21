@@ -1051,6 +1051,21 @@ void CPE_WritePluginMessage(Client *client, cs_byte channel, cs_str message) {
 	PacketWriter_End(client);
 }
 
+void CPE_WriteExtEntityTeleport(Client *client, cs_byte behavior, Vec *pos, Ang *ang) {
+	PacketWriter_Start(client, 17);
+
+	*data++ = PACKET_EXTENTITYTP;
+	*data++ = CLIENT_SELF;
+	*data++ = behavior;
+	if(Client_GetExtVer(client, EXT_ENTPOS))
+		Proto_WriteFlVec(&data, pos);
+	else
+		Proto_WriteFlSVec(&data, pos);
+	Proto_WriteAng(&data, ang);
+
+	PacketWriter_End(client);
+}
+
 cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, CLIENT_STATE_MOTD, false);
@@ -1220,11 +1235,11 @@ static const struct extReg {
 	{"ChangeModel", 1},
 	{"EnvMapAppearance", 2},
 	{"EnvWeatherType", 1},
-	{"HackControl", 1},
 	{"MessageTypes", 1},
+	{"HackControl", 1},
 	{"PlayerClick", 1},
-	{"LongerMessages", 1},
 	{"FullCP437", 1},
+	{"LongerMessages", 1},
 	{"BlockDefinitions", 1},
 	{"BlockDefinitionsExt", 2},
 	{"BulkBlockUpdate", 1},
@@ -1234,15 +1249,18 @@ static const struct extReg {
 	{"ExtEntityPositions", 1},
 	{"TwoWayPing", 1},
 	{"InventoryOrder", 1},
-	// {"ExtendedBlocks", 1},
 	{"FastMap", 1},
-	// {"ExtendedTextures", 1},
 	{"SetHotbar", 1},
 	{"SetSpawnpoint", 1},
 	{"VelocityControl", 1},
 	{"CustomParticles", 1},
 	{"CustomModels", 2},
 	{"PluginMessages", 1},
+	{"ExtEntityTeleport", 1},
+
+	// Не думаю, что они когда-нибудь появятся
+	// {"ExtendedBlocks", 1},
+	// {"ExtendedTextures", 1},
 
 	{NULL, 0}
 };
@@ -1267,6 +1285,7 @@ void Packet_RegisterDefault(void) {
 	(void)Packet_Register(PACKET_TWOWAYPING,      3, CPEHandler_TwoWayPing);
 	(void)Packet_Register(PACKET_PLAYERCLICKED,   14, CPEHandler_PlayerClick);
 	(void)Packet_Register(PACKET_PLUGINMESSAGE,   65, CPEHandler_PluginMessage);
+
 	(void)Packet_SetCPEHandler(PACKET_ENTITYTELEPORT, EXT_ENTPOS, 1, 15, NULL);
 }
 

@@ -81,6 +81,7 @@ API cs_bool Client_SetGroup(Client *client, cs_uintptr gid);
 API cs_bool Client_SpawnParticle(Client *client, cs_byte id, Vec *pos, Vec *origin);
 API cs_bool Client_SendPluginMessage(Client *client, cs_byte channel, cs_str message);
 API cs_bool Client_UndefineModel(Client *client, cs_byte id);
+API cs_bool Client_ExtTeleportTo(Client *client, cs_byte behavior, Vec *pos, Ang *ang);
 
 API EClientState Client_GetState(Client *client);
 API cs_str Client_GetName(Client *client);

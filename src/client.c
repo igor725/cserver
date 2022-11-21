@@ -638,6 +638,14 @@ cs_bool Client_UndefineModel(Client *client, cs_byte id) {
 	return false;
 }
 
+cs_bool Client_ExtTeleportTo(Client *client, cs_byte behavior, Vec *pos, Ang *ang) {
+	if(Client_GetExtVer(client, EXT_ENTTELEPORT)) {
+		CPE_WriteExtEntityTeleport(client, behavior, pos, ang);
+		return true;
+	}
+	return false;
+}
+
 cs_bool Client_SetProp(Client *client, EEntProp prop, cs_int32 value) {
 	if(prop >= ENTITY_PROP_COUNT) return false;
 	client->cpeData.props[prop] = value;
