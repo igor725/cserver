@@ -198,7 +198,7 @@ cs_bool Server_Init(void) {
 	Server_Config = cfg;
 
 	ent = Config_NewEntry(cfg, CFG_SERVERIP_KEY, CONFIG_TYPE_STR);
-	Config_SetComment(ent, "Bind server to specified IP address. \"0.0.0.0\" - means \"all available network adapters\"");
+	Config_SetComment(ent, "Bind server to specified IP address, \"0.0.0.0\" - means \"all available network adapters\"");
 	Config_SetDefaultStr(ent, "0.0.0.0");
 
 	ent = Config_NewEntry(cfg, CFG_SERVERPORT_KEY, CONFIG_TYPE_INT32);
@@ -221,22 +221,26 @@ cs_bool Server_Init(void) {
 	Config_SetComment(ent, "Check nicknames for prohibited characters");
 	Config_SetDefaultBool(ent, true);
 
+	ent = Config_NewEntry(cfg, CFG_IGNOREDEP_KEY, CONFIG_TYPE_BOOL);
+	Config_SetComment(ent, "Ignore PluginAPI version incompatibilities between plugins and server (a very dangerous option that can break your server, but fix some old plugins)");
+	Config_SetDefaultBool(ent, false);
+
 	ent = Config_NewEntry(cfg, CFG_LOCALOP_KEY, CONFIG_TYPE_BOOL);
 	Config_SetComment(ent, "Any player with ip address \"127.0.0.1\" will automatically become an operator");
 	Config_SetDefaultBool(ent, false);
 
 	ent = Config_NewEntry(cfg, CFG_MAXPLAYERS_KEY, CONFIG_TYPE_INT16);
-	Config_SetComment(ent, "Max players on server. [1-254]");
+	Config_SetComment(ent, "Max players on server [1-254]");
 	Config_SetLimit(ent, 1, 254);
 	Config_SetDefaultInt16(ent, 10);
 
 	ent = Config_NewEntry(cfg, CFG_CONN_KEY, CONFIG_TYPE_INT8);
-	Config_SetComment(ent, "Max connections per one IP. [1-5]");
+	Config_SetComment(ent, "Max connections per one IP [1-5]");
 	Config_SetLimit(ent, 1, 5);
 	Config_SetDefaultInt8(ent, 5);
 
 	ent = Config_NewEntry(cfg, CFG_WORLDS_KEY, CONFIG_TYPE_STR);
-	Config_SetComment(ent, "List of worlds to load at startup. (Can be \"*\" it means load all worlds in the folder)");
+	Config_SetComment(ent, "List of worlds to load at startup (Can be \"*\" it means load all worlds in the folder)");
 	Config_SetDefaultStr(ent, "world:256x256x256:normal,flat_world:64x64x64:flat");
 
 	if(!Config_Load(cfg)) {

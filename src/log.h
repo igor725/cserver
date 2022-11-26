@@ -25,6 +25,7 @@ typedef struct _LogBuffer {
 	void Log_Print(cs_byte flag, cs_str str, va_list *args);
 #endif
 
+API void Log_Gen(cs_byte flag, cs_str str, ...);
 API void Log_Error(cs_str str, ...);
 API void Log_Info(cs_str str, ...);
 API void Log_Chat(cs_str str, ...);

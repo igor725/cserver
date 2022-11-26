@@ -30,10 +30,11 @@
 	 * @brief Загружает указанный плагин.
 	 * 
 	 * @param name название плагина
+	 * @param ignoredep игнорировать несовместимость версий PluginAPI
 	 * @return true - плагин загружен успешно, false - произошли
 	 * технические шоколадки.
 	 */
-	cs_bool Plugin_LoadDll(cs_str name);
+	cs_bool Plugin_LoadDll(cs_str name, cs_bool ignoredep);
 
 	/**
 	 * @brief Выгружает указанный плагин из памяти.

@@ -245,7 +245,7 @@ COMMAND_FUNC(Plugin) {
 
 			if(String_CaselessCompare(temparg1, "load")) {
 				if(!Plugin_Get(temparg2)) {
-					if(Plugin_LoadDll(temparg2))
+					if(Plugin_LoadDll(temparg2, false))
 						COMMAND_PRINTF("Plugin \"%s\" loaded", temparg2);
 					COMMAND_PRINT("Something went wrong");
 				}
@@ -259,7 +259,7 @@ COMMAND_FUNC(Plugin) {
 					if(String_FormatBuf(newname, MAX_PATH_LEN, "plugins" PATH_DELIM "%s", temparg2) &&
 					String_FormatBuf(oldname, MAX_PATH_LEN, "plugins" PATH_DELIM "disabled" PATH_DELIM "%s", temparg2)) {
 						if(File_Rename(oldname, newname)) {
-							if(Plugin_LoadDll(temparg2))
+							if(Plugin_LoadDll(temparg2, false))
 								COMMAND_PRINTF("Now plugin \"%s\" is enabled", temparg2);
 							else
 								COMMAND_PRINTF("Plugin \"%s\" enabled but not loaded", temparg2);

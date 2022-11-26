@@ -436,9 +436,8 @@ cs_bool Handler_SetBlock(Client *client, cs_char *data) {
 				Vanilla_WriteSetBlock(client, &params.pos, World_GetBlock(world, &params.pos));
 			break;
 		case SETBLOCK_MODE_DESTROY:
-			params.id = BLOCK_AIR;
-			if(Event_Call(EVT_ONBLOCKPLACE, &params) && World_SetBlock(world, &params.pos, params.id))
-				UpdateBlock(world, &params.pos, params.id);
+			if(Event_Call(EVT_ONBLOCKPLACE, &params) && World_SetBlock(world, &params.pos, BLOCK_AIR))
+				UpdateBlock(world, &params.pos, BLOCK_AIR);
 			else
 				Vanilla_WriteSetBlock(client, &params.pos, World_GetBlock(world, &params.pos));
 			break;

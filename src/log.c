@@ -215,6 +215,13 @@ void Log_Print(cs_byte flag, cs_str str, va_list *args) {
 	}
 }
 
+void Log_Gen(cs_byte flag, cs_str str, ...) {
+	va_list args;
+	va_start(args, str);
+	Log_Print(flag, str, &args);
+	va_end(args);
+}
+
 void Log_Error(cs_str str, ...) {
 	va_list args;
 	va_start(args, str);

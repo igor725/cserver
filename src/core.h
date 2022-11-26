@@ -178,7 +178,7 @@ typedef cs_byte ClientID;
 #define NULL ((void *)0)
 #define INL inline
 
-#define PLUGIN_API_NUM 1
+#define PLUGIN_API_NUM 2
 #define MAX_PLUGINS 64
 #define	MAX_CMD_OUT 1024
 #define MAX_CLIENTS 254

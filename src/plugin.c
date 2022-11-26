@@ -5,6 +5,8 @@
 #include "plugin.h"
 #include "strstor.h"
 #include "list.h"
+#include "config.h"
+#include "server.h"
 
 Plugin *Plugins_List[MAX_PLUGINS] = {NULL};
 
@@ -38,7 +40,7 @@ INL static cs_bool CheckHoldIfaces(Plugin *plugin) {
 	return true;
 }
 
-cs_bool Plugin_LoadDll(cs_str name) {
+cs_bool Plugin_LoadDll(cs_str name, cs_bool ignoredep) {
 	if(!String_IsSafe(name)) return false;
 
 	cs_char path[256], error[512];
@@ -57,12 +59,13 @@ cs_bool Plugin_LoadDll(cs_str name) {
 		}
 
 		if(*apiVerSym != PLUGIN_API_NUM) {
+			cs_byte flag = ignoredep ? LOG_WARN : LOG_ERROR;
 			if(*apiVerSym < PLUGIN_API_NUM)
-				Log_Error(Sstor_Get("PLUG_DEPR"), name, PLUGIN_API_NUM, *apiVerSym);
+				Log_Gen(flag, Sstor_Get("PLUG_DEPR"), name, PLUGIN_API_NUM, *apiVerSym);
 			else
-				Log_Error(Sstor_Get("PLUG_DEPR_API"), name, *apiVerSym, PLUGIN_API_NUM);
+				Log_Gen(flag, Sstor_Get("PLUG_DEPR_API"), name, *apiVerSym, PLUGIN_API_NUM);
 
-			DLib_Unload(lib);
+			if(!ignoredep) DLib_Unload(lib);
 			return false;
 		}
 
@@ -286,10 +289,12 @@ void Plugin_LoadAll(void) {
 	Directory_Ensure("plugins" PATH_DELIM "disabled");
 
 	DirIter pIter = {0};
+	cs_bool ignoredep = Config_GetBoolByKey(Server_Config, CFG_IGNOREDEP_KEY);
+
 	if(Iter_Init(&pIter, "plugins", DLIB_EXT)) {
 		do {
 			if(!pIter.isDir && pIter.cfile)
-				Plugin_LoadDll(pIter.cfile);
+				Plugin_LoadDll(pIter.cfile, ignoredep);
 		} while(Iter_Next(&pIter));
 	}
 	Iter_Close(&pIter);
