@@ -138,6 +138,7 @@ cs_bool Iter_Next(DirIter *iter) {
 }
 
 void Iter_Close(DirIter *iter) {
+	if(iter->dirHandle == INVALID_HANDLE_VALUE) return;
 	if(iter->dirHandle && !FindClose(iter->dirHandle))
 		Error_PrintSys(false);
 }

@@ -26,7 +26,7 @@ NOINL static void PrintCallStack(void) {
 		if(SymFromAddr(GetCurrentProcess(), (cs_uintptr)stack[i], NULL, symbol)) {
 			printf("Frame #%d: %s = %p\n", i, symbol->Name, (void *)symbol->Address);
 			if(SymGetLineFromAddr(GetCurrentProcess(), (cs_uintptr)symbol->Address, (void *)&stack[i], &line))
-				printf("\tin %s at line %ld\n", line.FileName, line.LineNumber);
+				printf("\tin %s:%ld\n", line.FileName, line.LineNumber);
 			if(String_Compare(symbol->Name, "main")) break;
 		}
 	}
