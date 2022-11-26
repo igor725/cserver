@@ -311,6 +311,8 @@ COMMAND_FUNC(Plugin) {
 					}
 
 					return true;
+				} else if(String_CaselessCompare(temparg1, "url")) {
+					COMMAND_PRINTF("Plugin's homepage: %s", plugin->url ? plugin->url() : "[empty]");
 				}
 			}
 		}

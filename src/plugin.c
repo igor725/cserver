@@ -46,6 +46,7 @@ cs_bool Plugin_LoadDll(cs_str name, cs_bool ignoredep) {
 	cs_char path[256], error[512];
 	void *lib;
 	pluginInitFunc initSym;
+	pluginUrlFunc urlSym;
 	cs_int32 *apiVerSym;
 	cs_int32 *plugVerSym;
 	String_FormatBuf(path, 256, "plugins" PATH_DELIM "%s", name);
@@ -58,10 +59,14 @@ cs_bool Plugin_LoadDll(cs_str name, cs_bool ignoredep) {
 			return false;
 		}
 
+		if(!DLib_GetSym(lib, "Plugin_URL", (void *)&urlSym))
+			urlSym = NULL;
+
 		if(*apiVerSym != PLUGIN_API_NUM) {
 			cs_byte flag = ignoredep ? LOG_WARN : LOG_ERROR;
 			if(*apiVerSym < PLUGIN_API_NUM)
-				Log_Gen(flag, Sstor_Get("PLUG_DEPR"), name, PLUGIN_API_NUM, *apiVerSym);
+				Log_Gen(flag, Sstor_Get(urlSym ? "PLUG_DEPR2" : "PLUG_DEPR"),
+				name, PLUGIN_API_NUM, *apiVerSym, urlSym ? urlSym() : "");
 			else
 				Log_Gen(flag, Sstor_Get("PLUG_DEPR_API"), name, *apiVerSym, PLUGIN_API_NUM);
 
@@ -79,6 +84,7 @@ cs_bool Plugin_LoadDll(cs_str name, cs_bool ignoredep) {
 		if(DLib_GetSym(lib, "Plugin_Version", (void *)&plugVerSym))
 			plugin->version = *plugVerSym;
 		plugin->lib = lib;
+		plugin->url = urlSym;
 		plugin->id = -1;
 
 		for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {

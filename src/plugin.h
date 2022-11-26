@@ -125,6 +125,9 @@
 	 * ещё не сформирован окончательно.
 	 */
 #	define Plugin_SetVersion(ver) cs_int32 Plugin_ApiVer = PLUGIN_API_NUM, Plugin_Version = ver
+
+#	define Plugin_SetURL(url) EXP cs_str Plugin_URL(void) { return url; }
+
 	EXP cs_int32 Plugin_ApiVer, Plugin_Version;
 #endif
 
