@@ -537,7 +537,6 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 	cs_byte partial = *data++,
 	len = Proto_ReadStringNoAlloc(&data, params.message);
 	if(len == 0) return false;
-	convertColors(params.message, len);
 
 	if(Client_GetExtVer(client, EXT_LONGMSG)) {
 		if(String_Append(client->cpeData.message, CPE_MAX_EXTMESG_LEN, params.message) && partial == 1) return true;
@@ -549,9 +548,10 @@ cs_bool Handler_Message(Client *client, cs_char *data) {
 			Vanilla_WriteChat(client, MESSAGE_TYPE_CHAT, Sstor_Get("CMD_UNK"));
 	} else {
 		if(Event_Call(EVT_ONMESSAGE, &params)) {
-			cs_char formatted[320] = {0};
+			cs_char formatted[264] = {0};
 
-			if(String_FormatBuf(formatted, 320, "<%s&f>: %s", Client_GetDisplayName(client), params.message))
+			convertColors(params.message, len);
+			if(String_FormatBuf(formatted, 264, "<%s&f>: %s", Client_GetDisplayName(client), params.message))
 				Client_Chat(CLIENT_BROADCAST, params.type, formatted);
 		}
 	}
