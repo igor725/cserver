@@ -410,27 +410,9 @@ cs_bool Client_IsClosed(Client *client) {
 	return !NetBuffer_IsAlive(&client->netbuf);
 }
 
-static const struct _subnet {
-	cs_ulong net;
-	cs_ulong mask;
-} localnets[] = {
-	{0x0000007f, 0x000000FF},
-	{0x0000000A, 0x000000FF},
-	{0x000010AC, 0x00000FFF},
-	{0x0000A8C0, 0x0000FFFF},
-
-	{0x00000000, 0x00000000}
-};
-
 cs_bool Client_IsLocal(Client *client) {
 	if(Client_IsBot(client)) return true;
-
-	for(const struct _subnet *s = localnets; s->mask; s++) {
-		if((client->addr & s->mask) == s->net)
-			return true;
-	}
-
-	return false;
+	return Socket_IsLocal(client->addr);
 }
 
 cs_bool Client_IsInSameWorld(Client *client, Client *other) {

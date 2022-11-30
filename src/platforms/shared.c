@@ -97,6 +97,27 @@ cs_bool File_Close(cs_file fp) {
 	return fclose(fp) != 0;
 }
 
+static const struct _subnet {
+	cs_ulong net;
+	cs_ulong mask;
+} localnets[] = {
+	{0x0000007f, 0x000000FF},
+	{0x0000000A, 0x000000FF},
+	{0x000010AC, 0x00000FFF},
+	{0x0000A8C0, 0x0000FFFF},
+
+	{0x00000000, 0x00000000}
+};
+
+cs_bool Socket_IsLocal(cs_ulong addr) {
+	for(const struct _subnet *s = localnets; s->mask; s++) {
+		if((addr & s->mask) == s->net)
+			return true;
+	}
+
+	return false;
+}
+
 cs_bool Socket_SetAddrGuess(struct sockaddr_in *ssa, cs_str host, cs_uint16 port) {
 	cs_int32 ret;
 

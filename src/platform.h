@@ -60,6 +60,7 @@ cs_bool Socket_Init(void);
 void Socket_Uninit(void);
 API Socket Socket_New(void);
 API cs_bool Socket_IsFatal(void);
+API cs_bool Socket_IsLocal(cs_ulong addr);
 API cs_error Socket_GetError(void);
 API cs_ulong Socket_AvailData(Socket n);
 API cs_bool Socket_SetNonBlocking(Socket n, cs_bool state);
