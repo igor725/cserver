@@ -9,7 +9,7 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/out/x64dbg",
             "console": "integratedTerminal",
-            "preLaunchTask": "Build debug"
+            // "preLaunchTask": "Build debug"
         },
         {
             "name": "Launch testmode",

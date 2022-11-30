@@ -62,6 +62,10 @@ cs_int32 File_Error(cs_file fp) {
 	return ferror(fp);
 }
 
+cs_bool File_IsEnd(cs_file fp) {
+	return feof(fp) > 0;
+}
+
 cs_int32 File_WriteFormat(cs_file fp, cs_str fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
@@ -76,7 +80,8 @@ cs_bool File_Flush(cs_file fp) {
 }
 
 cs_int32 File_Seek(cs_file fp, long offset, cs_int32 origin) {
-	return fseek(fp, offset, origin);
+	if(fseek(fp, offset, origin) != 0) return -1;
+	return ftell(fp);
 }
 
 cs_bool File_Close(cs_file fp) {
