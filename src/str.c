@@ -46,8 +46,8 @@ cs_int32 String_ToInt(cs_str str) {
 	return atoi(str);
 }
 
-cs_int32 String_HexToInt(cs_str str) {
-	return strtol(str, NULL, 16);
+cs_long String_StrToLong(cs_str str, cs_char **strend, cs_int32 radix) {
+	return strtol(str, strend, radix);
 }
 
 cs_float String_ToFloat(cs_str str) {
