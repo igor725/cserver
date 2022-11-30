@@ -21,6 +21,7 @@ API void *Memory_Alloc(cs_size num, cs_size size);
 API void *Memory_Realloc(void *oldptr, cs_size new);
 API void  Memory_Copy(void *dst, const void *src, cs_size count);
 API void  Memory_Fill(void *dst, cs_size count, cs_byte val);
+API cs_bool Memory_Compare(const cs_byte *src1, const cs_byte *src2, cs_size len);
 API void  Memory_Free(void *ptr);
 
 API cs_bool Iter_Init(DirIter *iter, cs_str path, cs_str ext);

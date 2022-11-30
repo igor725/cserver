@@ -26,6 +26,15 @@ void Memory_Fill(void *dst, cs_size count, cs_byte val) {
 	while(count--) *u8dst++ = val;
 }
 
+cs_bool Memory_Compare(const cs_byte *src1, const cs_byte *src2, cs_size len) {
+	if(!src1 || !src2) return false;
+
+	while(len--)
+		if(*src1++ != *src2++) return false;
+
+	return true;
+}
+
 cs_file File_Open(cs_str path, cs_str mode) {
 	return fopen(path, mode);
 }

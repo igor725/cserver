@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 cs_bool String_CaselessCompare(cs_str str1, cs_str str2) {
+	if(!str1 || !str2) return false;
 	cs_byte c1, c2;
 
 	while(true) {
@@ -17,6 +18,7 @@ cs_bool String_CaselessCompare(cs_str str1, cs_str str2) {
 }
 
 cs_bool String_CaselessCompare2(cs_str str1, cs_str str2, cs_size len) {
+	if(!str1 || !str2) return false;
 	cs_byte c1, c2;
 
 	while(len--) {
