@@ -40,7 +40,7 @@ API cs_int32 File_Error(cs_file fp);
 API cs_bool File_IsEnd(cs_file fp);
 API cs_int32 File_WriteFormat(cs_file fp, cs_str fmt, ...);
 API cs_bool File_Flush(cs_file fp);
-API cs_int32 File_Seek(cs_file fp, long offset, cs_int32 origin);
+API cs_long File_Seek(cs_file fp, cs_long offset, cs_int32 origin);
 API cs_bool File_Close(cs_file fp);
 API cs_bool File_ProcClose(cs_file fp);
 

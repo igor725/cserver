@@ -10,6 +10,11 @@ typedef struct _PluginInterface {
 	cs_size isize;
 } PluginInterface;
 
+typedef struct _PluginInfo {
+	cs_str name, home;
+	cs_int32 ver;
+} PluginInfo;
+
 typedef cs_bool(*pluginInitFunc)(void);
 typedef cs_bool(*pluginUnloadFunc)(cs_bool);
 typedef void(*pluginReceiveIface)(cs_str name, void *ptr, cs_size size);

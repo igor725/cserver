@@ -88,7 +88,7 @@ cs_bool File_Flush(cs_file fp) {
 	return fflush(fp) == 0;
 }
 
-cs_int32 File_Seek(cs_file fp, long offset, cs_int32 origin) {
+cs_long File_Seek(cs_file fp, cs_long offset, cs_int32 origin) {
 	if(fseek(fp, offset, origin) != 0) return -1;
 	return ftell(fp);
 }

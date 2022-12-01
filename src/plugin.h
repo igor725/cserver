@@ -131,6 +131,9 @@
 	EXP cs_int32 Plugin_ApiVer, Plugin_Version;
 #endif
 
+API cs_int8 Plugin_RequestInfo(PluginInfo *pi, cs_int8 id);
+API void Plugin_DiscardInfo(PluginInfo *pi);
+
 /**
  * @brief Запрашивает у сервера указанный интерфейс.
  * 

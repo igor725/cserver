@@ -112,12 +112,33 @@ cs_bool Plugin_LoadDll(cs_str name, cs_bool ignoredep) {
 }
 
 Plugin *Plugin_Get(cs_str name) {
-	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
+	for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
 		Plugin *ptr = Plugins_List[i];
 		if(ptr && String_Compare(ptr->name, name)) return ptr;
 	}
 
 	return NULL;
+}
+
+cs_int8 Plugin_RequestInfo(PluginInfo *pi, cs_int8 id) {
+	Plugin *ptr = Plugins_List[id++]; if(!ptr) return 0;
+	pi->name = String_AllocCopy(ptr->name);
+	pi->home = ptr->url ? String_AllocCopy(ptr->url()) : NULL;
+	pi->ver = ptr->version;
+
+	for(; id < MAX_PLUGINS; ++id)
+		if(Plugins_List[id]) return id;
+
+	return 0;
+}
+
+void Plugin_DiscardInfo(PluginInfo *pi) {
+	Memory_Free((void *)pi->name);
+	if(pi->home)
+		Memory_Free((void *)pi->home);
+	pi->name = NULL;
+	pi->home = NULL;
+	pi->ver = 0;
 }
 
 cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname) {
@@ -127,7 +148,7 @@ cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname) {
 	Plugin *requester = NULL,
 	*answerer = NULL;
 
-	for(cs_int32 i = 0; i < MAX_PLUGINS && !(requester && answerer); i++) {
+	for(cs_int8 i = 0; i < MAX_PLUGINS && !(requester && answerer); i++) {
 		Plugin *cplugin = Plugins_List[i];
 		if(!cplugin) continue;
 
@@ -226,7 +247,7 @@ INL static cs_bool TryDiscard(Plugin *plugin, AListField **head, cs_str iname) {
 }
 
 cs_bool Plugin_DiscardInterface(pluginReceiveIface irecv, cs_str iname) {
-	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
+	for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
 		Plugin *cplugin = Plugins_List[i];
 		if(cplugin && cplugin->irecv == irecv) {
 			if(TryDiscard(cplugin, &cplugin->ireqHead, iname)) return true;
@@ -252,7 +273,7 @@ cs_bool Plugin_UnloadDll(Plugin *plugin, cs_bool force) {
 
 	if(plugin->ifaces) {
 		for(PluginInterface *iface = plugin->ifaces; iface->iname; iface++) {
-			for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
+			for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
 				Plugin *tplugin = Plugins_List[i];
 				if(tplugin == plugin || !tplugin) continue;
 				Plugin_Lock(tplugin);
@@ -307,7 +328,7 @@ void Plugin_LoadAll(void) {
 }
 
 void Plugin_UnloadAll(cs_bool force) {
-	for(cs_int32 i = 0; i < MAX_PLUGINS; i++) {
+	for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
 		Plugin *plugin = Plugins_List[i];
 		if(plugin) Plugin_UnloadDll(plugin, force);
 	}
