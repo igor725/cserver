@@ -17,6 +17,7 @@
 typedef struct _LogBuffer {
 	cs_char data[LOG_BUFSIZE];
 	cs_size offset;
+	cs_byte flag;
 } LogBuffer;
 
 #ifndef CORE_BUILD_PLUGIN
