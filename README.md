@@ -16,9 +16,8 @@ The goal of this project is to create a stable, customizable and future-rich mul
 * Easy configurable
 
 ## Download
-If you don't want to mess with compilers, you can always download latest prebuilt binaries [here](https://github.com/igor725/cserver/actions/workflows/build.yml).
-
-Single command builder for Linux: `curl -sL https://igvx.ru/singlecommand | bash` (server + base + lua)
+If you don't want to mess with compilers, you can always download the release build for your OS [here](https://github.com/igor725/cserver/releases).
+You can also get the latest unstable build [here](https://github.com/igor725/cserver/actions/workflows/build.yml).
 
 ## Dependencies
 
@@ -63,6 +62,8 @@ SET CFLAGS=!CFLAGS! /DCORE_MANUAL_BACKENDS ^
 
 ### On Linux/macOS
 ``./build [args ...]``
+
+Single command builder for Linux: `curl -sL https://igvx.ru/singlecommand | bash` (server + base + lua)
 
 NOTE: This script uses gcc, but you can change it to another compiler by setting CC environment variable (``CC=clang ./build [args ...]``).
 

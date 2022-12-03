@@ -128,7 +128,7 @@ cs_bool World_SetEnvProp(World *world, EProp prop, cs_int32 value) {
 		if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
 			world->flags |= WORLD_FLAG_MODIFIED;
 		world->info.props[prop] = value;
-		world->info.modval |= MV_PROPS;
+		world->info.modval |= CPE_WMODVAL_PROPS;
 		world->info.modprop |= 2 ^ prop;
 		return true;
 	}
@@ -145,7 +145,7 @@ cs_bool World_SetTexturePack(World *world, cs_str url) {
 		return true;
 	if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
 		world->flags |= WORLD_FLAG_MODIFIED;
-	world->info.modval |= MV_TEXPACK;
+	world->info.modval |= CPE_WMODVAL_TEXPACK;
 	if(!url || String_Length(url) > 64) {
 		world->info.texturepack[0] = '\0';
 		return url == NULL;
@@ -166,8 +166,7 @@ cs_bool World_SetWeather(World *world, EWeather type) {
 	if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
 		world->flags |= WORLD_FLAG_MODIFIED;
 	world->info.weatherType = type;
-	world->info.modval |= MV_WEATHER;
-	Event_Call(EVT_ONWEATHER, world);
+	world->info.modval |= CPE_WMODVAL_WEATHER;
 	return true;
 }
 
@@ -175,10 +174,9 @@ cs_bool World_SetEnvColor(World *world, EColor type, Color3* color) {
 	if(type < WORLD_COLORS_COUNT) {
 		if(!ISSET(world->flags, WORLD_FLAG_MODIGNORE))
 			world->flags |= WORLD_FLAG_MODIFIED;
-		world->info.modval |= MV_COLORS;
+		world->info.modval |= CPE_WMODVAL_COLORS;
 		world->info.modclr |= (1 << type);
 		world->info.colors[type] = *color;
-		Event_Call(EVT_ONCOLOR, world);
 		return true;
 	}
 
@@ -192,15 +190,28 @@ void World_SetSeed(World *world, cs_uint32 seed) {
 	world->info.seed = seed;
 }
 
-void World_FinishEnvUpdate(World *world) {
-	for(ClientID i = 0; i < MAX_CLIENTS; i++) {
-		Client *client = Clients_List[i];
-		if(client && Client_IsInWorld(client, world))
-			Client_UpdateWorldInfo(client, world, false);
+cs_bool World_FinishEnvUpdate(World *world) {
+	preWorldEnvUpdate ev = {
+		.world = world,
+		.values = world->info.modval,
+		.props = world->info.modprop,
+		.colors = world->info.modclr
+	};
+
+	if(Event_Call(EVT_PREWORLDENVUPDATE, &ev)) {
+		for(ClientID i = 0; i < MAX_CLIENTS; i++) {
+			Client *client = Clients_List[i];
+			if(client && Client_IsInWorld(client, world))
+				Client_UpdateWorldInfo(client, world, false);
+		}
+
+		world->info.modclr = 0x00;
+		world->info.modprop = 0x00;
+		world->info.modval = CPE_WMODVAL_NONE;
+		return true;
 	}
-	world->info.modclr = 0x00;
-	world->info.modprop = 0x00;
-	world->info.modval = MV_NONE;
+
+	return false;
 }
 
 cs_byte World_CountPlayers(World *world) {
