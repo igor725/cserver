@@ -122,8 +122,8 @@ cs_int32 NetBuffer_ReadLine(NetBuffer *nb, cs_char *buffer, cs_uint32 buflen) {
  
 		if(data[i] == '\n') {
 			nb->cread += (i + 1);
-			buffer[bufpos++] = '\0';
-			return (cs_int32)i;
+			buffer[bufpos] = '\0';
+			return (cs_int32)bufpos;
 		} else if(data[i] != '\r')
 			buffer[bufpos++] = data[i];
 	}
