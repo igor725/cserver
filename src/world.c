@@ -562,7 +562,7 @@ THREAD_FUNC(WorldLoadThread) {
 	if(fp) File_Close(fp);
 	Compr_Reset(&world->compr);
 	if(world->error.code == WORLD_ERROR_SUCCESS)
-		Event_Call(EVT_ONWORLDLOADED, world);
+		Event_Call(EVT_ONWORLDSTATUSCHANGE, world);
 	World_Unlock(world);
 	return 0;
 }
@@ -593,7 +593,7 @@ void World_FreeBlockArray(World *world) {
 void World_Unload(World *world) {
 	World_WaitAllTasks(world);
 	World_FreeBlockArray(world);
-	Event_Call(EVT_ONWORLDUNLOADED, world);
+	Event_Call(EVT_ONWORLDSTATUSCHANGE, world);
 }
 
 cs_str World_GetName(World *world) {

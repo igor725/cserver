@@ -10,7 +10,7 @@ cs_byte Log_Flags = LOG_ALL;
 static Mutex *logMutex = NULL;
 
 #define MKCOL(c) "\033["c"m"
-#define MKTCOL(c, t) Log_Flags&LOG_COLORS?MKCOL(c)t"\033[0m":t
+#define MKTCOL(c, t) Log_Flags & LOG_COLORS ? (MKCOL(c) t MKCOL("0")) : t
 
 static cs_str MapColor(cs_char col) {
 	if(col >= 'A' && col <= 'Z') col += 32;
