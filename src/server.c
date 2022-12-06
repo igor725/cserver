@@ -264,7 +264,7 @@ cs_bool Server_Init(void) {
 		}
 	}
 	Log_SetLevelStr(Config_GetStrByKey(cfg, CFG_LOGLEVEL_KEY));
-	Config_Save(Server_Config, true);
+	Config_Save(Server_Config, false);
 	Command_RegisterDefault();
 	Packet_RegisterDefault();
 	Plugin_LoadAll();
@@ -523,7 +523,7 @@ void Server_Cleanup(void) {
 	UnloadAllWorlds();
 	Socket_Close(Server_Socket);
 	Log_Info(Sstor_Get("SV_STOP_SC"));
-	Config_Save(Server_Config, true);
+	Config_Save(Server_Config, false);
 	Config_DestroyStore(Server_Config);
 	Log_Info(Sstor_Get("SV_STOP_UP"));
 	Plugin_UnloadAll(true);

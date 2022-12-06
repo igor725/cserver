@@ -4,6 +4,7 @@
 #include "types/event.h"
 
 #define Event_DeclareBunch(N) static EventRegBunch N[] =
+#define Event_DeclarePubBunch(N) EventRegBunch N[] =
 #define EVENT_BUNCH_ADD(R, E, F) {R, E, (void*)F}
 #define EVENT_BUNCH_END {0, 0, NULL}
 
