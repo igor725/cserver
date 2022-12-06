@@ -214,6 +214,7 @@ cs_bool Config_Load(CStore *store) {
 	store->error.code = CONFIG_ERROR_SUCCESS;
 	store->error.extra = CONFIG_EXTRA_NOINFO;
 	store->error.line = 0;
+	store->modified = false;
 
 	CEntry *ent = store->firstCfgEntry;
 	while(ent) {

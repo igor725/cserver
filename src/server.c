@@ -112,13 +112,13 @@ static cs_bool ProcessClients(void) {
 		cs_uint64 currtime = Time_GetMSec(), timeout = 0;
 		switch(client->state) {
 			case CLIENT_STATE_INITIAL:
-				timeout = 800;
+				timeout = 1500;
 				break;
 			case CLIENT_STATE_MOTD:
 				if(client->mapData.world)
 					timeout = (cs_uint64)-1;
 				else
-					timeout = 800;
+					timeout = 1500;
 				break;
 			case CLIENT_STATE_INGAME:
 				timeout = 30000;
