@@ -32,7 +32,8 @@ Command_Register(#N, H, (cmdFunc)svcmd_##N, F)
 Command_UnregisterByFunc((cmdFunc)svcmd_##N)
 
 #define Command_DeclareBunch(N) static CommandRegBunch N[] =
-#define COMMAND_BUNCH_ADD(N, F, H) {#N, H, (cmdFunc)svcmd_##N, F},
+#define Command_DeclarePubBunch(N) CommandRegBunch N[] =
+#define COMMAND_BUNCH_ADD(N, F, H) {#N, H, (cmdFunc)svcmd_##N, F}
 #define COMMAND_BUNCH_END {NULL, NULL, NULL, 0x00}
 
 #ifndef CORE_BUILD_PLUGIN

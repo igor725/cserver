@@ -463,6 +463,37 @@ cs_bool Config_GetBool(CEntry *ent) {
 	return ent->flags & CFG_FCHANGED ? ent->value.vbool : ent->defvalue.vbool;
 }
 
+void Config_SetGeneric(CEntry *ent, cs_str value) {
+	switch (ent->type) {
+		case CONFIG_TYPE_BOOL:
+			Config_SetBool(ent, *value == '1' || String_CaselessCompare(value, "True"));
+			break;
+		case CONFIG_TYPE_INT32:
+			Config_SetInt32(ent, String_ToInt(value));
+			break;
+		case CONFIG_TYPE_INT16:
+			Config_SetInt16(ent, (cs_int16)String_ToInt(value));
+			break;
+		case CONFIG_TYPE_INT8:
+			Config_SetInt8(ent, (cs_int8)String_ToInt(value));
+			break;
+		case CONFIG_TYPE_STR:
+			Config_SetStr(ent, value);
+			break;
+		case CONFIG_MAX_TYPE: break;
+	}
+}
+
+cs_int32 Config_Parse(CEntry *ent, cs_char *buf, cs_size len) {
+	switch (ent->type) {
+		case CONFIG_TYPE_BOOL: return String_FormatBuf(buf, len, "%s", Config_GetBool(ent) ? "True" : "False");
+		case CONFIG_TYPE_INT32: case CONFIG_TYPE_INT16: case CONFIG_TYPE_INT8:
+			return String_FormatBuf(buf, len, "%i", Config_GetInt32(ent));
+		case CONFIG_TYPE_STR: return String_FormatBuf(buf, len, "%s", Config_GetStr(ent));
+		default: case CONFIG_MAX_TYPE: return 0;
+	}
+}
+
 void Config_ResetToDefault(CStore *store) {
 	CEntry *ent = store->firstCfgEntry;
 	store->modified = true;
