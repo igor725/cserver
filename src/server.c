@@ -26,8 +26,8 @@ cs_uint64 Server_StartTime = 0;
 Socket Server_Socket = 0;
 
 INL static ClientID TryToGetIDFor(Client *client) {
-	cs_int16 maxPlayers = (cs_byte)Config_GetInt16ByKey(Server_Config, CFG_MAXPLAYERS_KEY);
-	cs_int8 maxConnPerIP = Config_GetInt8ByKey(Server_Config, CFG_CONN_KEY),
+	cs_int16 maxPlayers = (cs_byte)Config_GetIntByKey(Server_Config, CFG_MAXPLAYERS_KEY);
+	cs_int8 maxConnPerIP = (cs_int8)Config_GetIntByKey(Server_Config, CFG_CONN_KEY),
 	sameAddrCount = 1, playersCount = 0;
 	ClientID possibleId = CLIENT_SELF;
 
@@ -201,10 +201,10 @@ cs_bool Server_Init(void) {
 	Config_SetComment(ent, "Bind server to specified IP address, \"0.0.0.0\" - means \"all available network adapters\"");
 	Config_SetDefaultStr(ent, "0.0.0.0");
 
-	ent = Config_NewEntry(cfg, CFG_SERVERPORT_KEY, CONFIG_TYPE_INT32);
+	ent = Config_NewEntry(cfg, CFG_SERVERPORT_KEY, CONFIG_TYPE_INT);
 	Config_SetComment(ent, "Use specified port to accept clients. [1-65535]");
 	Config_SetLimit(ent, 1, 65535);
-	Config_SetDefaultInt32(ent, 25565);
+	Config_SetDefaultInt(ent, 25565);
 
 	ent = Config_NewEntry(cfg, CFG_SERVERNAME_KEY, CONFIG_TYPE_STR);
 	Config_SetComment(ent, "Server name and MOTD will be shown to the player during map loading");
@@ -229,15 +229,15 @@ cs_bool Server_Init(void) {
 	Config_SetComment(ent, "Any player with ip address \"127.0.0.1\" will automatically become an operator");
 	Config_SetDefaultBool(ent, false);
 
-	ent = Config_NewEntry(cfg, CFG_MAXPLAYERS_KEY, CONFIG_TYPE_INT16);
+	ent = Config_NewEntry(cfg, CFG_MAXPLAYERS_KEY, CONFIG_TYPE_INT);
 	Config_SetComment(ent, "Max players on server [1-254]");
 	Config_SetLimit(ent, 1, 254);
-	Config_SetDefaultInt16(ent, 10);
+	Config_SetDefaultInt(ent, 10);
 
-	ent = Config_NewEntry(cfg, CFG_CONN_KEY, CONFIG_TYPE_INT8);
+	ent = Config_NewEntry(cfg, CFG_CONN_KEY, CONFIG_TYPE_INT);
 	Config_SetComment(ent, "Max connections per one IP [1-5]");
 	Config_SetLimit(ent, 1, 5);
-	Config_SetDefaultInt8(ent, 5);
+	Config_SetDefaultInt(ent, 5);
 
 	ent = Config_NewEntry(cfg, CFG_WORLDS_KEY, CONFIG_TYPE_STR);
 	Config_SetComment(ent, "List of worlds to load at startup (Can be \"*\" it means load all worlds in the folder)");
@@ -396,7 +396,7 @@ cs_bool Server_Init(void) {
 		Log_Info(Sstor_Get("SV_WLDONE"), wIndex);
 
 	cs_str ip = Config_GetStrByKey(cfg, CFG_SERVERIP_KEY);
-	cs_uint16 port = Config_GetInt16ByKey(cfg, CFG_SERVERPORT_KEY);
+	cs_uint16 port = (cs_uint16)Config_GetIntByKey(cfg, CFG_SERVERPORT_KEY);
 	if(Bind(ip, port)) {
 		Log_Info(Sstor_Get("SV_START"), ip, port);
 		Event_Call(EVT_POSTSTART, NULL);

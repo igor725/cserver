@@ -29,19 +29,11 @@ API cs_bool Config_Save(CStore *store, cs_bool force);
 API void Config_SetComment(CEntry *ent, cs_str commentary);
 API cs_bool Config_SetLimit(CEntry *ent, cs_int32 min, cs_int32 max);
 
-API cs_int32 Config_GetInt32(CEntry *ent);
-API cs_int32 Config_GetInt32ByKey(CStore *store, cs_str key);
-API cs_int16 Config_GetInt16(CEntry *ent);
-API cs_int16 Config_GetInt16ByKey(CStore *store, cs_str key);
-API cs_int8 Config_GetInt8(CEntry *ent);
-API cs_int8 Config_GetInt8ByKey(CStore *store, cs_str key);
+API cs_int32 Config_GetInt(CEntry *ent);
+API cs_int32 Config_GetIntByKey(CStore *store, cs_str key);
 
-API cs_bool Config_SetDefaultInt32(CEntry *ent, cs_int32 value);
-API cs_bool Config_SetDefaultInt16(CEntry *ent, cs_int16 value);
-API cs_bool Config_SetDefaultInt8(CEntry *ent, cs_int8 value);
-API cs_bool Config_SetInt32(CEntry *ent, cs_int32 value);
-API cs_bool Config_SetInt16(CEntry *ent, cs_int16 value);
-API cs_bool Config_SetInt8(CEntry *ent, cs_int8 value);
+API cs_bool Config_SetDefaultInt(CEntry *ent, cs_int32 value);
+API cs_bool Config_SetInt(CEntry *ent, cs_int32 value);
 
 API cs_str Config_GetStr(CEntry *ent);
 API cs_str Config_GetStrByKey(CStore *store, cs_str key);
