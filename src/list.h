@@ -3,8 +3,10 @@
 #include "core.h"
 #include "types/list.h"
 
+#define List_Next(field) (field)->prev
+
 #define List_Iter(field, head) \
-for(field = head; field != NULL; field = field->prev)
+for(field = head; field != NULL; field = List_Next(field))
 
 API AListField *AList_AddField(AListField **head, void *value);
 API cs_bool AList_Iter(AListField **head, void *ud, cs_bool(*callback)(AListField *, AListField **, void *));

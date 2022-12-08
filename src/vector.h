@@ -27,7 +27,7 @@ static INL cs_bool Ang_Compare(const Ang *a, const Ang *b) {
 	return a->yaw == b->yaw && a->pitch == b->pitch;
 }
 
-#define Ang_Set(a, ay, ap) (a).yaw = ay, (a).pitch = ap;
+#define Ang_Set(a, ay, ap) (a).yaw = ay, (a).pitch = ap
 #define Vec_Add(d, v1, v2) (d).x = (v1).x + (v2).x, (d).y = (v1).y + (v2).y, (d).z = (v1).z + (v2).z
 #define Vec_Sub(d, v1, v2) (d).x = (v1).x - (v2).x, (d).y = (v1).y - (v2).y, (d).z = (v1).z - (v2).z
 #define Vec_Mul(d, v1, v2) (d).x = (v1).x * (v2).x, (d).y = (v1).y * (v2).y, (d).z = (v1).z * (v2).z
