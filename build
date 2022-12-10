@@ -182,7 +182,7 @@ if [ $COMPILE -eq 1 ]; then
 	fi
 
 	STDERR="$ROOT/out/stderr"
-	OBJDIR="$OUTDIR/objs"
+	OBJDIR="$ROOT/.objs/$MACH"
 
 	if [ $SAN -eq 1 ]; then
 		LIBS="-lasan -lubsan $LIBS"
