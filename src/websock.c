@@ -83,10 +83,10 @@ INL static void ProcessHandshake(WebSock *ws, NetBuffer *nb) {
 			cs_byte hash[20];
 			cs_char *buffer = NetBuffer_StartWrite(nb, 1024);
 
-			if(SHA1_Init(&ctx)) {
-				SHA1_Update(&ctx, ws->shake.key, ws->shake.keylen);
-				SHA1_Update(&ctx, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", 36);
-				SHA1_Final(hash, &ctx);
+			if(SHA1_Start(&ctx)) {
+				SHA1_PushData(&ctx, ws->shake.key, ws->shake.keylen);
+				SHA1_PushData(&ctx, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11", 36);
+				SHA1_End(hash, &ctx);
 
 				ws->shake.state = WEBSHAKE_STATE_DONE;
 				ws->state = WEBSOCK_STATE_HEADER;

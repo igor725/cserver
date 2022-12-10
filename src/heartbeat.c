@@ -84,10 +84,10 @@ static cs_bool VanillaKeyChecker(cs_str secret, Client *client) {
 	cs_byte hash[16];
 	cs_char hash_hex[33];
 
-	if(MD5_Init(&ctx)) {
-		MD5_Update(&ctx, secret, (cs_ulong)String_Length(secret));
-		MD5_Update(&ctx, name, (cs_ulong)String_Length(name));
-		MD5_Final(hash, &ctx);
+	if(MD5_Start(&ctx)) {
+		MD5_PushData(&ctx, secret, (cs_ulong)String_Length(secret));
+		MD5_PushData(&ctx, name, (cs_ulong)String_Length(name));
+		MD5_End(hash, &ctx);
 	} else {
 		Log_Error(Sstor_Get("HBEAT_KEYCHECK_ERR"));
 		return false;

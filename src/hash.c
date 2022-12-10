@@ -59,29 +59,29 @@ INL static cs_bool FinalHash(void *hash, HASH_CTX *ctx) {
 	Crypt.DestroyHash(ctx->hash);
 }
 
-cs_bool SHA1_Init(SHA_CTX *ctx) {
+cs_bool SHA1_Start(SHA_CTX *ctx) {
 	ctx->hashLen = 20;
 	return InitAlg(ctx, CALG_SHA1);
 }
 
-cs_bool SHA1_Update(SHA_CTX *ctx, const void *data, cs_ulong len) {
+cs_bool SHA1_PushData(SHA_CTX *ctx, const void *data, cs_ulong len) {
 	return UpdateHash(ctx, data, len);
 }
 
-cs_bool SHA1_Final(cs_byte *hash, SHA_CTX *ctx) {
+cs_bool SHA1_End(cs_byte *hash, SHA_CTX *ctx) {
 	return FinalHash(hash, ctx);
 }
 
-cs_bool MD5_Init(MD5_CTX *ctx) {
+cs_bool MD5_Start(MD5_CTX *ctx) {
 	ctx->hashLen = 16;
 	return InitAlg(ctx, CALG_MD5);
 }
 
-cs_bool MD5_Update(MD5_CTX *ctx, const void *data, cs_ulong len) {
+cs_bool MD5_PushData(MD5_CTX *ctx, const void *data, cs_ulong len) {
 	return UpdateHash(ctx, data, len);
 }
 
-cs_bool MD5_Final(cs_byte *hash, MD5_CTX *ctx) {
+cs_bool MD5_End(cs_byte *hash, MD5_CTX *ctx) {
 	return FinalHash(hash, ctx);
 }
 #elif defined(HASH_USE_CRYPTO_BACKEND)
@@ -133,32 +133,32 @@ void Hash_Uninit(void) {
 	Crypt.lib = NULL;
 }
 
-cs_bool SHA1_Init(SHA_CTX *ctx) {
+cs_bool SHA1_Start(SHA_CTX *ctx) {
 	if(!Crypt.lib && !Hash_Init()) return false;
 	return Crypt.SHA1Init(ctx);
 }
 
-cs_bool SHA1_Update(SHA_CTX *ctx, const void *data, cs_ulong len) {
+cs_bool SHA1_PushData(SHA_CTX *ctx, const void *data, cs_ulong len) {
 	if(!Crypt.lib) return false;
 	return Crypt.SHA1Update(ctx, data, len);
 }
 
-cs_bool SHA1_Final(cs_byte *hash, SHA_CTX *ctx) {
+cs_bool SHA1_End(cs_byte *hash, SHA_CTX *ctx) {
 	if(!Crypt.lib) return false;
 	return Crypt.SHA1Final(hash, ctx);
 }
 
-cs_bool MD5_Init(MD5_CTX *ctx) {
+cs_bool MD5_Start(MD5_CTX *ctx) {
 	if(!Crypt.lib && !Hash_Init()) return false;
 	return Crypt.MD5Init(ctx);
 }
 
-cs_bool MD5_Update(MD5_CTX *ctx, const void *data, cs_ulong len) {
+cs_bool MD5_PushData(MD5_CTX *ctx, const void *data, cs_ulong len) {
 	if(!Crypt.lib) return false;
 	return Crypt.MD5Update(ctx, data, len);
 }
 
-cs_bool MD5_Final(cs_byte *hash, MD5_CTX *ctx) {
+cs_bool MD5_End(cs_byte *hash, MD5_CTX *ctx) {
 	if(!Crypt.lib) return false;
 	return Crypt.MD5Final(hash, ctx);
 }

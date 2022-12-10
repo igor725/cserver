@@ -105,7 +105,7 @@ cs_bool Sstor_Defaults(void) {
 	Sstor_Set("HBEAT_ERR_ER", "Empty server response");
 	Sstor_Set("HBEAT_ERR_HF", "HTTP request failed");
 	Sstor_Set("HBEAT_ERR_CF", "Failed to open HTTP connection");
-	Sstor_Set("HBEAT_KEYCHECK_ERR", "VanillaKeyChecker: MD5_Init() returned false, can't check user key validity");
+	Sstor_Set("HBEAT_KEYCHECK_ERR", "VanillaKeyChecker: MD5_Start() returned false, can't check user key validity");
 	Sstor_Set("HBEAT_SECRET_COMM1", "#Remove this file if you want to generate new secret key\n");
 	Sstor_Set("HBEAT_SECRET_COMM2", "#This key used by the heartbeat as server's \"salt\" for user authentication check\n");
 
