@@ -99,28 +99,6 @@ ECTypes Config_TypeNameToEnum(cs_str name) {
 	return -1;
 }
 
-INL static cs_byte ToStr(CEntry *ent, cs_char *value, cs_byte len) {
-	cs_byte written = 0;
-	*value = '\0';
-
-	switch (ent->type) {
-		case CONFIG_TYPE_INT:
-			written = (cs_byte)String_FormatBuf(value, len, "%i", Config_GetInt(ent));
-			break;
-		case CONFIG_TYPE_BOOL:
-			written = (cs_byte)String_Copy(value, len, Config_GetBool(ent) ? "True" : "False");
-			break;
-		case CONFIG_TYPE_STR:
-			written = (cs_byte)String_Copy(value, len, Config_GetStr(ent));
-			break;
-
-		case CONFIG_MAX_TYPE:
-		default: return 0;
-	}
-
-	return written;
-}
-
 cs_bool Config_Load(CStore *store) {
 	cs_char path[MAX_PATH_LEN];
 	if(String_FormatBuf(path, MAX_PATH_LEN, "configs/%s.cfg", store->name) < 1) {
@@ -259,7 +237,7 @@ cs_bool Config_Save(CStore *store, cs_bool force) {
 		}
 
 		cs_char value[CFG_MAX_LEN];
-		cs_byte written = ToStr(ptr, value, CFG_MAX_LEN);
+		cs_int32 written = Config_Parse(ptr, value, CFG_MAX_LEN);
 		value[written++] = '\n';
 		if(written > 0) {
 			if(!File_Write(value, 1, written, fp)) {
@@ -407,11 +385,17 @@ void Config_SetGeneric(CEntry *ent, cs_str value) {
 }
 
 cs_int32 Config_Parse(CEntry *ent, cs_char *buf, cs_size len) {
+	if (len == 0) return -1;
+
 	switch (ent->type) {
-		case CONFIG_TYPE_BOOL: return String_FormatBuf(buf, len, "%s", Config_GetBool(ent) ? "True" : "False");
 		case CONFIG_TYPE_INT: return String_FormatBuf(buf, len, "%i", Config_GetInt(ent));
-		case CONFIG_TYPE_STR: return String_FormatBuf(buf, len, "%s", Config_GetStr(ent));
-		default: case CONFIG_MAX_TYPE: return 0;
+		case CONFIG_TYPE_BOOL: return (cs_int32)String_Copy(buf, len, Config_GetBool(ent) ? "True" : "False");
+		case CONFIG_TYPE_STR: return (cs_int32)String_Copy(buf, len, Config_GetStr(ent));
+
+		case CONFIG_MAX_TYPE:
+		default:
+			*buf = '\0';
+			return 0;
 	}
 }
 
@@ -423,6 +407,11 @@ void Config_ResetToDefault(CStore *store) {
 		ent->flags &= ~CFG_FCHANGED;
 		ent = ent->next;
 	}
+}
+
+void Config_SetToDefault(CEntry *ent) {
+	ent->store->modified = true;
+	ent->flags &= ~CFG_FCHANGED;
 }
 
 cs_bool Config_GetBoolByKey(CStore *store, cs_str key) {
