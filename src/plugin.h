@@ -112,7 +112,7 @@
 	PluginInterface Plugin_Interfaces[] = 
 	// Макросы для создания массива интерфейсов
 #	define PLUGIN_IFACE_END {NULL, NULL, 0}
-#	define PLUGIN_IFACE_ADD(n, i) {n, (void *)&(i), sizeof(i)},
+#	define PLUGIN_IFACE_ADD(n, i) {n, (void *)&(i), sizeof(i)}
 
 	/**
 	 * @brief Макрос, который должен выполнить каждый плагин. Он устанавливает версию API,
