@@ -1,3 +1,12 @@
+<p align='center'>
+    <a href='https://github.com/igor725/cserver/actions/workflows/build.yml'>
+        <img src='https://github.com/igor725/cserver/actions/workflows/build.yml/badge.svg' />
+    </a>
+    <a href='https://github.com/igor725/cserver/pulse'>
+        <img src='https://img.shields.io/github/commit-activity/m/igor725/cserver' />
+    </a>
+</p>
+
 # cserver
 Another Minecraft Classic server in C.
 The server is still under development (see [Projects](https://github.com/igor725/cserver/projects) tab)!

@@ -112,13 +112,13 @@ static cs_bool ProcessClients(void) {
 		cs_uint64 currtime = Time_GetMSec(), timeout = 0;
 		switch(client->state) {
 			case CLIENT_STATE_INITIAL:
-				timeout = 1500;
+				timeout = 3000;
 				break;
 			case CLIENT_STATE_MOTD:
 				if(client->mapData.world)
 					timeout = (cs_uint64)-1;
 				else
-					timeout = 1500;
+					timeout = 3000;
 				break;
 			case CLIENT_STATE_INGAME:
 				timeout = 30000;
@@ -252,6 +252,8 @@ cs_bool Server_Init(void) {
 				Log_Error(Sstor_Get("SV_CFG_ERR2"), "open", MAINCFG, Config_ErrorToString(code), extra);
 				return false;
 			}
+
+			Config_Save(Server_Config, true);
 		} else {
 			cs_str scode = Config_ErrorToString(code), 
 			sextra = Config_ExtraToString(extra);

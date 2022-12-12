@@ -7,6 +7,7 @@
 #include "list.h"
 #include "config.h"
 #include "server.h"
+#include "event.h"
 
 Plugin *Plugins_List[MAX_PLUGINS] = {NULL};
 
@@ -18,7 +19,7 @@ INL static void AddInterface(Plugin *requester, PluginInterface *iface) {
 }
 
 INL static cs_bool CheckHoldIfaces(Plugin *plugin) {
-	for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
+	for(cs_uint32 i = 0; i < MAX_PLUGINS; i++) {
 		AListField *hold;
 		Plugin *tplugin = Plugins_List[i];
 		if(tplugin == plugin || !tplugin) continue;
@@ -85,9 +86,9 @@ cs_bool Plugin_LoadDll(cs_str name, cs_bool ignoredep) {
 			plugin->version = *plugVerSym;
 		plugin->lib = lib;
 		plugin->url = urlSym;
-		plugin->id = -1;
+		plugin->id = (cs_uint32)-1;
 
-		for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
+		for(cs_uint32 i = 0; i < MAX_PLUGINS; i++) {
 			if(!Plugins_List[i] && plugin->id == -1) {
 				plugin->id = i;
 				break;
@@ -97,6 +98,14 @@ cs_bool Plugin_LoadDll(cs_str name, cs_bool ignoredep) {
 		if(plugin->id != -1) {
 			if(!plugin->ifaces || CheckHoldIfaces(plugin)) {
 				Plugins_List[plugin->id] = plugin;
+				PluginInfo pi = {
+					.id = plugin->id,
+					.version = plugin->version,
+					.name = String_AllocCopy(plugin->name),
+					.home = plugin->url ? String_AllocCopy(plugin->url()) : NULL
+				};
+				Event_Call(EVT_ONPLUGINLOAD, &pi);
+				Plugin_DiscardInfo(&pi);
 				if(initSym()) return true;
 				Log_Error(Sstor_Get("PLUG_ERROR"), path);
 			} else
@@ -112,7 +121,7 @@ cs_bool Plugin_LoadDll(cs_str name, cs_bool ignoredep) {
 }
 
 Plugin *Plugin_Get(cs_str name) {
-	for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
+	for(cs_uint32 i = 0; i < MAX_PLUGINS; i++) {
 		Plugin *ptr = Plugins_List[i];
 		if(ptr && String_Compare(ptr->name, name)) return ptr;
 	}
@@ -120,16 +129,18 @@ Plugin *Plugin_Get(cs_str name) {
 	return NULL;
 }
 
-cs_int8 Plugin_RequestInfo(PluginInfo *pi, cs_int8 id) {
+cs_uint32 Plugin_RequestInfo(PluginInfo *pi, cs_uint32 id) {
+	if (id >= MAX_PLUGINS) return 0;
 	Plugin *ptr = Plugins_List[id++]; if(!ptr) return 0;
 	pi->name = String_AllocCopy(ptr->name);
 	pi->home = ptr->url ? String_AllocCopy(ptr->url()) : NULL;
-	pi->ver = ptr->version;
+	pi->version = ptr->version;
+	pi->id = ptr->id;
 
-	for(; id < MAX_PLUGINS; ++id)
+	for (; id < MAX_PLUGINS; id++)
 		if(Plugins_List[id]) return id;
 
-	return 0;
+	return id;
 }
 
 void Plugin_DiscardInfo(PluginInfo *pi) {
@@ -138,7 +149,7 @@ void Plugin_DiscardInfo(PluginInfo *pi) {
 		Memory_Free((void *)pi->home);
 	pi->name = NULL;
 	pi->home = NULL;
-	pi->ver = 0;
+	pi->version = 0;
 }
 
 cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname) {
@@ -148,7 +159,7 @@ cs_bool Plugin_RequestInterface(pluginReceiveIface irecv, cs_str iname) {
 	Plugin *requester = NULL,
 	*answerer = NULL;
 
-	for(cs_int8 i = 0; i < MAX_PLUGINS && !(requester && answerer); i++) {
+	for(cs_uint32 i = 0; i < MAX_PLUGINS && !(requester && answerer); i++) {
 		Plugin *cplugin = Plugins_List[i];
 		if(!cplugin) continue;
 
@@ -247,7 +258,7 @@ INL static cs_bool TryDiscard(Plugin *plugin, AListField **head, cs_str iname) {
 }
 
 cs_bool Plugin_DiscardInterface(pluginReceiveIface irecv, cs_str iname) {
-	for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
+	for(cs_uint32 i = 0; i < MAX_PLUGINS; i++) {
 		Plugin *cplugin = Plugins_List[i];
 		if(cplugin && cplugin->irecv == irecv) {
 			if(TryDiscard(cplugin, &cplugin->ireqHead, iname)) return true;
@@ -261,6 +272,11 @@ cs_bool Plugin_DiscardInterface(pluginReceiveIface irecv, cs_str iname) {
 
 cs_bool Plugin_UnloadDll(Plugin *plugin, cs_bool force) {
 	Plugin_Lock(plugin);
+	if (plugin->id != (cs_uint32)-1) {
+		cs_uint32 id = plugin->id;
+		Event_Call(EVT_ONPLUGINUNLOAD, &id);
+	}
+
 	if(plugin->unload && !(*(pluginUnloadFunc)plugin->unload)(force) && !force) {
 		Plugin_Unlock(plugin);
 		return false;
@@ -273,7 +289,7 @@ cs_bool Plugin_UnloadDll(Plugin *plugin, cs_bool force) {
 
 	if(plugin->ifaces) {
 		for(PluginInterface *iface = plugin->ifaces; iface->iname; iface++) {
-			for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
+			for(cs_uint32 i = 0; i < MAX_PLUGINS; i++) {
 				Plugin *tplugin = Plugins_List[i];
 				if(tplugin == plugin || !tplugin) continue;
 				Plugin_Lock(tplugin);
@@ -299,9 +315,9 @@ cs_bool Plugin_UnloadDll(Plugin *plugin, cs_bool force) {
 	while(plugin->ireqHead)
 		AList_Remove(&plugin->ireqHead, plugin->ireqHead);
 
-	if(plugin->id != -1) {
+	if(plugin->id != (cs_uint32)-1) {
 		Plugins_List[plugin->id] = NULL;
-		plugin->id = -1;
+		plugin->id = (cs_uint32)-1;
 	}
 	Plugin_Unlock(plugin);
 
@@ -328,7 +344,7 @@ void Plugin_LoadAll(void) {
 }
 
 void Plugin_UnloadAll(cs_bool force) {
-	for(cs_int8 i = 0; i < MAX_PLUGINS; i++) {
+	for(cs_uint32 i = 0; i < MAX_PLUGINS; i++) {
 		Plugin *plugin = Plugins_List[i];
 		if(plugin) Plugin_UnloadDll(plugin, force);
 	}
