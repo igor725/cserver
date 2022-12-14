@@ -89,13 +89,13 @@ cs_bool Plugin_LoadDll(cs_str name, cs_bool ignoredep) {
 		plugin->id = (cs_uint32)-1;
 
 		for(cs_uint32 i = 0; i < MAX_PLUGINS; i++) {
-			if(!Plugins_List[i] && plugin->id == -1) {
+			if(!Plugins_List[i] && plugin->id == (cs_uint32)-1) {
 				plugin->id = i;
 				break;
 			}
 		}
 
-		if(plugin->id != -1) {
+		if(plugin->id != (cs_uint32)-1) {
 			if(!plugin->ifaces || CheckHoldIfaces(plugin)) {
 				Plugins_List[plugin->id] = plugin;
 				PluginInfo pi = {

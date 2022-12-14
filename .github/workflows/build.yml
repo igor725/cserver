@@ -7,6 +7,8 @@ on:
     paths:
       - src/**
       - .github/**
+      - build.bat
+      - build
 
 jobs:
   build:
@@ -120,7 +122,7 @@ jobs:
     - name: Set environment (Linux)
       if: ${{matrix.config.os == 'ubuntu'}}
       run: |
-        echo "CC=${{matrix.config.arch}}-linux-${{matrix.config.abi}}-gcc" >> $GITHUB_ENV
+        echo "CSERVER_BUILD_TARGET=${{matrix.config.arch}}-linux-${{matrix.config.abi}}" >> $GITHUB_ENV
 
     - name: Build core
       working-directory: core

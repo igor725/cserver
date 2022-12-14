@@ -1,6 +1,10 @@
 #!/bin/bash
-if [ "$CC" = "" ]; then
+if [ "$CC" == "" ]; then
 	CC="gcc"
+fi
+
+if [ "$STRIP" == "" ]; then
+	STRIP="strip"
 fi
 
 NPROC="nproc"
@@ -37,9 +41,15 @@ DEBUG=0
 OPT="-O2"
 WARN=""
 ROOT=$(cd "$(dirname "$0")"; pwd)
-MACH=$($CC -dumpmachine)
-if [ $MACH = "" ]; then
-	MACH="unknown"
+if [ "$CSERVER_BUILD_TARGET" == "" ]; then
+	MACH=$($CC -dumpmachine)
+	if [ $MACH = "" ]; then
+		MACH="unknown"
+	fi
+else
+	MACH="$CSERVER_BUILD_TARGET"
+	CC="$CSERVER_BUILD_TARGET-gcc"
+	STRIP="$CSERVER_BUILD_TARGET-strip"
 fi
 CC="$CC -fdiagnostics-color=always"
 if [ "$LNK" = "" ]; then
@@ -235,10 +245,10 @@ if [ $COMPILE -eq 1 ]; then
 
 	if [ $DEBUG -eq 0 ]; then
 		echo -ne "done\nStripping..."
-		"$MACH-strip" $OUTDIR/$OUTBIN
+		$STRIP $OUTDIR/$OUTBIN
 	fi
 
-	echo -ne "done\n"
+	echo -e "done\nCompiled binary: $OUTDIR/$OUTBIN"
 fi
 
 if [ $PLUGIN_INSTALL -eq 1 ]; then
