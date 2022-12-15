@@ -310,14 +310,15 @@ cs_bool Plugin_DiscardInterface(pluginReceiveIface irecv, cs_str iname) {
 
 cs_bool Plugin_UnloadDll(Plugin *plugin, cs_bool force) {
 	Plugin_Lock(plugin);
-	if (plugin->id != (cs_uint32)-1) {
-		cs_uint32 id = plugin->id;
-		Event_Call(EVT_ONPLUGINUNLOAD, &id);
-	}
 
 	if(plugin->unload && !(*(pluginUnloadFunc)plugin->unload)(force) && !force) {
 		Plugin_Unlock(plugin);
 		return false;
+	}
+
+	if (plugin->id != (cs_uint32)-1) {
+		cs_uint32 id = plugin->id;
+		Event_Call(EVT_ONPLUGINUNLOAD, &id);
 	}
 
 	if(plugin->name) {
