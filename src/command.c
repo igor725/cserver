@@ -257,7 +257,7 @@ COMMAND_FUNC(Plugin) {
 				else
 					COMMAND_PRINT("Failed to enable specified plugin");
 			} else if(String_CaselessCompare(temparg1, "disable")) {
-				if(Plugin_PerformUnload(temparg2, false, true))
+				if(Plugin_PerformUnload(temparg2, true))
 					COMMAND_PRINT("Plugin disabled successfully");
 				else
 					COMMAND_PRINT("Failed to disable specified plugin");

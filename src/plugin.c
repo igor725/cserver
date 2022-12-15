@@ -145,7 +145,7 @@ cs_bool Plugin_Enable(cs_str name, cs_bool load) {
 	return false;
 }
 
-cs_bool Plugin_PerformUnload(cs_str name, cs_bool force, cs_bool disable) {
+cs_bool Plugin_PerformUnload(cs_str name, cs_bool disable) {
 	cs_char from[128], to[128];
 	String_CopyToArray(from, "plugins" PATH_DELIM);
 	Plugin *ptr = Plugin_Get(name);
@@ -159,7 +159,7 @@ cs_bool Plugin_PerformUnload(cs_str name, cs_bool force, cs_bool disable) {
 		if(disable) String_AppendToArray(to, "." DLIB_EXT);
 		String_AppendToArray(from, "." DLIB_EXT);
 	}
-	if(ptr && !Plugin_UnloadDll(ptr, force))
+	if(ptr && !Plugin_UnloadDll(ptr, false))
 		return false;
 
 	return !disable || File_Rename(from, to);
