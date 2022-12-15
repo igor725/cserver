@@ -46,15 +46,17 @@ cs_bool Plugin_LoadDll(cs_str name, cs_bool ignoredep) {
 
 	cs_char path[256], error[512];
 	void *lib;
-	pluginInitFunc initSym;
-	pluginUrlFunc urlSym;
-	cs_int32 *apiVerSym;
-	cs_int32 *plugVerSym;
+	pluginInitFunc initSym = NULL;
+	pluginInitExFunc initSymEx = NULL;
+	pluginUrlFunc urlSym = NULL;
+	cs_int32 *apiVerSym = NULL;
+	cs_int32 *plugVerSym = NULL;
 	String_FormatBuf(path, 256, "plugins" PATH_DELIM "%s", name);
 
 	if(DLib_Load(path, &lib)) {
 		if(!(DLib_GetSym(lib, "Plugin_ApiVer", (void *)&apiVerSym) &&
-		DLib_GetSym(lib, "Plugin_Load", (void *)&initSym))) {
+		(DLib_GetSym(lib, "Plugin_Load", (void *)&initSym)
+		|| DLib_GetSym(lib, "Plugin_LoadEx", (void *)&initSymEx)))) {
 			Log_Error("%s: %s", path, DLib_GetError(error, 512));
 			DLib_Unload(lib);
 			return false;
@@ -106,7 +108,7 @@ cs_bool Plugin_LoadDll(cs_str name, cs_bool ignoredep) {
 				};
 				Event_Call(EVT_ONPLUGINLOAD, &pi);
 				Plugin_DiscardInfo(&pi);
-				if(initSym()) return true;
+				if(initSymEx ? initSymEx(plugin->id) : initSym()) return true;
 				Log_Error(Sstor_Get("PLUG_ERROR"), path);
 			} else
 				Log_Error(Sstor_Get("PLUG_ITFS"), name);

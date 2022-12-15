@@ -16,6 +16,7 @@ typedef struct _PluginInfo {
 } PluginInfo;
 
 typedef cs_bool(*pluginInitFunc)(void);
+typedef cs_bool(*pluginInitExFunc)(cs_uint32 id);
 typedef cs_bool(*pluginUnloadFunc)(cs_bool);
 typedef void(*pluginReceiveIface)(cs_str name, void *ptr, cs_size size);
 typedef cs_str(*pluginUrlFunc)(void);

@@ -76,6 +76,8 @@
 	 */
 	EXP cs_bool Plugin_Load(void);
 
+	EXP cs_bool Plugin_LoadEx(cs_uint32 id);
+
 	/**
 	 * @brief Выполняется сервером в момент выгрузки плагина.
 	 * Например, при вызове серверной команды /plugin unload <name>
