@@ -4,6 +4,7 @@
 #include "log.h"
 #include "platform.h"
 #include "client.h"
+#include "config.h"
 #include "command.h"
 #include "strstor.h"
 #include "server.h"
@@ -245,44 +246,23 @@ COMMAND_FUNC(Plugin) {
 
 			if(String_CaselessCompare(temparg1, "load")) {
 				if(!Plugin_Get(temparg2)) {
-					if(Plugin_LoadDll(temparg2, false))
+					if(Plugin_LoadDll(temparg2, Config_GetBoolByKey(Server_Config, CFG_IGNOREDEP_KEY)))
 						COMMAND_PRINTF("Plugin \"%s\" loaded", temparg2);
 					COMMAND_PRINT("Something went wrong");
 				}
 				COMMAND_PRINTF("Plugin \"%s\" is already loaded", temparg2);
-			}else {
+			} else if(String_CaselessCompare(temparg1, "enable")) {
+				if(Plugin_Enable(temparg2, true))
+					COMMAND_PRINT("Plugin enabled successfully");
+				else
+					COMMAND_PRINT("Failed to enable specified plugin");
+			} else if(String_CaselessCompare(temparg1, "disable")) {
+				if(Plugin_PerformUnload(temparg2, false, true))
+					COMMAND_PRINT("Plugin disabled successfully");
+				else
+					COMMAND_PRINT("Failed to disable specified plugin");
+			} else {
 				plugin = Plugin_Get(temparg2);
-				cs_char oldname[MAX_PATH_LEN], newname[MAX_PATH_LEN];
-				if(String_CaselessCompare(temparg1, "enable")) {
-					if(plugin) COMMAND_PRINT("This plugin is already loaded");
-
-					if(String_FormatBuf(newname, MAX_PATH_LEN, "plugins" PATH_DELIM "%s", temparg2) &&
-					String_FormatBuf(oldname, MAX_PATH_LEN, "plugins" PATH_DELIM "disabled" PATH_DELIM "%s", temparg2)) {
-						if(File_Rename(oldname, newname)) {
-							if(Plugin_LoadDll(temparg2, false))
-								COMMAND_PRINTF("Now plugin \"%s\" is enabled", temparg2);
-							else
-								COMMAND_PRINTF("Plugin \"%s\" enabled but not loaded", temparg2);
-						} else
-							COMMAND_PRINT("Failed to enable specified plugin");
-					}
-
-					COMMAND_PRINT("Something went wrong");
-				} else if(String_CaselessCompare(temparg1, "disable")) {
-					if(plugin && !Plugin_UnloadDll(plugin, false))
-						COMMAND_PRINT("Failed to unload specified plugin");
-
-					if(String_FormatBuf(oldname, MAX_PATH_LEN, "plugins" PATH_DELIM "%s", temparg2) &&
-					String_FormatBuf(newname, MAX_PATH_LEN, "plugins" PATH_DELIM "disabled" PATH_DELIM "%s", temparg2)) {
-						if(File_Rename(oldname, newname))
-							COMMAND_PRINTF("Now plugin \"%s\" is disabled", temparg2);
-						else
-							COMMAND_PRINT("Failed to disable specified plugin");
-					}
-
-					COMMAND_PRINT("Something went wrong");
-				}
-
 				if(!plugin)
 					COMMAND_PRINTF("Plugin \"%s\" is not loaded.", temparg2);
 

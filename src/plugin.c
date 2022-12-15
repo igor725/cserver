@@ -129,6 +129,40 @@ Plugin *Plugin_Get(cs_str name) {
 	return NULL;
 }
 
+cs_bool Plugin_Enable(cs_str name, cs_bool load) {
+	cs_char from[128], to[128];
+	String_CopyToArray(from, "plugins/disabled" PATH_DELIM);
+	String_CopyToArray(to, "plugins" PATH_DELIM);
+	String_AppendToArray(from, name);
+	String_AppendToArray(to, name);
+	if (File_Rename(from, to)) {
+		if (!load) return true;
+		return Plugin_LoadDll(name, Config_GetBoolByKey(Server_Config, CFG_IGNOREDEP_KEY));
+	}
+
+	return false;
+}
+
+cs_bool Plugin_PerformUnload(cs_str name, cs_bool force, cs_bool disable) {
+	cs_char from[128], to[128];
+	String_CopyToArray(from, "plugins" PATH_DELIM);
+	Plugin *ptr = Plugin_Get(name);
+	if(!ptr && !disable) return false;
+	String_AppendToArray(from, name);
+	if(disable) {
+		String_CopyToArray(to, "plugins" PATH_DELIM "disabled" PATH_DELIM);
+		String_AppendToArray(to, name);
+	}
+	if(!String_CaselessCompare(String_LastChar(name, '.'), "." DLIB_EXT)) {
+		if(disable) String_AppendToArray(to, "." DLIB_EXT);
+		String_AppendToArray(from, "." DLIB_EXT);
+	}
+	if(ptr && !Plugin_UnloadDll(ptr, force))
+		return false;
+
+	return !disable || File_Rename(from, to);
+}
+
 cs_uint32 Plugin_RequestInfo(PluginInfo *pi, cs_uint32 id) {
 	if (id >= MAX_PLUGINS) return 0;
 	Plugin *ptr = Plugins_List[id++]; if(!ptr) return 0;

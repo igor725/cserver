@@ -131,6 +131,8 @@
 	EXP cs_int32 Plugin_ApiVer, Plugin_Version;
 #endif
 
+API cs_bool Plugin_Enable(cs_str name, cs_bool load);
+API cs_bool Plugin_PerformUnload(cs_str name, cs_bool force, cs_bool disable);
 API cs_uint32 Plugin_RequestInfo(PluginInfo *pi, cs_uint32 id);
 API void Plugin_DiscardInfo(PluginInfo *pi);
 
