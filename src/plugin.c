@@ -164,8 +164,10 @@ cs_bool Plugin_PerformUnload(cs_str name, cs_bool force, cs_bool disable) {
 }
 
 cs_uint32 Plugin_RequestInfo(PluginInfo *pi, cs_uint32 id) {
+	Plugin *ptr = NULL;
+	while (!ptr && id < MAX_PLUGINS)
+		ptr = Plugins_List[id++];
 	if (id >= MAX_PLUGINS) return 0;
-	Plugin *ptr = Plugins_List[id++]; if(!ptr) return 0;
 	pi->name = String_AllocCopy(ptr->name);
 	pi->home = ptr->url ? String_AllocCopy(ptr->url()) : NULL;
 	pi->version = ptr->version;
