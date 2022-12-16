@@ -79,6 +79,7 @@
 
 #if defined(CORE_USE_WINDOWS_DEFINES)
 #	define NOINL __declspec(noinline)
+#	define DEPR  __declspec(deprecated)
 #	ifndef CORE_BUILD_PLUGIN
 #		define API __declspec(dllexport, noinline)
 #		define VAR __declspec(dllexport)
@@ -90,6 +91,7 @@
 #	endif
 #elif defined(CORE_USE_UNIX_DEFINES)
 #	define NOINL __attribute__((noinline))
+#	define DEPR  __attribute__((deprecated))
 #	ifndef CORE_BUILD_PLUGIN
 #		ifdef _WIN32
 #			define API __attribute__((dllexport, noinline))
