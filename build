@@ -75,6 +75,7 @@ fi
 PLUGIN_ARGS=""
 PLUGIN_BUILD=0
 PLUGIN_INSTALL=0
+SERVER_OUTROOT="$ROOT/out/$MACH"
 
 notaplugin () {
 	echo "Looks like the specified directory is not a plugin."
@@ -121,8 +122,9 @@ do
 	if [ "$a" == "upd" ] && [ $GITOK -eq 1 ]; then GITUPD=1; fi
 done
 
-SERVER_OUTROOT="$ROOT/out/$MACH"
+OUTDIR="$ROOT/out/$MACH"
 if [ $DEBUG -eq 1 ]; then
+	OUTDIR="$OUTDIR-dbg"
 	SERVER_OUTROOT="$SERVER_OUTROOT-dbg"
 fi
 PLUGINS_DIR="$SERVER_OUTROOT/plugins"
@@ -177,8 +179,6 @@ if [ $GITUPD -eq 1 ]; then
 		fi
 	fi
 fi
-
-OUTDIR="$ROOT/out/$MACH"
 
 if [ $COMPILE -eq 1 ]; then
 	if [ $DEBUG -eq 1 ]; then
