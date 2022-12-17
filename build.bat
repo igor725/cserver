@@ -24,7 +24,7 @@ SET SERVER_OUTROOT=%OUTDIR%
 
 SET LDFLAGS=/link
 SET CFLAGS=/FC /MP /Oi
-SET LIBS=kernel32.lib dbghelp.lib
+SET LIBS=dbghelp.lib
 
 git --version >nul
 IF "%ERRORLEVEL%"=="0" SET GITOK=1
@@ -52,7 +52,7 @@ SET PLUGNAME=%1
 SHIFT
 
 IF "!PLUGIN_BUILD!"=="1" (
-	SET LDFLAGS=!LDFLAGS! /DLL /NOENTRY
+	SET LDFLAGS=!LDFLAGS! /DLL
 	SET OUTBIN=!PLUGNAME!.dll
 	SET ROOT=..\cs-!PLUGNAME!
 	SET OBJDIR=!ROOT!\!OBJDIR!
@@ -109,11 +109,6 @@ IF "%PLUGIN_BUILD%"=="0" (
 		GOTO compileerror
 	)
 ) else (
-	IF "!DEBUG!"=="1" (
-		SET LIBS=!LIBS! vcruntimed.lib
-	) else (
-		SET LIBS=!LIBS! vcruntime.lib
-	)
 	IF NOT EXIST !SERVER_OUTROOT! GOTO noserver
 	IF NOT EXIST !SERVER_OUTROOT!\server.lib GOTO noserver
 )

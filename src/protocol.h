@@ -12,6 +12,7 @@ typedef cs_bool(*packetHandler)(Client *, cs_char *);
 #ifndef CORE_BUILD_PLUGIN
 	Packet *Packet_Get(EPacketID id);
 	void Packet_UnregisterAll(void);
+	void Packet_RegisterDefault(void);
 
 	/*
 	* Врайтеры и хендлеры
@@ -98,5 +99,4 @@ API void Proto_WriteByteColor4(cs_char **dataptr, const Color4* color);
 API void Proto_WriteNFloat(cs_char **dataptr, cs_uint32 n, cs_float *arr);
 
 API void CPE_RegisterServerExtension(cs_str name, cs_int32 version);
-void Packet_RegisterDefault(void);
 #endif // PROTOCOL_H

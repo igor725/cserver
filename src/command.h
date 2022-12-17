@@ -37,6 +37,7 @@ Command_UnregisterByFunc((cmdFunc)svcmd_##N)
 #define COMMAND_BUNCH_END {NULL, NULL, NULL, 0x00}
 
 #ifndef CORE_BUILD_PLUGIN
+	extern AListField *Command_Head; /** Список зарегистрированных команд */
 	void Command_RegisterDefault(void);
 	void Command_UnregisterAll(void);
 #endif
@@ -119,6 +120,4 @@ API void Command_SetUserData(Command *cmd, void *ud);
  * @return указатель на данные
  */
 API void *Command_GetUserData(Command *cmd);
-
-extern AListField *Command_Head; /** Список зарегистрированных команд */
 #endif // COMMAND_H

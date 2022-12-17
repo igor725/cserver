@@ -5,7 +5,9 @@
 #include "types/cpe.h"
 #include "types/block.h"
 
-BlockDef *Block_GetDefinition(World *world, BlockID id);
+#ifndef CORE_BUILD_PLUGIN
+	BlockDef *Block_GetDefinition(World *world, BlockID id);
+#endif
 
 /**
  * @brief Возвращает фоллбек блок для указанного блока

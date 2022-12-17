@@ -285,7 +285,7 @@ CPECuboid *Client_NewSelection(Client *client) {
 }
 
 cs_bool Client_UpdateSelection(Client *client, CPECuboid *cub) {
-	if(Client_GetExtVer(client, EXT_CUBOID)) {
+	if(cub->used && Client_GetExtVer(client, EXT_CUBOID)) {
 		if(&client->cpeData.cuboids[cub->id] != cub)
 			return false;
 		CPE_WriteMakeSelection(client, cub);
