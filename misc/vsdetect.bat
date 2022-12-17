@@ -2,7 +2,7 @@ SET ARCH=%VSCMD_ARG_TGT_ARCH%
 IF "%ARCH%"=="" GOTO vcerror
 
 WHERE /Q CL.EXE
-IF "%ERRORLEVEL%"=="0" (
+IF "!ERRORLEVEL!"=="0" (
 	EXIT /B 0
 )
 

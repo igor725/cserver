@@ -1,7 +1,7 @@
 @ECHO off
 setlocal enableextensions enabledelayedexpansion
 CALL misc\vsdetect.bat
-IF NOT "%ERRORLEVEL%"=="0" GOTO end
+IF NOT "!ERRORLEVEL!"=="0" GOTO end
 CD /D %~dp0
 
 SET RUNSERVER=0
@@ -27,7 +27,7 @@ SET CFLAGS=/FC /MP /Oi
 SET LIBS=dbghelp.lib
 
 git --version >nul
-IF "%ERRORLEVEL%"=="0" SET GITOK=1
+IF "!ERRORLEVEL!"=="0" SET GITOK=1
 
 :argloop
 IF "%1"=="" GOTO argsdone
@@ -75,7 +75,7 @@ GOTO subargloop
 
 :argsdone
 CALL misc\gitthing.bat
-IF NOT "%ERRORLEVEL%"=="0" GOTO end
+IF NOT "!ERRORLEVEL!"=="0" GOTO end
 ECHO Build configuration:
 ECHO Architecture: %ARCH%
 
@@ -141,7 +141,7 @@ IF EXIST %ROOT%\vars.bat (
 )
 
 CL %SOURCES% /I%ROOT%\src %CFLAGS% %LDFLAGS% %LIBS%
-IF NOT "%ERRORLEVEL%"=="0" GOTO compileerror
+IF NOT "!ERRORLEVEL!"=="0" GOTO compileerror
 
 IF "%PLUGIN_BUILD%"=="1" (
 	SET SVPLUGDIR=!SERVER_OUTROOT!\plugins

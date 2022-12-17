@@ -207,7 +207,10 @@ if [ $COMPILE -eq 1 ]; then
 	if [ ! -d "$OBJDIR" ]; then mkdir -p $OBJDIR; fi
 
 	if [ -f "$ROOT/vars.sh" ]; then
-		. "$ROOT/vars.sh"
+		if ! . "$ROOT/vars.sh"; then
+			echo "Failed to add plugin variables"
+			exit 1
+		fi
 	fi
 
 	echo -n "Compiling..."

@@ -70,7 +70,7 @@ IF "%GITOK%"=="0" (
 IF NOT EXIST "!ZFOLDER!\win32\!ARCH!" MD "!ZFOLDER!\win32\!ARCH!"
 PUSHD "!ZFOLDER!\win32\!ARCH!"
 NMAKE /F ..\Makefile.msc TOP=..\..\
-IF "%ERRORLEVEL%"=="0" (
+IF "!ERRORLEVEL!"=="0" (
 	POPD
 	GOTO detectzlib
 ) else (
