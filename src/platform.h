@@ -33,7 +33,7 @@ API cs_bool File_Rename(cs_str path, cs_str newpath);
 API cs_file File_Open(cs_str path, cs_str mode);
 API cs_file File_ProcOpen(cs_str cmd, cs_str mode);
 API cs_size File_Read(void *ptr, cs_size size, cs_size count, cs_file fp);
-API cs_int32 File_ReadLine(cs_file fp, cs_char *line, cs_int32 len);
+API cs_int32 File_ReadLine(cs_file fp, cs_char *line, cs_size len);
 API cs_size File_Write(const void *ptr, cs_size size, cs_size count, cs_file fp);
 API cs_int32 File_GetChar(cs_file fp);
 API cs_int32 File_Error(cs_file fp);

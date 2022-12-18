@@ -43,10 +43,10 @@ cs_size File_Read(void *ptr, cs_size size, cs_size count, cs_file fp) {
 	return fread(ptr, size, count, fp);
 }
 
-cs_int32 File_ReadLine(cs_file fp, cs_char *line, cs_int32 len) {
+cs_int32 File_ReadLine(cs_file fp, cs_char *line, cs_size len) {
 	cs_char *sym;
 
-	for(sym = line; (sym - line) < len; sym++) {
+	for(sym = line; (cs_size)(sym - line) < len; sym++) {
 		cs_int32 ch = File_GetChar(fp);
 		if(ch == EOF || ch == '\n') {
 			*sym = '\0';
