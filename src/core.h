@@ -13,6 +13,27 @@
 #ifndef CORE_H
 #define CORE_H
 
+// Определеяем, что у нас за процессор
+#if defined(__BYTE_ORDER) && __BYTE_ORDER == __BIG_ENDIAN || \
+defined(__BIG_ENDIAN__) || \
+defined(__ARMEB__) || \
+defined(__THUMBEB__) || \
+defined(__AARCH64EB__) || \
+defined(_M_PPC) || \
+defined(_MIBSEB) || defined(__MIBSEB) || defined(__MIBSEB__)
+#	define CORE_USE_BIG
+#elif defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN || \
+defined(__LITTLE_ENDIAN__) || \
+defined(__ARMEL__) || \
+defined(__THUMBEL__) || \
+defined(__AARCH64EL__) || \
+defined(_M_IX86) || defined(_M_X64) || defined(_M_IA64) || defined( _M_ARM) || \
+defined(_MIPSEL) || defined(__MIPSEL) || defined(__MIPSEL__)
+#	define CORE_USE_LITTLE
+#else
+#	error "Unknown CPU architecture"
+#endif
+
 // Определяем, где мы компилимся
 #ifndef CORE_MANUAL_BACKENDS
 #	if defined(__MINGW32__)
@@ -196,7 +217,6 @@ typedef cs_byte ClientID;
 #	define SOFTWARE_FULLNAME SOFTWARE_NAME "/" GIT_COMMIT_TAG
 #	define TICKS_PER_SECOND (1000 / 64)
 #	define MAINCFG "server.cfg"
-#	define WORLD_MAGIC 0x54414457
 #endif
 
 #define ISHEX(ch) ((ch > '/' && ch < ':') || (ch > '@' && ch < 'G') || (ch > '`' && ch < 'g'))

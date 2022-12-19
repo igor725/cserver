@@ -6,6 +6,12 @@
 #include "types/world.h"
 #include "types/cpe.h"
 
+#ifdef CORE_USE_LITTLE
+#	define WORLD_MAGIC 0x54414457u
+#else
+#	define WORLD_MAGIC 0x57444154u
+#endif
+
 API cs_bool World_HasError(World *world);
 API EWorldError World_PopError(World *world, EWorldExtra *extra);
 

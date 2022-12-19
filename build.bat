@@ -26,9 +26,6 @@ SET LDFLAGS=/link
 SET CFLAGS=/FC /MP /Oi
 SET LIBS=dbghelp.lib
 
-git --version >nul
-IF "!ERRORLEVEL!"=="0" SET GITOK=1
-
 :argloop
 IF "%1"=="" GOTO argsdone
 IF "%1"=="cls" cls
