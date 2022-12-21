@@ -70,13 +70,13 @@ jobs:
           os: windows
           arch: x86_64
           build: .\build.bat
-          testbin: .\core\out\x64dbg\server.exe
+          testbin: .\core\out\x64\server.exe
 
         - name: Windows (x86)
           os: windows
           arch: x86
           build: .\build.bat
-          testbin: .\core\out\x86dbg\server.exe
+          testbin: .\core\out\x86\server.exe
 
     steps:
     - name: Checkout Core repo
@@ -109,6 +109,12 @@ jobs:
         repository: igor725/cs-worldedit
         path: cs-worldedit
 
+    - name: Checkout Web plugin
+      uses: actions/checkout@v3
+      with:
+        repository: igor725/cs-web
+        path: cs-web
+
     - name: Detect MSVC (Windows)
       uses: ilammy/msvc-dev-cmd@v1
       if: ${{matrix.config.os == 'windows'}}
@@ -127,7 +133,7 @@ jobs:
     - name: Build core
       working-directory: core
       run: |
-        ${{matrix.config.build}} wall dbg noprompt
+        ${{matrix.config.build}} wall noprompt
 
     - name: Build plugins
       working-directory: core
@@ -135,10 +141,11 @@ jobs:
         HOSTCC: ${{matrix.config.hostcc}}
         MACOSX_DEPLOYMENT_TARGET: "11.0"
       run: |
-        ${{matrix.config.build}} wall dbg pb base install &&
-        ${{matrix.config.build}} wall dbg pb survival install &&
-        ${{matrix.config.build}} wall dbg pb worldedit install &&
-        ${{matrix.config.build}} wall dbg pb lua install
+        ${{matrix.config.build}} wall pb base install &&
+        ${{matrix.config.build}} wall pb survival install &&
+        ${{matrix.config.build}} wall pb worldedit install &&
+        ${{matrix.config.build}} wall pb lua install &&
+        ${{matrix.config.build}} wall pb web install wbuild
 
     - name: Make some tests
       if: ${{matrix.config.testbin != null}}

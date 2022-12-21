@@ -6,7 +6,7 @@
 #include "platform.h"
 #include "list.h"
 
-static cs_str defaultBlockNames[BLOCK_DEFAULT_COUNT] = {
+static cs_str const defaultBlockNames[BLOCK_DEFAULT_COUNT] = {
 	"Air", "Stone", "Grass", "Dirt",
 	"Cobblestone", "Wood", "Sapling",
 	"Bedrock", "Water", "Still water",

@@ -119,7 +119,6 @@ Notice that these arguments must be passed **after** the `pb` argument and plugi
 ## Notes
 * Use this software carefully! The server **may** have many security holes.
 * At this point, it is strongly recommended to recompile **all plugins** every time you update the server, otherwise your server may crash due to API incompatibility.
-* My main OS is Windows 10, this means the Linux thing are not well tested.
 * By default the server doesn't have any useful chat commands, build the [cs-base](https://github.com/igor725/cs-base) plugin for an expanded command set.
 * Here is the [example plugin](https://github.com/igor725/cs-test) for this server software.
 * Your directory should have the following structure in order to compile plugins:

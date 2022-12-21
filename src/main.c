@@ -45,10 +45,8 @@ int main(int argc, char *argv[]) {
 				Log_Error("Some tests failed!");
 				Process_Exit(1);
 			}
-		} else {
-			if(Server_Init())
-				Server_StartLoop();
-		}
+		} else if(Server_Init())
+			Server_StartLoop();
 
 		Server_Cleanup();
 		Compr_Uninit();
