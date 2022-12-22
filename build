@@ -3,6 +3,20 @@ if [ "$CC" == "" ]; then
 	CC="gcc"
 fi
 
+if ! command -v $CC 2>&1 > /dev/null; then
+	echo "Unable to find the specified compiler ($CC)"
+	exit 1
+fi
+
+if [ "$LNK" = "" ]; then
+	LNK="$CC"
+else
+	if ! command -v $LNK 2>&1 > /dev/null; then
+		echo "Unable to find the specified linker ($LNK)"
+		exit 1
+	fi
+fi
+
 if [ "$STRIP" == "" ]; then
 	STRIP="strip"
 fi
@@ -48,12 +62,9 @@ if [ "$CSERVER_BUILD_TARGET" == "" ]; then
 	fi
 else
 	MACH="$CSERVER_BUILD_TARGET"
-	CC="$CSERVER_BUILD_TARGET-gcc"
-	STRIP="$CSERVER_BUILD_TARGET-strip"
-fi
-CC="$CC -fdiagnostics-color=always"
-if [ "$LNK" = "" ]; then
-	LNK="$CC"
+	CC="$CSERVER_BUILD_TARGET-$CC"
+	LNK="$CSERVER_BUILD_TARGET-$LNK"
+	STRIP="$CSERVER_BUILD_TARGET-$STRIP"
 fi
 if [ "$TARGET_OS" != "win" ]; then
 	LNK="$LNK -rdynamic"
@@ -221,7 +232,7 @@ if [ $COMPILE -eq 1 ]; then
 	for cpath in $(find "$ROOT/src/" -maxdepth 1 -type f -name "*.c"); do
 		objpath="$OBJDIR/$(basename $cpath .c).o"
 		OBJS="$OBJS $objpath"
-		$CC -c $CFLAGS $WARN $OPT -I$ROOT/src $cpath -o$objpath 2>> $STDERR &
+		$CC -fdiagnostics-color=always -c $CFLAGS $WARN $OPT -I$ROOT/src $cpath -o$objpath 2>> $STDERR &
 		pids+=($!)
 		while test $(jobs -p | wc -w) -ge "$MAXWORKERS"; do
 			wait ${pids[0]}
