@@ -9,7 +9,7 @@
 
 # cserver
 Another Minecraft Classic server in C.
-The server is still under development (see [Projects](https://github.com/igor725/cserver/projects) tab)!
+The server is still under development (see [Projects](https://github.com/igor725/cserver/projects?type=classic) tab)!
 
 The goal of this project is to create a stable, customizable and future-rich multiplatform Minecraft Classic server with a minimum dependencies.
 
@@ -19,8 +19,8 @@ The goal of this project is to create a stable, customizable and future-rich mul
 * Plugins support
 * Web client support ([More info](https://www.classicube.net/api/docs/server#footer))
 * Lua scripting (Implemented in the [Lua plugin](https://github.com/igor725/cs-lua))
-* RCON server (Implemented in the [Base plugin](https://github.com/igor725/cs-base))
-* Own world generator (Written by [scaled](https://github.com/scaledteam) for [LuaClassic](https://github.com/igor725/LuaClassic), later ported to C by me)
+* In browser control panel (Implemented in the [WebAdmin plugin](https://github.com/igor725/cs-web))
+* Own world generator (Written by [scaled](https://github.com/scaledteam) for [LuaClassic](https://github.com/igor725/LuaClassic), later ported to cserver by me)
 * Heartbeat API (ClassiCube heartbeat implemented in the [Base plugin](https://github.com/igor725/cs-base))
 * Easy configurable
 
