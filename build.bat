@@ -111,6 +111,11 @@ IF "%PLUGIN_BUILD%"=="0" (
 )
 
 :compile
+IF EXIST %ROOT%\vars.bat (
+	CALL !ROOT!\vars.bat
+	IF NOT "!ERRORLEVEL!"=="0" GOTO compileerror
+)
+
 SET BINPATH=%OUTDIR%\%OUTBIN%
 IF "%PLUGIN_BUILD%"=="1" (
 	SET CFLAGS=!CFLAGS! /Fe!BINPATH! /DCORE_BUILD_PLUGIN /I.\src\
@@ -120,7 +125,7 @@ IF "%PLUGIN_BUILD%"=="1" (
 	SET CFLAGS=!CFLAGS! /Fe!BINPATH!
 )
 
-SET CFLAGS=%CFLAGS% %WARN% %OPT% /Fo%OBJDIR%\
+SET CFLAGS=!CFLAGS! !WARN! !OPT! /Fo%OBJDIR%\
 SET SOURCES=%ROOT%\src\*.c
 
 IF EXIST %ROOT%\version.rc (
@@ -130,11 +135,6 @@ IF EXIST %ROOT%\version.rc (
 	)
 	RC !RCCFLAGS! !ROOT!\version.rc
 	SET SOURCES=!SOURCES! !OBJDIR!\version.res
-)
-
-IF EXIST %ROOT%\vars.bat (
-	CALL !ROOT!\vars.bat
-	IF NOT "!ERRORLEVEL!"=="0" GOTO compileerror
 )
 
 CL %SOURCES% /I%ROOT%\src %CFLAGS% %LDFLAGS% %LIBS%

@@ -192,6 +192,13 @@ if [ $GITUPD -eq 1 ]; then
 fi
 
 if [ $COMPILE -eq 1 ]; then
+	if [ -f "$ROOT/vars.sh" ]; then
+		if ! . "$ROOT/vars.sh"; then
+			echo "Failed to add plugin variables"
+			exit 1
+		fi
+	fi
+
 	if [ $DEBUG -eq 1 ]; then
 		CFLAGS="$CFLAGS -g -DCORE_BUILD_DEBUG"
 		CFLAGS="$CFLAGS -fno-omit-frame-pointer"
@@ -216,13 +223,6 @@ if [ $COMPILE -eq 1 ]; then
 
 	if [ ! -d "$OUTDIR" ]; then mkdir -p $OUTDIR; fi
 	if [ ! -d "$OBJDIR" ]; then mkdir -p $OBJDIR; fi
-
-	if [ -f "$ROOT/vars.sh" ]; then
-		if ! . "$ROOT/vars.sh"; then
-			echo "Failed to add plugin variables"
-			exit 1
-		fi
-	fi
 
 	echo -n "Compiling..."
 	pids=()
