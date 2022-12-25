@@ -1,7 +1,7 @@
 @ECHO off
 setlocal enableextensions enabledelayedexpansion
 CALL misc\vsdetect.bat
-IF NOT "!ERRORLEVEL!"=="0" GOTO end
+IF !ERRORLEVEL! NEQ 0 GOTO end
 CD /D %~dp0
 
 SET RUNSERVER=0
@@ -18,9 +18,9 @@ SET GITUPD=0
 SET WARN=/W3
 SET OPT=/O2
 
-SET OUTDIR=%ROOT%\out\%ARCH%
-SET OBJDIR=%ROOT%\out\.objs\%ARCH%
-SET SERVER_OUTROOT=%OUTDIR%
+SET OUTDIR=!ROOT!\out\!ARCH!
+SET OBJDIR=!ROOT!\out\.objs\!ARCH!
+SET SERVER_OUTROOT=!OUTDIR!
 
 SET LDFLAGS=/link
 SET CFLAGS=/FC /MP /Oi
@@ -39,44 +39,42 @@ IF "%1"=="w0" SET WARN=/W0
 IF "%1"=="wx" SET CFLAGS=%CFLAGS% /WX
 IF "%1"=="san" SET SAN=1
 IF "%1"=="pb" SET PLUGIN_BUILD=1
-IF "%1"=="upd" IF "!GITOK!"=="1" SET GITUPD=1
+IF "%1"=="upd" IF !GITOK! EQU 1 SET GITUPD=1
 SHIFT
-IF "%PLUGIN_BUILD%"=="1" GOTO pluginbuild
+IF !PLUGIN_BUILD! EQU 1 GOTO pluginbuild
 GOTO argloop
 
 :pluginbuild
 SET PLUGNAME=%1
 SHIFT
 
-IF "!PLUGIN_BUILD!"=="1" (
-	SET LDFLAGS=!LDFLAGS! /DLL
-	SET OUTBIN=!PLUGNAME!.dll
-	SET ROOT=..\cs-!PLUGNAME!
-	SET OBJDIR=!ROOT!\!OBJDIR!
-	SET OUTDIR=!ROOT!\!OUTDIR!
-	IF NOT EXIST !ROOT! GOTO notaplugin
-	IF NOT EXIST !ROOT!\src GOTO notaplugin
-	ECHO Building plugin: !PLUGNAME!
-)
-
-IF "%1"=="" GOTO argsdone
+SET LDFLAGS=!LDFLAGS! /DLL
+SET OUTBIN=!PLUGNAME!.dll
+SET ROOT=..\cs-!PLUGNAME!
+SET OBJDIR=!ROOT!\!OBJDIR!
+SET OUTDIR=!ROOT!\!OUTDIR!
+IF NOT EXIST !ROOT! GOTO notaplugin
+IF NOT EXIST !ROOT!\src GOTO notaplugin
+ECHO Building plugin: !PLUGNAME!
 
 :subargloop
+IF "%1"=="" GOTO argsdone
+
 IF "%1"=="install" (
 	SET PLUGIN_INSTALL=1
-) ELSE IF NOT "%1"=="" (
+) ELSE (
 	SET PLUGIN_ARGS=!PLUGIN_ARGS!%1 
-) ELSE GOTO argsdone
+)
 SHIFT
 GOTO subargloop
 
 :argsdone
 CALL misc\gitthing.bat
-IF NOT "!ERRORLEVEL!"=="0" GOTO end
+IF !ERRORLEVEL! NEQ 0 GOTO end
 ECHO Build configuration:
-ECHO Architecture: %ARCH%
+ECHO Architecture: !ARCH!
 
-IF "%DEBUG%"=="0" (
+IF !DEBUG! EQU 0 (
 	SET CFLAGS=!CFLAGS! /MT
 	SET LDFLAGS=!LDFLAGS! /RELEASE /OPT:REF
 	ECHO Debug: disabled
@@ -87,7 +85,7 @@ IF "%DEBUG%"=="0" (
 	SET OPT=/Od
 	SET CFLAGS=!CFLAGS! /Z7 /MTd /DDEBUG /DCORE_BUILD_DEBUG
 	SET LDFLAGS=!LDFLAGS! /DEBUG
-	IF "!SAN!"=="1" (
+	IF !SAN! EQU 1 (
 		SET CFLAGS=!CFLAGS! -fsanitize=address /Zi /Fd!SERVER_OUTROOT!\server.pdb
 	)
 	ECHO Debug: enabled
@@ -96,11 +94,11 @@ IF "%DEBUG%"=="0" (
 IF NOT EXIST !OBJDIR! MD !OBJDIR!
 IF NOT EXIST !OUTDIR! MD !OUTDIR!
 
-IF "%PLUGIN_BUILD%"=="0" (
+IF !PLUGIN_BUILD! EQU 0 (
 	SET LDFLAGS=!LDFLAGS! /SUBSYSTEM:CONSOLE
 	SET LIBS=!LIBS! ws2_32.lib
 	CALL misc\zdetect.bat
-	IF "!ERRORLEVEL!"=="0" (
+	IF !ERRORLEVEL! EQU 0 (
 		GOTO compile
 	) ELSE (
 		GOTO compileerror
@@ -111,13 +109,13 @@ IF "%PLUGIN_BUILD%"=="0" (
 )
 
 :compile
-IF EXIST %ROOT%\vars.bat (
+IF EXIST !ROOT!\vars.bat (
 	CALL !ROOT!\vars.bat
-	IF NOT "!ERRORLEVEL!"=="0" GOTO compileerror
+	IF !ERRORLEVEL! NEQ 0 GOTO compileerror
 )
 
-SET BINPATH=%OUTDIR%\%OUTBIN%
-IF "%PLUGIN_BUILD%"=="1" (
+SET BINPATH=!OUTDIR!\!OUTBIN!
+IF !PLUGIN_BUILD! EQU 1 (
 	SET CFLAGS=!CFLAGS! /Fe!BINPATH! /DCORE_BUILD_PLUGIN /I.\src\
 	SET LIBS=server.lib !LIBS!
 	SET LDFLAGS=!LDFLAGS! /LIBPATH:!SERVER_OUTROOT!
@@ -125,37 +123,35 @@ IF "%PLUGIN_BUILD%"=="1" (
 	SET CFLAGS=!CFLAGS! /Fe!BINPATH!
 )
 
-SET CFLAGS=!CFLAGS! !WARN! !OPT! /Fo%OBJDIR%\
-SET SOURCES=%ROOT%\src\*.c
+SET CFLAGS=!CFLAGS! !WARN! !OPT! /Fo!OBJDIR!\
+SET SOURCES=!ROOT!\src\*.c
 
-IF EXIST %ROOT%\version.rc (
+IF EXIST !ROOT!\version.rc (
 	SET RCCFLAGS=/NOLOGO /Fo!OBJDIR!\version.res
-	IF "!DEBUG!"=="1" (
+	IF !DEBUG! EQU 1 (
 		SET RCCFLAGS=!RCCFLAGS! /DDEBUG
 	)
 	RC !RCCFLAGS! !ROOT!\version.rc
 	SET SOURCES=!SOURCES! !OBJDIR!\version.res
 )
 
-CL %SOURCES% /I%ROOT%\src %CFLAGS% %LDFLAGS% %LIBS%
-IF NOT "!ERRORLEVEL!"=="0" GOTO compileerror
+CL !SOURCES! /I!ROOT!\src !CFLAGS! !LDFLAGS! !LIBS!
+IF !ERRORLEVEL! NEQ 0 GOTO compileerror
 
-IF "%PLUGIN_BUILD%"=="1" (
+IF !PLUGIN_BUILD! EQU 1 (
 	SET SVPLUGDIR=!SERVER_OUTROOT!\plugins
-	IF "!PLUGIN_INSTALL!"=="1" (
+	IF !PLUGIN_INSTALL! EQU 1 (
 		IF NOT EXIST !SVPLUGDIR! MD !SVPLUGDIR!
 		COPY /Y !OUTDIR!\!PLUGNAME!.dll !SVPLUGDIR!
-		IF "!DEBUG!"=="1" (
-			COPY /Y !OUTDIR!\!PLUGNAME!.pdb !SVPLUGDIR!
-		)
+		IF !DEBUG! EQU 1 COPY /Y !OUTDIR!\!PLUGNAME!.pdb !SVPLUGDIR!
 	)
   GOTO endok
 ) else GOTO binstart
 
 :binstart
-IF "%RUNSERVER%"=="0" GOTO endok
-PUSHD %OUTDIR%
-%OUTBIN%
+IF !RUNSERVER! EQU 0 GOTO endok
+PUSHD !OUTDIR!
+!OUTBIN!
 POPD
 GOTO endok
 

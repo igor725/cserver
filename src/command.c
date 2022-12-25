@@ -193,9 +193,8 @@ COMMAND_FUNC(Stop) {
 COMMAND_FUNC(Say) {
 	COMMAND_SETUSAGE("/say <message ...>")
 	if(ccdata->args) {
-		cs_char message[256];
-		if(String_FormatBuf(message, 256, "&eServer&f: %s", ccdata->args)) {
-			Client_Chat(CLIENT_BROADCAST, MESSAGE_TYPE_CHAT, message);
+		if(String_FormatBuf(ccdata->out, MAX_CMD_OUT, "&eServer&f: %s", ccdata->args)) {
+			Client_Chat(CLIENT_BROADCAST, MESSAGE_TYPE_CHAT, ccdata->out);
 			return false;
 		}
 	}

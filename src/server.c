@@ -415,9 +415,9 @@ cs_bool Server_Init(void) {
 cs_uint64 prev, this = 0;
 
 INL static void DoStep(cs_int32 delta) {
-	(void)DoNetTick();
-	(void)Event_Call(EVT_ONTICK, &delta);
+	DoNetTick();
 	Timer_Update(delta);
+	Event_Call(EVT_ONTICK, &delta);
 }
 
 void Server_StartLoop(void) {

@@ -164,13 +164,11 @@ cs_bool Socket_Bind(Socket sock, struct sockaddr_in *addr) {
 }
 
 cs_bool Socket_Connect(Socket sock, struct sockaddr_in *addr) {
-	socklen_t len = sizeof(struct sockaddr_in);
-	return connect(sock, (struct sockaddr *)addr, len) == 0;
+	return connect(sock, (struct sockaddr *)addr, sizeof(struct sockaddr_in)) == 0;
 }
 
 Socket Socket_Accept(Socket sock, struct sockaddr_in *addr) {
-	socklen_t len = sizeof(struct sockaddr_in);
-	return accept(sock, (struct sockaddr *)addr, &len);
+	return accept(sock, (struct sockaddr *)addr, &(socklen_t){sizeof(struct sockaddr_in)});
 }
 
 cs_int32 Socket_Receive(Socket sock, cs_char *buf, cs_int32 len, cs_int32 flags) {
