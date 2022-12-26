@@ -51,7 +51,8 @@ Client *Client_NewBot(void) {
 		return NULL;
 
 	Client *client = Memory_Alloc(1, sizeof(Client));
-	Client_Init(client, INVALID_SOCKET, 0);
+	Client_Init(client, INVALID_SOCKET, 0xFFFFFFFF);
+	client->playerData.world = World_Main;
 	client->state = CLIENT_STATE_INGAME;
 	client->id = botid;
 
@@ -192,7 +193,7 @@ cs_float Client_GetClickDistanceInBlocks(Client *client) {
 }
 
 cs_int32 Client_GetExtVer(Client *client, cs_ulong exthash) {
-	if(Client_IsBot(client)) return false;
+	if(Client_IsBot(client)) return 0;
 
 	for(cs_int16 i = 0; i < client->cpeData.extensions.count; i++)
 		if(client->cpeData.extensions.list[i].hash == exthash)
@@ -217,7 +218,8 @@ cs_bool Client_ChangeWorld(Client *client, World *world) {
 	if(Client_IsBot(client)) {
 		Client_Despawn(client);
 		client->playerData.world = world;
-		Client_Spawn(client);
+		client->playerData.position = world->info.spawnVec;
+		client->playerData.angle = world->info.spawnAng;
 		return true;
 	}
 
