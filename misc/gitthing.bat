@@ -1,11 +1,11 @@
 @REM Сделать тут умное обновление
 git --version >nul
-IF "!ERRORLEVEL!"=="0" SET GITOK=1
+IF !ERRORLEVEL! EQU 0 SET GITOK=1
 
-IF "!GITOK!"=="1" (
-	IF "!GITUPD!"=="1" (
+IF !GITOK! EQU 1 (
+	IF !GITUPD! EQU 1 (
 		git -C !ROOT! fetch && git -C !ROOT! merge --ff-only
-		IF NOT "!ERRORLEVEL!"=="0" GOTO gitfail
+		IF NOT "!ERRORLEVEL!"=="0" GOTO :gitfail
 	)
 
 	SET TAG_INSTALLED=0
@@ -15,7 +15,7 @@ IF "!GITOK!"=="1" (
 		SET TAG_INSTALLED=1
 	)
 
-	IF "!TAG_INSTALLED!"=="0" (
+	IF !TAG_INSTALLED! EQU 0 (
 		FOR /F "tokens=* USEBACKQ" %%F IN (`git -C "!ROOT!" rev-parse --short HEAD 2^> nul`) DO 2> nul (
 			SET CFLAGS=!CFLAGS! /DGIT_COMMIT_TAG#\"%%F\"
 		)

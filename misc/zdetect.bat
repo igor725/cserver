@@ -21,12 +21,12 @@ IF EXIST ".\zlib.path" (
 IF NOT EXIST "!ZFOLDER!\" GOTO nozlib
 IF NOT EXIST "!ZFOLDER!\zlib.h" GOTO nozlib
 IF NOT EXIST "!ZFOLDER!\zconf.h" GOTO nozlib
-SET INCLUDE=%INCLUDE%;!ZFOLDER!\
+SET INCLUDE=!INCLUDE!;!ZFOLDER!\
 FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R "!ZFOLDER!\win32\!ARCH!" z*.dll`) DO (
 	@REM Добавить проверку найденной DLLки на совместимость с текущей системой
 	SET ZLIB_DYNAMIC=%%F
 )
-IF "%ZLIB_DYNAMIC%"=="" (
+IF "!ZLIB_DYNAMIC!"=="" (
 	GOTO makezlib_st1
 ) ELSE (
 	IF NOT EXIST "!ZLIB_DYNAMIC!" (
@@ -44,7 +44,7 @@ IF NOT EXIST "!ZFOLDER!\win32\Makefile.msc" (
 )
 
 :nozlib
-IF "%NOPROMPT%"=="0" (
+IF !NOPROMPT! EQU 0 (
 	ECHO zlib not found in "!ZFOLDER!".
 	ECHO Would you like the script to automatically clone and build zlib library?
 	ECHO Note: The zlib repo will be cloned from Mark Adler's GitHub, then compiled.
@@ -57,8 +57,8 @@ IF "%NOPROMPT%"=="0" (
 )
 
 :downzlib
-IF "%GITOK%"=="0" (
-	ECHO Looks like you don't have Git for Windows
+IF !GITOK! EQU 0 (
+	ECHO Looks like you don't have Git for Windows installed
 	ECHO You can download it from https://git-scm.com/download/win
 ) ELSE (
 	RMDIR /S /Q "!ZFOLDER!"
@@ -70,7 +70,7 @@ IF "%GITOK%"=="0" (
 IF NOT EXIST "!ZFOLDER!\win32\!ARCH!" MD "!ZFOLDER!\win32\!ARCH!"
 PUSHD "!ZFOLDER!\win32\!ARCH!"
 NMAKE /F ..\Makefile.msc TOP=..\..\
-IF "!ERRORLEVEL!"=="0" (
+IF !ERRORLEVEL! EQU 0 (
 	POPD
 	GOTO detectzlib
 ) else (
@@ -82,8 +82,8 @@ IF "!ERRORLEVEL!"=="0" (
 FOR /F "tokens=* USEBACKQ" %%F IN (`WHERE /R !SERVER_OUTROOT! zlib1.dll`) DO (
 	IF EXIST "%%F" GOTO zlibok
 )
-COPY "%ZLIB_DYNAMIC%" "%SERVER_OUTROOT%\zlib1.dll"
-IF "%DEBUG%"=="1" (
+COPY "!ZLIB_DYNAMIC!" "!SERVER_OUTROOT!\zlib1.dll"
+IF !DEBUG! EQU 1 (
 	COPY "!ZLIB_DYNAMIC:~0,-3!pdb" "!SERVER_OUTROOT!\zlib1.pdb"
 )
 GOTO zlibok
