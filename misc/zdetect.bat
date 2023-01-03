@@ -4,7 +4,7 @@ IF EXIST ".\zlib.path" (
 	FOR /F "delims=" %%F IN (.\zlib.path) DO (
 		IF NOT "%%F"=="" SET ZFOLDER=%%F
 	)
-) else (
+) ELSE IF !NOPROMPT! EQU 0 (
 	ECHO Type absolute or relative path ^(without quotes^) to the folder that containing zlib repo.
 	ECHO If specified folder is empty or does not contain zlib source code, it will be cloned and
 	ECHO builded by this script automatically.
