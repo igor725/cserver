@@ -78,7 +78,6 @@ API cs_ulong Http_ReadResponse(Http *http, cs_char *buf, cs_ulong sz);
  * в котором он находился до вызова Http_Open.
  * 
  * @param http контекст http
- * @return API 
  */
 API void Http_Cleanup(Http *http);
 #endif // HTTP_H

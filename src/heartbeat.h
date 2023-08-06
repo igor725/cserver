@@ -24,8 +24,8 @@ typedef struct _Heartbeat {
 	 * всеми доступными функциями проверки ключа. Для игроков с
 	 * 127.0.0.1 всегда возвращает true.
 	 * 
-	 * @param client 
-	 * @return cs_bool 
+	 * @param client указатель на Client
+	 * @return cs_bool верен ли ключ
 	 */
 	cs_bool Heartbeat_Validate(Client *client);
 	void Heartbeat_StopAll(void);

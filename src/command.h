@@ -109,7 +109,6 @@ API cs_bool Command_SetAlias(Command *cmd, cs_str alias);
  * 
  * @param cmd указатель на структуру команды
  * @param ud указатель на данные
- * @return API 
  */
 API void Command_SetUserData(Command *cmd, void *ud);
 

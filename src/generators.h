@@ -25,7 +25,7 @@ API cs_bool Generators_Add(cs_str name, GeneratorRoutine gr);
  * @brief Удаляет добавленный ранее генератор миров.
  * 
  * @param name название генератора
- * @return true - генератор удалён, false - генератор с таким именем не был зарегистрирован 
+ * @return true - генератор удалён, false - генератор с таким именем не был зарегистрирован
  */
 API cs_bool Generators_Remove(cs_str name);
 

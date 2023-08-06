@@ -111,7 +111,7 @@
 
 	// Небольшой макрос для облегчения жизни при объявлении интерфейсов плагина
 #	define Plugin_DeclareInterfaces EXP PluginInterface Plugin_Interfaces[]; \
-	PluginInterface Plugin_Interfaces[] = 
+	PluginInterface Plugin_Interfaces[] =
 	// Макросы для создания массива интерфейсов
 #	define PLUGIN_IFACE_END {NULL, NULL, 0}
 #	define PLUGIN_IFACE_ADD(n, i) {n, (void *)&(i), sizeof(i)}

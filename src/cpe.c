@@ -146,7 +146,7 @@ cs_uint32 CPE_GetModelStr(cs_int16 num, cs_char *buffer, cs_uint32 buflen) {
 }
 
 /**
- * CustomParticles 
+ * CustomParticles
  */
 
 static CPEParticle *customParticles[CPE_MAX_PARTICLES] = {NULL};

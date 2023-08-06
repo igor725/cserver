@@ -88,7 +88,7 @@ API cs_uint32 Compr_GetQueuedSize(Compr *ctx);
  * которые были записаны в выходной буфер с момента
  * последнего исполнения функции Compr_Update.
  * 
- * @param ctx 
+ * @param ctx указатель на контекст архиватора
  * @return количество записанных данных
  */
 API cs_uint32 Compr_GetWrittenSize(Compr *ctx);

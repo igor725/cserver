@@ -220,7 +220,7 @@ typedef struct _CPEModel {
 	cs_uint16 vScale;
 	cs_byte partsCount;
 	CPEModelPart *part;
-} CPEModel; 
+} CPEModel;
 
 typedef struct _CPECuboid {
 	cs_byte id;

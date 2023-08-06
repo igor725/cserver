@@ -119,7 +119,7 @@ cs_int32 NetBuffer_ReadLine(NetBuffer *nb, cs_char *buffer, cs_uint32 buflen) {
 	cs_uint32 bufpos = 0;
 	for(cs_uint32 i = 0; i < buflen; i++) {
 		if(i > avail) return -2;
- 
+
 		if(data[i] == '\n') {
 			nb->cread += (i + 1);
 			buffer[bufpos] = '\0';

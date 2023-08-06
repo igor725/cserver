@@ -38,7 +38,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "Build debug"
+            // "preLaunchTask": "Build debug"
         },
     ]
 }

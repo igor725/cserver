@@ -255,7 +255,7 @@ cs_bool Server_Init(void) {
 
 			Config_Save(Server_Config, true);
 		} else {
-			cs_str scode = Config_ErrorToString(code), 
+			cs_str scode = Config_ErrorToString(code),
 			sextra = Config_ExtraToString(extra);
 			if(line > 0)
 				Log_Error(Sstor_Get("SV_CFGL_ERR"), line, MAINCFG, scode, sextra);

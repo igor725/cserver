@@ -5,8 +5,8 @@
 cs_bool Tests_Memory(void) {
 	Tests_NewTask("Try alloc memory");
 	unsigned char *mem, *mem2;
-	Tests_Assert((mem = Memory_TryAlloc(1000, 1)) != NULL, "allocate first memory block"); 
-	Tests_Assert((mem2 = Memory_TryAlloc(1000, 1)) != NULL, "allocate second memory block"); 
+	Tests_Assert((mem = Memory_TryAlloc(1000, 1)) != NULL, "allocate first memory block");
+	Tests_Assert((mem2 = Memory_TryAlloc(1000, 1)) != NULL, "allocate second memory block");
 
 	Tests_NewTask("Check memory block size");
 	Tests_Assert(Memory_GetSize(mem) >= 1000, "check first memory block size");
