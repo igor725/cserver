@@ -91,6 +91,12 @@ typedef enum _EEntProp {
 	ENTITY_PROP_COUNT
 } EEntProp;
 
+typedef enum _ELightMode {
+	LIGHT_REVERT,
+	LIGHT_CLASSIC,
+	LIGHT_FANCY
+} ELightMode;
+
 typedef struct _Color4 {
 	cs_int16 r, g, b, a;
 } Color4;

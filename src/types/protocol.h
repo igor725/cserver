@@ -39,6 +39,7 @@
 #define EXT_CUSTOMMODELS 0xB27EFA32ul
 #define EXT_PLUGINMESSAGE 0x59FA7285ul
 #define EXT_ENTTELEPORT 0x9af9cdc6ul
+#define EXT_LIGHTMODE 0x88c1ccb4ul
 
 typedef enum _EPacketID {
 	// Vanilla packets
@@ -98,7 +99,8 @@ typedef enum _EPacketID {
 	PACKET_DEFINEMODELPART = 0x33,
 	PACKET_UNDEFINEMODEL = 0x34,
 	PACKET_PLUGINMESSAGE = 0x35,
-	PACKET_EXTENTITYTP = 0x36
+	PACKET_EXTENTITYTP = 0x36,
+	PACKET_LIGHTINGMODE = 0x37
 } EPacketID;
 
 typedef struct _Packet {

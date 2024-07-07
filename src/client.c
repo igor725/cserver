@@ -630,6 +630,14 @@ cs_bool Client_ExtTeleportTo(Client *client, cs_byte behavior, Vec *pos, Ang *an
 	return false;
 }
 
+cs_bool Client_SetLighting(Client *client, ELightMode mode, cs_bool locked) {
+	if(Client_GetExtVer(client, EXT_LIGHTMODE)) {
+		CPE_WriteLightingMode(client, mode, locked);
+		return true;
+	}
+	return false;
+}
+
 cs_bool Client_SetProp(Client *client, EEntProp prop, cs_int32 value) {
 	if(prop >= ENTITY_PROP_COUNT) return false;
 	client->cpeData.props[prop] = value;

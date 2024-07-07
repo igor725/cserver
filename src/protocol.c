@@ -1047,6 +1047,16 @@ void CPE_WriteExtEntityTeleport(Client *client, cs_byte behavior, Vec *pos, Ang 
 	PacketWriter_End(client);
 }
 
+void CPE_WriteLightingMode(Client *client, cs_byte mode, cs_bool locked) {
+	PacketWriter_Start(client, 3);
+
+	*data++ = PACKET_LIGHTINGMODE;
+	*data++ = mode;
+	*data++ = locked;
+
+	PacketWriter_End(client);
+}
+
 cs_bool CPEHandler_ExtInfo(Client *client, cs_char *data) {
 	ValidateCpeClient(client, false);
 	ValidateClientState(client, CLIENT_STATE_MOTD, false);
@@ -1238,6 +1248,7 @@ static const struct extReg {
 	{"CustomModels", 2},
 	{"PluginMessages", 1},
 	{"ExtEntityTeleport", 1},
+	{"LightingMode", 1},
 
 	// Не думаю, что они когда-нибудь появятся
 	// {"ExtendedBlocks", 1},

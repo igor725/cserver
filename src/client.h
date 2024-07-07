@@ -82,6 +82,7 @@ API cs_bool Client_SpawnParticle(Client *client, cs_byte id, Vec *pos, Vec *orig
 API cs_bool Client_SendPluginMessage(Client *client, cs_byte channel, cs_str message);
 API cs_bool Client_UndefineModel(Client *client, cs_byte id);
 API cs_bool Client_ExtTeleportTo(Client *client, cs_byte behavior, Vec *pos, Ang *ang);
+API cs_bool Client_SetLighting(Client *client, ELightMode mode, cs_bool locked);
 
 API EClientState Client_GetState(Client *client);
 API cs_str Client_GetName(Client *client);
