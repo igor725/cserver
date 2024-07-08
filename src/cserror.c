@@ -7,7 +7,10 @@
 #include "platform.h"
 
 #if defined(CORE_USE_WINDOWS)
+#pragma warning(push)
+#pragma warning(disable : 4255)
 #include <dbghelp.h>
+#pragma warning(pop)
 
 NOINL static void PrintCallStack(void) {
 	void *stack[16];
