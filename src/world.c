@@ -65,6 +65,7 @@ void World_Add(World *world) {
 cs_bool World_Remove(World *world) {
 	if(world == World_Main) return false;
 	World_WaitProcessFinish(world, WORLD_PROC_ALL);
+	World_Lock(world, 0);
 	AListField *tmp;
 	List_Iter(tmp, World_Head) {
 		if(tmp->value.ptr == world) {
