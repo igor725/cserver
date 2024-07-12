@@ -278,6 +278,7 @@ void Waitable_Signal(Waitable *wte) {
 }
 
 void Waitable_Wait(Waitable *wte) {
+	cs_int32 ret;
 	pthread_mutex_t handle;
 	pthread_mutexattr_t attr;
 
@@ -286,7 +287,6 @@ void Waitable_Wait(Waitable *wte) {
 	if((ret = pthread_mutex_init(&handle, &attr)) != 0)
 		_Error_Print(ret, true);
 
-	cs_int32 ret;
 	if((ret = pthread_cond_wait(&wte->cond, &handle)) != 0)
 		_Error_Print(ret, true);
 }
@@ -303,6 +303,7 @@ cs_bool Waitable_TryWait(Waitable *wte, cs_ulong timeout) {
 	ts.tv_sec += (add + secs);
 	ts.tv_nsec = timeout % (1000 * 1000 * 1000);
 
+	int32_t ret;
 	pthread_mutex_t handle;
 	pthread_mutexattr_t attr;
 
