@@ -273,7 +273,7 @@ void Waitable_Free(Waitable *wte) {
 
 void Waitable_Signal(Waitable *wte) {
 	cs_int32 ret;
-	if((ret = pthread_cond_signal(&wte->cond)) != 0)
+	if((ret = pthread_cond_broadcast(&wte->cond)) != 0)
 		_Error_Print(ret, true);
 }
 
