@@ -442,6 +442,9 @@ THREAD_FUNC(WorldSaveThread) {
 }
 
 cs_bool World_Lock(World *world, cs_ulong timeout) {
+	if (timeout != 0l) {
+		Log_Warn("Unimplemented timed World lock!");
+	}
 	Mutex_Lock(world->mtx);
 	return true;
 }
