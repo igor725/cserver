@@ -64,7 +64,7 @@ void World_Add(World *world) {
 
 cs_bool World_Remove(World *world) {
 	if(world == World_Main) return false;
-	World_Lock(world, 0);
+	World_WaitProcessFinish(world, WORLD_PROC_ALL);
 	AListField *tmp;
 	List_Iter(tmp, World_Head) {
 		if(tmp->value.ptr == world) {
@@ -110,7 +110,11 @@ void World_SetSpawn(World *world, Vec *svec, Ang *sang) {
 }
 
 cs_bool World_SetDimensions(World *world, const SVec *dims) {
-	if (ISSET(world->flags, WORLD_FLAG_ALLOCATED)) return false;
+	if (ISSET(world->flags, WORLD_FLAG_ALLOCATED)) {
+		const SVec* currdim = &world->info.dimensions;
+		return dims->x == currdim->x && dims->y == currdim->y && dims->z == currdim->z;
+	}
+
 	if(dims->x < 1 || dims->y < 1 || dims->z < 1) return false;
 	cs_uint32 size = (cs_uint32)dims->x * (cs_uint32)dims->y;
 	if((WORLD_MAX_SIZE / size) < (cs_uint32)dims->z) return false;
@@ -240,8 +244,10 @@ cs_uint32 World_GetSeed(World *world) {
 }
 
 void World_AllocBlockArray(World *world) {
-	if (world->flags & WORLD_FLAG_ALLOCATED)
-		World_FreeBlockArray(world);
+	if (world->flags & WORLD_FLAG_ALLOCATED) {
+		Log_Warn("Double World(%p) reallocation!");
+		return;
+	}
 	void *data = Memory_Alloc(world->wdata.size + 4, 1);
 	*(cs_uint32 *)data = htonl(world->wdata.size);
 	world->wdata.ptr = data;
@@ -493,6 +499,7 @@ cs_bool World_Save(World *world) {
 	if(!World_IsModified(world))
 		return World_IsReadyToPlay(world);
 
+	World_WaitProcessFinish(world, WORLD_PROC_ALL);
 	World_StartProcess(world, WORLD_PROC_SAVING);
 	Thread_Create(WorldSaveThread, world, true);
 	return true;
@@ -536,7 +543,8 @@ THREAD_FUNC(WorldLoadThread) {
 	if(ReadInfo(world, fp)) {
 		cs_uint32 wsize = 0;
 		cs_byte in[CHUNK_SIZE];
-		World_AllocBlockArray(world);
+		if (!ISSET(world->flags, WORLD_FLAG_ALLOCATED))
+			World_AllocBlockArray(world);
 		cs_byte *data = World_GetBlockArray(world, &wsize);
 		Compr_SetOutBuffer(&world->compr, data, wsize);
 		cs_uint32 indatasize;
@@ -570,6 +578,7 @@ cs_bool World_Load(World *world) {
 		return false;
 	}
 
+	World_WaitProcessFinish(world, WORLD_PROC_ALL);
 	World_StartProcess(world, WORLD_PROC_LOADING);
 	Thread_Create(WorldLoadThread, world, false);
 	return true;
