@@ -286,6 +286,7 @@ cs_bool Server_Init(void) {
 				World *tmp = World_Create(wname);
 				if(World_Load(tmp)) {
 					World_WaitProcessFinish(tmp, WORLD_PROC_LOADING);
+					World_Lock(tmp, 0);
 					if(World_HasError(tmp)) {
 						EWorldExtra extra = WORLD_EXTRA_NOINFO;
 						EWorldError code = World_PopError(tmp, &extra);
@@ -330,6 +331,7 @@ cs_bool Server_Init(void) {
 					tmp = World_Create(buffer);
 					if(World_Load(tmp)) {
 						World_WaitProcessFinish(tmp, WORLD_PROC_LOADING);
+						World_Lock(tmp, 0);
 						if(World_HasError(tmp)) {
 							EWorldExtra extra = WORLD_EXTRA_NOINFO;
 							EWorldError code = World_PopError(tmp, &extra);
@@ -457,6 +459,7 @@ INL static void UnloadAllWorlds(void) {
 
 		if(!World_IsInMemory(world) && World_Save(world)) {
 			World_WaitProcessFinish(world, WORLD_PROC_ALL);
+			World_Lock(tmp, 0);
 			if(World_HasError(world)) {
 				EWorldExtra extra = WORLD_EXTRA_NOINFO;
 				EWorldError code = World_PopError(world, &extra);
