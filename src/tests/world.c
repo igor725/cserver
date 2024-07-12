@@ -55,15 +55,13 @@ cs_bool Tests_World(void) {
 	Tests_NewTask("Saving world");
 	Tests_Assert(World_Save(world), "unload world");
 	World_WaitProcessFinish(world, WORLD_PROC_ALL);
-	World_Unlock(world);
 	World_Free(world);
 
 	Tests_NewTask("Load world");
 	world = World_Create(worldname);
 	Tests_Assert(world != NULL, "create world structure");
 	Tests_Assert(World_Load(world), "load world");
-	World_Lock(world, 0);
-	World_Unlock(world);
+	World_WaitProcessFinish(world, WORLD_PROC_LOADING);
 
 	Tests_NewTask("Checking world properties");
 	Tests_Assert(World_GetEnvProp(world, WORLD_PROP_SIDEBLOCK) == BLOCK_DIRT, "check side block");
