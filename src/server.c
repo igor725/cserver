@@ -464,6 +464,7 @@ INL static void UnloadAllWorlds(void) {
 				Log_Error(Sstor_Get("SV_WLOAD_ERR"), "save", wname, code, extra);
 				World_Unlock(world);
 			} else {
+				World_Unlock(world);
 				Event_Call(EVT_ONWORLDREMOVED, world);
 				AList_Remove(&World_Head, tmp);
 				World_Free(world);

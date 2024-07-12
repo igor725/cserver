@@ -289,6 +289,9 @@ void Waitable_Wait(Waitable *wte) {
 
 	if((ret = pthread_cond_wait(&wte->cond, &handle)) != 0)
 		_Error_Print(ret, true);
+
+	if((ret = pthread_mutex_destroy(&handle)) != 0)
+		_Error_Print(ret, true);
 }
 
 cs_bool Waitable_TryWait(Waitable *wte, cs_ulong timeout) {
@@ -312,7 +315,12 @@ cs_bool Waitable_TryWait(Waitable *wte, cs_ulong timeout) {
 	if((ret = pthread_mutex_init(&handle, &attr)) != 0)
 		_Error_Print(ret, true);
 
-	return pthread_cond_timedwait(&wte->cond, &handle, &ts) == 0;
+	cs_bool waitsucc =  pthread_cond_timedwait(&wte->cond, &handle, &ts) == 0;
+
+	if((ret = pthread_mutex_destroy(&handle)) != 0)
+		_Error_Print(ret, true);
+
+	return waitsucc;
 }
 
 cs_int32 Time_Format(cs_char *buf, cs_size buflen) {
