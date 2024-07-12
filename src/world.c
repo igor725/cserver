@@ -27,11 +27,8 @@ World *World_Create(cs_str name) {
 	if(!String_IsSafe(name)) return NULL;
 	World *tmp = Memory_Alloc(1, sizeof(World));
 	tmp->name = String_AllocCopy(name);
-	tmp->prgw = Waitable_Create();
-	tmp->taskw = Waitable_Create();
+	tmp->taskann = Waitable_Create();
 	tmp->mtx = Mutex_Create();
-	Waitable_Signal(tmp->taskw);
-	Waitable_Signal(tmp->prgw);
 
 	/*
 	 * Устанавливаем дефолтные значения
@@ -67,7 +64,6 @@ void World_Add(World *world) {
 
 cs_bool World_Remove(World *world) {
 	if(world == World_Main) return false;
-	World_WaitAllTasks(world);
 	World_Lock(world, 0);
 	AListField *tmp;
 	List_Iter(tmp, World_Head) {
@@ -93,7 +89,7 @@ cs_bool World_IsInMemory(World *world) {
 
 cs_bool World_IsReadyToPlay(World *world) {
 	return world->wdata.ptr != NULL &&
-	ISSET(world->flags, WORLD_FLAG_LOADED);
+	ISSET(world->flags, WORLD_FLAG_ALLOCATED);
 }
 
 World *World_GetByName(cs_str name) {
@@ -114,6 +110,7 @@ void World_SetSpawn(World *world, Vec *svec, Ang *sang) {
 }
 
 cs_bool World_SetDimensions(World *world, const SVec *dims) {
+	if (ISSET(world->flags, WORLD_FLAG_ALLOCATED)) return false;
 	if(dims->x < 1 || dims->y < 1 || dims->z < 1) return false;
 	cs_uint32 size = (cs_uint32)dims->x * (cs_uint32)dims->y;
 	if((WORLD_MAX_SIZE / size) < (cs_uint32)dims->z) return false;
@@ -247,7 +244,7 @@ void World_AllocBlockArray(World *world) {
 	*(cs_uint32 *)data = htonl(world->wdata.size);
 	world->wdata.ptr = data;
 	world->wdata.blocks = (BlockID *)data + 4;
-	world->flags |= WORLD_FLAG_LOADED;
+	world->flags |= WORLD_FLAG_ALLOCATED;
 }
 
 cs_bool World_CleanBlockArray(World *world) {
@@ -281,8 +278,7 @@ void World_Free(World *world) {
 	Compr_Cleanup(&world->compr);
 	World_FreeBlockArray(world);
 	if(world->mtx) Mutex_Free(world->mtx);
-	if(world->prgw) Waitable_Free(world->prgw);
-	if(world->taskw) Waitable_Free(world->taskw);
+	if(world->taskann) Waitable_Free(world->taskann);
 	if(world->name) Memory_Free((void *)world->name);
 	Memory_Free(world);
 }
@@ -379,7 +375,7 @@ THREAD_FUNC(WorldSaveThread) {
 	if((compr_ok = Compr_Init(&world->compr, COMPR_TYPE_GZIP)) == false) {
 		world->error.code = WORLD_ERROR_COMPR;
 		world->error.extra = WORLD_EXTRA_COMPR_INIT;
-		World_Unlock(world);
+		World_FinishProcess(world, WORLD_PROC_SAVING);
 		return 0;
 	}
 
@@ -396,7 +392,7 @@ THREAD_FUNC(WorldSaveThread) {
 		world->error.code = WORLD_ERROR_IOFAIL;
 		world->error.extra = WORLD_EXTRA_IO_OPEN;
 		Compr_Reset(&world->compr);
-		World_Unlock(world);
+		World_FinishProcess(world, WORLD_PROC_SAVING);
 		return 0;
 	}
 
@@ -417,7 +413,7 @@ THREAD_FUNC(WorldSaveThread) {
 		world->error.extra = WORLD_EXTRA_IO_WRITE;
 		Compr_Reset(&world->compr);
 		File_Close(fp);
-		World_Unlock(world);
+		World_FinishProcess(world, WORLD_PROC_SAVING);
 		return 0;
 	}
 
@@ -426,51 +422,49 @@ THREAD_FUNC(WorldSaveThread) {
 	if(compr_ok && !File_Rename(tmpname, path)) {
 		world->error.code = WORLD_ERROR_IOFAIL;
 		world->error.extra = WORLD_EXTRA_IO_RENAME;
-		World_Unlock(world);
+		World_FinishProcess(world, WORLD_PROC_SAVING);
 		return 0;
 	}
 
 	world->error.code = WORLD_ERROR_SUCCESS;
 	world->error.extra = WORLD_EXTRA_NOINFO;
-	world->flags &= ~WORLD_FLAG_MODIFIED;
-	World_Unlock(world);
+	World_FinishProcess(world, WORLD_PROC_SAVING);
 	return 0;
 }
 
 cs_bool World_Lock(World *world, cs_ulong timeout) {
-	cs_bool ret = true;
 	Mutex_Lock(world->mtx);
-	if(timeout > 0) {
-		if((ret = Waitable_TryWait(world->prgw, timeout)) == true)
-			Waitable_Reset(world->prgw);
-	} else {
-		Waitable_Wait(world->prgw);
-		Waitable_Reset(world->prgw);
-	}
-	Mutex_Unlock(world->mtx);
-	return ret;
+	return true;
 }
 
 void World_Unlock(World *world) {
-	Waitable_Signal(world->prgw);
+	Mutex_Unlock(world->mtx);
 }
 
-void World_StartTask(World *world) {
-	World_Lock(world, 0);
-	if(!world->taskc++)
-		Waitable_Reset(world->taskw);
-	World_Unlock(world);
+void World_StartProcess(World *world, WorldProcs process) {
+	Mutex_Lock(world->mtx);
+	++world->prCount[process];
+	world->processes |= BIT(process);
+	Mutex_Unlock(world->mtx);
 }
 
-void World_EndTask(World *world) {
-	World_Lock(world, 0);
-	if(--world->taskc == 0)
-		Waitable_Signal(world->taskw);
-	World_Unlock(world);
+void World_FinishProcess(World *world, WorldProcs process) {
+	Mutex_Lock(world->mtx);
+	if ((--world->prCount[process]) == 0) {
+		world->processes &= ~BIT(process);
+		Waitable_Signal(world->taskann);
+	}
+	Mutex_Unlock(world->mtx);
 }
 
-void World_WaitAllTasks(World *world) {
-	Waitable_Wait(world->taskw);
+void World_WaitProcessFinish(World *world, WorldProcs process) {
+	if (process == WORLD_PROC_ALL) {
+		while (world->processes)
+			Waitable_Wait(world->taskann);
+		return;
+	}
+	while (world->processes & BIT(process))
+		Waitable_Wait(world->taskann);
 }
 
 void World_SetInMemory(World *world, cs_bool state) {
@@ -497,7 +491,7 @@ cs_bool World_Save(World *world) {
 	if(!World_IsModified(world))
 		return World_IsReadyToPlay(world);
 
-	World_Lock(world, 0);
+	World_StartProcess(world, WORLD_PROC_SAVING);
 	Thread_Create(WorldSaveThread, world, true);
 	return true;
 }
@@ -521,7 +515,7 @@ THREAD_FUNC(WorldLoadThread) {
 	if((compr_ok = Compr_Init(&world->compr, COMPR_TYPE_UNGZIP)) == false) {
 		world->error.code = WORLD_ERROR_COMPR;
 		world->error.extra = WORLD_EXTRA_COMPR_INIT;
-		World_Unlock(world);
+		World_FinishProcess(world, WORLD_PROC_LOADING);
 		return 0;
 	}
 
@@ -533,7 +527,7 @@ THREAD_FUNC(WorldLoadThread) {
 		world->error.code = WORLD_ERROR_IOFAIL;
 		world->error.extra = WORLD_EXTRA_IO_OPEN;
 		Compr_Reset(&world->compr);
-		World_Unlock(world);
+		World_FinishProcess(world, WORLD_PROC_LOADING);
 		return 0;
 	}
 
@@ -563,7 +557,7 @@ THREAD_FUNC(WorldLoadThread) {
 	Compr_Reset(&world->compr);
 	if(world->error.code == WORLD_ERROR_SUCCESS)
 		Event_Call(EVT_ONWORLDSTATUSCHANGE, world);
-	World_Unlock(world);
+	World_FinishProcess(world, WORLD_PROC_LOADING);
 	return 0;
 }
 
@@ -573,10 +567,8 @@ cs_bool World_Load(World *world) {
 		world->error.extra = WORLD_EXTRA_NOINFO;
 		return false;
 	}
-	if(ISSET(world->flags, WORLD_FLAG_LOADED))
-		return false;
 
-	World_Lock(world, 0);
+	World_StartProcess(world, WORLD_PROC_LOADING);
 	Thread_Create(WorldLoadThread, world, false);
 	return true;
 }
@@ -587,11 +579,11 @@ void World_FreeBlockArray(World *world) {
 		world->wdata.size = 0;
 		world->wdata.ptr = world->wdata.blocks = NULL;
 	}
-	world->flags &= ~WORLD_FLAG_LOADED;
+	world->flags &= ~WORLD_FLAG_ALLOCATED;
 }
 
 void World_Unload(World *world) {
-	World_WaitAllTasks(world);
+	World_WaitProcessFinish(world, WORLD_PROC_ALL);
 	World_FreeBlockArray(world);
 	Event_Call(EVT_ONWORLDSTATUSCHANGE, world);
 }

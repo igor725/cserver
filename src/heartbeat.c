@@ -234,7 +234,6 @@ cs_bool Heartbeat_Run(Heartbeat *self) {
 
 	self->started = true;
 	self->isdone = Waitable_Create();
-	Waitable_Reset(self->isdone);
 	Thread_Create(HbeatThread, self, true);
 	AList_AddField(&headHeartbeat, self);
 	Mutex_Unlock(gLock);

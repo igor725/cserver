@@ -8,13 +8,21 @@
 #include "types/cpe.h"
 
 #define WORLD_FLAG_NONE 0x00
-#define WORLD_FLAG_LOADED BIT(0)
+#define WORLD_FLAG_ALLOCATED BIT(0)
 #define WORLD_FLAG_MODIFIED BIT(1)
 #define WORLD_FLAG_MODIGNORE BIT(2)
 #define WORLD_FLAG_INMEMORY BIT(3)
 
+#define WORLD_PROC_ALL ((WorldProcs)-1)
+#define WORLD_PROC_LOADING 0
+#define WORLD_PROC_SAVING 1
+#define WORLD_PROC_SENDWORLD 2
+
 #define WORLD_MAX_SIZE 4000000000u
 #define WORLD_INVALID_OFFSET (cs_uint32)-1
+
+typedef cs_uint16 WorldFlags;
+typedef cs_uint16 WorldProcs;
 
 typedef enum _EWorldError {
 	WORLD_ERROR_SUCCESS = 0,
@@ -50,13 +58,13 @@ typedef struct _WorldInfo {
 } WorldInfo;
 
 typedef struct _World {
-	cs_uint32 flags;
+	WorldFlags flags;
+	WorldProcs processes;
+	cs_byte prCount[sizeof(WorldProcs) * 8];
 	cs_str name;
 	WorldInfo info;
 	Mutex *mtx;
-	Waitable *prgw;
-	Waitable *taskw;
-	cs_uint32 taskc;
+	Waitable *taskann;
 	Compr compr;
 	KListField *headNode;
 	struct _WorldError {

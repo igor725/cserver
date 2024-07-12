@@ -34,9 +34,9 @@ API cs_bool World_Save(World *world);
 
 API cs_bool World_Lock(World *world, cs_ulong timeout);
 API void World_Unlock(World *world);
-API void World_StartTask(World *world);
-API void World_EndTask(World *world);
-API void World_WaitAllTasks(World *world);
+API void World_StartProcess(World *world, WorldProcs process);
+API void World_FinishProcess(World *world, WorldProcs process);
+API void World_WaitProcessFinish(World *world, WorldProcs process);
 
 API void World_SetInMemory(World *world, cs_bool state);
 API void World_SetIgnoreModifications(World *world, cs_bool state);

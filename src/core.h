@@ -217,7 +217,7 @@ typedef cs_byte ClientID;
 #ifndef CORE_BUILD_PLUGIN
 #	define SOFTWARE_NAME "CServer"
 #	define SOFTWARE_FULLNAME SOFTWARE_NAME "/" GIT_COMMIT_TAG
-#	define TICKS_PER_SECOND (1000 / 128)
+#	define TICKS_PER_SECOND (1000u / 128u)
 #	define MAINCFG "server.cfg"
 #endif
 

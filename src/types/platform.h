@@ -13,6 +13,7 @@
 	typedef WIN32_FIND_DATAA ITER_FILE;
 	typedef cs_ulong TRET, TSHND_PARAM;
 	typedef void Waitable;
+	typedef void Semaphore;
 	typedef CRITICAL_SECTION Mutex;
 	typedef SOCKET Socket;
 	typedef HANDLE Thread, ITER_DIR;
@@ -44,8 +45,6 @@
 	typedef cs_int32 TSHND_PARAM;
 	typedef struct _Waitable {
 		pthread_cond_t cond;
-		Mutex *mutex;
-		cs_bool signalled;
 	} Waitable;
 	typedef cs_int32 Socket;
 #endif

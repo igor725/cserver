@@ -261,8 +261,6 @@ Waitable *Waitable_Create(void) {
 	cs_int32 ret;
 	if((ret = pthread_cond_init(&wte->cond, NULL)) != 0)
 		_Error_Print(ret, true);
-	wte->mutex = Mutex_Create();
-	wte->signalled = false;
 	return wte;
 }
 
@@ -270,35 +268,27 @@ void Waitable_Free(Waitable *wte) {
 	cs_int32 ret;
 	if((ret = pthread_cond_destroy(&wte->cond)) != 0)
 		_Error_Print(ret, true);
-	Mutex_Free(wte->mutex);
 	Memory_Free(wte);
 }
 
 void Waitable_Signal(Waitable *wte) {
-	Mutex_Lock(wte->mutex);
 	cs_int32 ret;
-	if(!wte->signalled) {
-		wte->signalled = true;
-		if((ret = pthread_cond_signal(&wte->cond)) != 0)
-			_Error_Print(ret, true);
-	}
-	Mutex_Unlock(wte->mutex);
-}
-
-void Waitable_Reset(Waitable *wte) {
-	Mutex_Lock(wte->mutex);
-	wte->signalled = false;
-	Mutex_Unlock(wte->mutex);
+	if((ret = pthread_cond_signal(&wte->cond)) != 0)
+		_Error_Print(ret, true);
 }
 
 void Waitable_Wait(Waitable *wte) {
-	Mutex_Lock(wte->mutex);
+	pthread_mutex_t handle;
+	pthread_mutexattr_t attr;
+
+	if((ret = pthread_mutexattr_init(&attr)) != 0)
+		_Error_Print(ret, true);
+	if((ret = pthread_mutex_init(&handle, &attr)) != 0)
+		_Error_Print(ret, true);
+
 	cs_int32 ret;
-	while(!wte->signalled) {
-		if((ret = pthread_cond_wait(&wte->cond, &wte->mutex->handle)) != 0)
-			_Error_Print(ret, true);
-	}
-	Mutex_Unlock(wte->mutex);
+	if((ret = pthread_cond_wait(&wte->cond, &handle)) != 0)
+		_Error_Print(ret, true);
 }
 
 cs_bool Waitable_TryWait(Waitable *wte, cs_ulong timeout) {
@@ -313,7 +303,15 @@ cs_bool Waitable_TryWait(Waitable *wte, cs_ulong timeout) {
 	ts.tv_sec += (add + secs);
 	ts.tv_nsec = timeout % (1000 * 1000 * 1000);
 
-	return pthread_cond_timedwait(&wte->cond, &wte->mutex->handle, &ts) == 0;
+	pthread_mutex_t handle;
+	pthread_mutexattr_t attr;
+
+	if((ret = pthread_mutexattr_init(&attr)) != 0)
+		_Error_Print(ret, true);
+	if((ret = pthread_mutex_init(&handle, &attr)) != 0)
+		_Error_Print(ret, true);
+
+	return pthread_cond_timedwait(&wte->cond, &handle, &ts) == 0;
 }
 
 cs_int32 Time_Format(cs_char *buf, cs_size buflen) {

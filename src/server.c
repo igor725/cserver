@@ -456,7 +456,7 @@ INL static void UnloadAllWorlds(void) {
 		cs_str wname = World_GetName(world);
 
 		if(!World_IsInMemory(world) && World_Save(world)) {
-			World_WaitAllTasks(world);
+			World_WaitProcessFinish(world, WORLD_PROC_ALL);
 			World_Lock(world, 0);
 			if(World_HasError(world)) {
 				EWorldExtra extra = WORLD_EXTRA_NOINFO;

@@ -230,6 +230,7 @@ cs_bool Client_ChangeWorld(Client *client, World *world) {
 	client->state = CLIENT_STATE_MOTD;
 	client->playerData.position = world->info.spawnVec;
 	client->playerData.angle = world->info.spawnAng;
+	World_StartProcess(world, WORLD_PROC_SENDWORLD);
 	return true;
 }
 
@@ -895,7 +896,12 @@ NOINL static cs_bool SendWorldTick(Client *client) {
 	}
 
 	if(md->sent == 0) { // Передача только началась
-		World_StartTask(md->world);
+		World_WaitProcessFinish(md->world, WORLD_PROC_LOADING);
+		if (!World_IsReadyToPlay(md->world)) {
+			Client_Kick(client, Sstor_Get("KICK_INT"));
+			return true;
+		}
+
 		if(md->world != client->playerData.world) {
 			if(Client_GetExtVer(client, EXT_BLOCKDEF)) {
 				World *oldworld = client->playerData.world;
@@ -977,7 +983,7 @@ NOINL static cs_bool SendWorldTick(Client *client) {
 
 			// Не даём серверу слишком долго сжимать карту для клиента
 			// Поле taskc хранит в себе количество подключающихся в данный момент клиентов к данному миру
-			if(Time_GetMSec() - markStart < (TICKS_PER_SECOND / md->world->taskc))
+			if(Time_GetMSec() - markStart < (TICKS_PER_SECOND / md->world->prCount[WORLD_PROC_SENDWORLD]))
 				goto comprstep;
 			else
 				return false;
@@ -998,7 +1004,7 @@ NOINL static cs_bool SendWorldTick(Client *client) {
 	Client_KickFormat(client, Sstor_Get("KICK_ZERR"), Compr_GetLastError(&md->compr));
 
 	mapend:
-	World_EndTask(md->world);
+	World_FinishProcess(md->world, WORLD_PROC_SENDWORLD);
 	Compr_Reset(&md->compr);
 	md->world = NULL;
 	md->sent = 0;

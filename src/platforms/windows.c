@@ -232,7 +232,7 @@ void Mutex_Unlock(Mutex *mtx) {
 }
 
 Waitable *Waitable_Create(void) {
-	Waitable *handle = CreateEventA(NULL, true, false, NULL);
+	Waitable *handle = CreateEventA(NULL, false, false, NULL);
 	if(handle == INVALID_HANDLE_VALUE) Error_PrintSys(true);
 	return handle;
 }
@@ -240,11 +240,6 @@ Waitable *Waitable_Create(void) {
 void Waitable_Free(Waitable *wte) {
 	if(!CloseHandle(wte))
 		Error_PrintSys(false);
-}
-
-void Waitable_Reset(Waitable *wte) {
-	if(!ResetEvent(wte))
-		Error_PrintSys(true);
 }
 
 void Waitable_Signal(Waitable *wte) {
