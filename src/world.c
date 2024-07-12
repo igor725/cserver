@@ -240,6 +240,8 @@ cs_uint32 World_GetSeed(World *world) {
 }
 
 void World_AllocBlockArray(World *world) {
+	if (world->flags & WORLD_FLAG_ALLOCATED)
+		World_FreeBlockArray(world);
 	void *data = Memory_Alloc(world->wdata.size + 4, 1);
 	*(cs_uint32 *)data = htonl(world->wdata.size);
 	world->wdata.ptr = data;
