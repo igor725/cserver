@@ -218,8 +218,6 @@ cs_bool Client_ChangeWorld(Client *client, World *world) {
 	if(Client_IsBot(client)) {
 		Client_Despawn(client);
 		client->playerData.world = world;
-		client->playerData.position = world->info.spawnVec;
-		client->playerData.angle = world->info.spawnAng;
 		return true;
 	}
 
@@ -228,8 +226,6 @@ cs_bool Client_ChangeWorld(Client *client, World *world) {
 	Client_Despawn(client);
 	client->mapData.world = world;
 	client->state = CLIENT_STATE_MOTD;
-	client->playerData.position = world->info.spawnVec;
-	client->playerData.angle = world->info.spawnAng;
 	World_StartProcess(world, WORLD_PROC_SENDWORLD);
 	return true;
 }
@@ -897,6 +893,8 @@ NOINL static cs_bool SendWorldTick(Client *client) {
 
 	if(md->sent == 0) { // Передача только началась
 		World_WaitProcessFinish(md->world, WORLD_PROC_LOADING);
+		client->playerData.position = md->world->info.spawnVec;
+		client->playerData.angle = md->world->info.spawnAng;
 		if (!World_IsReadyToPlay(md->world)) {
 			Client_Kick(client, Sstor_Get("KICK_INT"));
 			return true;
