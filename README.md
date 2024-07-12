@@ -72,6 +72,9 @@ SET CFLAGS=!CFLAGS! /DCORE_MANUAL_BACKENDS ^
 
 ## Building
 
+> [!WARNING]
+> macOS build will be able to compile correctly, but it will probably crash in runtime since GitHub Action fails to pass a unit test. I don't have any Apple thing on me anymore, so I can't debug the server. macOS build will be disabled until a solution is found.
+
 ### On Linux/macOS
 ``./build [args ...]``
 
