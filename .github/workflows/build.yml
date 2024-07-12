@@ -80,43 +80,43 @@ jobs:
 
     steps:
     - name: Checkout Core repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
         path: core
 
     - name: Checkout Base plugin
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: igor725/cs-base
         path: cs-base
 
     - name: Checkout Survival plugin
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: igor725/cs-survival
         path: cs-survival
 
     - name: Checkout Lua plugin
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: igor725/cs-lua
         path: cs-lua
 
     - name: Checkout WorldEdit plugin
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: igor725/cs-worldedit
         path: cs-worldedit
 
     - name: Checkout Web plugin
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: igor725/cs-web
         path: cs-web
 
     - name: Detect MSVC (Windows)
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: ilammy/msvc-dev-cmd@v1.13.0
       if: ${{matrix.config.os == 'windows'}}
       with:
         arch: ${{matrix.config.arch}}
@@ -165,7 +165,7 @@ jobs:
         Start-Process -NoNewWindow -RedirectStandardOutput out\CHANGES git.exe "log --format=medium $lasttag..HEAD"
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: cserver-${{matrix.config.os}}-${{matrix.config.arch}}
         path: |
